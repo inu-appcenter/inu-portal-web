@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { ImagePlus, Pencil, Search, Clock, User, BookOpen } from "lucide-react";
+import { ImagePlus, Pencil, Search, Clock, User, BookOpen, Calendar } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -10,6 +10,7 @@ import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { TERM_LABELS } from "@/utils/semester";
 import {
   useCreateTimeTableCourseItem,
   useTimeTables,
@@ -494,9 +495,17 @@ export default function MobileTimetableImageImportPage() {
       <ScrollContent>
         {view === "intro" && (
           <IntroContainer>
-            <Headline>
-              {"사진 속 강의를 인식해\n현재 시간표에 등록할 수 있어요."}
-            </Headline>
+            <HeadlineGroup>
+              <Headline>
+                {"사진 속 강의를 인식해\n현재 시간표에 등록할 수 있어요."}
+              </Headline>
+              <TargetTimetableBadge>
+                <Calendar size={15} />
+                <span>
+                  {year}년 {TERM_LABELS[term]} · {activeTimetable?.name ?? "기본 시간표"}
+                </span>
+              </TargetTimetableBadge>
+            </HeadlineGroup>
 
             <DropzoneCard
               type="button"
@@ -892,6 +901,12 @@ const IntroContainer = styled.div`
   gap: 24px;
 `;
 
+const HeadlineGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
 const Headline = styled.h1`
   /* heading-1 */
   font-family: Pretendard;
@@ -900,6 +915,26 @@ const Headline = styled.h1`
   font-weight: 600;
   line-height: 32px; /* 160% */
   white-space: pre-line;
+  margin: 0;
+`;
+
+const TargetTimetableBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px 12px;
+  background: #f2f4f6;
+  border-radius: 8px;
+  font-family: Pretendard;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4e5968;
+  line-height: 18px;
+
+  svg {
+    color: #0061ff;
+  }
 `;
 
 const DropzoneCard = styled.button`
