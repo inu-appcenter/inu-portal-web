@@ -241,7 +241,7 @@ export default function MobileTimetableImageImportPage() {
     setView("analyzing");
     setMatches([]);
     setProgress(15);
-    setStatus("시간표 이미지를 전송하고 있어요.");
+    setStatus("횃불이가 열심히 분석하고 있어요.");
 
     let progressTimer: ReturnType<typeof setInterval> | null = null;
     try {
@@ -252,12 +252,10 @@ export default function MobileTimetableImageImportPage() {
         });
       }, 400);
 
-      setStatus("Vision AI가 강의 시간표를 정밀 분석하고 있어요.");
       const recognized = await recognizeTimeTableImage(file, year, term);
       if (progressTimer) clearInterval(progressTimer);
 
       setProgress(90);
-      setStatus("개설 강좌 매칭 결과를 정리하고 있어요.");
 
       if (!recognized || recognized.length === 0) {
         throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
@@ -776,11 +774,6 @@ export default function MobileTimetableImageImportPage() {
       {/* 하단 고정 액션바 */}
       <FixedBottomArea>
         <FixedBottomContent>
-          {view !== "result" && (
-            <SecurityCaption>
-              이미지는 서버에 저장하지 않고 기기에서만 분석해요
-            </SecurityCaption>
-          )}
           <FixedButtonRow>
             <CancelBottomButton
               variant="secondary"
@@ -1442,14 +1435,6 @@ const FixedBottomContent = styled.div`
   pointer-events: auto;
 `;
 
-const SecurityCaption = styled.div`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 18px;
-  color: #8b95a1;
-  text-align: center;
-`;
 
 const FixedButtonRow = styled.div`
   display: flex;
