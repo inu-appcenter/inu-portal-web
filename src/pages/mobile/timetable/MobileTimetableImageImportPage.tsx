@@ -284,6 +284,11 @@ export default function MobileTimetableImageImportPage() {
         const candidates = item.candidates || [];
         let selectedId = item.recommendedOfferingId;
 
+        // 추천 ID가 없더라도 매칭된 후보가 단 1개뿐인 경우 자동 선택
+        if (!selectedId && candidates.length === 1) {
+          selectedId = candidates[0].id;
+        }
+
         // 이미 시간표에 존재하는 강좌는 기본 선택 해제
         if (
           selectedId &&
