@@ -21,7 +21,7 @@ import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import BottomSheet from "@/components/common/BottomSheet";
 import { useTimetableStore } from "@/stores/useTimetableStore";
-import { TERM_LABELS } from "@/utils/semester";
+import { TERM_LABELS, TERM_ORDER } from "@/utils/semester";
 import {
   useCreateTimeTableCourseItem,
   useTimeTables,
@@ -91,13 +91,48 @@ export default function MobileTimetableImageImportPage() {
   const [isTimetableSheetOpen, setIsTimetableSheetOpen] = useState(false);
 
   const groupedTimetables = useMemo(() => {
-    const map = new Map<string, typeof timetables>();
+    type SemesterGroup = {
+      semester: string;
+      year: number;
+      term: Term;
+      timetables: typeof timetables;
+    };
+
+    const groupMap = new Map<string, SemesterGroup>();
+
     timetables.forEach((t) => {
-      const list = map.get(t.semester) || [];
-      list.push(t);
-      map.set(t.semester, list);
+      const existing = groupMap.get(t.semester);
+      if (existing) {
+        existing.timetables.push(t);
+      } else {
+        groupMap.set(t.semester, {
+          semester: t.semester,
+          year: t.year,
+          term: t.term,
+          timetables: [t],
+        });
+      }
     });
-    return map;
+
+    // 최신 연도, 최신 학기 순으로 정렬 (내림차순)
+    const sortedGroups = Array.from(groupMap.values()).sort((a, b) => {
+      if (b.year !== a.year) {
+        return b.year - a.year;
+      }
+      return (TERM_ORDER[b.term] ?? 0) - (TERM_ORDER[a.term] ?? 0);
+    });
+
+    // 각 학기 내부 시간표 정렬: 대표 시간표 우선, 그 다음 id 순
+    sortedGroups.forEach((group) => {
+      group.timetables.sort((a, b) => {
+        if (a.isRepresentative !== b.isRepresentative) {
+          return a.isRepresentative ? -1 : 1;
+        }
+        return a.id - b.id;
+      });
+    });
+
+    return sortedGroups;
   }, [timetables]);
 
   const targetTimetableId = useMemo(() => {
@@ -919,11 +954,11 @@ export default function MobileTimetableImageImportPage() {
           </SheetHeader>
 
           <SheetContent>
-            {Array.from(groupedTimetables.entries()).map(([semName, list]) => (
-              <SemesterSection key={semName}>
-                <SemesterSectionTitle>{semName}</SemesterSectionTitle>
+            {groupedTimetables.map((group) => (
+              <SemesterSection key={group.semester}>
+                <SemesterSectionTitle>{group.semester}</SemesterSectionTitle>
                 <TimetableCardList>
-                  {list.map((t) => {
+                  {group.timetables.map((t) => {
                     const isSelected = t.id === targetTimetableId;
                     const credit = getTimetableCredits(t.events);
                     return (
