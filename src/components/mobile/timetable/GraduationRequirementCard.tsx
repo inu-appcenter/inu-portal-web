@@ -80,8 +80,7 @@ export default function GraduationRequirementCard({
             <NoticeBox $tone="warn">
               <AlertTriangle size={14} />
               <span>
-                {profile.entryYear}학번 규정을 찾지 못해 {resolved.rule.startYear}
-                ~{resolved.rule.endYear}학번 기준으로 보여드려요.
+                유니님의 정보로 올바른 졸업요건 정보를 찾지 못했어요. 아래 "졸업요건 변경 제보하기" 버튼을 눌러 제보해주세요!
               </span>
             </NoticeBox>
           )}

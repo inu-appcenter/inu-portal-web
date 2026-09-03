@@ -3,7 +3,7 @@ import { useHeader } from "@/context/HeaderContext";
 import TimetableGrid, {
   ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import ComingSoonModal from "@/components/mobile/common/ComingSoonModal";
@@ -170,37 +170,62 @@ const MobileTimeTablePage = () => {
 
   const idParam = searchParams.get("id");
 
-  // URL의 ?id=는 "이 시간표로 띄워달라"는 **진입 시드**다. 한 번 반영하고 나면
-  // 소유권은 스토어(activeTimetableId)로 넘어간다 - 멀티 웹뷰에서 시간표 목록은
-  // 별도 웹뷰로 뜨고, 거기서 고른 시간표는 broadcastSync로만 이 화면에 도달하는데
-  // (goHome은 경로만 넘겨 쿼리스트링이 사라진다) URL이 계속 우선권을 가지면 그
-  // 선택이 곧바로 예전 id로 되돌아가 버린다.
-  const [settledId, setSettledId] = useState<string | null>(null);
-
   const currentMemberId = useMemo(
     () => getMemberIdFromToken(tokenInfo.accessToken),
     [tokenInfo.accessToken],
   );
 
+  // URL의 ?id=는 "이 시간표로 띄워달라"는 **진입 시드**다 - 계정마다 최대 한 번만
+  // 스토어에 반영하고, 그 뒤로는 스토어(activeTimetableId)가 유일한 진실의
+  // 소스다. activeTimetable의 계산이 이 시도 여부를 전혀 참조하지 않으므로(아래),
+  // "언제 반영을 시도했는지"는 렌더에 영향을 주지 않는 순수 부기라 ref로 충분하다
+  // - 렌더 중 읽는 상태(state)로 만들면 그 상태가 다시 activeTimetable 우선순위
+  // 계산에 들어가는 순환이 생기고, 그 순환을 effect에서 풀려다 보면
+  // react-hooks/set-state-in-effect를 어기게 된다(실제로 겪음). ref로 완전히
+  // 렌더 바깥에 두면 그 순환 자체가 생기지 않는다.
+  //
+  // 계정이 바뀌면(로그아웃 후 다른 계정 로그인) 다시 한 번 시도할 수 있도록
+  // "이 계정으로 이미 시도했는지"를 저장한다 - 이전 계정의 시간표 id가 새 계정의
+  // 목록에 우연히 존재해도 그걸로 오인하지 않기 위해서다.
+  const seededMemberIdRef = useRef<string | null | undefined>(undefined);
+
   useEffect(() => {
-    setSettledId(null);
-  }, [currentMemberId]);
+    if (seededMemberIdRef.current === currentMemberId) return; // 이 계정으로 이미 시도함
 
-  const pendingUrlTimetable = useMemo(() => {
-    if (!idParam || idParam === settledId) return null;
+    if (!idParam) {
+      seededMemberIdRef.current = currentMemberId;
+      return;
+    }
     const id = Number(idParam);
-    if (!Number.isFinite(id)) return null;
-    return timetables.find((t) => t.id === id) ?? null;
-  }, [idParam, settledId, timetables]);
+    if (!Number.isFinite(id)) {
+      seededMemberIdRef.current = currentMemberId;
+      return;
+    }
+    if (timetables.length === 0) return; // 목록이 아직 안 채워졌으면 다음 렌더에 재시도
 
-  const storeTimetable = useMemo(
-    () => timetables.find((t) => t.id === activeTimetableId) ?? null,
-    [timetables, activeTimetableId],
-  );
+    seededMemberIdRef.current = currentMemberId; // 목록이 채워졌으니 이번이 마지막 시도
+    const seeded = timetables.find((t) => t.id === id);
+    if (seeded && seeded.id !== activeTimetableId) {
+      setSemester(seeded.semester);
+      setActiveTimetable(seeded.id);
+    }
+  }, [
+    currentMemberId,
+    idParam,
+    timetables,
+    activeTimetableId,
+    setSemester,
+    setActiveTimetable,
+  ]);
 
+  // 위 시드 effect의 결과(또는 시드가 없어 스토어/대표 시간표로 정한 값)만으로
+  // 계산한다 - URL을 참조하지 않으므로 다른 웹뷰의 broadcastSync로 activeTimetableId만
+  // 바뀌고 이 웹뷰의 URL(?id=)은 옛 값 그대로 남아있어도(goHome이 경로만 넘겨
+  // 쿼리스트링이 사라진다) 그 선택이 곧바로 낡은 URL 값으로 덮어써지지 않는다
+  // (실제로 겪은 회귀).
   const activeTimetable = useMemo(() => {
-    if (pendingUrlTimetable) return pendingUrlTimetable;
-    if (storeTimetable) return storeTimetable;
+    const stored = timetables.find((t) => t.id === activeTimetableId);
+    if (stored) return stored;
     if (!currentSemester) return null;
     return (
       timetables.find(
@@ -210,18 +235,16 @@ const MobileTimeTablePage = () => {
           t.isRepresentative,
       ) ?? null
     );
-  }, [timetables, currentSemester, pendingUrlTimetable, storeTimetable]);
+  }, [timetables, activeTimetableId, currentSemester]);
 
   const displayedSemesterLabel =
     activeTimetable?.semester || currentSemesterLabel;
 
-  // 화면이 고른 시간표를 스토어와 URL 양쪽에 수렴시킨다. settledId를 같이 올려야
-  // 방금 우리가 쓴 URL이 다시 "새 시드"로 읽히는 되먹임이 생기지 않는다.
+  // 스토어 → URL 단방향 미러링(새로고침/딥링크 복원용) + 대표 시간표 폴백을 스토어에
+  // 반영. 위 시드 effect와 달리 이건 매 렌더 activeTimetable이 바뀔 때마다 계속 돈다.
   useEffect(() => {
     if (!isLoggedIn || !activeTimetable) return;
     const nextId = String(activeTimetable.id);
-
-    if (settledId !== nextId) setSettledId(nextId);
 
     if (activeTimetable.id !== activeTimetableId) {
       setSemester(activeTimetable.semester);
@@ -242,7 +265,6 @@ const MobileTimeTablePage = () => {
     setActiveTimetable,
     setSearchParams,
     setSemester,
-    settledId,
   ]);
 
   useTimeTableDetail(activeTimetable?.id, { enabled: isLoggedIn });

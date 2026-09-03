@@ -2,6 +2,9 @@
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 import { handleBackRequest } from "./nativeBackRequest";
+import { whenCapabilities } from "./bridgeCapabilities";
+import { installNavigatorSharePolyfill } from "./nativeShare";
+import { flushAllBroadcastSync } from "@/stores/middleware/broadcastSync";
 // readNotificationByFcmMessageId는 동적 import로 지연 로드한다(정적 import 금지).
 // apis/members.ts → apis/tokenInstance.ts·refreshInstance.ts → useUserStore.ts →
 // (여기) bridgeChannel.ts 로 이어지는 순환참조가 생겨, 모듈 평가 순서에 따라
@@ -37,12 +40,19 @@ if (bridgeChannel) {
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
 
-  // 뒤로가기 위임(안드로이드 시스템 백). 네이티브는 스스로 판단하지 않고 이
-  // 웹뷰에 먼저 물어본다 — 열린 모달/오버레이나 되돌릴 SPA 히스토리는 웹만
-  // 알기 때문. 응답이 늦으면 네이티브가 자체 타임아웃으로 폴백하므로 여기서는
-  // 반드시 동기적으로 답한다.
+  // 뒤로가기 위임(안드로이드 시스템 백, iOS 스와이프 백 제스처 등). 네이티브는
+  // 스스로 판단하지 않고 이 웹뷰에 먼저 물어본다 — 열린 모달/오버레이나 되돌릴
+  // SPA 히스토리는 웹만 알기 때문. 응답이 늦으면 네이티브가 자체 타임아웃으로
+  // 폴백하므로 여기서는 반드시 동기적으로 답한다.
+  //
+  // handled:false로 답하는 순간 네이티브가 곧바로 이 웹뷰를 pop한다 - 이 흐름은
+  // appBridge.goBack/goHome/navigateTo(웹이 먼저 요청하는 아웃바운드 경로)를
+  // 전혀 거치지 않으므로 그쪽에 건 flushAllBroadcastSync만으로는 못 잡는다.
+  // 여기서 실제로 웹뷰를 떠나는 게 확정되는 시점에 별도로 flush해야 한다.
   bridgeChannel.on("checkBack", (_value, msg) => {
-    bridgeChannel?.reply(msg, "backResult", { handled: handleBackRequest() });
+    const handled = handleBackRequest();
+    if (!handled) flushAllBroadcastSync();
+    bridgeChannel?.reply(msg, "backResult", { handled });
   });
 
   // 푸시 탭 진입: fcmMessageId를 서버에 읽음 처리로 보낸 뒤, 안읽음 뱃지를
@@ -54,6 +64,15 @@ if (bridgeChannel) {
       .then(() => window.dispatchEvent(new Event("intip:notification-opened")))
       .catch((error) => console.error("Failed to mark opened notification as read", error));
   });
+
+  // bridgeCapabilities 리스너 등록 + navigator.share polyfill 설치 착수. 반드시
+  // 아래 bridgeReady 전송보다 먼저 와야 한다 — 네이티브는 bridgeReady 수신 직후
+  // (우리 요청 없이) bridgeCapabilities 를 바로 회신하므로, 리스너가 늦게
+  // 붙으면 그 메시지를 통째로 놓친다. whenCapabilities() 가 리스너 등록을
+  // 맡고, installNavigatorSharePolyfill() 은 그 결과를 기다렸다가(비동기)
+  // "share" 기능이 광고된 경우에만 polyfill 을 심는다.
+  void whenCapabilities();
+  installNavigatorSharePolyfill();
 
   // This must stay after every NativeToWeb handler registration. The native
   // shell holds one-shot notificationOpened events until it receives this ACK.

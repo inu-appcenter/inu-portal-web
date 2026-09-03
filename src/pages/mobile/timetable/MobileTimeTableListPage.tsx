@@ -2,11 +2,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
-import {
-  useTimetableStore,
-  flushTimetableStoreSync,
-  Timetable,
-} from "@/stores/useTimetableStore";
+import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
 import { useMemo, useCallback, useState } from "react";
 import Icon from "@/components/common/Icon";
@@ -177,10 +173,10 @@ export default function MobileTimeTableListPage() {
     setSemester(t.semester);
     setActiveTimetable(t.id);
     // 멀티 웹뷰에서 이 목록은 별도 웹뷰이고 아래 navigate는 곧바로 네이티브에
-    // goHome을 보내 이 웹뷰를 접는다. 선택 결과는 broadcastSync로만 시간표 탭
-    // 웹뷰에 도달하므로(쿼리스트링은 goHome이 경로만 넘겨 버려진다), 병합을
-    // 건너뛰고 이동 직전에 즉시 내보낸다.
-    flushTimetableStoreSync();
+    // goHome을 보내 이 웹뷰를 접는다(쿼리스트링은 버려지므로 선택 결과는
+    // broadcastSync로만 시간표 탭 웹뷰에 도달한다). appBridgeAdapter.goHome이
+    // 이동 직전 모든 broadcastSync 스토어를 전역으로 flush하므로 여기서 따로
+    // 챙길 필요는 없다.
     // id를 함께 넘겨 URL이 바로 이 시간표를 가리키게 함 (새로고침 시 복원용)
     navigate(`${ROUTES.TIMETABLE.ROOT}?id=${t.id}`, { replace: true });
   };
