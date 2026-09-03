@@ -80,30 +80,34 @@ const BASE_TIME_PRESETS = [
   "22:00",
 ];
 
-const validateBriefTime = (
-  timeStr: string,
-): { isValid: boolean; message?: string } => {
-  if (!timeStr) return { isValid: false, message: "시간을 입력해 주세요." };
+const normalizeBriefTime = (timeStr: string): string => {
+  if (!timeStr) return "08:00";
   const [hStr, mStr] = timeStr.split(":");
-  const hour = parseInt(hStr, 10);
-  const minute = parseInt(mStr, 10);
+  let hour = parseInt(hStr, 10);
+  let minute = parseInt(mStr, 10);
 
-  if (isNaN(hour) || isNaN(minute)) {
-    return { isValid: false, message: "올바른 시간 형식이 아닙니다." };
+  if (isNaN(hour) || isNaN(minute)) return "08:00";
+
+  // 10분 단위로 가장 가까운 값으로 반올림
+  const roundedMinute = Math.round(minute / 10) * 10;
+  if (roundedMinute === 60) {
+    hour += 1;
+    minute = 0;
+  } else {
+    minute = roundedMinute;
   }
-  if (hour < 7 || (hour === 22 && minute > 50) || hour > 22) {
-    return {
-      isValid: false,
-      message: "브리핑 알림 시간은 오전 07:00부터 오후 10:50 사이로 설정해 주세요.",
-    };
+
+  // 서버 스케줄러 범위인 07:00 ~ 22:50 으로 보정
+  if (hour < 7) {
+    hour = 7;
+    minute = 0;
+  } else if (hour > 22 || (hour === 22 && minute > 50)) {
+    hour = 22;
+    minute = 50;
   }
-  if (minute % 10 !== 0) {
-    return {
-      isValid: false,
-      message: "알림 시간은 10분 단위(00, 10, 20, 30, 40, 50분)로 설정해 주세요.",
-    };
-  }
-  return { isValid: true };
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(hour)}:${pad(minute)}`;
 };
 
 const SCHEDULE_SCOPE_OPTIONS: {
@@ -289,14 +293,21 @@ export default function MobileDailyBriefSettingPage() {
 
   const handleCustomPreAlertSubmit = () => {
     const parsed = parseInt(customPreAlertInput, 10);
-    if (isNaN(parsed) || parsed < 1 || parsed > 180) {
-      alert("알림 시간은 1분에서 180분 사이로 입력해 주세요.");
+    if (isNaN(parsed) || parsed < 5 || parsed > 180) {
+      alert("알림 시간은 5분에서 180분 사이로 입력해 주세요.");
       return;
     }
-    handleUpdate({ timetablePreAlertMinutes: parsed });
+    // 5분 단위로 가장 가까운 값으로 보정 (최소 5분, 최대 180분)
+    const roundedMinutes = Math.min(
+      Math.max(Math.round(parsed / 5) * 5, 5),
+      180,
+    );
+    handleUpdate({ timetablePreAlertMinutes: roundedMinutes });
     setIsCustomPreAlertOpen(false);
     setCustomPreAlertInput("");
-    trackEvent("[Daily Brief] 수업 전 알림 직접 설정", { minutes: parsed });
+    trackEvent("[Daily Brief] 수업 전 알림 직접 설정", {
+      minutes: roundedMinutes,
+    });
   };
 
   const handleScheduleScopeChange = (scope: ScheduleScope) => {
@@ -426,33 +437,39 @@ export default function MobileDailyBriefSettingPage() {
                             </ChipGroup>
 
                             {isCustomPreAlertOpen && (
-                              <CustomInputRow>
-                                <StyledNumberInput
-                                  type="number"
-                                  min={1}
-                                  max={180}
-                                  placeholder="분 입력 (예: 25)"
-                                  value={customPreAlertInput}
-                                  onChange={(e) =>
-                                    setCustomPreAlertInput(e.target.value)
-                                  }
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter")
-                                      handleCustomPreAlertSubmit();
-                                  }}
-                                />
-                                <InputUnitLabel>분 전</InputUnitLabel>
-                                <ApplyButton
-                                  onClick={handleCustomPreAlertSubmit}
-                                >
-                                  적용
-                                </ApplyButton>
-                                <CancelButton
-                                  onClick={() => setIsCustomPreAlertOpen(false)}
-                                >
-                                  취소
-                                </CancelButton>
-                              </CustomInputRow>
+                              <CustomInputWrapper>
+                                <CustomInputRow>
+                                  <StyledNumberInput
+                                    type="number"
+                                    min={5}
+                                    max={180}
+                                    step={5}
+                                    placeholder="5분 단위 (예: 15, 25)"
+                                    value={customPreAlertInput}
+                                    onChange={(e) =>
+                                      setCustomPreAlertInput(e.target.value)
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter")
+                                        handleCustomPreAlertSubmit();
+                                    }}
+                                  />
+                                  <InputUnitLabel>분 전</InputUnitLabel>
+                                  <ApplyButton
+                                    onClick={handleCustomPreAlertSubmit}
+                                  >
+                                    적용
+                                  </ApplyButton>
+                                  <CancelButton
+                                    onClick={() => setIsCustomPreAlertOpen(false)}
+                                  >
+                                    취소
+                                  </CancelButton>
+                                </CustomInputRow>
+                                <CustomInputHelpText>
+                                  5분 단위(5~180분)로 설정할 수 있어요
+                                </CustomInputHelpText>
+                              </CustomInputWrapper>
                             )}
                           </>
                         )}
@@ -554,25 +571,23 @@ export default function MobileDailyBriefSettingPage() {
                                     value={settings.timetableDailyBriefTime}
                                     onChange={(e) => {
                                       if (!e.target.value) return;
-                                      const validation = validateBriefTime(e.target.value);
-                                      if (!validation.isValid) {
-                                        alert(validation.message);
-                                        return;
-                                      }
+                                      const normalizedTime = normalizeBriefTime(
+                                        e.target.value,
+                                      );
                                       handleUpdate({
-                                        timetableDailyBriefTime: e.target.value,
+                                        timetableDailyBriefTime: normalizedTime,
                                       });
                                       trackEvent(
                                         "[Daily Brief] 강의 목록 시간 직접 입력",
                                         {
-                                          time: e.target.value,
+                                          time: normalizedTime,
                                         },
                                       );
                                     }}
                                   />
                                 </CustomTimePickerRow>
                                 <TimePickerHelpText>
-                                  오전 07:00 ~ 오후 10:50 사이 (10분 단위)
+                                  오전 07:00 ~ 오후 10:50 (10분 단위로 자동 설정돼요)
                                 </TimePickerHelpText>
                               </CustomTimePickerWrapper>
                             )}
@@ -720,25 +735,23 @@ export default function MobileDailyBriefSettingPage() {
                                   value={settings.scheduleDailyBriefTime}
                                   onChange={(e) => {
                                     if (!e.target.value) return;
-                                    const validation = validateBriefTime(e.target.value);
-                                    if (!validation.isValid) {
-                                      alert(validation.message);
-                                      return;
-                                    }
+                                    const normalizedTime = normalizeBriefTime(
+                                      e.target.value,
+                                    );
                                     handleUpdate({
-                                      scheduleDailyBriefTime: e.target.value,
+                                      scheduleDailyBriefTime: normalizedTime,
                                     });
                                     trackEvent(
                                       "[Daily Brief] 학사일정 시간 직접 입력",
                                       {
-                                        time: e.target.value,
+                                        time: normalizedTime,
                                       },
                                     );
                                   }}
                                 />
                               </CustomTimePickerRow>
                               <TimePickerHelpText>
-                                오전 07:00 ~ 오후 10:50 사이 (10분 단위)
+                                오전 07:00 ~ 오후 10:50 (10분 단위로 자동 설정돼요)
                               </TimePickerHelpText>
                             </CustomTimePickerWrapper>
                           )}
@@ -1734,6 +1747,13 @@ const SelectableChip = styled.button<{ $selected: boolean }>`
   }
 `;
 
+const CustomInputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 4px;
+`;
+
 const CustomInputRow = styled.div`
   display: flex;
   align-items: center;
@@ -1741,6 +1761,13 @@ const CustomInputRow = styled.div`
   margin-top: 6px;
   width: 100%;
   box-sizing: border-box;
+`;
+
+const CustomInputHelpText = styled.div`
+  font-size: 11.5px;
+  color: #718096;
+  font-weight: 500;
+  padding-left: 2px;
 `;
 
 const StyledNumberInput = styled.input`
