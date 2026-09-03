@@ -833,9 +833,16 @@ export default function MobileGradeCalculatorPage() {
     ? formatSemesterKeyLabel(selectedSemesterKey)
     : "";
 
+  // 불러온 과목은 "지금 보고 있는 학기"가 아니라 그 과목이 실제로 속한 학기로
+  // 들어간다. 계산기에 아직 없는 학기면 새로 만들고, 넣은 뒤 그 학기를 보여준다.
+  const applyImportedSubjects = (entry: SemesterEntry, subjects: Subject[]) => {
+    const key = semesterKey(entry);
+    setSemestersData((prev) => ({ ...prev, [key]: subjects }));
+    setSelectedSemesterKey(key);
+  };
+
   // --- Timetable Importer ---
   const handleImportTimetable = (timetableId: number) => {
-    if (!selectedSemesterKey) return;
     const tb = timetables.find((t) => t.id === timetableId);
     if (!tb) return;
 
@@ -846,9 +853,16 @@ export default function MobileGradeCalculatorPage() {
       return;
     }
 
+    const targetEntry: SemesterEntry = { year: tb.year, term: tb.term };
+    const targetLabel = formatSemesterKeyLabel(semesterKey(targetEntry));
+    const existingCount = (semestersData[semesterKey(targetEntry)] ?? []).length;
+
     if (
       window.confirm(
-        `"${tb.semester} (${tb.name})" 시간표의 과목 ${courseEvents.length}개를 불러올까요?\n현재 학기(${selectedSemesterLabel})에 작성 중인 과목 목록은 덮어씌워집니다.`,
+        `"${tb.semester} (${tb.name})" 시간표의 과목 ${courseEvents.length}개를 ${targetLabel}에 불러올까요?` +
+          (existingCount > 0
+            ? `\n${targetLabel}에 작성 중인 과목 ${existingCount}개는 덮어씌워집니다.`
+            : ""),
       )
     ) {
       const imported: Subject[] = courseEvents.map((event) => ({
@@ -864,7 +878,7 @@ export default function MobileGradeCalculatorPage() {
         courseId: event.numericCourseId ?? null,
       }));
 
-      updateSubjects(imported);
+      applyImportedSubjects(targetEntry, imported);
       setShowTimetableSheet(false);
     }
   };
