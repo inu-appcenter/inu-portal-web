@@ -10,6 +10,7 @@ import type {
   TimeTableItemSummary,
   TimeTableVisibility,
   TimeTableEvaluation,
+  TimeTableImageRecognizeResponse,
 } from "@/types/timetables";
 import { isMockApiEnabled, mockDelay } from "@/mocks/mockFlag";
 import {
@@ -402,5 +403,33 @@ export const streamTimeTableEvaluation = async (
     }
     callbacks.onError?.(error instanceof Error ? error : new Error(String(error)));
   }
+};
+
+/**
+ * 시간표 이미지 Vision AI 인식 및 개설 강좌 매칭
+ */
+export const recognizeTimeTableImage = async (
+  file: File,
+  year?: number,
+  term?: Term,
+): Promise<TimeTableImageRecognizeResponse[]> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (year !== undefined) {
+    formData.append("year", String(year));
+  }
+  if (term !== undefined) {
+    formData.append("term", term);
+  }
+
+  const response = await tokenInstance.post<
+    ApiResponse<TimeTableImageRecognizeResponse[]>
+  >("/api/timetables/image-import/recognize", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data.data ?? [];
 };
 

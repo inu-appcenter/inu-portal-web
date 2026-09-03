@@ -106,3 +106,21 @@ export interface TimeTableEvaluation {
   updatedAt?: string;
 }
 
+export interface TimeTableImageMeeting {
+  day: TimeTableDay;
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  classroom: string;
+}
+
+export interface TimeTableImageRecognizeResponse {
+  title: string;
+  professor: string;
+  classroom: string;
+  subjectNumber: string;
+  meetings: TimeTableImageMeeting[];
+  candidates: import("./courseOfferings").CourseOffering[];
+  recommendedOfferingId: number | null;
+}
+
+
