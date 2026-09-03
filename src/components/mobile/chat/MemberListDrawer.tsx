@@ -380,6 +380,8 @@ const StyledContent = styled(Dialog.Content)`
   display: flex;
   flex-direction: column;
   outline: none;
+  /* 앱헤더 밖(사이드바)이라 상단 safe-area를 직접 확보한다 */
+  padding-top: var(--native-safe-area-inset-top, 0px);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
