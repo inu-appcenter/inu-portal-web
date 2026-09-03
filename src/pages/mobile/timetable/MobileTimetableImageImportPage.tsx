@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ImagePlus, Pencil, Search, Clock, User, BookOpen } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
@@ -13,6 +14,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
   useCreateTimeTableCourseItem,
   useTimeTables,
+  syncTimeTableDetail,
 } from "@/hooks/useTimeTables";
 import {
   getCourseOfferingsPage,
@@ -112,6 +114,7 @@ export default function MobileTimetableImageImportPage() {
   const isSavingRef = useRef(false);
 
   const createMutation = useCreateTimeTableCourseItem();
+  const queryClient = useQueryClient();
 
   const isOverlayOpen = openCandidateGroupId !== null;
 
@@ -608,6 +611,14 @@ export default function MobileTimetableImageImportPage() {
       });
 
       if (addedCount > 0) {
+        // 이 화면은 상세 쿼리를 구독하지 않는(useTimeTables만 쓰는) 별도 웹뷰라
+        // useCreateTimeTableCourseItem의 invalidateQueries만으로는 아무 refetch도
+        // 못 일으킨다(캐시에 그 키 자체가 없다) - 강제로 한 번 fetch해야 원래
+        // 편집 화면 웹뷰로 broadcastQueryClient가 방금 추가한 강의를 실어 나른다.
+        // navigate(-1) 전에 반드시 await(useTimeTables.ts의 syncTimeTableDetail
+        // 주석 참고 - 웹뷰가 닫히면 진행 중인 fetch가 끊긴다).
+        await syncTimeTableDetail(queryClient, targetTimetableId);
+
         const skippedMessage =
           skippedCount > 0
             ? ` 이미 등록되었거나 시간이 겹치는 ${skippedCount}개는 제외했습니다.`
@@ -641,6 +652,8 @@ export default function MobileTimetableImageImportPage() {
         flushSync(() => {
           setIsSaving(true);
         });
+        // 일부는 실패했지만 일부는 이미 서버에 반영됐다 - 위와 같은 이유로 동기화.
+        await syncTimeTableDetail(queryClient, targetTimetableId);
         navigate(-1);
         return;
       }

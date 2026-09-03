@@ -87,7 +87,7 @@ const syncTimeTablesList = (queryClient: QueryClient) => {
  *
  * 저장 자체는 이미 성공했으므로, 이 동기화가 실패해도 에러로 번지게 두지 않는다.
  */
-const syncTimeTableDetail = (queryClient: QueryClient, timeTableId: number) => {
+export const syncTimeTableDetail = (queryClient: QueryClient, timeTableId: number) => {
   const token = useUserStore.getState().tokenInfo.accessToken;
   const memberId = getCurrentMemberId(token);
   return queryClient
@@ -271,9 +271,14 @@ export const useCreateTimeTableCourseItem = () => {
       timeTableId: number;
       body: TimeTableCourseItemRequest;
     }) => createTimeTableCourseItem(timeTableId, body),
-    // 강의 추가는 상세를 이미 구독 중인 편집 화면에서만 일어나므로 invalidate로 충분하다.
-    // 마법사(WizardSaveFlow)는 이 mutation을 강의 수만큼 순차 호출하므로, 여기에
-    // syncTimeTableDetail을 붙이면 강의 하나당 상세 조회가 한 번씩 더 붙는다.
+    // 대부분의 호출부(편집 화면 강의 검색 시트)는 상세를 이미 구독 중이라 invalidate로
+    // 충분하다. 마법사(WizardSaveFlow)와 이미지 인식 등록(MobileTimetableImageImportPage)은
+    // 이 mutation을 강의 수만큼 순차 호출하므로, 여기에 syncTimeTableDetail을 붙이면
+    // 강의 하나당 상세 조회가 한 번씩 더 붙는다 - 그래서 그 호출부들이 루프가 끝난 뒤
+    // syncTimeTableDetail을 직접 한 번만 부른다(export된 이유). 상세를 구독하지 않는
+    // 웹뷰(이미지 인식 등록)에서 그 호출을 빼먹으면 invalidate가 아무 것도 못 건드려
+    // 저장은 서버에 성공해도 돌아간 화면에 반영되지 않는다 - 실제로 한 번 빠뜨렸던
+    // 버그다.
     onSuccess: (_data, { timeTableId }) => {
       queryClient.invalidateQueries({
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
