@@ -289,19 +289,6 @@ export default function MobileTimetableImageImportPage() {
           selectedId = candidates[0].id;
         }
 
-        // 이미 시간표에 존재하는 강좌는 기본 선택 해제
-        if (
-          selectedId &&
-          (existingOfferingIds.includes(selectedId) ||
-            candidates.some(
-              (c) =>
-                c.id === selectedId &&
-                existingSubjectNumbers.includes(c.subjectNumber),
-            ))
-        ) {
-          selectedId = null;
-        }
-
         return {
           group,
           candidates,
