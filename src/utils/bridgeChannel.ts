@@ -2,6 +2,8 @@
 // (npm 패키지/레지스트리 없음). CLAUDE.md 참고.
 import { createWebChannel, type WebChannel } from "../../packages/intip-bridge/src/adapters/web";
 import { handleBackRequest } from "./nativeBackRequest";
+import { whenCapabilities } from "./bridgeCapabilities";
+import { installNavigatorSharePolyfill } from "./nativeShare";
 // readNotificationByFcmMessageId는 동적 import로 지연 로드한다(정적 import 금지).
 // apis/members.ts → apis/tokenInstance.ts·refreshInstance.ts → useUserStore.ts →
 // (여기) bridgeChannel.ts 로 이어지는 순환참조가 생겨, 모듈 평가 순서에 따라
@@ -54,6 +56,15 @@ if (bridgeChannel) {
       .then(() => window.dispatchEvent(new Event("intip:notification-opened")))
       .catch((error) => console.error("Failed to mark opened notification as read", error));
   });
+
+  // bridgeCapabilities 리스너 등록 + navigator.share polyfill 설치 착수. 반드시
+  // 아래 bridgeReady 전송보다 먼저 와야 한다 — 네이티브는 bridgeReady 수신 직후
+  // (우리 요청 없이) bridgeCapabilities 를 바로 회신하므로, 리스너가 늦게
+  // 붙으면 그 메시지를 통째로 놓친다. whenCapabilities() 가 리스너 등록을
+  // 맡고, installNavigatorSharePolyfill() 은 그 결과를 기다렸다가(비동기)
+  // "share" 기능이 광고된 경우에만 polyfill 을 심는다.
+  void whenCapabilities();
+  installNavigatorSharePolyfill();
 
   // This must stay after every NativeToWeb handler registration. The native
   // shell holds one-shot notificationOpened events until it receives this ACK.

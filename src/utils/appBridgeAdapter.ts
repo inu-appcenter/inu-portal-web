@@ -1,7 +1,9 @@
 import { getAppEnvironmentStatus } from "./getMobilePlatform";
 import { bridgeChannel } from "./bridgeChannel";
 import { handleBackRequest } from "./nativeBackRequest";
+import { nativeShare } from "./nativeShare";
 import { isMainTabPath } from "@/constants/routes";
+import type { ShareResultPayload } from "../../packages/intip-bridge/src/messages";
 
 /**
  * 단일 브릿지 채널.
@@ -149,5 +151,22 @@ export const appBridge = {
     }
 
     this.goBack();
+  },
+
+  /**
+   * OS 공유 시트를 띄우고 타입이 잡힌 결과를 돌려받습니다. `navigator.share`
+   * 폴리필(전역 truthiness 체크로 통과하는 형태)이 아니라, 결과값(`status`
+   * 등)을 직접 다뤄야 하는 호출부를 위한 것입니다.
+   *
+   * 신버전 앱: PlatformChannel 의 `share`/`shareResult` 요청-응답을 그대로 사용합니다.
+   * 구버전 앱/브라우저: 이 메시지를 모르므로 `unsupported` 로 즉시 resolve 합니다
+   * (호출부가 기존 `navigator.share` → 클립보드 폴백 체인을 그대로 타도록).
+   */
+  async share(data: ShareData): Promise<ShareResultPayload> {
+    if (bridgeChannel) {
+      return nativeShare(data);
+    }
+
+    return { status: "unsupported" };
   },
 };
