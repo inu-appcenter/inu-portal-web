@@ -182,9 +182,15 @@ const MobileTimeTablePage = () => {
     [tokenInfo.accessToken],
   );
 
-  useEffect(() => {
+  // 계정이 바뀌면(로그아웃 후 다른 계정 로그인 등) 이전 계정의 시간표 id가 새
+  // 계정의 목록에 우연히 존재해도 그 시드로 오인하지 않도록 초기화한다. effect
+  // 대신 렌더 중 조정 - currentMemberId는 settledId에서 파생되지 않는 독립
+  // 입력이라 이전에 겪은 순환 파생 문제(아래 큰 sync effect와 달리)가 없다.
+  const [lastSeenMemberId, setLastSeenMemberId] = useState(currentMemberId);
+  if (currentMemberId !== lastSeenMemberId) {
+    setLastSeenMemberId(currentMemberId);
     setSettledId(null);
-  }, [currentMemberId]);
+  }
 
   const pendingUrlTimetable = useMemo(() => {
     if (!idParam || idParam === settledId) return null;
@@ -217,10 +223,20 @@ const MobileTimeTablePage = () => {
 
   // 화면이 고른 시간표를 스토어와 URL 양쪽에 수렴시킨다. settledId를 같이 올려야
   // 방금 우리가 쓴 URL이 다시 "새 시드"로 읽히는 되먹임이 생기지 않는다.
+  //
+  // settledId 갱신을 렌더 중 조정으로 옮기면 안 된다 - nextId는 pendingUrlTimetable
+  // (URL 시드)과 storeTimetable(스토어) 중 이미 우선순위를 적용해 고른 activeTimetable
+  // 에서 나오는데, 그 우선순위 계산 자체가 settledId를 입력으로 쓴다(순환). settledId를
+  // "현재 activeTimetableId"에 직접 동기화하면(렌더 중 조정으로 흔히 하듯) 다른
+  // 웹뷰의 브로드캐스트로 activeTimetableId만 바뀌고 이 웹뷰의 URL은 그대로인 순간
+  // "URL이 스토어와 다르니 아직 안 먹힌 시드"로 오판해 방금 들어온 선택을 낡은 URL
+  // 값으로 되돌려버리는 회귀가 실제로 있었다. 여기서는 store/외부 시스템과의 동기화이므로
+  // effect 안에서의 setState가 정당하다(리액트 문서가 명시하는 예외 케이스).
   useEffect(() => {
     if (!isLoggedIn || !activeTimetable) return;
     const nextId = String(activeTimetable.id);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 위 주석 참고(순환 의존이라 렌더 중 조정 불가)
     if (settledId !== nextId) setSettledId(nextId);
 
     if (activeTimetable.id !== activeTimetableId) {

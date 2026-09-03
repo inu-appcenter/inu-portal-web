@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { broadcastSync, flushBroadcastSync } from "@/stores/middleware/broadcastSync";
+import { persistedBroadcastSync } from "@/stores/middleware/broadcastSync";
 import useUserStore from "@/stores/useUserStore";
 import {
   DEFAULT_FILTERS,
@@ -47,47 +46,39 @@ interface CourseFilterState {
 const SYNC_CHANNEL = "course-filter-sync";
 
 export const useCourseFilterStore = create<CourseFilterState>()(
-  persist(
-    broadcastSync<CourseFilterState>({
-      name: SYNC_CHANNEL,
-      // 액션은 제외하고 확정 필터만 실어 보낸다.
-      partialize: (state) => ({
-        filters: state.filters,
-        hasApplied: state.hasApplied,
-      }),
-    })((set) => ({
-      filters: DEFAULT_FILTERS,
-      hasApplied: false,
-      applyFilters: (filters) => {
-        set({ filters, hasApplied: true });
-        // 이 액션의 유일한 호출부(필터 화면 "저장")는 곧바로 goBack을 보내 자기
-        // 웹뷰를 pop시킨다. 기본 마이크로태스크 병합에 맡기면 goBack이 먼저
-        // 네이티브에 도착해 브로드캐스트가 유실되므로 여기서 즉시 내보낸다.
-        flushBroadcastSync(SYNC_CHANNEL);
-      },
-    })),
-    {
-      name: TIMETABLE_COURSE_FILTERS_KEY,
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) =>
-        ({
-          filters: state.filters,
-          hasApplied: state.hasApplied,
-        }) as CourseFilterState,
-      // 저장 포맷이 { state: { filters } }라 예전의 평평한 FilterState와 다르다.
-      // 구 포맷이 남아 있으면 persist가 filters를 못 찾으므로 기본값으로 시작한다
-      // (필터를 한 번 다시 적용하면 새 포맷으로 저장된다).
-      merge: (persisted, current) => {
-        const saved = (persisted ?? {}) as Partial<CourseFilterState>;
-        if (!saved.filters) return current;
-        return {
-          ...current,
-          filters: { ...DEFAULT_FILTERS, ...saved.filters },
-          hasApplied: true,
-        };
-      },
+  persistedBroadcastSync<CourseFilterState>({
+    channel: SYNC_CHANNEL,
+    storageKey: TIMETABLE_COURSE_FILTERS_KEY,
+    // 액션은 제외하고 확정 필터만 브로드캐스트/영속화한다.
+    partialize: (state) => ({
+      filters: state.filters,
+      hasApplied: state.hasApplied,
+    }),
+    // 저장 포맷이 { state: { filters } }라 예전의 평평한 FilterState와 다르다.
+    // 구 포맷이 남아 있으면 persist가 filters를 못 찾으므로 기본값으로 시작한다
+    // (필터를 한 번 다시 적용하면 새 포맷으로 저장된다).
+    merge: (persisted, current) => {
+      const saved = (persisted ?? {}) as Partial<CourseFilterState>;
+      if (!saved.filters) return current;
+      return {
+        ...current,
+        filters: { ...DEFAULT_FILTERS, ...saved.filters },
+        hasApplied: true,
+      };
     },
-  ),
+  })((set) => ({
+    filters: DEFAULT_FILTERS,
+    hasApplied: false,
+    applyFilters: (filters) => {
+      set({ filters, hasApplied: true });
+      // 이 액션의 유일한 호출부(필터 화면 "저장")는 곧바로 goBack을 보내 자기
+      // 웹뷰를 pop시킨다 - 기본 마이크로태스크 병합에 맡기면 goBack이 먼저
+      // 네이티브에 도착해 브로드캐스트가 유실될 수 있지만, appBridgeAdapter의
+      // goBack/goHome/navigateTo가 실제로 웹뷰를 떠나기 직전 모든 broadcastSync
+      // 스토어를 전역으로 flush하므로(flushAllBroadcastSync 참고) 여기서 채널을
+      // 지정해 따로 내보낼 필요는 없다.
+    },
+  })),
 );
 
 const FALLBACK_MAJOR = "컴퓨터공학부";

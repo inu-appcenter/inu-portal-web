@@ -1,4 +1,5 @@
 import type { StateCreator, StoreApi } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { openMultiWebViewChannel } from "@/utils/multiWebViewChannel";
 
 interface BroadcastSyncOptions<T> {
@@ -31,6 +32,17 @@ const pendingFlushers = new Map<string, () => void>();
 
 export function flushBroadcastSync(name: string): void {
   pendingFlushers.get(name)?.();
+}
+
+/**
+ * broadcastSync를 쓰는 모든 스토어의 대기 중인 브로드캐스트를 한 번에 내보낸다.
+ *
+ * 개별 호출부가 "이 스토어를 방금 바꿨으니 채널명을 알아서 flush해야 한다"는
+ * 것을 기억할 필요가 없도록, 이 웹뷰를 실제로 떠나는 단일 지점(appBridge의
+ * navigateTo/goBack/goHome, appBridgeAdapter.ts 참고)에서 전역으로 한 번 부른다.
+ */
+export function flushAllBroadcastSync(): void {
+  pendingFlushers.forEach((flush) => flush());
 }
 
 export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>) {
@@ -85,4 +97,51 @@ export function broadcastSync<T extends object>(options: BroadcastSyncOptions<T>
 
       return creator(broadcastingSet, get, api);
     };
+}
+
+interface PersistedBroadcastSyncOptions<T> {
+  /** BroadcastChannel 채널 이름. */
+  channel: string;
+  /** localStorage 저장 키(zustand persist의 name). 콜드스타트 복원용이라
+   * 채널 이름과 다른 값이어도 된다(기존 스토어들이 이미 그렇다). */
+  storageKey: string;
+  /** 브로드캐스트로 실어 보내는 동시에 localStorage에도 영속화할 필드만 선택한다. */
+  partialize: (state: T) => Partial<T>;
+  /** 원격 브로드캐스트 수신 직후 실행할 부수 효과. */
+  onReceive?: (partial: Partial<T>, state: T) => void;
+  /** 저장된 값을 현재 상태에 병합하는 방식(구 포맷 마이그레이션 등). 기본은 얕은 병합. */
+  merge?: (persisted: unknown, current: T) => T;
+}
+
+/**
+ * broadcastSync(같은 오리진의 다른 웹뷰로 즉시 전파) + persist(콜드스타트 복원)를
+ * 한 번에 구성한다.
+ *
+ * 이 둘은 대부분 짝으로 쓰인다 - broadcastSync 단독으로는 방금 새로 뜬 웹뷰의
+ * 초기 상태를 못 채우고(BroadcastChannel은 그 시점에 아직 아무도 안 듣고
+ * 있으므로), persist가 그 콜드스타트를 책임진다. 따로 조합하면(`persist(
+ * broadcastSync(...)(creator), {...})`) partialize를 두 곳에 거의 똑같이
+ * 중복 정의하게 되므로, 옵션 하나로 합쳐 그 중복과 두 이름(브로드캐스트 채널/
+ * 저장 키)을 헷갈릴 여지를 없앤다.
+ */
+export function persistedBroadcastSync<T extends object>(
+  options: PersistedBroadcastSyncOptions<T>,
+) {
+  // 반환 타입에 ['zustand/persist', T] 태그를 그대로 남겨야 create()가 만든
+  // 스토어에 `.persist`(rehydrate 등)가 타입 상으로도 붙는다 - StateCreator<T,[],[]>로
+  // 지워버리면 broadcastSync 단독일 때와 구분이 안 돼 호출부에서 .persist를 못 쓴다.
+  return (creator: StateCreator<T, [], []>): StateCreator<T, [], [["zustand/persist", T]]> =>
+    persist(
+      broadcastSync<T>({
+        name: options.channel,
+        partialize: options.partialize,
+        onReceive: options.onReceive,
+      })(creator),
+      {
+        name: options.storageKey,
+        storage: createJSONStorage(() => localStorage),
+        partialize: options.partialize as (state: T) => T,
+        merge: options.merge as (persisted: unknown, current: T) => T,
+      },
+    );
 }

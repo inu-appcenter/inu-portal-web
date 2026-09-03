@@ -3,6 +3,7 @@ import { bridgeChannel } from "./bridgeChannel";
 import { handleBackRequest } from "./nativeBackRequest";
 import { nativeShare } from "./nativeShare";
 import { isMainTabPath } from "@/constants/routes";
+import { flushAllBroadcastSync } from "@/stores/middleware/broadcastSync";
 import type { ShareResultPayload } from "../../packages/intip-bridge/src/messages";
 
 /**
@@ -66,6 +67,9 @@ export const appBridge = {
     const fullUrl = isAbsoluteUrl ? pathOrUrl : `${window.location.origin}${pathOrUrl}`;
     const path = isAbsoluteUrl ? new URL(pathOrUrl).pathname + new URL(pathOrUrl).search + new URL(pathOrUrl).hash : pathOrUrl;
 
+    // 새 웹뷰가 뜨기 전에 이 웹뷰의 스토어 변경사항을 모두 내보낸다 (아래 goBack/goHome 주석 참고).
+    flushAllBroadcastSync();
+
     // 신버전 앱: PlatformChannel 우선
     if (bridgeChannel) {
       bridgeChannel.send("navigateTo", { path, url: fullUrl });
@@ -110,6 +114,13 @@ export const appBridge = {
    * `requestBack()` 을 쓰세요.
    */
   goBack(): void {
+    // broadcastSync 스토어들은 set() 직후 마이크로태스크로 브로드캐스트를 병합해
+    // 내보낸다. 이 웹뷰를 떠나는 요청은 그보다 먼저 동기적으로 네이티브에 도착해
+    // 웹뷰를 pop해버릴 수 있으므로, 실제로 떠나기 직전 여기서 한 번에 flush한다
+    // (broadcastSync.ts의 flushAllBroadcastSync 참고). 호출부가 스토어별 flush를
+    // 따로 챙길 필요가 없도록 하는 전역 지점이다.
+    flushAllBroadcastSync();
+
     // 신버전 앱: PlatformChannel 우선
     if (bridgeChannel) {
       bridgeChannel.send("goBack");
@@ -140,6 +151,9 @@ export const appBridge = {
    * appBridge.goHome 을 못 쓰면 기존처럼 일반 SPA navigate 로 대체해야 함).
    */
   goHome(path: string): void {
+    // 웹뷰 스택을 collapse하기 전에 flush (goBack 주석 참고).
+    flushAllBroadcastSync();
+
     if (bridgeChannel) {
       bridgeChannel.send("goHome", { path });
       return;
