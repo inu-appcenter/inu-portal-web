@@ -14,6 +14,7 @@ import {
   useCreateTimeTableCourseItem,
   useTimeTables,
 } from "@/hooks/useTimeTables";
+import { recognizeTimeTableImage } from "@/apis/timetables";
 import {
   getCourseOfferingsPage,
   searchCourseOfferings,
@@ -25,13 +26,7 @@ import {
   sampleImagePicker as timetableSampleWebp,
 } from "@/resources/assets/illustrations/timetable";
 import {
-  detectTimetableBlocks,
-  detectTimetableImageLayout,
-  extractBracketedSubjectNumbers,
-  findConfidentOffering,
   findUniqueTitleOffering,
-  isOfferingFragmentMatch,
-  parseAndGroupBlocks,
   scoreOffering,
   type DetectedCourseGroup,
 } from "@/utils/timetableImageImport";
@@ -241,290 +236,81 @@ export default function MobileTimetableImageImportPage() {
     }
   };
 
-  // OCR 분석 실행 로직
+  // Vision AI 분석 실행 로직
   const analyze = async (file: File) => {
     setView("analyzing");
     setMatches([]);
-    setProgress(0);
-    setStatus("강의 블록을 찾고 있어요.");
+    setProgress(15);
+    setStatus("시간표 이미지를 전송하고 있어요.");
+
+    let progressTimer: ReturnType<typeof setInterval> | null = null;
     try {
-      let detectedBlocks: Awaited<ReturnType<typeof detectTimetableBlocks>> =
-        [];
-      const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker("kor+eng", 1, {
-        logger: (message) => {
-          if (message.status === "recognizing text") {
-            setProgress(Math.round(message.progress * 100));
-          }
-        },
-      });
-      try {
-        setStatus("시간표 이미지 형식을 확인하고 있어요.");
-        const fullImageResult = await worker.recognize(file, {}, { blocks: true });
-        const subjectNumbers = extractBracketedSubjectNumbers(
-          fullImageResult.data.text,
-        );
-
-        if (subjectNumbers.length > 0) {
-          setStatus("수강번호로 개설 강좌를 찾고 있어요.");
-          const numberMatches: Match[] = [];
-          for (const subjectNumber of subjectNumbers) {
-            const offerings = await searchCourseOfferings(
-              year,
-              term,
-              subjectNumber,
-            );
-            const offering = offerings.find(
-              (candidate) => candidate.subjectNumber === subjectNumber,
-            );
-            if (!offering) {
-              numberMatches.push({
-                group: {
-                  id: `subject-${subjectNumber}`,
-                  title: subjectNumber,
-                  professor: "",
-                  rawText: subjectNumber,
-                  blocks: [],
-                },
-                candidates: [],
-                selectedId: null,
-              });
-              continue;
-            }
-            numberMatches.push({
-              group: {
-                id: `subject-${subjectNumber}`,
-                title: offering.courseTitle,
-                professor: offering.professor ?? "",
-                rawText: subjectNumber,
-                blocks: offering.meetings.map((meeting, index) => ({
-                  id: `subject-${subjectNumber}-${index}`,
-                  crop: document.createElement("canvas"),
-                  day: meeting.day,
-                  startTime: meeting.startTime.slice(0, 5),
-                  endTime: meeting.endTime.slice(0, 5),
-                  rawText: subjectNumber,
-                  confidence: fullImageResult.data.confidence,
-                })),
-              },
-              candidates: [offering],
-              selectedId:
-                existingOfferingIds.includes(offering.id) ||
-                existingSubjectNumbers.includes(offering.subjectNumber)
-                  ? null
-                  : offering.id,
-            });
-          }
-          setMatches(numberMatches);
-          setView("result");
-          return;
-        }
-
-        const ocrLines: Array<{ text: string; bbox: { x0: number; y0: number; x1: number; y1: number } }> = [];
-        fullImageResult.data.blocks?.forEach((b) => {
-          b.paragraphs?.forEach((p) => {
-            p.lines?.forEach((l) => {
-              ocrLines.push({ text: l.text, bbox: l.bbox });
-            });
-          });
+      progressTimer = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 85) return prev;
+          return prev + 5;
         });
+      }, 400);
 
-        const layout = detectTimetableImageLayout(fullImageResult.data.text);
-        detectedBlocks = await detectTimetableBlocks(file, layout, ocrLines);
-        if (!detectedBlocks.length) {
-          throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
-        }
-        await worker.setParameters({
-          tessedit_pageseg_mode: "6" as any,
-        });
-        for (let index = 0; index < detectedBlocks.length; index += 1) {
-          setStatus(
-            `강의 글자를 읽고 있어요. (${index + 1}/${detectedBlocks.length})`,
-          );
-          const blockCrop = detectedBlocks[index].crop;
-          const result = await worker.recognize(blockCrop);
-          detectedBlocks[index].rawText = result.data.text.trim();
-          detectedBlocks[index].confidence = result.data.confidence;
-        }
-      } finally {
-        await worker.terminate();
+      setStatus("Vision AI가 강의 시간표를 정밀 분석하고 있어요.");
+      const recognized = await recognizeTimeTableImage(file, year, term);
+      if (progressTimer) clearInterval(progressTimer);
+
+      setProgress(90);
+      setStatus("개설 강좌 매칭 결과를 정리하고 있어요.");
+
+      if (!recognized || recognized.length === 0) {
+        throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
       }
 
-      const groups = parseAndGroupBlocks(detectedBlocks);
-      setStatus("개설 강좌와 비교하고 있어요.");
+      const dummyCanvas = document.createElement("canvas");
+      const nextMatches: Match[] = recognized.map((item, index) => {
+        const group: DetectedCourseGroup = {
+          id: `vision-${index}`,
+          title: item.title,
+          professor: item.professor || "",
+          rawText: [item.title, item.professor, item.classroom, item.subjectNumber]
+            .filter(Boolean)
+            .join(" "),
+          blocks: (item.meetings || []).map((m, mIdx) => ({
+            id: `vision-${index}-${mIdx}`,
+            crop: dummyCanvas,
+            day: m.day,
+            startTime: m.startTime,
+            endTime: m.endTime,
+            rawText: m.classroom || item.classroom || "",
+            confidence: 100,
+          })),
+        };
 
-      // 1. 모든 그룹의 검색 키워드 취합 (중복 제거 후 병렬 조회)
-      const allKeywords = new Set<string>();
-      groups.forEach((group) => {
-        const hangulOnly = group.title.replace(/[^가-힣]/g, "");
-        if (hangulOnly.length >= 2) {
-          for (let i = 0; i <= hangulOnly.length - 2; i += 1) {
-            allKeywords.add(hangulOnly.slice(i, i + 2));
-            if (i + 3 <= hangulOnly.length) allKeywords.add(hangulOnly.slice(i, i + 3));
-            if (i + 4 <= hangulOnly.length) allKeywords.add(hangulOnly.slice(i, i + 4));
-          }
+        const candidates = item.candidates || [];
+        let selectedId = item.recommendedOfferingId;
+
+        // 이미 시간표에 존재하는 강좌는 기본 선택 해제
+        if (
+          selectedId &&
+          (existingOfferingIds.includes(selectedId) ||
+            candidates.some(
+              (c) =>
+                c.id === selectedId &&
+                existingSubjectNumbers.includes(c.subjectNumber),
+            ))
+        ) {
+          selectedId = null;
         }
-        if (group.professor && group.professor.length >= 2) {
-          allKeywords.add(group.professor);
-        }
-      });
 
-      const keywordResults = await Promise.all(
-        [...allKeywords].map((kw) =>
-          searchCourseOfferings(year, term, kw).catch(() => []),
-        ),
-      );
-      const globalCandidatePool = new Map<number, CourseOffering>();
-      keywordResults.flat().forEach((offering) => {
-        globalCandidatePool.set(offering.id, offering);
-      });
-
-      // 2. 시간표 블록들의 요일/시간대 강좌 병렬 조회 (±10~25분 오차 슬롯 생성)
-      const toMinutes = (v: string) => {
-        const [h, m] = v.slice(0, 5).split(":").map(Number);
-        return h * 60 + m;
-      };
-      const toTimeStr = (min: number) =>
-        `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-
-      const allMeetingVariants = groups.flatMap((g) =>
-        g.blocks.flatMap((b) => {
-          const sMin = toMinutes(b.startTime);
-          const eMin = toMinutes(b.endTime);
-          const offsets = [0, -10, 10, -15, 15, -20, 20, -25, 25];
-          return offsets.map(
-            (off) =>
-              `${b.day}|${toTimeStr(Math.max(0, sMin + off))}|${toTimeStr(Math.max(0, eMin + off))}`,
-          );
-        }),
-      );
-      const uniqueMeetings = [...new Set(allMeetingVariants)].slice(0, 80);
-
-      if (uniqueMeetings.length > 0) {
-        try {
-          const meetingPage = await getCourseOfferingsPage(year, term, 0, 100, {
-            meetingFilterMode: "HAS_CLASS",
-            meetings: uniqueMeetings,
-          });
-          meetingPage.content.forEach((offering) =>
-            globalCandidatePool.set(offering.id, offering),
-          );
-        } catch {
-          // ignore
-        }
-      }
-
-      // 3. 각 그룹별 매칭 및 점수화
-      const preliminaryMatches: Match[] = [];
-      for (const group of groups) {
-        const candidates = [...globalCandidatePool.values()]
-          .filter((offering) => !existingOfferingIds.includes(offering.id))
-          .map((offering) => ({
-            offering,
-            score: scoreOffering(group, offering),
-          }))
-          .filter(({ score }) => score >= 20)
-          .sort((a, b) => b.score - a.score)
-          .map(({ offering }) => offering);
-        preliminaryMatches.push({ group, candidates, selectedId: null });
-      }
-
-      const isLocationOnly = (title: string) => {
-        const stripped = title.replace(/\s/g, "");
-        return (
-          /^[A-Za-z0-9가-힣]{1,6}-[A-Za-z0-9]{2,4}(?:호)?$/.test(stripped) ||
-          /^[0-9OoIl]{1,2}-[0-9OoIl]{2,4}(?:호)?$/.test(stripped) ||
-          title === "인식 실패"
-        );
-      };
-
-      const merged = new Map<string, Match>();
-      preliminaryMatches.forEach((match) => {
-        const fragmentCandidates = match.candidates.filter((offering) =>
-          isOfferingFragmentMatch(match.group, offering),
-        );
-        const offering =
-          fragmentCandidates.length === 1
-            ? fragmentCandidates[0]
-            : findConfidentOffering(match.group, match.candidates);
-        const mergeKey = offering
-          ? `offering-${offering.id}`
-          : `ocr-${match.group.id}`;
-        const current = merged.get(mergeKey);
-        if (current) {
-          current.group.blocks.push(...match.group.blocks);
-          match.candidates.forEach((candidate) => {
-            if (!current.candidates.some((item) => item.id === candidate.id))
-              current.candidates.push(candidate);
-          });
-        } else {
-          merged.set(mergeKey, {
-            group: offering
-              ? {
-                  ...match.group,
-                  title: offering.courseTitle,
-                  professor: offering.professor ?? match.group.professor,
-                }
-              : { ...match.group },
-            candidates: [...match.candidates],
-            selectedId: null,
-          });
-        }
-      });
-
-      // 4. 호실 패턴 단독 그룹(07-505 등)을 이미 매칭된 강좌의 남은 미팅과 병합
-      const mergedList = [...merged.values()];
-      const confidentCourseMatches = mergedList.filter((m) =>
-        m.group.id.startsWith("offering-") ||
-        (m.candidates.length > 0 && !isLocationOnly(m.group.title)),
-      );
-
-      const filteredMerged = mergedList.filter((match) => {
-        if (!isLocationOnly(match.group.title) || match.candidates.length > 0) {
-          return true;
-        }
-        // 호실 단독 그룹의 블록이 다른 확정 강좌의 meeting에 포함되는지 확인
-        for (const confidentMatch of confidentCourseMatches) {
-          const candidate = confidentMatch.candidates[0];
-          if (!candidate) continue;
-          const hasMeeting = match.group.blocks.some((locBlock) =>
-            candidate.meetings.some(
-              (m) =>
-                m.day === locBlock.day &&
-                Math.abs(toMinutes(m.startTime) - toMinutes(locBlock.startTime)) <= 25,
-            ),
-          );
-          if (hasMeeting) {
-            confidentMatch.group.blocks.push(...match.group.blocks);
-            return false; // 호실 단독 카드는 제거하고 기존 강좌에 흡수
-          }
-        }
-        return true;
-      });
-
-      const nextMatches = filteredMerged.map((match) => {
-        const candidates = match.candidates
-          .map((offering) => ({
-            offering,
-            score: scoreOffering(match.group, offering),
-          }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3)
-          .map(({ offering }) => offering);
-        const confidentOffering = findConfidentOffering(
-          match.group,
-          candidates,
-        );
         return {
-          ...match,
+          group,
           candidates,
-          selectedId: confidentOffering?.id ?? null,
+          selectedId,
         };
       });
 
+      setProgress(100);
       setMatches(nextMatches);
       setView("result");
     } catch (error) {
+      if (progressTimer) clearInterval(progressTimer);
       alert(
         error instanceof Error ? error.message : "이미지 분석에 실패했습니다.",
       );
