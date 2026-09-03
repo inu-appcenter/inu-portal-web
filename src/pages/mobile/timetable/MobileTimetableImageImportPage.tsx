@@ -2,13 +2,24 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { ImagePlus, Pencil, Search, Clock, User, BookOpen, Calendar } from "lucide-react";
+import {
+  ImagePlus,
+  Pencil,
+  Search,
+  Clock,
+  User,
+  BookOpen,
+  Calendar,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import BottomSheet from "@/components/common/BottomSheet";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { TERM_LABELS } from "@/utils/semester";
 import {
@@ -57,12 +68,37 @@ const formatOfferingMeetings = (offering: CourseOffering) =>
     )
     .join(", ");
 
+const getTimetableCredits = (events: any[]) => {
+  const seenItemIds = new Set<number>();
+  return events.reduce((total, item) => {
+    if (item.itemId) {
+      if (seenItemIds.has(item.itemId)) return total;
+      seenItemIds.add(item.itemId);
+    }
+    const credits = item.credits || 0;
+    return credits > 0 ? total + credits : total;
+  }, 0);
+};
+
 export default function MobileTimetableImageImportPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useTimeTables();
-  const { timetables, activeTimetableId } = useTimetableStore();
+  const { timetables, activeTimetableId, setActiveTimetable, setSemester } =
+    useTimetableStore();
+
+  const [isTimetableSheetOpen, setIsTimetableSheetOpen] = useState(false);
+
+  const groupedTimetables = useMemo(() => {
+    const map = new Map<string, typeof timetables>();
+    timetables.forEach((t) => {
+      const list = map.get(t.semester) || [];
+      list.push(t);
+      map.set(t.semester, list);
+    });
+    return map;
+  }, [timetables]);
 
   const targetTimetableId = useMemo(() => {
     const paramId = searchParams.get("id");
@@ -499,11 +535,15 @@ export default function MobileTimetableImageImportPage() {
               <Headline>
                 {"사진 속 강의를 인식해\n현재 시간표에 등록할 수 있어요."}
               </Headline>
-              <TargetTimetableBadge>
-                <Calendar size={15} />
+              <TargetTimetableBadge
+                type="button"
+                onClick={() => setIsTimetableSheetOpen(true)}
+              >
+                <Calendar className="calendar" size={15} />
                 <span>
                   {year}년 {TERM_LABELS[term]} · {activeTimetable?.name ?? "기본 시간표"}
                 </span>
+                <ChevronDown className="chevron" size={14} />
               </TargetTimetableBadge>
             </HeadlineGroup>
 
@@ -862,6 +902,66 @@ export default function MobileTimetableImageImportPage() {
         onSelectOffering={handleSelectOffering}
         onSaveManual={handleSaveManual}
       />
+
+      {/* 등록 대상 시간표 선택 바텀시트 */}
+      <BottomSheet
+        open={isTimetableSheetOpen}
+        onOpenChange={setIsTimetableSheetOpen}
+        height="auto"
+        maxHeight="75%"
+      >
+        <SheetContainer>
+          <SheetHeader>
+            <SheetTitle>등록할 시간표 선택</SheetTitle>
+            <SheetSubtitle>
+              인식된 강의를 추가할 시간표를 선택해 주세요.
+            </SheetSubtitle>
+          </SheetHeader>
+
+          <SheetContent>
+            {Array.from(groupedTimetables.entries()).map(([semName, list]) => (
+              <SemesterSection key={semName}>
+                <SemesterSectionTitle>{semName}</SemesterSectionTitle>
+                <TimetableCardList>
+                  {list.map((t) => {
+                    const isSelected = t.id === targetTimetableId;
+                    const credit = getTimetableCredits(t.events);
+                    return (
+                      <TimetableRowButton
+                        key={t.id}
+                        type="button"
+                        $selected={isSelected}
+                        onClick={() => {
+                          setSearchParams({ id: String(t.id) });
+                          setActiveTimetable(t.id);
+                          setSemester(t.semester);
+                          setIsTimetableSheetOpen(false);
+                        }}
+                      >
+                        <TimetableRowLeft>
+                          <TimetableRowName $selected={isSelected}>
+                            {t.name}
+                            {t.isRepresentative && (
+                              <PrimaryBadge>대표</PrimaryBadge>
+                            )}
+                          </TimetableRowName>
+                          <TimetableRowMeta>
+                            {credit > 0 ? `${credit}학점` : "0학점"} · 과목{" "}
+                            {t.events.length}개
+                          </TimetableRowMeta>
+                        </TimetableRowLeft>
+                        {isSelected && (
+                          <Check size={20} color="#0061ff" strokeWidth={2.5} />
+                        )}
+                      </TimetableRowButton>
+                    );
+                  })}
+                </TimetableCardList>
+              </SemesterSection>
+            ))}
+          </SheetContent>
+        </SheetContainer>
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -918,23 +1018,151 @@ const Headline = styled.h1`
   margin: 0;
 `;
 
-const TargetTimetableBadge = styled.div`
+const TargetTimetableBadge = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   align-self: flex-start;
   padding: 6px 12px;
   background: #f2f4f6;
+  border: 1px solid transparent;
   border-radius: 8px;
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
   color: #4e5968;
   line-height: 18px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 
-  svg {
+  &:hover {
+    background: #e5e8eb;
+  }
+
+  &:active {
+    background: #d1d6db;
+  }
+
+  svg.calendar {
     color: #0061ff;
   }
+
+  svg.chevron {
+    color: #8b95a1;
+  }
+`;
+
+const SheetContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 24px 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+`;
+
+const SheetHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+`;
+
+const SheetTitle = styled.h2`
+  font-family: Pretendard;
+  font-size: 18px;
+  font-weight: 700;
+  color: #191f28;
+  margin: 0;
+`;
+
+const SheetSubtitle = styled.p`
+  font-family: Pretendard;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8b95a1;
+  margin: 0;
+`;
+
+const SheetContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SemesterSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SemesterSectionTitle = styled.div`
+  font-family: Pretendard;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7684;
+  padding: 0 4px;
+`;
+
+const TimetableCardList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const TimetableRowButton = styled.button<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5e8eb")};
+  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#ffffff")};
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f9fafb")};
+  }
+`;
+
+const TimetableRowLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const TimetableRowName = styled.div<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Pretendard;
+  font-size: 15px;
+  font-weight: 600;
+  color: ${({ $selected }) => ($selected ? "#0061ff" : "#191f28")};
+`;
+
+const TimetableRowMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Pretendard;
+  font-size: 12px;
+  color: #8b95a1;
+`;
+
+const PrimaryBadge = styled.span`
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e5f0ff;
+  color: #0061ff;
+  font-size: 11px;
+  font-weight: 600;
 `;
 
 const DropzoneCard = styled.button`
