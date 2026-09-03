@@ -1651,7 +1651,7 @@ function CourseEditModal({
             </FormLabel>
             <FormInput
               type="text"
-              placeholder="예: 철근콘크리트구조, 인명구조실습"
+              placeholder="과목명을 입력해 주세요"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
@@ -1664,7 +1664,7 @@ function CourseEditModal({
             </FormLabel>
             <FormInput
               type="text"
-              placeholder="예: 김우일, 함경수 (선택사항)"
+              placeholder="교수명을 입력해 주세요 (선택사항)"
               value={professor}
               onChange={(e) => setProfessor(e.target.value)}
             />
