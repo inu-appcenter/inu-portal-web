@@ -133,6 +133,10 @@ const toGradeRecordRequest = (subject: Subject) => ({
   grade: subject.grade === UNGRADED ? null : (subject.grade as GradeLetter),
   isMajor: subject.isMajor,
   isCourseRepetition: Boolean(subject.excluded),
+  // 이수구분: 전공기초/전공핵심 등 졸업요건 판정용 원문. 구버전 서버는 이
+  // 필드를 모르므로 그냥 무시하고, 배포된 서버는 저장해 재조회 시 복원한다.
+  isuName: subject.isuName ?? undefined,
+  isuFldName: subject.isuFldName ?? undefined,
 });
 
 const fromGradeRecord = (record: GradeRecord): Subject => ({
@@ -145,6 +149,8 @@ const fromGradeRecord = (record: GradeRecord): Subject => ({
   courseCode: record.courseCode ?? undefined,
   sourceYear: record.year,
   sourceTerm: record.term,
+  isuName: record.isuName ?? null,
+  isuFldName: record.isuFldName ?? null,
 });
 
 // 성적이 아직 안 나온 과목. 평점에도, 취득 학점에도 반영하지 않는다.
@@ -483,19 +489,39 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
 
     setIsSaving(true);
     try {
-      await Promise.all([
-        ...changedKeys.map((key) => {
-          const entry = parseSemesterKey(key);
-          return upsertGradeRecordsMutation.mutateAsync({
+      // 서버가 같은 회원의 grade_record 행에 대한 동시 트랜잭션(다른 학기라도)을
+      // 못 견뎌 DB 락 대기/데드락으로 실패할 수 있어(서버 이슈 #430 참고), 학기별
+      // 요청을 동시에(Promise.all) 쏘지 않고 한 번에 하나씩 순차로 보낸다. 그래도
+      // 실패한 학기가 있으면 그 학기만 "저장 안 됨" 상태로 남기고 나머지는 반영한다.
+      const nextSavedSemestersData: SemestersData = { ...savedSemestersData };
+      const failedLabels: string[] = [];
+
+      for (const key of changedKeys) {
+        const entry = parseSemesterKey(key);
+        try {
+          await upsertGradeRecordsMutation.mutateAsync({
             year: entry.year,
             term: entry.term,
             records: semestersData[key].map(toGradeRecordRequest),
           });
-        }),
-        ...removedKeys.map((key) =>
-          deleteAllGradeRecordsMutation.mutateAsync(parseSemesterKey(key)),
-        ),
-      ]);
+          nextSavedSemestersData[key] = semestersData[key];
+        } catch (e) {
+          console.error(`Failed to save grades for semester ${key}`, e);
+          failedLabels.push(formatSemesterKeyLabel(key));
+        }
+      }
+
+      for (const key of removedKeys) {
+        try {
+          await deleteAllGradeRecordsMutation.mutateAsync(
+            parseSemesterKey(key),
+          );
+          delete nextSavedSemestersData[key];
+        } catch (e) {
+          console.error(`Failed to delete grades for semester ${key}`, e);
+          failedLabels.push(formatSemesterKeyLabel(key));
+        }
+      }
 
       localStorage.setItem(
         LOCAL_STORAGE_KEY,
@@ -506,11 +532,14 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
           graduationProfile,
         ),
       );
-      setSavedSemestersData(semestersData);
+      setSavedSemestersData(nextSavedSemestersData);
       setSavedTargetCredits(targetCredits);
-    } catch (e) {
-      console.error("Failed to save grades to server", e);
-      alert("성적 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+
+      if (failedLabels.length > 0) {
+        alert(
+          `${failedLabels.join(", ")} 저장에 실패했어요. 잠시 후 다시 시도해주세요.`,
+        );
+      }
     } finally {
       setIsSaving(false);
     }

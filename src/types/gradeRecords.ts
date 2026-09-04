@@ -32,6 +32,13 @@ export interface GradeRecord {
   isMajor: boolean;
   /** 재수강으로 성적이 취소된 과목이면 true. */
   isCourseRepetition: boolean;
+  /**
+   * 이수구분(전공기초/전공핵심/심화교양…) 원문. 졸업요건 판정에 쓰인다.
+   * 서버가 아직 배포 전이면 응답에 없을 수 있어 optional로 둔다.
+   */
+  isuName?: string | null;
+  /** 이수영역(전공심화/사회…) 원문. */
+  isuFldName?: string | null;
 }
 
 /** PUT /api/grades 요청 바디의 records[] 항목 하나. */
@@ -42,6 +49,12 @@ export interface GradeRecordRequest {
   grade: GradeLetter | null;
   isMajor: boolean;
   isCourseRepetition: boolean;
+  /**
+   * 이수구분/이수영역 원문. 서버가 아직 이 필드를 받지 않는 버전이어도 그냥
+   * 무시되도록 optional로 보낸다(구버전 서버와의 호환).
+   */
+  isuName?: string | null;
+  isuFldName?: string | null;
 }
 
 /** PUT /api/grades 요청 바디. 같은 year/term의 기존 성적을 전부 지우고 교체한다. */

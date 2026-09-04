@@ -46,6 +46,8 @@ export const mockUpsertGradeRecords = (
     grade_value: r.grade,
     isMajor: r.isMajor,
     isCourseRepetition: r.isCourseRepetition,
+    isuName: r.isuName ?? null,
+    isuFldName: r.isuFldName ?? null,
   }));
 
   records = [
