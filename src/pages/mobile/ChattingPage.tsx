@@ -57,6 +57,7 @@ import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleMo
 import { useQuery } from "@tanstack/react-query";
 import { ChatRoomMemberResponseDto } from "@/types/chat";
 import useChatModeration from "@/hooks/useChatModeration";
+import { pickValidImages } from "@/utils/fileValidation";
 
 interface UploadingMessage {
   tempId: string;
@@ -726,10 +727,11 @@ export default function ChattingPage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
-    if (files.length > 0) {
-      setPendingFiles(files);
+    const validFiles = pickValidImages(files);
+    e.target.value = "";
+    if (validFiles.length > 0) {
+      setPendingFiles(validFiles);
       setIsUploadModalOpen(true);
-      e.target.value = "";
     }
   };
 

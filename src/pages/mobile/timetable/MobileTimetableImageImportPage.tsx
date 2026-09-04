@@ -44,6 +44,7 @@ import {
   scoreOffering,
   type DetectedCourseGroup,
 } from "@/utils/timetableImageImport";
+import { pickValidImage } from "@/utils/fileValidation";
 
 type Match = {
   group: DetectedCourseGroup;
@@ -570,9 +571,9 @@ export default function MobileTimetableImageImportPage() {
         type="file"
         accept="image/*"
         onChange={(event) => {
-          const file = event.target.files?.[0];
-          if (file) void analyze(file);
+          const file = pickValidImage(event.target.files?.[0]);
           event.currentTarget.value = "";
+          if (file) void analyze(file);
         }}
       />
 

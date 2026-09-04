@@ -16,6 +16,7 @@ import {
   buildProfanityAlertMessage,
   checkProfanityInFields,
 } from "@/utils/profanityFilter";
+import { pickValidImages } from "@/utils/fileValidation";
 
 interface Props {
   category: string;
@@ -105,7 +106,9 @@ export default function WriteForm({ category, setCategory }: Props) {
 
   // 이미지 업로드
   const handleImageUpload = (files: File[]) => {
-    setImages((prevImages) => [...prevImages, ...files]);
+    const validFiles = pickValidImages(files, { currentCount: images.length });
+    if (validFiles.length === 0) return;
+    setImages((prevImages) => [...prevImages, ...validFiles]);
   };
 
   // 이미지 삭제

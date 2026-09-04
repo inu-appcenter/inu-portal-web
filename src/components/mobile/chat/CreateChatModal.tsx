@@ -13,6 +13,7 @@ import {
   checkedCheckbox,
   uncheckedCheckbox,
 } from "@/resources/assets/icons/posts";
+import { pickValidImage } from "@/utils/fileValidation";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -44,7 +45,8 @@ export default function CreateChatModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = pickValidImage(e.target.files?.[0]);
+    e.target.value = "";
     if (file) {
       setThumbnail(file);
       const reader = new FileReader();

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { deleteItem, updateItem } from "@/apis/rentalAdmin.ts";
 import { Items } from "@/apis/rental.ts";
+import { pickValidImages } from "@/utils/fileValidation";
 
 const EditItemModal = ({
   item,
@@ -70,8 +71,9 @@ const EditItemModal = ({
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setImages(Array.from(files));
+      setImages(pickValidImages(Array.from(files)));
     }
+    event.target.value = "";
   };
 
   return (

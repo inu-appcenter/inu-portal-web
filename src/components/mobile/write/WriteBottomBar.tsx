@@ -28,6 +28,8 @@ export default function WriteBottomBar({
     if (e.target.files && e.target.files.length > 0) {
       onImageChange(Array.from(e.target.files));
     }
+    // 같은 파일을 다시 고를 수 있도록 초기화 (검증에 걸린 뒤 재선택 대응)
+    e.target.value = "";
   };
 
   return (

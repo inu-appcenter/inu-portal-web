@@ -6,6 +6,7 @@ import { updateChatRoomInfo } from "@/apis/chat";
 import { useQueryClient } from "@tanstack/react-query";
 import Icon from "@/components/common/Icon";
 import { ChatRoom } from "@/types/chat";
+import { pickValidImage } from "@/utils/fileValidation";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -54,7 +55,8 @@ export default function EditChatModal({
   }, [initialData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = pickValidImage(e.target.files?.[0]);
+    e.target.value = "";
     if (file) {
       setThumbnail(file);
       const reader = new FileReader();

@@ -2,6 +2,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { addItem, ItemFormValues } from "@/apis/rentalAdmin.ts";
 import styled from "styled-components";
 import React, { useState } from "react";
+import { pickValidImages } from "@/utils/fileValidation";
 
 const AddItem = () => {
   const [images, setImages] = useState<File[]>([]); // 이미지 파일 상태 추가
@@ -13,8 +14,9 @@ const AddItem = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setImages(Array.from(files));
+      setImages(pickValidImages(Array.from(files)));
     }
+    event.target.value = "";
   };
 
   const onSubmit: SubmitHandler<ItemFormValues> = async (data) => {

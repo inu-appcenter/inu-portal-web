@@ -5,6 +5,7 @@ import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
 import { CouncilNotice } from "@/types/councilNotices";
+import { pickValidImages } from "@/utils/fileValidation";
 
 export default function UploadNotice({
   onUploaded,
@@ -56,8 +57,9 @@ export default function UploadNotice({
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      setSelectedImages(Array.from(files));
+      setSelectedImages(pickValidImages(Array.from(files)));
     }
+    event.target.value = "";
   };
 
   // 등록 핸들러
