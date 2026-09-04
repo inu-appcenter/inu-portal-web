@@ -34,6 +34,7 @@ import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
 import { TERM_LABELS, TERM_ORDER, formatSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
+import { useCourses } from "@/hooks/useCourses";
 import {
   useAllGradeRecords,
   useDeleteAllGradeRecords,
@@ -283,6 +284,18 @@ export default function MobileGradeCalculatorPage() {
 
   const navigate = useNavigate();
   const { timetables } = useTimetableStore();
+  // 시간표 요소(ClassItem)에는 이수구분 정보가 없다(서버 시간표 상세 응답
+  // TimeTableCourseItem이 courseOfferingId/courseId만 줄 뿐 isuName 등을 안 담는다).
+  // 대신 numericCourseId(Course PK)로 강의 목록에서 completionDivisionName을
+  // 찾아 전공 여부를 판정한다. 강의 목록은 가벼운 전체 조회 1건이라 "시간표
+  // 불러오기" 시트를 열 때만 가져온다(다른 화면에서 이미 캐시돼 있으면 재요청 없음).
+  const { courses: coursesForImport } = useCourses(undefined, {
+    enabled: showTimetableSheet,
+  });
+  const courseByIdForImport = useMemo(
+    () => new Map(coursesForImport.map((c) => [c.id, c])),
+    [coursesForImport],
+  );
   const userDepartment = useUserStore((state) => state.userInfo.department);
   const userStudentId = useUserStore((state) => state.userInfo.studentId);
 
@@ -865,18 +878,30 @@ export default function MobileGradeCalculatorPage() {
             : ""),
       )
     ) {
-      const imported: Subject[] = courseEvents.map((event) => ({
-        id: `${Date.now()}-${Math.random()}`,
-        name: event.name,
-        // 개설강의에 등록된 실제 학점을 쓴다. 값이 없는 예외적인 경우에만 강의
-        // 시간(끝-시작)으로 대략 추정한다.
-        credits:
-          event.credits ?? Math.max(1, Math.round(event.endTime - event.startTime)),
-        grade: "A+",
-        isMajor: false,
-        courseCode: event.courseId,
-        courseId: event.numericCourseId ?? null,
-      }));
+      const imported: Subject[] = courseEvents.map((event) => {
+        // numericCourseId(Course PK)로 강의 목록에서 이수구분(completionDivisionName)을
+        // 찾아 성적 붙여넣기와 같은 판정 함수(isMajorCompletion)를 재사용한다.
+        // 강의 목록이 아직 안 불러와졌거나(로딩 중) 매칭되는 강의가 없으면(예:
+        // 커스텀/폐강 강의) 판정할 근거가 없으므로 기존처럼 false로 둔다.
+        const course =
+          event.numericCourseId != null
+            ? courseByIdForImport.get(event.numericCourseId)
+            : undefined;
+
+        return {
+          id: `${Date.now()}-${Math.random()}`,
+          name: event.name,
+          // 개설강의에 등록된 실제 학점을 쓴다. 값이 없는 예외적인 경우에만 강의
+          // 시간(끝-시작)으로 대략 추정한다.
+          credits:
+            event.credits ??
+            Math.max(1, Math.round(event.endTime - event.startTime)),
+          grade: "A+",
+          isMajor: isMajorCompletion(course?.completionDivisionName ?? null, null),
+          courseCode: event.courseId,
+          courseId: event.numericCourseId ?? null,
+        };
+      });
 
       applyImportedSubjects(targetEntry, imported);
       setShowTimetableSheet(false);
