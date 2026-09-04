@@ -310,6 +310,7 @@ export default function MobileGradeCalculatorPage() {
 
     let initialSemestersData: SemestersData | null = null;
     let initialTargetCredits = 130;
+    let initialGraduationProfile: GraduationProfile | null = null;
 
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (cached) {
@@ -317,6 +318,11 @@ export default function MobileGradeCalculatorPage() {
         const parsed = JSON.parse(cached);
         initialTargetCredits = parsed.targetCredits || 130;
         if (!isLoggedIn) initialSemestersData = parsed.semestersData || {};
+        // targetCredits와 마찬가지로 졸업요건 설정은 로그인 여부와 무관하게
+        // 로컬 캐시에서 복원한다(서버에 저장되는 값이 아니다).
+        if (parsed.graduationProfile) {
+          initialGraduationProfile = parsed.graduationProfile;
+        }
       } catch (e) {
         console.error("Failed to parse cached grades", e);
       }
@@ -348,6 +354,14 @@ export default function MobileGradeCalculatorPage() {
     setSavedSemestersData(initialSemestersData);
     setTargetCredits(initialTargetCredits);
     setSavedTargetCredits(initialTargetCredits);
+
+    if (initialGraduationProfile) {
+      setGraduationProfile(initialGraduationProfile);
+      setSavedGraduationProfile(initialGraduationProfile);
+      // 캐시에 저장된 졸업요건 설정이 있다는 뜻이므로, 아래 학과 자동 채움
+      // effect가 이 값을 덮어쓰지 않도록 미리 표시해둔다.
+      hasStoredGraduationProfile.current = true;
+    }
 
     const sortedKeys = Object.keys(initialSemestersData).sort(
       compareSemesterKeys,
