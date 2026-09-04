@@ -178,12 +178,28 @@ const isPassed = (sub: Subject) =>
 // v2: 학기 키가 "N학년 M학기" 프리셋 라벨에서 실제 "연도-학기"로 바뀌어 예전 캐시와 호환되지 않는다.
 const LOCAL_STORAGE_KEY = "intip_grade_calculator_data_v2";
 
-
+/**
+ * targetCredits가 "사용자가 정한 값"인지, 아직 아무도 손대지 않은 기본값인지
+ * 구분하는 플래그. 이게 없으면 하드코딩 기본값 130과 "사용자가 고른 130"을
+ * 구분할 수 없어, 졸업요건을 나중에 설정해도 이미 저장된 값을 존중해야 하는지
+ * 판단할 수 없다.
+ *
+ * 하위 호환: 이 필드가 생기기 전 캐시(undefined)는 "이미 값이 저장돼 있다"로
+ * 간주해 true로 취급한다 — 캐시가 아예 없는 신규 사용자만 false로 시작해서
+ * 졸업요건으로 최초 1회 채워지는 대상이 된다.
+ */
 const serializeGradeData = (
   data: SemestersData,
   targetCredits: number,
+  targetCreditsIsUserSet: boolean,
   graduationProfile: GraduationProfile,
-) => JSON.stringify({ semestersData: data, targetCredits, graduationProfile });
+) =>
+  JSON.stringify({
+    semestersData: data,
+    targetCredits,
+    targetCreditsIsUserSet,
+    graduationProfile,
+  });
 
 
 
@@ -253,6 +269,10 @@ export default function MobileGradeCalculatorPage() {
   );
   const [targetCredits, setTargetCredits] = useState<number>(130);
   const [savedTargetCredits, setSavedTargetCredits] = useState<number>(130);
+  // 사용자가 직접 고른(연필 수정) 적 있거나, 예전 캐시(플래그 없음)라 이미 값이
+  // 있다고 간주되면 true. false인 동안에는 졸업요건이 해석되는 대로 한 번 채운다.
+  const [targetCreditsIsUserSet, setTargetCreditsIsUserSet] =
+    useState<boolean>(false);
   const [targetCreditsInput, setTargetCreditsInput] = useState<string>("130");
   const [showTargetCreditsModal, setShowTargetCreditsModal] =
     useState<boolean>(false);
@@ -310,6 +330,9 @@ export default function MobileGradeCalculatorPage() {
 
     let initialSemestersData: SemestersData | null = null;
     let initialTargetCredits = 130;
+    // 캐시가 아예 없는 신규 사용자만 false로 시작한다(하위 호환 설명은
+    // serializeGradeData 위 주석 참고).
+    let initialTargetCreditsIsUserSet = false;
     let initialGraduationProfile: GraduationProfile | null = null;
 
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -317,6 +340,7 @@ export default function MobileGradeCalculatorPage() {
       try {
         const parsed = JSON.parse(cached);
         initialTargetCredits = parsed.targetCredits || 130;
+        initialTargetCreditsIsUserSet = parsed.targetCreditsIsUserSet ?? true;
         if (!isLoggedIn) initialSemestersData = parsed.semestersData || {};
         // targetCredits와 마찬가지로 졸업요건 설정은 로그인 여부와 무관하게
         // 로컬 캐시에서 복원한다(서버에 저장되는 값이 아니다).
@@ -361,6 +385,7 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
     setSavedSemestersData(initialSemestersData);
     setTargetCredits(initialTargetCredits);
     setSavedTargetCredits(initialTargetCredits);
+    setTargetCreditsIsUserSet(initialTargetCreditsIsUserSet);
 
     if (initialGraduationProfile) {
       setGraduationProfile(initialGraduationProfile);
@@ -379,10 +404,16 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
     return (
-      serializeGradeData(semestersData, targetCredits, graduationProfile) !==
+      serializeGradeData(
+        semestersData,
+        targetCredits,
+        targetCreditsIsUserSet,
+        graduationProfile,
+      ) !==
       serializeGradeData(
         savedSemestersData,
         savedTargetCredits,
+        targetCreditsIsUserSet,
         savedGraduationProfile,
       )
     );
@@ -392,6 +423,7 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
     savedGraduationProfile,
     semestersData,
     targetCredits,
+    targetCreditsIsUserSet,
     graduationProfile,
   ]);
 
@@ -401,7 +433,12 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
   const saveToLocalStorageOnly = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(semestersData, targetCredits, graduationProfile),
+      serializeGradeData(
+        semestersData,
+        targetCredits,
+        targetCreditsIsUserSet,
+        graduationProfile,
+      ),
     );
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
@@ -462,7 +499,12 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
 
       localStorage.setItem(
         LOCAL_STORAGE_KEY,
-        serializeGradeData(semestersData, targetCredits, graduationProfile),
+        serializeGradeData(
+          semestersData,
+          targetCredits,
+          targetCreditsIsUserSet,
+          graduationProfile,
+        ),
       );
       setSavedSemestersData(semestersData);
       setSavedTargetCredits(targetCredits);
@@ -664,6 +706,8 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
     if (Number.isNaN(parsed) || parsed <= 0) return;
 
     setTargetCredits(parsed);
+    // 사용자가 직접 정한 값이므로, 이후 졸업요건이 바뀌어도 다시 덮어쓰지 않는다.
+    setTargetCreditsIsUserSet(true);
     setShowTargetCreditsModal(false);
   };
 
@@ -793,21 +837,11 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
   ]);
 
   const handleSaveGraduationProfile = (profile: GraduationProfile) => {
-    // 학과·학번이 정해지면 취득 목표 학점은 그 규정의 졸업학점으로 맞춘다.
-    // (연필 버튼으로 직접 고치는 건 그대로 열려 있다.)
-    const resolved = resolveGraduationRule(
-      profile.departmentCode,
-      profile.entryYear,
-    );
-    const nextTargetCredits = resolved
-      ? resolved.rule.generalRequirements.minTotalCredits
-      : savedTargetCredits;
-
+    // 취득 목표 학점을 그 규정의 졸업학점으로 맞출지는 아래 "졸업요건 → 취득
+    // 목표 학점 최초 1회 반영" effect가 targetCreditsIsUserSet 플래그를 보고
+    // 판단한다(사용자가 이미 정한 값이 있으면 여기서 손대지 않는다).
     setGraduationProfile(profile);
     setShowGraduationModal(false);
-    if (resolved) {
-      setTargetCredits(nextTargetCredits);
-    }
 
     // 졸업요건 설정은 성적 입력과 별개라 여기서 바로 저장한다. 작성 중인 과목
     // 목록까지 딸려 저장되지 않도록 저장본(savedSemestersData)을 그대로 쓴다.
@@ -815,10 +849,15 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
     //  브라우저 이탈 경고가 뜬다.)
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(savedSemestersData, nextTargetCredits, profile),
+      serializeGradeData(
+        savedSemestersData,
+        targetCredits,
+        targetCreditsIsUserSet,
+        profile,
+      ),
     );
     setSavedGraduationProfile(profile);
-    setSavedTargetCredits(nextTargetCredits);
+    setSavedTargetCredits(targetCredits);
     hasStoredGraduationProfile.current = true;
   };
 
@@ -974,15 +1013,37 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
     const filled = { ...graduationProfile, departmentCode, entryYear };
     setGraduationProfile(filled);
     setSavedGraduationProfile(filled);
-
-    // 학과·학번이 다 채워졌으면 취득 목표 학점도 그 규정의 졸업학점으로 맞춘다.
-    const resolved = resolveGraduationRule(departmentCode, entryYear);
-    if (resolved) {
-      const minTotalCredits = resolved.rule.generalRequirements.minTotalCredits;
-      setTargetCredits(minTotalCredits);
-      setSavedTargetCredits(minTotalCredits);
-    }
   }, [graduationProfile, userDepartment, userStudentId]);
+
+  // 졸업요건 → 취득 목표 학점 최초 1회 반영.
+  // 졸업요건 데이터가 가이드(정답)이므로, 사용자가 취득 목표 학점을 아직 한
+  // 번도 정한 적 없을 때(targetCreditsIsUserSet === false)만 그 규정의
+  // 졸업학점으로 채운다. 연필 버튼으로 직접 고치거나(handleSaveTargetCredits)
+  // 예전 캐시라 이미 값이 있다고 간주되면(하위 호환) 이 effect는 더 이상
+  // 개입하지 않는다 — 졸업요건을 몇 번을 다시 설정해도 마찬가지다.
+  useEffect(() => {
+    if (targetCreditsIsUserSet) return;
+    if (!resolvedGraduationRule) return;
+
+    const minTotalCredits =
+      resolvedGraduationRule.rule.generalRequirements.minTotalCredits;
+
+    setTargetCredits(minTotalCredits);
+    setSavedTargetCredits(minTotalCredits);
+    setTargetCreditsIsUserSet(true);
+
+    // 성적 입력과 별개로 바로 저장한다(그래야 새로고침해도 유지된다). 작성
+    // 중인 과목 목록이 딸려 저장되지 않도록 저장본을 그대로 쓴다.
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      serializeGradeData(savedSemestersData, minTotalCredits, true, graduationProfile),
+    );
+  }, [
+    resolvedGraduationRule,
+    targetCreditsIsUserSet,
+    savedSemestersData,
+    graduationProfile,
+  ]);
 
   // 소개 시트와 설정 모달이 겹쳐 뜨지 않도록, 시트가 닫히는 애니메이션이
   // 끝난 뒤에 졸업요건 설정을 연다.
