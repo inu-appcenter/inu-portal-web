@@ -64,10 +64,16 @@ interface WishlistGroup {
   title: string;
   required: boolean;
   options: WizardCourseOption[];
+  // required=true로 개별 지정된 분반들. 비어있지 않으면 이 그룹은 반드시 이 분반들
+  // 중에서만 골라야 한다 - "이 강의가 아니라 같은 과목 다른 분반"으로 대체되면 안 된다.
+  requiredOptions: WizardCourseOption[];
 }
 
 // 위시리스트를 courseId 기준으로 묶는다. 같은 과목을 여러 분반 담았다면 그 분반들이
 // 하나의 그룹 안에서 서로 대안이 되고, 하나라도 required면 그룹 전체를 필수로 취급한다.
+// 단, required로 지정된 분반이 있으면 대안 취급하지 않고 그 분반 자체를 강제한다
+// (requiredOptions) - 그래야 "이 분반을 필수로 표시했는데 다른 분반이 대신 뽑히는" 문제가
+// 생기지 않는다.
 //
 // 위시리스트 항목이 강의 스냅샷을 직접 들고 있으므로 후보 풀에서 되찾는 단계가 없다.
 // 예전에는 여기서 pool 조회에 실패한 항목을 `continue`로 조용히 버렸는데, 그게 곧
@@ -80,19 +86,28 @@ const buildGroups = (wishlist: WizardWishlistItem[]): WishlistGroup[] => {
     const existing = groups.get(course.courseId);
     if (existing) {
       existing.options.push(course);
-      existing.required = existing.required || item.required;
+      if (item.required) {
+        existing.required = true;
+        existing.requiredOptions.push(course);
+      }
     } else {
       groups.set(course.courseId, {
         courseId: course.courseId,
         title: course.title,
         required: item.required,
         options: [course],
+        requiredOptions: item.required ? [course] : [],
       });
     }
   }
 
   return [...groups.values()];
 };
+
+// 그룹을 순회할 때 실제로 시도해야 할 분반 후보. requiredOptions가 있으면 그것만,
+// 없으면(전부 선택 취급된 대안 그룹) 전체 options를 시도한다.
+const candidateOptionsOf = (group: WishlistGroup): WizardCourseOption[] =>
+  group.requiredOptions.length > 0 ? group.requiredOptions : group.options;
 
 interface HardConstraintFlags {
   ignoreExcludedSlots?: boolean;
@@ -170,7 +185,7 @@ const searchCombinations = (
     }
 
     const group = groups[index];
-    for (const option of group.options) {
+    for (const option of candidateOptionsOf(group)) {
       if (violatesHardConstraints(option, occupiedMeetings, ctx)) continue;
       backtrack(index + 1, [...chosen, option], [...occupiedMeetings, ...option.meetings]);
     }
@@ -188,19 +203,56 @@ const searchCombinations = (
 // 선택(optional) 그룹은 통째로 건너뛸 수 있어 결과 0개의 원인이 될 수 없으므로(searchCombinations
 // 참고) 필수 그룹 사이의 겹침만 확인하면 된다. 그룹 안 모든 분반 조합이 전부 겹쳐야("피할 방법이
 // 없어야") 그 그룹 쌍을 원인으로 지목한다 - 분반을 바꾸면 피해지는 경우까지 잘못 지목하지 않기 위해서다.
+// 아래 세 함수 공통 패턴: 필수 그룹 하나를 통째로 원인으로 지목하려면, 그 그룹의
+// 후보(candidateOptionsOf) 전부가 해당 조건에 걸려야 한다 - 분반을 바꾸면 피해지는
+// 경우까지 잘못 지목하지 않기 위해 findOverlappingRequiredPairs와 같은 기준을 쓴다.
+const findRequiredCoursesInExcludedSlots = (
+  groups: WishlistGroup[],
+  excludedSlotSet: Set<string>,
+): WizardCourseOption[] =>
+  groups
+    .filter((g) => g.required)
+    .map((g) => candidateOptionsOf(g))
+    .filter((options) =>
+      options.every((opt) => courseGridSlots(opt).some((s) => excludedSlotSet.has(s))),
+    )
+    .map((options) => options[0]);
+
+const findRequiredCoursesInExcludedCourses = (
+  groups: WishlistGroup[],
+  excludedSubjectNumberSet: Set<string>,
+): WizardCourseOption[] =>
+  groups
+    .filter((g) => g.required)
+    .map((g) => candidateOptionsOf(g))
+    .filter((options) => options.every((opt) => excludedSubjectNumberSet.has(opt.subjectNumber)))
+    .map((options) => options[0]);
+
+const findRequiredCoursesOnFreeDays = (
+  groups: WishlistGroup[],
+  freeDays: number[],
+): WizardCourseOption[] => {
+  const daySet = new Set(freeDays);
+  return groups
+    .filter((g) => g.required)
+    .map((g) => candidateOptionsOf(g))
+    .filter((options) => options.every((opt) => opt.meetings.some((m) => daySet.has(m.day))))
+    .map((options) => options[0]);
+};
+
 const findOverlappingRequiredPairs = (groups: WishlistGroup[]): WizardCourseOption[][] => {
   const required = groups.filter((g) => g.required);
   const pairs: WizardCourseOption[][] = [];
 
   for (let i = 0; i < required.length; i += 1) {
     for (let j = i + 1; j < required.length; j += 1) {
-      const gi = required[i];
-      const gj = required[j];
-      const allOptionsOverlap = gi.options.every((oi) =>
-        gj.options.every((oj) => overlapsAny(oi, oj.meetings)),
+      const giOptions = candidateOptionsOf(required[i]);
+      const gjOptions = candidateOptionsOf(required[j]);
+      const allOptionsOverlap = giOptions.every((oi) =>
+        gjOptions.every((oj) => overlapsAny(oi, oj.meetings)),
       );
       if (allOptionsOverlap) {
-        pairs.push([gi.options[0], gj.options[0]]);
+        pairs.push([giOptions[0], gjOptions[0]]);
       }
     }
   }
@@ -406,18 +458,28 @@ export const generateWizardCandidates = (
     if (full.length === 0) {
       // 하드 조건을 하나씩 완화해보고, 완화 시 결과가 나오는 조건만 원인으로 지목한다
       const { preference, exclusion } = conditions;
-      const relaxationChecks: { label: string; flags: HardConstraintFlags }[] = [];
+      const relaxationChecks: {
+        label: string;
+        flags: HardConstraintFlags;
+        courses: WizardCourseOption[];
+      }[] = [];
 
       if (exclusion.excludedSlots.length > 0) {
+        const excludedSlotSet = new Set(exclusion.excludedSlots);
         relaxationChecks.push({
-          label: `제외한 시간대 (${new Set(exclusion.excludedSlots).size}칸)`,
+          label: `제외한 시간대 (${excludedSlotSet.size}칸)`,
           flags: { ignoreExcludedSlots: true },
+          courses: findRequiredCoursesInExcludedSlots(groups, excludedSlotSet),
         });
       }
       if (exclusion.excludedCourses.length > 0) {
+        const excludedSubjectNumberSet = new Set(
+          exclusion.excludedCourses.map((c) => c.subjectNumber),
+        );
         relaxationChecks.push({
           label: `제외한 강의 (${exclusion.excludedCourses.length}개)`,
           flags: { ignoreExcludedCourses: true },
+          courses: findRequiredCoursesInExcludedCourses(groups, excludedSubjectNumberSet),
         });
       }
       if (preference.freeDayOfWeek.enabled && preference.freeDayOfWeek.days.length > 0) {
@@ -425,6 +487,7 @@ export const generateWizardCandidates = (
         relaxationChecks.push({
           label: `${names}요일 공강`,
           flags: { ignoreFreeDayOfWeek: true },
+          courses: findRequiredCoursesOnFreeDays(groups, preference.freeDayOfWeek.days),
         });
       }
       // 오전/야간 회피(C-03/C-04)는 소프트 조건이라 후보를 탈락시키지 않으므로 결과 0개의
@@ -432,7 +495,12 @@ export const generateWizardCandidates = (
 
       for (const check of relaxationChecks) {
         const relaxed = searchCombinations(groups, makeContext(conditions, check.flags));
-        if (relaxed.length > 0) conflicts.push({ label: check.label });
+        if (relaxed.length > 0) {
+          conflicts.push({
+            label: check.label,
+            courses: check.courses.length > 0 ? check.courses : undefined,
+          });
+        }
       }
 
       if (conflicts.length === 0) {

@@ -10,9 +10,10 @@ import { formatCourseMeta } from "@/utils/timetableWizardFormat";
 interface WizardEmptyStateProps {
   conflicts: WizardConflictItem[];
   onRelax: () => void;
-  // 담은 강의끼리 시간이 겹치는 conflict(courses가 채워진 경우, 항상 위시리스트
-  // 항목이다 - timetableWizardGenerator.ts의 findOverlappingRequiredPairs 참고)를
-  // 이 화면에서 바로 뺄 수 있게 한다. 없으면(레거시 호출부) 빼기 버튼을 숨긴다.
+  // 원인이 지목된 conflict(courses가 채워진 경우, 항상 위시리스트 항목이다 -
+  // timetableWizardGenerator.ts의 findOverlappingRequiredPairs/
+  // findRequiredCoursesIn*/findRequiredCoursesOnFreeDays 참고)를 이 화면에서
+  // 바로 뺄 수 있게 한다. 없으면(레거시 호출부) 빼기 버튼을 숨긴다.
   onRemoveWishlistCourse?: (subjectNumber: string) => void;
   // 같은 과목의 다른 분반으로 바꾸고 싶을 때 - 원인 강의를 빼고 그 과목명으로
   // 미리 필터링된 강의 검색 시트를 연다.
