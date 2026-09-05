@@ -537,7 +537,7 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
 
       if (failedLabels.length > 0) {
         alert(
-          `${failedLabels.join(", ")} 저장에 실패했어요. 잠시 후 다시 시도해주세요.`,
+          `${failedLabels.join(", ")} 저장/삭제에 실패했어요. 잠시 후 다시 시도해주세요.`,
         );
       }
     } catch (e) {
