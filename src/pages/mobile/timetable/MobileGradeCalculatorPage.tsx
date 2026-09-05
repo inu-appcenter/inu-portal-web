@@ -320,9 +320,16 @@ export default function MobileGradeCalculatorPage() {
         if (!isLoggedIn) initialSemestersData = parsed.semestersData || {};
         // targetCredits와 마찬가지로 졸업요건 설정은 로그인 여부와 무관하게
         // 로컬 캐시에서 복원한다(서버에 저장되는 값이 아니다).
-        if (parsed.graduationProfile) {
-          initialGraduationProfile = parsed.graduationProfile;
-        }
+if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
+  const gp = parsed.graduationProfile as Partial<GraduationProfile>;
+  initialGraduationProfile = {
+    ...EMPTY_GRADUATION_PROFILE,
+    ...gp,
+    departmentCode: typeof gp.departmentCode === "string" ? gp.departmentCode : "",
+    entryYear: gp.entryYear ?? null,
+    targetGpa: gp.targetGpa ?? null,
+  };
+}
       } catch (e) {
         console.error("Failed to parse cached grades", e);
       }
