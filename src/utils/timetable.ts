@@ -95,6 +95,49 @@ export const mapDetailItemsToClassItems = (
     }));
   });
 
+// 같은 요일 + 시간대 겹침 여부 (TimetableGrid.tsx의 배치 로직과 동일한 판정식)
+const isOverlapping = (a: ClassItem, b: ClassItem) =>
+  a.day === b.day && a.startTime < b.endTime && b.startTime < a.endTime;
+
+/**
+ * 새로 추가하려는 강의(schedules)가 기존 시간표(timetable)의 어떤 요소와
+ * 요일·시간이 겹치는지 찾아, 요소(itemId) 단위로 중복 없이 반환한다.
+ * 충돌 안내에 과목명·교수명·요일·시간을 보여주기 위한 용도.
+ */
+export const findConflictingClassItems = (
+  schedules: ClassItem[],
+  timetable: ClassItem[],
+): ClassItem[] => {
+  const seen = new Set<number>();
+  const conflicts: ClassItem[] = [];
+
+  for (const schedule of schedules) {
+    for (const existing of timetable) {
+      if (!isOverlapping(schedule, existing)) continue;
+
+      const key = existing.itemId ?? existing.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      conflicts.push(existing);
+    }
+  }
+
+  return conflicts;
+};
+
+const DAY_LABELS_KO = ["월", "화", "수", "목", "금", "토", "일"];
+
+/** 충돌 안내 문구: "과목명(교수명) 월 10:00~11:15, ..." 형태로 합친다 */
+export const formatConflictingClassItems = (conflicts: ClassItem[]) =>
+  conflicts
+    .map((c) => {
+      const day = DAY_LABELS_KO[c.day] ?? "";
+      const time = `${formatHoursToTime(c.startTime)}~${formatHoursToTime(c.endTime)}`;
+      const professor = c.professor ? `(${c.professor})` : "";
+      return `${c.name}${professor} ${day} ${time}`;
+    })
+    .join(", ");
+
 /** 시간표 이벤트를 강의(시간표 요소) 단위로 묶은 결과 */
 export interface TimetableCourseGroup {
   /** 묶음 식별자 */
