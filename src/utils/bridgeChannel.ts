@@ -5,6 +5,7 @@ import { handleBackRequest } from "./nativeBackRequest";
 import { whenCapabilities } from "./bridgeCapabilities";
 import { installNavigatorSharePolyfill } from "./nativeShare";
 import { flushAllBroadcastSync } from "@/stores/middleware/broadcastSync";
+import { mixpanelTrack } from "@/utils/mixpanel";
 // readNotificationByFcmMessageId는 동적 import로 지연 로드한다(정적 import 금지).
 // apis/members.ts → apis/tokenInstance.ts·refreshInstance.ts → useUserStore.ts →
 // (여기) bridgeChannel.ts 로 이어지는 순환참조가 생겨, 모듈 평가 순서에 따라
@@ -57,8 +58,23 @@ if (bridgeChannel) {
 
   // 푸시 탭 진입: fcmMessageId를 서버에 읽음 처리로 보낸 뒤, 안읽음 뱃지를
   // 갱신하도록 알린다.
-  bridgeChannel.on("notificationOpened", ({ fcmMessageId }) => {
+  bridgeChannel.on("notificationOpened", ({
+    fcmMessageId,
+    path,
+    notificationType,
+    campaignId,
+    sentAt,
+  }) => {
     if (fcmMessageId === undefined) return;
+    mixpanelTrack.notificationClicked({
+      notification_id: String(fcmMessageId),
+      notification_type: notificationType,
+      campaign_id: campaignId,
+      source: "push",
+      target_screen: path,
+      sent_at: sentAt,
+      clicked_at: new Date().toISOString(),
+    });
     void import("@/apis/members")
       .then(({ readNotificationByFcmMessageId }) => readNotificationByFcmMessageId(fcmMessageId))
       .then(() => window.dispatchEvent(new Event("intip:notification-opened")))
