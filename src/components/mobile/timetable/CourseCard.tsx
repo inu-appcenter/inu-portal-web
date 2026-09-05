@@ -74,6 +74,16 @@ export const CourseCard: React.FC<CourseCardProps> = ({
           return (
             <SectionRow
               key={offering.offeringId}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedOfferingId((prev) =>
+                    prev === offering.offeringId ? null : offering.offeringId,
+                  );
+                }
+              }}
               onClick={() =>
                 setExpandedOfferingId((prev) =>
                   prev === offering.offeringId ? null : offering.offeringId,
