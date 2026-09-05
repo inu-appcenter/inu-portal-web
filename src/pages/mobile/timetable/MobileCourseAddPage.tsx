@@ -94,14 +94,32 @@ const MobileCourseAddPage = () => {
     setCourseName(editTarget.custom.title ?? "");
     setMemo(editTarget.item.memo ?? "");
     if (editTarget.custom.meetings.length > 0) {
-      setTimeSlots(
-        editTarget.custom.meetings.map((meeting, index) => ({
+      const groupedSlots = new Map<string, CourseTimeSlot>();
+      editTarget.custom.meetings.forEach((meeting, index) => {
+        const key = `${meeting.startTime}|${meeting.endTime}|${meeting.location ?? ""}`;
+        const dayIndex = DAY_INDEX[meeting.day];
+        const existingSlot = groupedSlots.get(key);
+
+        if (existingSlot) {
+          if (!existingSlot.dayIndices.includes(dayIndex)) {
+            existingSlot.dayIndices = [...existingSlot.dayIndices, dayIndex].sort(
+              (a, b) => a - b,
+            );
+          }
+          return;
+        }
+
+        groupedSlots.set(key, {
           id: `slot-${index + 1}`,
-          dayIndices: [DAY_INDEX[meeting.day]],
+          dayIndices: [dayIndex],
           startTime: toHourMinute(meeting.startTime),
           endTime: toHourMinute(meeting.endTime),
           location: meeting.location ?? undefined,
-        })),
+        });
+      });
+
+      setTimeSlots(
+        Array.from(groupedSlots.values()),
       );
     }
   }, [editTarget]);
