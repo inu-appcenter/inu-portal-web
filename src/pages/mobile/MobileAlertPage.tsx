@@ -49,7 +49,17 @@ const MobileAlertPage = () => {
     Boolean(tokenInfo.accessToken) || Boolean(getStoredAccessToken());
 
   const handleAlertClick = async (alert: Notification) => {
-    mixpanelTrack.notificationClicked(alert.type, alert.title);
+    const notificationId = alert.fcmMessageId || alert.memberFcmMessageId;
+    if (notificationId) {
+      mixpanelTrack.notificationClicked({
+        notification_id: String(notificationId),
+        notification_type: alert.type,
+        source: "inbox",
+        target_screen: alert.path || alert.type,
+        target_id: alert.targetId,
+        clicked_at: new Date().toISOString(),
+      });
+    }
 
     if (alert.memberFcmMessageId && !alert.isRead) {
       try {
