@@ -2,14 +2,19 @@ import styled, { keyframes } from "styled-components";
 import { HiOutlineArrowPath, HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { NEW_SITE_URL } from "@/utils/legacyHost";
 
+interface LegacyHostBlockScreenProps {
+  /** "그래도 들어가기"를 눌렀을 때. 안내를 넘기고 이 주소 그대로 앱을 띄운다. */
+  onContinue: () => void;
+}
+
 /**
- * 구 배포 도메인(intip-test.pages.dev)으로 들어온 사용자를 막는 전체 화면.
+ * 구 배포 도메인(intip-test.pages.dev)으로 들어온 사용자에게 보여주는 전체 화면 안내.
  *
  * 앱(WebView)은 예전 주소를 캐싱한 채 켜질 수 있는데, 이 주소로는 정상 동작을 보장하지
- * 않으므로 리다이렉트 대신 사용 자체를 막고 앱 재시작을 안내한다. 브라우저로 들어온
- * 경우를 위해 새 주소 링크도 함께 둔다.
+ * 않으므로 리다이렉트 대신 앱 재시작을 안내한다. 브라우저로 들어온 경우를 위해 새 주소
+ * 링크를, 이 주소를 의도적으로 쓰는 경우를 위해 "그래도 들어가기"를 함께 둔다.
  */
-export default function LegacyHostBlockScreen() {
+export default function LegacyHostBlockScreen({ onContinue }: LegacyHostBlockScreenProps) {
   return (
     <ScreenWrapper>
       <AmbientOrb className="left" />
@@ -35,6 +40,10 @@ export default function LegacyHostBlockScreen() {
           <HiOutlineArrowPath aria-hidden="true" />
           브라우저로 보고 있다면 새 주소로 이동하기
         </NewSiteLink>
+
+        <ContinueButton type="button" onClick={onContinue}>
+          그래도 들어가기
+        </ContinueButton>
 
         <FooterText>{NEW_SITE_URL}</FooterText>
       </Card>
@@ -185,6 +194,29 @@ const NewSiteLink = styled.a`
 
   &:active {
     transform: scale(0.985);
+  }
+`;
+
+const ContinueButton = styled.button`
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(151, 175, 208, 0.6);
+  background: transparent;
+  color: #52708f;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  word-break: keep-all;
+
+  &:active {
+    transform: scale(0.985);
+    background: rgba(31, 95, 191, 0.06);
   }
 `;
 
