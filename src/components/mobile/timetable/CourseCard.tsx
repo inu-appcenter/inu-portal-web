@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import { MessagesSquare } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import type {
   CourseCardOfferingView,
   CourseCardView,
 } from "@/types/courseCardView";
+import { openLectureReview, SYLLABUS_UNAVAILABLE_MESSAGE } from "@/utils/lectureReview";
 
 interface CourseCardProps {
   /**
@@ -24,6 +26,13 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   onRemoveOffering,
   onToggleRequired,
 }) => {
+  // 후보로 담긴 강의를 눌러도 검색 상태와 동일하게 상세(강의평/강의계획서)가
+  // 열리게 한다 - 예전에는 이 행에 onClick 자체가 없어 담기 전(WizardCourseSearchSheet)
+  // 에서만 상세를 볼 수 있었다.
+  const [expandedOfferingId, setExpandedOfferingId] = useState<number | null>(
+    null,
+  );
+
   // 출처에 따라 모르는 값은 아예 빼고 · 로 잇는다(빈 칸이나 "-"를 그리지 않는다)
   const metaParts = [
     `${data.credit}학점`,
@@ -59,47 +68,91 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       </Header>
 
       <CourseContainer>
-        {data.offerings.map((offering) => (
-          <SectionRow key={offering.offeringId}>
-            <SectionInfo>
-              <ProfRow>
-                <ProfName>{offering.professor || "교수 미정"}</ProfName>
-                <CourseCode>{offering.subjectNumber}</CourseCode>
-              </ProfRow>
-              <SubText>{offering.timeStr}</SubText>
-              {offering.room && <SubText>{offering.room}</SubText>}
-            </SectionInfo>
+        {data.offerings.map((offering) => {
+          const isExpanded = expandedOfferingId === offering.offeringId;
 
-            <RightAction>
-              {offering.required !== undefined && onToggleRequired && (
-                <RequiredToggle
-                  type="button"
-                  $active={offering.required}
-                  aria-pressed={offering.required}
-                  onClick={() => onToggleRequired(offering)}
-                >
-                  {offering.required ? "필수" : "선택"}
-                </RequiredToggle>
+          return (
+            <SectionRow
+              key={offering.offeringId}
+              onClick={() =>
+                setExpandedOfferingId((prev) =>
+                  prev === offering.offeringId ? null : offering.offeringId,
+                )
+              }
+            >
+              <SectionRowMain>
+                <SectionInfo>
+                  <ProfRow>
+                    <ProfName>{offering.professor || "교수 미정"}</ProfName>
+                    <CourseCode>{offering.subjectNumber}</CourseCode>
+                  </ProfRow>
+                  <SubText>{offering.timeStr}</SubText>
+                  {offering.room && <SubText>{offering.room}</SubText>}
+                </SectionInfo>
+
+                <RightAction>
+                  {offering.required !== undefined && onToggleRequired && (
+                    <RequiredToggle
+                      type="button"
+                      $active={offering.required}
+                      aria-pressed={offering.required}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleRequired(offering);
+                      }}
+                    >
+                      {offering.required ? "필수" : "선택"}
+                    </RequiredToggle>
+                  )}
+                  {/* 담은 인원을 모르는 출처(스냅샷)에서는 아예 노출하지 않는다 */}
+                  {offering.savedCount !== null && (
+                    <SavedCount>{offering.savedCount}명 담음</SavedCount>
+                  )}
+                  {onRemoveOffering && (
+                    // 시안의 44px 정사각형은 터치 영역이고, 파란 원은 그 안의 36px이다.
+                    <FavButton
+                      type="button"
+                      aria-label="담기 취소"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveOffering(offering);
+                      }}
+                    >
+                      <FavCircle>
+                        <Icon name="close-md" size={20} />
+                      </FavCircle>
+                    </FavButton>
+                  )}
+                </RightAction>
+              </SectionRowMain>
+
+              {isExpanded && (
+                <ExpandedArea>
+                  <SecondaryActionButton
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openLectureReview(offering.professor);
+                    }}
+                  >
+                    <MessagesSquare size={18} />
+                    강의평
+                  </SecondaryActionButton>
+                  <SecondaryActionButton
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                    }}
+                  >
+                    <Icon name="file-document" size={18} />
+                    강의계획서
+                  </SecondaryActionButton>
+                </ExpandedArea>
               )}
-              {/* 담은 인원을 모르는 출처(스냅샷)에서는 아예 노출하지 않는다 */}
-              {offering.savedCount !== null && (
-                <SavedCount>{offering.savedCount}명 담음</SavedCount>
-              )}
-              {onRemoveOffering && (
-                // 시안의 44px 정사각형은 터치 영역이고, 파란 원은 그 안의 36px이다.
-                <FavButton
-                  type="button"
-                  aria-label="담기 취소"
-                  onClick={() => onRemoveOffering(offering)}
-                >
-                  <FavCircle>
-                    <Icon name="close-md" size={20} />
-                  </FavCircle>
-                </FavButton>
-              )}
-            </RightAction>
-          </SectionRow>
-        ))}
+            </SectionRow>
+          );
+        })}
       </CourseContainer>
     </CourseCardWrapper>
   );
@@ -207,9 +260,41 @@ const SectionRow = styled.div`
   width: 100%;
   padding: 12px 16px;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+`;
+
+const SectionRowMain = styled.div`
+  width: 100%;
+  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+`;
+
+const ExpandedArea = styled.div`
+  width: 100%;
+  display: flex;
+  gap: 8px;
+`;
+
+const SecondaryActionButton = styled.button`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
+  color: var(--text-secondary, #333d4b);
+  font-size: 12px;
+  font-family: Pretendard, sans-serif;
+  font-weight: 500;
+  line-height: 16px;
+  cursor: pointer;
 `;
 
 const SectionInfo = styled.div`
