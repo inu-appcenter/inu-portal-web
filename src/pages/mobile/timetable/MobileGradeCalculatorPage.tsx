@@ -288,7 +288,8 @@ export default function MobileGradeCalculatorPage() {
   // TimeTableCourseItem이 courseOfferingId/courseId만 줄 뿐 isuName 등을 안 담는다).
   // 대신 numericCourseId(Course PK)로 강의 목록에서 completionDivisionName을
   // 찾아 전공 여부를 판정한다. 강의 목록은 가벼운 전체 조회 1건이라 "시간표
-  // 불러오기" 시트를 열 때만 가져온다(다른 화면에서 이미 캐시돼 있으면 재요청 없음).
+  // 불러오기" 시트를 열 때만 가져온다(이미 캐시돼 있으면 즉시 사용하고,
+  // staleTime(5분) 이후에는 재요청될 수 있음).
   const { courses: coursesForImport } = useCourses(undefined, {
     enabled: showTimetableSheet,
   });
