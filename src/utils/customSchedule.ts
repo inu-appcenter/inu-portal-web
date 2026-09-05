@@ -12,9 +12,10 @@ export const toCustomScheduleMeetings = (
   slots: CustomScheduleTimeSlot[],
 ): TimeTableCustomMeetingRequest[] =>
   slots.flatMap((slot) => {
-    const uniqueDayIndices = [...new Set(slot.dayIndices)].filter(
-      (dayIndex) => dayIndex >= 0 && dayIndex < DAY_BY_INDEX.length,
-    );
+    const uniqueDayIndices = [...new Set(slot.dayIndices)]
+      .filter((dayIndex) => Number.isInteger(dayIndex))
+      .filter((dayIndex) => dayIndex >= 0 && dayIndex < DAY_BY_INDEX.length)
+      .sort((a, b) => a - b);
 
     return uniqueDayIndices.map((dayIndex) => ({
       location: slot.location?.trim() || undefined,
