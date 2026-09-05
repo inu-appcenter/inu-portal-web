@@ -15,9 +15,10 @@ import {
   useTimeTables,
   useUpdateTimeTableCustomItem,
 } from "@/hooks/useTimeTables";
-import { DAY_BY_INDEX, DAY_INDEX } from "@/utils/timetable";
+import { DAY_INDEX } from "@/utils/timetable";
 import type { TimeTableCustomMeetingRequest } from "@/types/timetables";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { toCustomScheduleMeetings } from "@/utils/customSchedule";
 
 // 서버가 "HH:mm:ss"로 내려주더라도 시간 선택기가 쓰는 "HH:mm"으로 맞춘다
 const toHourMinute = (time: string) => time.slice(0, 5);
@@ -77,7 +78,7 @@ const MobileCourseAddPage = () => {
 
   // 상태 관리 - 시간 정보 (기본적으로 1개 슬롯 탑재)
   const [timeSlots, setTimeSlots] = useState<CourseTimeSlot[]>([
-    { id: "slot-1", day: 0, startTime: "15:00", endTime: "16:30" },
+    { id: "slot-1", dayIndices: [0], startTime: "15:00", endTime: "16:30" },
   ]);
 
   // Ref 관리
@@ -96,7 +97,7 @@ const MobileCourseAddPage = () => {
       setTimeSlots(
         editTarget.custom.meetings.map((meeting, index) => ({
           id: `slot-${index + 1}`,
-          day: DAY_INDEX[meeting.day],
+          dayIndices: [DAY_INDEX[meeting.day]],
           startTime: toHourMinute(meeting.startTime),
           endTime: toHourMinute(meeting.endTime),
           location: meeting.location ?? undefined,
@@ -115,7 +116,7 @@ const MobileCourseAddPage = () => {
   const handleAddTimeSlot = () => {
     const newSlot: CourseTimeSlot = {
       id: `slot-${Date.now()}`,
-      day: 0,
+      dayIndices: [0],
       startTime: "09:00",
       endTime: "10:30",
     };
@@ -153,12 +154,16 @@ const MobileCourseAddPage = () => {
     }
     if (isPending) return;
 
-    const meetings: TimeTableCustomMeetingRequest[] = timeSlots.map((slot) => ({
-      location: slot.location?.trim() || undefined,
-      day: DAY_BY_INDEX[slot.day],
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-    }));
+    const hasEmptyDaySelection = timeSlots.some(
+      (slot) => slot.dayIndices.length === 0,
+    );
+    if (hasEmptyDaySelection) {
+      alert("각 일정에 최소 1개의 요일을 선택해 주세요.");
+      return;
+    }
+
+    const meetings: TimeTableCustomMeetingRequest[] =
+      toCustomScheduleMeetings(timeSlots);
     const title = courseName.trim();
     const trimmedMemo = memo.trim();
 
