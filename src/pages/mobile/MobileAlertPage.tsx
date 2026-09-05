@@ -15,6 +15,7 @@ import { Notification } from "@/types/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import notificationCategory from "@/resources/strings/notificationCategory";
 import { formatTimeAgo } from "@/utils/date";
+import { resolveNotificationTarget } from "@/utils/notificationTarget";
 import { UNREAD_NOTIFICATION_QUERY_KEY } from "@/hooks/useUnreadNotification";
 
 function getStoredAccessToken() {
@@ -58,6 +59,20 @@ const MobileAlertPage = () => {
       } catch (e) {
         console.error("Failed to mark notification as read", e);
       }
+    }
+
+    // 서버가 내려준 path가 곧 시스템 알림을 눌렀을 때 가는 곳이다. 두 경로가
+    // 갈라지지 않도록 이 값을 먼저 쓰고, 값이 없는 알림만 type으로 폴백한다.
+    const target = resolveNotificationTarget(alert.path);
+
+    if (target?.kind === "internal") {
+      navigate(target.path);
+      return;
+    }
+
+    if (target?.kind === "external") {
+      window.open(target.url, "_blank", "noopener,noreferrer");
+      return;
     }
 
     if (alert.type === "DEPARTMENT") {
