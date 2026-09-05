@@ -540,6 +540,9 @@ if (parsed.graduationProfile && typeof parsed.graduationProfile === "object") {
           `${failedLabels.join(", ")} 저장에 실패했어요. 잠시 후 다시 시도해주세요.`,
         );
       }
+    } catch (e) {
+      console.error("Unexpected error while saving grades", e);
+      alert("성적 저장 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSaving(false);
     }
