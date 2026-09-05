@@ -1,10 +1,11 @@
 import tokenInstance from "./tokenInstance.ts";
-import { ApiResponse } from "../types/common.ts";
+import { ApiResponse, Pagination } from "../types/common.ts";
 import {
   ApiLogData,
   FcmAdminLogData,
   FcmSendRequest,
   MemberLogData,
+  ScheduledNotificationData,
 } from "../types/admin.ts";
 
 export const getMemberLogs = async (
@@ -76,6 +77,29 @@ export const sendFcmAdminNotification = async (
     console.error("API request error:", error);
     throw new Error("회원 알림 전송에 실패했습니다.");
   }
+};
+
+export const getScheduledNotifications = async (
+  page: number = 1,
+): Promise<ApiResponse<Pagination<ScheduledNotificationData[]>>> => {
+  try {
+    const response = await tokenInstance.get<
+      ApiResponse<Pagination<ScheduledNotificationData[]>>
+    >(`/api/tokens/admin/scheduled?page=${page}`);
+    return response.data;
+  } catch (error) {
+    console.error("API request error:", error);
+    throw new Error("예약 알림 조회에 실패했습니다.");
+  }
+};
+
+export const cancelScheduledNotification = async (
+  scheduledNotificationId: number,
+): Promise<ApiResponse<null>> => {
+  const response = await tokenInstance.delete<ApiResponse<null>>(
+    `/api/tokens/admin/scheduled/${scheduledNotificationId}`,
+  );
+  return response.data;
 };
 
 // 버스 관리자 API
