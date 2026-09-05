@@ -328,6 +328,10 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
               value={scheduledAtInput}
               onChange={(e) => setScheduledAtInput(e.target.value)}
             />
+            <HintText>
+              ⚠️ 이 기기(브라우저)의 로컬 시각 기준입니다. 서버는 입력값을 한국 표준시(KST)로
+              그대로 저장하므로, 기기 시스템 시간대가 KST가 아니면 실제 발송 시각이 달라집니다.
+            </HintText>
           </FormGroup>
         )}
 
@@ -433,6 +437,16 @@ const ModeButton = styled.button<{ $active: boolean }>`
   background-color: ${(props) => (props.$active ? "#0f766e" : "#f8fafc")};
   color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
   border: 1px solid ${(props) => (props.$active ? "#0f766e" : "#e2e8f0")};
+`;
+
+const HintText = styled.p`
+  font-size: 0.75rem;
+  color: #b45309;
+  background-color: #fffbeb;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin: 0;
+  line-height: 1.4;
 `;
 
 const StatusMsg = styled.p`
