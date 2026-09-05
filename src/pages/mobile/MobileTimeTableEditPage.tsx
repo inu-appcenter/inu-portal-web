@@ -153,6 +153,10 @@ const MobileTimeTableEditPage = () => {
     Set<number>
   >(new Set());
 
+  // 활성 시간표가 바뀌면 이전 시간표의 pending 상태가 새 시간표에 누수되지 않도록 초기화
+  useEffect(() => {
+    setPendingAddedOfferingIds(new Set());
+  }, [activeTimetableId]);
   const addedCourseOfferingIds = useMemo(() => {
     const set = new Set<number>();
     timetable.forEach((item) => {
