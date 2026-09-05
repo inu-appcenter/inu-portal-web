@@ -1,4 +1,4 @@
-import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { TimeTableDay, TimeTableDetailItem } from "@/types/timetables";
 
 export const DAY_INDEX: Record<TimeTableDay, number> = {
