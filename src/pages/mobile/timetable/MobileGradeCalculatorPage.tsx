@@ -290,9 +290,10 @@ export default function MobileGradeCalculatorPage() {
   // 찾아 전공 여부를 판정한다. 강의 목록은 가벼운 전체 조회 1건이라 "시간표
   // 불러오기" 시트를 열 때만 가져온다(이미 캐시돼 있으면 즉시 사용하고,
   // staleTime(5분) 이후에는 재요청될 수 있음).
-  const { courses: coursesForImport } = useCourses(undefined, {
-    enabled: showTimetableSheet,
-  });
+  const { courses: coursesForImport, isLoading: isCoursesForImportLoading } =
+    useCourses(undefined, {
+      enabled: showTimetableSheet,
+    });
   const courseByIdForImport = useMemo(
     () => new Map(coursesForImport.map((c) => [c.id, c])),
     [coursesForImport],
@@ -861,9 +862,20 @@ export default function MobileGradeCalculatorPage() {
     if (!tb) return;
 
     const courseEvents = getUniqueCourseEvents(tb.events);
+    const hasCourseLookupTarget = courseEvents.some(
+      (event) => event.numericCourseId != null,
+    );
 
     if (courseEvents.length === 0) {
       alert("이 시간표에는 불러올 과목이 없어요.");
+      return;
+    }
+    if (
+      hasCourseLookupTarget &&
+      isCoursesForImportLoading &&
+      coursesForImport.length === 0
+    ) {
+      alert("강의 목록을 불러오는 중이에요. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
