@@ -49,14 +49,14 @@ export default function GraduationRequirementCard({
   })();
 
 
-  if (!resolved || !evaluation)
-    return <EmptyText>{emptyMessage}</EmptyText>
-
   // 면제(EXEMPT) 요건은 그 학과에 적용되지 않는 규정이라 아예 보여주지 않는다.
-  const requiredCourses = evaluation.requiredCourses.filter(
-    (course) => course.status !== "EXEMPT",
-  );
+  const requiredCourses = evaluation
+    ? evaluation.requiredCourses.filter((course) => course.status !== "EXEMPT")
+    : [];
 
+  // resolved/evaluation이 없을 때(아직 설정 전, 또는 학과 데이터 미지원)도
+  // "설정" 버튼은 계속 눌러야 하므로 카드·헤더는 항상 그린다. 이 버튼이 없으면
+  // 사용자가 졸업요건 설정 모달을 다시 열 방법이 없어진다.
   return (
     <Card>
       <CardHeader>
