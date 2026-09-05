@@ -4,7 +4,7 @@ import DayChip, { DayChipProps } from "@/components/common/DayChip";
 
 export interface CourseTimeSlot {
   id: string;
-  day: number; // 0:월 ~ 4:금
+  dayIndices: number[];
   startTime: string; // "HH:MM"
   endTime: string; // "HH:MM"
   location?: string;
@@ -28,9 +28,19 @@ const CourseTimeSelector = ({
   onRemove,
 }: CourseTimeSelectorProps) => {
   const handleDaySelect = (dayIndex: number) => {
+    const hasSelected = slot.dayIndices.includes(dayIndex);
+    const nextDayIndices = hasSelected
+      ? slot.dayIndices.filter((selectedDay) => selectedDay !== dayIndex)
+      : [...slot.dayIndices, dayIndex];
+
+    // 최소 1개 요일은 항상 선택되도록 유지
+    if (nextDayIndices.length === 0) {
+      return;
+    }
+
     onChange({
       ...slot,
-      day: dayIndex,
+      dayIndices: nextDayIndices,
     });
   };
 
@@ -84,7 +94,7 @@ const CourseTimeSelector = ({
 
       <DayChipContainer>
         {DAYS.map((dayName, dayIndex) => {
-          const isSelected = slot.day === dayIndex;
+          const isSelected = slot.dayIndices.includes(dayIndex);
           return (
             <StyledDayChip
               key={dayName}
