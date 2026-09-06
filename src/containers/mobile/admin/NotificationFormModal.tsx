@@ -113,6 +113,8 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
   const [memberIdInput, setMemberIdInput] = useState("");
   const [studentIdInput, setStudentIdInput] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
+  const [sendMode, setSendMode] = useState<"NOW" | "SCHEDULED">("NOW");
+  const [scheduledAtInput, setScheduledAtInput] = useState("");
 
   const departmentOptions = useMemo(
     () => extractDepartmentOptions(navBarList as DepartmentNode[]),
@@ -131,17 +133,28 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
       return;
     }
 
+    let scheduledAt: string | undefined;
+    if (sendMode === "SCHEDULED") {
+      if (!scheduledAtInput) return alert("예약 시각을 선택해주세요.");
+      // datetime-local 값은 "YYYY-MM-DDTHH:mm" (초 단위 없음) 형식이라 서버 LocalDateTime 포맷에 맞춰 ":00"을 붙인다.
+      scheduledAt = `${scheduledAtInput}:00`;
+      if (new Date(scheduledAt) <= new Date()) {
+        return alert("예약 시각은 현재 이후여야 합니다.");
+      }
+    }
+
     const resolvedPath =
       selectedPathOption === "CUSTOM"
         ? customPath.trim()
         : selectedPathOption.trim();
 
-    let request: FcmSendRequest = {
+    const request: FcmSendRequest = {
       targetType,
       subFilter,
       title: title.trim(),
       content: content.trim(),
       path: resolvedPath || undefined,
+      scheduledAt,
     };
 
     if (targetType === "MEMBERS") {
@@ -173,7 +186,13 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
           <CancelButton onClick={onClose} disabled={sending}>취소</CancelButton>
           <SubmitButton onClick={handleFormSubmit} disabled={sending}>
             <Icon name="paper-plane" size={18} />
-            <span>{sending ? "전송 중..." : "알림 보내기"}</span>
+            <span>
+              {sending
+                ? "전송 중..."
+                : sendMode === "SCHEDULED"
+                  ? "예약하기"
+                  : "알림 보내기"}
+            </span>
           </SubmitButton>
         </>
       }
@@ -279,6 +298,43 @@ const NotificationFormModal: React.FC<NotificationFormModalProps> = ({
           </FormGroup>
         )}
 
+        <Divider />
+
+        <FormGroup>
+          <Label>발송 시점</Label>
+          <ModeToggle>
+            <ModeButton
+              type="button"
+              $active={sendMode === "NOW"}
+              onClick={() => setSendMode("NOW")}
+            >
+              즉시 발송
+            </ModeButton>
+            <ModeButton
+              type="button"
+              $active={sendMode === "SCHEDULED"}
+              onClick={() => setSendMode("SCHEDULED")}
+            >
+              예약 발송
+            </ModeButton>
+          </ModeToggle>
+        </FormGroup>
+
+        {sendMode === "SCHEDULED" && (
+          <FormGroup>
+            <Label>예약 시각</Label>
+            <Input
+              type="datetime-local"
+              value={scheduledAtInput}
+              onChange={(e) => setScheduledAtInput(e.target.value)}
+            />
+            <HintText>
+              ⚠️ 이 기기(브라우저)의 로컬 시각 기준입니다. 서버는 입력값을 한국 표준시(KST)로
+              그대로 저장하므로, 기기 시스템 시간대가 KST가 아니면 실제 발송 시각이 달라집니다.
+            </HintText>
+          </FormGroup>
+        )}
+
         {sendMessage && <StatusMsg>{sendMessage}</StatusMsg>}
       </FormContainer>
     </AdminModal>
@@ -364,6 +420,33 @@ const Divider = styled.div`
   height: 1px;
   background-color: #f1f5f9;
   margin: 4px 0;
+`;
+
+const ModeToggle = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const ModeButton = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s;
+  background-color: ${(props) => (props.$active ? "#0f766e" : "#f8fafc")};
+  color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
+  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "#e2e8f0")};
+`;
+
+const HintText = styled.p`
+  font-size: 0.75rem;
+  color: #b45309;
+  background-color: #fffbeb;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin: 0;
+  line-height: 1.4;
 `;
 
 const StatusMsg = styled.p`

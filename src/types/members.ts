@@ -57,6 +57,9 @@ export interface Notification {
     | "DAILY_BRIEF_SCHEDULE"
     | string;
   targetId?: number; // 게시글 ID, 채팅방 ID 등
+  // 푸시 payload의 data.path와 같은 값. 포털 내부 경로이거나 외부 링크이며,
+  // path 없이 발송된 알림(과거 이력 포함)에는 없다. utils/notificationTarget 참고.
+  path?: string | null;
   createDate: string;
   isRead?: boolean;
 }

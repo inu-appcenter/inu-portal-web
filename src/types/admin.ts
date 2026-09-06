@@ -57,4 +57,28 @@ export interface FcmSendRequest {
   title: string;
   content: string;
   path?: string;
+  // 값이 있으면 예약 발송, 없으면(undefined) 기존과 동일한 즉시 발송.
+  // "YYYY-MM-DDTHH:mm:ss" 형식(초 단위, 서버 기준 KST wall-clock)이어야 한다.
+  scheduledAt?: string;
+}
+
+export type ScheduledNotificationStatus =
+  | "SCHEDULED"
+  | "DISPATCHING"
+  | "SENT"
+  | "FAILED"
+  | "CANCELED"
+  | "EXPIRED";
+
+export interface ScheduledNotificationData {
+  id: number;
+  title: string;
+  content: string;
+  path: string | null;
+  targetType: AdminNotificationTargetType;
+  subFilter: AdminNotificationSubFilter;
+  scheduledAt: string;
+  status: ScheduledNotificationStatus;
+  fcmMessageId: number | null;
+  failureReason: string | null;
 }

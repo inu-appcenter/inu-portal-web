@@ -319,6 +319,7 @@ const GuideSheet = styled.div`
   z-index: 2101;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
 
   @keyframes slideUp {
@@ -374,14 +375,19 @@ const CloseButton = styled.button`
   outline: none;
 `;
 
+// min-height:0이 없으면 폰 목업(PhoneFrame, 440px 고정)이 시트를 max-height 밖으로 밀어
+// 내서 하단이 잘리고 스크롤도 생기지 않는다. GradeImportSheet의 SheetBody와 같은 이유.
 const SheetBody = styled.div`
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 4px 20px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   flex: 1;
+  min-height: 0;
 `;
 
 const StepBadge = styled.span`
@@ -410,12 +416,14 @@ const StepDesc = styled.p`
 
 const MockStage = styled.div`
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   width: 100%;
 `;
 
 const DotsRow = styled.div`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
   margin-top: 10px;

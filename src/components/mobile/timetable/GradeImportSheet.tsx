@@ -324,6 +324,7 @@ const Sheet = styled.div`
   z-index: 2001;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   animation: slideUp 0.25s cubic-bezier(0.1, 0.76, 0.55, 0.94);
 
   @keyframes slideUp {
@@ -379,16 +380,25 @@ const BackButton = styled.button`
   outline: none;
 `;
 
+// flex 컬럼 안의 아이템은 min-height가 auto라 내용만큼 커지려 든다. min-height:0을 주지
+// 않으면 시트가 max-height를 넘겨 푸터/목록 아래쪽이 화면 밖으로 잘리고 스크롤도 안 생긴다
+// (ClassDetailBottomSheet의 ScrollableBody와 같은 패턴).
 const SheetBody = styled.div`
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 8px 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   flex: 1;
+  min-height: 0;
 `;
 
+// 스크롤 컨테이너(SheetBody) 안의 flex 아이템들은 기본 flex-shrink:1이라 내용이 넘치면
+// 스크롤 대신 찌그러진다. 아래 블록들은 전부 shrink를 막아 실제 높이대로 쌓이게 한다.
 const GuideBox = styled.div`
+  flex-shrink: 0;
   background-color: var(--bg-subtle, #f8f9fb);
   border-radius: 12px;
   padding: 12px 14px;
@@ -425,6 +435,7 @@ const GuideLinkButton = styled.button`
 
 const PasteArea = styled.textarea`
   width: 100%;
+  flex-shrink: 0;
   min-height: 160px;
   box-sizing: border-box;
   border: 1px solid var(--border-default, #e5e8eb);
@@ -448,6 +459,7 @@ const PasteArea = styled.textarea`
 `;
 
 const SummaryLine = styled.div`
+  flex-shrink: 0;
   font-size: 14px;
   line-height: 20px;
   color: var(--text-secondary, #333d4b);
@@ -463,6 +475,7 @@ const SummaryLine = styled.div`
 const PreviewList = styled.div`
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 12px;
   overflow: hidden;
@@ -470,6 +483,7 @@ const PreviewList = styled.div`
 
 const PreviewRow = styled.div<{ $dimmed?: boolean }>`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 12px;

@@ -8,18 +8,24 @@ import { broadcastQueryClient } from "@tanstack/query-broadcast-client-experimen
 import { queryClient } from "@/lib/queryClient";
 import { initMixpanel } from "./utils/mixpanel";
 import { startPwaCleanup } from "./utils/pwaCleanup";
-import { isLegacyHost } from "./utils/legacyHost";
+import { isLegacyHost, isLegacyHostBypassed, rememberLegacyHostBypass } from "./utils/legacyHost";
 import LegacyHostBlockScreen from "@/components/common/LegacyHostBlockScreen";
 import "@/utils/bridgeChannel"; // 신 앱 PlatformChannel 초기화 + Native→Web 수신 결선
 import "@/styles/variables.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
-// 구 도메인(intip-test.pages.dev) 접속은 앱 초기화 없이 안내 화면만 띄우고 끝낸다.
+// 구 도메인(intip-test.pages.dev) 접속은 앱 초기화 전에 안내 화면부터 띄운다.
+// "그래도 들어가기"를 누르면 그 자리에서 평소대로 앱을 띄운다.
 // 자세한 배경은 utils/legacyHost.ts 참고.
-if (isLegacyHost()) {
-  root.render(<LegacyHostBlockScreen />);
+if (isLegacyHost() && !isLegacyHostBypassed()) {
+  root.render(<LegacyHostBlockScreen onContinue={handleLegacyHostContinue} />);
 } else {
+  bootApp();
+}
+
+function handleLegacyHostContinue() {
+  rememberLegacyHostBypass();
   bootApp();
 }
 

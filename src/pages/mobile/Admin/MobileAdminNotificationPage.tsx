@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
-import { RefreshCcw, Clock } from "lucide-react";
+import { RefreshCcw, Clock, X as XIcon } from "lucide-react";
 import Icon from "@/components/common/Icon";
 
 import useUserStore from "@/stores/useUserStore.ts";
 import useMobileNavigate from "@/hooks/useMobileNavigate.ts";
 import {
+  cancelScheduledNotification,
   getFcmAdminLogResult,
   getFcmAdminLogs,
+  getScheduledNotifications,
   sendFcmAdminNotification,
 } from "@/apis/admin.ts";
 import {
   FcmAdminLogData,
   FcmSendRequest,
   FcmSendStatus,
+  ScheduledNotificationData,
+  ScheduledNotificationStatus,
   isAdminUser,
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
@@ -65,11 +69,25 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const SCHEDULE_STATUS_CONFIG: Record<
+  ScheduledNotificationStatus,
+  { label: string; color: string; bg: string }
+> = {
+  SCHEDULED: { label: "발송 대기", color: "#3b82f6", bg: "#eff6ff" },
+  DISPATCHING: { label: "발송 중", color: "#3b82f6", bg: "#eff6ff" },
+  SENT: { label: "발송됨", color: "#10b981", bg: "#ecfdf5" },
+  FAILED: { label: "발송 실패", color: "#ef4444", bg: "#fef2f2" },
+  CANCELED: { label: "취소됨", color: "#64748b", bg: "#f1f5f9" },
+  EXPIRED: { label: "만료됨", color: "#f59e0b", bg: "#fffbeb" },
+};
+
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export default function MobileAdminNotificationPage() {
   const mobilenavigate = useMobileNavigate();
   const { tokenInfo, userInfo } = useUserStore();
+
+  const [activeTab, setActiveTab] = useState<"LOGS" | "SCHEDULED">("LOGS");
 
   const [logs, setLogs] = useState<FcmAdminLogData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -77,6 +95,10 @@ export default function MobileAdminNotificationPage() {
   const [sending, setSending] = useState(false);
   const [sendMessage, setSendMessage] = useState("");
   const [selectedLog, setSelectedLog] = useState<FcmAdminLogData | null>(null);
+
+  const [scheduledList, setScheduledList] = useState<ScheduledNotificationData[]>([]);
+  const [scheduledLoading, setScheduledLoading] = useState(false);
+  const [cancelingId, setCancelingId] = useState<number | null>(null);
 
   useHeader({
     title: "푸시 알림 전송",
@@ -107,11 +129,41 @@ export default function MobileAdminNotificationPage() {
     }
   };
 
+  const fetchScheduled = async () => {
+    try {
+      setScheduledLoading(true);
+      const response = await getScheduledNotifications(1);
+      setScheduledList(response.data?.contents ?? []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setScheduledLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (tokenInfo.accessToken && isAdminUser(userInfo.role)) {
       void fetchLogs();
+      void fetchScheduled();
     }
   }, [tokenInfo.accessToken, userInfo.role]);
+
+  const handleCancelScheduled = async (item: ScheduledNotificationData) => {
+    if (!window.confirm(`"${item.title}" 예약을 취소할까요?`)) return;
+    try {
+      setCancelingId(item.id);
+      await cancelScheduledNotification(item.id);
+      await fetchScheduled();
+    } catch (error) {
+      const message =
+        (error as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg ?? "이미 발송이 시작되었거나 종결된 예약이라 취소할 수 없습니다.";
+      alert(message);
+      await fetchScheduled();
+    } finally {
+      setCancelingId(null);
+    }
+  };
 
   const pollSendResult = async (fcmMessageId: number) => {
     for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -126,10 +178,20 @@ export default function MobileAdminNotificationPage() {
   const handleSendRequest = async (request: FcmSendRequest) => {
     try {
       setSending(true);
+
+      if (request.scheduledAt) {
+        setSendMessage("예약 등록 중...");
+        await sendFcmAdminNotification(request);
+        setIsFormOpen(false);
+        setActiveTab("SCHEDULED");
+        await fetchScheduled();
+        return;
+      }
+
       setSendMessage("발송 요청 중...");
       const response = await sendFcmAdminNotification(request);
       const fcmMessageId = response.data;
-      
+
       setSendMessage("전송 결과를 확인하고 있습니다...");
       const result = await pollSendResult(fcmMessageId);
 
@@ -155,9 +217,31 @@ export default function MobileAdminNotificationPage() {
     <AdminLayout>
       <PageWrapper>
       <PageHeader>
+        <TabRow>
+          <TabButton $active={activeTab === "LOGS"} onClick={() => setActiveTab("LOGS")}>
+            발송 이력
+          </TabButton>
+          <TabButton
+            $active={activeTab === "SCHEDULED"}
+            onClick={() => setActiveTab("SCHEDULED")}
+          >
+            예약 대기열
+            {scheduledList.filter((s) => s.status === "SCHEDULED").length > 0 && (
+              <TabBadge>
+                {scheduledList.filter((s) => s.status === "SCHEDULED").length}
+              </TabBadge>
+            )}
+          </TabButton>
+        </TabRow>
         <HeaderActions>
-          <RefreshBtn onClick={fetchLogs} disabled={loading}>
-            <LoadingIcon size={18} $loading={loading} />
+          <RefreshBtn
+            onClick={activeTab === "LOGS" ? fetchLogs : fetchScheduled}
+            disabled={activeTab === "LOGS" ? loading : scheduledLoading}
+          >
+            <LoadingIcon
+              size={18}
+              $loading={activeTab === "LOGS" ? loading : scheduledLoading}
+            />
             <span>새로고침</span>
           </RefreshBtn>
           <CreateBtn onClick={() => setIsFormOpen(true)}>
@@ -167,41 +251,92 @@ export default function MobileAdminNotificationPage() {
         </HeaderActions>
       </PageHeader>
 
-      <LogsContainer>
-        {logs.length > 0 ? (
-          <LogList>
-            {logs.map((log) => {
-              const status = STATUS_CONFIG[log.status];
-              return (
-                <LogCard key={log.id} onClick={() => setSelectedLog(log)}>
-                  <LogIconBox $bg={status.bg} $color={status.color}>
-                    {status.renderIcon(20)}
-                  </LogIconBox>
-                  <LogMainInfo>
-                    <LogHeaderRow>
-                      <LogTitle>{log.title}</LogTitle>
-                      <StatusBadge $bg={status.bg} $color={status.color}>
-                        {status.label}
-                      </StatusBadge>
-                    </LogHeaderRow>
-                    <LogBody>{log.body}</LogBody>
-                    <LogMeta>
-                      <MetaItem>대상 {log.targetCount}명</MetaItem>
-                      <MetaItem>성공 {log.sendCount}명</MetaItem>
-                      <MetaItem>실패 {log.failureCount}명</MetaItem>
-                    </LogMeta>
-                  </LogMainInfo>
-                </LogCard>
-              );
-            })}
-          </LogList>
-        ) : (
-          <EmptyState>
-            <Icon name="bell" size={48} color="#e2e8f0" />
-            <p>{loading ? "불러오는 중..." : "전송 이력이 없습니다."}</p>
-          </EmptyState>
-        )}
-      </LogsContainer>
+      {activeTab === "LOGS" ? (
+        <LogsContainer>
+          {logs.length > 0 ? (
+            <LogList>
+              {logs.map((log) => {
+                const status = STATUS_CONFIG[log.status];
+                return (
+                  <LogCard key={log.id} onClick={() => setSelectedLog(log)}>
+                    <LogIconBox $bg={status.bg} $color={status.color}>
+                      {status.renderIcon(20)}
+                    </LogIconBox>
+                    <LogMainInfo>
+                      <LogHeaderRow>
+                        <LogTitle>{log.title}</LogTitle>
+                        <StatusBadge $bg={status.bg} $color={status.color}>
+                          {status.label}
+                        </StatusBadge>
+                      </LogHeaderRow>
+                      <LogBody>{log.body}</LogBody>
+                      <LogMeta>
+                        <MetaItem>대상 {log.targetCount}명</MetaItem>
+                        <MetaItem>성공 {log.sendCount}명</MetaItem>
+                        <MetaItem>실패 {log.failureCount}명</MetaItem>
+                      </LogMeta>
+                    </LogMainInfo>
+                  </LogCard>
+                );
+              })}
+            </LogList>
+          ) : (
+            <EmptyState>
+              <Icon name="bell" size={48} color="#e2e8f0" />
+              <p>{loading ? "불러오는 중..." : "전송 이력이 없습니다."}</p>
+            </EmptyState>
+          )}
+        </LogsContainer>
+      ) : (
+        <LogsContainer>
+          {scheduledList.length > 0 ? (
+            <LogList>
+              {scheduledList.map((item) => {
+                const status = SCHEDULE_STATUS_CONFIG[item.status];
+                return (
+                  <LogCard key={item.id} style={{ cursor: "default" }}>
+                    <LogIconBox $bg={status.bg} $color={status.color}>
+                      <Clock size={20} />
+                    </LogIconBox>
+                    <LogMainInfo>
+                      <LogHeaderRow>
+                        <LogTitle>{item.title}</LogTitle>
+                        <StatusBadge $bg={status.bg} $color={status.color}>
+                          {status.label}
+                        </StatusBadge>
+                      </LogHeaderRow>
+                      <LogBody>{item.content}</LogBody>
+                      <LogMeta>
+                        <MetaItem>예약 시각 {item.scheduledAt.replace("T", " ")}</MetaItem>
+                        <MetaItem>대상 {item.targetType}</MetaItem>
+                        {item.failureReason && (
+                          <MetaItem style={{ color: "#ef4444" }}>
+                            {item.failureReason}
+                          </MetaItem>
+                        )}
+                      </LogMeta>
+                    </LogMainInfo>
+                    {item.status === "SCHEDULED" && (
+                      <CancelIconBtn
+                        onClick={() => handleCancelScheduled(item)}
+                        disabled={cancelingId === item.id}
+                        title="예약 취소"
+                      >
+                        <XIcon size={18} />
+                      </CancelIconBtn>
+                    )}
+                  </LogCard>
+                );
+              })}
+            </LogList>
+          ) : (
+            <EmptyState>
+              <Clock size={48} color="#e2e8f0" />
+              <p>{scheduledLoading ? "불러오는 중..." : "예약된 알림이 없습니다."}</p>
+            </EmptyState>
+          )}
+        </LogsContainer>
+      )}
 
       <NotificationFormModal
         isOpen={isFormOpen}
@@ -274,6 +409,50 @@ const PageHeader = styled.div`
 const HeaderActions = styled.div`
   display: flex;
   gap: 8px;
+`;
+
+const TabRow = styled.div`
+  display: flex;
+  gap: 4px;
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s;
+  background-color: ${(props) => (props.$active ? "#0f172a" : "transparent")};
+  color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
+
+  &:hover { color: ${(props) => (props.$active ? "#ffffff" : "#0f172a")}; }
+`;
+
+const TabBadge = styled.span`
+  padding: 1px 7px;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+`;
+
+const CancelIconBtn = styled.button`
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #94a3b8;
+  flex-shrink: 0;
+
+  &:hover { background-color: #fef2f2; color: #ef4444; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
 const CreateBtn = styled.button`

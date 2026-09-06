@@ -381,13 +381,19 @@ export const mixpanelTrack = {
   },
 
   /**
-   * 알림 상세 클릭
+   * 알림 클릭
    */
-  notificationClicked: (type: string, title: string) => {
-    trackEvent("[알림] 클릭", {
-      notification_type: type,
-      title: title,
-    });
+  notificationClicked: (properties: {
+    notification_id: string;
+    notification_type?: string;
+    campaign_id?: string;
+    source: "push" | "inbox";
+    target_screen?: string;
+    target_id?: number;
+    sent_at?: string;
+    clicked_at: string;
+  }) => {
+    trackEvent("notification_clicked", properties);
   },
 
   /**
