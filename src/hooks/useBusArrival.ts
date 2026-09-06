@@ -4,7 +4,11 @@ import { getBusArrival } from "@/apis/busArrival";
 import { convertStatus, toTime } from "@/components/mobile/bus/busArrivalUtils";
 import type { BusData } from "@/types/bus";
 
-export default function useBusArrival(bstopId: string, busList: BusData[]) {
+export default function useBusArrival(
+  bstopId: string,
+  busList: BusData[],
+  enabled: boolean = true,
+) {
   const [busArrivalList, setBusArrivalList] = useState<BusData[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
@@ -35,7 +39,7 @@ export default function useBusArrival(bstopId: string, busList: BusData[]) {
     queryFn: () => getBusArrival(bstopId),
     refetchInterval: 30 * 1000,
     staleTime: 30 * 1000,
-    enabled: !!bstopId && stableBusList.length > 0,
+    enabled: enabled && !!bstopId && stableBusList.length > 0,
   });
 
   useEffect(() => {
