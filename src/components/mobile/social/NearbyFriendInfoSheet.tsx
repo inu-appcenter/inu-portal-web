@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import styled, { keyframes } from "styled-components";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Info } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import BottomSheet from "@/components/common/BottomSheet";
@@ -260,6 +260,7 @@ export default function NearbyFriendInfoSheet({
           </IconWrapper>
           <Title>주변을 찾는 중이에요</Title>
           <Description>위치 확인 중이에요. 잠시만 기다려주세요.</Description>
+          <FriendGuideNotice />
         </StatusBlock>
       )}
 
@@ -310,25 +311,33 @@ export default function NearbyFriendInfoSheet({
           </ResultsHeader>
 
           {nearbyMembers.length === 0 ? (
-            <EmptyResult>주변에서 친구를 찾을 수 없어요.</EmptyResult>
+            <EmptyResultWrapper>
+              <EmptyResult>주변에서 친구를 찾을 수 없어요.</EmptyResult>
+              <FriendGuideNotice />
+            </EmptyResultWrapper>
           ) : (
-            <ResultList>
-              {nearbyMembers.map((member) => {
-                const isRequested = requestedIds.includes(member.memberId);
-                return (
-                  <SocialUserCard
-                    key={member.memberId}
-                    name={member.nickname}
-                    subtitle={`${member.distanceMeters}m · ${member.studentId}`}
-                    fireId={member.fireId}
-                    actionLabel={isRequested ? "요청됨" : "친구 요청"}
-                    onActionClick={
-                      isRequested ? undefined : () => handleRequest(member)
-                    }
-                  />
-                );
-              })}
-            </ResultList>
+            <>
+              <ResultList>
+                {nearbyMembers.map((member) => {
+                  const isRequested = requestedIds.includes(member.memberId);
+                  return (
+                    <SocialUserCard
+                      key={member.memberId}
+                      name={member.nickname}
+                      subtitle={`${member.distanceMeters}m · ${member.studentId}`}
+                      fireId={member.fireId}
+                      actionLabel={isRequested ? "요청됨" : "친구 요청"}
+                      onActionClick={
+                        isRequested ? undefined : () => handleRequest(member)
+                      }
+                    />
+                  );
+                })}
+              </ResultList>
+              <ListFooterNotice>
+                <FriendGuideNotice />
+              </ListFooterNotice>
+            </>
           )}
         </ResultsWrapper>
       )}
@@ -352,6 +361,19 @@ export default function NearbyFriendInfoSheet({
   );
 }
 
+function FriendGuideNotice({ className }: { className?: string }) {
+  return (
+    <NoticeBanner className={className}>
+      <NoticeIconWrapper>
+        <Info size={16} />
+      </NoticeIconWrapper>
+      <NoticeText>
+        찾으려는 친구도 이 화면을 띄웠는지 확인해 주세요.
+      </NoticeText>
+    </NoticeBanner>
+  );
+}
+
 const IconWrapper = styled.div`
   width: 52px;
   height: 52px;
@@ -368,7 +390,7 @@ const StatusBlock = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 0 8px;
+  padding: 24px 0 16px;
 `;
 
 const Title = styled.h2`
@@ -439,6 +461,8 @@ const PrimaryButton = styled.button`
 const ResultsWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 100%;
 `;
 
 const ResultsHeader = styled.div`
@@ -506,10 +530,54 @@ const ResultList = styled.div`
   margin: 0 -20px;
 `;
 
+const EmptyResultWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px 0 24px;
+  gap: 16px;
+  width: 100%;
+`;
+
 const EmptyResult = styled.div`
   text-align: center;
   color: var(--text-tertiary, #8b95a1);
   font-family: Pretendard;
   font-size: 14px;
-  padding: 40px 0;
+`;
+
+const ListFooterNotice = styled.div`
+  margin-top: auto;
+  padding: 24px 0 16px;
+`;
+
+const NoticeBanner = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-subtle, #f8f9fb);
+  border-radius: 14px;
+  color: var(--text-secondary, #6b7684);
+  font-family: Pretendard;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+`;
+
+const NoticeIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-brand, #0061ff);
+`;
+
+const NoticeText = styled.span`
+  flex: 1;
+  word-break: keep-all;
 `;
