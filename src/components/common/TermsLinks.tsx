@@ -8,15 +8,16 @@ import styled from "styled-components";
  */
 export default function TermsLinks() {
   return (
-    <Wrapper>
+    <Sentence>
+      로그인 시{" "}
       <PolicyLink
         href="/terms-of-use.html"
         target="_blank"
         rel="noopener noreferrer"
       >
         이용약관
-      </PolicyLink>
-      <Separator aria-hidden="true">·</Separator>
+      </PolicyLink>{" "}
+      및{" "}
       <PolicyLink
         href="/privacy-policy.html"
         target="_blank"
@@ -24,26 +25,22 @@ export default function TermsLinks() {
       >
         개인정보 처리방침
       </PolicyLink>
-    </Wrapper>
+      에 동의한 것으로 간주됩니다.
+    </Sentence>
   );
 }
 
-const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+const Sentence = styled.p`
+  margin: 0;
   width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--text-tertiary, #8b95a1);
 `;
 
 const PolicyLink = styled.a`
-  font-family: Pretendard, sans-serif;
-  font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
-  text-decoration: underline;
-`;
-
-const Separator = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-brand, #0061ff);
+  text-decoration: none;
 `;

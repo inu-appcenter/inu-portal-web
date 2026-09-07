@@ -88,3 +88,6 @@
 .icon-users-group:before { content: '\e858'; } /* '' */
 .icon-users:before { content: '\e859'; } /* '' */
 .icon-warning:before { content: '\e85a'; } /* '' */
+.icon-question-mark-circle:before { content: '\e85b'; } /* '' */
+.icon-settings:before { content: '\e85c'; } /* '' */
+.icon-user-close:before { content: '\e85d'; } /* '' */

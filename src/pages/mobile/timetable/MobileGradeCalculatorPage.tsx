@@ -32,15 +32,23 @@ import {
 } from "@/utils/gradeCalculatorIntro";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
-import { TERM_LABELS, TERM_ORDER, formatSemester } from "@/utils/semester";
+import {
+  TERM_LABELS,
+  TERM_ORDER,
+  formatSemester,
+  formatSemesterShort,
+} from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
-import { useCourses } from "@/hooks/useCourses";
 import {
   useAllGradeRecords,
   useDeleteAllGradeRecords,
   useUpsertGradeRecords,
 } from "@/hooks/useGradeRecords";
-import type { GradeLetter, GradeRecord } from "@/types/gradeRecords";
+import type {
+  GradeLetter,
+  GradeRecord,
+  GradeRecordRequest,
+} from "@/types/gradeRecords";
 import {
   ResponsiveContainer,
   LineChart,
@@ -114,6 +122,12 @@ const formatSemesterKeyLabel = (key: string): string => {
   return formatSemester(entry.year, entry.term);
 };
 
+/** 그래프 x축용 짧은 표기("23-2학기"). 학기가 늘어도 라벨이 겹치지 않게 한다. */
+const formatSemesterKeyShortLabel = (key: string): string => {
+  const entry = parseSemesterKey(key);
+  return formatSemesterShort(entry.year, entry.term);
+};
+
 // 정확한 개강일 대신 대략적인 학사 일정으로 "현재 학기"를 추정한다.
 // (1~2월은 겨울학기로 보고 전년도로 취급)
 const getDefaultSemesterEntry = (): SemesterEntry => {
@@ -127,13 +141,15 @@ const getDefaultSemesterEntry = (): SemesterEntry => {
 };
 
 // --- Subject <-> GradeRecord 매핑 ---
-const toGradeRecordRequest = (subject: Subject) => ({
+const toGradeRecordRequest = (subject: Subject): GradeRecordRequest => ({
   courseCode: subject.courseCode || undefined,
   title: subject.name,
   credit: subject.credits,
   grade: subject.grade === UNGRADED ? null : (subject.grade as GradeLetter),
   isMajor: subject.isMajor,
   isCourseRepetition: Boolean(subject.excluded),
+  isuName: subject.isuName ?? null,
+  isuFldName: subject.isuFldName ?? null,
 });
 
 const fromGradeRecord = (record: GradeRecord): Subject => ({
@@ -144,6 +160,8 @@ const fromGradeRecord = (record: GradeRecord): Subject => ({
   isMajor: record.isMajor,
   excluded: record.isCourseRepetition,
   courseCode: record.courseCode ?? undefined,
+  isuName: record.isuName,
+  isuFldName: record.isuFldName,
   sourceYear: record.year,
   sourceTerm: record.term,
 });
@@ -184,7 +202,19 @@ const serializeGradeData = (
   data: SemestersData,
   targetCredits: number,
   graduationProfile: GraduationProfile,
-) => JSON.stringify({ semestersData: data, targetCredits, graduationProfile });
+  /**
+   * 사용자가 취득 학점(졸업 필요 학점)을 연필 버튼으로 직접 고쳤는지.
+   * true면 학과 규정 자동 동기화가 그 값을 덮지 않는다. 이 값은 서버 성적
+   * 레코드에 넣을 자리가 없어 로컬에만 둔다 — 로컬 값이 항상 우선이다.
+   */
+  targetCreditsOverridden: boolean,
+) =>
+  JSON.stringify({
+    semestersData: data,
+    targetCredits,
+    graduationProfile,
+    targetCreditsOverridden,
+  });
 
 
 
@@ -211,10 +241,21 @@ const getUniqueCourseEvents = (events: ClassItem[]): ClassItem[] => {
   return Array.from(byItemId.values());
 };
 
+/**
+ * x축 학기 라벨. "22년" / "1학기"처럼 두 줄로 그린다.
+ *
+ * 예전에는 "2023년 2학기"를 공백에서 잘라 썼는데, 연도가 네 자리라 학기가 늘면
+ * 옆 라벨과 겹쳤다("여름학기"처럼 긴 조각은 특히). 연도를 두 자리로 줄이고
+ * 계절학기는 "학기"를 떼서 각 줄을 30px 아래로 낮췄다. 학기 수가 많을 때는
+ * 글자 크기를 한 단계 더 낮춘다.
+ */
 const CustomXAxisTick = (props: any) => {
-  const { x, y, payload } = props;
+  const { x, y, payload, visibleTicksCount } = props;
   if (!payload || !payload.value) return null;
-  const parts = payload.value.split(" ");
+
+  const [firstLine, secondLine] = String(payload.value).split("\n");
+  const fontSize = (visibleTicksCount ?? 0) >= 7 ? 10 : 11;
+
   return (
     <g transform={`translate(${x},${y})`}>
       <text
@@ -222,23 +263,105 @@ const CustomXAxisTick = (props: any) => {
         y={12}
         textAnchor="middle"
         fill="#8b95a1"
-        fontSize={11}
+        fontSize={fontSize}
         fontWeight={500}
       >
-        {parts[0]}
+        {firstLine}
       </text>
-      {parts[1] && (
+      {secondLine && (
         <text
           x={0}
-          y={26}
+          y={12 + fontSize + 3}
           textAnchor="middle"
           fill="#8b95a1"
-          fontSize={11}
+          fontSize={fontSize}
           fontWeight={500}
         >
-          {parts[1]}
+          {secondLine}
         </text>
       )}
+    </g>
+  );
+};
+
+/** 그래프에서 선택된 학기의 평점을 띄우는 말풍선. 선택 안 된 점에는 아무것도 안 그린다. */
+const GpaPointLabel = (props: {
+  x?: number;
+  y?: number;
+  value?: number;
+  index?: number;
+  activeIndex: number | null;
+  /** 전체 평점은 점 위에, 전공 평점은 점 아래에 둔다(값이 붙어 있어도 안 겹치게). */
+  placement: "top" | "bottom";
+  label: string;
+  color: string;
+}) => {
+  const { x, y, value, index, activeIndex, placement, label, color } = props;
+  if (
+    activeIndex === null ||
+    index !== activeIndex ||
+    typeof x !== "number" ||
+    typeof y !== "number" ||
+    typeof value !== "number"
+  ) {
+    return null;
+  }
+
+  const width = 58;
+  const height = 18;
+  const offsetY = placement === "top" ? -height - 10 : 12;
+
+  return (
+    <g transform={`translate(${x - width / 2},${y + offsetY})`}>
+      <rect
+        width={width}
+        height={height}
+        rx={9}
+        fill="#ffffff"
+        stroke={color}
+        strokeWidth={1}
+      />
+      <text
+        x={width / 2}
+        y={height / 2 + 3.5}
+        textAnchor="middle"
+        fill="#333d4b"
+        fontSize={10}
+        fontWeight={700}
+      >
+        {`${label} ${value.toFixed(2)}`}
+      </text>
+    </g>
+  );
+};
+
+/**
+ * 그래프의 점. 선택된 학기는 크게 그리고, 손가락으로 누를 수 있도록 눈에 안 보이는
+ * 넓은 히트 영역을 함께 둔다(실제 점은 반지름 4px이라 그대로는 누르기 어렵다).
+ */
+const GpaPointDot = (props: {
+  cx?: number;
+  cy?: number;
+  index?: number;
+  activeIndex: number | null;
+  color: string;
+  onToggle: (index: number) => void;
+}) => {
+  const { cx, cy, index, activeIndex, color, onToggle } = props;
+  if (typeof cx !== "number" || typeof cy !== "number" || index === undefined) {
+    return null;
+  }
+
+  const isActive = index === activeIndex;
+
+  return (
+    <g style={{ cursor: "pointer" }} onClick={() => onToggle(index)}>
+      <circle cx={cx} cy={cy} r={16} fill="transparent" />
+      {/* 선택된 점은 흰 링을 한 겹 둘러 배경선과 구분되게 키운다. */}
+      {isActive && (
+        <circle cx={cx} cy={cy} r={7} fill="#ffffff" stroke={color} strokeWidth={2} />
+      )}
+      <circle cx={cx} cy={cy} r={isActive ? 4 : 3.5} fill={color} />
     </g>
   );
 };
@@ -255,6 +378,11 @@ export default function MobileGradeCalculatorPage() {
   const [targetCredits, setTargetCredits] = useState<number>(130);
   const [savedTargetCredits, setSavedTargetCredits] = useState<number>(130);
   const [targetCreditsInput, setTargetCreditsInput] = useState<string>("130");
+  /** 취득 학점을 사용자가 직접 고쳤는지. 로컬 값이 학과 규정보다 우선한다. */
+  const [targetCreditsOverridden, setTargetCreditsOverridden] =
+    useState<boolean>(false);
+  /** 그래프에서 평점을 펼쳐 볼 학기(점) 인덱스. null이면 아무 값도 안 띄운다. */
+  const [activeGraphIndex, setActiveGraphIndex] = useState<number | null>(null);
   const [showTargetCreditsModal, setShowTargetCreditsModal] =
     useState<boolean>(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] =
@@ -284,20 +412,6 @@ export default function MobileGradeCalculatorPage() {
 
   const navigate = useNavigate();
   const { timetables } = useTimetableStore();
-  // 시간표 요소(ClassItem)에는 이수구분 정보가 없다(서버 시간표 상세 응답
-  // TimeTableCourseItem이 courseOfferingId/courseId만 줄 뿐 isuName 등을 안 담는다).
-  // 대신 numericCourseId(Course PK)로 강의 목록에서 completionDivisionName을
-  // 찾아 전공 여부를 판정한다. 강의 목록은 가벼운 전체 조회 1건이라 "시간표
-  // 불러오기" 시트를 열 때만 가져온다(이미 캐시돼 있으면 즉시 사용하고,
-  // staleTime(5분) 이후에는 재요청될 수 있음).
-  const { courses: coursesForImport, isLoading: isCoursesForImportLoading } =
-    useCourses(undefined, {
-      enabled: showTimetableSheet,
-    });
-  const courseByIdForImport = useMemo(
-    () => new Map(coursesForImport.map((c) => [c.id, c])),
-    [coursesForImport],
-  );
   const userDepartment = useUserStore((state) => state.userInfo.department);
   const userStudentId = useUserStore((state) => state.userInfo.studentId);
 
@@ -325,12 +439,19 @@ export default function MobileGradeCalculatorPage() {
 
     let initialSemestersData: SemestersData | null = null;
     let initialTargetCredits = 130;
+    let initialGraduationProfile: GraduationProfile | null = null;
+    let initialTargetCreditsOverridden = false;
 
     const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
         initialTargetCredits = parsed.targetCredits || 130;
+        // 졸업요건 설정과 취득 학점은 서버에 저장할 자리가 없어 로컬에만 있다.
+        // 복원하지 않으면 진입할 때마다 학과 자동 채움이 다시 돌면서 사용자가
+        // 고친 값을 덮어쓴다.
+        initialGraduationProfile = parsed.graduationProfile ?? null;
+        initialTargetCreditsOverridden = Boolean(parsed.targetCreditsOverridden);
         if (!isLoggedIn) initialSemestersData = parsed.semestersData || {};
       } catch (e) {
         console.error("Failed to parse cached grades", e);
@@ -363,6 +484,19 @@ export default function MobileGradeCalculatorPage() {
     setSavedSemestersData(initialSemestersData);
     setTargetCredits(initialTargetCredits);
     setSavedTargetCredits(initialTargetCredits);
+    setTargetCreditsOverridden(initialTargetCreditsOverridden);
+
+    if (
+      initialGraduationProfile &&
+      (initialGraduationProfile.departmentCode ||
+        initialGraduationProfile.entryYear !== null ||
+        initialGraduationProfile.targetGpa !== null)
+    ) {
+      setGraduationProfile(initialGraduationProfile);
+      setSavedGraduationProfile(initialGraduationProfile);
+      // 저장된 설정이 있으면 학과 자동 채움은 건너뛴다.
+      hasStoredGraduationProfile.current = true;
+    }
 
     const sortedKeys = Object.keys(initialSemestersData).sort(
       compareSemesterKeys,
@@ -373,11 +507,17 @@ export default function MobileGradeCalculatorPage() {
   // --- Save Data Helper ---
   const hasChanges = useMemo(() => {
     return (
-      serializeGradeData(semestersData, targetCredits, graduationProfile) !==
+      serializeGradeData(
+        semestersData,
+        targetCredits,
+        graduationProfile,
+        targetCreditsOverridden,
+      ) !==
       serializeGradeData(
         savedSemestersData,
         savedTargetCredits,
         savedGraduationProfile,
+        targetCreditsOverridden,
       )
     );
   }, [
@@ -387,6 +527,7 @@ export default function MobileGradeCalculatorPage() {
     semestersData,
     targetCredits,
     graduationProfile,
+    targetCreditsOverridden,
   ]);
 
   const upsertGradeRecordsMutation = useUpsertGradeRecords();
@@ -395,7 +536,12 @@ export default function MobileGradeCalculatorPage() {
   const saveToLocalStorageOnly = () => {
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(semestersData, targetCredits, graduationProfile),
+      serializeGradeData(
+        semestersData,
+        targetCredits,
+        graduationProfile,
+        targetCreditsOverridden,
+      ),
     );
     setSavedSemestersData(semestersData);
     setSavedTargetCredits(targetCredits);
@@ -456,7 +602,12 @@ export default function MobileGradeCalculatorPage() {
 
       localStorage.setItem(
         LOCAL_STORAGE_KEY,
-        serializeGradeData(semestersData, targetCredits, graduationProfile),
+        serializeGradeData(
+          semestersData,
+          targetCredits,
+          graduationProfile,
+          targetCreditsOverridden,
+        ),
       );
       setSavedSemestersData(semestersData);
       setSavedTargetCredits(targetCredits);
@@ -658,7 +809,18 @@ export default function MobileGradeCalculatorPage() {
     if (Number.isNaN(parsed) || parsed <= 0) return;
 
     setTargetCredits(parsed);
+    setTargetCreditsOverridden(true);
     setShowTargetCreditsModal(false);
+
+    // 취득 학점은 서버 성적 레코드에 넣을 자리가 없어 로컬에만 산다. 졸업요건
+    // 설정과 마찬가지로 여기서 바로 저장한다 — 저장 버튼을 누르기 전에 화면을
+    // 벗어나면 값이 사라지던 문제. 작성 중인 과목 목록이 딸려 저장되지 않도록
+    // 저장본(savedSemestersData)을 쓴다.
+    localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      serializeGradeData(savedSemestersData, parsed, graduationProfile, true),
+    );
+    setSavedTargetCredits(parsed);
   };
 
 
@@ -766,8 +928,15 @@ export default function MobileGradeCalculatorPage() {
       resolvedGraduationRule.rule,
       subjects,
       resolvedGraduationRule.departmentCode,
+      // 직접 고친 취득 학점이 있으면 졸업요건도 그 기준으로 본다.
+      targetCreditsOverridden ? { minTotalCredits: targetCredits } : undefined,
     );
-  }, [resolvedGraduationRule, semestersData]);
+  }, [
+    resolvedGraduationRule,
+    semestersData,
+    targetCredits,
+    targetCreditsOverridden,
+  ]);
 
   const requiredAverageGpa = useMemo(() => {
     if (!graduationEvaluation || graduationProfile.targetGpa === null) {
@@ -796,11 +965,14 @@ export default function MobileGradeCalculatorPage() {
     const nextTargetCredits = resolved
       ? resolved.rule.generalRequirements.minTotalCredits
       : savedTargetCredits;
+    // 학과·학번을 다시 고른 것이므로 직접 입력해 둔 값은 규정값에 자리를 내준다.
+    const nextOverridden = resolved ? false : targetCreditsOverridden;
 
     setGraduationProfile(profile);
     setShowGraduationModal(false);
     if (resolved) {
       setTargetCredits(nextTargetCredits);
+      setTargetCreditsOverridden(false);
     }
 
     // 졸업요건 설정은 성적 입력과 별개라 여기서 바로 저장한다. 작성 중인 과목
@@ -809,7 +981,12 @@ export default function MobileGradeCalculatorPage() {
     //  브라우저 이탈 경고가 뜬다.)
     localStorage.setItem(
       LOCAL_STORAGE_KEY,
-      serializeGradeData(savedSemestersData, nextTargetCredits, profile),
+      serializeGradeData(
+        savedSemestersData,
+        nextTargetCredits,
+        profile,
+        nextOverridden,
+      ),
     );
     setSavedGraduationProfile(profile);
     setSavedTargetCredits(nextTargetCredits);
@@ -830,19 +1007,36 @@ export default function MobileGradeCalculatorPage() {
         const stats = calculateSemesterStats(subjects);
         return {
           semesterKey: key,
-          semester: formatSemesterKeyLabel(key),
           gpa: stats.gpa,
         };
       })
       .filter(
-        (
-          item,
-        ): item is { semesterKey: string; semester: string; gpa: number } =>
-          item !== null,
+        (item): item is { semesterKey: string; gpa: number } => item !== null,
       );
 
     return semestersWithData;
   }, [semestersData, sortedSemesterKeys]);
+
+  const graphChartData = useMemo(
+    () =>
+      graphData.map((d) => {
+        const stats = calculateSemesterStats(semestersData[d.semesterKey] || []);
+        return {
+          name: formatSemesterKeyShortLabel(d.semesterKey),
+          overall: parseFloat(d.gpa.toFixed(2)),
+          major: parseFloat(stats.majorGpa.toFixed(2)),
+        };
+      }),
+    [graphData, semestersData],
+  );
+
+  // 학기를 지우거나 새로 넣으면 펼쳐 둔 점이 다른 학기를 가리키게 되므로 닫는다.
+  useEffect(() => {
+    setActiveGraphIndex(null);
+  }, [graphChartData.length]);
+
+  const toggleGraphPoint = (index: number) =>
+    setActiveGraphIndex((prev) => (prev === index ? null : index));
 
   const selectedSemesterLabel = selectedSemesterKey
     ? formatSemesterKeyLabel(selectedSemesterKey)
@@ -862,20 +1056,9 @@ export default function MobileGradeCalculatorPage() {
     if (!tb) return;
 
     const courseEvents = getUniqueCourseEvents(tb.events);
-    const hasCourseLookupTarget = courseEvents.some(
-      (event) => event.numericCourseId != null,
-    );
 
     if (courseEvents.length === 0) {
       alert("이 시간표에는 불러올 과목이 없어요.");
-      return;
-    }
-    if (
-      hasCourseLookupTarget &&
-      isCoursesForImportLoading &&
-      coursesForImport.length === 0
-    ) {
-      alert("강의 목록을 불러오는 중이에요. 잠시 후 다시 시도해 주세요.");
       return;
     }
 
@@ -891,30 +1074,18 @@ export default function MobileGradeCalculatorPage() {
             : ""),
       )
     ) {
-      const imported: Subject[] = courseEvents.map((event) => {
-        // numericCourseId(Course PK)로 강의 목록에서 이수구분(completionDivisionName)을
-        // 찾아 성적 붙여넣기와 같은 판정 함수(isMajorCompletion)를 재사용한다.
-        // 강의 목록이 아직 안 불러와졌거나(로딩 중) 매칭되는 강의가 없으면(예:
-        // 커스텀/폐강 강의) 판정할 근거가 없으므로 기존처럼 false로 둔다.
-        const course =
-          event.numericCourseId != null
-            ? courseByIdForImport.get(event.numericCourseId)
-            : undefined;
-
-        return {
-          id: `${Date.now()}-${Math.random()}`,
-          name: event.name,
-          // 개설강의에 등록된 실제 학점을 쓴다. 값이 없는 예외적인 경우에만 강의
-          // 시간(끝-시작)으로 대략 추정한다.
-          credits:
-            event.credits ??
-            Math.max(1, Math.round(event.endTime - event.startTime)),
-          grade: "A+",
-          isMajor: isMajorCompletion(course?.completionDivisionName ?? null, null),
-          courseCode: event.courseId,
-          courseId: event.numericCourseId ?? null,
-        };
-      });
+      const imported: Subject[] = courseEvents.map((event) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        name: event.name,
+        // 개설강의에 등록된 실제 학점을 쓴다. 값이 없는 예외적인 경우에만 강의
+        // 시간(끝-시작)으로 대략 추정한다.
+        credits:
+          event.credits ?? Math.max(1, Math.round(event.endTime - event.startTime)),
+        grade: "A+",
+        isMajor: false,
+        courseCode: event.courseId,
+        courseId: event.numericCourseId ?? null,
+      }));
 
       applyImportedSubjects(targetEntry, imported);
       setShowTimetableSheet(false);
@@ -993,13 +1164,14 @@ export default function MobileGradeCalculatorPage() {
     setSavedGraduationProfile(filled);
 
     // 학과·학번이 다 채워졌으면 취득 목표 학점도 그 규정의 졸업학점으로 맞춘다.
+    // 단 사용자가 직접 고친 값은 건드리지 않는다.
     const resolved = resolveGraduationRule(departmentCode, entryYear);
-    if (resolved) {
+    if (resolved && !targetCreditsOverridden) {
       const minTotalCredits = resolved.rule.generalRequirements.minTotalCredits;
       setTargetCredits(minTotalCredits);
       setSavedTargetCredits(minTotalCredits);
     }
-  }, [graduationProfile, userDepartment, userStudentId]);
+  }, [graduationProfile, userDepartment, userStudentId, targetCreditsOverridden]);
 
   // 소개 시트와 설정 모달이 겹쳐 뜨지 않도록, 시트가 닫히는 애니메이션이
   // 끝난 뒤에 졸업요건 설정을 연다.
@@ -1135,14 +1307,6 @@ export default function MobileGradeCalculatorPage() {
                     stroke="var(--border-brand, #0061FF)"
                     strokeWidth="2"
                   />
-                  <circle
-                    cx="6"
-                    cy="4"
-                    r="2.5"
-                    fill="#ffffff"
-                    stroke="var(--border-brand, #0061FF)"
-                    strokeWidth="2"
-                  />
                 </svg>
                 <span>전체 평점</span>
               </LegendItem>
@@ -1162,14 +1326,7 @@ export default function MobileGradeCalculatorPage() {
                     y2="4"
                     stroke="var(--border-warn, #FEE588)"
                     strokeWidth="2"
-                  />
-                  <circle
-                    cx="6"
-                    cy="4"
-                    r="2.5"
-                    fill="#ffffff"
-                    stroke="var(--border-warn, #FEE588)"
-                    strokeWidth="2"
+                    strokeDasharray="3 2"
                   />
                 </svg>
                 <span>전공 평점</span>
@@ -1190,18 +1347,10 @@ export default function MobileGradeCalculatorPage() {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={(() => {
-                    return graphData.map((d) => {
-                      const subjects = semestersData[d.semesterKey] || [];
-                      const stats = calculateSemesterStats(subjects);
-                      return {
-                        name: d.semester,
-                        overall: parseFloat(d.gpa.toFixed(2)),
-                        major: parseFloat(stats.majorGpa.toFixed(2)),
-                      };
-                    });
-                  })()}
-                  margin={{ top: 20, right: 16, left: 8, bottom: 30 }}
+                  data={graphChartData}
+                  // 카드 폭을 최대한 쓰도록 여백을 최소로 둔다. 위쪽만 선택 시
+                  // 뜨는 말풍선이 잘리지 않을 만큼 남긴다.
+                  margin={{ top: 12, right: 4, left: 0, bottom: 30 }}
                 >
                   <ReferenceLine y={4.5} stroke="#e5e8eb" strokeWidth={1} />
                   <ReferenceLine y={4.0} stroke="#e5e8eb" strokeWidth={1} />
@@ -1215,37 +1364,38 @@ export default function MobileGradeCalculatorPage() {
                     axisLine={false}
                     tickLine={false}
                     interval={0}
-                    padding={{ left: 24, right: 24 }}
+                    padding={{ left: 10, right: 10 }}
                   />
                   <YAxis
                     domain={[1.2, 4.8]}
                     ticks={[2.0, 3.0, 3.5, 4.0, 4.5]}
                     axisLine={false}
                     tickLine={false}
-                    width={32}
+                    width={28}
                     interval={0}
                     tickFormatter={(val) => val.toFixed(1)}
-                    tick={{ fill: "#8b95a1", fontSize: 12, fontWeight: 500 }}
+                    tick={{ fill: "#8b95a1", fontSize: 11, fontWeight: 500 }}
                   />
                   <Line
                     type="linear"
                     dataKey="overall"
                     stroke="var(--border-brand, #0061FF)"
                     strokeWidth={2.5}
-                    dot={{
-                      stroke: "var(--border-brand, #0061FF)",
-                      strokeWidth: 2,
-                      r: 4,
-                      fill: "#ffffff",
-                      fillOpacity: 1,
-                    }}
-                    label={{
-                      position: "top",
-                      fill: "#333d4b",
-                      fontSize: 10,
-                      fontWeight: "bold",
-                      offset: 8,
-                    }}
+                    dot={
+                      <GpaPointDot
+                        activeIndex={activeGraphIndex}
+                        color="var(--border-brand, #0061FF)"
+                        onToggle={toggleGraphPoint}
+                      />
+                    }
+                    label={
+                      <GpaPointLabel
+                        activeIndex={activeGraphIndex}
+                        placement="top"
+                        label="전체"
+                        color="var(--border-brand, #0061FF)"
+                      />
+                    }
                     isAnimationActive={false}
                   />
                   <Line
@@ -1253,20 +1403,22 @@ export default function MobileGradeCalculatorPage() {
                     dataKey="major"
                     stroke="var(--border-warn, #FEE588)"
                     strokeWidth={2.5}
-                    dot={{
-                      stroke: "var(--border-warn, #FEE588)",
-                      strokeWidth: 2,
-                      r: 4,
-                      fill: "#ffffff",
-                      fillOpacity: 1,
-                    }}
-                    label={{
-                      position: "top",
-                      fill: "#8b95a1",
-                      fontSize: 10,
-                      fontWeight: "bold",
-                      offset: 8,
-                    }}
+                    strokeDasharray="4 4"
+                    dot={
+                      <GpaPointDot
+                        activeIndex={activeGraphIndex}
+                        color="var(--border-warn, #FEE588)"
+                        onToggle={toggleGraphPoint}
+                      />
+                    }
+                    label={
+                      <GpaPointLabel
+                        activeIndex={activeGraphIndex}
+                        placement="bottom"
+                        label="전공"
+                        color="var(--border-warn, #FEE588)"
+                      />
+                    }
                     isAnimationActive={false}
                   />
                 </LineChart>
@@ -1800,6 +1952,16 @@ const GraphCardBody = styled.div`
   display: flex;
   width: 100%;
   margin-top: 8px;
+
+  /*
+   * recharts의 accessibilityLayer(기본 켜짐)가 차트 <svg>에 tabIndex=0을 걸어서,
+   * 점을 탭하면 브라우저 기본 포커스 링이 그래프 전체를 감싼다. 키보드로 들어온
+   * 포커스(:focus-visible)에서는 그대로 두고, 마우스·터치일 때만 지운다.
+   */
+  .recharts-surface:focus:not(:focus-visible),
+  .recharts-wrapper:focus:not(:focus-visible) {
+    outline: none;
+  }
 `;
 
 const EmptyGraphText = styled.div`

@@ -12,12 +12,10 @@ export default function MobileLoginPage() {
 
   return (
     <MobileLoginPageWrapper>
-      <Content>
-        <LogoWrapper>
-          <LoginLogo />
-        </LogoWrapper>
-        <LoginForm />
-      </Content>
+      <LogoSection>
+        <LoginLogo />
+      </LogoSection>
+      <LoginForm />
     </MobileLoginPageWrapper>
   );
 }
@@ -25,22 +23,19 @@ export default function MobileLoginPage() {
 const MobileLoginPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
-  padding-bottom: 40px;
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 64px;
   width: 100%;
+  padding: 0 32px 40px;
+  box-sizing: border-box;
+  height:100vh;
 `;
 
-const LogoWrapper = styled.div`
+/** 로고 위아래 여백까지 포함한 고정 높이 영역(디자인 240px). */
+const LogoSection = styled.div`
   display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 240px;
-  margin-top: 20px;
+  height: 240px;
+  flex-shrink: 0;
 `;

@@ -5,9 +5,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "@/apis/members";
 import { ROUTES } from "@/constants/routes";
+import InputField from "@/components/common/InputField";
 import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
-import FontelloIcon from "@/components/common/Icon";
+import { loginMascotFace } from "@/resources/assets/illustrations/login";
 
 function getRedirectPath(search: string) {
   const redirect = new URLSearchParams(search).get("redirect");
@@ -23,9 +24,6 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordType, setPasswordType] = useState<"password" | "text">(
-    "password",
-  );
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,63 +70,51 @@ export default function LoginForm() {
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setPasswordType((prev) => (prev === "password" ? "text" : "password"));
-  };
-
   return (
     <FormWrapper>
-      <FormItemWrapper>
-        <span className="info">
-          인천대학교 포털시스템 계정으로 로그인할 수 있습니다.
-        </span>
-        <Label>학번</Label>
-        <FormInputWrapper>
-          <Input
-            type="text"
-            placeholder="예: 202100000"
-            value={studentId}
-            onChange={(event) => setStudentId(event.target.value)}
-            onKeyDown={handleKeyPress}
-          />
-          <FormIcon name="user-02" size={24} label="아이디" />
-        </FormInputWrapper>
-        <InputLine />
-      </FormItemWrapper>
-      <FormItemWrapper>
-        <Label>비밀번호</Label>
-        <FormInputWrapper>
-          <Input
-            type={passwordType}
-            placeholder="비밀번호"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            onKeyDown={handleKeyPress}
-          />
-          <PasswordToggle
-            type="button"
-            aria-label="비밀번호 표시 전환"
-            onClick={togglePasswordVisibility}
-          >
-            <FormIcon name="lock" size={24} />
-          </PasswordToggle>
-        </FormInputWrapper>
-        <InputLine />
-      </FormItemWrapper>
-      <LoginButton
-        onClick={() => {
-          void handleLogin();
-        }}
-        $isActive={isActive && !loading}
-        id="login-button"
-      >
-        {loading ? "로그인 중..." : "로그인"}
-      </LoginButton>
+      <FieldsSection>
+        <Guide>인천대학교 포털 시스템 계정으로 시작하세요.</Guide>
+        <InputField
+          label="학번"
+          type="text"
+          inputMode="numeric"
+          autoComplete="username"
+          placeholder="202600000"
+          value={studentId}
+          onChange={setStudentId}
+          onKeyDown={handleKeyPress}
+        />
+        <InputField
+          label="비밀번호"
+          type="password"
+          autoComplete="current-password"
+          placeholder="********"
+          value={password}
+          onChange={setPassword}
+          onKeyDown={handleKeyPress}
+        />
+      </FieldsSection>
 
-      {/* 약관 동의는 로그인 후 최초 프로필 설정 화면에서 명시적으로 받는다. */}
-      <span className="termofuse">
+      <ButtonSection>
+        {/* 버튼 뒤에서 얼굴만 빼꼼 내미는 횃불이. 버튼이 아랫부분을 가리는 게
+            의도라 절대배치 + 버튼을 위로 올리는 z-index로 겹쳐 둔다. */}
+        <MascotFrame aria-hidden="true">
+          <MascotImage src={loginMascotFace} alt="" />
+        </MascotFrame>
+        <LoginButton
+          type="button"
+          onClick={() => {
+            void handleLogin();
+          }}
+          disabled={!isActive || loading}
+          id="login-button"
+        >
+          {loading ? "로그인 중..." : "로그인"}
+        </LoginButton>
+
+        {/* 약관 동의는 로그인 후 최초 프로필 설정 화면에서 명시적으로 받는다. */}
         <TermsLinks />
-      </span>
+      </ButtonSection>
     </FormWrapper>
   );
 }
@@ -138,71 +124,75 @@ const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-
-  .termofuse {
-    width: 90%;
-    max-width: 384px;
-    margin-top: 4px;
-  }
+  gap: 64px;
 `;
 
-const FormItemWrapper = styled.div`
-  width: 90%;
-  max-width: 384px;
+const FieldsSection = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 `;
 
-const Label = styled.div`
-  font-size: 18px;
-  font-weight: 600;
+const Guide = styled.p`
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary, #333d4b);
 `;
 
-const FormInputWrapper = styled.div`
+const ButtonSection = styled.div`
+  position: relative;
+  width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  margin: 0 8px 0 8px;
+  gap: 16px;
 `;
 
-const Input = styled.input`
-  border: none;
-  font-size: 18px;
-  flex: 1;
+const MascotFrame = styled.div`
+  position: relative;
+
+  z-index: 0;
+  pointer-events: none;
 `;
 
-const FormIcon = styled(FontelloIcon)`
-  color: #969696;
+const MascotImage = styled.img`
+  position: absolute;
+  
+  width: 88.5678px;
+  height: 44.1181px;
+  right: -44.1181px;
+  bottom: -23px;
 `;
 
-const PasswordToggle = styled.button`
-  display: flex;
-  align-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-`;
-
-const InputLine = styled.div`
-  border: 1px solid #969696;
-`;
-
-const LoginButton = styled.div<{ $isActive: boolean }>`
-  width: 90%;
-  max-width: 384px;
+const LoginButton = styled.button`
+  position: relative;
+  z-index: 1;
+  width: 100%;
   height: 56px;
-  background: ${({ $isActive }) =>
-    $isActive
-      ? "linear-gradient(90deg, rgba(49, 130, 206, 0.9) 0%, rgba(49, 170, 226, 0.9) 55%, rgba(49, 130, 206, 0.9) 100%)"
-      : "linear-gradient(90deg, rgba(156, 175, 226, 0.7) 0%, rgba(181, 197, 242, 0.7) 55%, rgba(156, 175, 226, 0.7) 100%)"};
-  color: white;
-  border-radius: 16px;
-  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 16px;
-  cursor: ${({ $isActive }) => ($isActive ? "pointer" : "not-allowed")};
+  padding: 12px 24px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: var(--radius-full, 999px);
+  background: var(--blue-800, #003a99);
+  color: var(--text-inverse, #ffffff);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:disabled {
+    background: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #b0b8c1);
+    cursor: not-allowed;
+  }
 `;

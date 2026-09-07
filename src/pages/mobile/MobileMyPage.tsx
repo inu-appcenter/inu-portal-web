@@ -1,23 +1,27 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
-import { useState } from "react";
-import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import Icon from "@/components/common/Icon";
-import { loginModalLogo as loginImg } from "@/resources/assets/illustrations/login";
+import type { FontelloIconName } from "@/components/common/fontelloIcons";
+import Modal from "@/components/common/Modal";
+import Ripple from "@/components/common/Ripple";
+import ProfileImage from "@/components/mobile/common/ProfileImage";
+import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import { MenuGroup, MenuItem } from "@/components/mobile/mypage/MenuGroup";
 import {
-  MyPageActive,
-  MyPageCategoryCommon,
-  MyPageCategoryLoggeedIn,
+  MyPageAccountMenu,
+  MyPageAdminMenu,
+  MyPageSupportMenu,
+  MyPageSystemMenu,
+  type MyPageMenuItem,
 } from "@/resources/strings/m-mypage";
-import UserInfo from "../../containers/mobile/mypage/UserInfo.tsx";
+import { loginMascotFace } from "@/resources/assets/illustrations/login";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { deleteFcmToken } from "@/apis/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import { DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
-import Ripple from "@/components/common/Ripple";
-import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { clearTermsAgreement } from "@/components/common/TermsAgreement";
 import {
   APPCENTER_URL,
@@ -25,25 +29,42 @@ import {
   SUPPORT_MAILTO,
 } from "@/constants/support";
 
+/** 프로필 카드 아래 줄에 놓이는 활동 바로가기. */
+const COUNTERS: {
+  key: "posts" | "likes" | "comments" | "scraps";
+  title: string;
+  icon: FontelloIconName;
+  route: string;
+}[] = [
+  {
+    key: "posts",
+    title: "내 글",
+    icon: "edit-pencil-01",
+    route: ROUTES.MYPAGE.POSTS,
+  },
+  { key: "likes", title: "좋아요", icon: "heart", route: ROUTES.MYPAGE.LIKES },
+  {
+    key: "comments",
+    title: "댓글",
+    icon: "chat-circle",
+    route: ROUTES.MYPAGE.COMMENTS,
+  },
+  { key: "scraps", title: "스크랩", icon: "bookmark", route: "/save" },
+];
+
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [isBlockedUsersOpen, setIsBlockedUsersOpen] = useState<boolean>(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isBlockedUsersOpen, setIsBlockedUsersOpen] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = userInfo.id !== 0;
-  const renderMenuIcon = (image?: string, title?: string) => {
-    if (image) return <img src={image} alt="" />;
-    if (title === "알림 설정") {
-      return <Icon name="bell" size={32} className="fallback-icon" />;
-    }
-    if (title === "차단 사용자 관리") {
-      return <Icon name="user-remove" size={32} className="fallback-icon" />;
-    }
-    if (title === "개발자에게 메일 보내기") {
-      return <Icon name="mail" size={32} className="fallback-icon" />;
-    }
-    return <HiOutlineCog6Tooth className="fallback-icon" aria-hidden="true" />;
-  };
+  const isAdmin = userInfo.role === "admin";
+
+  useHeader({
+    title: "마이페이지",
+    subHeader: null,
+    hasback: false,
+  });
 
   const handleLogout = async () => {
     const fcmToken = localStorage.getItem("fcmToken");
@@ -71,31 +92,11 @@ export default function MobileMyPage() {
     navigate(ROUTES.HOME, { replace: true, state: { isTabNavigation: true } });
   };
 
-  const handleLogoutModalClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
-
   const handleClick = (title: string) => {
     mixpanelTrack.mypageMenuClicked(title);
     switch (title) {
-      case "내가 쓴 글":
-        navigate(`/mypage/post`);
-        break;
-      case "좋아요 한 글":
-        navigate(`/mypage/like`);
-        break;
-      case "작성한 댓글":
-        navigate(`/mypage/comment`);
-        break;
       case "프로필 수정":
-        navigate(`/mypage/profile`);
-        break;
-      case "스크랩":
-        navigate(`/save`);
+        navigate(ROUTES.MYPAGE.PROFILE);
         break;
       case "알림 설정":
         navigate(ROUTES.MYPAGE.NOTIFICATION);
@@ -103,21 +104,6 @@ export default function MobileMyPage() {
       case "차단 사용자 관리":
         setIsBlockedUsersOpen(true);
         break;
-      case "로그아웃":
-        handleLogoutModalClick();
-        break;
-      case "회원탈퇴":
-        navigate(`/mypage/delete`);
-        break;
-
-      case "알림 설정 확인":
-        navigate(ROUTES.MYPAGE.FCM);
-        break;
-
-      case "관리자 페이지":
-        navigate("/admin");
-        break;
-
       case "문의하기":
         window.open(SUPPORT_FORM_URL);
         break;
@@ -125,630 +111,386 @@ export default function MobileMyPage() {
         // 부적절한 콘텐츠·악성 사용자 신고를 위한 개발자 직통 연락처
         window.location.href = SUPPORT_MAILTO;
         break;
-      case "인천대학교 앱센터":
+      case "인천대학교 IT Innovation LAB":
         window.open(APPCENTER_URL);
         break;
-
+      case "알림 설정 확인":
+        navigate(ROUTES.MYPAGE.FCM);
+        break;
+      case "관리자 페이지":
+        navigate("/admin");
+        break;
+      case "로그아웃":
+        setIsLogoutModalOpen(true);
+        break;
+      case "회원탈퇴":
+        navigate(ROUTES.MYPAGE.DELETE);
+        break;
       default:
         break;
     }
   };
 
-  useHeader({
-    title: "마이페이지",
-    subHeader: null,
-    hasback: false,
-  });
+  const renderGroup = (items: MyPageMenuItem[]) => (
+    <MenuGroup>
+      {items.map((item) => (
+        <MenuItem
+          key={item.title}
+          {...item}
+          onClick={() => handleClick(item.title)}
+        />
+      ))}
+    </MenuGroup>
+  );
+
+  const systemMenu = isAdmin
+    ? [...MyPageSystemMenu, MyPageAdminMenu]
+    : MyPageSystemMenu;
 
   return (
-    <MyPageWrapper>
-      <DesktopContentGrid>
-        <TopBackground $hasActiveSummary={isLoggedIn}>
-          <UserWrapper>
-            {isLoggedIn && <UserInfo />}
-            {!isLoggedIn && (
-              <ErrorWrapper>
-                <LoginImg src={loginImg} alt="횃불이 로그인 이미지" />
-                <div className="error">
-                  로그인이 필요합니다!
-                  <LoginButton
-                    onClick={() => {
-                      navigate("/login");
-                    }}
-                  >
-                    로그인
-                  </LoginButton>
-                </div>
-              </ErrorWrapper>
-            )}
-          </UserWrapper>
-          {isLoggedIn && (
-            <ActiveWrapper>
-              {MyPageActive.map((active, index) => (
-                <div
-                  className="item"
-                  key={index}
-                  onClick={() => handleClick(active.title)}
+    <Page>
+      <Body>
+        {isLoggedIn ? (
+          <ProfileCard>
+            <ProfileHeader onClick={() => handleClick("프로필 수정")}>
+              <Ripple />
+              <Avatar>
+                <ProfileImage fireId={userInfo.fireId} clickable={false} />
+              </Avatar>
+              <ProfileText>
+                <Nickname>{userInfo.nickname}</Nickname>
+                <Department>
+                  {userInfo.department || "학과 정보 없음"}
+                </Department>
+              </ProfileText>
+              <Icon
+                name="chevron-right"
+                size={24}
+                color="var(--text-tertiary, #8b95a1)"
+              />
+            </ProfileHeader>
+            <Counters>
+              {COUNTERS.map(({ key, title, icon, route }) => (
+                <Counter
+                  key={key}
+                  onClick={() => {
+                    mixpanelTrack.mypageMenuClicked(title);
+                    navigate(route);
+                  }}
                 >
-                  <img src={active.image} />
-                  <p>{active.title}</p>
-                </div>
+                  <Icon
+                    name={icon}
+                    size={24}
+                    color="var(--text-brand, #0061ff)"
+                  />
+                  <CounterLabel>{title}</CounterLabel>
+                </Counter>
               ))}
-              {!userInfo.id && <Overlay />} {/* 로그인 안 됐으면 오버레이 */}
-            </ActiveWrapper>
-          )}
-        </TopBackground>
+            </Counters>
+          </ProfileCard>
+        ) : (
+          <LoginCard>
+            <LoginCopy>
+              <LoginTitle>
+                로그인 하시면
+                <br />
+                다양한 꿀기능을 사용할 수 있어요.
+              </LoginTitle>
+              <LoginSubtitle>
+                인천대학교 포털 시스템 계정으로 시작하세요.
+              </LoginSubtitle>
+            </LoginCopy>
+            {/* 버튼 뒤에서 얼굴만 빼꼼 내미는 횃불이. 버튼이 아랫부분을 가리는
+                게 의도라 절대배치로 겹쳐 둔다. */}
+            <MascotFace src={loginMascotFace} alt="" aria-hidden="true" />
+            <LoginButton type="button" onClick={() => navigate(ROUTES.LOGIN)}>
+              로그인
+            </LoginButton>
+          </LoginCard>
+        )}
 
-        <CategoryWrapper $hasActiveSummary={isLoggedIn}>
-          {isLoggedIn &&
-            MyPageCategoryLoggeedIn.map((category, index) => (
-              <div
-                className="item"
-                key={index}
-                onClick={() => handleClick(category.title)}
-              >
-                <Ripple />
-                <span>
-                  {renderMenuIcon(category.image, category.title)}
+        {isLoggedIn && renderGroup(MyPageAccountMenu)}
+        {renderGroup(MyPageSupportMenu)}
+        {renderGroup(systemMenu)}
 
-                  <div>
-                    {category.title}
-                    {category.description && (
-                      <div className="description">{category.description}</div>
-                    )}
-                  </div>
-                </span>
-                <Arrow color="#A0A0A0" name="chevron-right" />
-              </div>
-            ))}
-          {/* admin role일 경우 관리자 페이지 추가 */}
-          {userInfo.role === "admin" && (
-            <div className="item" onClick={() => handleClick("관리자 페이지")}>
-              <Ripple />
-              <span>
-                {renderMenuIcon()}
-                <div>관리자 페이지</div>
-              </span>
-              <Arrow color="#A0A0A0" name="chevron-right" />
-            </div>
-          )}
-          {MyPageCategoryCommon.map((category, index) => (
-            <div
-              className="item"
-              key={index}
-              onClick={() => handleClick(category.title)}
+        {isLoggedIn && (
+          <FooterActions>
+            <TextAction type="button" onClick={() => handleClick("로그아웃")}>
+              로그아웃
+            </TextAction>
+            {/* 앱 내 계정 삭제 진입점 (App Store 가이드라인 5.1.1(v)) */}
+            <TextAction
+              type="button"
+              $muted
+              onClick={() => handleClick("회원탈퇴")}
             >
-              <Ripple />
-              <span>
-                {renderMenuIcon(category.image, category.title)}
-                <div>
-                  <div>{category.title}</div>
-                  <div className="description">{category.description}</div>
-                </div>
-              </span>
-              <Arrow color="#A0A0A0" name="chevron-right" />
-            </div>
-          ))}{" "}
-          <div className="item" onClick={() => handleClick("알림 설정 확인")}>
-            <Ripple />
-            <span>
-              {renderMenuIcon()}
-              <div>
-                <div>알림 설정 확인 (디버그)</div>
-                <div className="description">FCM 토큰 및 전송 상태 확인</div>
-              </div>
-            </span>
-            <Arrow color="#A0A0A0" name="chevron-right" />
-          </div>
-        </CategoryWrapper>
-      </DesktopContentGrid>
-      {isModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <Title>
-              INTIP에서 <br />
-              로그아웃 하시겠어요?
-            </Title>
-            <ButtonContainer>
-              <CancelButton onClick={handleModalClose}>취소</CancelButton>
-              <Divider />
-              <LogoutButton
-                onClick={() => {
-                  handleModalClose();
-                  handleLogout();
-                }}
-              >
-                확인
-              </LogoutButton>
-            </ButtonContainer>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+              회원탈퇴
+            </TextAction>
+          </FooterActions>
+        )}
+      </Body>
+
+      <Modal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        title="INTIP에서 로그아웃 하시겠어요?"
+        primaryButton={{
+          text: "로그아웃",
+          variant: "danger",
+          onClick: () => {
+            setIsLogoutModalOpen(false);
+            void handleLogout();
+          },
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsLogoutModalOpen(false),
+        }}
+      />
       <BlockedUsersModal
         isOpen={isBlockedUsersOpen}
         onOpenChange={setIsBlockedUsersOpen}
         title="차단 사용자 관리"
       />
-    </MyPageWrapper>
+    </Page>
   );
 }
 
-const MyPageWrapper = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+const Page = styled.div`
   width: 100%;
   min-height: 100svh;
   box-sizing: border-box;
-  background: transparent;
+  background: var(--bg-subtle, #f8f9fb);
   padding-top: var(--header-height, 56px);
   padding-bottom: var(--nav-height, 100px);
 
   @media ${DESKTOP_MEDIA} {
     min-height: auto;
-    padding-top: var(--header-height, 56px);
-    padding-bottom: 0;
+    padding-bottom: 56px;
   }
 `;
 
-const DesktopContentGrid = styled.div`
+const Body = styled.div`
   width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
+  padding: 20px 16px;
+`;
 
-  @media ${DESKTOP_MEDIA} {
-    width: min(100%, ${DESKTOP_READING_WIDTH});
-    display: grid;
-    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-    gap: 28px;
-    align-items: start;
-    margin: 0 auto;
-    padding: 24px 0 56px;
+const Card = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 20px;
+`;
+
+const ProfileCard = styled(Card)`
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: clip;
+`;
+
+const ProfileHeader = styled.button`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+
+  &.active-touch {
+    background: var(--bg-muted, #f1f3f5);
   }
 `;
 
-const TopBackground = styled.div<{ $hasActiveSummary: boolean }>`
+const Avatar = styled.div`
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full, 999px);
+  overflow: hidden;
+  background: var(--border-brand-subtle, #d3e5ff);
+
+  img {
+    width: 100%;
+    height: 100%;
+    border: none;
+    object-fit: cover;
+  }
+`;
+
+const ProfileText = styled.div`
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const Nickname = styled.span`
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-secondary, #333d4b);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Department = styled.span`
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-tertiary, #8b95a1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Counters = styled.div`
+  display: flex;
+  align-items: stretch;
+`;
+
+const Counter = styled.button`
+  position: relative;
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 16px;
+  border: none;
   background: transparent;
-  height: fit-content;
-  padding: 32px 0
-    ${({ $hasActiveSummary }) => ($hasActiveSummary ? "80px" : "24px")};
-  width: 100%;
+  font: inherit;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.6;
+  }
+`;
+
+const CounterLabel = styled.span`
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--text-secondary, #333d4b);
+  white-space: nowrap;
+`;
+
+const LoginCard = styled(Card)`
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  @media ${DESKTOP_MEDIA} {
-    gap: 20px;
-    padding: 0;
-    position: sticky;
-    top: 76px;
-    align-items: stretch;
-  }
+  gap: 100px;
+  padding: 40px 20px 20px;
+  overflow: clip;
 `;
 
-const UserWrapper = styled.div`
+const LoginCopy = styled.div`
+  position: relative;
+  z-index: 2;
   width: 100%;
   display: flex;
-  justify-content: center;
-  z-index: 1;
-  padding: 0 24px;
-  box-sizing: border-box;
-
-  @media ${DESKTOP_MEDIA} {
-    padding: 0;
-  }
-`;
-
-const ActiveWrapper = styled.div`
-  position: absolute;
-  bottom: -32px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 85%;
-  max-width: 320px;
-  box-sizing: border-box;
-  background-color: #fff;
-  padding: 16px 24px;
-  height: fit-content;
-  display: flex;
-  justify-content: space-between;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-
-  > .item {
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:active {
-      opacity: 0.7;
-    }
-  }
-
-  > .item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-width: fit-content;
-  }
-
-  > .item img {
-    width: 24px;
-    height: 24px;
-  }
-
-  > .item p {
-    padding: 0;
-    margin: 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  @media ${DESKTOP_MEDIA} {
-    position: relative;
-    inset: auto;
-    transform: none;
-    width: 100%;
-    max-width: none;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    border-radius: 24px;
-    border: 1px solid rgba(14, 77, 157, 0.08);
-    box-shadow:
-      0 14px 32px rgba(15, 36, 71, 0.06),
-      0 4px 10px rgba(15, 36, 71, 0.04);
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    > .item {
-      min-height: 108px;
-      padding: 16px 12px;
-      border-radius: 18px;
-      background: transparent;
-      transition: transform 0.2s ease;
-
-      &:hover {
-        transform: translateY(-2px);
-      }
-
-      &:active {
-        opacity: 1;
-        transform: scale(0.98);
-      }
-    }
-
-    > .item img {
-      width: 28px;
-      height: 28px;
-    }
-
-    > .item p {
-      font-size: 14px;
-      text-align: center;
-    }
-  }
-`;
-
-const CategoryWrapper = styled.div<{ $hasActiveSummary: boolean }>`
-  display: flex;
-  margin-top: ${({ $hasActiveSummary }) =>
-    $hasActiveSummary ? "56px" : "12px"};
-  border-radius: 10px;
   flex-direction: column;
-  align-items: center;
-  width: 85%;
-  max-width: 320px;
   gap: 12px;
-
-  .item {
-    width: 100%;
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #fff;
-    padding: 12px 16px;
-    border-radius: 12px;
-    box-sizing: border-box;
-    position: relative;
-    overflow: hidden;
-    transition: background-color 0.2s ease;
-
-    &.active-touch {
-      background-color: #f8f9fa;
-      > *:not(.ripple-container) {
-        transform: scale(0.97);
-      }
-    }
-
-    > *:not(.ripple-container) {
-      transition: transform 0.12s ease-in-out;
-    }
-
-    word-break: keep-all;
-
-    span {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex: 1;
-      min-width: 0;
-
-      > div {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 2px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #212529;
-        min-width: 0;
-        min-height: 32px;
-      }
-
-      img {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
-      }
-
-      .fallback-icon {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
-        color: #6c7ea8;
-      }
-
-      .description {
-        font-size: 11px;
-        color: #adb5bd;
-        font-weight: 500;
-        white-space: pre-line;
-      }
-    }
-  }
-
-  padding-bottom: 40px;
-
-  @media ${DESKTOP_MEDIA} {
-    margin-top: 0;
-    width: 100%;
-    max-width: none;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    align-items: stretch;
-    padding-bottom: 56px;
-
-    .item {
-      min-height: 88px;
-      padding: 16px 20px;
-      border-radius: 18px;
-      box-shadow:
-        0 14px 32px rgba(15, 36, 71, 0.05),
-        0 4px 10px rgba(15, 36, 71, 0.03);
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow:
-          0 18px 36px rgba(15, 36, 71, 0.08),
-          0 6px 12px rgba(15, 36, 71, 0.04);
-      }
-
-      &.active-touch {
-        > *:not(.ripple-container) {
-          transform: scale(0.97);
-        }
-      }
-
-      span {
-        align-items: center;
-      }
-
-      span > div {
-        gap: 4px;
-      }
-
-      span .description {
-        font-size: 12px;
-        line-height: 1.45;
-      }
-    }
-  }
-`;
-
-const Arrow = styled(Icon)`
-  @media ${DESKTOP_MEDIA} {
-    font-size: 11px;
-    opacity: 0.7;
-  }
-`;
-
-const ModalOverlay = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  border-radius: 8px;
-  width: 300px;
-  max-width: 90%;
-  padding-top: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-`;
-
-const Title = styled.div`
-  font-size: 16px;
-  font-weight: bold;
-
-  text-align: center;
-  height: 70px;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  align-items: center;
-  //justify-content: center;
-  justify-content: space-evenly;
-  height: 50px;
-  border-top: 1px solid #d9d9d9;
-  text-align: center;
-  font-size: 14px;
-`;
-
-const CancelButton = styled.div`
-  cursor: pointer;
-  //width: 100%;
-  height: 100%;
-  flex: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  //&:hover {
-  //    background: #0056b3;
-  //}
-`;
-
-const LogoutButton = styled.div`
-  cursor: pointer;
-  font-weight: 600;
-  line-height: 20px;
-  color: #0e4d9d;
-  //width: 100%;
-  height: 100%;
-
-  flex: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Divider = styled.div`
-  height: 50px;
-  width: 1px;
-  background: #d9d9d9;
-`;
-
-const ErrorWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px 16px;
-  padding-right: 32px;
+  padding: 0 8px;
   box-sizing: border-box;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-
-  div {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    word-break: keep-all;
-  }
-
-  @media ${DESKTOP_MEDIA} {
-    width: 100%;
-    min-height: 180px;
-    justify-content: flex-start;
-    padding: 28px;
-    gap: 18px;
-    border-radius: 24px;
-
-    div {
-      align-items: flex-start;
-      text-align: left;
-    }
-  }
+  color: var(--text-secondary, #333d4b);
+  word-break: keep-all;
 `;
 
-const LoginImg = styled.img`
-  width: 90px;
-  height: 90px;
+const LoginTitle = styled.p`
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+`;
+
+const LoginSubtitle = styled.p`
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+`;
+
+const MascotFace = styled.img`
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 66px;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 50px;
   object-fit: contain;
+  pointer-events: none;
 `;
 
 const LoginButton = styled.button`
+  position: relative;
+  z-index: 2;
   width: 100%;
-  height: fit-content;
-  padding: 8px 16px;
-  box-sizing: border-box;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #7a6dd0; // 기존 보라보다 화면과 조화로운 톤
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-  border-radius: 25px / 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 12px 24px;
+  box-sizing: border-box;
   border: none;
-
-  &:hover {
-    background: linear-gradient(
-      90deg,
-      #6b5ec7,
-      #8a79e0
-    ); // 자연스러운 호버 그라데이션
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  }
+  border-radius: var(--radius-full, 999px);
+  background: var(--blue-800, #003a99);
+  color: var(--text-inverse, #ffffff);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
 
   &:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  @media ${DESKTOP_MEDIA} {
-    width: auto;
-    min-width: 132px;
+    background: var(--blue-700, #004fcc);
   }
 `;
 
-const Overlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.6); // 반투명 흰색
-  z-index: 10;
-  cursor: not-allowed;
-  border-radius: inherit;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+const FooterActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
+const TextAction = styled.button<{ $muted?: boolean }>`
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: ${({ $muted }) =>
+    $muted ? "var(--text-disabled, #b0b8c1)" : "var(--text-tertiary, #8b95a1)"};
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.6;
+  }
 `;

@@ -46,6 +46,9 @@ export const mockUpsertGradeRecords = (
     grade_value: r.grade,
     isMajor: r.isMajor,
     isCourseRepetition: r.isCourseRepetition,
+    // 서버와 같게: 요청 바디에 없는 값은 null로 되돌려준다.
+    isuName: r.isuName ?? null,
+    isuFldName: r.isuFldName ?? null,
   }));
 
   records = [
