@@ -79,6 +79,19 @@ export const sendFcmAdminNotification = async (
   }
 };
 
+/**
+ * 실패한 관리자 알림을 재발송한다. 서버가 "전달 실패 회원"만 골라 그들의 현재 토큰으로 보내므로,
+ * 이미 받은 사람에게 중복 푸시가 가지 않는다. 알림함 항목도 새로 생기지 않는다.
+ */
+export const retryFcmAdminNotification = async (
+  fcmMessageId: number,
+): Promise<ApiResponse<FcmAdminLogData>> => {
+  const response = await tokenInstance.post<ApiResponse<FcmAdminLogData>>(
+    `/api/tokens/admin/${fcmMessageId}/retry`,
+  );
+  return response.data;
+};
+
 export const getScheduledNotifications = async (
   page: number = 1,
 ): Promise<ApiResponse<Pagination<ScheduledNotificationData[]>>> => {
