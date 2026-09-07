@@ -346,6 +346,43 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
   });
 });
 
+describe("직접 고친 취득 학점", () => {
+  const rule = resolveGraduationRule("COMPUTER_ENGINEERING", 2023)!.rule;
+
+  it("총 취득학점 요건과 남은 학점을 넘긴 값으로 계산한다", () => {
+    const subjects = [subject("자료구조", 30, { isMajor: true })];
+    const evaluation = evaluateGraduation(rule, subjects, null, {
+      minTotalCredits: 100,
+    });
+    const total = evaluation.credits.find((item) => item.key === "total");
+
+    expect(total?.required).toBe(100);
+    expect(total?.remaining).toBe(70);
+    expect(evaluation.remainingTotalCredits).toBe(70);
+    expect(
+      evaluation.notices.some((notice) => notice.includes("직접 설정한 100학점")),
+    ).toBe(true);
+  });
+
+  it("학칙과 같은 값이면 안내하지 않는다", () => {
+    const evaluation = evaluateGraduation(rule, [], null, {
+      minTotalCredits: rule.generalRequirements.minTotalCredits,
+    });
+
+    expect(
+      evaluation.notices.some((notice) => notice.includes("직접 설정한")),
+    ).toBe(false);
+  });
+
+  it("넘기지 않으면 학칙 기준을 쓴다", () => {
+    const evaluation = evaluateGraduation(rule, []);
+
+    expect(evaluation.credits.find((item) => item.key === "total")?.required).toBe(
+      rule.generalRequirements.minTotalCredits,
+    );
+  });
+});
+
 describe("필수 교양 매칭 (강의 카탈로그 기반)", () => {
   const findCourse = (
     evaluation: ReturnType<typeof evaluateGraduation>,

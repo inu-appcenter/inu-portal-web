@@ -185,6 +185,13 @@ export const evaluateGraduation = (
   subjects: EvaluatedSubject[],
   /** 학과 단위 면제 규정을 적용하려면 넘긴다. 없으면 학칙 그대로 본다. */
   departmentCode?: string | null,
+  options?: {
+    /**
+     * 사용자가 직접 고친 졸업 필요 학점. 수집 데이터가 학과 사정(전과·복수전공,
+     * 규정 개정)까지 담지는 못하므로, 본인이 아는 값이 있으면 그쪽을 우선한다.
+     */
+    minTotalCredits?: number;
+  },
 ): GraduationEvaluation => {
   const passed = subjects.filter((subject) => subject.passed);
 
@@ -199,13 +206,10 @@ export const evaluateGraduation = (
 
   const { generalRequirements: general, majorRequirements: major } = rule;
 
+  const minTotalCredits = options?.minTotalCredits ?? general.minTotalCredits;
+
   const credits: CreditProgress[] = [
-    buildCreditProgress(
-      "total",
-      "총 취득학점",
-      totalEarned,
-      general.minTotalCredits,
-    ),
+    buildCreditProgress("total", "총 취득학점", totalEarned, minTotalCredits),
     buildCreditProgress("major", "전공", majorEarned, major.minMajorCredits),
     buildCreditProgress(
       "general",
@@ -322,6 +326,15 @@ export const evaluateGraduation = (
     }
   }
 
+  if (
+    options?.minTotalCredits !== undefined &&
+    options.minTotalCredits !== general.minTotalCredits
+  ) {
+    notices.push(
+      `총 취득학점은 직접 설정한 ${options.minTotalCredits}학점 기준으로 계산했어요. (학칙 기준 ${general.minTotalCredits}학점)`,
+    );
+  }
+
   const generalOverflow =
     general.maxGeneralCredits >= NO_GENERAL_LIMIT
       ? 0
@@ -339,7 +352,7 @@ export const evaluateGraduation = (
     requiredCourses,
     coreGeneral,
     generalOverflow,
-    remainingTotalCredits: Math.max(0, general.minTotalCredits - totalEarned),
+    remainingTotalCredits: Math.max(0, minTotalCredits - totalEarned),
     englishCertification: rule.englishCertification,
     notices,
   };

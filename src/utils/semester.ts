@@ -18,6 +18,27 @@ export const TERM_ORDER: Record<Term, number> = {
 export const formatSemester = (year: number, term: Term) =>
   `${year}년 ${TERM_LABELS[term]}`;
 
+/** 좁은 자리(그래프 x축 등)에 쓰는 짧은 학기 표기 */
+export const TERM_SHORT_LABELS: Record<Term, string> = {
+  FIRST: "1학기",
+  SUMMER: "여름",
+  SECOND: "2학기",
+  WINTER: "겨울",
+};
+
+/**
+ * 좁은 자리에서 두 줄로 쓰는 표기. ["22년", "1학기"] / ["24년", "여름"].
+ * 연도는 뒤 두 자리만 쓰고, 계절학기는 "학기"를 떼서 폭을 줄인다.
+ */
+export const formatSemesterShortLines = (
+  year: number,
+  term: Term,
+): [string, string] => [`${String(year).slice(-2)}년`, TERM_SHORT_LABELS[term]];
+
+/** 위 두 줄 표기를 개행 문자로 이어 붙인 값. 그래프 x축 라벨로 쓴다. */
+export const formatSemesterShort = (year: number, term: Term) =>
+  formatSemesterShortLines(year, term).join("\n");
+
 export const sortSemestersDesc = (semesters: Semester[]) =>
   [...semesters].sort(
     (a, b) => b.year - a.year || TERM_ORDER[b.term] - TERM_ORDER[a.term],
