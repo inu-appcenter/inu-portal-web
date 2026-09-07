@@ -42,5 +42,5 @@ export default function MobileMyPageComment() {
 
 const MobileMyPageCommentWrapper = styled.div`
   width: 100%;
-  padding-top: 72px;
+  
 `;

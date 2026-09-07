@@ -42,5 +42,5 @@ export default function MobileMyPagePost() {
 
 const MobileMyPagePostWrapper = styled.div`
   width: 100%;
-  padding-top: 72px;
+  
 `;

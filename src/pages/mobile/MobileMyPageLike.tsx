@@ -41,5 +41,5 @@ export default function MobileMyPageLike() {
 }
 
 const MobileMyPageLikeWrapper = styled.div`
-  padding-top: 72px;
+  
 `;
