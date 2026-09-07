@@ -40,7 +40,11 @@ import {
   useDeleteAllGradeRecords,
   useUpsertGradeRecords,
 } from "@/hooks/useGradeRecords";
-import type { GradeLetter, GradeRecord } from "@/types/gradeRecords";
+import type {
+  GradeLetter,
+  GradeRecord,
+  GradeRecordRequest,
+} from "@/types/gradeRecords";
 import {
   ResponsiveContainer,
   LineChart,
@@ -127,13 +131,15 @@ const getDefaultSemesterEntry = (): SemesterEntry => {
 };
 
 // --- Subject <-> GradeRecord 매핑 ---
-const toGradeRecordRequest = (subject: Subject) => ({
+const toGradeRecordRequest = (subject: Subject): GradeRecordRequest => ({
   courseCode: subject.courseCode || undefined,
   title: subject.name,
   credit: subject.credits,
   grade: subject.grade === UNGRADED ? null : (subject.grade as GradeLetter),
   isMajor: subject.isMajor,
   isCourseRepetition: Boolean(subject.excluded),
+  isuName: subject.isuName ?? null,
+  isuFldName: subject.isuFldName ?? null,
 });
 
 const fromGradeRecord = (record: GradeRecord): Subject => ({
@@ -144,6 +150,8 @@ const fromGradeRecord = (record: GradeRecord): Subject => ({
   isMajor: record.isMajor,
   excluded: record.isCourseRepetition,
   courseCode: record.courseCode ?? undefined,
+  isuName: record.isuName,
+  isuFldName: record.isuFldName,
   sourceYear: record.year,
   sourceTerm: record.term,
 });
