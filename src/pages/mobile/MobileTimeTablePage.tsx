@@ -31,6 +31,7 @@ import {
   useDeleteTimeTableItem,
 } from "@/hooks/useTimeTables";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
@@ -41,7 +42,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
-import { noTimetable as NoTimetableGraphic } from '@/resources/assets/illustrations/timetable'
+import { noTimetable as NoTimetableGraphic } from "@/resources/assets/illustrations/timetable";
 
 const LOGIN_REQUIRED_MESSAGE = "로그인 후 사용 가능합니다.";
 
@@ -119,9 +120,7 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
-const EmptyTimetableIllust = () => (
-  <img src={NoTimetableGraphic} width={182}/>
-);
+const EmptyTimetableIllust = () => <img src={NoTimetableGraphic} width={182} />;
 
 const MobileTimeTablePage = () => {
   const navigate = useNavigate();
@@ -759,7 +758,7 @@ const MobileTimeTablePage = () => {
             </NoTimetableTextGroup>
           </NoTimetableContent>
           <EmptyActionGroup>
-            <CapsuleButton
+            <EmptyActionButton
               variant="primary"
               fullWidth
               onClick={() => {
@@ -772,10 +771,11 @@ const MobileTimeTablePage = () => {
               }}
             >
               시간표 생성하기
-            </CapsuleButton>
-            <CapsuleButton
-              variant="secondary"
+            </EmptyActionButton>
+            <ImageImportActionButton
+              variant="brand"
               fullWidth
+              leftIcon={<Icon name="image-add" size={24} />}
               onClick={() => {
                 mixpanelTrack.timetableFeatureClicked(
                   "이미지로 시간표 가져오기",
@@ -786,21 +786,23 @@ const MobileTimeTablePage = () => {
               }}
             >
               이미지로 시간표 가져오기
-            </CapsuleButton>
+            </ImageImportActionButton>
           </EmptyActionGroup>
         </NoTimetableContainer>
       )}
 
-      <SemesterInfoLine>
-        <ScoreArea>
-          <div className="type1">
-            <span>전공 {majorCredits}</span>
-            <span>교양 {generalCredits}</span>
-            {otherCredits > 0 && <span>기타 {otherCredits}</span>}
-          </div>
-          <div className="type2">총 {totalCredits}학점</div>
-        </ScoreArea>
-      </SemesterInfoLine>
+      {(activeTimetable?.events.length ?? 0) > 0 && (
+        <SemesterInfoLine>
+          <ScoreArea>
+            <div className="type1">
+              <span>전공 {majorCredits}</span>
+              <span>교양 {generalCredits}</span>
+              {otherCredits > 0 && <span>기타 {otherCredits}</span>}
+            </div>
+            <div className="type2">총 {totalCredits}학점</div>
+          </ScoreArea>
+        </SemesterInfoLine>
+      )}
 
       <ButtonGroup>
         <ButtonRow>
@@ -823,7 +825,11 @@ const MobileTimeTablePage = () => {
                 <UsersIcon />
               </IconSlot>
             </MenuCardTitleRow>
-            <MenuCardDescription>공강 시간을 비교해 보세요</MenuCardDescription>
+            <MenuCardDescription>
+              친구와 공강 시간을 비교하고
+              <br />
+              일정을 맞춰 보세요.
+            </MenuCardDescription>
           </MenuCard>
 
           <MenuCard onClick={handleGradeCalculatorClick}>
@@ -833,7 +839,11 @@ const MobileTimeTablePage = () => {
                 <CalculatorIcon />
               </IconSlot>
             </MenuCardTitleRow>
-            <MenuCardDescription>예상 학점을 계산해 보세요</MenuCardDescription>
+            <MenuCardDescription>
+              예상 학점을 계산해 보고
+              <br />
+              졸업 요건도 확인해 보세요.
+            </MenuCardDescription>
           </MenuCard>
         </ButtonRow>
 
@@ -841,7 +851,7 @@ const MobileTimeTablePage = () => {
           <SimulatorCardBody>
             <SimulatorCardTitle>모의 수강신청</SimulatorCardTitle>
             <SimulatorCardDescription>
-              미리 수강신청 앱/웹을 사용해보세요.
+              학과, 대기열 사전 설정으로 실전 수강신청 환경을 체험하세요.
             </SimulatorCardDescription>
           </SimulatorCardBody>
           <ChevronRightIcon />
@@ -1030,6 +1040,21 @@ const EmptyActionGroup = styled.div`
   gap: 16px;
 `;
 
+/* 빈 시간표 CTA는 공용 CapsuleButton(20px)보다 작은 heading-2(16px SemiBold)를
+   쓰고 좌우 패딩도 좁다. CapsuleButton의 기본값을 바꾸면 다른 화면까지 따라
+   움직이므로 이 화면에서만 덮어쓴다. */
+const EmptyActionButton = styled(CapsuleButton)`
+  padding: 12px 20px;
+  font-size: 16px;
+  line-height: 1.4;
+`;
+
+/* 보조 CTA는 brand 팔레트(연한 파랑 배경 + 파란 글자)에 테두리를 더한 형태다.
+   CapsuleButton의 brand variant에는 테두리가 없어 여기서만 얹는다. */
+const ImageImportActionButton = styled(EmptyActionButton)`
+  border-color: var(--border-brand-subtle, #d3e5ff);
+`;
+
 const NoTimetableContent = styled.div`
   display: flex;
   flex-direction: column;
@@ -1090,12 +1115,12 @@ const ButtonRow = styled.div`
 const SimulatorCard = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
   border: none;
   border-radius: 20px;
   background: var(--interactive-primary, #0061ff);
-  padding: 12px 8px 12px 16px;
+  padding: 12px 8px 12px 12px;
   box-sizing: border-box;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
@@ -1111,6 +1136,7 @@ const SimulatorCardBody = styled.div`
   flex-direction: column;
   min-width: 0;
   text-align: left;
+  gap: 12px
 `;
 
 const SimulatorCardTitle = styled.span`
@@ -1124,8 +1150,8 @@ const SimulatorCardTitle = styled.span`
 const SimulatorCardDescription = styled.span`
   font-family: Pretendard;
   font-weight: 400;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--text-inverse, #ffffff);
 `;
 
@@ -1133,7 +1159,7 @@ const MenuCard = styled.div`
   background: var(--bg-base, #ffffff);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 20px;
-  padding: 16px 12px 16px 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1183,8 +1209,8 @@ const IconSlot = styled.div`
 const MenuCardDescription = styled.p`
   font-family: Pretendard;
   font-weight: 400;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--text-secondary, #6b7684);
   margin: 0;
   width: 100%;
