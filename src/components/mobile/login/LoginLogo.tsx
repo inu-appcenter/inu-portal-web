@@ -1,10 +1,12 @@
 import styled from "styled-components";
-import { mobileLoginLogoWithText as logoWithText } from "@/resources/assets/illustrations/login";
+import { intipLogoWordmark } from "@/resources/assets/illustrations/brand";
 
 export default function LoginLogo() {
-  return <LogoImage src={logoWithText} alt="App Logo" />;
+  return <LogoImage src={intipLogoWordmark} alt="INTIP" />;
 }
 
 const LogoImage = styled.img`
-  width: 100%;
+  width: 200px;
+  height: 100px;
+  object-fit: contain;
 `;
