@@ -10,6 +10,7 @@ import {
   getFcmAdminLogResult,
   getFcmAdminLogs,
   getScheduledNotifications,
+  retryFcmAdminNotification,
   sendFcmAdminNotification,
 } from "@/apis/admin.ts";
 import {
@@ -18,6 +19,7 @@ import {
   FcmSendStatus,
   ScheduledNotificationData,
   ScheduledNotificationStatus,
+  canRetryFcmMessage,
   isAdminUser,
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
@@ -67,6 +69,24 @@ const STATUS_CONFIG: Record<
     bg: "#f8fafc",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
+  ABANDONED: {
+    label: "발송 포기",
+    color: "#a855f7",
+    bg: "#faf5ff",
+    renderIcon: (size) => <Icon name="circle-warning" size={size} />,
+  },
+};
+
+const formatDateTime = (value: string | null): string => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const SCHEDULE_STATUS_CONFIG: Record<
@@ -95,6 +115,7 @@ export default function MobileAdminNotificationPage() {
   const [sending, setSending] = useState(false);
   const [sendMessage, setSendMessage] = useState("");
   const [selectedLog, setSelectedLog] = useState<FcmAdminLogData | null>(null);
+  const [retryingId, setRetryingId] = useState<number | null>(null);
 
   const [scheduledList, setScheduledList] = useState<ScheduledNotificationData[]>([]);
   const [scheduledLoading, setScheduledLoading] = useState(false);
@@ -173,6 +194,36 @@ export default function MobileAdminNotificationPage() {
       await sleep(1200);
     }
     return null;
+  };
+
+  const handleRetry = async (log: FcmAdminLogData) => {
+    // 재발송은 실패한 사람에게만 나가지만, 관리자가 무엇을 하는지는 분명히 알고 눌러야 한다.
+    const confirmed = window.confirm(
+      `"${log.title}"을(를) 다시 보낼까요?\n\n` +
+        `전달에 실패한 ${log.retryableCount}명에게만 재발송하며, ` +
+        `이미 받은 ${log.sendCount}명에게는 다시 가지 않습니다.`,
+    );
+    if (!confirmed) return;
+
+    try {
+      setRetryingId(log.id);
+      await retryFcmAdminNotification(log.id);
+
+      // 발송은 비동기라 접수 직후엔 PROCESSING이다. 결과가 확정될 때까지 폴링한다.
+      const result = await pollSendResult(log.id);
+      if (result) {
+        setSelectedLog(result);
+      }
+      await fetchLogs();
+    } catch (error) {
+      const message =
+        (error as { response?: { data?: { msg?: string } } })?.response?.data
+          ?.msg ?? "재발송에 실패했습니다.";
+      alert(message);
+      await fetchLogs();
+    } finally {
+      setRetryingId(null);
+    }
   };
 
   const handleSendRequest = async (request: FcmSendRequest) => {
@@ -274,8 +325,31 @@ export default function MobileAdminNotificationPage() {
                         <MetaItem>대상 {log.targetCount}명</MetaItem>
                         <MetaItem>성공 {log.sendCount}명</MetaItem>
                         <MetaItem>실패 {log.failureCount}명</MetaItem>
+                        {log.retryCount > 0 && (
+                          <RetryMetaItem>
+                            재발송 {log.retryCount}회 · {formatDateTime(log.lastRetriedAt)}
+                          </RetryMetaItem>
+                        )}
                       </LogMeta>
                     </LogMainInfo>
+                    {canRetryFcmMessage(log) && (
+                      <RetryBtn
+                        // 카드 클릭(상세 모달)과 겹치지 않도록 이벤트를 여기서 끊는다.
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleRetry(log);
+                        }}
+                        disabled={retryingId !== null}
+                        title={`전달 실패한 ${log.retryableCount}명에게만 재발송`}
+                      >
+                        <LoadingIcon size={16} $loading={retryingId === log.id} />
+                        <span>
+                          {retryingId === log.id
+                            ? "재발송 중"
+                            : `재발송 ${log.retryableCount}`}
+                        </span>
+                      </RetryBtn>
+                    )}
                   </LogCard>
                 );
               })}
@@ -376,6 +450,61 @@ export default function MobileAdminNotificationPage() {
                 <StatLab>실패</StatLab>
               </StatItem>
             </StatsRow>
+
+            {(selectedLog.retryCount > 0 || selectedLog.retryableCount > 0) && (
+              <>
+                <Divider />
+                <DetailItem>
+                  <DetailLabel>재발송 현황</DetailLabel>
+                  <RetryStatusBox>
+                    <RetryStatusRow>
+                      <span>재발송 횟수</span>
+                      <strong>{selectedLog.retryCount}회</strong>
+                    </RetryStatusRow>
+                    <RetryStatusRow>
+                      <span>마지막 재발송</span>
+                      <strong>{formatDateTime(selectedLog.lastRetriedAt)}</strong>
+                    </RetryStatusRow>
+                    <RetryStatusRow>
+                      <span>재발송 가능 대상</span>
+                      <strong style={{ color: selectedLog.retryableCount > 0 ? "#ef4444" : "#10b981" }}>
+                        {selectedLog.retryableCount}명
+                      </strong>
+                    </RetryStatusRow>
+                  </RetryStatusBox>
+                </DetailItem>
+              </>
+            )}
+
+            {canRetryFcmMessage(selectedLog) ? (
+              <>
+                <RetryNotice>
+                  전달에 실패한 {selectedLog.retryableCount}명에게만 다시 보냅니다.
+                  이미 받은 {selectedLog.sendCount}명에게는 중복으로 가지 않으며,
+                  알림함에도 새 항목이 생기지 않습니다.
+                </RetryNotice>
+                <RetryPrimaryBtn
+                  onClick={() => void handleRetry(selectedLog)}
+                  disabled={retryingId !== null}
+                >
+                  <LoadingIcon size={18} $loading={retryingId === selectedLog.id} />
+                  <span>
+                    {retryingId === selectedLog.id
+                      ? "재발송 중..."
+                      : `실패한 ${selectedLog.retryableCount}명에게 재발송`}
+                  </span>
+                </RetryPrimaryBtn>
+              </>
+            ) : (
+              selectedLog.failureCount > 0 && (
+                <RetryNotice>
+                  {selectedLog.status === "PENDING" || selectedLog.status === "PROCESSING"
+                    ? "발송이 진행 중입니다. 완료된 뒤에 재발송할 수 있습니다."
+                    : "재발송할 대상이 없습니다. 실패 기록이 남기 이전에 발송된 알림은 " +
+                      "누가 못 받았는지 알 수 없어, 중복 발송을 피하기 위해 재발송하지 않습니다."}
+                </RetryNotice>
+              )
+            )}
           </DetailView>
         )}
       </AdminModal>
@@ -383,6 +512,93 @@ export default function MobileAdminNotificationPage() {
     </AdminLayout>
   );
 }
+
+const RetryBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ef4444;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #fee2e2;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const RetryMetaItem = styled.span`
+  font-size: 0.75rem;
+  color: #a855f7;
+  font-weight: 600;
+`;
+
+const RetryStatusBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+`;
+
+const RetryStatusRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #64748b;
+
+  strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+`;
+
+const RetryNotice = styled.p`
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #fffbeb;
+  color: #92400e;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+`;
+
+const RetryPrimaryBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #ef4444;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #dc2626;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
 
 const PageWrapper = styled.div`
   margin: 0 ${MOBILE_PAGE_GUTTER};

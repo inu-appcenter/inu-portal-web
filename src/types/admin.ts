@@ -36,7 +36,8 @@ export type FcmSendStatus =
   | "SUCCESS"
   | "PARTIAL_FAILURE"
   | "FAILED"
-  | "NO_TARGET";
+  | "NO_TARGET"
+  | "ABANDONED";
 
 export interface FcmAdminLogData {
   id: number;
@@ -46,7 +47,26 @@ export interface FcmAdminLogData {
   sendCount: number;
   failureCount: number;
   status: FcmSendStatus;
+  /**
+   * 재발송 가능한 인원 수. 끝내 전달하지 못한 회원만 센다.
+   * 0이면 재시도해도 보낼 대상이 없다(성공했거나, 실패 기록이 남기 이전의 과거 발송).
+   */
+  retryableCount: number;
+  /** 관리자가 수동 재발송한 횟수. */
+  retryCount: number;
+  /** 마지막 재발송 시각. 재발송한 적 없으면 null. */
+  lastRetriedAt: string | null;
 }
+
+/** 재발송을 걸 수 있는 상태. 발송이 진행 중인 건은 어디까지 나갔는지 몰라 제외한다. */
+export const RETRYABLE_FCM_STATUSES: FcmSendStatus[] = [
+  "FAILED",
+  "PARTIAL_FAILURE",
+  "ABANDONED",
+];
+
+export const canRetryFcmMessage = (log: FcmAdminLogData): boolean =>
+  RETRYABLE_FCM_STATUSES.includes(log.status) && log.retryableCount > 0;
 
 export interface FcmSendRequest {
   targetType: AdminNotificationTargetType;
