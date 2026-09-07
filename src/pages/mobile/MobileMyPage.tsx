@@ -95,7 +95,7 @@ export default function MobileMyPage() {
   const isLoggedIn = userInfo.id !== 0;
   const isAdmin = userInfo.role === "admin";
 
-  const { data: counters } = useMyPageCounters(isLoggedIn, userInfo.id);
+  // const { data: counters } = useMyPageCounters(isLoggedIn, userInfo.id);
 
   useHeader({
     title: "마이페이지",
@@ -208,7 +208,7 @@ export default function MobileMyPage() {
             </ProfileHeader>
             <Counters>
               {COUNTERS.map(({ key, title, icon, route }) => {
-                const value = counters?.[key];
+                // const value = counters?.[key];
                 return (
                   <Counter
                     key={key}
@@ -224,9 +224,9 @@ export default function MobileMyPage() {
                     />
                     <CounterLabel>
                       <span>{title}</span>
-                      {value !== undefined && (
+                      {/* {value !== undefined && (
                         <CounterValue $empty={value === 0}>{value}</CounterValue>
-                      )}
+                      )} */}
                     </CounterLabel>
                   </Counter>
                 );
