@@ -345,3 +345,104 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     expect(findSw(evaluation)?.status).toBe("MISSING");
   });
 });
+
+describe("필수 교양 매칭 (강의 카탈로그 기반)", () => {
+  const findCourse = (
+    evaluation: ReturnType<typeof evaluateGraduation>,
+    courseName: string,
+  ) => evaluation.requiredCourses.find((c) => c.courseName === courseName);
+
+  const korean2016 = resolveGraduationRule("KOREAN", 2016)!;
+
+  it("과목을 넣은 순서가 판정을 바꾸지 않는다", () => {
+    // 예전에는 위에 있는 광의 요건 "영어(...)"가 아래 회화 요건의 과목을 먼저
+    // 삼켜서, 같은 과목 집합인데 입력 순서에 따라 회화가 미이수로 나왔다.
+    const subjects = [
+      subject("대학영어1", 2, { isuName: "기초교양" }),
+      subject("대학영어회화1", 1, { isuName: "기초교양" }),
+      subject("대학영어회화2", 1, { isuName: "기초교양" }),
+    ];
+    const forward = evaluateGraduation(korean2016.rule, subjects, "KOREAN");
+    const reversed = evaluateGraduation(
+      korean2016.rule,
+      [...subjects].reverse(),
+      "KOREAN",
+    );
+
+    expect(forward.requiredCourses).toEqual(reversed.requiredCourses);
+    expect(findCourse(forward, "대학영어회화1")?.status).toBe("DONE");
+    expect(findCourse(forward, "대학영어회화2")?.status).toBe("DONE");
+    expect(
+      findCourse(forward, "영어(대학영어 또는 Academic English)")?.matchedNames,
+    ).toEqual(["대학영어1"]);
+  });
+
+  it("끝자리만 다른 과목을 요건별로 가른다", () => {
+    const evaluation = evaluateGraduation(
+      korean2016.rule,
+      [subject("대학영어회화2", 1, { isuName: "기초교양" })],
+      "KOREAN",
+    );
+
+    expect(findCourse(evaluation, "대학영어회화2")?.status).toBe("DONE");
+    expect(findCourse(evaluation, "대학영어회화1")?.status).toBe("MISSING");
+  });
+
+  it("학점이 여러 과목에 나뉜 요건은 실제 개설 과목을 합쳐 센다", () => {
+    // "대학수학" 6학점 요건 ↔ 실제 개설은 대학수학(1)·(2) 각 3학점
+    const physics = resolveGraduationRule("PHYSICS", 2023)!;
+    const evaluation = evaluateGraduation(
+      physics.rule,
+      [
+        subject("대학수학(1)", 3, { isuName: "기초교양" }),
+        subject("대학수학(2)", 3, { isuName: "기초교양" }),
+      ],
+      "PHYSICS",
+    );
+
+    expect(findCourse(evaluation, "대학수학")?.status).toBe("DONE");
+    expect(findCourse(evaluation, "대학수학")?.earnedCredits).toBe(6);
+  });
+
+  it("요건이 지목한 대체 과목도 인정한다", () => {
+    const chemistry = resolveGraduationRule("CHEMISTRY", 2020)!;
+    const evaluation = evaluateGraduation(
+      chemistry.rule,
+      [subject("공학작문및발표", 2, { isuName: "교양선택" })],
+      "CHEMISTRY",
+    );
+
+    expect(
+      findCourse(evaluation, "글쓰기이론과실제 또는 공학작문및발표")?.status,
+    ).toBe("DONE");
+  });
+
+  it("카테고리 키워드가 다른 영역 과목까지 끌어오지 않는다", () => {
+    // "영어독해와작문"은 국어 키워드 "작문"에 걸리지만 국어 요건 과목이 아니다.
+    const german = resolveGraduationRule("GERMAN", 1990)!;
+    const evaluation = evaluateGraduation(
+      german.rule,
+      [subject("영어독해와작문", 3, { isuName: "교양선택" })],
+      "GERMAN",
+    );
+
+    expect(findCourse(evaluation, "국어 관련 1과목")?.matchedNames).toEqual([]);
+    expect(findCourse(evaluation, "영어")?.matchedNames).toEqual([
+      "영어독해와작문",
+    ]);
+  });
+
+  it("카탈로그에 없는 신설 과목은 카테고리 키워드로 판정한다", () => {
+    // 2026학번 요건의 AI 교양은 강의계획서(2020~2025)에 아직 없다.
+    const physics2026 = resolveGraduationRule("PHYSICS", 2026)!;
+    const evaluation = evaluateGraduation(
+      physics2026.rule,
+      [subject("AI시대의글쓰기이론과실제", 2, { isuName: "기초교양" })],
+      "PHYSICS",
+    );
+
+    expect(findCourse(evaluation, "AI시대의글쓰기이론과실제")?.status).toBe(
+      "DONE",
+    );
+  });
+});

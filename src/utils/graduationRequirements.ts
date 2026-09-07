@@ -1,5 +1,9 @@
 import { GRADUATION_REQUIREMENTS } from "@/resources/data/graduationRequirements";
 import { getCollegeByDepartmentCode } from "@/utils/departmentOptions";
+import {
+  assignSubjectsToRequirements,
+  resolveRequirement,
+} from "@/utils/requiredCourseMatch";
 import type {
   CreditProgress,
   DepartmentGraduationRequirement,
@@ -8,8 +12,6 @@ import type {
   GraduationRule,
   RequiredCourseProgress,
   RequiredCourseStatus,
-  RequiredGeneralCategory,
-  RequiredGeneralCourse,
 } from "@/types/graduation";
 
 /** 수집 데이터가 덮는 가장 이른 입학연도 */
@@ -108,78 +110,6 @@ export const isSwRequirementExempt = (
 ): boolean =>
   SW_EXEMPT_COLLEGES.has(getCollegeByDepartmentCode(departmentCode));
 
-// --- 필수 교양 과목 매칭 ---
-
-/**
- * 요건의 과목명이 "국어", "영어", "회화"처럼 영역만 가리키는 경우에는
- * 그 영역의 대표 키워드로 넓혀서 찾는다.
- */
-const CATEGORY_KEYWORDS: Record<RequiredGeneralCategory, string[]> = {
-  국어: ["국어", "글쓰기", "작문", "말하기"],
-  영어: ["영어", "english"],
-  SW: ["sw", "소프트웨어", "컴퓨팅적사고", "코딩"],
-  수학: ["수학", "미적분"],
-  기타: [],
-};
-
-const GENERIC_ALIASES = new Set(["국어", "영어", "sw", "수학", "회화"]);
-
-/** 과목명에서 떼어내도 의미가 없는 조각들 */
-const STOP_TOKENS = new Set([
-  "관련",
-  "과목",
-  "1과목",
-  "이상",
-  "또는",
-  "전공필수",
-  "및",
-  "기타",
-  "선택",
-  "academic",
-]);
-
-const normalizeName = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[\s·,()[\]{}/\\&+.'"’-]/g, "")
-    .replace(/[0-9]+$/, "");
-
-/**
- * 요건 과목명을 매칭용 별칭들로 푼다.
- * "영어(대학영어 또는 Academic English)" → ["영어"(→영역 키워드), "대학영어", "academicenglish"]
- */
-const buildAliases = (course: RequiredGeneralCourse): string[] => {
-  const raw = course.courseName;
-  const segments = raw
-    .replace(/[()]/g, " ")
-    .split(/또는|,|\/|=/g)
-    .flatMap((segment) => [segment, ...segment.split(/\s+/)]);
-
-  const aliases = new Set<string>();
-  segments.forEach((segment) => {
-    const normalized = normalizeName(segment);
-    if (!normalized || STOP_TOKENS.has(normalized)) return;
-
-    if (GENERIC_ALIASES.has(normalized)) {
-      CATEGORY_KEYWORDS[course.category].forEach((keyword) =>
-        aliases.add(keyword),
-      );
-      return;
-    }
-    // 너무 짧은 조각은 아무 과목명에나 걸린다.
-    if (normalized.length < 3) return;
-    aliases.add(normalized);
-  });
-
-  if (aliases.size === 0) {
-    CATEGORY_KEYWORDS[course.category].forEach((keyword) =>
-      aliases.add(keyword),
-    );
-  }
-
-  return [...aliases];
-};
-
 type SubjectKind = "MAJOR" | "GENERAL" | "OTHER";
 
 /**
@@ -213,8 +143,6 @@ const isRequiredMajor = (subject: EvaluatedSubject): boolean => {
 /** 핵심교양 이수영역. "-"처럼 영역이 비어 있는 행은 셀 수 없다. */
 const getCoreGeneralArea = (subject: EvaluatedSubject): string | null => {
   const isuName = subject.isuName ?? "";
-  console.log(subject)
-
   if (!CORE_GENERAL_ISU_NAMES.some((name) => isuName.includes(name))) {
     return null;
   }
@@ -314,60 +242,50 @@ export const evaluateGraduation = (
 
   const swExempt = isSwRequirementExempt(departmentCode);
 
-  // 한 과목이 두 요건에 동시에 잡히지 않도록 소비한 과목을 기록한다.
-  const consumed = new Set<number>();
-  const requiredCourses: RequiredCourseProgress[] =
-    general.requiredGeneralCourses.map((course) => {
-      if (swExempt && course.category === "SW") {
-        return {
-          courseName: course.courseName,
-          category: course.category,
-          requiredCredits: course.credits,
-          earnedCredits: 0,
-          status: "EXEMPT" as RequiredCourseStatus,
-          matchedNames: [],
-        };
-      }
+  /** 자동 판정 대상이 아닌 요건(학과 면제·이름만으로 못 정하는 요건)은 배정에서 뺀다. */
+  const skipStatus = (
+    course: (typeof general.requiredGeneralCourses)[number],
+  ): RequiredCourseStatus | null => {
+    if (swExempt && course.category === "SW") return "EXEMPT";
+    if (course.category === "기타") return "UNKNOWN";
+    return null;
+  };
 
-      if (course.category === "기타") {
-        return {
-          courseName: course.courseName,
-          category: course.category,
-          requiredCredits: course.credits,
-          earnedCredits: 0,
-          status: "UNKNOWN" as RequiredCourseStatus,
-          matchedNames: [],
-        };
-      }
+  // 배정 대상 요건만 추려 매칭하고, 결과는 원래 순서로 되돌린다.
+  const assignableIndices = general.requiredGeneralCourses
+    .map((course, index) => (skipStatus(course) === null ? index : -1))
+    .filter((index) => index >= 0);
+  const resolved = assignableIndices.map((index) =>
+    resolveRequirement(general.requiredGeneralCourses[index]),
+  );
 
-      const aliases = buildAliases(course);
+  const { matchedSubjects } = assignSubjectsToRequirements(
+    resolved,
+    passed,
+    (requirement, subject) =>
       // "SW(=전공필수 기계기초프로그래밍)"처럼 전공으로 대체되는 요건만 전공 과목까지 본다.
-      const allowMajor = course.courseName.includes("전공");
+      requirement.course.courseName.includes("전공") ||
+      classifySubject(subject) !== "MAJOR",
+  );
 
-      let earnedCredits = 0;
-      const matchedNames: string[] = [];
-
-      passed.forEach((subject, index) => {
-        if (consumed.has(index)) return;
-        if (earnedCredits >= course.credits) return;
-        if (!allowMajor && classifySubject(subject) === "MAJOR") return;
-
-        const name = normalizeName(subject.name);
-        if (!name) return;
-        if (!aliases.some((alias) => name.includes(alias))) return;
-
-        consumed.add(index);
-        earnedCredits += subject.credits;
-        matchedNames.push(subject.name);
-      });
+  const requiredCourses: RequiredCourseProgress[] =
+    general.requiredGeneralCourses.map((course, index) => {
+      const skipped = skipStatus(course);
+      const matched = skipped
+        ? []
+        : matchedSubjects[assignableIndices.indexOf(index)];
+      const earnedCredits = matched.reduce(
+        (sum, subject) => sum + subject.credits,
+        0,
+      );
 
       return {
         courseName: course.courseName,
         category: course.category,
         requiredCredits: course.credits,
         earnedCredits,
-        status: toStatus(earnedCredits, course.credits),
-        matchedNames,
+        status: skipped ?? toStatus(earnedCredits, course.credits),
+        matchedNames: matched.map((subject) => subject.name),
       };
     });
 
