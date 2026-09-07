@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { useQuery } from "@tanstack/react-query";
-
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import Icon from "@/components/common/Icon";
@@ -21,13 +19,7 @@ import {
 } from "@/resources/strings/m-mypage";
 import { loginMascotFace } from "@/resources/assets/illustrations/login";
 import { useHeader } from "@/context/HeaderContext.tsx";
-import {
-  deleteFcmToken,
-  getMembersLikes,
-  getMembersPosts,
-  getMembersReplies,
-  getMembersScraps,
-} from "@/apis/members";
+import { deleteFcmToken } from "@/apis/members";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { clearTermsAgreement } from "@/components/common/TermsAgreement";
@@ -37,7 +29,7 @@ import {
   SUPPORT_MAILTO,
 } from "@/constants/support";
 
-/** 프로필 카드 아래 줄에 놓이는 활동 요약. 값은 `useMyPageCounters`가 채운다. */
+/** 프로필 카드 아래 줄에 놓이는 활동 바로가기. */
 const COUNTERS: {
   key: "posts" | "likes" | "comments" | "scraps";
   title: string;
@@ -60,33 +52,6 @@ const COUNTERS: {
   { key: "scraps", title: "스크랩", icon: "bookmark", route: "/save" },
 ];
 
-/**
- * 프로필 카드의 활동 수. 개수만 세는 API가 없어 목록 API를 그대로 쓴다 —
- * 마이페이지를 열 때마다 네 번 왕복하지 않도록 1분간 캐시한다. 실패하면 숫자
- * 없이 라벨만 보여주고 카드 자체는 그대로 뜬다.
- */
-function useMyPageCounters(enabled: boolean, memberId: number) {
-  return useQuery({
-    queryKey: ["mypage", "counters", memberId],
-    enabled,
-    staleTime: 60_000,
-    queryFn: async () => {
-      const [posts, likes, replies, scraps] = await Promise.all([
-        getMembersPosts("date"),
-        getMembersLikes("date"),
-        getMembersReplies("date"),
-        getMembersScraps("date", 1),
-      ]);
-      return {
-        posts: posts.data?.length ?? 0,
-        likes: likes.data?.length ?? 0,
-        comments: replies.data?.length ?? 0,
-        scraps: scraps.data?.total ?? 0,
-      };
-    },
-  });
-}
-
 export default function MobileMyPage() {
   const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -94,8 +59,6 @@ export default function MobileMyPage() {
   const navigate = useNavigate();
   const isLoggedIn = userInfo.id !== 0;
   const isAdmin = userInfo.role === "admin";
-
-  // const { data: counters } = useMyPageCounters(isLoggedIn, userInfo.id);
 
   useHeader({
     title: "마이페이지",
@@ -207,30 +170,22 @@ export default function MobileMyPage() {
               />
             </ProfileHeader>
             <Counters>
-              {COUNTERS.map(({ key, title, icon, route }) => {
-                // const value = counters?.[key];
-                return (
-                  <Counter
-                    key={key}
-                    onClick={() => {
-                      mixpanelTrack.mypageMenuClicked(title);
-                      navigate(route);
-                    }}
-                  >
-                    <Icon
-                      name={icon}
-                      size={24}
-                      color="var(--text-brand, #0061ff)"
-                    />
-                    <CounterLabel>
-                      <span>{title}</span>
-                      {/* {value !== undefined && (
-                        <CounterValue $empty={value === 0}>{value}</CounterValue>
-                      )} */}
-                    </CounterLabel>
-                  </Counter>
-                );
-              })}
+              {COUNTERS.map(({ key, title, icon, route }) => (
+                <Counter
+                  key={key}
+                  onClick={() => {
+                    mixpanelTrack.mypageMenuClicked(title);
+                    navigate(route);
+                  }}
+                >
+                  <Icon
+                    name={icon}
+                    size={24}
+                    color="var(--text-brand, #0061ff)"
+                  />
+                  <CounterLabel>{title}</CounterLabel>
+                </Counter>
+              ))}
             </Counters>
           </ProfileCard>
         ) : (
@@ -440,13 +395,6 @@ const CounterLabel = styled.span`
   line-height: 16px;
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-`;
-
-const CounterValue = styled.span<{ $empty: boolean }>`
-  font-weight: 500;
-  line-height: 1.4;
-  color: ${({ $empty }) =>
-    $empty ? "var(--text-disabled, #b0b8c1)" : "var(--text-brand, #0061ff)"};
 `;
 
 const LoginCard = styled(Card)`
