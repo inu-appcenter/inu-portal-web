@@ -63,16 +63,18 @@ const getErrorStatus = (error: unknown) =>
   (error as { response?: { status?: number } })?.response?.status;
 
 const formatTime = (time: number) => {
-  const h = Math.floor(time);
-  const m = Math.round((time - h) * 60);
+  const totalMinutes = Math.round(time * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
   const hStr = h < 10 ? `0${h}` : `${h}`;
   const mStr = m < 10 ? `0${m}` : `${m}`;
   return `${hStr}:${mStr}`;
 };
 
 const formatDuration = (hours: number) => {
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
   if (h > 0 && m > 0) return `${h}시간 ${m}분`;
   if (h > 0) return `${h}시간`;
   return `${m}분`;
@@ -615,44 +617,80 @@ export default function MobileTimeTableComparePage() {
       });
 
     for (let day = 0; day < 5; day++) {
-      let currentStart: number | null = null;
-      for (let hour = 9; hour < 18; hour++) {
-        const isMeSelected = selectedFriendIdsState.includes(99999);
-        const isMeBusy =
-          isMeSelected &&
-          myClasses.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
-          return classes.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        });
-        const isBothFree = !isMeBusy && !isAnyFriendBusy;
+      const busyIntervals: { start: number; end: number }[] = [];
 
-        if (isBothFree) {
-          if (currentStart === null) {
-            currentStart = hour;
+      const isMeSelected = selectedFriendIdsState.includes(99999);
+      if (isMeSelected) {
+        myClasses.forEach((c) => {
+          if (c.day === day) {
+            busyIntervals.push({ start: c.startTime, end: c.endTime });
           }
+        });
+      }
+
+      selectedFriendsTimetables.forEach((classes) => {
+        classes.forEach((c) => {
+          if (c.day === day) {
+            busyIntervals.push({ start: c.startTime, end: c.endTime });
+          }
+        });
+      });
+
+      // 9시 ~ 18시 범위로 제한 및 정렬
+      const clampedIntervals = busyIntervals
+        .map((b) => ({
+          start: Math.max(9, b.start),
+          end: Math.min(18, b.end),
+        }))
+        .filter((b) => b.start < b.end);
+
+      clampedIntervals.sort((a, b) => a.start - b.start);
+
+      // 겹치거나 맞닿은 바쁜 구간 병합
+      const mergedBusy: { start: number; end: number }[] = [];
+      for (const curr of clampedIntervals) {
+        if (mergedBusy.length === 0) {
+          mergedBusy.push({ ...curr });
         } else {
-          if (currentStart !== null) {
-            list.push({
-              day,
-              startTime: currentStart,
-              endTime: hour,
-              duration: hour - currentStart,
-            });
-            currentStart = null;
+          const prev = mergedBusy[mergedBusy.length - 1];
+          if (curr.start <= prev.end) {
+            prev.end = Math.max(prev.end, curr.end);
+          } else {
+            mergedBusy.push({ ...curr });
           }
         }
       }
-      if (currentStart !== null) {
-        list.push({
-          day,
-          startTime: currentStart,
-          endTime: 18,
-          duration: 18 - currentStart,
-        });
+
+      // 9시부터 18시 사이의 빈 구간(공강) 추출
+      let cursor = 9;
+      for (const busy of mergedBusy) {
+        if (busy.start > cursor) {
+          const duration = busy.start - cursor;
+          const durationMinutes = Math.round(duration * 60);
+          // 30분 이상인 공강만 목록 및 표시에 포함
+          if (durationMinutes >= 30) {
+            list.push({
+              day,
+              startTime: cursor,
+              endTime: busy.start,
+              duration,
+            });
+          }
+        }
+        cursor = Math.max(cursor, busy.end);
+      }
+
+      if (cursor < 18) {
+        const duration = 18 - cursor;
+        const durationMinutes = Math.round(duration * 60);
+        if (durationMinutes >= 30) {
+          list.push({
+            day,
+            startTime: cursor,
+            endTime: 18,
+            duration,
+          });
+        }
       }
     }
     return list;
@@ -665,86 +703,23 @@ export default function MobileTimeTableComparePage() {
       .sort((a, b) => b.duration - a.duration);
   }, [freeSlotsList]);
 
-  // 짧은 공강: 1시간 이하인 경우 (30분 단위)
+  // 짧은 공강: 1시간 이하인 경우 (30분 이상)
   const shortFreeTimes = useMemo(() => {
     return freeSlotsList.filter((s) => s.duration <= 1.0);
   }, [freeSlotsList]);
 
   // "공강" 보기 시간표 생성 헬퍼
   const freeViewClasses = useMemo(() => {
-    if (selectedFriendIdsState.length === 0) {
-      return [];
-    }
-    const result: ClassItem[] = [];
-    let idCounter = 20000;
-
-    // 선택된 친구들의 시간표들을 미리 구해둠
-    const selectedFriendsTimetables = selectedFriendIdsState
-      .filter((id) => id !== 99999)
-      .map((friendId) => {
-        const friend = queriedFriends.find((f) => f.friendId === friendId);
-        return friend ? getFriendTimetable(friend) : [];
-      });
-
-    for (let day = 0; day < 5; day++) {
-      let currentBlock: {
-        startTime: number;
-        endTime: number;
-      } | null = null;
-
-      for (let hour = 9; hour < 18; hour++) {
-        const isMeSelected = selectedFriendIdsState.includes(99999);
-        const isMeBusy =
-          isMeSelected &&
-          myClasses.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        const isAnyFriendBusy = selectedFriendsTimetables.some((classes) => {
-          return classes.some(
-            (c) => c.day === day && hour >= c.startTime && hour < c.endTime,
-          );
-        });
-
-        const isBothFree = !isMeBusy && !isAnyFriendBusy;
-
-        if (isBothFree) {
-          if (currentBlock) {
-            currentBlock.endTime = hour + 1;
-          } else {
-            currentBlock = { startTime: hour, endTime: hour + 1 };
-          }
-        } else {
-          if (currentBlock) {
-            result.push({
-              id: idCounter++,
-              name: "",
-              room: "",
-              day,
-              startTime: currentBlock.startTime,
-              endTime: currentBlock.endTime,
-              color:
-                "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
-            });
-            currentBlock = null;
-          }
-        }
-      }
-
-      if (currentBlock) {
-        result.push({
-          id: idCounter++,
-          name: "",
-          room: "",
-          day,
-          startTime: currentBlock.startTime,
-          endTime: currentBlock.endTime,
-          color:
-            "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
-        });
-      }
-    }
-    return result;
-  }, [selectedFriendIdsState, queriedFriends, getFriendTimetable, myClasses]);
+    return freeSlotsList.map((slot, index) => ({
+      id: 20000 + index,
+      name: "",
+      room: "",
+      day: slot.day,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      color: "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
+    }));
+  }, [freeSlotsList]);
 
   // 현재 탭 선택에 맞는 시간표 이벤트 결정
   const activeEvents = useMemo(() => {

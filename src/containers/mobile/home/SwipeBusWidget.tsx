@@ -187,6 +187,7 @@ interface BusStopCardProps {
   bstopId: string;
   busList: BusData[];
   isMorning: boolean;
+  enabled?: boolean;
   onClick: (type: string, category: string) => void;
   onBusClick: (bus: BusData) => void;
 }
@@ -198,10 +199,11 @@ function BusStopCard({
   bstopId,
   busList,
   isMorning,
+  enabled = true,
   onClick,
   onBusClick,
 }: BusStopCardProps) {
-  const { busArrivalList, isLoading } = useBusArrival(bstopId, busList);
+  const { busArrivalList, isLoading } = useBusArrival(bstopId, busList, enabled);
 
   const filteredBuses = useMemo(() => {
     return busArrivalList.filter((bus) => {
@@ -433,7 +435,7 @@ export default function SwipeBusWidget() {
             isDraggingRef.current = false;
           }}
         >
-          {busStops.map((stop) => (
+          {busStops.map((stop, index) => (
             <SwiperSlide key={stop.key}>
               <BusStopCard
                 stopName={stop.stopName}
@@ -441,6 +443,7 @@ export default function SwipeBusWidget() {
                 bstopId={stop.bstopId}
                 busList={stop.busList}
                 isMorning={isMorning}
+                enabled={Math.abs(index - activeIndex) <= 1}
                 onClick={handleCardClick}
                 onBusClick={(bus) => handleBusClick(bus, stop.stopName)}
               />
