@@ -1,16 +1,10 @@
 import styled from "styled-components";
-import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
-import {
-  SlidersHorizontal,
-  MessagesSquare,
-  SearchX,
-} from "lucide-react";
-import Icon from "@/components/common/Icon";
+import { SlidersHorizontal } from "lucide-react";
 import FloatingSearchBar, {
   FloatingSearchBarRef,
 } from "@/components/mobile/common/FloatingSearchBar";
@@ -18,48 +12,16 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { useEffectiveCourseFilters } from "@/stores/useCourseFilterStore";
-import {
-  countActiveFilters,
-  getOnlineTypeLabel,
-  getEnrollmentLabel,
-} from "@/components/mobile/timetable/filter/courseFilterModel";
+import { countActiveFilters } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { mapFilterToOfferingFilters } from "@/utils/courseSearchResult";
-import Skeleton from "@/components/common/Skeleton";
+import CourseResultList from "@/components/mobile/timetable/CourseResultList";
+import type { CourseResult } from "@/components/mobile/timetable/CourseResultList";
 
-export interface CourseResult {
-  id: number;
-  name: string;
-  professor: string;
-  timeStr: string;
-  room: string;
-  grade: number;
-  isMajor: boolean;
-  credits: number;
-  courseId: string;
-  remarks?: string;
-  // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
-  enrolledCount: number | null;
-  capacity: number | null;
-  savedCount?: number | null;
-  schedules: ClassItem[];
-  deptName?: string;
-  collegeName?: string;
-  isuName?: string;
-  isuFldName?: string;
-  hyName?: string;
-  ssupTypeName?: string;
-  ssupTypeCode?: string;
-  gradeEvaluationMethod: string;
-}
+export type { CourseResult };
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const COURSE_SEARCH_SNAP_POINTS = [0.18, 0.45, 0.9];
 const SHEET_SNAP_POINTS = [0, 0.2, 0.5, 1];
-const SYLLABUS_UNAVAILABLE_MESSAGE =
-  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
-const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
-const LECTURE_REVIEW_NOTICE_MESSAGE =
-  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
 interface CourseSheetScrollableContentProps {
   children: ReactNode;
@@ -378,40 +340,6 @@ const MobileCourseSearchSheet = ({
     }
   }, [isSearchActive]);
 
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  const fetchNextPageRef = useRef(fetchNextPage);
-  fetchNextPageRef.current = fetchNextPage;
-
-  const hasNextPageRef = useRef(hasNextPage);
-  hasNextPageRef.current = hasNextPage;
-
-  const isFetchingRef = useRef(false);
-  isFetchingRef.current = Boolean(isLoading || isFetchingNextPage);
-
-  const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
-    if (observerRef.current) observerRef.current.disconnect();
-    if (!node) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (
-          entry?.isIntersecting &&
-          hasNextPageRef.current &&
-          !isFetchingRef.current &&
-          fetchNextPageRef.current
-        ) {
-          isFetchingRef.current = true;
-          fetchNextPageRef.current();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observerRef.current.observe(node);
-  }, []);
-
   // 목록을 손가락으로 끌면 키보드를 내린다. scroll 이 아니라 touchmove 를 보는
   // 이유: 웹뷰에서 인풋에 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고
   // (안드로이드는 셸이 웹뷰를 키보드 높이만큼 줄이고, iOS 는 WKWebView 가
@@ -420,22 +348,6 @@ const MobileCourseSearchSheet = ({
   // 닫히고 검색바까지 접혔다. 손가락 드래그는 그런 오인이 없다.
   const dismissKeyboardOnDrag = () => {
     searchBarRef.current?.blur();
-  };
-
-  const openLectureReview = (professor: string) => {
-    const professorName = professor?.trim() || "";
-    if (!professorName) {
-      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
-      return;
-    }
-
-    if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
-      alert(LECTURE_REVIEW_NOTICE_MESSAGE);
-      localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
-    }
-
-    const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
-    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -463,173 +375,18 @@ const MobileCourseSearchSheet = ({
             scrollRef={attachScroller}
           >
             <SheetContentWrapper onTouchMove={dismissKeyboardOnDrag}>
-              <CourseList>
-                {isLoading ? (
-                  Array.from({ length: 6 }).map((_, index) => (
-                    <SkeletonCard key={`course-skeleton-${index}`}>
-                      <div className="skeleton-row-top">
-                        <Skeleton width="45%" height="20px" />
-                        <Skeleton
-                          width="70px"
-                          height="20px"
-                          style={{ borderRadius: "999px" }}
-                        />
-                      </div>
-                      <div className="skeleton-row-mid">
-                        <Skeleton width="50px" height="16px" />
-                        <Skeleton width="40px" height="16px" />
-                        <Skeleton width="50px" height="16px" />
-                      </div>
-                      <div className="skeleton-row-bottom">
-                        <Skeleton width="30%" height="14px" />
-                        <Skeleton width="50%" height="14px" />
-                      </div>
-                    </SkeletonCard>
-                  ))
-                ) : filteredCourses.length === 0 ? (
-                  <EmptyContainer>
-                    <SearchIconBox>
-                      <SearchX size={32} color="var(--gray-400, #b0b8c1)" />
-                    </SearchIconBox>
-                    <EmptyTitle>조회된 강의가 없습니다</EmptyTitle>
-                    <EmptyDescription>
-                      검색어나 필터 조건을 변경해 보세요
-                    </EmptyDescription>
-                  </EmptyContainer>
-                ) : (
-                  filteredCourses.map((course) => {
-                  const isExpanded = expandedId === course.id;
-                  const isAdded = Boolean(
-                    (addedCourseOfferingIds && addedCourseOfferingIds.has(course.id)) ||
-                    (course.courseId && addedCourseIds && addedCourseIds.has(course.courseId)),
-                  );
-                  const onlineTypeLabel = getOnlineTypeLabel(
-                    course.ssupTypeName,
-                    course.ssupTypeCode,
-                  );
-                  const enrollmentLabel = getEnrollmentLabel(
-                    course.enrolledCount,
-                    course.capacity,
-                  );
-
-                  return (
-                    <CourseItem
-                      key={course.id}
-                      data-course-id={course.id}
-                      onClick={() => onToggleExpand(course.id)}
-                    >
-                      {/* 기본 정보 */}
-                      <InfoRow>
-                        <MainInfo>
-                          <CourseName>{course.name}</CourseName>
-                        </MainInfo>
-                        <RightInfo>
-                          {course.savedCount != null && (
-                            <SavedBadge>
-                              {course.savedCount}명 담음
-                            </SavedBadge>
-                          )}
-                          {enrollmentLabel && (
-                            <EnrolledBadge>{enrollmentLabel}</EnrolledBadge>
-                          )}
-                        </RightInfo>
-                      </InfoRow>
-
-                      <CourseAttributes>
-                        <AttributeItem $primary>
-                          {course.professor}
-                        </AttributeItem>
-                        <AttributeItem>{course.credits}학점</AttributeItem>
-                        <AttributeItem>
-                          {course.gradeEvaluationMethod}
-                        </AttributeItem>
-                      </CourseAttributes>
-
-                      <CourseAdditionalInfo>
-                        <InfoLine>
-                          <span>
-                          {course.grade > 0 ? `${course.grade}학년` : "전학년"}
-                        </span>
-                          {/* 서버 이수구분(전공기초/전공핵심/전공심화/기초교양/핵심교양/
-                              심화교양/교직/일반선택/군사학)을 그대로 보여준다. 전공/교양
-                              두 갈래로 뭉개면 전공핵심·전공기초가 "전공심화"로, 교직·
-                              일반선택이 "교양"으로 잘못 표시된다. */}
-                          <span>{course.isuName || "-"}</span>
-                          {onlineTypeLabel && <span>{onlineTypeLabel}</span>}
-                          <span>{course.courseId}</span>
-                        </InfoLine>
-                        <div>{course.timeStr}</div>
-                        <div>{course.room}</div>
-                      </CourseAdditionalInfo>
-
-                      {/* 확장 영역 */}
-                      {isExpanded && (
-                        <ExpandedArea>
-                          {course.remarks && (
-                            <RemarkText>비고 : {course.remarks}</RemarkText>
-                          )}
-                          <ButtonRow>
-                            <PrimaryActionButton
-                              disabled={isAdded}
-                              $isAdded={isAdded}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isAdded && onAddCourse) {
-                                  onAddCourse(course);
-                                }
-                              }}
-                            >
-                              {isAdded ? <Icon name="check" size={20} /> : <Icon name="add-plus-sm" size={20} />}
-                              {isAdded ? "추가됨" : "시간표에 추가"}
-                            </PrimaryActionButton>
-                            <SecondaryActionButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openLectureReview(course.professor);
-                              }}
-                            >
-                              <MessagesSquare size={20} />
-                              강의평
-                            </SecondaryActionButton>
-                            <SecondaryActionButton
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                alert(SYLLABUS_UNAVAILABLE_MESSAGE);
-                              }}
-                            >
-                              <Icon name="file-document" size={20} />
-                              강의계획서
-                            </SecondaryActionButton>
-                          </ButtonRow>
-                        </ExpandedArea>
-                      )}
-                    </CourseItem>
-                  );
-                }))}
-                {isFetchingNextPage && (
-                  <SkeletonCard key="next-page-skeleton">
-                    <div className="skeleton-row-top">
-                      <Skeleton width="45%" height="20px" />
-                      <Skeleton
-                        width="70px"
-                        height="20px"
-                        style={{ borderRadius: "999px" }}
-                      />
-                    </div>
-                    <div className="skeleton-row-mid">
-                      <Skeleton width="50px" height="16px" />
-                      <Skeleton width="40px" height="16px" />
-                      <Skeleton width="50px" height="16px" />
-                    </div>
-                  </SkeletonCard>
-                )}
-                {hasNextPage && (
-                  <div
-                    ref={loadMoreRef}
-                    style={{ height: "20px", width: "100%" }}
-                  />
-                )}
-              </CourseList>
+              <CourseResultList
+                courses={filteredCourses}
+                expandedId={expandedId}
+                onToggleExpand={onToggleExpand}
+                onAddCourse={onAddCourse}
+                addedCourseOfferingIds={addedCourseOfferingIds}
+                addedCourseIds={addedCourseIds}
+                isLoading={isLoading}
+                hasNextPage={hasNextPage}
+                fetchNextPage={fetchNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+              />
             </SheetContentWrapper>
           </CourseSheetScrollableContent>
         </CourseSheetContainer>
@@ -840,274 +597,3 @@ const FilterButton = styled.button<{
   }
 `;
 
-const CourseList = styled.div`
-  padding: 0;
-`;
-
-const EmptyContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 20px;
-  text-align: center;
-`;
-
-const SearchIconBox = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--bg-muted, #f1f3f5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-family: Pretendard, sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-secondary, #333d4b);
-  margin: 0 0 6px 0;
-`;
-
-const EmptyDescription = styled.p`
-  font-family: Pretendard, sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
-  margin: 0;
-`;
-
-const SkeletonCard = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  .skeleton-row-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .skeleton-row-mid {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .skeleton-row-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-`;
-
-const CourseItem = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  display: flex;
-  flex-direction: column;
-  //gap: 8px;
-  background-color: #ffffff;
-  transition: background-color 0.2s;
-  //cursor: pointer;
-
-  /* The sheet's per-frame drag-driven scrollPaddingBottom (see
-     CourseSheetScrollableContent) forces a layout recalculation on every
-     animation tick, and with an unvirtualized course list that cost scales
-     with row count — the main source of Android-only jank here (WKWebView
-     doesn't show the same behavior). content-visibility skips layout/paint
-     for rows currently off-screen entirely, instead of just scoping
-     invalidation (plain contain doesn't stop the browser from still doing
-     the work for every row). "auto <length>" remembers each row's real
-     rendered height after it's first been on-screen, so the placeholder only
-     matters before that — safe here since the sheet's snap points are
-     viewport-ratio based (COURSE_SEARCH_SNAP_POINTS), not derived from this
-     list's scrollHeight. */
-  content-visibility: auto;
-  contain-intrinsic-size: auto 140px;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const MainInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const CourseName = styled.h3`
-  color: var(--text-secondary, #333d4b);
-
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 24px;
-  margin: 0;
-`;
-
-const RightInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const EnrolledBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
-
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 16px;
-`;
-
-const SavedBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
-
-  font-family: Pretendard, sans-serif;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 16px;
-`;
-
-const CourseAttributes = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: center;
-`;
-
-const AttributeItem = styled.span<{ $primary?: boolean }>`
-  color: ${({ $primary }) =>
-    $primary
-      ? "var(--text-secondary, #333d4b)"
-      : "var(--text-tertiary, #8b95a1)"};
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
-`;
-
-const CourseAdditionalInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
-
-  margin-top: 4px;
-`;
-
-const InfoLine = styled.div`
-  display: flex;
-  gap: 12px;
-`;
-
-const ExpandedArea = styled.div`
-  margin-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  animation: fadeIn 0.2s ease-in-out;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-5px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const RemarkText = styled.div`
-  color: var(--text-tertiary, #8b95a1);
-
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
-`;
-
-const ButtonRow = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const ActionButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  border: none;
-  outline: none;
-  transition: all 0.2s ease-in-out;
-  box-sizing: border-box;
-
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 20px;
-
-  &:active {
-    transform: scale(0.96);
-  }
-`;
-
-const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
-  border-radius: 999px;
-  background: ${({ $isAdded }) =>
-    $isAdded
-      ? "var(--bg-subtle-dark, #e5e8eb)"
-      : "var(--interactive-primary, #3b82f6)"};
-
-  color: ${({ $isAdded }) =>
-    $isAdded ? "var(--text-tertiary, #8b95a1)" : "#fff"};
-
-  ${({ $isAdded }) =>
-    $isAdded &&
-    `
-    background-color: var(--bg-neutral-subtle, #f2f4f6) !important;
-    color: var(--text-tertiary, #8b95a1) !important;
-    border: 1px solid var(--border-default, #e5e8eb);
-    cursor: not-allowed;
-    opacity: 0.8;
-  `}
-`;
-
-const SecondaryActionButton = styled(ActionButton)`
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-
-  color: var(--text-primary, #333d4b);
-`;

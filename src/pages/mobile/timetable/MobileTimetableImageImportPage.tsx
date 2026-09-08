@@ -29,10 +29,11 @@ import {
   syncTimeTableDetail,
 } from "@/hooks/useTimeTables";
 import { recognizeTimeTableImage } from "@/apis/timetables";
-import {
-  getCourseOfferingsPage,
-  searchCourseOfferings,
-} from "@/apis/courseOfferings";
+import { useCourses } from "@/hooks/useCourses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
+import CourseResultList from "@/components/mobile/timetable/CourseResultList";
+import type { CourseResult } from "@/components/mobile/timetable/CourseResultList";
 import type { CourseOffering } from "@/types/courseOfferings";
 import type { Term, TimeTableDay } from "@/types/timetables";
 import {
@@ -41,7 +42,6 @@ import {
 } from "@/resources/assets/illustrations/timetable";
 import {
   findUniqueTitleOffering,
-  scoreOffering,
   type DetectedCourseGroup,
 } from "@/utils/timetableImageImport";
 
@@ -606,7 +606,7 @@ export default function MobileTimetableImageImportPage() {
                 <DropzoneTextGroup>
                   <DropzoneTitle>시간표 이미지 선택하기</DropzoneTitle>
                   <DropzoneSubtitle>
-                    PNG, JPG 등 휴대폰 캡처 이미지를 선택해 주세요.
+                    수강신청 앱·에브리타임 캡처, 포털의 수강신청확인원 모두 괜찮아요.
                   </DropzoneSubtitle>
                 </DropzoneTextGroup>
               </DropzoneHeader>
@@ -640,10 +640,24 @@ export default function MobileTimetableImageImportPage() {
                 <GuideItem>
                   <GuideItemLeft>
                     <GuideItemTitle>에브리타임</GuideItemTitle>
-                    <GuideItemSubtitle>시간표 전체 화면</GuideItemSubtitle>
+                    <GuideItemSubtitle>시간표 전체 화면 캡처</GuideItemSubtitle>
+                  </GuideItemLeft>
+                </GuideItem>
+
+                <GuideDivider />
+
+                <GuideItem>
+                  <GuideItemLeft>
+                    <GuideItemTitle>인천대학교 포털</GuideItemTitle>
+                    <GuideItemSubtitle>
+                      수강신청확인원 화면 캡처
+                    </GuideItemSubtitle>
                   </GuideItemLeft>
                 </GuideItem>
               </GuideCard>
+              <GuideFootnote>
+                수강신청확인원은 인천대학교 포털에 로그인한 뒤 내려받을 수 있어요.
+              </GuideFootnote>
             </GuideSection>
           </IntroContainer>
         )}
@@ -941,15 +955,17 @@ export default function MobileTimetableImageImportPage() {
       />
 
       {/* 강의 정보 직접 수정 & 분반 실시간 검색 모달 */}
-      <CourseEditModal
-        isOpen={editingMatch !== null}
-        match={editingMatch}
-        year={year}
-        term={term}
-        onClose={() => setEditingMatch(null)}
-        onSelectOffering={handleSelectOffering}
-        onSaveManual={handleSaveManual}
-      />
+      {editingMatch && (
+        <CourseEditModal
+          key={editingMatch.group.id}
+          match={editingMatch}
+          year={year}
+          term={term}
+          onClose={() => setEditingMatch(null)}
+          onSelectOffering={handleSelectOffering}
+          onSaveManual={handleSaveManual}
+        />
+      )}
 
       {/* 등록 대상 시간표 선택 바텀시트 */}
       <BottomSheet
@@ -1300,6 +1316,14 @@ const GuideSection = styled.div`
   gap: 12px;
 `;
 
+const GuideFootnote = styled.p`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: #8b95a1;
+  margin: 0;
+`;
 const GuideSectionTitle = styled.h2`
   font-family: Pretendard;
   font-weight: 600;
@@ -1755,7 +1779,6 @@ const FixedBottomContent = styled.div`
   pointer-events: auto;
 `;
 
-
 const FixedButtonRow = styled.div`
   display: flex;
   align-items: center;
@@ -1784,8 +1807,7 @@ const PrimaryBottomButton = styled(CapsuleButton)`
 // --- Course Edit Modal Component ---
 
 interface CourseEditModalProps {
-  isOpen: boolean;
-  match: Match | null;
+  match: Match;
   year: number;
   term: Term;
   onClose: () => void;
@@ -1801,7 +1823,6 @@ interface CourseEditModalProps {
 }
 
 function CourseEditModal({
-  isOpen,
   match,
   year,
   term,
@@ -1809,8 +1830,6 @@ function CourseEditModal({
   onSelectOffering,
   onSaveManual,
 }: CourseEditModalProps) {
-  if (!isOpen || !match) return null;
-
   const [title, setTitle] = useState(
     match.group.title === "인식 실패" ? "" : match.group.title,
   );
@@ -1825,95 +1844,77 @@ function CourseEditModal({
     match.group.blocks[0]?.endTime ?? "10:30",
   );
 
-  const [debouncedKeyword, setDebouncedKeyword] = useState(title);
-  const [searchResults, setSearchResults] = useState<CourseOffering[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedKeyword, setDebouncedKeyword] = useState(() => title.trim());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedKeyword(title.trim());
-    }, 200);
+    const timer = setTimeout(() => setDebouncedKeyword(title.trim()), 250);
     return () => clearTimeout(timer);
   }, [title]);
 
-  useEffect(() => {
-    let active = true;
-    const fetchOfferings = async () => {
-      setIsSearching(true);
-      try {
-        const promises: Promise<CourseOffering[]>[] = [];
-        if (debouncedKeyword.length >= 1) {
-          promises.push(searchCourseOfferings(year, term, debouncedKeyword));
-        }
-        if (professor.trim().length >= 2) {
-          promises.push(searchCourseOfferings(year, term, professor.trim()));
-        }
-        promises.push(
-          getCourseOfferingsPage(year, term, 0, 50)
-            .then((res) => res.content)
-            .catch(() => []),
-        );
+  // 검색은 시간표 편집 화면과 똑같이 서버 keyword 조회 + 무한 스크롤에 맡긴다.
+  // 예전에는 여기서 "그 학기 첫 50개"를 함께 받아 scoreOffering(OCR 매칭 점수)으로
+  // 재정렬했는데, 그 점수는 입력한 키워드를 모르고 강의명 유사도만 보기 때문에
+  // 학수번호·교수명으로 찾은 분반이 상위 15개 밖으로 밀려나 검색이 먹통처럼 보였다.
+  const hasKeyword = debouncedKeyword.length > 0;
+  const filters = useMemo(
+    () => ({ keyword: hasKeyword ? debouncedKeyword : undefined }),
+    [debouncedKeyword, hasKeyword],
+  );
+  const {
+    courseOfferings,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCourseOfferings(year, term, filters, { enabled: hasKeyword });
 
-        const results = await Promise.all(promises);
-        if (!active) return;
+  const { courses } = useCourses();
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
+    [courses],
+  );
+  const searchResults = useMemo(
+    () =>
+      courseOfferings.map((offering) =>
+        mapCourseOfferingToCourseResult(
+          offering,
+          courseById.get(offering.courseId),
+        ),
+      ),
+    [courseOfferings, courseById],
+  );
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((offering) => [offering.id, offering])),
+    [courseOfferings],
+  );
 
-        const pool = new Map<number, CourseOffering>();
-        results.flat().forEach((offering) => {
-          pool.set(offering.id, offering);
-        });
+  // 순서는 서버가 준 그대로 두되, 인식된 요일/시간과 맞는 분반만 배지로 짚어 준다.
+  // (정렬로 끌어올리면 페이지가 추가될 때마다 목록이 뒤섞여 고르기가 더 어렵다.)
+  const highlightedIds = useMemo(() => {
+    const ids = new Set<number>();
+    courseOfferings.forEach((offering) => {
+      const matched = offering.meetings.some(
+        (meeting) =>
+          meeting.day === day &&
+          meeting.startTime.slice(0, 5) === startTime.slice(0, 5) &&
+          meeting.endTime.slice(0, 5) === endTime.slice(0, 5),
+      );
+      if (matched) ids.add(offering.id);
+    });
+    return ids;
+  }, [courseOfferings, day, startTime, endTime]);
 
-        const dummyGroup: DetectedCourseGroup = {
-          id: "temp",
-          title: title.trim() || match.group.title,
-          professor: professor.trim(),
-          rawText: "",
-          blocks: [
-            {
-              id: "temp-block",
-              crop: {} as any,
-              day,
-              startTime,
-              endTime,
-              rawText: "",
-              confidence: 100,
-            },
-          ],
-        };
+  const selectedIds = useMemo(
+    () => (match.selectedId != null ? new Set([match.selectedId]) : undefined),
+    [match.selectedId],
+  );
 
-        const sorted = [...pool.values()]
-          .map((offering) => ({
-            offering,
-            score: scoreOffering(dummyGroup, offering),
-          }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 15)
-          .map(({ offering }) => offering);
+  const isSearching = hasKeyword && isFetching && courseOfferings.length === 0;
 
-        setSearchResults(sorted);
-      } catch (err) {
-        console.warn("Live search failed:", err);
-      } finally {
-        if (active) setIsSearching(false);
-      }
-    };
-
-    fetchOfferings();
-    return () => {
-      active = false;
-    };
-  }, [
-    debouncedKeyword,
-    professor,
-    day,
-    startTime,
-    endTime,
-    year,
-    term,
-    match.group.title,
-  ]);
-
-  const handleSelect = (offering: CourseOffering) => {
-    onSelectOffering(match.group.id, offering);
+  const handleSelect = (course: CourseResult) => {
+    const offering = offeringById.get(course.id);
+    if (offering) onSelectOffering(match.group.id, offering);
   };
 
   const handleManualSave = () => {
@@ -1934,7 +1935,7 @@ function CourseEditModal({
           <div>
             <ModalSheetTitle>강의 정보 수정 & 분반 검색</ModalSheetTitle>
             <ModalSheetSubtitle>
-              과목명이나 교수명을 수정하면 개설 강좌가 검색됩니다.
+              과목명(또는 학수번호)을 수정하면 개설 분반이 검색됩니다.
             </ModalSheetSubtitle>
           </div>
           <ModalCloseButton type="button" onClick={onClose}>
@@ -1949,7 +1950,7 @@ function CourseEditModal({
             </FormLabel>
             <FormInput
               type="text"
-              placeholder="과목명을 입력해 주세요"
+              placeholder="과목명 또는 학수번호"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
@@ -2022,58 +2023,36 @@ function CourseEditModal({
                 <Search size={14} color="#0061ff" />
                 <span>검색된 개설 분반 ({searchResults.length}개)</span>
               </div>
-              {isSearching && (
-                <SearchLoadingBadge>검색 중...</SearchLoadingBadge>
-              )}
+              {isFetching && <SearchLoadingBadge>검색 중...</SearchLoadingBadge>}
             </ResultsSectionTitle>
 
             <OfferingsScrollList>
-              {searchResults.length > 0 ? (
-                searchResults.map((offering) => {
-                  const isSelected = match.selectedId === offering.id;
-                  const meetings = formatOfferingMeetings(offering);
-                  return (
-                    <OfferingItemCard
-                      key={offering.id}
-                      $selected={isSelected}
-                      onClick={() => handleSelect(offering)}
-                    >
-                      <OfferingMainInfo>
-                        <OfferingTitleRow>
-                          <OfferingCourseTitle>
-                            {offering.courseTitle}
-                          </OfferingCourseTitle>
-                          <OfferingBadge>
-                            {offering.deptName ||
-                              offering.isuName ||
-                              "개설"}
-                          </OfferingBadge>
-                        </OfferingTitleRow>
-                        <OfferingSubInfo>
-                          <span>{offering.professor || "교수 미정"}</span>
-                          <span>·</span>
-                          <span>{offering.subjectNumber}</span>
-                          {meetings && (
-                            <>
-                              <span>·</span>
-                              <span style={{ color: "#0061ff" }}>{meetings}</span>
-                            </>
-                          )}
-                        </OfferingSubInfo>
-                      </OfferingMainInfo>
-                      <SelectActionButton type="button" $selected={isSelected}>
-                        {isSelected ? "선택됨" : "선택"}
-                      </SelectActionButton>
-                    </OfferingItemCard>
-                  );
-                })
-              ) : (
-                <EmptyResultsText>
-                  {isSearching
-                    ? "일치하는 개설 강좌를 검색 중입니다..."
-                    : "일치하는 개설 강좌를 찾지 못했습니다. 과목명을 검색해 보세요."}
-                </EmptyResultsText>
-              )}
+              <CourseResultList
+                courses={searchResults}
+                expandedId={expandedId}
+                onToggleExpand={(id) =>
+                  setExpandedId((prev) => (prev === id ? null : id))
+                }
+                onAddCourse={handleSelect}
+                addedCourseOfferingIds={selectedIds}
+                addLabel="이 분반 선택"
+                addedLabel="선택됨"
+                showSecondaryActions={false}
+                highlightedIds={highlightedIds}
+                scrollExpandedIntoView
+                isLoading={isSearching}
+                hasNextPage={hasNextPage}
+                fetchNextPage={fetchNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                emptyTitle={
+                  hasKeyword ? "조회된 분반이 없습니다" : "과목명을 입력해 주세요"
+                }
+                emptyDescription={
+                  hasKeyword
+                    ? "과목명 일부만 입력하거나 학수번호로 검색해 보세요"
+                    : "강의명·영문명·학수번호로 검색할 수 있어요"
+                }
+              />
             </OfferingsScrollList>
           </ResultsSection>
         </ModalSheetBody>
@@ -2118,7 +2097,7 @@ const ModalBackdrop = styled.div`
 const ModalContentSheet = styled.div`
   width: 100%;
   max-width: 600px;
-  max-height: 85vh;
+  max-height: 85dvh;
   background: #ffffff;
   border-radius: 20px 20px 0 0;
   display: flex;
@@ -2176,23 +2155,29 @@ const ModalCloseButton = styled.button`
   }
 `;
 
+// 시트 안의 유일한 스크롤 영역. 결과 목록에 따로 max-height를 주면 스크롤러가
+// 두 겹이 되어 마지막 행의 펼침 영역(선택 버튼)이 안쪽 박스에 잘린다.
 const ModalSheetBody = styled.div`
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px 20px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 `;
 
 const FormGroup = styled.div`
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 `;
 
 const FormRow = styled.div`
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2251,6 +2236,7 @@ const ResultsSection = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
+  flex-shrink: 0;
 `;
 
 const ResultsSectionTitle = styled.div`
@@ -2269,90 +2255,7 @@ const SearchLoadingBadge = styled.span`
 `;
 
 const OfferingsScrollList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 220px;
-  overflow-y: auto;
   padding-right: 2px;
-`;
-
-const OfferingItemCard = styled.div<{ $selected: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#f8f9fb")};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5484d")};
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f1f3f5")};
-  }
-`;
-
-const OfferingMainInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-`;
-
-const OfferingTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-`;
-
-const OfferingCourseTitle = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-  color: #191f28;
-`;
-
-const OfferingBadge = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #eef3ff;
-  color: #0061ff;
-`;
-
-const OfferingSubInfo = styled.div`
-  font-size: 12px;
-  color: #6b7684;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-`;
-
-const SelectActionButton = styled.button<{ $selected: boolean }>`
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 0;
-  font-size: 12px;
-  font-weight: 700;
-  background: ${({ $selected }) => ($selected ? "#0061ff" : "#ffffff")};
-  color: ${({ $selected }) => ($selected ? "#ffffff" : "#0061ff")};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#d3e5ff")};
-  cursor: pointer;
-  flex-shrink: 0;
-`;
-
-const EmptyResultsText = styled.div`
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: #8b95a1;
-  background: #f8f9fb;
-  border-radius: 10px;
-  line-height: 20px;
 `;
 
 const ModalSheetFooter = styled.div`
