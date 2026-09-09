@@ -288,7 +288,11 @@ function BusStopCard({
   );
 }
 
-export default function SwipeBusWidget() {
+export interface SwipeBusWidgetProps {
+  initialStopName?: string;
+}
+
+export default function SwipeBusWidget({ initialStopName }: SwipeBusWidgetProps = {}) {
   const navigate = useNavigate();
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
@@ -356,6 +360,16 @@ export default function SwipeBusWidget() {
     : "swipe_bus_index_afternoon";
 
   const initialActiveIndex = useMemo(() => {
+    if (initialStopName && busStops.length > 0) {
+      const matchedIdx = busStops.findIndex(
+        (s) =>
+          s.stopName.includes(initialStopName) ||
+          initialStopName.includes(s.stopName) ||
+          s.sectionLabel.includes(initialStopName),
+      );
+      if (matchedIdx !== -1) return matchedIdx;
+    }
+
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
@@ -368,9 +382,16 @@ export default function SwipeBusWidget() {
       console.error("Failed to read bus swipe index", e);
     }
     return 0;
-  }, [busStops.length, storageKey]);
+  }, [busStops, initialStopName, storageKey]);
 
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
+
+  useEffect(() => {
+    if (swiperInstance && initialActiveIndex !== activeIndex) {
+      swiperInstance.slideTo(initialActiveIndex);
+      setActiveIndex(initialActiveIndex);
+    }
+  }, [initialActiveIndex, swiperInstance]);
 
   const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
