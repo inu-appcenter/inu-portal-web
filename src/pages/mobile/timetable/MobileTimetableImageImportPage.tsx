@@ -621,6 +621,7 @@ export default function MobileTimetableImageImportPage() {
 
             <GuideSection>
               <GuideSectionTitle>이런 화면이 잘 인식돼요</GuideSectionTitle>
+              
               <GuideCard>
                 <GuideItem>
                   <GuideItemLeft>
@@ -640,7 +641,7 @@ export default function MobileTimetableImageImportPage() {
                 <GuideItem>
                   <GuideItemLeft>
                     <GuideItemTitle>에브리타임</GuideItemTitle>
-                    <GuideItemSubtitle>시간표 전체 화면 캡처</GuideItemSubtitle>
+                    <GuideItemSubtitle>시간표 전체 화면 캡처 (다크모드는 인식율이 낮아요)</GuideItemSubtitle>
                   </GuideItemLeft>
                 </GuideItem>
 
