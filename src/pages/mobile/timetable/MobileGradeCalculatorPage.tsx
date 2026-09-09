@@ -1092,39 +1092,102 @@ export default function MobileGradeCalculatorPage() {
     }
   };
 
+  const toSubjectFromRow = (
+    row: ResolvedGradeRow,
+    source: { year: number; term: Term } | null,
+  ): Subject => ({
+    id: `${Date.now()}-${Math.random()}`,
+    name: row.title,
+    // 학점 열까지 복사되지 않은 행은 0으로 두고 사용자가 채우게 한다.
+    credits: row.resolvedCredit ?? 0,
+    grade: row.grade ?? UNGRADED,
+    isMajor: isMajorCompletion(row.resolvedIsuName, row.isuFldName),
+    note: row.note,
+    excluded: row.voided,
+    courseCode: row.courseCode,
+    courseId: row.courseId,
+    isuName: row.resolvedIsuName,
+    isuFldName: row.isuFldName,
+    sourceYear: source?.year,
+    sourceTerm: source?.term,
+  });
+
   // --- 스마트캠퍼스 성적 붙여넣기 ---
+  // 붙여넣은 표에 여러 학기가 섞여 있을 수 있다("전체 성적 조회"를 통째로 복사한 경우
+  // 등). 행마다 자기 학기(row.semester)로 흩어 넣고, 어느 학기에도 못 붙은 행만
+  // 시트가 감지한 기본 학기(source) 또는 지금 보고 있는 학기로 보낸다. 계산기에 아직
+  // 없는 학기면 새로 만든다 — 그래야 여러 학기를 한 번에 저장(핸들세이브의 일괄 저장)
+  // 흐름에 그대로 태울 수 있다.
   const handleApplyImportedGrades = (
     rows: ResolvedGradeRow[],
     source: { year: number; term: Term } | null,
   ) => {
-    if (!selectedSemesterKey) return;
+    if (rows.length === 0) return;
+
+    const fallbackEntry: SemesterEntry | null =
+      source ?? (selectedSemesterKey ? parseSemesterKey(selectedSemesterKey) : null);
+    if (!fallbackEntry && rows.some((row) => !row.semester)) return;
+
+    const groups = new Map<
+      string,
+      { entry: SemesterEntry; rows: ResolvedGradeRow[] }
+    >();
+    for (const row of rows) {
+      const entry = row.semester ?? fallbackEntry;
+      if (!entry) continue;
+      const key = semesterKey(entry);
+      const group = groups.get(key);
+      if (group) {
+        group.rows.push(row);
+      } else {
+        groups.set(key, { entry, rows: [row] });
+      }
+    }
+    if (groups.size === 0) return;
+
+    const overwrittenKeys = Array.from(groups.keys()).filter(
+      (key) => (semestersData[key]?.length ?? 0) > 0,
+    );
+    const totalSubjects = rows.length;
+
+    const confirmMessage =
+      groups.size > 1
+        ? `${groups.size}개 학기, 과목 ${totalSubjects}개를 한 번에 불러올까요?` +
+          (overwrittenKeys.length > 0
+            ? `\n이미 입력된 학기(${overwrittenKeys
+                .map(formatSemesterKeyLabel)
+                .join(", ")})는 덮어씌워집니다.`
+            : "")
+        : `현재 학기(${formatSemesterKeyLabel(
+            Array.from(groups.keys())[0],
+          )})에 입력된 ${
+            semestersData[Array.from(groups.keys())[0]]?.length ?? 0
+          }개 과목을 불러온 ${totalSubjects}개 과목으로 바꿀까요?`;
+
     if (
-      currentSubjects.length > 0 &&
-      !window.confirm(
-        `현재 학기(${selectedSemesterLabel})에 입력된 ${currentSubjects.length}개 과목을 불러온 ${rows.length}개 과목으로 바꿀까요?`,
-      )
+      (overwrittenKeys.length > 0 || groups.size > 1) &&
+      !window.confirm(confirmMessage)
     ) {
       return;
     }
 
-    const imported: Subject[] = rows.map((row) => ({
-      id: `${Date.now()}-${Math.random()}`,
-      name: row.title,
-      // 학점 열까지 복사되지 않은 행은 0으로 두고 사용자가 채우게 한다.
-      credits: row.resolvedCredit ?? 0,
-      grade: row.grade ?? UNGRADED,
-      isMajor: isMajorCompletion(row.resolvedIsuName, row.isuFldName),
-      note: row.note,
-      excluded: row.voided,
-      courseCode: row.courseCode,
-      courseId: row.courseId,
-      isuName: row.resolvedIsuName,
-      isuFldName: row.isuFldName,
-      sourceYear: source?.year,
-      sourceTerm: source?.term,
-    }));
+    setSemestersData((prev) => {
+      const next = { ...prev };
+      for (const { entry, rows: groupRows } of groups.values()) {
+        next[semesterKey(entry)] = groupRows.map((row) =>
+          toSubjectFromRow(row, entry),
+        );
+      }
+      return next;
+    });
 
-    updateSubjects(imported);
+    // 지금 보던 학기가 이번에 불러온 학기 중 하나면 그대로 두고, 아니면(예: 다른 학기의
+    // 과목만 골라 붙여넣은 경우) 불러온 학기 중 첫 번째를 보여준다.
+    const importedKeys = Array.from(groups.keys());
+    if (!selectedSemesterKey || !importedKeys.includes(selectedSemesterKey)) {
+      setSelectedSemesterKey(importedKeys.sort(compareSemesterKeys)[0]);
+    }
+
     setShowGradeImportSheet(false);
   };
 

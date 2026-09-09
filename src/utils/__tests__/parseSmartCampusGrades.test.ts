@@ -123,4 +123,34 @@ describe("parseSmartCampusGrades", () => {
       isuFldName: "전공심화",
     });
   });
+
+  it("여러 학기의 과목별 성적 표를 한 번에 붙여넣으면 행마다 자기 학기를 붙인다", () => {
+    const multi = [
+      "2022년 1학기 과목별 성적",
+      "교과목명/과목코드\t학점\t등급\t이수구분\t이수영역\t성적폐기사유",
+      "디지털기술과미래 / 0004325\t3\tB+\t교양필수\tINU핵심창의융합\t",
+      "컴퓨터공학개론 / 0001762\t2\tA0\t전공기초\t전공기초\t",
+      "2022년 2학기 과목별 성적",
+      "교과목명/과목코드\t학점\t등급\t이수구분\t이수영역\t성적폐기사유",
+      "이산수학 / IA02009\t3\tC+\t전공기초\t전공기초\t",
+    ].join("\n");
+
+    const result = parseSmartCampusGrades(multi);
+
+    expect(result.hasMultipleSemesters).toBe(true);
+    expect(
+      result.rows.map((row) => [row.title, row.semester]),
+    ).toEqual([
+      ["디지털기술과미래", { year: 2022, term: "FIRST" }],
+      ["컴퓨터공학개론", { year: 2022, term: "FIRST" }],
+      ["이산수학", { year: 2022, term: "SECOND" }],
+    ]);
+    // 대표값은 여전히 처음 만난 학기다(단일 학기 붙여넣기와의 하위 호환).
+    expect(result.detectedSemester).toEqual({ year: 2022, term: "FIRST" });
+  });
+
+  it("학기가 하나뿐이면 hasMultipleSemesters가 false다", () => {
+    const result = parseSmartCampusGrades(FULL_SCREEN);
+    expect(result.hasMultipleSemesters).toBe(false);
+  });
 });

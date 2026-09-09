@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSemesters } from "@/hooks/useSemesters";
-import { pickCurrentSemester } from "@/utils/semester";
+import { formatSemester, pickCurrentSemester } from "@/utils/semester";
 import { useCourses } from "@/hooks/useCourses";
 import useUserStore from "@/stores/useUserStore";
 import { parseSmartCampusGrades } from "@/utils/parseSmartCampusGrades";
@@ -137,6 +137,32 @@ export default function GradeImportSheet({
     [resolvedRows],
   );
 
+  // 붙여넣은 표에 학기가 여러 개 섞여 있으면(예: 전체 성적 조회를 통째로 복사) 미리보기도
+  // 학기별로 묶어 보여준다 — 어떤 과목이 어느 학기로 들어가는지 저장 전에 확인할 수 있게.
+  const groupedRows = useMemo(() => {
+    const rows = resolvedRows ?? [];
+    const groups: { label: string; rows: ResolvedGradeRow[] }[] = [];
+    const indexByLabel = new Map<string, number>();
+
+    rows.forEach((row) => {
+      const semester = row.semester ?? effectiveSemester;
+      const label = semester
+        ? formatSemester(semester.year, semester.term)
+        : "학기 미상";
+      let index = indexByLabel.get(label);
+      if (index === undefined) {
+        index = groups.length;
+        indexByLabel.set(label, index);
+        groups.push({ label, rows: [] });
+      }
+      groups[index].rows.push(row);
+    });
+
+    return groups;
+  }, [resolvedRows, effectiveSemester]);
+
+  const isMultiSemester = groupedRows.length > 1;
+
   if (!isOpen) return null;
 
   const isPreview = resolvedRows !== null;
@@ -212,8 +238,11 @@ export default function GradeImportSheet({
               ) : (
                 <>
                   <SummaryLine>
-                    <b>{resolvedRows.length}개 과목</b>을 찾았어요. 이 중{" "}
-                    {matchedCount}개는 학교 강의 정보와 연결됐어요.
+                    <b>{resolvedRows.length}개 과목</b>
+                    {isMultiSemester
+                      ? `을 ${groupedRows.length}개 학기에서 찾았어요.`
+                      : "을 찾았어요."}{" "}
+                    이 중 {matchedCount}개는 학교 강의 정보와 연결됐어요.
                     {voidedCount > 0 && (
                       <span className="target">
                         재수강으로 성적이 취소된 {voidedCount}개는 평점 계산에서
@@ -228,42 +257,54 @@ export default function GradeImportSheet({
                       </span>
                     )}
                     <span className="target">
-                      {targetSemesterLabel}에 추가됩니다.
+                      {isMultiSemester
+                        ? "학기별로 나뉘어 한 번에 추가됩니다."
+                        : `${targetSemesterLabel}에 추가됩니다.`}
                     </span>
                   </SummaryLine>
 
-                  <PreviewList>
-                    {resolvedRows.map((row) => (
-                      <PreviewRow
-                        key={`${row.courseCode}-${row.title}`}
-                        $dimmed={row.voided}
-                      >
-                        <div className="main">
-                          <span className="name">{row.title}</span>
-                          <span className="meta">
-                            {row.courseCode}
-                            {row.resolvedCredit !== null
-                              ? ` · ${row.resolvedCredit}학점`
-                              : " · 학점 미상"}
-                            {row.resolvedIsuName
-                              ? ` · ${row.resolvedIsuName}`
-                              : ""}
-                            {row.note ? ` · ${row.note}` : ""}
-                          </span>
-                        </div>
-                        <div className="right">
-                          <GradePill $empty={!row.grade || row.voided}>
-                            {row.voided
-                              ? "성적취소"
-                              : (row.grade ?? "미입력")}
-                          </GradePill>
-                          <MatchBadge $status={row.matchStatus}>
-                            {MATCH_BADGE[row.matchStatus]}
-                          </MatchBadge>
-                        </div>
-                      </PreviewRow>
-                    ))}
-                  </PreviewList>
+                  {groupedRows.map((group) => (
+                    <PreviewGroup key={group.label}>
+                      {isMultiSemester && (
+                        <GroupHeading>
+                          {group.label}
+                          <span className="count">{group.rows.length}개</span>
+                        </GroupHeading>
+                      )}
+                      <PreviewList>
+                        {group.rows.map((row) => (
+                          <PreviewRow
+                            key={`${row.courseCode}-${row.title}`}
+                            $dimmed={row.voided}
+                          >
+                            <div className="main">
+                              <span className="name">{row.title}</span>
+                              <span className="meta">
+                                {row.courseCode}
+                                {row.resolvedCredit !== null
+                                  ? ` · ${row.resolvedCredit}학점`
+                                  : " · 학점 미상"}
+                                {row.resolvedIsuName
+                                  ? ` · ${row.resolvedIsuName}`
+                                  : ""}
+                                {row.note ? ` · ${row.note}` : ""}
+                              </span>
+                            </div>
+                            <div className="right">
+                              <GradePill $empty={!row.grade || row.voided}>
+                                {row.voided
+                                  ? "성적취소"
+                                  : (row.grade ?? "미입력")}
+                              </GradePill>
+                              <MatchBadge $status={row.matchStatus}>
+                                {MATCH_BADGE[row.matchStatus]}
+                              </MatchBadge>
+                            </div>
+                          </PreviewRow>
+                        ))}
+                      </PreviewList>
+                    </PreviewGroup>
+                  ))}
                 </>
               )}
             </>
@@ -292,7 +333,9 @@ export default function GradeImportSheet({
               disabled={resolvedRows.length === 0}
               onClick={handleApply}
             >
-              {resolvedRows.length}개 과목 적용
+              {isMultiSemester
+                ? `${groupedRows.length}개 학기 · ${resolvedRows.length}개 과목 적용`
+                : `${resolvedRows.length}개 과목 적용`}
             </CapsuleButton>
           )}
         </SheetFooter>
@@ -468,6 +511,28 @@ const SummaryLine = styled.div`
     display: block;
     margin-top: 2px;
     font-size: 12px;
+    color: var(--text-tertiary, #8b95a1);
+  }
+`;
+
+const PreviewGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 6px;
+`;
+
+const GroupHeading = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #333d4b);
+
+  .count {
+    font-size: 12px;
+    font-weight: 500;
     color: var(--text-tertiary, #8b95a1);
   }
 `;

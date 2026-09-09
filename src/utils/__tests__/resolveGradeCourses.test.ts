@@ -31,6 +31,7 @@ const row = (overrides: Partial<ParsedGradeRow>): ParsedGradeRow => ({
   isuFldName: "전공기초",
   note: null,
   voided: false,
+  semester: null,
   ...overrides,
 });
 
