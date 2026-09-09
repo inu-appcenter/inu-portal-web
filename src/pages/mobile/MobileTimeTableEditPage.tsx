@@ -29,6 +29,10 @@ import {
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { showToast } from "@/utils/toast";
+import {
+  findConflictingCourseDetails,
+} from "@/utils/timetable";
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -300,11 +304,30 @@ const MobileTimeTableEditPage = () => {
 
   const handleAddCourse = (newCourse: CourseResult) => {
     if (activeTimetableId === null) {
-      alert("활성화된 시간표가 없습니다.");
+      showToast("활성화된 시간표가 없습니다.");
       return;
     }
     if (createCourseItemMutation.isPending) return;
 
+    // 1. 기존 강의와의 시간 충돌 검사 (과목명, 교수명, 분반, 요일, 시간)
+    const conflicts = findConflictingCourseDetails(
+      newCourse.schedules,
+      timetable,
+      offeringById,
+    );
+
+    if (conflicts.length > 0) {
+      const conflictMsg = conflicts
+        .map(
+          (c) =>
+            `${c.courseName} 수업과 충돌합니다. (${c.day} ${c.time})`,
+        )
+        .join("\n");
+      showToast(conflictMsg, { duration: 3500 });
+      return;
+    }
+
+    // 2. 충돌이 없을 시 강의 추가 API 호출
     createCourseItemMutation.mutate(
       {
         timeTableId: activeTimetableId,
@@ -318,7 +341,7 @@ const MobileTimeTableEditPage = () => {
           });
         },
         onError: (error: any) => {
-          alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
+          showToast(error.response?.data?.msg || "강의 추가에 실패했습니다.");
         },
       },
     );
@@ -429,23 +452,38 @@ const MobileTimeTableEditPage = () => {
   const handleDelete = (id: number) => {
     if (activeTimetableId === null || deleteItemMutation.isPending) return;
     const target = timetable.find((item) => item.id === id);
-    if (target?.itemId === undefined) return;
+    if (!target || target.itemId === undefined) return;
+
+    const targetItemId = target.itemId;
+    const targetId = target.id;
+    const targetName = target.name;
+    const targetIsCustom = target.isCustom;
 
     deleteItemMutation.mutate(
-      { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
+      { timeTableId: activeTimetableId, timeTableItemId: targetItemId },
       {
         onSuccess: () => {
           mixpanelTrack.timetableItemActionCompleted(
             "항목 삭제",
-            target.isCustom ? "직접 일정" : "강의",
+            targetIsCustom ? "직접 일정" : "강의",
             {
               semester: activeTimetable?.semester,
             },
           );
         },
-        onError: (error: any) => {
-          alert(
-            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+        onError: () => {
+          // 서버 오류 발생 시 강의는 삭제되지 않고 토스트로 재시도 안내 표시
+          showToast(
+            `서버 오류로 인해 '${targetName}' ${targetIsCustom ? "일정" : "강의"} 삭제에 실패했습니다.`,
+            {
+              duration: 4000,
+              action: {
+                text: "다시 시도",
+                onClick: () => {
+                  handleDelete(targetId);
+                },
+              },
+            },
           );
         },
       },

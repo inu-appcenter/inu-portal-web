@@ -156,3 +156,79 @@ export const groupClassItemsByCourse = (
 
   return [...groups.values()];
 };
+
+export const DAY_LABELS_KO = ["월", "화", "수", "목", "금", "토", "일"];
+
+export interface ConflictDetail {
+  courseName: string;
+  professor: string;
+  courseId: string;
+  day: string;
+  time: string;
+}
+
+/**
+ * 추가하려는 강의 일정(newSchedules)과 기존 시간표 일정(existingEvents) 간의 시간 충돌을 검사하여
+ * 충돌한 기존 강의들의 상세 정보(과목명, 교수명, 분반, 요일, 시간) 목록을 반환합니다.
+ */
+export const findConflictingCourseDetails = (
+  newSchedules: ClassItem[] | undefined,
+  existingEvents: ClassItem[],
+  offeringById?: Map<
+    number,
+    { professor?: string | null; subjectNumber?: string | null }
+  >,
+): ConflictDetail[] => {
+  if (!newSchedules || newSchedules.length === 0) return [];
+  const conflicts: ConflictDetail[] = [];
+  const seenKeys = new Set<string>();
+
+  for (const newSched of newSchedules) {
+    if (newSched.isUntimed) continue;
+
+    for (const existing of existingEvents) {
+      if (existing.isUntimed) continue;
+
+      const isOverlapping =
+        existing.day === newSched.day &&
+        existing.startTime < newSched.endTime &&
+        newSched.startTime < existing.endTime;
+
+      if (isOverlapping) {
+        const key = `${existing.name}-${existing.day}-${existing.startTime}-${existing.endTime}`;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+
+          const offering =
+            existing.courseOfferingId && offeringById
+              ? offeringById.get(existing.courseOfferingId)
+              : null;
+          const professorStr =
+            existing.professor?.trim() ||
+            offering?.professor?.trim() ||
+            "-";
+          const courseIdStr =
+            existing.courseId?.trim() ||
+            offering?.subjectNumber?.trim() ||
+            "-";
+          const dayStr =
+            DAY_LABELS_KO[existing.day] !== undefined
+              ? `${DAY_LABELS_KO[existing.day]}요일`
+              : "-";
+          const timeStr = `${formatHoursToTime(existing.startTime)} ~ ${formatHoursToTime(existing.endTime)}`;
+
+          conflicts.push({
+            courseName: existing.name,
+            professor: professorStr,
+            courseId: courseIdStr,
+            day: dayStr,
+            time: timeStr,
+          });
+        }
+      }
+    }
+  }
+
+  return conflicts;
+};
+

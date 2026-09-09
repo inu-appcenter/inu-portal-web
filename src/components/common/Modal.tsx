@@ -127,7 +127,7 @@ const ModalOverlay = styled(Dialog.Overlay)`
   background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 9999;
+  z-index: 19999;
   animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 `;
 
@@ -146,7 +146,7 @@ const ModalContainer = styled(Dialog.Content)`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  z-index: 10000;
+  z-index: 20000;
   outline: none;
   animation: ${scaleUp} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 `;
