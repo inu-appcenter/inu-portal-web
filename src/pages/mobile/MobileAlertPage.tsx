@@ -173,7 +173,25 @@ const MobileAlertPage = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const alerts = useMemo(() => {
-    return data?.pages.flatMap((page) => page.data.contents) || [];
+    const flattened = data?.pages.flatMap((page) => page.data.contents) || [];
+
+    // 오프셋 페이지네이션 특성상 새 알림이 도착한 사이 무효화·재조회가 겹치면
+    // 페이지 경계가 밀려 같은 알림이 두 페이지에 걸쳐 중복으로 잡힐 수 있다.
+    // memberFcmMessageId(없으면 fcmMessageId)로 방어적으로 한 번만 남긴다.
+    const seen = new Set<string>();
+    return flattened.filter((alert) => {
+      const id = alert.memberFcmMessageId ?? alert.fcmMessageId;
+      const dedupeKey = id != null ? String(id) : null;
+
+      if (dedupeKey === null) {
+        return true;
+      }
+      if (seen.has(dedupeKey)) {
+        return false;
+      }
+      seen.add(dedupeKey);
+      return true;
+    });
   }, [data]);
 
   if (!isLoggedIn) {

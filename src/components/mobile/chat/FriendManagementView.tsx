@@ -319,6 +319,11 @@ export default function FriendManagementView({
     },
   });
 
+  // 친구 요청 수락/거절 중 하나라도 진행 중이면 연타로 인한 중복 처리를 막기 위해
+  // 확인 모달과 목록의 액션 버튼을 모두 잠근다.
+  const isFriendRequestActionPending =
+    acceptMutation.isPending || deleteMutation.isPending;
+
   const chatMutation = useMutation({
     mutationFn: async (targetFriendIds: number[]) =>
       createPersonalChatRoom(targetFriendIds),
@@ -342,6 +347,15 @@ export default function FriendManagementView({
 
   const friends = useMemo(() => friendsRes?.data || [], [friendsRes]);
   const pendingRequests = useMemo(() => pendingRes?.data || [], [pendingRes]);
+
+  // 알림(딥링크)으로 들어와 곧바로 이 뷰가 스와이퍼 슬라이드로 마운트되는 경우,
+  // 받은 친구 요청/친구 목록은 마운트 이후 비동기로 도착한다. 부모의 autoHeight
+  // 재계산은 마운트 시점 한 번만 예약돼 있어서, 그보다 늦게 도착한 데이터는
+  // 스와이퍼 슬라이드 높이에 반영되지 못하고 화면 밖으로 잘려 보이지 않는다.
+  // 데이터가 도착할 때마다 다시 알려준다.
+  useEffect(() => {
+    onContentHeightChange?.();
+  }, [pendingRequests.length, friends.length, onContentHeightChange]);
 
   // Filtering and sorting
   const filteredFriends = useMemo(() => {
@@ -557,7 +571,12 @@ export default function FriendManagementView({
       />
       <Modal
         isOpen={confirmModal !== null}
-        onClose={() => setConfirmModal(null)}
+        onClose={() => {
+          // 요청이 진행 중일 때 닫으면 결과를 못 보고 중복 요청을 유발하기 쉬우니
+          // 처리 중에는 닫지 않는다.
+          if (isFriendRequestActionPending) return;
+          setConfirmModal(null);
+        }}
         title={
           confirmModal?.type === "accept"
             ? "친구 요청 수락"
@@ -571,19 +590,27 @@ export default function FriendManagementView({
         primaryButton={{
           text: confirmModal?.type === "accept" ? "수락" : "거절",
           variant: confirmModal?.type === "accept" ? "brand" : "danger",
+          // 연타/중복 클릭으로 accept·delete가 두 번 나가는 것을 막는다 —
+          // 서버가 같은 요청을 두 번 처리하면 상대에게 동일 알림이 중복 발송된다.
+          disabled: isFriendRequestActionPending,
+          loading: isFriendRequestActionPending,
           onClick: () => {
-            if (!confirmModal) return;
+            if (!confirmModal || isFriendRequestActionPending) return;
             if (confirmModal.type === "accept") {
-              acceptMutation.mutate(confirmModal.friendId);
+              acceptMutation.mutate(confirmModal.friendId, {
+                onSettled: () => setConfirmModal(null),
+              });
             } else {
-              deleteMutation.mutate(confirmModal.friendId);
+              deleteMutation.mutate(confirmModal.friendId, {
+                onSettled: () => setConfirmModal(null),
+              });
             }
-            setConfirmModal(null);
           },
         }}
         secondaryButton={{
           text: "취소",
           onClick: () => setConfirmModal(null),
+          disabled: isFriendRequestActionPending,
         }}
       />
 
@@ -658,6 +685,7 @@ export default function FriendManagementView({
                     }
                     actionLabel="수락"
                     secondaryActionLabel="거절"
+                    actionsDisabled={isFriendRequestActionPending}
                   />
                   {index < pendingRequests.length - 1 && (
                     <Divider margin="0" />

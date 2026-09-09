@@ -15,6 +15,8 @@ interface SocialUserCardProps {
   actionLabel?: string;
   secondaryActionLabel?: string;
   onClick?: () => void;
+  /** 요청 처리 중 연타를 막기 위해 액션 버튼을 잠글 때 사용 */
+  actionsDisabled?: boolean;
 }
 
 export default function SocialUserCard({
@@ -26,6 +28,7 @@ export default function SocialUserCard({
   actionLabel,
   secondaryActionLabel,
   onClick,
+  actionsDisabled = false,
 }: SocialUserCardProps) {
   const safeFireId = normalizeProfileImageId(fireId, DEFAULT_PROFILE_IMAGE_ID);
   const isInteractive = !!onClick;
@@ -54,18 +57,28 @@ export default function SocialUserCard({
 
         <ActionArea>
           {onSecondaryActionClick && (
-            <ActionButton onClick={(e) => {
-              e.stopPropagation();
-              onSecondaryActionClick();
-            }} $variant="secondary">
+            <ActionButton
+              onClick={(e) => {
+                e.stopPropagation();
+                if (actionsDisabled) return;
+                onSecondaryActionClick();
+              }}
+              disabled={actionsDisabled}
+              $variant="secondary"
+            >
               {secondaryActionLabel || "거절"}
             </ActionButton>
           )}
           {onActionClick && (
-            <ActionButton onClick={(e) => {
-              e.stopPropagation();
-              onActionClick();
-            }} $variant="primary">
+            <ActionButton
+              onClick={(e) => {
+                e.stopPropagation();
+                if (actionsDisabled) return;
+                onActionClick();
+              }}
+              disabled={actionsDisabled}
+              $variant="primary"
+            >
               {actionLabel || "수락"}
             </ActionButton>
           )}
@@ -183,5 +196,10 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
 
   &:active {
     opacity: 0.7;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
