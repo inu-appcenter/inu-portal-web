@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 import Box from "@/components/common/Box";
 import Switch from "@/components/common/Switch";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
-import { Pencil, Trash2, ChevronRight } from "lucide-react";
-import { ROUTES } from "@/constants/routes";
+import CapsuleButton from "@/components/common/CapsuleButton";
+import Icon from "@/components/common/Icon";
+import { Pencil, Trash2, MessageSquarePlus } from "lucide-react";
+import useAIChatStore from "@/stores/useAIChatStore";
 import {
   getAgentReminders,
   toggleAgentReminder,
@@ -17,7 +19,7 @@ import type { AgentReminder } from "@/types/agentReminder";
 import { trackEvent } from "@/utils/mixpanel";
 
 export default function MobileAgentReminderSetting() {
-  const navigate = useNavigate();
+  const { openAgent } = useAIChatStore();
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -56,13 +58,17 @@ export default function MobileAgentReminderSetting() {
       setReminders((prev) =>
         prev.map((r) => (r.id === id ? { ...r, enabled: currentEnabled } : r)),
       );
-      alert("알림 상태를 변경하지 못했어요.");
+      alert("알림 상태를 변경하지 못했어요. 네트워크를 확인해 주세요.");
     }
   };
 
   const handleStartEdit = (reminder: AgentReminder) => {
-    setEditingId(reminder.id);
-    setEditingTime(reminder.targetTime || "08:30");
+    if (editingId === reminder.id) {
+      setEditingId(null);
+    } else {
+      setEditingId(reminder.id);
+      setEditingTime(reminder.targetTime || "08:30");
+    }
   };
 
   const handleSaveTime = async (id: number) => {
@@ -100,368 +106,407 @@ export default function MobileAgentReminderSetting() {
     if (upper.includes("BUS")) return "🚌";
     if (upper.includes("NOTICE")) return "📢";
     if (upper.includes("SCHEDULE")) return "📅";
-    return "🔔";
+    return "⏰";
   };
 
   return (
-    <SettingWrapper>
+    <ReminderSettingWrapper>
       <TitleContentArea
         title="AI 맞춤 알림"
-        description="AI 비서에게 대화로 요청한 나만의 맞춤 예약 알림들을 관리할 수 있어요."
+        description="AI 캠퍼스 비서에게 대화로 요청한 나만의 맞춤 예약 알림들을 확인하고 관리할 수 있어요."
       >
         {isLoading ? (
-          <SkeletonList>
-            <Skeleton variant="card" height={100} style={{ borderRadius: "16px" }} />
-            <Skeleton variant="card" height={100} style={{ borderRadius: "16px" }} />
-          </SkeletonList>
+          <Box style={{ width: "100%", padding: 0 }}>
+            <SettingRow>
+              <RowContent>
+                <Skeleton variant="text" width="60%" height={20} />
+                <Skeleton variant="text" width="40%" height={14} />
+              </RowContent>
+            </SettingRow>
+            <Divider margin="0" />
+            <SettingRow>
+              <RowContent>
+                <Skeleton variant="text" width="50%" height={20} />
+                <Skeleton variant="text" width="35%" height={14} />
+              </RowContent>
+            </SettingRow>
+          </Box>
         ) : reminders.length === 0 ? (
-          <EmptyContainer>
-            <EmptyIcon>🤖</EmptyIcon>
-            <EmptyTitle>등록된 맞춤 알림이 아직 없어요</EmptyTitle>
-            <EmptyDesc>
-              AI 캠퍼스 비서에게 평소 필요한 알림을 자유롭게 요청해 보세요!
-              <br />
-              예: <i>"오전 11시에 학식 알려줘"</i>, <i>"8시 30분에 날씨 알려줘"</i>
-            </EmptyDesc>
-            <GoAgentButton onClick={() => navigate(ROUTES.AI.ROOT)}>
-              <span>AI 비서에게 알림 부탁하기</span>
-              <ChevronRight size={14} color="#FFFFFF" />
-            </GoAgentButton>
-          </EmptyContainer>
+          <Box style={{ width: "100%", padding: 0 }}>
+            <EmptyBox>
+              <EmptyIconBadge>🤖</EmptyIconBadge>
+              <EmptyTitle>등록된 맞춤 알림이 아직 없어요</EmptyTitle>
+              <EmptyDescription>
+                AI 캠퍼스 비서에게 평소 필요한 알림을 자유롭게 요청해 보세요!
+                <br />
+                예: <i>"오전 11시에 학식 알려줘"</i>, <i>"8시 30분에 날씨 알려줘"</i>
+              </EmptyDescription>
+              <CapsuleButtonWrapper>
+                <CapsuleButton
+                  variant="primary"
+                  onClick={openAgent}
+                  leftIcon={<MessageSquarePlus size={17} />}
+                  style={{
+                    fontSize: "15px",
+                    padding: "10px 22px",
+                    lineHeight: "22px",
+                  }}
+                >
+                  AI 비서에게 알림 부탁하기
+                </CapsuleButton>
+              </CapsuleButtonWrapper>
+            </EmptyBox>
+          </Box>
         ) : (
-          <ReminderList>
-            {reminders.map((reminder) => (
-              <ReminderCard key={reminder.id} $enabled={reminder.enabled}>
-                <CardTopRow>
-                  <CardTitleArea>
-                    <EmojiBadge>{getToolEmoji(reminder.targetTool)}</EmojiBadge>
-                    <TitleTextWrapper>
-                      <CardTitle>{reminder.title}</CardTitle>
-                      <CardSubtitle>
-                        {reminder.repeatTypeDesc} • {reminder.targetTime}
-                      </CardSubtitle>
-                    </TitleTextWrapper>
-                  </CardTitleArea>
-                  <Switch
-                    checked={reminder.enabled}
-                    onCheckedChange={() => handleToggle(reminder.id, reminder.enabled)}
-                  />
-                </CardTopRow>
+          <Box style={{ width: "100%", padding: 0 }}>
+            {reminders.map((reminder, idx) => (
+              <div key={reminder.id}>
+                <SettingRow>
+                  <RowContent>
+                    <TitleRow>
+                      <ToolEmojiBadge>
+                        {getToolEmoji(reminder.targetTool)}
+                      </ToolEmojiBadge>
+                      <RowTitle $disabled={!reminder.enabled}>
+                        {reminder.title}
+                      </RowTitle>
+                    </TitleRow>
+                    <RowDescription>
+                      {reminder.repeatTypeDesc} • {reminder.targetTime} 발송
+                    </RowDescription>
+                  </RowContent>
 
-                {editingId === reminder.id ? (
-                  <EditTimeRow>
-                    <TimePickerLabel>시간 변경:</TimePickerLabel>
-                    <StyledTimeInput
-                      type="time"
-                      value={editingTime}
-                      onChange={(e) => setEditingTime(e.target.value)}
-                    />
-                    <SmallActionButton $primary onClick={() => handleSaveTime(reminder.id)}>
-                      저장
-                    </SmallActionButton>
-                    <SmallActionButton onClick={() => setEditingId(null)}>
-                      취소
-                    </SmallActionButton>
-                  </EditTimeRow>
-                ) : (
-                  <CardBottomRow>
-                    <TimeBadge>{reminder.targetTime} 발송</TimeBadge>
-                    <ButtonGroup>
-                      <ActionButton onClick={() => handleStartEdit(reminder)}>
-                        <Pencil size={12} color="#6B7280" />
-                        <span>시간 수정</span>
-                      </ActionButton>
-                      <ActionButton
-                        $danger
-                        onClick={() => handleDelete(reminder.id, reminder.title)}
-                      >
-                        <Trash2 size={12} color="#EF4444" />
-                        <span>삭제</span>
-                      </ActionButton>
-                    </ButtonGroup>
-                  </CardBottomRow>
+                  <RightControls>
+                    <IconButton
+                      title="시간 수정"
+                      onClick={() => handleStartEdit(reminder)}
+                    >
+                      <Pencil size={15} color="#6B7280" />
+                    </IconButton>
+                    <IconButton
+                      title="알림 삭제"
+                      $danger
+                      onClick={() => handleDelete(reminder.id, reminder.title)}
+                    >
+                      <Trash2 size={15} color="#EF4444" />
+                    </IconButton>
+                    <SwitchContainer>
+                      <Switch
+                        checked={reminder.enabled}
+                        onCheckedChange={() =>
+                          handleToggle(reminder.id, reminder.enabled)
+                        }
+                      />
+                    </SwitchContainer>
+                  </RightControls>
+                </SettingRow>
+
+                {/* 인라인 시간 수정 서브 패널 */}
+                {editingId === reminder.id && (
+                  <SubOptionBox>
+                    <SubOptionHeader>
+                      <SubOptionTextWrapper>
+                        <SubOptionTitle>발송 시간 변경</SubOptionTitle>
+                        <SubOptionDesc>
+                          알림을 수신할 시간을 설정해 주세요.
+                        </SubOptionDesc>
+                      </SubOptionTextWrapper>
+                    </SubOptionHeader>
+
+                    <CustomTimeRow>
+                      <StyledTimeInput
+                        type="time"
+                        value={editingTime}
+                        onChange={(e) => setEditingTime(e.target.value)}
+                      />
+                      <ApplyButton onClick={() => handleSaveTime(reminder.id)}>
+                        적용
+                      </ApplyButton>
+                      <CancelButton onClick={() => setEditingId(null)}>
+                        취소
+                      </CancelButton>
+                    </CustomTimeRow>
+                  </SubOptionBox>
                 )}
-              </ReminderCard>
+
+                {idx < reminders.length - 1 && <Divider margin="0" />}
+              </div>
             ))}
-          </ReminderList>
+
+            {/* 하단 새 알림 추가 버튼 (CapsuleButton) */}
+            <Divider margin="0" />
+            <AddActionRow>
+              <CapsuleButton
+                variant="brand"
+                fullWidth
+                onClick={openAgent}
+                leftIcon={<MessageSquarePlus size={16} />}
+                style={{
+                  fontSize: "14.5px",
+                  padding: "10px 18px",
+                  lineHeight: "22px",
+                  boxShadow: "none",
+                }}
+              >
+                + AI 비서에게 새 맞춤 알림 부탁하기
+              </CapsuleButton>
+            </AddActionRow>
+          </Box>
         )}
       </TitleContentArea>
 
-      {/* 대화형 수정 안내 팁 카드 */}
-      <TipCard>
-        <TipHeader>
-          <TipIcon>💡</TipIcon>
-          <TipTitle>대화로도 언제든 수정할 수 있어요</TipTitle>
-        </TipHeader>
-        <TipBody>
-          AI 비서와의 채팅창에서 <b>"아까 학식 알림 11시 반으로 바꿔줘"</b> 또는{" "}
-          <b>"날씨 알림 꺼줘"</b>라고 말씀하셔도 설정이 자동으로 연동됩니다.
-        </TipBody>
-      </TipCard>
-
-      {/* 푸시 알림 예시 배너 */}
+      {/* 푸시 알림 예시 미리보기 (INTIP 표준 배너) */}
       <PreviewSectionWrapper>
-        <PreviewSectionLabel>알림 수신 예시</PreviewSectionLabel>
-        <BannerCard>
-          <BannerHeader>
-            <AppIcon>INTIP</AppIcon>
-            <AppName>INTIP AI 비서</AppName>
-            <BannerTime>11:00</BannerTime>
-          </BannerHeader>
-          <BannerTitle>🍱 오늘의 11시 학식 메뉴 배달</BannerTitle>
-          <BannerBody>
-            제1기숙사 식당: 치즈돈까스(5,500원) / 학생식당: 김치제육볶음이 준비되어
-            있어요. 맛있는 점심 드세요!
-          </BannerBody>
-        </BannerCard>
+        <PreviewSectionLabel>알림 예시</PreviewSectionLabel>
+        <NotificationPreviewList>
+          <OsNotificationBanner>
+            <OsHeader>
+              <OsAppIconWrapper>
+                <Icon name="bell" size={10} color="#ffffff" />
+              </OsAppIconWrapper>
+              <OsAppName>INTIP AI 비서</OsAppName>
+              <OsTimeText>11:00</OsTimeText>
+            </OsHeader>
+            <OsTitle>🍱 [11:00] 오늘의 점심 학식 안내</OsTitle>
+            <OsBody>
+              제1기숙사 식당: 치즈돈까스(5,500원) / 학생식당: 김치제육볶음
+            </OsBody>
+          </OsNotificationBanner>
+
+          <OsNotificationBanner>
+            <OsHeader>
+              <OsAppIconWrapper>
+                <Icon name="bell" size={10} color="#ffffff" />
+              </OsAppIconWrapper>
+              <OsAppName>INTIP AI 비서</OsAppName>
+              <OsTimeText>08:30</OsTimeText>
+            </OsHeader>
+            <OsTitle>☀️ [08:30] 송도캠퍼스 날씨 브리핑</OsTitle>
+            <OsBody>
+              현재 기온 18.7℃, 미세먼지 '좋음'. 오후 3시경 소나기가 예상되니 우산을 챙기세요! ☂️
+            </OsBody>
+          </OsNotificationBanner>
+        </NotificationPreviewList>
       </PreviewSectionWrapper>
-    </SettingWrapper>
+    </ReminderSettingWrapper>
   );
 }
 
-const SettingWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-`;
+/* --- INTIP 디자인 시스템 스타일드 컴포넌트 --- */
 
-const SkeletonList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-`;
-
-const ReminderList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-`;
-
-const ReminderCard = styled(Box)<{ $enabled: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 18px;
+const ReminderSettingWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
-  opacity: ${({ $enabled }) => ($enabled ? 1 : 0.65)};
-  transition: opacity 0.2s ease;
-  border: 1px solid #edf2f7;
-`;
-
-const CardTopRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const CardTitleArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const EmojiBadge = styled.div`
-  font-size: 24px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background-color: #f3f6fb;
-  flex-shrink: 0;
-`;
-
-const TitleTextWrapper = styled.div`
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 24px;
 `;
 
-const CardTitle = styled.div`
-  font-size: 15.5px;
-  font-weight: 700;
-  color: #1a202c;
-  letter-spacing: -0.2px;
-`;
-
-const CardSubtitle = styled.div`
-  font-size: 13px;
-  font-weight: 500;
-  color: #718096;
-`;
-
-const CardBottomRow = styled.div`
+const SettingRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
+  padding: 16px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #ffffff;
 `;
 
-const TimeBadge = styled.span`
-  font-size: 12px;
-  font-weight: 600;
-  color: #3b82f6;
-  background-color: #eff6ff;
-  padding: 4px 10px;
-  border-radius: 6px;
+const RowContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  padding-right: 12px;
 `;
 
-const ButtonGroup = styled.div`
+const TitleRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
 `;
 
-const ActionButton = styled.button<{ $danger?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 9px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#FEE2E2" : "#E5E7EB")};
-  background-color: ${({ $danger }) => ($danger ? "#FEF2F2" : "#FFFFFF")};
-  color: ${({ $danger }) => ($danger ? "#EF4444" : "#4B5563")};
-  border-radius: 8px;
-  font-size: 12px;
+const ToolEmojiBadge = styled.span`
+  font-size: 16px;
+  line-height: 1;
+`;
+
+const RowTitle = styled.div<{ $disabled?: boolean }>`
+  font-size: 15.5px;
   font-weight: 600;
+  color: ${({ $disabled }) => ($disabled ? "#8E8E93" : "#1C1C1E")};
+`;
+
+const RowDescription = styled.div`
+  font-size: 13px;
+  color: #8e8e93;
+  line-height: 1.4;
+  padding-left: 24px;
+`;
+
+const RightControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+`;
+
+const IconButton = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background-color: ${({ $danger }) => ($danger ? "#FFF1F2" : "#F4F6F8")};
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: ${({ $danger }) => ($danger ? "#FEE2E2" : "#F3F4F6")};
+    background-color: ${({ $danger }) => ($danger ? "#FFE4E6" : "#E5E7EB")};
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
-const EditTimeRow = styled.div`
+const SwitchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+`;
+
+const SubOptionBox = styled.div`
+  width: 100%;
+  padding: 14px 20px;
+  background-color: #fafbfc;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #f0f2f5;
+`;
+
+const SubOptionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const SubOptionTextWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const SubOptionTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #2c3e50;
+`;
+
+const SubOptionDesc = styled.div`
+  font-size: 12px;
+  color: #8e8e93;
+`;
+
+const CustomTimeRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
-`;
-
-const TimePickerLabel = styled.span`
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #4b5563;
+  width: 100%;
 `;
 
 const StyledTimeInput = styled.input`
-  font-size: 13px;
+  width: 130px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 6px 10px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 5px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  color: #1f2937;
+  color: #333;
+  background-color: #fff;
   outline: none;
+  box-sizing: border-box;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: #5e92f0;
   }
 `;
 
-const SmallActionButton = styled.button<{ $primary?: boolean }>`
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
+const ApplyButton = styled.button`
+  padding: 6px 14px;
+  border-radius: 8px;
   border: none;
+  background-color: #5e92f0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  background-color: ${({ $primary }) => ($primary ? "#3B82F6" : "#E5E7EB")};
-  color: ${({ $primary }) => ($primary ? "#FFFFFF" : "#374151")};
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
-const EmptyContainer = styled(Box)`
+const CancelButton = styled.button`
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  color: #666666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const EmptyBox = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 36px 20px;
+  padding: 40px 20px;
   width: 100%;
   box-sizing: border-box;
-  gap: 12px;
-  background-color: #ffffff;
-  border: 1px dashed #cbd5e1;
+  gap: 8px;
 `;
 
-const EmptyIcon = styled.div`
-  font-size: 38px;
+const EmptyIconBadge = styled.div`
+  font-size: 40px;
   margin-bottom: 4px;
 `;
 
 const EmptyTitle = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: #1c1c1e;
 `;
 
-const EmptyDesc = styled.div`
-  font-size: 13px;
-  color: #64748b;
-  line-height: 1.5;
-`;
-
-const GoAgentButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 10px;
-  padding: 10px 18px;
-  background: linear-gradient(135deg, #4f46e5, #3b82f6);
-  color: #ffffff;
-  border: none;
-  border-radius: 100px;
+const EmptyDescription = styled.div`
   font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-  transition: transform 0.15s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
+  color: #8e8e93;
+  line-height: 1.5;
+  margin-top: 2px;
 `;
 
-const TipCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+const CapsuleButtonWrapper = styled.div`
+  margin-top: 14px;
+`;
+
+const AddActionRow = styled.div`
+  padding: 14px 20px;
+  background-color: #ffffff;
   width: 100%;
   box-sizing: border-box;
 `;
 
-const TipHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const TipIcon = styled.span`
-  font-size: 14px;
-`;
-
-const TipTitle = styled.span`
-  font-size: 13px;
-  font-weight: 700;
-  color: #334155;
-`;
-
-const TipBody = styled.div`
-  font-size: 12px;
-  color: #64748b;
-  line-height: 1.45;
-`;
+/* --- INTIP OS Notification Banner Components --- */
 
 const PreviewSectionWrapper = styled.div`
   display: flex;
@@ -477,7 +522,14 @@ const PreviewSectionLabel = styled.span`
   margin-left: 2px;
 `;
 
-const BannerCard = styled.div`
+const NotificationPreviewList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+`;
+
+const OsNotificationBanner = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -489,7 +541,7 @@ const BannerCard = styled.div`
   gap: 3px;
 `;
 
-const BannerHeader = styled.div`
+const OsHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -497,40 +549,42 @@ const BannerHeader = styled.div`
   margin-bottom: 2px;
 `;
 
-const AppIcon = styled.div`
+const OsAppIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
-  font-weight: 800;
-  color: white;
-  width: 24px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
   background-color: #5e92f0;
   flex-shrink: 0;
 `;
 
-const AppName = styled.span`
+const OsAppName = styled.span`
   font-size: 11.5px;
   font-weight: 600;
   color: #4b5563;
   flex: 1;
+  letter-spacing: -0.2px;
 `;
 
-const BannerTime = styled.span`
+const OsTimeText = styled.span`
   font-size: 11px;
   color: #9ca3af;
 `;
 
-const BannerTitle = styled.div`
+const OsTitle = styled.div`
   font-size: 13.5px;
   font-weight: 700;
   color: #111827;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
 `;
 
-const BannerBody = styled.div`
+const OsBody = styled.div`
   font-size: 12.5px;
   color: #374151;
   line-height: 1.45;
+  white-space: pre-line;
+  letter-spacing: -0.1px;
 `;
