@@ -27,17 +27,23 @@ import Modal from "@/components/common/Modal";
 
 // --- SVG Icons ---
 
-const CheckIcon = () => (
+const CheckIcon = ({
+  size = 16,
+  color = "#ffffff",
+}: {
+  size?: number;
+  color?: string;
+}) => (
   <svg
-    width="24"
-    height="24"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
       d="M20 6L9 17L4 12"
-      stroke="#0061FF"
+      stroke={color}
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -198,10 +204,14 @@ export interface FriendManagementViewProps {
   onLongPress?: (friendId: number) => void;
   onPressStart?: (friendId: number) => void;
   onPressCancel?: () => void;
+  onProfileClick?: (friend: FriendResponseDto) => void;
   isShareMode?: boolean;
   sharePayload?: string;
   onFilteredFriendsChange?: (friends: FriendResponseDto[]) => void;
   onContentHeightChange?: () => void;
+  customFriends?: FriendResponseDto[];
+  showMyProfile?: boolean;
+  showPendingRequests?: boolean;
 }
 
 export default function FriendManagementView({
@@ -212,10 +222,14 @@ export default function FriendManagementView({
   onLongPress,
   onPressStart,
   onPressCancel,
+  onProfileClick,
   isShareMode = false,
   sharePayload,
   onFilteredFriendsChange,
   onContentHeightChange,
+  customFriends,
+  showMyProfile = true,
+  showPendingRequests = true,
 }: FriendManagementViewProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -278,6 +292,7 @@ export default function FriendManagementView({
 
   // Long press tracking for rows
   const internalLongPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const preventClickResetTimer = useRef<NodeJS.Timeout | null>(null);
   const preventClick = useRef(false);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
@@ -286,6 +301,9 @@ export default function FriendManagementView({
       if (internalLongPressTimer.current) {
         clearTimeout(internalLongPressTimer.current);
       }
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
+      }
     };
   }, []);
 
@@ -293,13 +311,13 @@ export default function FriendManagementView({
   const { data: friendsRes, isLoading: friendsLoading } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
-    enabled: isLoggedIn,
+    enabled: isLoggedIn && !customFriends,
   });
 
   const { data: pendingRes } = useQuery({
     queryKey: ["pendingFriends"],
     queryFn: getPendingFriends,
-    enabled: isLoggedIn && !isShareMode && !isSelectionMode,
+    enabled: isLoggedIn && !isShareMode && !isSelectionMode && showPendingRequests && !customFriends,
   });
 
   // Mutations
@@ -340,7 +358,7 @@ export default function FriendManagementView({
     },
   });
 
-  const friends = useMemo(() => friendsRes?.data || [], [friendsRes]);
+  const friends = useMemo(() => customFriends || friendsRes?.data || [], [customFriends, friendsRes]);
   const pendingRequests = useMemo(() => pendingRes?.data || [], [pendingRes]);
 
   // Filtering and sorting
@@ -379,6 +397,10 @@ export default function FriendManagementView({
   const handleRowClick = (friendId: number, rowId: string) => {
     if (preventClick.current) {
       preventClick.current = false;
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
+        preventClickResetTimer.current = null;
+      }
       return;
     }
     if (isSelectionMode) {
@@ -399,8 +421,15 @@ export default function FriendManagementView({
 
   const handlePressStartInternal = useCallback(
     (friendId: number) => {
-      if (isSelectionMode) return;
+      if (isSelectionMode) {
+        preventClick.current = false;
+        return;
+      }
       preventClick.current = false;
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
+        preventClickResetTimer.current = null;
+      }
       if (internalLongPressTimer.current) {
         clearTimeout(internalLongPressTimer.current);
       }
@@ -415,6 +444,13 @@ export default function FriendManagementView({
         } else if (onPressStart) {
           onPressStart(friendId);
         }
+        if (preventClickResetTimer.current) {
+          clearTimeout(preventClickResetTimer.current);
+        }
+        preventClickResetTimer.current = setTimeout(() => {
+          preventClick.current = false;
+          preventClickResetTimer.current = null;
+        }, 300);
       }, 600);
     },
     [isSelectionMode, onLongPress, onPressStart],
@@ -457,7 +493,11 @@ export default function FriendManagementView({
       const showDetail = !isSelectionMode && isExpanded;
 
       return (
-        <FriendRowWrapper key={friend.friendId} $expanded={isExpanded}>
+        <FriendRowWrapper
+          key={friend.friendId}
+          $expanded={isExpanded}
+          $isSelected={isSelectionMode && isSelected}
+        >
           <RowInner>
             <RowHeader
               onMouseDown={() => handlePressStartInternal(friend.friendId)}
@@ -469,7 +509,23 @@ export default function FriendManagementView({
               onClick={() => handleRowClick(friend.friendId, rowId)}
             >
               <Ripple />
-              <ProfileArea>
+              <ProfileArea
+                onClick={(e) => {
+                  if (isShareMode) return;
+                  e.stopPropagation();
+                  if (preventClick.current) {
+                    preventClick.current = false;
+                    return;
+                  }
+                  if (onProfileClick) {
+                    onProfileClick(friend);
+                  } else {
+                    setSelectedFriendId(friend.friendId);
+                    setSelectedMyId(null);
+                    setIsProfileModalOpen(true);
+                  }
+                }}
+              >
                 <ProfileImage
                   src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
                   alt="Profile"
@@ -478,13 +534,13 @@ export default function FriendManagementView({
                       "https://portal.inuappcenter.kr/images/profile/default.png";
                   }}
                 />
-                {isSelectionMode && (
-                  <SelectionOverlay $selected={isSelected}>
-                    {isSelected && <CheckIcon />}
-                  </SelectionOverlay>
-                )}
               </ProfileArea>
               <NameRow>{friend.friendAlias || friend.nickname}</NameRow>
+              {isSelectionMode && (
+                <SelectionCheckbox $selected={isSelected}>
+                  {isSelected && <CheckIcon size={16} color="#ffffff" />}
+                </SelectionCheckbox>
+              )}
             </RowHeader>
 
             <ExpandedDetailWrapper $expanded={showDetail}>
@@ -588,46 +644,51 @@ export default function FriendManagementView({
       />
 
       {/* 1. 내 프로필 카드 */}
-      {isLoggedIn && !searchTerm.trim() && !isShareMode && !isSelectionMode && (
-        <>
-          <SectionHeader>내 프로필</SectionHeader>
-          <FriendListContainer style={{ marginBottom: "16px" }}>
-            <MyProfileRow
-              onClick={() => {
-                setSelectedMyId(userInfo.id);
-                setSelectedFriendId(null);
-                setIsProfileModalOpen(true);
-              }}
-            >
-              <Ripple />
-              <ProfileArea>
-                <ProfileImage
-                  src={`https://portal.inuappcenter.kr/images/profile/${safeMyFireId}`}
-                  alt="Profile"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://portal.inuappcenter.kr/images/profile/default.png";
-                  }}
+      {showMyProfile &&
+        isLoggedIn &&
+        !searchTerm.trim() &&
+        !isShareMode &&
+        !isSelectionMode && (
+          <>
+            <SectionHeader>내 프로필</SectionHeader>
+            <FriendListContainer style={{ marginBottom: "16px" }}>
+              <MyProfileRow
+                onClick={() => {
+                  setSelectedMyId(userInfo.id);
+                  setSelectedFriendId(null);
+                  setIsProfileModalOpen(true);
+                }}
+              >
+                <Ripple />
+                <ProfileArea>
+                  <ProfileImage
+                    src={`https://portal.inuappcenter.kr/images/profile/${safeMyFireId}`}
+                    alt="Profile"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://portal.inuappcenter.kr/images/profile/default.png";
+                    }}
+                  />
+                </ProfileArea>
+                <MyProfileInfo>
+                  <MyProfileName>{userInfo.nickname}</MyProfileName>
+                  <MyProfileDepartment>
+                    {userInfo.department || "학과 정보 없음"}
+                  </MyProfileDepartment>
+                </MyProfileInfo>
+                <Icon
+                  name="chevron-right"
+                  size={20}
+                  color="var(--text-tertiary, #8b95a1)"
                 />
-              </ProfileArea>
-              <MyProfileInfo>
-                <MyProfileName>{userInfo.nickname}</MyProfileName>
-                <MyProfileDepartment>
-                  {userInfo.department || "학과 정보 없음"}
-                </MyProfileDepartment>
-              </MyProfileInfo>
-              <Icon
-                name="chevron-right"
-                size={20}
-                color="var(--text-tertiary, #8b95a1)"
-              />
-            </MyProfileRow>
-          </FriendListContainer>
-        </>
-      )}
+              </MyProfileRow>
+            </FriendListContainer>
+          </>
+        )}
 
       {/* 2. 받은 친구 요청 */}
-      {pendingRequests.length > 0 &&
+      {showPendingRequests &&
+        pendingRequests.length > 0 &&
         !searchTerm.trim() &&
         !isShareMode &&
         !isSelectionMode && (
@@ -771,16 +832,17 @@ const StatusSection = styled.div`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 0 4px;
-  margin-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 2px;
+  margin-bottom: 4px;
   box-sizing: border-box;
 `;
 
 const TotalCountText = styled.span`
   font-family: Pretendard;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 1.4;
   color: var(--text-tertiary, #8b95a1);
 `;
 
@@ -789,10 +851,12 @@ const SortIndicator = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 2px;
+  height: 32px;
+  padding: 0 2px;
   font-family: Pretendard;
-  font-weight: 400;
+  font-weight: 500;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 1.4;
   color: var(--text-tertiary, #8b95a1);
   cursor: pointer;
 `;
@@ -855,7 +919,7 @@ const MyProfileDepartment = styled.div`
   color: var(--text-tertiary, #8b95a1);
 `;
 
-const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
+const FriendRowWrapper = styled.div<{ $expanded: boolean; $isSelected?: boolean }>`
   position: relative;
   overflow: hidden;
   display: flex;
@@ -863,9 +927,11 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
-  background-color: transparent;
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? "var(--bg-brand, #eff6ff)" : "transparent"};
   user-select: none;
   -webkit-user-select: none;
+  transition: background-color 0.15s ease-in-out;
 
   &:last-child {
     border-bottom: none;
@@ -901,6 +967,13 @@ const ProfileArea = styled.div`
   height: 40px;
   flex-shrink: 0;
   position: relative;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;
 
 const ProfileImage = styled.img`
@@ -911,22 +984,22 @@ const ProfileImage = styled.img`
   background-color: var(--border-brand-subtle, #d3e5ff);
 `;
 
-const SelectionOverlay = styled.div<{ $selected: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  box-sizing: border-box;
-  border: 2px solid
-    ${({ $selected }) => ($selected ? "#0061ff" : "rgba(0, 0, 0, 0.15)")};
+const SelectionCheckbox = styled.div<{ $selected: boolean }>`
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
   background-color: ${({ $selected }) =>
-    $selected ? "rgba(0, 97, 255, 0.4)" : "transparent"};
+    $selected ? "var(--interactive-primary, #0061ff)" : "var(--bg-subtle, #f8f9fb)"};
+  border: 1px solid
+    ${({ $selected }) =>
+      $selected ? "var(--interactive-primary, #0061ff)" : "var(--border-strong, #d1d6db)"};
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
+  margin-left: 12px;
+  box-sizing: border-box;
+  transition: all 0.15s ease-in-out;
 `;
 
 const NameRow = styled.div`
@@ -940,6 +1013,10 @@ const NameRow = styled.div`
   min-height: 40px;
   margin-left: 12px;
   box-sizing: border-box;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`

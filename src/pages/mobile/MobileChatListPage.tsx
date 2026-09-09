@@ -9,7 +9,6 @@ import React, { useEffect, useMemo, useState, useCallback, useRef, memo } from "
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import Icon from "@/components/common/Icon";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
@@ -29,12 +28,12 @@ import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
 import EmptyState from "@/components/common/EmptyState";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
-
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
 import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
@@ -60,8 +59,20 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const [selectedRoomForPreview, setSelectedRoomForPreview] =
     useState<OpenChatRoomResponseDto | null>(null);
 
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchActiveChange = useCallback(
+    (active: boolean) => {
+      setIsSearchActive(active);
+      if (!active) {
+        setSearchTerm("");
+      } else {
+        closeAddMenu();
+      }
+    },
+    [closeAddMenu],
+  );
 
   const [isTop, setIsTop] = useState(true);
 
@@ -100,6 +111,8 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    staleTime: 0,
     enabled: isLoggedIn,
   });
 
@@ -228,8 +241,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
 
   const handleEnterSelectionMode = useCallback(() => {
     setIsSelectionMode(true);
+    setSelectedIds(allFriendIds);
     window.history.pushState({ modal: "selection" }, "");
-  }, []);
+  }, [allFriendIds]);
 
   const handleExitSelectionMode = useCallback(() => {
     setIsSelectionMode(false);
@@ -239,7 +253,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   }, []);
 
   const menuItems = useMemo(() => {
-    if (isSearching || isSelectionMode) return undefined;
+    if (isSelectionMode) return undefined;
 
     const defaultMenu = [
       {
@@ -271,46 +285,18 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       ];
     }
     return defaultMenu;
-  }, [selectedCategory, navigate, isSearching, isSelectionMode]);
+  }, [selectedCategory, navigate, isSelectionMode]);
 
-  const handleSearchClick = useCallback(() => {
-    setIsSearching(true);
-    window.history.pushState({ modal: "search" }, "");
-    mixpanelTrack.featureClicked("Search Icon", "ChatListHeader");
-  }, []);
-
-  const handleCloseSearch = useCallback(() => {
-    setIsSearching(false);
-    setSearchTerm("");
-    if (window.history.state?.modal === "search") {
-      window.history.back();
-    }
-  }, []);
-
+  // Category 전환 시 add-friend 메뉴 닫기
   useEffect(() => {
-    const handlePopState = () => {
-      if (isSearching) {
-        setIsSearching(false);
-        setSearchTerm("");
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [isSearching]);
-
-  // Category/search 전환 시 add-friend 메뉴 닫기
-  useEffect(() => {
-    if ((selectedCategory !== "친구" || isSearching) && isAddMenuOpen) {
+    if (selectedCategory !== "친구" && isAddMenuOpen) {
       closeAddMenu();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, isSearching]);
+  }, [selectedCategory]);
 
   const headerRight = useMemo(() => {
-    if (isSearching) return null;
+    if (isSearchActive) return null;
 
     if (selectedCategory === "친구") {
       if (isSelectionMode) {
@@ -336,47 +322,35 @@ const MobileChatListPage = memo(function MobileChatListPage() {
           <HeaderActionButton onClick={handleEnterSelectionMode}>
             시간표 비교
           </HeaderActionButton>
-          <IconButton onClick={handleSearchClick}>
-            <Icon name="search" size={24} color="#1C1C1E" />
-          </IconButton>
         </HeaderRightArea>
       );
     }
     return null;
   }, [
     selectedCategory,
-    isSearching,
     isSelectionMode,
     selectedIds.length,
     allFriendIds.length,
     handleSelectAll,
     handleExitSelectionMode,
     handleEnterSelectionMode,
-    handleSearchClick,
   ]);
 
   const headerTitle = useMemo(() => {
-    if (isSearching) {
-      return "친구 검색";
-    }
     if (isSelectionMode) {
       return selectedIds.length > 0
         ? `${selectedIds.length}명 선택됨`
         : "시간표 비교";
     }
     return "채팅";
-  }, [isSearching, isSelectionMode, selectedIds.length]);
+  }, [isSelectionMode, selectedIds.length]);
 
   useHeader({
     title: headerTitle,
-    subHeader: isSearching || isSelectionMode ? null : subHeader,
+    subHeader: isSelectionMode ? null : subHeader,
     floatingSubHeader: true,
-    hasback: isSearching || isSelectionMode,
-    onBack: isSearching
-      ? handleCloseSearch
-      : isSelectionMode
-      ? handleExitSelectionMode
-      : undefined,
+    hasback: isSelectionMode,
+    onBack: isSelectionMode ? handleExitSelectionMode : undefined,
     menuItems: menuItems,
     rightArea: headerRight,
     rightAreaNotCircle: true,
@@ -464,12 +438,12 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   useEffect(() => {
     if (!swiperRef) return;
 
-    if (isSearching || isAnyModalOpen || isSelectionMode) {
+    if (isSearchActive || isAnyModalOpen || isSelectionMode) {
       swiperRef.allowTouchMove = false;
     } else {
       swiperRef.allowTouchMove = true;
     }
-  }, [swiperRef, isSearching, isAnyModalOpen, isSelectionMode]);
+  }, [swiperRef, isSearchActive, isAnyModalOpen, isSelectionMode]);
 
   // 데이터 로딩 완료 및 카테고리 전환 시점을 대비한 스위퍼 리사이징 수동 업데이트 트리거
   useEffect(() => {
@@ -509,7 +483,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         }}
         initialSlide={currentIndex}
         onSlideChange={handleSlideChange}
-        allowTouchMove={!isAnyModalOpen && !isSearching && !isSelectionMode}
+        allowTouchMove={!isAnyModalOpen && !isSearchActive && !isSelectionMode}
         speed={320}
         autoHeight={true}
         observer={true}
@@ -581,20 +555,32 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         <div
                           style={{
                             width: "100%",
-                            padding: "12px 20px",
+                            padding: "0 12px 0 0",
                             display: "flex",
-                            gap: "12px",
+                            gap: "4px",
                             alignItems: "center",
                             boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              width: "74px",
+                              height: "72px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Skeleton width="48px" height="48px" circle />
+                          </div>
                           <div
                             style={{
                               flex: 1,
                               display: "flex",
                               flexDirection: "column",
                               gap: "8px",
+                              padding: "12px 0",
                             }}
                           >
                             <Skeleton width="40%" height="18px" />
@@ -612,7 +598,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         room={room}
                         onClick={() => handleRoomClick(room)}
                       />
-                      {index < personalRooms.length - 1 && <Divider margin="0" />}
+                      {index < personalRooms.length - 1 && (
+                        <Divider margin="0" />
+                      )}
                     </div>
                   ))
                 ) : (
@@ -626,41 +614,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         {/* 슬라이드 1: 오픈채팅 */}
         <SwiperSlide style={{ height: "auto" }}>
           <Slide>
-            <TitleContentArea
-              description={
-                "채팅 기능은 beta 버전이며, 불안정할 수 있습니다. 향후 친구 및 채팅 기능을 연계한 새로운 서비스가 제공될 예정입니다. 친구 탭에서 친구를 미리 등록해보세요!"
-              }
-            />
-            {isLoggedIn && !userInfo.chatPushEnabled && (
-              <TitleContentArea
-                description={
-                  <NotificationWarningBanner>
-                    현재 채팅 알림이 꺼져있어요.
-                    <span
-                      className="link"
-                      onClick={() => navigate(ROUTES.MYPAGE.NOTIFICATION)}
-                    >
-                      알림 설정으로 이동
-                    </span>
-                  </NotificationWarningBanner>
-                }
-              />
-            )}
-            {!isLoggedIn && (
-              <TitleContentArea
-                description={
-                  <NotificationWarningBanner>
-                    채팅 기능을 이용하려면 로그인이 필요해요.
-                    <span
-                      className="link"
-                      onClick={() => navigate(ROUTES.LOGIN)}
-                    >
-                      로그인하러 가기
-                    </span>
-                  </NotificationWarningBanner>
-                }
-              />
-            )}
+            <TitleContentArea title="내 오픈채팅 목록" />
             <Box>
               <ListWrapper>
                 {isLoading ? (
@@ -670,20 +624,32 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         <div
                           style={{
                             width: "100%",
-                            padding: "12px 20px",
+                            padding: "0 12px 0 0",
                             display: "flex",
-                            gap: "12px",
+                            gap: "4px",
                             alignItems: "center",
                             boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              width: "74px",
+                              height: "72px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Skeleton width="48px" height="48px" circle />
+                          </div>
                           <div
                             style={{
                               flex: 1,
                               display: "flex",
                               flexDirection: "column",
                               gap: "8px",
+                              padding: "12px 0",
                             }}
                           >
                             <Skeleton width="40%" height="18px" />
@@ -776,18 +742,16 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         {/* 슬라이드 2: 친구 */}
         <SwiperSlide style={{ height: "auto" }}>
           <Slide>
-            {!isSearching && (
-              <TitleContentArea
-                description={
-                  <>
-                    닉네임 검색, 주변 친구 찾기, 초대 링크로 친구를 찾아보세요!
-                    <br />
-                    아직 학번 닉네임을 사용 중이라면, 마이페이지에서 새로운
-                    닉네임을 설정해보세요.
-                  </>
-                }
-              />
-            )}
+            <TitleContentArea
+              description={
+                <>
+                  닉네임 검색, 주변 친구 찾기, 초대 링크로 친구를 찾아보세요!
+                  <br />
+                  아직 학번 닉네임을 사용 중이라면, 마이페이지에서 새로운
+                  닉네임을 설정해보세요.
+                </>
+              }
+            />
             {!isLoggedIn && (
               <TitleContentArea
                 description={
@@ -815,89 +779,102 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         </SwiperSlide>
       </Swiper>
 
-      {!isSearching && !isSelectionMode && isLoggedIn && (
-        <FabAnchor>
-          {selectedCategory === "친구" && (
-            <AddFriendMenuCard
-              open={isAddMenuOpen}
-              onScrimClick={() => closeAddMenu()}
-              onSearchClick={() => {
-                closeAddMenu(() => {
-                  mixpanelTrack.friendActionClicked("친구 추가");
-                  setIsAddFriendModalOpen(true);
-                });
+      {/* Floating Area (always rendered for animation) */}
+      <FloatingActionsOuter $isMenuOpen={isAddMenuOpen}>
+        <FloatingActionsWrapper>
+          {/* Plus button - scale out when selection mode or search active */}
+          <PlusButtonWrapper
+            $visible={!isSelectionMode && !isSearchActive && isLoggedIn}
+            $isMenuOpen={isAddMenuOpen}
+          >
+            {selectedCategory === "친구" && (
+              <AddFriendMenuCard
+                open={isAddMenuOpen}
+                onScrimClick={() => closeAddMenu()}
+                onSearchClick={() => {
+                  closeAddMenu(() => {
+                    mixpanelTrack.friendActionClicked("친구 추가");
+                    setIsAddFriendModalOpen(true);
+                  });
+                }}
+                onNearbyClick={() => {
+                  closeAddMenu(() => setIsNearbyInfoOpen(true));
+                }}
+                onInviteClick={() => {
+                  closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
+                }}
+              />
+            )}
+            <FloatingActionButton
+              onClick={() => {
+                if (selectedCategory === "개인") {
+                  mixpanelTrack.chatRoomMenuClicked(
+                    "개인 채팅방 생성",
+                    "new_personal",
+                  );
+                  navigate(ROUTES.CHAT.CREATE_PERSONAL);
+                } else if (selectedCategory === "친구") {
+                  toggleAddMenu();
+                } else {
+                  mixpanelTrack.chatRoomMenuClicked(
+                    "오픈 채팅방 생성",
+                    "new_open",
+                  );
+                  setIsCreateModalOpen(true);
+                }
               }}
-              onNearbyClick={() => {
-                closeAddMenu(() => setIsNearbyInfoOpen(true));
-              }}
-              onInviteClick={() => {
-                closeAddMenu(() => navigate(ROUTES.FRIEND.QR));
-              }}
-            />
+              $isTop={isTop}
+            >
+              <Plus
+                size={20}
+                color="white"
+                style={{
+                  transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform:
+                    selectedCategory === "친구" && isAddMenuOpen
+                      ? "rotate(45deg)"
+                      : "rotate(0deg)",
+                }}
+              />
+              <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
+            </FloatingActionButton>
+          </PlusButtonWrapper>
+
+          {/* Search bar (rendered only on 친구 tab) */}
+          {selectedCategory === "친구" && !isSelectionMode && (
+            <SearchBarContainer $isSearchActive={isSearchActive}>
+              <FloatingSearchBar
+                placeholder="친구 이름 또는 학번 검색"
+                onSearch={setSearchTerm}
+                onActiveChange={handleSearchActiveChange}
+                searchParamKey="q"
+                size={56}
+              />
+            </SearchBarContainer>
           )}
-          <FloatingActionButton
-            onClick={() => {
-              if (selectedCategory === "개인") {
-                mixpanelTrack.chatRoomMenuClicked(
-                  "개인 채팅방 생성",
-                  "new_personal",
+
+          {/* Compare button - slides up from bottom */}
+          <CompareButtonArea
+            $visible={isSelectionMode && selectedCategory === "친구"}
+          >
+            <CompareButton
+              variant="primary"
+              fullWidth
+              onClick={() => {
+                if (selectedIds.length === 0) return;
+                navigate(
+                  `${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`,
                 );
-                navigate(ROUTES.CHAT.CREATE_PERSONAL);
-              } else if (selectedCategory === "친구") {
-                toggleAddMenu();
-              } else {
-                mixpanelTrack.chatRoomMenuClicked("오픈 채팅방 생성", "new_open");
-                setIsCreateModalOpen(true);
-              }
-            }}
-            $isTop={isTop}
-          >
-            <Plus
-              size={20}
-              color="white"
-              style={{
-                transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                transform:
-                  selectedCategory === "친구" && isAddMenuOpen
-                    ? "rotate(45deg)"
-                    : "rotate(0deg)",
               }}
-            />
-            <ButtonLabel $isTop={isTop}>{fabLabel}</ButtonLabel>
-          </FloatingActionButton>
-        </FabAnchor>
-      )}
-
-      {isSelectionMode && selectedCategory === "친구" && (
-        <CompareButtonFloatingArea>
-          <CompareFloatingButton
-            onClick={() => {
-              if (selectedIds.length === 0) return;
-              navigate(
-                `${ROUTES.TIMETABLE.COMPARE}?ids=${selectedIds.join(",")}`,
-              );
-            }}
-            disabled={selectedIds.length === 0}
-            className={selectedIds.length === 0 ? "disabled" : ""}
-          >
-            {selectedIds.length > 0
-              ? `선택한 ${selectedIds.length}명과 시간표 비교`
-              : "비교할 친구를 선택해주세요"}
-          </CompareFloatingButton>
-        </CompareButtonFloatingArea>
-      )}
-
-      {isSearching && (
-        <FloatingSearchContainer>
-          <MobilePillSearchBar
-            placeholder="닉네임을 입력하세요."
-            value={searchTerm}
-            onChange={setSearchTerm}
-            onSubmit={() => {}}
-            autoFocus
-          />
-        </FloatingSearchContainer>
-      )}
+              disabled={selectedIds.length === 0}
+            >
+              {selectedIds.length > 0
+                ? `선택한 ${selectedIds.length}명과 시간표 비교`
+                : "비교할 친구를 선택해주세요"}
+            </CompareButton>
+          </CompareButtonArea>
+        </FloatingActionsWrapper>
+      </FloatingActionsOuter>
 
       <CreateChatModal
         isOpen={isCreateModalOpen}
@@ -925,7 +902,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
         onOpenChange={setIsSentRequestsModalOpen}
       />
 
-      {!isSearching && (
+      {!isSearchActive && (
         <SwipeChevronGuides
           hasSwiped={hasSwiped}
           currentIndex={currentIndex}
@@ -985,14 +962,50 @@ const ListWrapper = styled.div`
   flex-direction: column;
 `;
 
-const FabAnchor = styled.div`
+const FloatingActionsOuter = styled.div<{ $isMenuOpen?: boolean }>`
   position: fixed;
-  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-  right: 24px;
-  z-index: 10;
+  bottom: calc(var(--nav-height, 100px) + 0px);
+  right: 0;
+  left: 0;
+  width: 100%;
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 99)};
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+`;
+
+const FloatingActionsWrapper = styled.div`
+  max-width: 768px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+
+  & > * {
+    pointer-events: auto;
+  }
+`;
+
+const PlusButtonWrapper = styled.div<{ $visible: boolean; $isMenuOpen?: boolean }>`
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1002 : 1)};
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.25s ease,
+    margin-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`
@@ -1046,33 +1059,6 @@ const HeaderRightArea = styled.div`
   gap: 12px;
 `;
 
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 4px;
-`;
-
-const FloatingSearchContainer = styled.div`
-  position: fixed;
-  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  padding: 0 20px;
-  z-index: 100;
-
-  & > * {
-    max-width: 400px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  }
-`;
-
 const HeaderActionsContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -1105,47 +1091,53 @@ const HeaderActionButton = styled.button`
   }
 `;
 
-const CompareButtonFloatingArea = styled.div`
-  position: fixed;
-  bottom: calc(100px + env(safe-area-inset-bottom, 0px) + 12px);
-  left: 0;
-  right: 0;
-  padding: 0 16px;
-  display: flex;
-  justify-content: center;
-  z-index: 100;
+const CompareButtonArea = styled.div<{ $visible: boolean }>`
+  width: 100%;
+  overflow: hidden;
+  max-height: ${({ $visible }) => ($visible ? "80px" : "0px")};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) =>
+    $visible ? "translateY(0)" : "translateY(12px)"};
+  margin-top: ${({ $visible }) => ($visible ? "12px" : "0px")};
+  pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
+  transition:
+    max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const CompareFloatingButton = styled.button`
-  width: 100%;
-  max-width: 500px;
-  height: 52px;
-  border-radius: 16px;
-  background-color: var(--interactive-primary, #0061ff);
-  color: #ffffff;
-  border: none;
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
+const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
+  width: ${({ $isSearchActive }) => ($isSearchActive ? "100%" : "56px")};
+  height: 56px;
+  flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 97, 255, 0.25);
-  transition: all 0.2s ease-in-out;
-  outline: none;
+  justify-content: flex-end;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+`;
 
-  &.disabled {
-    background-color: var(--bg-disabled, #e5e8eb);
+const CompareButton = styled(CapsuleButton)`
+  color: #fff;
+  text-align: center;
+
+  /* title-3 */
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.2px;
+  border-radius: 999px;
+  background: var(--interactive-primary, #0061ff);
+  height: 48px;
+  padding: 12px 24px;
+  max-width: 500px;
+
+  &:disabled {
+    border-color: var(--border-default, #e5e8eb);
+    background: var(--bg-disabled, #e5e8eb);
     color: var(--text-disabled, #8b95a1);
     cursor: not-allowed;
     box-shadow: none;
-    pointer-events: none;
-  }
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #2563eb);
-    transform: scale(0.98);
   }
 `;

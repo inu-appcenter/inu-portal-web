@@ -115,6 +115,7 @@ export default function useChatModeration(): ChatModeration {
           }}
           senderNickname={sheetTarget?.senderNickname ?? ""}
           isMine={sheetTarget?.isMine ?? false}
+          content={sheetTarget?.content ?? ""}
           onHide={() => {
             if (sheetTarget) hideMessage(sheetTarget.messageId);
           }}

@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { UserRoundSearch } from "lucide-react";
 import Icon from "@/components/common/Icon";
+import { createPortal } from "react-dom";
 
 /**
  * 친구 추가 FAB을 눌렀을 때 뜨는 카드형 드롭다운 메뉴.
@@ -24,9 +25,22 @@ export default function AddFriendMenuCard({
   onNearbyClick,
   onInviteClick,
 }: AddFriendMenuCardProps) {
+  const handleScrimDismiss = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onScrimClick();
+  };
+
   return (
     <>
-      {open && <Scrim onClick={onScrimClick} />}
+      {open &&
+        createPortal(
+          <Scrim
+            onClick={handleScrimDismiss}
+            onTouchEnd={handleScrimDismiss}
+          />,
+          document.body,
+        )}
       <MenuCard $open={open}>
         <MenuRow type="button" onClick={onSearchClick}>
           <UserRoundSearch size={20} />
@@ -48,7 +62,12 @@ export default function AddFriendMenuCard({
 const Scrim = styled.div`
   position: fixed;
   inset: 0;
-  z-index: 9;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  background: transparent;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
 `;
 
 const MenuCard = styled.div<{ $open: boolean }>`
@@ -71,7 +90,7 @@ const MenuCard = styled.div<{ $open: boolean }>`
   transition:
     transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 0.15s ease;
-  z-index: 10;
+  z-index: 1002;
 `;
 
 const MenuRow = styled.button`
