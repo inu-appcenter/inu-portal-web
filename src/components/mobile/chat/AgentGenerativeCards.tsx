@@ -1,6 +1,7 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { formatRoom } from "@/components/mobile/timetable/TimetableGrid";
 import {
   ExternalLink,
   Phone,
@@ -266,23 +267,62 @@ const BusCard: React.FC<{ data: any }> = ({ data }) => {
 
 /* --- 5. TimeTable Card --- */
 const TimeTableCard: React.FC<{ data: any }> = ({ data }) => {
-  const timetable = data?.timetable;
+  if (!data) return null;
+
+  if (data.hasTimetable === false) {
+    return (
+      <TimeTableBox>
+        <TodayHeader>
+          <TodayHeaderLeft>
+            <Clock size={16} color="#0061ff" />
+            <TodayTitle>오늘의 시간표</TodayTitle>
+          </TodayHeaderLeft>
+        </TodayHeader>
+        <TimetableEmptyState>
+          <TimetableEmptyText>
+            등록된 시간표가 없어요. 시간표를 만들어 보세요.
+          </TimetableEmptyText>
+        </TimetableEmptyState>
+      </TimeTableBox>
+    );
+  }
+
+  const todayClasses: any[] = Array.isArray(data.todayClasses) ? data.todayClasses : [];
 
   return (
     <TimeTableBox>
-      <CardHeader>
-        <Clock size={16} color="#0061ff" />
-        <CardTitle>내 대표 시간표</CardTitle>
-      </CardHeader>
-      {timetable ? (
-        <TimeTableInfo>
-          <TimeTableName>{timetable.timeTableName || timetable.name}</TimeTableName>
-          <TimeTableSub>
-            {timetable.year}년 {timetable.term === "FIRST" ? "1학기" : "2학기"}
-          </TimeTableSub>
-        </TimeTableInfo>
+      <TodayHeader>
+        <TodayHeaderLeft>
+          <Clock size={16} color="#0061ff" />
+          <TodayTitle>{data.todayDateText || "오늘의 시간표"}</TodayTitle>
+        </TodayHeaderLeft>
+        {data.statusText && (
+          <TodayStatusBadge>{data.statusText}</TodayStatusBadge>
+        )}
+      </TodayHeader>
+
+      {todayClasses.length > 0 ? (
+        <ClassListContainer>
+          {todayClasses.map((classItem, idx) => (
+            <ClassItemRow key={idx} $current={Boolean(classItem.isCurrent)}>
+              <ClassNameText>{classItem.name}</ClassNameText>
+              <ClassInfoText>
+                <ClassDetailTime>
+                  {classItem.startTime}~{classItem.endTime}
+                </ClassDetailTime>
+                {classItem.room && (
+                  <ClassRoomLocation>{formatRoom(classItem.room)}</ClassRoomLocation>
+                )}
+              </ClassInfoText>
+            </ClassItemRow>
+          ))}
+        </ClassListContainer>
       ) : (
-        <EmptyMessage>등록된 대표 시간표가 없습니다.</EmptyMessage>
+        <TimetableEmptyState>
+          <TimetableEmptyText>
+            오늘은 등록된 수업이 없어요.
+          </TimetableEmptyText>
+        </TimetableEmptyState>
       )}
     </TimeTableBox>
   );
@@ -662,27 +702,97 @@ const BusStopCount = styled.span`
 /* Timetable */
 const TimeTableBox = styled.div`
   padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
 
-const TimeTableInfo = styled.div`
+const TodayHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const TodayHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const TodayTitle = styled.span`
+  color: #333d4b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: -0.2px;
+`;
+
+const TodayStatusBadge = styled.span`
+  color: #0061ff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+`;
+
+const ClassListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 6px;
-  padding: 10px;
-  background-color: #eff6ff;
-  border-radius: 10px;
 `;
 
-const TimeTableName = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-  color: #0061ff;
+const ClassItemRow = styled.div<{ $current: boolean }>`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: ${({ $current }) => ($current ? "#eff6ff" : "transparent")};
+  ${({ $current }) =>
+    $current &&
+    css`
+      border-left: 3px solid #0061ff;
+      padding-left: 9px;
+    `}
 `;
 
-const TimeTableSub = styled.span`
+const ClassNameText = styled.span`
+  color: #333d4b;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 20px;
+`;
+
+const ClassInfoText = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 12px;
-  color: #6b7684;
+  font-weight: 500;
+`;
+
+const ClassDetailTime = styled.span`
+  color: #333d4b;
+  opacity: 0.6;
+`;
+
+const ClassRoomLocation = styled.span`
+  color: #333d4b;
+  font-weight: 600;
+`;
+
+const TimetableEmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0;
+`;
+
+const TimetableEmptyText = styled.p`
+  margin: 0;
+  color: #b0b8c1;
+  font-size: 13.5px;
+  text-align: center;
 `;
 
 /* Schedule */
