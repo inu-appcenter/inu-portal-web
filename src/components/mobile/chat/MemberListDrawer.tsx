@@ -17,7 +17,7 @@ import {
 import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { ChatRoom, ChatRoomMemberResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
@@ -80,11 +80,35 @@ export default function MemberListDrawer({
   const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<
     number | null
   >(null);
+  const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
+  const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<
     number[]
   >([]);
+
+  // MobileFriendListPage(FriendManagementView)와 동일한 즐겨찾기 목록 동기화
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
+    try {
+      const saved = localStorage.getItem("__intipFriendFavorites");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("__intipFriendFavorites", JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
+
+  const handleToggleFavorite = useCallback((friendId: number) => {
+    setFavoriteIds((prev) =>
+      prev.includes(friendId)
+        ? prev.filter((id) => id !== friendId)
+        : [...prev, friendId],
+    );
+  }, []);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -96,7 +120,7 @@ export default function MemberListDrawer({
   const { data: friendsRes } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
-    enabled: isInviteOpen,
+    enabled: isOpen,
   });
   const friends = friendsRes?.data || [];
 
@@ -255,14 +279,34 @@ export default function MemberListDrawer({
                       (member.friendAlias || member.nickname) +
                       (member.isMe ? " (나)" : "");
 
+                    const matchedFriend = friends.find(
+                      (f) =>
+                        (f.studentId &&
+                          member.studentId &&
+                          f.studentId === member.studentId) ||
+                        f.nickname === member.nickname,
+                    );
+
                     return (
                       <MemberItem
                         key={`${member.nickname}-${index}`}
                         onClick={() => {
-                          if (member.chatRoomMemberId) {
+                          if (member.isMe) {
+                            setSelectedMyId(userInfo?.id || null);
+                            setSelectedFriendId(null);
+                            setSelectedChatRoomMemberId(null);
+                            setIsProfileModalOpen(true);
+                          } else if (matchedFriend) {
+                            setSelectedFriendId(matchedFriend.friendId);
+                            setSelectedMyId(null);
+                            setSelectedChatRoomMemberId(null);
+                            setIsProfileModalOpen(true);
+                          } else if (member.chatRoomMemberId) {
                             setSelectedChatRoomMemberId(
                               member.chatRoomMemberId,
                             );
+                            setSelectedFriendId(null);
+                            setSelectedMyId(null);
                             setIsProfileModalOpen(true);
                           }
                         }}
@@ -440,7 +484,7 @@ const StyledContent = styled(Dialog.Content)`
   right: 0;
   bottom: 0;
   width: 85vw;
-  max-width: 320px;
+  max-width: 380px;
   background-color: #f8f9fb;
   border-top-left-radius: 32px;
   border-bottom-left-radius: 32px;
@@ -456,7 +500,7 @@ const StyledContent = styled(Dialog.Content)`
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  word-break: keep-all;
+  word-break: normal;
   overflow-wrap: break-word;
 `;
 

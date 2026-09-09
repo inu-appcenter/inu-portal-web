@@ -34,7 +34,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import { updateChatRoomTitle, getChatRoomMembers } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
-import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
+import Modal from "@/components/common/Modal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChatRoomMemberResponseDto } from "@/types/chat";
 import useChatModeration from "@/hooks/useChatModeration";
@@ -105,6 +105,7 @@ export default function ChattingPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMemberListOpen, setIsMemberListOpen] = useState(false);
   const [isTitleModalOpen, setIsTitleModalOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
   const [activeImageMeta, setActiveImageMeta] = useState<{
     senderName: string;
     createDate: string;
@@ -271,6 +272,7 @@ export default function ChattingPage() {
       return;
     }
 
+    setEditTitle(roomInfo?.title || "");
     setIsTitleModalOpen(true);
   };
 
@@ -1085,12 +1087,43 @@ export default function ChattingPage() {
         }
       />
 
-      <EditChatRoomTitleModal
+      <Modal
         isOpen={isTitleModalOpen}
-        onOpenChange={setIsTitleModalOpen}
-        currentTitle={roomInfo?.title || ""}
-        onConfirm={handleConfirmTitleUpdate}
-      />
+        onClose={() => setIsTitleModalOpen(false)}
+        title="채팅방 이름 변경"
+        description="나에게만 적용되는 채팅방 이름이에요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsTitleModalOpen(false),
+        }}
+        primaryButton={{
+          text: "변경하기",
+          onClick: async () => {
+            if (!editTitle.trim()) {
+              alert("이름을 입력해주세요.");
+              return;
+            }
+            await handleConfirmTitleUpdate(editTitle.trim());
+            setIsTitleModalOpen(false);
+          },
+        }}
+      >
+        <input
+          placeholder="채팅방 이름을 입력하세요"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          maxLength={50}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            border: "1px solid #e2e8f0",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            outline: "none",
+          }}
+        />
+      </Modal>
     </ChatPageWrapper>
   );
 }
