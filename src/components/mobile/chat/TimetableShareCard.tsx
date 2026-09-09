@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
@@ -12,7 +11,7 @@ interface TimetableShareCardProps {
   isMe?: boolean;
 }
 
-const DAYS_KOREAN = ["월요일", "화요일", "수요일", "목요일", "금요일"];
+const DAYS_SHORT_KOREAN = ["월", "화", "수", "목", "금", "토", "일"];
 
 const formatTime = (time: number) => {
   const h = Math.floor(time);
@@ -61,52 +60,67 @@ export default function TimetableShareCard({
     navigate(`${ROUTES.TIMETABLE.COMPARE}?${queryParams.toString()}`);
   };
 
+  const getSlotCountLabel = (slot: any, index: number) => {
+    if (typeof slot.count === "number") {
+      return `${slot.count}명`;
+    }
+    if (typeof slot.peopleCount === "number") {
+      return `${slot.peopleCount}명`;
+    }
+    if (memberIds.length > 0) {
+      return `${Math.max(1, memberIds.length - (index > 0 ? index : 0))}명`;
+    }
+    return formatDuration(slot.duration);
+  };
+
   return (
     <CardContainer $isMe={isMe} onClick={handleNavigate}>
-      <CardBody>
-        <SectionHeader>
-          <Sparkles size={14} color="#D97706" />
-          <span>만나기 좋은 시간 추천</span>
-        </SectionHeader>
+      <CardHeader>
+        <Icon name="calendar-add" size={24} color="#0061FF" />
+        <HeaderTitle>만나기 좋은 시간 추천</HeaderTitle>
+      </CardHeader>
 
-        {topTimes.length > 0 ? (
-          <TimeList>
-            {topTimes.slice(0, 3).map((slot, index) => (
-              <TimeItem key={index}>
-                <TimeLeft>
-                  <DayBadge>{DAYS_KOREAN[slot.day] || "요일"}</DayBadge>
-                  <TimeText>{`${formatTime(slot.startTime)} ~ ${formatTime(slot.endTime)}`}</TimeText>
-                </TimeLeft>
-                <DurationBadge>{formatDuration(slot.duration)}</DurationBadge>
-              </TimeItem>
-            ))}
-          </TimeList>
-        ) : (
-          <EmptyText>겹치는 공강 시간을 확인해보세요!</EmptyText>
-        )}
-      </CardBody>
+      {topTimes.length > 0 ? (
+        <TimeList>
+          {topTimes.slice(0, 3).map((slot, index) => (
+            <TimeItem key={index}>
+              <TimeInfoGroup>
+                <DayText>{DAYS_SHORT_KOREAN[slot.day] || "요일"}</DayText>
+                <TimeText>{`${formatTime(slot.startTime)} ~ ${formatTime(slot.endTime)}`}</TimeText>
+              </TimeInfoGroup>
+              <CountBadge $isTop={index === 0}>
+                {getSlotCountLabel(slot, index)}
+              </CountBadge>
+            </TimeItem>
+          ))}
+        </TimeList>
+      ) : (
+        <EmptyText>겹치는 공강 시간을 확인해보세요!</EmptyText>
+      )}
 
-      <CardFooter>
+      <FooterButton>
         <span>공강 시간 확인하러 가기</span>
-        <Icon name="chevron-right" size={16} color="#3B82F6" />
-      </CardFooter>
+        <Icon name="chevron-right" size={16} color="#FFFFFF" />
+      </FooterButton>
     </CardContainer>
   );
 }
 
 const CardContainer = styled.div<{ $isMe?: boolean }>`
-  /* 말풍선의 시간 영역까지 고려해 좁은 화면에서는 카드 폭을 함께 줄인다. */
-  width: min(250px, calc(100vw - 128px));
+  width: 248px;
   max-width: 100%;
-  min-width: 0;
   box-sizing: border-box;
   background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e5e8eb;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  border: 1px solid #d3e5ff;
+  box-shadow: 0px 2px 8px 0px rgba(0, 97, 255, 0.07);
   overflow: hidden;
   cursor: pointer;
   user-select: none;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
@@ -117,72 +131,77 @@ const CardContainer = styled.div<{ $isMe?: boolean }>`
   }
 `;
 
-const CardBody = styled.div`
-  padding: 14px 16px 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const SectionHeader = styled.div`
+const CardHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #92400e;
+`;
+
+const HeaderTitle = styled.span`
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #0061ff;
 `;
 
 const TimeList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 const TimeItem = styled.div`
+  background: #f8f9fb;
+  border: 0.667px solid #e5e8eb;
+  border-radius: 12px;
+  padding: 4px 4px 4px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  flex-wrap: wrap;
-  min-width: 0;
-  background: #f8fafc;
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid #f1f5f9;
+  box-sizing: border-box;
 `;
 
-const TimeLeft = styled.div`
+const TimeInfoGroup = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 1 1 120px;
-  flex-wrap: wrap;
+  gap: 20px;
   min-width: 0;
 `;
 
-const DayBadge = styled.span`
-  font-size: 12px;
-  font-weight: 700;
-  color: #334155;
+const DayText = styled.span`
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #333d4b;
+  flex-shrink: 0;
 `;
 
 const TimeText = styled.span`
-  font-size: 12px;
-  color: #64748b;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 14px;
   font-weight: 500;
-  overflow-wrap: anywhere;
+  line-height: 1.4;
+  color: #333d4b;
+  white-space: nowrap;
 `;
 
-const DurationBadge = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  color: #2563eb;
-  background: #dbeafe;
-  padding: 2px 6px;
-  border-radius: 4px;
+const CountBadge = styled.div<{ $isTop?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: ${({ $isTop }) => ($isTop ? "#0061FF" : "#EFF6FF")};
+  border: ${({ $isTop }) => ($isTop ? "none" : "1px solid #D3E5FF")};
+  color: ${({ $isTop }) => ($isTop ? "#FFFFFF" : "#0061FF")};
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  white-space: nowrap;
   flex-shrink: 0;
-  margin-left: auto;
 `;
 
 const EmptyText = styled.div`
@@ -192,26 +211,22 @@ const EmptyText = styled.div`
   padding: 8px 0;
 `;
 
-const CardFooter = styled.div`
+const FooterButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 10px 16px;
-  background: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+  padding: 8px 8px 8px 16px;
+  background: #0061ff;
+  border-radius: 12px;
+  box-sizing: border-box;
+  cursor: pointer;
 
   span {
-    min-width: 0;
-    font-size: 13px;
-    font-weight: 700;
-    color: #2563eb;
-    line-height: 18px;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-  }
-
-  svg {
-    flex-shrink: 0;
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #ffffff;
+    user-select: none;
   }
 `;

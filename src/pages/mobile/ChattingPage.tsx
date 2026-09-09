@@ -31,25 +31,6 @@ import UserProfileModal from "@/components/mobile/social/UserProfileModal";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const MESSAGE_COLORS = [
-  "#FFF4BD",
-  "#E2F0D9",
-  "#FFD9D9",
-  "#D9EFFF",
-  "#EADBFF",
-  "#FFE5D0",
-];
-
-const getMessageColor = (identifier: string) => {
-  if (!identifier) return MESSAGE_COLORS[0];
-  let hash = 0;
-  for (let i = 0; i < identifier.length; i++) {
-    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash);
-  return MESSAGE_COLORS[index % MESSAGE_COLORS.length];
-};
-
 import { updateChatRoomTitle, getChatRoomMembers } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
@@ -952,6 +933,7 @@ export default function ChattingPage() {
                   showTime={showTime}
                   members={members}
                   onLongPress={() => handleMessageLongPress(msg, true)}
+                  hasTail={showName}
                 />
               ) : (
                 <ChatItemOtherPerson
@@ -966,7 +948,11 @@ export default function ChattingPage() {
                 />
               )}
               {showDateLine && (
-                <DateDivider>{formatDateLine(msg.createDate)}</DateDivider>
+                <DateDivider>
+                  <div className="line" />
+                  <span className="text">{formatDateLine(msg.createDate)}</span>
+                  <div className="line" />
+                </DateDivider>
               )}
             </React.Fragment>
           );
@@ -985,7 +971,9 @@ export default function ChattingPage() {
         </NewMessageBanner>
       )}
 
-      <FixedInputArea>
+      <BottomGradient />
+
+      <FloatingInputContainer>
         {isChatbuliMode && (
           <ChatbuliGuideBanner>
             <span className="guide-icon">💡</span>
@@ -1009,7 +997,7 @@ export default function ChattingPage() {
           }}
         />
 
-        <div className="input-wrapper">
+        <FloatingInputBar>
           <input
             ref={fileInputRef}
             id="image-upload"
@@ -1019,14 +1007,14 @@ export default function ChattingPage() {
             style={{ display: "none" }}
             onChange={handleImageUpload}
           />
-          <IconButton
+          <PlusIconButton
             type="button"
             onClick={() => setIsPlusMenuOpen((prev) => !prev)}
             onMouseDown={(e) => e.preventDefault()}
             aria-label="추가 기능 메뉴"
           >
-            <Icon name="add-plus-sm" size={24} color="#0066FF" />
-          </IconButton>
+            <Icon name="add-plus-l" size={24} color="#0061FF" />
+          </PlusIconButton>
 
           <InputContainer>
             {isChatbuliMode && (
@@ -1078,10 +1066,10 @@ export default function ChattingPage() {
             }}
             aria-label="전송"
           >
-            <Icon name="paper-plane" size={24} color="#5E92F0" />
+            <Icon name="paper-plane" size={24} color="#FFFFFF" />
           </SendButton>
-        </div>
-      </FixedInputArea>
+        </FloatingInputBar>
+      </FloatingInputContainer>
 
       <ImageModal
         imageUrl={selectedImageUrl}
@@ -1151,7 +1139,7 @@ const ChatPageWrapper = styled.div`
   left: 0;
   right: 0;
   overscroll-behavior: none;
-  background-color: var(--bg-base, #ffffff);
+  background-color: #f8f9fb;
   z-index: 60;
 `;
 
@@ -1167,8 +1155,9 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-bottom: 104px;
+  padding-left: 16px;
+  padding-right: 16px;
   box-sizing: border-box;
 
   /* iOS 하드웨어 가속 모멘텀 스크롤 활성화 */
@@ -1213,8 +1202,8 @@ const LoadingWrapper = styled.div`
 const ChatbuliGuideBanner = styled.div`
   position: absolute;
   bottom: 100%;
-  left: 8px;
-  margin-bottom: 6px;
+  left: 16px;
+  margin-bottom: 8px;
   background: #fff8f3;
   border: 1px solid #ffd8bf;
   border-radius: 12px;
@@ -1226,7 +1215,7 @@ const ChatbuliGuideBanner = styled.div`
   z-index: 105;
   animation: bannerFadeIn 0.2s ease-out;
   pointer-events: none;
-  max-width: calc(100% - 16px);
+  max-width: calc(100% - 32px);
   box-sizing: border-box;
 
   @media (min-width: 768px) {
@@ -1265,26 +1254,69 @@ const ChatbuliGuideBanner = styled.div`
   }
 `;
 
-const FixedInputArea = styled.div`
-  position: relative;
-  background-color: #ffffff;
-  border-top: 1px solid #eaeaea;
+const BottomGradient = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 16.02%,
+    #f8f9fb 80.42%
+  );
+  pointer-events: none;
+  z-index: 90;
+`;
+
+const FloatingInputContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    padding-left: clamp(24px, 8vw, 120px);
+    padding-right: clamp(24px, 8vw, 120px);
+  }
+`;
+
+const FloatingInputBar = styled.div`
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #d1d6db;
+  border-radius: 32px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+`;
+
+const PlusIconButton = styled.button`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  padding: 0;
+  color: #0061ff;
+  transition: opacity 0.15s ease;
 
-  .input-wrapper {
-    display: flex;
-    align-items: center;
-    padding: 8px 8px;
-    gap: 8px;
-    min-height: 64px;
-    box-sizing: border-box;
-
-    @media (min-width: 768px) {
-      padding-left: clamp(24px, 8vw, 120px);
-      padding-right: clamp(24px, 8vw, 120px);
-    }
+  &:active {
+    opacity: 0.7;
   }
 `;
 
@@ -1347,38 +1379,51 @@ const InputBadge = styled.div`
 const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   flex: 1;
   min-width: 0;
-  padding: 8px 14px;
+  padding: 12px 6px;
   box-sizing: border-box;
-  background: #eff2f9;
-  border-radius: 20px;
+  background: transparent;
   border: none;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   font-size: 16px;
-  line-height: 24px;
-  color: #1c1c1e;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #333d4b;
   resize: none;
   outline: none;
-  max-height: 96px;
+  max-height: 132px;
   text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
 
   &::placeholder {
-    color: #8e8e93;
+    color: #b0b8c1;
     text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
   }
 
   &::-webkit-input-placeholder {
-    color: #8e8e93;
+    color: #b0b8c1;
     text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
   }
 `;
 
 const SendButton = styled.button`
-  background: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: #0061ff;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 4px;
+  padding: 0;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+
+  &:active {
+    background-color: #0050d4;
+    transform: scale(0.96);
+  }
 `;
 
 const IconButton = styled.button`
@@ -1394,12 +1439,27 @@ const IconButton = styled.button`
 
 const DateDivider = styled.div`
   display: flex;
-  justify-content: center;
   align-items: center;
-  margin: 24px 0 16px 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: #767676;
+  gap: 10px;
+  width: 100%;
+  margin: 16px 0;
+
+  .line {
+    flex: 1;
+    height: 1px;
+    background-color: #e5e8eb;
+    min-width: 0;
+  }
+
+  .text {
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #b0b8c1;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 `;
 
 const SystemMessage = styled.div`
@@ -1440,16 +1500,16 @@ const MessageContainer = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  margin-right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  margin-right: 8px;
   cursor: pointer;
   object-fit: cover;
   flex-shrink: 0;
-  background-color: #f2f2f7;
-  border: 1px solid #eaeaea;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background-color: #d3e5ff;
+  border: none;
+  box-shadow: none;
   transition: transform 0.15s ease;
 
   &:active {
@@ -1458,8 +1518,8 @@ const ProfileImage = styled.img`
 `;
 
 const ProfilePlaceholder = styled.div`
-  width: 36px;
-  margin-right: 10px;
+  width: 40px;
+  margin-right: 8px;
   flex-shrink: 0;
 `;
 
@@ -1478,9 +1538,11 @@ const SenderHeader = styled.div`
 `;
 
 const SenderName = styled.span`
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #1c1c1e;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #8b95a1;
   cursor: pointer;
   width: fit-content;
   max-width: 100%;
@@ -1496,7 +1558,7 @@ const SenderName = styled.span`
 const MessageBubble = styled.div`
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
   max-width: 100%;
   /* 길게 누르면 신고/차단 시트가 뜬다 — iOS WebView의 기본 텍스트 선택·복사
@@ -1512,24 +1574,38 @@ const MessageBubble = styled.div`
   }
 `;
 
-const Bubble = styled.div<{ $bgColor: string }>`
+const Bubble = styled.div<{ $isMe?: boolean; $hasTail?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 9px 13px;
-  border-radius: 18px;
-  font-size: 14px;
-  line-height: 20px;
-  /* 시간 표시까지 포함해도 모바일 화면을 넘지 않는 폭 */
+  padding: 8px 12px;
+  border-radius: ${({ $isMe, $hasTail }) => {
+    if ($hasTail) {
+      return $isMe ? "20px 4px 20px 20px" : "4px 20px 20px 20px";
+    }
+    return "20px";
+  }};
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
   max-width: calc(100vw - 112px);
   box-sizing: border-box;
   word-break: break-word;
   overflow-wrap: anywhere;
-  background-color: ${(props) => props.$bgColor};
-  color: #1c1c1e;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-
+  background-color: ${({ $isMe }) => ($isMe ? "#d3e5ff" : "#ffffff")};
+  color: #333d4b;
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
   white-space: pre-wrap;
+  cursor: pointer;
+  transition:
+    transform 0.12s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.12s ease;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.92;
+  }
 
   @media (min-width: 768px) {
     max-width: 780px;
@@ -1564,11 +1640,19 @@ const ImageThumbnail = styled.img`
   height: auto;
   min-width: 100px;
   min-height: 150px;
-  background: gray;
-  border-radius: 12px;
+  background: #e5e8eb;
+  border-radius: 16px;
   cursor: pointer;
   object-fit: cover;
   margin-bottom: 4px;
+  transition:
+    transform 0.12s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.12s ease;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.92;
+  }
 
   @media (min-width: 1024px) {
     width: 30vw;
@@ -1576,8 +1660,9 @@ const ImageThumbnail = styled.img`
 `;
 
 const Time = styled.span`
-  font-size: 12px;
-  color: #767676;
+  font-size: 10px;
+  font-weight: 400;
+  color: #b0b8c1;
   white-space: nowrap;
 `;
 
@@ -1635,8 +1720,6 @@ const ChatItemOtherPerson = ({
     hour: "2-digit",
     minute: "2-digit",
   });
-
-  const bgColor = getMessageColor(message.senderHash);
 
   const isTimetableShare =
     message.messageType === "TIMETABLE_SHARE" ||
@@ -1700,7 +1783,7 @@ const ChatItemOtherPerson = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>
+                  <Bubble $isMe={false} $hasTail={showName}>
                     {message.messageType === "BOT_QUESTION" && (
                       <BotQuestionTag>
                         <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
@@ -1733,6 +1816,7 @@ const ChatItemMy = ({
   showTime,
   members,
   onLongPress,
+  hasTail = true,
 }: {
   message: ChatMessage;
   onImageClick: (
@@ -1744,6 +1828,7 @@ const ChatItemMy = ({
   showTime: boolean;
   members: ChatRoomMemberResponseDto[];
   onLongPress: () => void;
+  hasTail?: boolean;
 }) => {
   const longPress = useLongPress(onLongPress);
   const getDisplayName = () => {
@@ -1768,7 +1853,6 @@ const ChatItemMy = ({
     minute: "2-digit",
   });
 
-  const bgColor = getMessageColor(message.senderHash);
   const isTimetableShare =
     message.messageType === "TIMETABLE_SHARE" ||
     (message.extraData && message.extraData.includes("topFreeTimes"));
@@ -1816,7 +1900,7 @@ const ChatItemMy = ({
                   />
                 )}
                 {message.content && (
-                  <Bubble $bgColor={bgColor}>
+                  <Bubble $isMe={true} $hasTail={hasTail}>
                     {message.messageType === "BOT_QUESTION" && (
                       <BotQuestionTag>
                         <img src={TorchAiLogo} alt="챗불이" width={17} height={17} />
@@ -1839,13 +1923,16 @@ const TimeArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  justify-content: flex-end;
   flex-shrink: 0;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  line-height: 1.3;
 `;
 
 const UnreadCount = styled.span`
   font-size: 10px;
-  font-weight: 700;
-  color: #5e92f0;
+  font-weight: 400;
+  color: #0061ff;
 `;
 
 const MyMessageContent = styled(MessageContent)`
@@ -1909,10 +1996,10 @@ const NewMessageBanner = styled.div`
   }
 
   position: absolute;
-  bottom: 80px; /* FixedInputArea 위에 부드럽게 플로팅 */
+  bottom: calc(88px + env(safe-area-inset-bottom, 0px)); /* FloatingInputContainer 위에 플로팅 */
   left: 50%;
   transform: translateX(-50%);
-  z-index: 99;
+  z-index: 101;
   display: flex;
   align-items: center;
   gap: 6px;
