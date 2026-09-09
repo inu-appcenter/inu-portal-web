@@ -35,6 +35,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal";
 import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
@@ -870,7 +871,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
 
       {isSelectionMode && selectedCategory === "친구" && (
         <CompareButtonFloatingArea>
-          <CompareFloatingButton
+          <CompareButton
+            variant="primary"
+            fullWidth
             onClick={() => {
               if (selectedIds.length === 0) return;
               navigate(
@@ -878,12 +881,11 @@ const MobileChatListPage = memo(function MobileChatListPage() {
               );
             }}
             disabled={selectedIds.length === 0}
-            className={selectedIds.length === 0 ? "disabled" : ""}
           >
             {selectedIds.length > 0
               ? `선택한 ${selectedIds.length}명과 시간표 비교`
               : "비교할 친구를 선택해주세요"}
-          </CompareFloatingButton>
+          </CompareButton>
         </CompareButtonFloatingArea>
       )}
 
@@ -1116,36 +1118,28 @@ const CompareButtonFloatingArea = styled.div`
   z-index: 100;
 `;
 
-const CompareFloatingButton = styled.button`
-  width: 100%;
-  max-width: 500px;
-  height: 52px;
-  border-radius: 16px;
-  background-color: var(--interactive-primary, #0061ff);
-  color: #ffffff;
-  border: none;
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 97, 255, 0.25);
-  transition: all 0.2s ease-in-out;
-  outline: none;
+const CompareButton = styled(CapsuleButton)`
+  color: #fff;
+  text-align: center;
 
-  &.disabled {
-    background-color: var(--bg-disabled, #e5e8eb);
+  /* title-3 */
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.2px;
+  border-radius: 999px;
+  background: var(--interactive-primary, #0061ff);
+  height: 48px;
+  padding: 12px 24px;
+  max-width: 500px;
+
+  &:disabled {
+    border-color: var(--border-default, #e5e8eb);
+    background: var(--bg-disabled, #e5e8eb);
     color: var(--text-disabled, #8b95a1);
     cursor: not-allowed;
     box-shadow: none;
-    pointer-events: none;
-  }
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #2563eb);
-    transform: scale(0.98);
   }
 `;

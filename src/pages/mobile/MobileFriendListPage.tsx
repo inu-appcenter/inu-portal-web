@@ -20,6 +20,7 @@ import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSh
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
@@ -454,7 +455,9 @@ export default function MobileFriendListPage() {
 
           {/* Compare / Share button - slides up from bottom */}
           <CompareButtonArea $visible={isShareMode || isSelectionMode}>
-            <CompareFloatingButton
+            <CompareButton
+              variant="primary"
+              fullWidth
               onClick={handleCompareClick}
               disabled={
                 isShareMode
@@ -462,17 +465,6 @@ export default function MobileFriendListPage() {
                     ? selectedIds.length === 0 || chatMutation.isPending
                     : !selectedRoomId
                   : selectedIds.length === 0
-              }
-              className={
-                (
-                  isShareMode
-                    ? shareTab === "friends"
-                      ? selectedIds.length === 0
-                      : !selectedRoomId
-                    : selectedIds.length === 0
-                )
-                  ? "disabled"
-                  : ""
               }
             >
               {isShareMode
@@ -484,7 +476,7 @@ export default function MobileFriendListPage() {
                   ? "이 채팅방에 공유하기"
                   : "공유할 채팅방 선택"
                 : "시간표 비교하기"}
-            </CompareFloatingButton>
+            </CompareButton>
           </CompareButtonArea>
         </FloatingActionsWrapper>
       </FloatingActionsOuter>
@@ -651,36 +643,28 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const CompareFloatingButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  border: none;
-  color: #ffffff;
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 32px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.16);
-  cursor: pointer;
-  outline: none;
+const CompareButton = styled(CapsuleButton)`
+  color: #fff;
+  text-align: center;
 
-  &:disabled,
-  &.disabled {
-    background-color: var(--bg-disabled, #d1d6db);
+  /* title-3 */
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.2px;
+  border-radius: 999px;
+  background: var(--interactive-primary, #0061ff);
+  height: 48px;
+  padding: 12px 24px;
+
+  &:disabled {
+    border-color: var(--border-default, #e5e8eb);
+    background: var(--bg-disabled, #e5e8eb);
     color: var(--text-disabled, #8b95a1);
     cursor: not-allowed;
     box-shadow: none;
-    pointer-events: none;
-  }
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #2563eb);
-    transform: scale(0.98);
   }
 `;
 
