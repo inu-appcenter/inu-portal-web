@@ -284,6 +284,7 @@ export default function FriendManagementView({
 
   // Long press tracking for rows
   const internalLongPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const preventClickResetTimer = useRef<NodeJS.Timeout | null>(null);
   const preventClick = useRef(false);
   const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
@@ -291,6 +292,9 @@ export default function FriendManagementView({
     return () => {
       if (internalLongPressTimer.current) {
         clearTimeout(internalLongPressTimer.current);
+      }
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
       }
     };
   }, []);
@@ -385,6 +389,10 @@ export default function FriendManagementView({
   const handleRowClick = (friendId: number, rowId: string) => {
     if (preventClick.current) {
       preventClick.current = false;
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
+        preventClickResetTimer.current = null;
+      }
       return;
     }
     if (isSelectionMode) {
@@ -405,8 +413,15 @@ export default function FriendManagementView({
 
   const handlePressStartInternal = useCallback(
     (friendId: number) => {
-      if (isSelectionMode) return;
+      if (isSelectionMode) {
+        preventClick.current = false;
+        return;
+      }
       preventClick.current = false;
+      if (preventClickResetTimer.current) {
+        clearTimeout(preventClickResetTimer.current);
+        preventClickResetTimer.current = null;
+      }
       if (internalLongPressTimer.current) {
         clearTimeout(internalLongPressTimer.current);
       }
@@ -421,6 +436,13 @@ export default function FriendManagementView({
         } else if (onPressStart) {
           onPressStart(friendId);
         }
+        if (preventClickResetTimer.current) {
+          clearTimeout(preventClickResetTimer.current);
+        }
+        preventClickResetTimer.current = setTimeout(() => {
+          preventClick.current = false;
+          preventClickResetTimer.current = null;
+        }, 300);
       }, 600);
     },
     [isSelectionMode, onLongPress, onPressStart],
