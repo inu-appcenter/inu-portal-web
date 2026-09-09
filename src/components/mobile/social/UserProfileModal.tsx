@@ -1,3 +1,8 @@
+import {
+  isFriendRequestAlreadyProcessed,
+  tryLockFriendRequest,
+  unlockFriendRequest,
+} from "@/utils/friendRequestLock";
 import { Drawer } from "vaul";
 import styled from "styled-components";
 import { safeBottom } from "@/styles/safeArea";
@@ -439,14 +444,29 @@ export default function UserProfileModal({
     },
   });
 
+  const refreshAfterAccept = () => {
+    queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+    queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    queryClient.invalidateQueries({ queryKey: ["friends"] });
+  };
+
+  // 같은 요청을 친구 목록 모달에서도 처리할 수 있어 friendRequestLock으로 함께 잠근다.
   const acceptMutation = useMutation({
     mutationFn: (friendId: number) => acceptFriend(friendId),
     onSuccess: () => {
       alert("친구 요청을 수락했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
+      refreshAfterAccept();
     },
+    onError: (err: unknown) => {
+      if (isFriendRequestAlreadyProcessed(err)) {
+        refreshAfterAccept();
+        return;
+      }
+      const msg = (err as { response?: { data?: { msg?: string } } }).response
+        ?.data?.msg;
+      alert(msg || "친구 요청을 수락하지 못했어요.");
+    },
+    onSettled: (_data, _err, friendId) => unlockFriendRequest(friendId),
   });
 
   const updateAliasMutation = useMutation({
@@ -489,7 +509,10 @@ export default function UserProfileModal({
         break;
       case "RECEIVED":
         if (confirm("친구 요청을 수락할까요?")) {
-          if (profile.friendId) acceptMutation.mutate(profile.friendId);
+          const targetId = profile.friendId;
+          if (targetId && tryLockFriendRequest(targetId)) {
+            acceptMutation.mutate(targetId);
+          }
         }
         break;
       case "ACCEPTED":
