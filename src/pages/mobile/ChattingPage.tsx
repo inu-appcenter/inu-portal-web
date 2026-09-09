@@ -1013,7 +1013,7 @@ export default function ChattingPage() {
             onMouseDown={(e) => e.preventDefault()}
             aria-label="추가 기능 메뉴"
           >
-            <Icon name="add-plus-l" size={24} color="#0061FF" />
+            <Icon name="add-plus-l" size={22} color="#0061FF" />
           </PlusIconButton>
 
           <InputContainer>
@@ -1066,7 +1066,7 @@ export default function ChattingPage() {
             }}
             aria-label="전송"
           >
-            <Icon name="paper-plane" size={24} color="#FFFFFF" />
+            <Icon name="paper-plane" size={20} color="#FFFFFF" />
           </SendButton>
         </FloatingInputBar>
       </FloatingInputContainer>
@@ -1289,20 +1289,20 @@ const FloatingInputBar = styled.div`
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  padding: 8px;
+  padding: 4px 6px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid #d1d6db;
-  border-radius: 32px;
+  border-radius: 28px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
   width: 100%;
 `;
 
 const PlusIconButton = styled.button`
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: none;
   border: none;
@@ -1326,20 +1326,21 @@ const InputContainer = styled.div`
   display: flex;
   align-items: center;
   min-width: 0;
+  min-height: 40px;
 `;
 
 const InputBadge = styled.div`
   position: absolute;
-  left: 8px;
-  top: 7px;
-  height: 26px;
+  left: 6px;
+  top: 8px;
+  height: 24px;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   gap: 3px;
   background: #ffffff;
   border: 1px solid #ffd8bf;
-  border-radius: 13px;
+  border-radius: 12px;
   padding: 0 6px;
   box-shadow: 0 1px 3px rgba(255, 107, 0, 0.12);
   z-index: 2;
@@ -1352,7 +1353,7 @@ const InputBadge = styled.div`
   }
 
   .badge-text {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: #ff6b00;
     line-height: 1;
@@ -1379,34 +1380,34 @@ const InputBadge = styled.div`
 const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   flex: 1;
   min-width: 0;
-  padding: 12px 6px;
+  padding: 9px 6px;
   box-sizing: border-box;
   background: transparent;
   border: none;
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 22px;
   color: #333d4b;
   resize: none;
   outline: none;
-  max-height: 132px;
-  text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+  max-height: 120px;
+  text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
 
   &::placeholder {
     color: #b0b8c1;
-    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+    text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
   }
 
   &::-webkit-input-placeholder {
     color: #b0b8c1;
-    text-indent: ${(props) => (props.$isChatbuli ? "92px" : "0px")};
+    text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
   }
 `;
 
 const SendButton = styled.button`
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
   background: #0061ff;
   border: none;
