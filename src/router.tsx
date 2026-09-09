@@ -84,6 +84,7 @@ import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
+import InviteChatMembersPage from "@/pages/mobile/InviteChatMembersPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
 
@@ -135,6 +136,7 @@ export const router = createBrowserRouter([
         children: [
           // 채팅
           { path: "/chat/:roomId", element: <ChattingPage /> },
+          { path: "/chat/:roomId/invite", element: <InviteChatMembersPage /> },
           { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
         ],
       },

@@ -3,8 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Crown } from "lucide-react";
 import Icon from "@/components/common/Icon";
-import Divider from "@/components/common/Divider";
-import SocialUserCard from "@/components/mobile/social/SocialUserCard";
+import Modal from "@/components/common/Modal";
 import Switch from "@/components/common/Switch";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,12 +11,10 @@ import {
   leaveChatRoom,
   closeChatRoom,
   patchRoomPushSetting,
-  inviteFriendsToChatRoom,
 } from "@/apis/chat";
-import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { ChatRoom, ChatRoomMemberResponseDto } from "@/types/chat";
 import {
   normalizeProfileImageId,
@@ -33,11 +30,6 @@ const contentShow = keyframes`
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
-`;
-
-const modalShow = keyframes`
-  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 `;
 
 interface MemberListDrawerProps {
@@ -80,35 +72,8 @@ export default function MemberListDrawer({
   const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<
     number | null
   >(null);
-  const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
-  const [selectedMyId, setSelectedMyId] = useState<number | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<
-    number[]
-  >([]);
-
-  // MobileFriendListPage(FriendManagementView)와 동일한 즐겨찾기 목록 동기화
-  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
-    try {
-      const saved = localStorage.getItem("__intipFriendFavorites");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem("__intipFriendFavorites", JSON.stringify(favoriteIds));
-  }, [favoriteIds]);
-
-  const handleToggleFavorite = useCallback((friendId: number) => {
-    setFavoriteIds((prev) =>
-      prev.includes(friendId)
-        ? prev.filter((id) => id !== friendId)
-        : [...prev, friendId],
-    );
-  }, []);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["chatMembers", roomId],
@@ -116,40 +81,6 @@ export default function MemberListDrawer({
     enabled: isOpen,
   });
   const members: ChatRoomMemberResponseDto[] = membersRes?.data || [];
-
-  const { data: friendsRes } = useQuery({
-    queryKey: ["friends"],
-    queryFn: getFriends,
-    enabled: isOpen,
-  });
-  const friends = friendsRes?.data || [];
-
-  // 현재 채팅방에 이미 참여 중인 멤버는 초대 대상에서 제외
-  const filteredFriends = useMemo(() => {
-    return friends.filter(
-      (friend) =>
-        !members.some(
-          (m) =>
-            (m.studentId && m.studentId === friend.studentId) ||
-            m.nickname === friend.nickname,
-        ),
-    );
-  }, [friends, members]);
-
-  const inviteMutation = useMutation({
-    mutationFn: (friendIds: number[]) =>
-      inviteFriendsToChatRoom(roomId, friendIds),
-    onSuccess: () => {
-      alert("성공적으로 초대했습니다.");
-      queryClient.invalidateQueries({ queryKey: ["chatMembers", roomId] });
-      if (refreshRoom) refreshRoom();
-      setIsInviteOpen(false);
-      setSelectedFriendsToInvite([]);
-    },
-    onError: (err: any) => {
-      alert(err.response?.data?.msg || "초대에 실패했습니다.");
-    },
-  });
 
   const leaveMutation = useMutation({
     mutationFn: () => leaveChatRoom(roomId),
@@ -181,9 +112,8 @@ export default function MemberListDrawer({
 
   const togglePushMutation = useMutation({
     mutationFn: () => patchRoomPushSetting(roomId),
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
-      alert(res.data ? "알림이 켜졌습니다." : "알림이 꺼졌습니다.");
       if (refreshRoom) {
         refreshRoom();
       }
@@ -193,15 +123,7 @@ export default function MemberListDrawer({
     },
   });
 
-  const handleLeave = () => {
-    if (
-      confirm(
-        "채팅방에서 나가시겠습니까?\n나간 후에는 이전 대화 내용을 볼 수 없습니다.",
-      )
-    ) {
-      leaveMutation.mutate();
-    }
-  };
+  const handleLeave = () => setIsLeaveModalOpen(true);
 
   const handleClose = () => {
     if (
@@ -256,7 +178,10 @@ export default function MemberListDrawer({
                 <SectionTitle>대화 상대 {members.length}</SectionTitle>
                 {roomInfo?.type === "PERSONAL" && (
                   <InvitationButton
-                    onClick={() => setIsInviteOpen(true)}
+                    onClick={() => {
+                      onOpenChange(false);
+                      navigate(`/chat/${roomId}/invite`);
+                    }}
                     title="초대하기"
                   >
                     <Icon name="user-add" size={18} color="#0061FF" />
@@ -279,34 +204,17 @@ export default function MemberListDrawer({
                       (member.friendAlias || member.nickname) +
                       (member.isMe ? " (나)" : "");
 
-                    const matchedFriend = friends.find(
-                      (f) =>
-                        (f.studentId &&
-                          member.studentId &&
-                          f.studentId === member.studentId) ||
-                        f.nickname === member.nickname,
-                    );
-
                     return (
                       <MemberItem
                         key={`${member.nickname}-${index}`}
                         onClick={() => {
                           if (member.isMe) {
-                            setSelectedMyId(userInfo?.id || null);
-                            setSelectedFriendId(null);
-                            setSelectedChatRoomMemberId(null);
-                            setIsProfileModalOpen(true);
-                          } else if (matchedFriend) {
-                            setSelectedFriendId(matchedFriend.friendId);
-                            setSelectedMyId(null);
                             setSelectedChatRoomMemberId(null);
                             setIsProfileModalOpen(true);
                           } else if (member.chatRoomMemberId) {
                             setSelectedChatRoomMemberId(
                               member.chatRoomMemberId,
                             );
-                            setSelectedFriendId(null);
-                            setSelectedMyId(null);
                             setIsProfileModalOpen(true);
                           }
                         }}
@@ -433,24 +341,29 @@ export default function MemberListDrawer({
               isOwner: roomInfo?.owner || isAdmin,
             }}
           />
-
-          {/* 친구 초대 모달 */}
-          <InviteFriendsModal
-            isOpen={isInviteOpen}
-            onOpenChange={setIsInviteOpen}
-            friends={filteredFriends}
-            selectedIds={selectedFriendsToInvite}
-            onToggle={(friendId) =>
-              setSelectedFriendsToInvite((prev) =>
-                prev.includes(friendId)
-                  ? prev.filter((id) => id !== friendId)
-                  : [...prev, friendId],
-              )
-            }
-            onConfirm={() => inviteMutation.mutate(selectedFriendsToInvite)}
-            isPending={inviteMutation.isPending}
-          />
         </StyledContent>
+        <Modal
+          isOpen={isLeaveModalOpen}
+          onClose={() => setIsLeaveModalOpen(false)}
+          title="채팅방 나가기"
+          description={
+            <>
+              채팅방에서 나가시겠습니까?
+              <br />
+              나간 후에는 이전 대화 내용을 볼 수 없습니다.
+            </>
+          }
+          secondaryButton={{
+            text: "취소",
+            onClick: () => setIsLeaveModalOpen(false),
+          }}
+          primaryButton={{
+            text: "나가기",
+            variant: "danger",
+            loading: leaveMutation.isPending,
+            onClick: () => leaveMutation.mutate(),
+          }}
+        />
       </Dialog.Portal>
     </Dialog.Root>
   );
@@ -807,189 +720,3 @@ const ActionRow = styled.div<{ $danger?: boolean }>`
   }
 `;
 
-/* Invite Friends Modal */
-interface InviteFriendsModalProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  friends: any[];
-  selectedIds: number[];
-  onToggle: (id: number) => void;
-  onConfirm: () => void;
-  isPending: boolean;
-}
-
-const InviteFriendsModal = ({
-  isOpen,
-  onOpenChange,
-  friends,
-  selectedIds,
-  onToggle,
-  onConfirm,
-  isPending,
-}: InviteFriendsModalProps) => {
-  if (!isOpen) return null;
-
-  return (
-    <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <InviteOverlay />
-        <InviteContent>
-          <InviteHeader>
-            <InviteTitle>내 친구에서 초대</InviteTitle>
-            <HeaderIconButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
-            </HeaderIconButton>
-          </InviteHeader>
-          <InviteScrollArea>
-            {friends.length === 0 ? (
-              <EmptyStateStyle>초대 가능한 친구가 없습니다.</EmptyStateStyle>
-            ) : (
-              friends.map((friend, index) => (
-                <div key={friend.friendId} style={{ width: "100%" }}>
-                  <SelectableCard onClick={() => onToggle(friend.friendId)}>
-                    <SocialUserCard
-                      name={friend.nickname}
-                      subtitle={friend.studentId}
-                      fireId={friend.fireId}
-                    />
-                    <Checkbox $selected={selectedIds.includes(friend.friendId)}>
-                      {selectedIds.includes(friend.friendId) && (
-                        <Icon name="check" size={16} color="white" />
-                      )}
-                    </Checkbox>
-                  </SelectableCard>
-                  {index < friends.length - 1 && <Divider />}
-                </div>
-              ))
-            )}
-          </InviteScrollArea>
-          <InviteFooter>
-            <InviteConfirmButton
-              disabled={selectedIds.length === 0 || isPending}
-              onClick={onConfirm}
-            >
-              {isPending ? "초대 중..." : `초대 완료 (${selectedIds.length}명)`}
-            </InviteConfirmButton>
-          </InviteFooter>
-        </InviteContent>
-      </Dialog.Portal>
-    </Dialog.Root>
-  );
-};
-
-const InviteOverlay = styled(Dialog.Overlay)`
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
-  animation: ${fadeIn} 200ms ease-out;
-`;
-
-const InviteContent = styled(Dialog.Content)`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90vw;
-  max-width: 360px;
-  height: 80vh;
-  background-color: white;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-  outline: none;
-  border-radius: 24px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
-  animation: ${modalShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-`;
-
-const InviteHeader = styled.div`
-  padding: 20px 20px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const InviteTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 700;
-  color: #1c1c1e;
-  margin: 0;
-`;
-
-const InviteScrollArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 20px;
-`;
-
-const EmptyStateStyle = styled.div`
-  padding: 40px 0;
-  text-align: center;
-  color: #969696;
-  font-size: 14px;
-`;
-
-const SelectableCard = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  width: 100%;
-
-  & > :first-child {
-    flex: 1;
-    pointer-events: none;
-  }
-`;
-
-const Checkbox = styled.div<{ $selected: boolean }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#5E92F0" : "#E5E5EA")};
-  background-color: ${({ $selected }) =>
-    $selected ? "#5E92F0" : "transparent"};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  margin-left: 12px;
-`;
-
-const InviteFooter = styled.div`
-  padding: 16px 20px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 12px));
-  border-top: 1px solid #f2f2f7;
-  background-color: white;
-`;
-
-const InviteConfirmButton = styled.button`
-  width: 100%;
-  height: 48px;
-  background-color: #5e92f0;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-
-  &:disabled {
-    background-color: #e5e5ea;
-    color: #8e8e93;
-    cursor: not-allowed;
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.97);
-    opacity: 0.9;
-  }
-`;
