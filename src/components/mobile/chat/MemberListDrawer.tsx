@@ -456,6 +456,8 @@ const StyledContent = styled(Dialog.Content)`
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
 
 const PanelHeader = styled.div`
@@ -686,7 +688,9 @@ const ChatbotDesc = styled.span`
   font-size: 12px;
   font-weight: 400;
   color: #8b95a1;
-  line-height: 1.3;
+  line-height: 1.35;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
 
 const FreeTimeContainer = styled(Card)`
@@ -720,7 +724,8 @@ const SyncCardTitle = styled.div`
   font-weight: 600;
   color: #333d4b;
   line-height: 1.4;
-  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   margin-bottom: 12px;
 `;
 
@@ -732,6 +737,7 @@ const SyncCardAction = styled.div<{ $textColor: string }>`
   font-weight: 500;
   color: ${({ $textColor }) => $textColor};
   line-height: 1.4;
+  word-break: keep-all;
 `;
 
 const ActionRow = styled.div<{ $danger?: boolean }>`
@@ -745,6 +751,8 @@ const ActionRow = styled.div<{ $danger?: boolean }>`
   color: ${({ $danger }) => ($danger ? "#ef4444" : "#333d4b")};
   cursor: pointer;
   transition: background-color 0.15s ease;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 
   &:active {
     background-color: #f2f4f6;
