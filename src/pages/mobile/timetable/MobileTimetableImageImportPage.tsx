@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
+import { isAxiosError } from "axios";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -69,6 +70,33 @@ const formatOfferingMeetings = (offering: CourseOffering) =>
         `${DAY_LABEL[meeting.day] ?? meeting.day} ${meeting.startTime.slice(0, 5)}~${meeting.endTime.slice(0, 5)}`,
     )
     .join(", ");
+
+// 흐린/잘린/다른 학교 시간표 등 인식 실패 시 보여줄 기본 안내 문구.
+// 서버가 구조화된 메시지를 내려주지 못하는 경우(네트워크 오류, 500 등)에도
+// 사용자가 원인을 짐작하고 다시 시도할 수 있도록 안내한다.
+const DEFAULT_IMAGE_ANALYZE_ERROR_MESSAGE =
+  "이미지를 분석하지 못했어요. 흐리거나 잘린 이미지, 혹은 지원하지 않는 학교의 시간표일 수 있어요. 다른 이미지로 다시 시도해 주세요.";
+
+/** 이미지 분석 실패 시 사용자에게 보여줄 안내 메시지를 만든다. */
+const getImageAnalyzeErrorMessage = (error: unknown): string => {
+  if (isAxiosError(error)) {
+    if (error.code === "ECONNABORTED" || /timeout/i.test(error.message)) {
+      return "이미지 분석 시간이 너무 오래 걸려 중단됐어요. 잠시 후 다시 시도해 주세요.";
+    }
+    if (!error.response) {
+      return "네트워크 연결을 확인한 후 다시 시도해 주세요.";
+    }
+    const serverMessage = error.response.data?.msg ?? error.response.data?.message;
+    if (typeof serverMessage === "string" && serverMessage.trim()) {
+      return serverMessage;
+    }
+    return DEFAULT_IMAGE_ANALYZE_ERROR_MESSAGE;
+  }
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return DEFAULT_IMAGE_ANALYZE_ERROR_MESSAGE;
+};
 
 const getTimetableCredits = (events: any[]) => {
   const seenItemIds = new Set<number>();
@@ -333,7 +361,7 @@ export default function MobileTimetableImageImportPage() {
       setProgress(90);
 
       if (!recognized || recognized.length === 0) {
-        throw new Error("분석 가능한 강의 정보를 찾지 못했습니다.");
+        throw new Error(DEFAULT_IMAGE_ANALYZE_ERROR_MESSAGE);
       }
 
       const dummyCanvas = document.createElement("canvas");
@@ -376,9 +404,7 @@ export default function MobileTimetableImageImportPage() {
       setView("result");
     } catch (error) {
       if (progressTimer) clearInterval(progressTimer);
-      alert(
-        error instanceof Error ? error.message : "이미지 분석에 실패했습니다.",
-      );
+      alert(getImageAnalyzeErrorMessage(error));
       setView("intro");
     }
   };
@@ -571,7 +597,13 @@ export default function MobileTimetableImageImportPage() {
         accept="image/*"
         onChange={(event) => {
           const file = event.target.files?.[0];
-          if (file) void analyze(file);
+          if (file) {
+            if (!file.type.startsWith("image/")) {
+              alert("이미지 파일만 업로드할 수 있어요. (PNG, JPG 등)");
+            } else {
+              void analyze(file);
+            }
+          }
           event.currentTarget.value = "";
         }}
       />
