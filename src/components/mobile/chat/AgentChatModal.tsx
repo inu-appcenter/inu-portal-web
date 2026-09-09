@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Send, X, Bot } from "lucide-react";
+import { Sparkles, Send, X, Bot, RotateCcw } from "lucide-react";
 import { postAgentChat, AgentChatResponse } from "@/apis/agent";
 import AgentGenerativeCards from "./AgentGenerativeCards";
 
@@ -74,14 +74,6 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     setIsLoading(true);
 
     try {
-      const historyPayload = messages
-        .filter((m) => m.id !== "welcome")
-        .slice(-6)
-        .map((m) => ({
-          role: m.role,
-          content: m.content,
-        }));
-
       const res = await postAgentChat({
         message: text,
       });
@@ -108,6 +100,22 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResetChat = () => {
+    setMessages([
+      {
+        id: "welcome",
+        role: "assistant",
+        content:
+          "안녕하세요! 무엇을 도와드릴까요? 학식, 실시간 버스, 시간표, 공지사항, 학사일정, 교내 연락처 등을 물어보실 수 있습니다.",
+        createdAt: new Date(),
+      },
+    ]);
+    setInputValue("");
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -147,9 +155,24 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                   <HeaderSubtitle>Gemma 4 기반 생성형 포털 에이전트</HeaderSubtitle>
                 </HeaderTextGroup>
               </HeaderLeft>
-              <CloseBtn type="button" onClick={onClose}>
-                <X size={20} />
-              </CloseBtn>
+              <HeaderRight>
+                <IconButton
+                  type="button"
+                  onClick={handleResetChat}
+                  title="대화 내용 초기화"
+                  aria-label="대화 내용 초기화"
+                >
+                  <RotateCcw size={17} />
+                </IconButton>
+                <IconButton
+                  type="button"
+                  onClick={onClose}
+                  title="닫기"
+                  aria-label="닫기"
+                >
+                  <X size={20} />
+                </IconButton>
+              </HeaderRight>
             </Header>
 
             {/* Message Area */}
@@ -333,7 +356,13 @@ const HeaderSubtitle = styled.span`
   color: #8b95a1;
 `;
 
-const CloseBtn = styled.button`
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const IconButton = styled.button`
   background: none;
   border: none;
   color: #8b95a1;
@@ -343,7 +372,9 @@ const CloseBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     background-color: #f2f4f6;
