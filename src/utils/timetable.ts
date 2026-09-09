@@ -199,3 +199,103 @@ export const groupClassItemsByCourse = (
 
   return [...groups.values()];
 };
+
+/** 친구 시간표 비교(공강 계산)에서 "바쁜 시간" 하나를 나타내는 최소 단위 */
+export interface BusyInterval {
+  day: number;
+  startTime: number;
+  endTime: number;
+}
+
+/** 공통 공강 시간 하나 */
+export interface CommonFreeSlot {
+  day: number;
+  startTime: number;
+  endTime: number;
+  duration: number;
+}
+
+export interface CalculateCommonFreeSlotsOptions {
+  /** 계산 대상 요일 수 (0 ~ dayCount-1). 기본 5 (월~금) */
+  dayCount?: number;
+  /** 공강 탐색 시작 시각(시 단위). 기본 9 */
+  windowStart?: number;
+  /** 공강 탐색 종료 시각(시 단위). 기본 18 */
+  windowEnd?: number;
+  /** 목록/그리드에 포함할 최소 공강 길이(분). 기본 30 */
+  minFreeMinutes?: number;
+}
+
+/**
+ * 여러 명(나 + 선택된 친구들)의 수업 시간을 합쳐 요일별 "공통 공강" 구간을 계산한다.
+ *
+ * 부동소수점 오차(예: 50분 수업 -> 50/60 시간의 2진 반올림 오차)가 구간 병합·최소
+ * 길이 판정에 영향을 주지 않도록 내부 연산은 전부 정수 분(minute) 단위로 수행하고,
+ * 반환 시에만 시간(hour) 단위 소수로 변환한다.
+ */
+export const calculateCommonFreeSlots = (
+  busyByPerson: BusyInterval[][],
+  options: CalculateCommonFreeSlotsOptions = {},
+): CommonFreeSlot[] => {
+  const {
+    dayCount = 5,
+    windowStart = 9,
+    windowEnd = 18,
+    minFreeMinutes = 30,
+  } = options;
+
+  const windowStartMin = Math.round(windowStart * 60);
+  const windowEndMin = Math.round(windowEnd * 60);
+  if (windowEndMin <= windowStartMin) return [];
+
+  const result: CommonFreeSlot[] = [];
+
+  for (let day = 0; day < dayCount; day++) {
+    // 정수 분 단위로 변환 + 탐색 범위로 클램프
+    const busyMinutes = busyByPerson
+      .flat()
+      .filter((b) => b.day === day)
+      .map((b) => ({
+        start: Math.max(windowStartMin, Math.round(b.startTime * 60)),
+        end: Math.min(windowEndMin, Math.round(b.endTime * 60)),
+      }))
+      .filter((b) => b.start < b.end)
+      .sort((a, b) => a.start - b.start);
+
+    // 겹치거나 맞닿은(back-to-back) 구간 병합
+    const merged: { start: number; end: number }[] = [];
+    for (const curr of busyMinutes) {
+      const prev = merged[merged.length - 1];
+      if (prev && curr.start <= prev.end) {
+        prev.end = Math.max(prev.end, curr.end);
+      } else {
+        merged.push({ ...curr });
+      }
+    }
+
+    // 탐색 범위 안의 빈 구간(공강) 추출
+    let cursor = windowStartMin;
+    const pushFreeSlot = (startMin: number, endMin: number) => {
+      const durationMin = endMin - startMin;
+      if (durationMin < minFreeMinutes) return;
+      result.push({
+        day,
+        startTime: startMin / 60,
+        endTime: endMin / 60,
+        duration: durationMin / 60,
+      });
+    };
+
+    for (const busy of merged) {
+      if (busy.start > cursor) {
+        pushFreeSlot(cursor, busy.start);
+      }
+      cursor = Math.max(cursor, busy.end);
+    }
+    if (cursor < windowEndMin) {
+      pushFreeSlot(cursor, windowEndMin);
+    }
+  }
+
+  return result;
+};
