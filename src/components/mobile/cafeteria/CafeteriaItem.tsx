@@ -74,12 +74,7 @@ export default function CafeteriaItem({
                   2기숙사 식당은 당일 식사 시간 전에 업데이트 됩니다!
                 </>
               ) : (
-                cafeteriaInfo[typeIndex]?.split(" ").map((line, index) => (
-                  <span key={index}>
-                    {line}
-                    <br />
-                  </span>
-                ))
+                cafeteriaInfo[typeIndex]
               )}
             </p>
           )}
@@ -125,6 +120,8 @@ const DetailWrapper = styled.div`
     font-weight: 500;
     color: #404040;
     margin: 0;
+    /* 서버가 코너와 메뉴를 개행으로 구분해 내려준다. */
+    white-space: pre-line;
   }
 
   .detail-wrapper {

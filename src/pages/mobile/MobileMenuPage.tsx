@@ -59,9 +59,16 @@ const CafeteriaListContent = ({
     }
   };
 
+  // 코너가 여럿인 끼니(학생식당 중식 등)는 코너마다 가격/칼로리가 있어 하나로 뽑을 수 없다.
+  const isSingleCorner = (input: string) =>
+    (input.match(/[0-9,]+kcal/gi) ?? []).length === 1;
+
   const extractValues = (input: string): CafeteriaDetail | null => {
+    if (!isSingleCorner(input)) {
+      return null;
+    }
     const price = input.match(/([0-9,]+)원/);
-    const calory = input.match(/[0-9,]+kcal/);
+    const calory = input.match(/[0-9,]+kcal/i);
     if (price && calory) {
       return {
         구성원가: price[0],
@@ -71,9 +78,16 @@ const CafeteriaListContent = ({
     return null;
   };
 
+  // 코너가 하나면 꼬리의 가격/칼로리 줄을 떼어 하단에 따로 보여준다.
   const extractMenu = (input: string): string | null => {
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    return match ? match[1].trim() : input;
+    if (!isSingleCorner(input)) {
+      return input;
+    }
+    const lines = input.split("\n");
+    while (lines.length > 0 && /[0-9,]+원|kcal/i.test(lines[lines.length - 1])) {
+      lines.pop();
+    }
+    return lines.join("\n").trim() || input;
   };
 
   useEffect(() => {

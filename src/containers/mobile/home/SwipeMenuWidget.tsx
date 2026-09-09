@@ -53,16 +53,7 @@ export default function SwipeMenuWidget() {
 
   // 식사 시간대별 인덱스 및 라벨 매핑
   const getMealInfo = (cafeteriaName: string, hour: number): { indices: number[]; label: string } => {
-    if (cafeteriaName === "학생식당") {
-      if (hour >= 14.5) {
-        return { indices: [2], label: "석식" };
-      } else {
-        return { indices: [0, 1], label: "중식" };
-      }
-    }
-
-    const hasBreakfast =
-      cafeteriaName === "제1기숙사식당" || cafeteriaName === "27호관식당";
+    const hasBreakfast = cafeteriaName === "제1기숙사식당";
 
     if (hasBreakfast && hour < 9.5) {
       return { indices: [0], label: "조식" };
@@ -73,40 +64,41 @@ export default function SwipeMenuWidget() {
     }
   };
 
-  // 학생식당 코너 라벨 변환
-  const getCornerLabel = (cafeteriaName: string, index: number): string => {
-    if (cafeteriaName === "학생식당") {
-      if (index === 0) return "1코너 (백반)";
-      if (index === 1) return "2코너 (일품)";
-      return "석식";
-    }
+  const getCornerLabel = (_cafeteriaName: string, index: number): string => {
     if (index === 0) return "조식";
     if (index === 1) return "중식";
     return "석식";
   };
 
-  // 메뉴 텍스트 추출 (가격/칼로리 정보 제거 후 공백(" ") 기준 첫 번째 메뉴만 추출)
+  // 대표 메뉴 한 개만 추출 (코너 머리말과 가격/칼로리 줄은 건너뛴다)
   const extractMenu = (input: string): string => {
     if (!input) return "";
-    
-    // 1. 가격 및 칼로리 제거를 위해 가격 매칭 전까지만 추출
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    const cleanText = match ? match[1].trim() : input.trim();
-    
-    // 예외 처리: "오늘은 쉽니다" 또는 "업데이트 전" 등 안내 메시지는 split 하지 않고 그대로 반환
+
+    const lines = input
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const firstLine = lines[0] ?? input.trim();
     if (
-      cleanText === "오늘은 쉽니다" ||
-      cleanText === "업데이트 전" ||
-      cleanText.includes("정보가 없습니다")
+      firstLine === "오늘은 쉽니다" ||
+      firstLine === "업데이트 전" ||
+      firstLine.includes("정보가 없습니다")
     ) {
-      return cleanText;
+      return firstLine;
     }
-    
-    // 2. MobileMenuPage/CafeteriaItem이 공백(" ")을 기준으로 줄바꿈하는 것을 참고하여
-    //    공백(" ")으로 쪼갠 뒤 가장 첫 번째 메뉴(index 0)만 추출
-    const firstMenu = cleanText.split(/\s+/)[0];
-    
-    return firstMenu ? firstMenu.trim() : cleanText;
+
+    // "[1코너(백반)]" 같은 머리말은 걷어내고, 가격/칼로리만 있는 줄은 건너뛴다.
+    const menu = lines
+      .map((line) => line.replace(/^\[[^\]]*\]\s*/, "").trim())
+      .find(
+        (line) =>
+          line.length > 0 &&
+          !/^"?[0-9,]+원/.test(line) &&
+          !/^[0-9,\s/]*kcal/i.test(line),
+      );
+
+    return (menu ?? firstLine).replace(/\s*"?[0-9,]+원.*$/, "").trim();
   };
 
   // 식단표 데이터 병렬 페칭
