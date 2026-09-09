@@ -198,10 +198,12 @@ export const getPublicChatMessages = async (
 
 export const createPersonalChatRoom = async (
   targetFriendIds: number[],
+  title?: string,
+  adminMode?: boolean,
 ): Promise<CreateChatRoomResponse> => {
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     "/api/chat-rooms/personal",
-    { targetFriendIds },
+    { targetFriendIds, title, adminMode },
   );
   return response.data;
 };

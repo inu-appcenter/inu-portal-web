@@ -54,7 +54,7 @@ import { updateChatRoomTitle, getChatRoomMembers } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import EditChatRoomTitleModal from "@/components/mobile/chat/EditChatRoomTitleModal";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChatRoomMemberResponseDto } from "@/types/chat";
 import useChatModeration from "@/hooks/useChatModeration";
 
@@ -241,14 +241,17 @@ export default function ChattingPage() {
     }
   }, [messages]);
 
-  // 컴포넌트 언마운트 시 메모리 누수 방지를 위한 일괄 해제
+  const queryClient = useQueryClient();
+
+  // 컴포넌트 언마운트 시 메모리 누수 방지를 위한 일괄 해제 및 채팅 목록 쿼리 무효화 (최신 메시지 갱신)
   useEffect(() => {
     return () => {
       uploadingImages.forEach((item) => {
         URL.revokeObjectURL(item.previewUrl);
       });
+      queryClient.invalidateQueries({ queryKey: ["myChatRooms"] });
     };
-  }, [uploadingImages]);
+  }, [uploadingImages, queryClient]);
 
   const { data: membersRes } = useQuery({
     queryKey: ["chatMembers", roomId],

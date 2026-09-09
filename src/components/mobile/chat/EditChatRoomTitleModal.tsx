@@ -71,8 +71,7 @@ export default function EditChatRoomTitleModal({
           >
             <Header>
               <Title>채팅방 이름 변경</Title>
-              <Description>참여자 모두에게 적용돼요.</Description>
-
+              <Description>나에게만 적용되는 채팅방 이름이에요.</Description>
             </Header>
 
             <FormArea>

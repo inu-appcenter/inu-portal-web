@@ -2,40 +2,32 @@ import styled from "styled-components";
 import { ShieldCheck } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { getFriends, searchFriend } from "@/apis/friends";
+import { useMutation } from "@tanstack/react-query";
+import { searchFriend } from "@/apis/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
-import Box from "@/components/common/Box";
-import Divider from "@/components/common/Divider";
-import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { ROUTES } from "@/constants/routes";
-import Icon from "@/components/common/Icon";
-import EmptyState from "@/components/common/EmptyState";
 import useUserStore from "@/stores/useUserStore";
 import Switch from "@/components/common/Switch";
+import CapsuleButton from "@/components/common/CapsuleButton";
 import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import { FriendResponseDto } from "@/types/friends";
 
 export default function CreatePersonalChatPage() {
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
-  const isAdmin = userInfo?.role === "admin";
+  const isAdmin =
+    userInfo?.role?.toLowerCase() === "admin" ||
+    userInfo?.role === "ROLE_ADMIN";
 
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [selectedFriendIds, setSelectedFriendIds] = useState<number[]>([]);
   const [title, setTitle] = useState("");
-  const [studentIdSearch, setStudentIdSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<FriendResponseDto[]>([]);
-
-  const { data: friendsRes, isLoading } = useQuery({
-    queryKey: ["friends"],
-    queryFn: getFriends,
-    enabled: !isAdminMode,
-  });
-
-  const friends = friendsRes?.data || [];
+  const [filteredFriends, setFilteredFriends] = useState<FriendResponseDto[]>([]);
 
   const searchMutation = useMutation({
     mutationFn: searchFriend,
@@ -46,7 +38,7 @@ export default function CreatePersonalChatPage() {
         return;
       }
       setSearchedUsers((prev) => [user, ...prev]);
-      setStudentIdSearch("");
+      setSearchTerm("");
     },
     onError: (error: any) => {
       alert(error.response?.data?.msg || "유저를 찾을 수 없습니다.");
@@ -54,7 +46,15 @@ export default function CreatePersonalChatPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (friendIds: number[]) => createPersonalChatRoom(friendIds),
+    mutationFn: ({
+      friendIds,
+      title,
+      adminMode,
+    }: {
+      friendIds: number[];
+      title?: string;
+      adminMode?: boolean;
+    }) => createPersonalChatRoom(friendIds, title, adminMode),
     onSuccess: (res: any) => {
       const roomId = res.data?.id || res.id;
       if (roomId) {
@@ -68,254 +68,302 @@ export default function CreatePersonalChatPage() {
     },
   });
 
-  useHeader({
-    title: "대화 상대 선택",
-    hasback: true,
-  });
-
-  const toggleFriend = (friendId: number) => {
+  const toggleFriend = useCallback((friendId: number) => {
     setSelectedFriendIds((prev) =>
       prev.includes(friendId)
         ? prev.filter((id) => id !== friendId)
         : [...prev, friendId],
     );
-  };
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    const currentList = isAdminMode ? searchedUsers : filteredFriends;
+    if (currentList.length === 0) return;
+
+    const allCurrentIds = currentList.map((f) => f.friendId);
+    const isAllSelected = allCurrentIds.every((id) =>
+      selectedFriendIds.includes(id),
+    );
+
+    if (isAllSelected) {
+      setSelectedFriendIds((prev) =>
+        prev.filter((id) => !allCurrentIds.includes(id)),
+      );
+    } else {
+      setSelectedFriendIds((prev) =>
+        Array.from(new Set([...prev, ...allCurrentIds])),
+      );
+    }
+  }, [isAdminMode, searchedUsers, filteredFriends, selectedFriendIds]);
+
+  const currentAvailableFriends = isAdminMode ? searchedUsers : filteredFriends;
+  const isAllSelected =
+    currentAvailableFriends.length > 0 &&
+    currentAvailableFriends.every((f) =>
+      selectedFriendIds.includes(f.friendId),
+    );
+
+  const headerRight = useMemo(() => {
+    return (
+      <HeaderActionButton onClick={handleSelectAll}>
+        {isAllSelected ? "전체 해제" : "전체 선택"}
+      </HeaderActionButton>
+    );
+  }, [handleSelectAll, isAllSelected]);
+
+  useHeader({
+    title: "대화 상대 선택",
+    hasback: true,
+    rightAreaNotCircle: true,
+    rightArea: headerRight,
+  });
 
   const handleCreate = () => {
     if (selectedFriendIds.length === 0) {
       alert("대화 상대를 한 명 이상 선택해주세요.");
       return;
     }
-    createMutation.mutate(selectedFriendIds);
+    createMutation.mutate({
+      friendIds: selectedFriendIds,
+      title: title.trim() || undefined,
+      adminMode: isAdminMode,
+    });
   };
 
-  const handleSearch = () => {
-    if (!studentIdSearch.trim()) return;
-    searchMutation.mutate(studentIdSearch.trim());
+  const handleSearchSubmit = () => {
+    if (!isAdminMode) return;
+    if (!searchTerm.trim()) return;
+    searchMutation.mutate(searchTerm.trim());
   };
 
   return (
-    <Container>
-      {isAdmin && (
-        <AdminToggleArea>
-          <div className="label">
-            <ShieldCheck size={20} color="#5E92F0" />
-            <span>공식 메시지 모드 (Admin)</span>
-          </div>
-          <Switch
-            checked={isAdminMode}
-            onCheckedChange={(checked) => {
-              setIsAdminMode(checked);
-              setSelectedFriendIds([]);
-              setSearchedUsers([]);
-              setTitle("");
-            }}
-          />
-        </AdminToggleArea>
-      )}
-
-      <Box style={{ padding: "16px" }}>
-        <InputWrapper>
-          <div className="label">채팅방 이름</div>
-          <TitleInput
-            value={isAdminMode ? "INTIP 운영자" : title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={
-              selectedFriendIds.length > 1
-                ? "그룹 채팅 (기본값)"
-                : "상대방 이름 (기본값)"
-            }
-            disabled={isAdminMode}
-          />
+    <PageWrapper>
+      {/* 1. 채팅방 이름 카드 */}
+      <ChatTitleCard>
+        <ChatTitleSection>
+          <ChatTitleLabel>채팅방 이름</ChatTitleLabel>
+          <ChatTitleInputWrapper>
+            <ChatTitleInput
+              value={isAdminMode ? "INTIP 운영자" : title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={
+                selectedFriendIds.length > 1
+                  ? "그룹 채팅 (기본값)"
+                  : "상대방 이름 (기본값)"
+              }
+              disabled={isAdminMode}
+            />
+          </ChatTitleInputWrapper>
           {!isAdminMode && (
-            <p className="hint">
-              {selectedFriendIds.length > 1
-                ? "미입력 시 '그룹 채팅'으로 설정됩니다."
-                : "미입력 시 상대방의 닉네임이 이름으로 사용됩니다."}
-            </p>
+            <ChatTitleHints>
+              <p className="hint-line">
+                미입력 시 상대방의 닉네임이 이름으로 사용됩니다.
+              </p>
+              <p className="hint-line">
+                설정한 그룹채팅방의 이름은 나에게만 표시되는 이름으로 설정돼요.
+              </p>
+            </ChatTitleHints>
           )}
-        </InputWrapper>
-      </Box>
+        </ChatTitleSection>
 
-      {isAdminMode && (
-        <SearchArea>
-          <MobilePillSearchBar
-            value={studentIdSearch}
-            onChange={setStudentIdSearch}
-            onSubmit={handleSearch}
-            placeholder="학번으로 유저 검색 후 추가"
-          />
-        </SearchArea>
-      )}
-
-      <Box>
-        {isAdminMode ? (
-          searchedUsers.length > 0 ? (
-            searchedUsers.map((user, index) => (
-              <div key={user.friendId} style={{ width: "100%" }}>
-                <SelectableCard onClick={() => toggleFriend(user.friendId)}>
-                  <SocialUserCard
-                    name={user.nickname}
-                    subtitle={user.studentId}
-                    fireId={user.fireId}
-                  />
-                  <Checkbox
-                    $selected={selectedFriendIds.includes(user.friendId)}
-                  >
-                    {selectedFriendIds.includes(user.friendId) && (
-                      <Icon name="check" size={16} color="white" />
-                    )}
-                  </Checkbox>
-                </SelectableCard>
-                {index < searchedUsers.length - 1 && <Divider />}
-              </div>
-            ))
-          ) : (
-            <EmptyState>학번을 검색하여 대화 상대를 추가하세요.</EmptyState>
-          )
-        ) : isLoading ? (
-          <EmptyState>친구 목록을 불러오는 중...</EmptyState>
-        ) : friends.length > 0 ? (
-          friends.map((friend, index) => (
-            <div key={friend.friendId} style={{ width: "100%" }}>
-              <SelectableCard onClick={() => toggleFriend(friend.friendId)}>
-                <SocialUserCard
-                  name={friend.nickname}
-                  subtitle={friend.studentId}
-                  fireId={friend.fireId}
-                />
-                <Checkbox
-                  $selected={selectedFriendIds.includes(friend.friendId)}
-                >
-                  {selectedFriendIds.includes(friend.friendId) && (
-                    <Icon name="check" size={16} color="white" />
-                  )}
-                </Checkbox>
-              </SelectableCard>
-              {index < friends.length - 1 && <Divider />}
-            </div>
-          ))
-        ) : (
-          <EmptyState>선택 가능한 친구가 없습니다.</EmptyState>
+        {isAdmin && (
+          <AdminToggleRow>
+            <AdminLabelArea>
+              <ShieldCheck size={20} color="#5E92F0" />
+              <AdminLabelText>공식 메시지 모드 (Admin)</AdminLabelText>
+            </AdminLabelArea>
+            <Switch
+              checked={isAdminMode}
+              onCheckedChange={(checked) => {
+                setIsAdminMode(checked);
+                setSelectedFriendIds([]);
+                setSearchedUsers([]);
+                setTitle("");
+                setSearchTerm("");
+              }}
+            />
+          </AdminToggleRow>
         )}
-      </Box>
+      </ChatTitleCard>
 
+      {/* 2. 검색 바 */}
+      <SearchBarWrapper>
+        <MobilePillSearchBar
+          variant="clean"
+          value={searchTerm}
+          onChange={setSearchTerm}
+          onSubmit={handleSearchSubmit}
+          placeholder={
+            isAdminMode
+              ? "학번으로 유저 검색 후 추가"
+              : "닉네임, 학번으로 검색"
+          }
+        />
+      </SearchBarWrapper>
+
+      {/* 3. 친구 목록 (FriendManagementView 공용 컴포넌트 활용) */}
+      <FriendManagementView
+        searchTerm={searchTerm}
+        isSelectionMode={true}
+        selectedIds={selectedFriendIds}
+        onToggleSelect={toggleFriend}
+        showMyProfile={false}
+        showPendingRequests={false}
+        customFriends={isAdminMode ? searchedUsers : undefined}
+        onFilteredFriendsChange={setFilteredFriends}
+      />
+
+      {/* 4. 하단 고정 만들기 버튼 */}
       <FixedFooter>
         <FixedFooterContent>
-          <SubmitButton
+          <CreateButton
+            variant="primary"
+            fullWidth
             disabled={selectedFriendIds.length === 0 || createMutation.isPending}
             onClick={handleCreate}
-            $isAdmin={isAdminMode}
           >
             {createMutation.isPending
               ? "채팅방 생성 중..."
-              : isAdminMode
-                ? `공식 방 만들기 (${selectedFriendIds.length}명)`
-                : `방 만들기 (${selectedFriendIds.length}명)`}
-          </SubmitButton>
+              : `채팅방 만들기 (${selectedFriendIds.length}명)`}
+          </CreateButton>
         </FixedFooterContent>
       </FixedFooter>
-    </Container>
+    </PageWrapper>
   );
 }
 
-const Container = styled.div`
+const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 24px ${MOBILE_PAGE_GUTTER} 120px;
   gap: 20px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px ${MOBILE_PAGE_GUTTER} 120px;
+  background-color: var(--bg-subtle, #f8f9fb);
 `;
 
-const AdminToggleArea = styled.div`
+const ChatTitleCard = styled.div`
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 20px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background-color: #f8f9ff;
-  border: 1px solid #e0e4ff;
-  border-radius: 16px;
-
-  .label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1c1c1e;
-  }
+  flex-direction: column;
+  gap: 20px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
-const SearchArea = styled.div`
-  margin-bottom: 8px;
-`;
-
-const InputWrapper = styled.div`
+const ChatTitleSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-
-  .label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1c1c1e;
-    margin-left: 4px;
-  }
-
-  .hint {
-    font-size: 12px;
-    color: #8e8e93;
-    margin-left: 4px;
-    margin-top: 4px;
-  }
-`;
-
-const TitleInput = styled.input`
   width: 100%;
-  height: 48px;
-  padding: 0 16px;
-  border: 1px solid #e5e5ea;
-  border-radius: 12px;
-  font-size: 15px;
-  color: #1c1c1e;
-  background-color: ${({ disabled }) => (disabled ? "#F2F2F7" : "white")};
-
-  &::placeholder {
-    color: #aeaeb2;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #5E92F0;
-  }
 `;
 
-const SelectableCard = styled.div`
+const AdminToggleRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
   width: 100%;
-  padding: 4px 0;
+  box-sizing: border-box;
+  padding: 0 4px 4px 4px;
+`;
 
-  & > :first-child {
-    flex: 1;
-    pointer-events: none;
+const AdminLabelArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const AdminLabelText = styled.span`
+  font-family: Pretendard;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-secondary, #333d4b);
+`;
+
+const ChatTitleLabel = styled.p`
+  font-family: Pretendard;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-secondary, #333d4b);
+  margin: 0;
+`;
+
+const ChatTitleInputWrapper = styled.div`
+  background: var(--bg-subtle, #f8f9fb);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: var(--interactive-primary, #0061ff);
   }
 `;
 
-const Checkbox = styled.div<{ $selected: boolean }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#5E92F0" : "#E5E5EA")};
-  background-color: ${({ $selected }) =>
-    $selected ? "#5E92F0" : "transparent"};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  margin-left: 12px;
+const ChatTitleInput = styled.input`
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary, #191f28);
+  padding: 0;
+
+  &::placeholder {
+    color: var(--text-tertiary, #8b95a1);
+  }
+
+  &:disabled {
+    color: var(--text-disabled, #b0b8c1);
+  }
+`;
+
+const ChatTitleHints = styled.div`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-tertiary, #8b95a1);
+  margin-top: 4px;
+
+  .hint-line {
+    margin: 0;
+    line-height: 16px;
+  }
+`;
+
+const SearchBarWrapper = styled.div`
+  width: 100%;
+`;
+
+const HeaderActionButton = styled.button`
+  border: none;
+  background: none;
+  font-family: Pretendard;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--text-brand, #0061ff);
+  cursor: pointer;
+  outline: none;
+  padding: 8px 12px;
+  white-space: nowrap;
+
+  &:active {
+    opacity: 0.7;
+  }
 `;
 
 const FixedFooter = styled.div`
@@ -326,9 +374,9 @@ const FixedFooter = styled.div`
   width: 100%;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.45) 45%,
-    rgba(255, 255, 255, 0.85) 100%
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
   );
   z-index: 100;
   pointer-events: none;
@@ -338,35 +386,30 @@ const FixedFooterContent = styled.div`
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 16px ${MOBILE_PAGE_GUTTER}
-    calc(32px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   pointer-events: auto;
 `;
 
-const SubmitButton = styled.button<{ $isAdmin?: boolean }>`
-  width: 100%;
-  height: 56px;
-  background-color: ${({ $isAdmin }) => ($isAdmin ? "#1C1C1E" : "#5E92F0")};
-  color: white;
-  border: none;
-  border-radius: 16px;
+const CreateButton = styled(CapsuleButton)`
+  color: #fff;
+  text-align: center;
+  font-family: Pretendard;
   font-size: 16px;
+  font-style: normal;
   font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px
-    ${({ $isAdmin }) =>
-      $isAdmin ? "rgba(0, 0, 0, 0.2)" : "rgba(94, 146, 240, 0.3)"};
-  transition: all 0.2s;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  border-radius: 999px;
+  background: var(--interactive-primary, #0061ff);
+  height: 48px;
+  padding: 12px 24px;
 
   &:disabled {
-    background-color: #e5e5ea;
-    color: #8e8e93;
-    box-shadow: none;
+    border-color: var(--border-default, #e5e8eb);
+    background: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #b0b8c1);
     cursor: not-allowed;
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.98);
+    box-shadow: none;
   }
 `;

@@ -111,6 +111,8 @@ const MobileChatListPage = memo(function MobileChatListPage() {
     queryKey: ["myChatRooms"],
     queryFn: getMyChatRooms,
     refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    staleTime: 0,
     enabled: isLoggedIn,
   });
 
@@ -553,20 +555,32 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         <div
                           style={{
                             width: "100%",
-                            padding: "12px 20px",
+                            padding: "0 12px 0 0",
                             display: "flex",
-                            gap: "12px",
+                            gap: "4px",
                             alignItems: "center",
                             boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              width: "74px",
+                              height: "72px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Skeleton width="48px" height="48px" circle />
+                          </div>
                           <div
                             style={{
                               flex: 1,
                               display: "flex",
                               flexDirection: "column",
                               gap: "8px",
+                              padding: "12px 0",
                             }}
                           >
                             <Skeleton width="40%" height="18px" />
@@ -610,20 +624,32 @@ const MobileChatListPage = memo(function MobileChatListPage() {
                         <div
                           style={{
                             width: "100%",
-                            padding: "12px 20px",
+                            padding: "0 12px 0 0",
                             display: "flex",
-                            gap: "12px",
+                            gap: "4px",
                             alignItems: "center",
                             boxSizing: "border-box",
                           }}
                         >
-                          <Skeleton width="48px" height="48px" circle />
+                          <div
+                            style={{
+                              width: "74px",
+                              height: "72px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Skeleton width="48px" height="48px" circle />
+                          </div>
                           <div
                             style={{
                               flex: 1,
                               display: "flex",
                               flexDirection: "column",
                               gap: "8px",
+                              padding: "12px 0",
                             }}
                           >
                             <Skeleton width="40%" height="18px" />
