@@ -56,7 +56,37 @@ export interface FcmAdminLogData {
   retryCount: number;
   /** 마지막 재발송 시각. 재발송한 적 없으면 null. */
   lastRetriedAt: string | null;
+  /**
+   * 아래 5개는 클릭율 집계 필드다. 서버(read_source 컬럼 마이그레이션 + 배포)가
+   * 나가기 전 응답에는 아예 없으므로 optional로 둔다. 배포가 끝나면 필수로 좁혀도 된다.
+   * 재발송 직후 값은 상세 GET으로 다시 읽는 편이 정확하다(POST 응답에도 집계는 실린다).
+   */
+  /** 알림함 행이 생긴 수신 "회원" 수. 클릭율의 분모. 기기 단위인 targetCount와 다르다. */
+  recipientCount?: number;
+  /** 읽음 처리된 수. 전체 읽음·조회수 기반 자동 읽음도 포함하므로 clickCount보다 크거나 같다. */
+  readCount?: number;
+  /** pushReadCount + inboxReadCount. 클릭율의 분자. */
+  clickCount?: number;
+  /** 푸시를 직접 눌러서 연 수. */
+  pushReadCount?: number;
+  /** 알림함에서 개별 알림을 눌러서 연 수. */
+  inboxReadCount?: number;
 }
+
+/**
+ * 클릭율(%). 분모는 반드시 recipientCount(회원 단위)다. targetCount/sendCount는
+ * 토큰(기기) 단위라 기기를 여러 대 쓰는 회원 때문에 전환율이 낮게 나온다.
+ * 집계 필드가 없거나 수신 인원이 0이면 계산하지 않고 null을 준다(호출부에서 "-" 표시).
+ */
+export const getFcmClickRate = (log: FcmAdminLogData): number | null => {
+  const recipientCount = log.recipientCount ?? 0;
+  if (!recipientCount) return null;
+  return ((log.clickCount ?? 0) / recipientCount) * 100;
+};
+
+/** 집계 도입(read_source 컬럼) 이전에 이미 읽힌 과거 발송. 버그가 아니라 데이터 부재다. */
+export const isFcmClickStatUnavailable = (log: FcmAdminLogData): boolean =>
+  (log.readCount ?? 0) > 0 && (log.clickCount ?? 0) === 0;
 
 /** 재발송을 걸 수 있는 상태. 발송이 진행 중인 건은 어디까지 나갔는지 몰라 제외한다. */
 export const RETRYABLE_FCM_STATUSES: FcmSendStatus[] = [

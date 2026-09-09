@@ -20,7 +20,9 @@ import {
   ScheduledNotificationData,
   ScheduledNotificationStatus,
   canRetryFcmMessage,
+  getFcmClickRate,
   isAdminUser,
+  isFcmClickStatUnavailable,
 } from "@/types/admin.ts";
 import { useHeader } from "@/context/HeaderContext.tsx";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
@@ -451,6 +453,53 @@ export default function MobileAdminNotificationPage() {
               </StatItem>
             </StatsRow>
 
+            {selectedLog.recipientCount !== undefined && (
+              <>
+                <Divider />
+                <DetailItem>
+                  <DetailLabel>클릭율</DetailLabel>
+                  <RetryStatusBox>
+                    <ClickRateHeadline>
+                      <ClickRateValue>
+                        {(() => {
+                          const rate = getFcmClickRate(selectedLog);
+                          return rate === null ? "-" : `${rate.toFixed(1)}%`;
+                        })()}
+                      </ClickRateValue>
+                      <ClickRateCaption>
+                        {selectedLog.recipientCount > 0
+                          ? `수신 ${selectedLog.recipientCount}명 중 ${selectedLog.clickCount ?? 0}명이 알림을 눌러서 열었어요.`
+                          : "알림함에 쌓인 수신 인원이 없어 클릭율을 계산할 수 없어요."}
+                      </ClickRateCaption>
+                    </ClickRateHeadline>
+                    <RetryStatusRow>
+                      <span>수신 인원</span>
+                      <strong>{selectedLog.recipientCount}명</strong>
+                    </RetryStatusRow>
+                    <RetryStatusRow>
+                      {/* 전체 읽음·자동 읽음까지 포함하므로 클릭 수보다 크거나 같다. */}
+                      <span>읽음</span>
+                      <strong>{selectedLog.readCount ?? 0}명</strong>
+                    </RetryStatusRow>
+                    <RetryStatusRow>
+                      <span>푸시 클릭</span>
+                      <strong>{selectedLog.pushReadCount ?? 0}명</strong>
+                    </RetryStatusRow>
+                    <RetryStatusRow>
+                      <span>알림함 클릭</span>
+                      <strong>{selectedLog.inboxReadCount ?? 0}명</strong>
+                    </RetryStatusRow>
+                  </RetryStatusBox>
+                  {isFcmClickStatUnavailable(selectedLog) && (
+                    <StatHint>
+                      집계 이전에 발송된 알림이라 어떤 경로로 열었는지 알 수 없어,
+                      읽은 사람이 있어도 클릭 수는 0으로 나옵니다.
+                    </StatHint>
+                  )}
+                </DetailItem>
+              </>
+            )}
+
             {(selectedLog.retryCount > 0 || selectedLog.retryableCount > 0) && (
               <>
                 <Divider />
@@ -564,6 +613,33 @@ const RetryStatusRow = styled.div`
     color: #0f172a;
     font-weight: 700;
   }
+`;
+
+const ClickRateHeadline = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+`;
+
+const ClickRateValue = styled.div`
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+`;
+
+const ClickRateCaption = styled.div`
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.5;
+`;
+
+const StatHint = styled.p`
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  line-height: 1.6;
 `;
 
 const RetryNotice = styled.p`
