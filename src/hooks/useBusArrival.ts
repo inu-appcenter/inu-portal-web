@@ -57,13 +57,19 @@ export default function useBusArrival(
         return bus;
       }
 
-      const match = data.find(
-        (item) =>
-          item.ROUTEID === bus.routeId ||
-          (item as any).routeId === bus.routeId ||
-          (item as any).routeNo === bus.number ||
-          (item as any).ROUTENO === bus.number,
-      );
+      const candidates = data.filter((item) => {
+        const seconds = Number(item.ARRIVALESTIMATETIME);
+        return item.BSTOPID === bstopId.trim() &&
+          item.ROUTEID === bus.routeId &&
+          item.ARRIVALESTIMATETIME.trim() !== "" &&
+          Number.isFinite(seconds) && seconds >= 0;
+      });
+      const remaining = (item: (typeof data)[number]) =>
+        Number(item.ARRIVALESTIMATETIME) - Math.max(0,
+          (Date.now() - (item.observedAt ?? dataUpdatedAt)) / 1000);
+      const match = candidates
+        .filter((item) => remaining(item) >= 0)
+        .sort((a, b) => remaining(a) - remaining(b))[0];
 
       if (!match) {
         return {
@@ -87,8 +93,9 @@ export default function useBusArrival(
           match.ARRIVALESTIMATETIME ??
           (match as any).estimatedArrivalSeconds,
       );
-      const elapsedSeconds = dataUpdatedAt
-        ? Math.max(0, Math.floor((Date.now() - dataUpdatedAt) / 1000))
+      const observedAt = match.observedAt ?? dataUpdatedAt;
+      const elapsedSeconds = observedAt
+        ? Math.max(0, Math.floor((Date.now() - observedAt) / 1000))
         : 0;
       const seconds = Math.max(0, rawSeconds - elapsedSeconds);
 
@@ -110,17 +117,18 @@ export default function useBusArrival(
         arrivalInfo: {
           time: toTime(seconds),
           seconds,
-          station: `${match.REST_STOP_COUNT} 전`,
+          station: match.REST_STOP_COUNT.trim() ? `${match.REST_STOP_COUNT} 전` : undefined,
           status: convertStatus(match.CONGESTION),
           isLastBus: match.LASTBUSYN === "1",
-          restCount: Number(match.REST_STOP_COUNT),
+          restCount: match.REST_STOP_COUNT.trim() !== "" && Number.isFinite(Number(match.REST_STOP_COUNT))
+            ? Number(match.REST_STOP_COUNT) : undefined,
         },
       };
     });
 
     setBusArrivalList(updated);
     setLastUpdated(dataUpdatedAt ? new Date(dataUpdatedAt) : new Date());
-  }, [data, dataUpdatedAt, stableBusList]);
+  }, [data, dataUpdatedAt, stableBusList, bstopId]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -133,6 +141,13 @@ export default function useBusArrival(
           }
 
           const nextSeconds = info.seconds - 1;
+
+          if (nextSeconds <= 0) {
+            return {
+              ...bus,
+              arrivalInfo: { time: "도착정보 없음", seconds: 0, isLastBus: false },
+            };
+          }
 
           return {
             ...bus,

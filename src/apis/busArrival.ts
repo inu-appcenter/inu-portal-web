@@ -1,6 +1,7 @@
 import axiosInstance from "@/apis/axiosInstance";
 
 export interface BusArrivalItem {
+  observedAt?: number;
   ARRIVALESTIMATETIME: string;
   BSTOPID: string;
   BUSID: string;
@@ -27,6 +28,7 @@ export async function getBusArrival(bstopId: string): Promise<BusArrivalItem[]> 
 
     const dataList = response.data?.data ?? [];
     return dataList.map((item: any) => ({
+      observedAt: item.observedAt,
       ARRIVALESTIMATETIME: String(item.arrivalEstimateTime ?? ""),
       BSTOPID: String(item.bstopId ?? ""),
       BUSID: String(item.busId ?? ""),
