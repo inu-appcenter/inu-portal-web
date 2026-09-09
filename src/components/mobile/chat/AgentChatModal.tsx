@@ -10,6 +10,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   uiComponent?: AgentChatResponse["uiComponent"];
+  uiComponents?: AgentChatResponse["uiComponents"];
   createdAt: Date;
 }
 
@@ -19,12 +20,12 @@ interface AgentChatModalProps {
 }
 
 const SUGGESTED_PROMPTS = [
-  "오늘 학식 뭐야?",
-  "정문 버스 언제 와?",
-  "오늘 날씨 어때?",
+  "오늘 점심 학식이랑 날씨 알려줘",
+  "오늘 수업 뭐 있고 정문 버스 언제 와?",
+  "장학금 공지 올라오면 알림 줘",
+  "채팅 알림 꺼줘",
+  "내 알림 설정 확인해줘",
   "이번 달 학사일정 알려줘",
-  "장학금 공지사항 찾아줘",
-  "컴퓨터공학부 과사무실 전화번호 알려줘",
 ];
 
 export const AgentChatModal: React.FC<AgentChatModalProps> = ({
@@ -78,11 +79,19 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         message: text,
       });
 
+      const components =
+        res.data?.uiComponents && res.data.uiComponents.length > 0
+          ? res.data.uiComponents
+          : res.data?.uiComponent
+            ? [res.data.uiComponent]
+            : [];
+
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
         content: res.data?.message || "",
         uiComponent: res.data?.uiComponent,
+        uiComponents: components,
         createdAt: new Date(),
       };
 
@@ -186,8 +195,9 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                   )}
                   <MessageBubbleGroup $isUser={msg.role === "user"}>
                     <Bubble $isUser={msg.role === "user"}>{msg.content}</Bubble>
-                    {msg.uiComponent && (
+                    {((msg.uiComponents && msg.uiComponents.length > 0) || msg.uiComponent) && (
                       <AgentGenerativeCards
+                        components={msg.uiComponents}
                         component={msg.uiComponent}
                         onNavigate={onClose}
                       />

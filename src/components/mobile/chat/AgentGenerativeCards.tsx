@@ -10,6 +10,8 @@ import {
   Bus as BusIcon,
   Utensils,
   LogIn,
+  Bell,
+  Sliders,
 } from "lucide-react";
 import {
   FALLBACK_SKY_CONDITION_SLUG,
@@ -25,11 +27,63 @@ import { ROUTES } from "@/constants/routes";
 import { UiComponent } from "@/apis/agent";
 
 interface Props {
-  component: UiComponent;
+  component?: UiComponent | null;
+  components?: UiComponent[] | null;
   onNavigate?: () => void;
 }
 
-export const AgentGenerativeCards: React.FC<Props> = ({ component, onNavigate }) => {
+export const AgentGenerativeCards: React.FC<Props> = ({
+  component,
+  components,
+  onNavigate,
+}) => {
+  const list =
+    components && components.length > 0
+      ? components
+      : component
+        ? [component]
+        : [];
+
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const carouselRef = React.useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, offsetWidth } = carouselRef.current;
+    if (offsetWidth > 0) {
+      const idx = Math.round(scrollLeft / (offsetWidth * 0.88));
+      setActiveIndex(Math.min(idx, list.length - 1));
+    }
+  };
+
+  if (list.length === 0) return null;
+
+  if (list.length === 1) {
+    return <SingleCardItem component={list[0]} onNavigate={onNavigate} />;
+  }
+
+  return (
+    <CarouselWrapper>
+      <CarouselContainer ref={carouselRef} onScroll={handleScroll}>
+        {list.map((c, i) => (
+          <CarouselSlide key={i}>
+            <SingleCardItem component={c} onNavigate={onNavigate} />
+          </CarouselSlide>
+        ))}
+      </CarouselContainer>
+      <CarouselDots>
+        {list.map((_, i) => (
+          <CarouselDot key={i} $active={activeIndex === i} />
+        ))}
+      </CarouselDots>
+    </CarouselWrapper>
+  );
+};
+
+const SingleCardItem: React.FC<{
+  component: UiComponent;
+  onNavigate?: () => void;
+}> = ({ component, onNavigate }) => {
   const navigate = useNavigate();
 
   const handleLinkClick = (url: string) => {
@@ -74,6 +128,12 @@ export const AgentGenerativeCards: React.FC<Props> = ({ component, onNavigate })
             }}
           />
         );
+      case "KEYWORD_CONFIRM":
+        return <KeywordConfirmCard data={component.data} />;
+      case "SETTING_RESULT":
+        return <SettingResultCard data={component.data} />;
+      case "MY_SETTINGS":
+        return <MySettingsCard data={component.data} />;
       default:
         return null;
     }
@@ -400,6 +460,99 @@ const AuthRequiredCard: React.FC<{ onLoginClick: () => void }> = ({ onLoginClick
     </LoginActionBtn>
   </AuthBox>
 );
+
+/* --- 9. Keyword Confirm Card --- */
+const KeywordConfirmCard: React.FC<{ data: any }> = ({ data }) => {
+  if (!data) return null;
+  const isExcluded = Boolean(data.isExcluded);
+
+  return (
+    <ActionCardBox>
+      <CardHeader>
+        <Bell size={16} color={isExcluded ? "#f04438" : "#0061ff"} />
+        <CardTitle>{data.statusText || "키워드 알림 설정"}</CardTitle>
+      </CardHeader>
+      <KeywordContent>
+        <KeywordBadgeRow>
+          <KeywordChip $excluded={isExcluded}>
+            #{data.keyword}
+          </KeywordChip>
+          <TargetTag>{data.targetName || "공지사항"}</TargetTag>
+        </KeywordBadgeRow>
+        <ActionDescription>
+          {isExcluded
+            ? "이 키워드가 포함된 공지는 알림에서 제외됩니다."
+            : "새로운 공지사항이 등록되면 즉시 푸시 알림을 보내드립니다."}
+        </ActionDescription>
+      </KeywordContent>
+    </ActionCardBox>
+  );
+};
+
+/* --- 10. Setting Result Card --- */
+const SettingResultCard: React.FC<{ data: any }> = ({ data }) => {
+  if (!data) return null;
+  const enabled = Boolean(data.enabled);
+
+  return (
+    <ActionCardBox>
+      <CardHeader>
+        <Sliders size={16} color="#0061ff" />
+        <CardTitle>{data.title || "알림 설정"}</CardTitle>
+        <SettingBadge $enabled={enabled}>
+          {data.statusText || (enabled ? "켜짐" : "꺼짐")}
+        </SettingBadge>
+      </CardHeader>
+      <ActionDescription>
+        {data.message || (enabled ? "설정이 활성화되었습니다." : "설정이 비활성화되었습니다.")}
+      </ActionDescription>
+    </ActionCardBox>
+  );
+};
+
+/* --- 11. My Settings Card --- */
+const MySettingsCard: React.FC<{ data: any }> = ({ data }) => {
+  if (!data) return null;
+  const chatPush = Boolean(data.chatPushEnabled);
+  const brief = data.dailyBrief;
+  const keywords: any[] = Array.isArray(data.keywords) ? data.keywords : [];
+
+  return (
+    <ActionCardBox>
+      <CardHeader>
+        <Bell size={16} color="#0061ff" />
+        <CardTitle>내 알림 설정 현황</CardTitle>
+      </CardHeader>
+      <SettingsList>
+        <SettingItemRow>
+          <SettingLabel>채팅 푸시 알림</SettingLabel>
+          <SettingBadge $enabled={chatPush}>{chatPush ? "켜짐" : "꺼짐"}</SettingBadge>
+        </SettingItemRow>
+        {brief && (
+          <SettingItemRow>
+            <SettingLabel>데일리 브리프</SettingLabel>
+            <SettingSubText>
+              {brief.timetableDailyBriefEnabled ? `매일 ${brief.timetableDailyBriefTime || "08:00"}` : "꺼짐"}
+            </SettingSubText>
+          </SettingItemRow>
+        )}
+        <SettingItemRow>
+          <SettingLabel>공지 키워드 알림</SettingLabel>
+          <SettingSubText>{keywords.length}개 등록됨</SettingSubText>
+        </SettingItemRow>
+        {keywords.length > 0 && (
+          <KeywordsChipsContainer>
+            {keywords.slice(0, 6).map((k: any, idx: number) => (
+              <MiniKeywordChip key={k.keywordId ?? idx} $excluded={k.isExcluded}>
+                #{k.keyword}
+              </MiniKeywordChip>
+            ))}
+          </KeywordsChipsContainer>
+        )}
+      </SettingsList>
+    </ActionCardBox>
+  );
+};
 
 /* --- Styled Components --- */
 const CardContainer = styled.div`
@@ -918,6 +1071,145 @@ const LoginActionBtn = styled.button`
   &:hover {
     background-color: #0052d9;
   }
+`;
+
+/* Carousel */
+const CarouselWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 330px;
+`;
+
+const CarouselContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0 6px 0;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const CarouselSlide = styled.div`
+  flex: 0 0 92%;
+  scroll-snap-align: start;
+`;
+
+const CarouselDots = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding-bottom: 2px;
+`;
+
+const CarouselDot = styled.span<{ $active: boolean }>`
+  width: ${({ $active }) => ($active ? "16px" : "6px")};
+  height: 6px;
+  border-radius: 3px;
+  background-color: ${({ $active }) => ($active ? "#0061ff" : "#d1d5db")};
+  transition: all 0.2s ease;
+`;
+
+/* Action & Settings Cards */
+const ActionCardBox = styled.div`
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const KeywordContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const KeywordBadgeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const KeywordChip = styled.span<{ $excluded?: boolean }>`
+  font-size: 14px;
+  font-weight: 700;
+  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "#0061ff")};
+  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "#eff6ff")};
+  padding: 4px 10px;
+  border-radius: 12px;
+`;
+
+const TargetTag = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #4e5968;
+  background-color: #f2f4f6;
+  padding: 3px 8px;
+  border-radius: 8px;
+`;
+
+const ActionDescription = styled.p`
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: #4e5968;
+  word-break: keep-all;
+`;
+
+const SettingBadge = styled.span<{ $enabled: boolean }>`
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: ${({ $enabled }) => ($enabled ? "#0061ff" : "#6b7684")};
+  background-color: ${({ $enabled }) => ($enabled ? "#eff6ff" : "#f2f4f6")};
+`;
+
+const SettingsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SettingItemRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+`;
+
+const SettingLabel = styled.span`
+  color: #333d4b;
+  font-weight: 600;
+`;
+
+const SettingSubText = styled.span`
+  color: #0061ff;
+  font-weight: 600;
+  font-size: 12px;
+`;
+
+const KeywordsChipsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+`;
+
+const MiniKeywordChip = styled.span<{ $excluded?: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "#333d4b")};
+  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "#f2f4f6")};
+  padding: 2px 7px;
+  border-radius: 8px;
 `;
 
 export default AgentGenerativeCards;

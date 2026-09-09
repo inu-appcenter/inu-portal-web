@@ -16,6 +16,9 @@ export interface UiComponent {
     | "NOTICE_LIST"
     | "DIRECTORY"
     | "AUTH_REQUIRED"
+    | "KEYWORD_CONFIRM"
+    | "SETTING_RESULT"
+    | "MY_SETTINGS"
     | string;
   data: any;
   link?: UiComponentLink | null;
@@ -24,6 +27,7 @@ export interface UiComponent {
 export interface AgentChatResponse {
   message: string;
   uiComponent?: UiComponent | null;
+  uiComponents?: UiComponent[] | null;
 }
 
 export interface AgentChatMessageHistory {
