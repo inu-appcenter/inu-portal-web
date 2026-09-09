@@ -1,10 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut, BellOff, Edit3 } from "lucide-react";
+import { Crown } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import Divider from "@/components/common/Divider";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
+import Switch from "@/components/common/Switch";
 import { useNavigate } from "react-router-dom";
 import {
   getChatRoomMembers,
@@ -16,8 +17,13 @@ import {
 import { getFriends } from "@/apis/friends";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
-import EditChatModal from "@/components/mobile/chat/EditChatModal";
 import { useState, useMemo } from "react";
+import { ChatRoom, ChatRoomMemberResponseDto } from "@/types/chat";
+import {
+  normalizeProfileImageId,
+  DEFAULT_PROFILE_IMAGE_ID,
+} from "@/utils/userInfo";
+import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -34,15 +40,26 @@ const modalShow = keyframes`
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 `;
 
-import { ChatRoom } from "@/types/chat";
-
 interface MemberListDrawerProps {
   roomId: string | number;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   roomInfo: ChatRoom | null;
   refreshRoom?: () => void;
+  onEditTitle?: () => void;
+  onFindFreeTime?: () => void;
+  onFindMeetingTime?: () => void;
+  onEnterChatbuli?: () => void;
+  onReportRoom?: () => void;
 }
+
+const formatStudentInfo = (studentId: string | null | undefined) => {
+  if (!studentId) return "익명";
+  if (/^\d{8,}$/.test(studentId)) {
+    return `${studentId.slice(2, 4)}학번`;
+  }
+  return studentId;
+};
 
 export default function MemberListDrawer({
   roomId,
@@ -50,6 +67,11 @@ export default function MemberListDrawer({
   onOpenChange,
   roomInfo,
   refreshRoom,
+  onEditTitle,
+  onFindFreeTime,
+  onFindMeetingTime,
+  onEnterChatbuli,
+  onReportRoom,
 }: MemberListDrawerProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -59,8 +81,6 @@ export default function MemberListDrawer({
     number | null
   >(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState<
     number[]
@@ -71,7 +91,7 @@ export default function MemberListDrawer({
     queryFn: () => getChatRoomMembers(roomId),
     enabled: isOpen,
   });
-  const members = membersRes?.data || [];
+  const members: ChatRoomMemberResponseDto[] = membersRes?.data || [];
 
   const { data: friendsRes } = useQuery({
     queryKey: ["friends"],
@@ -169,101 +189,195 @@ export default function MemberListDrawer({
     }
   };
 
+  const roomTitle = roomInfo?.friendAlias || roomInfo?.title || "채팅방";
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <StyledOverlay />
         <StyledContent>
-          <Header>
-            <Title>대화 상대 ({members.length})</Title>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              {roomInfo?.type === "PERSONAL" && members.length >= 3 && (
-                <IconButton
-                  onClick={() => setIsInviteOpen(true)}
-                  title="초대하기"
-                >
-                  <Icon name="user-add" size={22} color="#5E92F0" />
-                </IconButton>
-              )}
-              <CloseButton onClick={() => onOpenChange(false)}>
-                <Icon name="close-md" size={24} color="#1C1C1E" />
-              </CloseButton>
-            </div>
-          </Header>
+          <VisuallyHidden>
+            <Dialog.Title>채팅방 사이드바 메뉴</Dialog.Title>
+            <Dialog.Description>대화 상대 및 채팅방 설정</Dialog.Description>
+          </VisuallyHidden>
 
-          <ScrollArea>
-            {isLoading ? (
-              <div
-                style={{
-                  padding: "40px 0",
-                  textAlign: "center",
-                  color: "#969696",
-                  fontSize: "14px",
+          {/* Panel Header */}
+          <PanelHeader>
+            <TitleCol>
+              <RoomTitle>{roomTitle}</RoomTitle>
+              {onEditTitle && (
+                <HeaderIconButton
+                  onClick={onEditTitle}
+                  title="채팅방 이름 변경"
+                  aria-label="채팅방 이름 변경"
+                >
+                  <Icon name="edit-pencil-01" size={20} color="#8B95A1" />
+                </HeaderIconButton>
+              )}
+            </TitleCol>
+            <HeaderIconButton
+              onClick={() => onOpenChange(false)}
+              title="닫기"
+              aria-label="닫기"
+            >
+              <Icon name="close-md" size={22} color="#333D4B" />
+            </HeaderIconButton>
+          </PanelHeader>
+
+          {/* Panel Body */}
+          <PanelBody>
+            {/* 1. 참여자 카드 */}
+            <Card>
+              <SectionHeader>
+                <SectionTitle>대화 상대 {members.length}</SectionTitle>
+                {roomInfo?.type === "PERSONAL" && (
+                  <InvitationButton
+                    onClick={() => setIsInviteOpen(true)}
+                    title="초대하기"
+                  >
+                    <Icon name="user-add" size={18} color="#0061FF" />
+                    <span>초대하기</span>
+                  </InvitationButton>
+                )}
+              </SectionHeader>
+
+              <MemberList>
+                {isLoading ? (
+                  <LoadingText>멤버를 불러오는 중...</LoadingText>
+                ) : (
+                  members.map((member, index) => {
+                    const safeFireId = normalizeProfileImageId(
+                      member.fireId,
+                      DEFAULT_PROFILE_IMAGE_ID,
+                    );
+                    const profileUrl = `https://portal.inuappcenter.kr/images/profile/${safeFireId}`;
+                    const displayName =
+                      (member.friendAlias || member.nickname) +
+                      (member.isMe ? " (나)" : "");
+
+                    return (
+                      <MemberItem
+                        key={`${member.nickname}-${index}`}
+                        onClick={() => {
+                          if (member.chatRoomMemberId) {
+                            setSelectedChatRoomMemberId(
+                              member.chatRoomMemberId,
+                            );
+                            setIsProfileModalOpen(true);
+                          }
+                        }}
+                      >
+                        <AvatarWrapper>
+                          {member.isOwner && (
+                            <CrownBadge>
+                              <Crown size={14} color="#FFB800" fill="#FFB800" />
+                            </CrownBadge>
+                          )}
+                          <AvatarImg
+                            src={profileUrl}
+                            alt={member.nickname}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                `https://portal.inuappcenter.kr/images/profile/${DEFAULT_PROFILE_IMAGE_ID}`;
+                            }}
+                          />
+                        </AvatarWrapper>
+                        <MemberInfo>
+                          <MemberName>{displayName}</MemberName>
+                          <MemberDetails>
+                            {formatStudentInfo(member.studentId)}
+                          </MemberDetails>
+                        </MemberInfo>
+                      </MemberItem>
+                    );
+                  })
+                )}
+              </MemberList>
+            </Card>
+
+            {/* 2. 챗불이 AI 카드 */}
+            <ChatbotCard
+              onClick={() => {
+                onOpenChange(false);
+                onEnterChatbuli?.();
+              }}
+            >
+              <ChatbotIconImg src={TorchAiLogo} alt="챗불이" />
+              <ChatbotTextCol>
+                <ChatbotTitle>챗불이</ChatbotTitle>
+                <ChatbotDesc>대학 생활에 대해 챗불이에게 질문하기</ChatbotDesc>
+              </ChatbotTextCol>
+            </ChatbotCard>
+
+            {/* 3. 공강 & 회의 시간 맞추기 카드 */}
+            <FreeTimeContainer>
+              <SyncSubCard
+                $bgColor="#eff6ff"
+                onClick={() => {
+                  onOpenChange(false);
+                  onFindFreeTime?.();
                 }}
               >
-                멤버를 불러오는 중...
-              </div>
-            ) : (
-              members.map((member, index) => (
-                <div
-                  key={`${member.nickname}-${index}`}
-                  style={{ width: "100%" }}
-                >
-                  <SocialUserCard
-                    name={
-                      (member.friendAlias
-                        ? `${member.friendAlias} (${member.nickname})`
-                        : member.nickname) +
-                      (member.isMe ? " (나)" : "") +
-                      (member.isOwner ? " (방장)" : "")
-                    }
-                    subtitle={member.studentId || "익명"}
-                    fireId={member.fireId || 0}
-                    onClick={() => {
-                      if (member.chatRoomMemberId) {
-                        setSelectedChatRoomMemberId(member.chatRoomMemberId);
-                        setIsProfileModalOpen(true);
-                      }
-                    }}
-                  />
-                  {index < members.length - 1 && <Divider />}
-                </div>
-              ))
-            )}
-          </ScrollArea>
+                <SyncCardTitle>겹치는 공강 보기</SyncCardTitle>
+                <SyncCardAction $textColor="#0061ff">
+                  <span>채팅방에 공유하기</span>
+                  <Icon name="chevron-right-md" size={18} color="#0061FF" />
+                </SyncCardAction>
+              </SyncSubCard>
 
-          <Footer>
-            {(roomInfo?.owner || isAdmin) && roomInfo?.type === "OPEN" && (
-              <>
-                <ActionButton
-                  onClick={() => setIsEditModalOpen(true)}
-                  $variant="default"
-                >
-                  <Edit3 size={20} />
-                  채팅방 정보 수정
-                </ActionButton>
-                <ActionButton onClick={handleClose} $variant="danger">
-                  <Icon name="trash-full" size={20} />
-                  채팅방 폐쇄
-                </ActionButton>
-              </>
-            )}
-            <BottomActionRow>
-              <IconButton
-                onClick={() => togglePushMutation.mutate()}
-                title={roomInfo?.pushEnabled ? "알림 끄기" : "알림 켜기"}
+              <SyncSubCard
+                $bgColor="#e9ffe4"
+                onClick={() => {
+                  onOpenChange(false);
+                  (onFindMeetingTime || onFindFreeTime)?.();
+                }}
               >
-                {roomInfo?.pushEnabled ? (
-                  <Icon name="bell" size={22} />
-                ) : (
-                  <BellOff size={22} />
-                )}
-              </IconButton>
-              <IconButton onClick={handleLeave} title="채팅방 나가기">
-                <LogOut size={22} />
-              </IconButton>
-            </BottomActionRow>
-          </Footer>
+                <SyncCardTitle>회의 시간 맞추기</SyncCardTitle>
+                <SyncCardAction $textColor="#22c55e">
+                  <span>채팅방에 공유하기</span>
+                  <Icon name="chevron-right-md" size={18} color="#22C55E" />
+                </SyncCardAction>
+              </SyncSubCard>
+            </FreeTimeContainer>
+
+            {/* 4. 알림 및 나가기/신고 카드 */}
+            <Card>
+              <ActionRow
+                style={{ cursor: "default" }}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest("button")) return;
+                  togglePushMutation.mutate();
+                }}
+              >
+                <span>채팅방 알림</span>
+                <Switch
+                  checked={roomInfo?.pushEnabled ?? false}
+                  onCheckedChange={() => togglePushMutation.mutate()}
+                />
+              </ActionRow>
+
+              <ActionRow
+                onClick={() => {
+                  onOpenChange(false);
+                  onReportRoom?.();
+                }}
+              >
+                <span>채팅방 신고하기</span>
+              </ActionRow>
+
+              <ActionRow $danger onClick={handleLeave}>
+                <span>채팅방 나가기</span>
+              </ActionRow>
+
+              {(roomInfo?.owner || isAdmin) && roomInfo?.type === "OPEN" && (
+                <ActionRow $danger onClick={handleClose}>
+                  <span>채팅방 폐쇄하기</span>
+                </ActionRow>
+              )}
+            </Card>
+          </PanelBody>
+
+          {/* 프로필 상세 모달 */}
           <UserProfileModal
             chatRoomMemberId={selectedChatRoomMemberId}
             isOpen={isProfileModalOpen}
@@ -275,12 +389,8 @@ export default function MemberListDrawer({
               isOwner: roomInfo?.owner || isAdmin,
             }}
           />
-          <EditChatModal
-            isOpen={isEditModalOpen}
-            onOpenChange={setIsEditModalOpen}
-            roomId={roomId}
-            initialData={roomInfo}
-          />
+
+          {/* 친구 초대 모달 */}
           <InviteFriendsModal
             isOpen={isInviteOpen}
             onOpenChange={setIsInviteOpen}
@@ -302,69 +412,25 @@ export default function MemberListDrawer({
   );
 }
 
-const Footer = styled.div`
-  padding: 16px 20px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 12px));
-  border-top: 1px solid #f2f2f7;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: white;
-`;
-
-const BottomActionRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-`;
-
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  color: #8e8e93;
-  background-color: #f2f2f7;
-  transition: all 0.2s;
-
-  &:active {
-    opacity: 0.7;
-    transform: scale(0.95);
-  }
-`;
-
-const ActionButton = styled.button<{ $variant?: "danger" | "default" }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-
-  background-color: ${(props) =>
-    props.$variant === "danger" ? "#FFF5F5" : "#F2F2F7"};
-  color: ${(props) => (props.$variant === "danger" ? "#FF3B30" : "#1C1C1E")};
-
-  &:active {
-    opacity: 0.7;
-  }
+const VisuallyHidden = styled.div`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 `;
 
 const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   animation: ${fadeIn} 200ms ease-out;
 `;
 
@@ -373,54 +439,323 @@ const StyledContent = styled(Dialog.Content)`
   top: 0;
   right: 0;
   bottom: 0;
-  width: 80vw;
+  width: 85vw;
   max-width: 320px;
-  background-color: white;
+  background-color: #f8f9fb;
+  border-top-left-radius: 32px;
+  border-bottom-left-radius: 32px;
   z-index: 1001;
   display: flex;
   flex-direction: column;
   outline: none;
-  /* 앱헤더 밖(사이드바)이라 상단 safe-area를 직접 확보한다 */
-  padding-top: var(--native-safe-area-inset-top, 0px);
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  padding: calc(
+      12px + var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px))
+    )
+    12px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 `;
 
-const Header = styled.div`
-  padding: 20px 20px 16px;
+const PanelHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  //border-bottom: 1px solid #f2f2f7;
+  justify-content: space-between;
+  height: 48px;
+  padding-left: 8px;
+  padding-right: 4px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 `;
 
-const Title = styled.h2`
-  font-size: 18px;
-  font-weight: 700;
-  color: #1c1c1e;
+const TitleCol = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+`;
+
+const RoomTitle = styled.h2`
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #333d4b;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const CloseButton = styled.button`
-  background: none;
+const HeaderIconButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   border: none;
+  background: none;
+  border-radius: 50%;
   cursor: pointer;
-  padding: 4px;
+  color: #333d4b;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.6;
+  }
 `;
 
-const ScrollArea = styled.div`
+const PanelBody = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
+
+  /* 스크롤바 숨김 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;
 
-const EmptyStateStyle = styled.div`
-  padding: 40px 0;
-  text-align: center;
-  color: #969696;
+const Card = styled.div`
+  background: #ffffff;
+  border-radius: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 12px 16px 4px;
+`;
+
+const SectionTitle = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #8b95a1;
+  line-height: 1.4;
+`;
+
+const InvitationButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: #0061ff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const MemberList = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 8px;
+`;
+
+const MemberItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    background-color: #f2f4f6;
+  }
+`;
+
+const AvatarWrapper = styled.div`
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+`;
+
+const AvatarImg = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #e5e8eb;
+`;
+
+const CrownBadge = styled.div`
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+`;
+
+const MemberInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const MemberName = styled.span`
   font-size: 14px;
+  font-weight: 600;
+  color: #333d4b;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
+const MemberDetails = styled.span`
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a1;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const LoadingText = styled.div`
+  padding: 24px 0;
+  text-align: center;
+  color: #8b95a1;
+  font-size: 13px;
+`;
+
+const ChatbotCard = styled(Card)`
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
+
+  &:active {
+    background-color: #f2f4f6;
+    transform: scale(0.98);
+  }
+`;
+
+const ChatbotIconImg = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+`;
+
+const ChatbotTextCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const ChatbotTitle = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #333d4b;
+  line-height: 1.4;
+`;
+
+const ChatbotDesc = styled.span`
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a1;
+  line-height: 1.3;
+`;
+
+const FreeTimeContainer = styled(Card)`
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+`;
+
+const SyncSubCard = styled.div<{ $bgColor: string }>`
+  flex: 1;
+  min-width: 0;
+  background-color: ${({ $bgColor }) => $bgColor};
+  border-radius: 16px;
+  padding: 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+
+  &:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+`;
+
+const SyncCardTitle = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: #333d4b;
+  line-height: 1.4;
+  white-space: nowrap;
+  margin-bottom: 12px;
+`;
+
+const SyncCardAction = styled.div<{ $textColor: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${({ $textColor }) => $textColor};
+  line-height: 1.4;
+`;
+
+const ActionRow = styled.div<{ $danger?: boolean }>`
+  height: 48px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 400;
+  color: ${({ $danger }) => ($danger ? "#ef4444" : "#333d4b")};
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    background-color: #f2f4f6;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f8f9fb;
+  }
+`;
+
+/* Invite Friends Modal */
 interface InviteFriendsModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -447,13 +782,13 @@ const InviteFriendsModal = ({
       <Dialog.Portal>
         <InviteOverlay />
         <InviteContent>
-          <Header>
-            <Title>내 친구에서 초대</Title>
-            <CloseButton onClick={() => onOpenChange(false)}>
+          <InviteHeader>
+            <InviteTitle>내 친구에서 초대</InviteTitle>
+            <HeaderIconButton onClick={() => onOpenChange(false)}>
               <Icon name="close-md" size={24} color="#1C1C1E" />
-            </CloseButton>
-          </Header>
-          <ScrollArea>
+            </HeaderIconButton>
+          </InviteHeader>
+          <InviteScrollArea>
             {friends.length === 0 ? (
               <EmptyStateStyle>초대 가능한 친구가 없습니다.</EmptyStateStyle>
             ) : (
@@ -475,15 +810,15 @@ const InviteFriendsModal = ({
                 </div>
               ))
             )}
-          </ScrollArea>
-          <Footer>
+          </InviteScrollArea>
+          <InviteFooter>
             <InviteConfirmButton
               disabled={selectedIds.length === 0 || isPending}
               onClick={onConfirm}
             >
               {isPending ? "초대 중..." : `초대 완료 (${selectedIds.length}명)`}
             </InviteConfirmButton>
-          </Footer>
+          </InviteFooter>
         </InviteContent>
       </Dialog.Portal>
     </Dialog.Root>
@@ -518,13 +853,39 @@ const InviteContent = styled(Dialog.Content)`
   overflow: hidden;
 `;
 
+const InviteHeader = styled.div`
+  padding: 20px 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const InviteTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1c1e;
+  margin: 0;
+`;
+
+const InviteScrollArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px;
+`;
+
+const EmptyStateStyle = styled.div`
+  padding: 40px 0;
+  text-align: center;
+  color: #969696;
+  font-size: 14px;
+`;
+
 const SelectableCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   width: 100%;
-  //padding: 8px 0;
 
   & > :first-child {
     flex: 1;
@@ -545,6 +906,13 @@ const Checkbox = styled.div<{ $selected: boolean }>`
   transition: all 0.2s;
   flex-shrink: 0;
   margin-left: 12px;
+`;
+
+const InviteFooter = styled.div`
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 12px));
+  border-top: 1px solid #f2f2f7;
+  background-color: white;
 `;
 
 const InviteConfirmButton = styled.button`

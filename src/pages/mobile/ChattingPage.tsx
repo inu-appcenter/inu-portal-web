@@ -249,6 +249,14 @@ export default function ChattingPage() {
     navigate(`${ROUTES.TIMETABLE.COMPARE}?${params.toString()}`);
   };
 
+  const handleFindMeetingTime = () => {
+    mixpanelTrack.chatRoomMenuClicked("회의 시간 맞추기", roomId ?? "");
+    const params = new URLSearchParams();
+    params.set("tab", "meeting");
+    if (roomId) params.set("roomId", roomId);
+    navigate(`${ROUTES.TIMETABLE.COMPARE}?${params.toString()}`);
+  };
+
   useVisualViewport();
 
   const handleUpdateTitle = () => {
@@ -292,11 +300,12 @@ export default function ChattingPage() {
       <HeaderRightArea>
         <IconButton
           onClick={() => {
-            mixpanelTrack.chatRoomMenuClicked("멤버 목록 열기", roomId ?? "");
+            mixpanelTrack.chatRoomMenuClicked("메뉴 열기", roomId ?? "");
             setIsMemberListOpen(true);
           }}
+          aria-label="채팅방 메뉴 열기"
         >
-          <Icon name="users" size={24} color="#1C1C1E" />
+          <Icon name="hamburger-md" size={24} color="#1C1C1E" />
         </IconButton>
       </HeaderRightArea>
     ),
@@ -322,56 +331,9 @@ export default function ChattingPage() {
     );
   }, [roomInfo, isGroupChat]);
 
-  const menuItems = React.useMemo(() => {
-    const items = [];
-
-    let canChangeTitle = false;
-
-    if (roomInfo) {
-      if (roomInfo.type === "OPEN") {
-        // 오픈 채팅방: 방장 또는 시스템 관리자만
-        canChangeTitle = !!(roomInfo.owner || isAdmin);
-      } else if (roomInfo.type === "PERSONAL") {
-        // 개인 채팅방
-        if (roomInfo.maxCapacity > 2) {
-          // 그룹 개인 채팅방 (3명 이상): 누구나 자유롭게
-          canChangeTitle = true;
-        } else {
-          // 1:1 채팅방 (2명): 변경 불가
-          canChangeTitle = false;
-        }
-      }
-    }
-
-    if (canChangeTitle) {
-      items.push({
-        label: "채팅방 이름 변경",
-        onClick: handleUpdateTitle,
-      });
-    }
-
-    if (roomInfo?.type === "PERSONAL" && !roomInfo.anonymous) {
-      items.push({
-        label: "공강 맞추기",
-        onClick: handleFindFreeTime,
-      });
-    }
-
-    // App Store 가이드라인 1.2 — 신고 수단은 항상 보이는 곳에 있어야 한다.
-    // 개별 메시지는 길게 눌러 신고하고, 방 전체는 여기서 신고한다.
-    items.push({
-      label: "채팅방 신고하기",
-      onClick: () =>
-        chatModeration.openRoomReport(roomId ?? "", roomInfo?.title ?? "채팅방"),
-    });
-
-    return items;
-  }, [roomInfo, isAdmin, members, roomId, chatModeration.openRoomReport]);
-
   useHeader({
     title: headerTitle,
     rightArea: headerRight,
-    menuItems: menuItems,
   });
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -1112,8 +1074,15 @@ export default function ChattingPage() {
         roomId={roomId ?? ""}
         isOpen={isMemberListOpen}
         onOpenChange={setIsMemberListOpen}
-        roomInfo={roomInfo} // roomInfo 전달
+        roomInfo={roomInfo}
         refreshRoom={refreshRoom}
+        onEditTitle={handleUpdateTitle}
+        onFindFreeTime={handleFindFreeTime}
+        onFindMeetingTime={handleFindMeetingTime}
+        onEnterChatbuli={handleEnterChatbuliMode}
+        onReportRoom={() =>
+          chatModeration.openRoomReport(roomId ?? "", roomInfo?.title ?? "채팅방")
+        }
       />
 
       <EditChatRoomTitleModal
