@@ -102,3 +102,28 @@ export const firstMenuOf = (section: CafeteriaSection): string => {
     );
   return (menu ?? section.menu.split("\n")[0] ?? "").replace(/\s*"?[0-9,]+원.*$/, "").trim();
 };
+
+/**
+ * 홈 위젯 한 장에 담을 코너 묶음.
+ * 학생식당은 코너가 많아 한 장이 길어지므로 두 장으로 나누고, 고정 메뉴인 국밥은 뺀다.
+ */
+const WIDGET_CORNER_GROUPS: Record<string, (string | null)[][]> = {
+  학생식당: [
+    ["1코너(백반)", "2코너(일품)", null],
+    ["4코너(일품)", "5코너(고급일품)"],
+  ],
+};
+
+/** 위젯 슬라이드별 코너 목록. 보여줄 코너가 없는 뒷장은 만들지 않는다. */
+export const groupSectionsForWidget = (
+  cafeteria: string,
+  sections: CafeteriaSection[],
+): CafeteriaSection[][] => {
+  const groups = WIDGET_CORNER_GROUPS[cafeteria];
+  if (!groups) {
+    return [sections];
+  }
+  return groups
+    .map((corners) => sections.filter((section) => corners.includes(section.title)))
+    .filter((group, index) => index === 0 || group.length > 0);
+};

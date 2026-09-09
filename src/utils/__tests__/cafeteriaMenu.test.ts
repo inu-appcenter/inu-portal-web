@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { firstMenuOf, parseCafeteriaSections } from "../cafeteriaMenu";
+import {
+  firstMenuOf,
+  groupSectionsForWidget,
+  parseCafeteriaSections,
+} from "../cafeteriaMenu";
 
 const 학생식당_중식 = `[1코너(백반)]
 사골왕만두국(pork)
@@ -119,5 +123,49 @@ describe("firstMenuOf", () => {
   it("택1 메뉴는 선택 머리말을 떼고, 상시 메뉴는 가격을 뗀다", () => {
     expect(firstMenuOf(parseCafeteriaSections(이호관_중식)[0])).toBe("냉열무국수");
     expect(firstMenuOf(parseCafeteriaSections(이십칠호관_중식)[0])).toBe("제육야채비빔밥");
+  });
+});
+
+describe("groupSectionsForWidget", () => {
+  it("학생식당은 1·2코너와 4·5코너 두 장으로 나누고 국밥은 뺀다", () => {
+    const sections = parseCafeteriaSections(`${학생식당_중식}
+
+[4코너(일품)]
+크림김치볶음밥
+6,500원 (구성원 5,500원)
+1224kcal
+
+[5코너(고급일품)]
+뚝배기 소불고기
+8,500원 (구성원 7,500원)
+1311kcal`);
+
+    const groups = groupSectionsForWidget("학생식당", sections);
+
+    expect(groups.map((group) => group.map((section) => section.title))).toEqual([
+      ["1코너(백반)", "2코너(일품)"],
+      ["4코너(일품)", "5코너(고급일품)"],
+    ]);
+  });
+
+  it("학생식당 석식처럼 코너가 없으면 한 장만 만든다", () => {
+    const sections = parseCafeteriaSections(
+      "예거슈니첼돈까스(pork)\n6,500원 (구성원 5,500원)\n1184kcal",
+    );
+
+    const groups = groupSectionsForWidget("학생식당", sections);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0][0].title).toBeNull();
+  });
+
+  it("다른 식당은 코너를 그대로 한 장에 담는다", () => {
+    const groups = groupSectionsForWidget(
+      "27호관식당",
+      parseCafeteriaSections(이십칠호관_중식),
+    );
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toHaveLength(2);
   });
 });

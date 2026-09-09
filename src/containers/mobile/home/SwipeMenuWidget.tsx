@@ -5,7 +5,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { getCafeterias } from "@/apis/cafeterias";
 import { cafeterias } from "@/resources/strings/cafeterias";
-import { firstMenuOf, parseCafeteriaSections } from "@/utils/cafeteriaMenu";
+import {
+  firstMenuOf,
+  groupSectionsForWidget,
+  parseCafeteriaSections,
+} from "@/utils/cafeteriaMenu";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -108,6 +112,23 @@ export default function SwipeMenuWidget() {
     fetchAllMenus();
   }, [today]);
 
+  const slides = useMemo(
+    () =>
+      cafeterias.flatMap((caf) => {
+        const mealInfo = getMealInfo(caf.title, currentHour);
+        const sections = parseCafeteriaSections(
+          menuDataList[caf.title]?.menus?.[mealInfo.index],
+        );
+        return groupSectionsForWidget(caf.title, sections).map((group, index) => ({
+          key: `${caf.title}-${index}`,
+          cafeteria: caf.title,
+          mealInfo,
+          sections: group,
+        }));
+      }),
+    [menuDataList, currentHour],
+  );
+
   const handleCardClick = (cafeteriaName: string) => {
     if (isDraggingRef.current) return;
     navigate(`${ROUTES.BOARD.MENU}?category=${cafeteriaName}`);
@@ -155,16 +176,16 @@ export default function SwipeMenuWidget() {
             isDraggingRef.current = false;
           }}
       >
-        {cafeterias.map((caf) => {
-          const cafData = menuDataList[caf.title];
-          const mealInfo = getMealInfo(caf.title, currentHour);
+        {slides.map((slide) => {
+          const cafData = menuDataList[slide.cafeteria];
+          const mealInfo = slide.mealInfo;
 
           return (
-            <SwiperSlide key={caf.title}>
-              <SlideContent onClick={() => handleCardClick(caf.title)}>
+            <SwiperSlide key={slide.key}>
+              <SlideContent onClick={() => handleCardClick(slide.cafeteria)}>
                 <WidgetHeader>
                   <WidgetTitle>식당 메뉴</WidgetTitle>
-                  <WidgetSubTitle>{caf.title}</WidgetSubTitle>
+                  <WidgetSubTitle>{slide.cafeteria}</WidgetSubTitle>
                 </WidgetHeader>
 
                 <MenuArea>
@@ -176,9 +197,7 @@ export default function SwipeMenuWidget() {
                   ) : (
                     (() => {
                       // 코너가 여럿인 끼니는 코너마다 한 줄씩 보여준다.
-                      const sections = parseCafeteriaSections(
-                        cafData?.menus?.[mealInfo.index],
-                      );
+                      const sections = slide.sections;
                       if (sections.length === 0) {
                         return (
                           <MenuInfoRow>
@@ -204,15 +223,15 @@ export default function SwipeMenuWidget() {
       </CardWrapper>
 
       <PaginationDots ref={paginationRef} aria-label="식당 메뉴 위젯 페이지네이션">
-        {cafeterias.map((caf, index) => (
+        {slides.map((slide, index) => (
           <PaginationDot
-            key={caf.title}
+            key={slide.key}
             type="button"
             $active={index === activeIndex}
             onClick={() => {
               swiperInstance?.slideTo(index);
             }}
-            aria-label={`${caf.title} 식단 보기`}
+            aria-label={`${slide.cafeteria} 식단 보기`}
             aria-current={index === activeIndex}
           />
         ))}
