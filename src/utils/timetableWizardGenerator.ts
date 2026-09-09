@@ -66,32 +66,38 @@ interface WishlistGroup {
   options: WizardCourseOption[];
 }
 
-// 위시리스트를 courseId 기준으로 묶는다. 같은 과목을 여러 분반 담았다면 그 분반들이
-// 하나의 그룹 안에서 서로 대안이 되고, 하나라도 required면 그룹 전체를 필수로 취급한다.
+// 위시리스트를 courseId 기준으로 묶는다. 같은 과목을 여러 분반 담았을 때:
+//  - 그중 하나라도 필수로 표시했다면, 그 그룹은 "필수로 표시한 분반들 중 하나"만
+//    선택 대상으로 삼는다. 필수로 안 찍은 나머지 분반은 조합에서 아예 제외한다 -
+//    사용자가 이미 "이 분반이어야 한다"고 못박았는데, 담아만 두고 안 찍은 다른
+//    분반이 대신 뽑혀 나가면(#397) "필수로 찍은 강의가 시간표에 없다"는 결과가 된다.
+//  - 하나도 필수가 아니면 전부 대안으로 묶여, 조합마다 그중 하나 또는 통째로 스킵된다.
 //
 // 위시리스트 항목이 강의 스냅샷을 직접 들고 있으므로 후보 풀에서 되찾는 단계가 없다.
 // 예전에는 여기서 pool 조회에 실패한 항목을 `continue`로 조용히 버렸는데, 그게 곧
 // "담아둔 강의가 추천에서 아무 말 없이 사라지는" 버그였다.
 const buildGroups = (wishlist: WizardWishlistItem[]): WishlistGroup[] => {
-  const groups = new Map<number, WishlistGroup>();
+  const byCourse = new Map<number, { title: string; items: WizardWishlistItem[] }>();
 
   for (const item of wishlist) {
-    const course = item.course;
-    const existing = groups.get(course.courseId);
+    const existing = byCourse.get(item.course.courseId);
     if (existing) {
-      existing.options.push(course);
-      existing.required = existing.required || item.required;
+      existing.items.push(item);
     } else {
-      groups.set(course.courseId, {
-        courseId: course.courseId,
-        title: course.title,
-        required: item.required,
-        options: [course],
-      });
+      byCourse.set(item.course.courseId, { title: item.course.title, items: [item] });
     }
   }
 
-  return [...groups.values()];
+  return [...byCourse.entries()].map(([courseId, { title, items }]) => {
+    const requiredOptions = items.filter((i) => i.required).map((i) => i.course);
+    const required = requiredOptions.length > 0;
+    return {
+      courseId,
+      title,
+      required,
+      options: required ? requiredOptions : items.map((i) => i.course),
+    };
+  });
 };
 
 interface HardConstraintFlags {
@@ -182,6 +188,29 @@ const searchCombinations = (
 
   backtrack(0, [], []);
   return results;
+};
+
+// 필수 그룹의 분반 중 predicate를 만족하는(=그 하드 조건을 위반하는) 강의를 찾는다.
+// 실패 안내 화면에서 "어느 강의가 문제인지" 짚어주고 바로 빼기/교체할 수 있게 하기
+// 위해 쓴다(#397) - 겹침 원인(findOverlappingRequiredPairs)뿐 아니라 제외 시간대/제외
+// 강의/공강 요일 원인도 같은 방식으로 강의를 특정해야 "조건 완화하기"로 처음 화면까지
+// 돌아가지 않고 그 자리에서 바로 처리할 수 있다.
+const findRequiredCoursesViolating = (
+  groups: WishlistGroup[],
+  predicate: (course: WizardCourseOption) => boolean,
+): WizardCourseOption[] => {
+  const seen = new Set<number>();
+  const result: WizardCourseOption[] = [];
+  for (const group of groups) {
+    if (!group.required) continue;
+    for (const option of group.options) {
+      if (predicate(option) && !seen.has(option.courseOfferingId)) {
+        seen.add(option.courseOfferingId);
+        result.push(option);
+      }
+    }
+  }
+  return result;
 };
 
 // 필수 그룹끼리 시간이 겹쳐 조합이 아예 안 나올 때, 어느 강의끼리 겹치는지 짚어준다.
@@ -406,18 +435,34 @@ export const generateWizardCandidates = (
     if (full.length === 0) {
       // 하드 조건을 하나씩 완화해보고, 완화 시 결과가 나오는 조건만 원인으로 지목한다
       const { preference, exclusion } = conditions;
-      const relaxationChecks: { label: string; flags: HardConstraintFlags }[] = [];
+      const excludedSlotSet = new Set(exclusion.excludedSlots);
+      const excludedSubjectNumberSet = new Set(
+        exclusion.excludedCourses.map((c) => c.subjectNumber),
+      );
+      const relaxationChecks: {
+        label: string;
+        flags: HardConstraintFlags;
+        findCourses: () => WizardCourseOption[];
+      }[] = [];
 
       if (exclusion.excludedSlots.length > 0) {
         relaxationChecks.push({
-          label: `제외한 시간대 (${new Set(exclusion.excludedSlots).size}칸)`,
+          label: `제외한 시간대 (${excludedSlotSet.size}칸)`,
           flags: { ignoreExcludedSlots: true },
+          findCourses: () =>
+            findRequiredCoursesViolating(groups, (c) =>
+              courseGridSlots(c).some((s) => excludedSlotSet.has(s)),
+            ),
         });
       }
       if (exclusion.excludedCourses.length > 0) {
         relaxationChecks.push({
           label: `제외한 강의 (${exclusion.excludedCourses.length}개)`,
           flags: { ignoreExcludedCourses: true },
+          findCourses: () =>
+            findRequiredCoursesViolating(groups, (c) =>
+              excludedSubjectNumberSet.has(c.subjectNumber),
+            ),
         });
       }
       if (preference.freeDayOfWeek.enabled && preference.freeDayOfWeek.days.length > 0) {
@@ -425,6 +470,10 @@ export const generateWizardCandidates = (
         relaxationChecks.push({
           label: `${names}요일 공강`,
           flags: { ignoreFreeDayOfWeek: true },
+          findCourses: () =>
+            findRequiredCoursesViolating(groups, (c) =>
+              c.meetings.some((m) => preference.freeDayOfWeek.days.includes(m.day)),
+            ),
         });
       }
       // 오전/야간 회피(C-03/C-04)는 소프트 조건이라 후보를 탈락시키지 않으므로 결과 0개의
@@ -432,7 +481,9 @@ export const generateWizardCandidates = (
 
       for (const check of relaxationChecks) {
         const relaxed = searchCombinations(groups, makeContext(conditions, check.flags));
-        if (relaxed.length > 0) conflicts.push({ label: check.label });
+        if (relaxed.length > 0) {
+          conflicts.push({ label: check.label, courses: check.findCourses() });
+        }
       }
 
       if (conflicts.length === 0) {

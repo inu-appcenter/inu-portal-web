@@ -126,7 +126,7 @@ describe("generateWizardCandidates - 실패 원인 진단", () => {
     expect(result.candidates.length).toBeGreaterThan(0);
   });
 
-  it("제외 시간대가 원인일 때는 courses 없이 label만 담는다(기존 동작 유지)", () => {
+  it("제외 시간대가 원인일 때도 문제가 된 필수 강의를 conflicts.courses에 담는다(#397)", () => {
     const course = makeCourse({
       meetings: [{ day: 1, startTime: 10, endTime: 11.5, location: "301호" }],
     });
@@ -141,7 +141,40 @@ describe("generateWizardCandidates - 실패 원인 진단", () => {
 
     expect(result.candidates).toHaveLength(0);
     expect(result.conflicts.length).toBeGreaterThan(0);
-    expect(result.conflicts.some((c) => c.label.includes("제외한 시간대"))).toBe(true);
-    expect(result.conflicts.every((c) => c.courses === undefined)).toBe(true);
+    const slotConflict = result.conflicts.find((c) => c.label.includes("제외한 시간대"));
+    expect(slotConflict?.courses?.map((c) => c.title)).toEqual(["자바프로그래밍"]);
+  });
+});
+
+describe("generateWizardCandidates - 필수 분반 지정(#397)", () => {
+  it("같은 과목의 여러 분반 중 하나만 필수로 찍으면, 그 분반만 조합에 포함된다", () => {
+    const requiredSection = makeCourse({
+      courseId: 5,
+      courseOfferingId: 51,
+      subjectNumber: "NET301-01",
+      title: "컴퓨터네트워크",
+      meetings: [{ day: 0, startTime: 9, endTime: 10.5, location: "401호" }], // 월
+    });
+    const otherSection = makeCourse({
+      courseId: 5,
+      courseOfferingId: 52,
+      subjectNumber: "NET301-02",
+      title: "컴퓨터네트워크",
+      meetings: [{ day: 1, startTime: 13, endTime: 14.5, location: "402호" }], // 화
+    });
+
+    const result = generateWizardCandidates(
+      makeConditions([
+        { course: requiredSection, required: true },
+        { course: otherSection, required: false },
+      ]),
+    );
+
+    expect(result.candidates.length).toBeGreaterThan(0);
+    for (const candidate of result.candidates) {
+      const offeringIds = candidate.courses.map((c) => c.courseOfferingId);
+      expect(offeringIds).toContain(51);
+      expect(offeringIds).not.toContain(52);
+    }
   });
 });

@@ -16,6 +16,8 @@ interface CourseCardProps {
   onRemoveOffering?: (offering: CourseCardOfferingView) => void;
   /** 필수/선택 토글. required가 정의된 출처에서만 의미가 있다 */
   onToggleRequired?: (offering: CourseCardOfferingView) => void;
+  /** 분반 행 클릭 - 과목 상세 모달을 여는 용도(#397). 생략하면 행이 클릭 불가능해진다 */
+  onSelectOffering?: (offering: CourseCardOfferingView) => void;
 }
 
 // --- Component ---
@@ -23,6 +25,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   data,
   onRemoveOffering,
   onToggleRequired,
+  onSelectOffering,
 }) => {
   // 출처에 따라 모르는 값은 아예 빼고 · 로 잇는다(빈 칸이나 "-"를 그리지 않는다)
   const metaParts = [
@@ -60,7 +63,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
       <CourseContainer>
         {data.offerings.map((offering) => (
-          <SectionRow key={offering.offeringId}>
+          <SectionRow
+            key={offering.offeringId}
+            $clickable={Boolean(onSelectOffering)}
+            onClick={() => onSelectOffering?.(offering)}
+          >
             <SectionInfo>
               <ProfRow>
                 <ProfName>{offering.professor || "교수 미정"}</ProfName>
@@ -76,7 +83,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                   type="button"
                   $active={offering.required}
                   aria-pressed={offering.required}
-                  onClick={() => onToggleRequired(offering)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleRequired(offering);
+                  }}
                 >
                   {offering.required ? "필수" : "선택"}
                 </RequiredToggle>
@@ -90,7 +100,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({
                 <FavButton
                   type="button"
                   aria-label="담기 취소"
-                  onClick={() => onRemoveOffering(offering)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveOffering(offering);
+                  }}
                 >
                   <FavCircle>
                     <Icon name="close-md" size={20} />
@@ -203,13 +216,14 @@ const CourseContainer = styled.div`
   align-items: flex-start;
 `;
 
-const SectionRow = styled.div`
+const SectionRow = styled.div<{ $clickable?: boolean }>`
   width: 100%;
   padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 `;
 
 const SectionInfo = styled.div`

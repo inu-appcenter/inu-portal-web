@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/common/Icon";
@@ -28,12 +28,18 @@ import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
-import { toWishlistCourseCards } from "@/utils/timetableWizardFormat";
+import {
+  mapWizardCoursesToClassItems,
+  toWishlistCourseCards,
+} from "@/utils/timetableWizardFormat";
 import type {
   WizardPreferenceConditions,
   WizardCourseOption,
 } from "@/types/timetableWizard";
 import { CourseCard } from "@/components/mobile/timetable/CourseCard";
+import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBottomSheet";
+import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import type { CourseCardOfferingView } from "@/types/courseCardView";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
 const DAY_LABELS = ["월", "화", "수", "목", "금"];
@@ -160,6 +166,47 @@ export default function MobileTimetableWizardPage() {
 
   // 위시리스트는 개설강의 단위 스냅샷이고 카드는 과목 단위라, 그리기 직전에만 묶는다.
   const wishlistCards = useMemo(() => toWishlistCourseCards(wishlist), [wishlist]);
+
+  // Step1에서 이미 담은(=필수/선택 표시가 붙은) 강의 행을 눌러도 상세 모달이 뜨지
+  // 않던 문제(#397) - 검색 시트에서 담기 전에는 강의 정보를 볼 수 있는데, 담은
+  // 뒤에는 그 정보를 다시 볼 방법이 없었다. 후보로 담긴 강의는 서버 재조회 없이
+  // 스냅샷 그대로 보여주면 되므로, 편집 화면과 같은 ClassDetailBottomSheet를 재사용한다.
+  const wishlistGridEvents = useMemo(
+    () => mapWizardCoursesToClassItems(wishlist.map((item) => item.course)),
+    [wishlist],
+  );
+  const wishlistColorMap = useMemo(() => new Map<string, string>(), []);
+  const [selectedWishlistClass, setSelectedWishlistClass] = useState<ClassItem | null>(null);
+  const [isWishlistDetailOpen, setIsWishlistDetailOpen] = useState(false);
+
+  const handleSelectWishlistOffering = useCallback(
+    (offering: CourseCardOfferingView) => {
+      // gridEvents에서 되찾지 않고 위시리스트 스냅샷에서 직접 만든다 - 시간 정보가 없는
+      // (이러닝 등) 강의는 gridEvents에 항목 자체가 없어(WizardDetailScreen과 동일한 이유)
+      // 찾기에 의존하면 그 강의는 영영 상세를 못 연다.
+      const item = wishlist.find((w) => w.course.courseOfferingId === offering.offeringId);
+      if (!item) return;
+      const firstMeeting = item.course.meetings[0];
+      setSelectedWishlistClass({
+        id: offering.offeringId,
+        name: item.course.title,
+        room: firstMeeting?.location ?? "",
+        day: firstMeeting?.day ?? 0,
+        startTime: firstMeeting?.startTime ?? 0,
+        endTime: firstMeeting?.endTime ?? 0,
+        credits: item.course.credit,
+        professor: item.course.professor ?? undefined,
+        ssupTypeName: item.course.ssupTypeName ?? undefined,
+        ssupTypeCode: item.course.ssupTypeCode ?? undefined,
+        courseOfferingId: item.course.courseOfferingId,
+        courseId: item.course.subjectNumber,
+        evaluation: item.course.gradeEvaluationMethod ?? undefined,
+        isUntimed: item.course.meetings.length === 0,
+      });
+      setIsWishlistDetailOpen(true);
+    },
+    [wishlist],
+  );
 
   const selectedCandidate = useMemo(
     () => result?.candidates.find((c) => c.id === selectedCandidateId) ?? null,
@@ -305,6 +352,7 @@ export default function MobileTimetableWizardPage() {
                 onToggleRequired={(offering) =>
                   toggleWishlistRequired(offering.subjectNumber)
                 }
+                onSelectOffering={handleSelectWishlistOffering}
               />
             ))}
             {/* 학기만 정해지면 항상 열 수 있다. 조회 결과가 0건이어도 시트 안에서
@@ -319,6 +367,15 @@ export default function MobileTimetableWizardPage() {
             </AddCourseButton>
           </Card>
           <BottomActionsSpacer />
+
+          <ClassDetailBottomSheet
+            open={isWishlistDetailOpen}
+            onOpenChange={setIsWishlistDetailOpen}
+            selectedClass={selectedWishlistClass}
+            allEvents={wishlistGridEvents}
+            colorMap={wishlistColorMap}
+            readOnly
+          />
         </ScrollContent>
       )}
 
