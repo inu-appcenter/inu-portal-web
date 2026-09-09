@@ -159,7 +159,50 @@ const NoticeListCard: React.FC<{
 
 /* --- 3. Cafeteria Card --- */
 const CafeteriaCard: React.FC<{ data: any }> = ({ data }) => {
+  const [selectedTab, setSelectedTab] = React.useState(0);
   if (!data) return null;
+
+  if (data.isAllCafeterias) {
+    const cafeterias: any[] = Array.isArray(data.cafeterias) ? data.cafeterias : [];
+    const activeCafeterias = cafeterias.filter((c) => c.isOperated);
+    const displayList = activeCafeterias.length > 0 ? activeCafeterias : cafeterias;
+    const currentCafeteria = displayList[selectedTab] || displayList[0];
+
+    return (
+      <CafeteriaBox>
+        <CardHeader>
+          <Utensils size={16} color="#0061ff" />
+          <CardTitle>오늘의 학식 ({data.mealLabel || "메뉴"})</CardTitle>
+        </CardHeader>
+
+        <CafeteriaTabBar>
+          {displayList.map((c, idx) => (
+            <CafeteriaTabBtn
+              key={c.name}
+              type="button"
+              $active={selectedTab === idx}
+              onClick={() => setSelectedTab(idx)}
+            >
+              {c.name.replace("식당", "").replace("(교직원)", "")}
+            </CafeteriaTabBtn>
+          ))}
+        </CafeteriaTabBar>
+
+        {currentCafeteria ? (
+          <CafeteriaMenuContent>
+            <CafeteriaSelectedTitle>
+              {currentCafeteria.name}
+            </CafeteriaSelectedTitle>
+            <MealValue>
+              {currentCafeteria.menu || "운영 정보가 없습니다."}
+            </MealValue>
+          </CafeteriaMenuContent>
+        ) : (
+          <EmptyMessage>운영 중인 식당 정보를 찾지 못했습니다.</EmptyMessage>
+        )}
+      </CafeteriaBox>
+    );
+  }
 
   return (
     <CafeteriaBox>
@@ -531,6 +574,45 @@ const MealValue = styled.span`
   color: #333d4b;
   white-space: pre-wrap;
   word-break: break-word;
+`;
+
+const CafeteriaTabBar = styled.div`
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 8px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f2f4f6;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const CafeteriaTabBtn = styled.button<{ $active: boolean }>`
+  flex-shrink: 0;
+  padding: 4px 9px;
+  font-size: 11.5px;
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
+  border-radius: 12px;
+  border: 1px solid ${({ $active }) => ($active ? "#0061ff" : "#e5e8eb")};
+  background-color: ${({ $active }) => ($active ? "#eff6ff" : "#ffffff")};
+  color: ${({ $active }) => ($active ? "#0061ff" : "#4e5968")};
+  cursor: pointer;
+  transition: all 0.15s ease;
+`;
+
+const CafeteriaMenuContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+`;
+
+const CafeteriaSelectedTitle = styled.span`
+  font-size: 13px;
+  font-weight: 700;
+  color: #191f28;
 `;
 
 /* Bus */
