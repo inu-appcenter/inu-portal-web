@@ -1155,7 +1155,7 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  padding-bottom: 104px;
+  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
   padding-left: 16px;
   padding-right: 16px;
   box-sizing: border-box;
@@ -1259,7 +1259,7 @@ const BottomGradient = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  height: 120px;
+  height: 80px;
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 16.02%,
@@ -1275,7 +1275,7 @@ const FloatingInputContainer = styled.div`
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
+  padding: 0 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
   box-sizing: border-box;
 
   @media (min-width: 768px) {
@@ -1997,7 +1997,7 @@ const NewMessageBanner = styled.div`
   }
 
   position: absolute;
-  bottom: calc(88px + env(safe-area-inset-bottom, 0px)); /* FloatingInputContainer 위에 플로팅 */
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px)); /* FloatingInputContainer 위에 플로팅 */
   left: 50%;
   transform: translateX(-50%);
   z-index: 101;
