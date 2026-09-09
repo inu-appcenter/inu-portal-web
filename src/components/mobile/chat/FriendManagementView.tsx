@@ -27,17 +27,23 @@ import Modal from "@/components/common/Modal";
 
 // --- SVG Icons ---
 
-const CheckIcon = () => (
+const CheckIcon = ({
+  size = 16,
+  color = "#ffffff",
+}: {
+  size?: number;
+  color?: string;
+}) => (
   <svg
-    width="24"
-    height="24"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
       d="M20 6L9 17L4 12"
-      stroke="#0061FF"
+      stroke={color}
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -457,7 +463,11 @@ export default function FriendManagementView({
       const showDetail = !isSelectionMode && isExpanded;
 
       return (
-        <FriendRowWrapper key={friend.friendId} $expanded={isExpanded}>
+        <FriendRowWrapper
+          key={friend.friendId}
+          $expanded={isExpanded}
+          $isSelected={isSelectionMode && isSelected}
+        >
           <RowInner>
             <RowHeader
               onMouseDown={() => handlePressStartInternal(friend.friendId)}
@@ -478,13 +488,13 @@ export default function FriendManagementView({
                       "https://portal.inuappcenter.kr/images/profile/default.png";
                   }}
                 />
-                {isSelectionMode && (
-                  <SelectionOverlay $selected={isSelected}>
-                    {isSelected && <CheckIcon />}
-                  </SelectionOverlay>
-                )}
               </ProfileArea>
               <NameRow>{friend.friendAlias || friend.nickname}</NameRow>
+              {isSelectionMode && isSelected && (
+                <SelectionCheckbox>
+                  <CheckIcon size={16} color="#ffffff" />
+                </SelectionCheckbox>
+              )}
             </RowHeader>
 
             <ExpandedDetailWrapper $expanded={showDetail}>
@@ -855,7 +865,7 @@ const MyProfileDepartment = styled.div`
   color: var(--text-tertiary, #8b95a1);
 `;
 
-const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
+const FriendRowWrapper = styled.div<{ $expanded: boolean; $isSelected?: boolean }>`
   position: relative;
   overflow: hidden;
   display: flex;
@@ -863,9 +873,11 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean }>`
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid var(--border-default, #e5e8eb);
-  background-color: transparent;
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? "var(--bg-brand, #eff6ff)" : "transparent"};
   user-select: none;
   -webkit-user-select: none;
+  transition: background-color 0.15s ease-in-out;
 
   &:last-child {
     border-bottom: none;
@@ -911,22 +923,16 @@ const ProfileImage = styled.img`
   background-color: var(--border-brand-subtle, #d3e5ff);
 `;
 
-const SelectionOverlay = styled.div<{ $selected: boolean }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  box-sizing: border-box;
-  border: 2px solid
-    ${({ $selected }) => ($selected ? "#0061ff" : "rgba(0, 0, 0, 0.15)")};
-  background-color: ${({ $selected }) =>
-    $selected ? "rgba(0, 97, 255, 0.4)" : "transparent"};
+const SelectionCheckbox = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background-color: var(--interactive-primary, #0061ff);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
+  margin-left: 12px;
 `;
 
 const NameRow = styled.div`
@@ -940,6 +946,10 @@ const NameRow = styled.div`
   min-height: 40px;
   margin-left: 12px;
   box-sizing: border-box;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const ExpandedDetailWrapper = styled.div<{ $expanded: boolean }>`
