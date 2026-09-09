@@ -84,7 +84,6 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
 
       const res = await postAgentChat({
         message: text,
-        conversationHistory: historyPayload,
       });
 
       const assistantMessage: Message = {
