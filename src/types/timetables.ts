@@ -95,6 +95,13 @@ export interface TimeTableItemSummary {
   memo?: string | null;
 }
 
+// 시간표 요소 메모 수정 요청 (강의/커스텀 공통). memo가 null이면 메모를 삭제한다.
+// 빈 문자열(공백 포함)은 서버에서 거부되므로(memo != null && blank => 400) 호출부에서
+// 비어 있는 입력은 null로 변환해서 보내야 한다.
+export interface TimeTableItemMemoUpdateRequest {
+  memo: string | null;
+}
+
 // 시간표 AI 평가 응답 인터페이스
 export interface TimeTableEvaluation {
   timeTableId: number;
