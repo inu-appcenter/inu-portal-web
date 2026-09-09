@@ -115,6 +115,8 @@ const SingleCardItem: React.FC<{
         return <BusCard data={component.data} />;
       case "TIMETABLE":
         return <TimeTableCard data={component.data} />;
+      case "TIMETABLE_GAP":
+        return <TimeTableGapCard data={component.data} />;
       case "SCHEDULE":
         return <ScheduleCard data={component.data} />;
       case "DIRECTORY":
@@ -1210,6 +1212,239 @@ const MiniKeywordChip = styled.span<{ $excluded?: boolean }>`
   background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "#f2f4f6")};
   padding: 2px 7px;
   border-radius: 8px;
+`;
+
+const TimeTableGapCard: React.FC<{ data: any }> = ({ data }) => {
+  if (!data || data.hasTimetable === false) {
+    return (
+      <TimeTableBox>
+        <TodayHeader>
+          <TodayHeaderLeft>
+            <Clock size={16} color="#0061ff" />
+            <TodayTitle>시간표 공강 분석</TodayTitle>
+          </TodayHeaderLeft>
+        </TodayHeader>
+        <TimetableEmptyState>
+          <TimetableEmptyText>
+            등록된 시간표가 없어요. 시간표를 먼저 등록해주세요.
+          </TimetableEmptyText>
+        </TimetableEmptyState>
+      </TimeTableBox>
+    );
+  }
+
+  const {
+    dayName,
+    isToday,
+    isDayOff,
+    lectureCount,
+    totalClassText,
+    totalGapText,
+    statusText,
+    gaps,
+    hasBigGap,
+    hasLunchGap,
+  } = data;
+
+  return (
+    <TimeTableBox>
+      <TodayHeader>
+        <TodayHeaderLeft>
+          <Clock size={16} color="#0061ff" />
+          <TodayTitle>
+            {isToday ? `오늘(${dayName})` : `${dayName}요일`} 공강 분석
+          </TodayTitle>
+        </TodayHeaderLeft>
+        <GapStatusBadge $isDayOff={isDayOff} $hasBigGap={hasBigGap}>
+          {statusText || (isDayOff ? "전일 공강 🎉" : "공강 분석")}
+        </GapStatusBadge>
+      </TodayHeader>
+
+      {isDayOff ? (
+        <DayOffBanner>
+          <DayOffEmoji>🎉</DayOffEmoji>
+          <DayOffTitle>등록된 강의가 없는 전일 공강(Day Off)입니다!</DayOffTitle>
+          <DayOffSub>여유롭게 휴식을 취하거나 자유로운 하루를 보내세요.</DayOffSub>
+        </DayOffBanner>
+      ) : (
+        <>
+          <GapSummaryStats>
+            <StatBox>
+              <StatLabel>총 수업</StatLabel>
+              <StatValue>{lectureCount}개 ({totalClassText})</StatValue>
+            </StatBox>
+            <StatBox>
+              <StatLabel>총 공강</StatLabel>
+              <StatValue $highlight={hasBigGap}>{totalGapText || "0분"}</StatValue>
+            </StatBox>
+            <StatBox>
+              <StatLabel>점심 시간</StatLabel>
+              <StatValue>{hasLunchGap ? "식사 가능 🍱" : "연강 주의 ☕"}</StatValue>
+            </StatBox>
+          </GapSummaryStats>
+
+          {gaps && gaps.length > 0 ? (
+            <GapListSection>
+              <GapSectionTitle>수업 사이 공강 구간 ({gaps.length}개)</GapSectionTitle>
+              {gaps.map((gap: any, idx: number) => (
+                <GapItemCard key={idx}>
+                  <GapTimeRow>
+                    <GapTimeSlot>
+                      <Clock size={12} />
+                      {gap.startTime} ~ {gap.endTime}
+                    </GapTimeSlot>
+                    <GapTypeTag $isBig={gap.durationMinutes >= 120}>
+                      {gap.gapType || gap.durationText}
+                    </GapTypeTag>
+                  </GapTimeRow>
+                  <GapBetweenText>
+                    <span>{gap.beforeLecture}</span>
+                    <span style={{ color: "#8b95a1" }}> ➔ </span>
+                    <span>{gap.afterLecture}</span>
+                  </GapBetweenText>
+                </GapItemCard>
+              ))}
+            </GapListSection>
+          ) : (
+            <NoGapNotice>
+              수업 사이에 15분 이상의 공강이 없습니다. (연강 일정)
+            </NoGapNotice>
+          )}
+        </>
+      )}
+    </TimeTableBox>
+  );
+};
+
+const GapStatusBadge = styled.span<{ $isDayOff?: boolean; $hasBigGap?: boolean }>`
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  color: ${({ $isDayOff, $hasBigGap }) =>
+    $isDayOff ? "#d97706" : $hasBigGap ? "#7c3aed" : "#0061ff"};
+  background-color: ${({ $isDayOff, $hasBigGap }) =>
+    $isDayOff ? "#fef3c7" : $hasBigGap ? "#f3e8ff" : "#eff6ff"};
+`;
+
+const DayOffBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+  background-color: #fffbeb;
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+  gap: 6px;
+`;
+
+const DayOffEmoji = styled.div`
+  font-size: 32px;
+`;
+
+const DayOffTitle = styled.div`
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #92400e;
+`;
+
+const DayOffSub = styled.div`
+  font-size: 12.5px;
+  color: #b45309;
+`;
+
+const GapSummaryStats = styled.div`
+  display: flex;
+  gap: 8px;
+  background-color: #f9fafb;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+`;
+
+const StatBox = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+`;
+
+const StatLabel = styled.span`
+  font-size: 11px;
+  font-weight: 500;
+  color: #8b95a1;
+`;
+
+const StatValue = styled.span<{ $highlight?: boolean }>`
+  font-size: 12.5px;
+  font-weight: 700;
+  color: ${({ $highlight }) => ($highlight ? "#7c3aed" : "#191f28")};
+`;
+
+const GapListSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const GapSectionTitle = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #4e5968;
+  margin-bottom: 2px;
+`;
+
+const GapItemCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background-color: #ffffff;
+  border: 1px solid #e5e8eb;
+  border-radius: 10px;
+`;
+
+const GapTimeRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const GapTimeSlot = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const GapTypeTag = styled.span<{ $isBig?: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: ${({ $isBig }) => ($isBig ? "#7c3aed" : "#0061ff")};
+  background-color: ${({ $isBig }) => ($isBig ? "#f3e8ff" : "#eff6ff")};
+`;
+
+const GapBetweenText = styled.div`
+  font-size: 11.5px;
+  color: #4e5968;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const NoGapNotice = styled.div`
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+  color: #6b7684;
+  background-color: #f9fafb;
+  border-radius: 10px;
 `;
 
 export default AgentGenerativeCards;

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, X, Bot, RotateCcw } from "lucide-react";
-import { postAgentChat, AgentChatResponse } from "@/apis/agent";
+import { postAgentChat, streamAgentChat, AgentChatResponse } from "@/apis/agent";
 import AgentGenerativeCards from "./AgentGenerativeCards";
 
 interface Message {
@@ -11,6 +11,7 @@ interface Message {
   content: string;
   uiComponent?: AgentChatResponse["uiComponent"];
   uiComponents?: AgentChatResponse["uiComponents"];
+  suggestedActions?: string[] | null;
   createdAt: Date;
 }
 
@@ -20,10 +21,10 @@ interface AgentChatModalProps {
 }
 
 const SUGGESTED_PROMPTS = [
+  "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
+  "오늘 나 공강 시간 언제고 우주공강 있어?",
   "오늘 점심 학식이랑 날씨 알려줘",
-  "오늘 수업 뭐 있고 정문 버스 언제 와?",
   "장학금 공지 올라오면 알림 줘",
-  "채팅 알림 꺼줘",
   "내 알림 설정 확인해줘",
   "이번 달 학사일정 알려줘",
 ];
@@ -37,12 +38,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       id: "welcome",
       role: "assistant",
       content:
-        "안녕하세요! 무엇을 도와드릴까요? 학식, 실시간 버스, 시간표, 공지사항, 학사일정, 교내 연락처 등을 물어보실 수 있습니다.",
+        "안녕하세요! 무엇을 도와드릴까요? 학식, 실시간 버스, 시간표, 공강 분석, 공지사항, 학사일정, 교내 연락처 등을 물어보실 수 있습니다.",
       createdAt: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingStatus, setStreamingStatus] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,44 +72,129 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       createdAt: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // 최근 대화 맥락 (Multi-turn Contextual Memory)
+    const recentHistory = messages
+      .filter((m) => m.id !== "welcome" && !m.id.startsWith("error-") && m.content.trim().length > 0)
+      .slice(-6)
+      .map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+    const assistantId = `assistant-${Date.now()}`;
+    const pendingAssistantMessage: Message = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      uiComponents: [],
+      createdAt: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage, pendingAssistantMessage]);
     if (!textToSend) setInputValue("");
     setIsLoading(true);
+    setStreamingStatus("질문 의도를 분석하고 있습니다...");
 
     try {
-      const res = await postAgentChat({
-        message: text,
-      });
-
-      const components =
-        res.data?.uiComponents && res.data.uiComponents.length > 0
-          ? res.data.uiComponents
-          : res.data?.uiComponent
-            ? [res.data.uiComponent]
-            : [];
-
-      const assistantMessage: Message = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: res.data?.message || "",
-        uiComponent: res.data?.uiComponent,
-        uiComponents: components,
-        createdAt: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      await streamAgentChat(
+        {
+          message: text,
+          history: recentHistory,
+        },
+        {
+          onStatus: (_status, message) => {
+            if (message) setStreamingStatus(message);
+          },
+          onTools: (_tools, uiComponents) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantId
+                  ? {
+                      ...msg,
+                      uiComponent: uiComponents[0] || null,
+                      uiComponents,
+                    }
+                  : msg
+              )
+            );
+          },
+          onDelta: (delta) => {
+            setStreamingStatus("");
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantId
+                  ? {
+                      ...msg,
+                      content: msg.content + delta,
+                    }
+                  : msg
+              )
+            );
+          },
+          onDone: (suggestedActions) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantId
+                  ? {
+                      ...msg,
+                      suggestedActions,
+                    }
+                  : msg
+              )
+            );
+            setIsLoading(false);
+            setStreamingStatus("");
+          },
+          onError: (err) => {
+            console.error("Agent stream error:", err);
+          },
+        }
+      );
     } catch (err: any) {
-      const errorMessage: Message = {
-        id: `error-${Date.now()}`,
-        role: "assistant",
-        content:
-          err.response?.data?.message ||
-          "죄송합니다. 요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-        createdAt: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      console.warn("SSE streaming failed, falling back to sync chat:", err);
+      try {
+        const res = await postAgentChat({
+          message: text,
+          history: recentHistory,
+        });
+
+        const components =
+          res.data?.uiComponents && res.data.uiComponents.length > 0
+            ? res.data.uiComponents
+            : res.data?.uiComponent
+              ? [res.data.uiComponent]
+              : [];
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId
+              ? {
+                  ...msg,
+                  content: res.data?.message || "",
+                  uiComponent: res.data?.uiComponent,
+                  uiComponents: components,
+                  suggestedActions: res.data?.suggestedActions,
+                }
+              : msg
+          )
+        );
+      } catch (fallbackErr: any) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId
+              ? {
+                  ...msg,
+                  content:
+                    fallbackErr.response?.data?.message ||
+                    "죄송합니다. 요청을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+                }
+              : msg
+          )
+        );
+      }
     } finally {
       setIsLoading(false);
+      setStreamingStatus("");
     }
   };
 
@@ -186,38 +273,55 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
 
             {/* Message Area */}
             <MessagesContainer>
-              {messages.map((msg) => (
-                <MessageRow key={msg.id} $isUser={msg.role === "user"}>
-                  {msg.role === "assistant" && (
-                    <AvatarCircle>
-                      <Bot size={16} color="#0061ff" />
-                    </AvatarCircle>
-                  )}
-                  <MessageBubbleGroup $isUser={msg.role === "user"}>
-                    <Bubble $isUser={msg.role === "user"}>{msg.content}</Bubble>
-                    {((msg.uiComponents && msg.uiComponents.length > 0) || msg.uiComponent) && (
-                      <AgentGenerativeCards
-                        components={msg.uiComponents}
-                        component={msg.uiComponent}
-                        onNavigate={onClose}
-                      />
-                    )}
-                  </MessageBubbleGroup>
-                </MessageRow>
-              ))}
+              {messages.map((msg) => {
+                const hasCards =
+                  (msg.uiComponents && msg.uiComponents.length > 0) || Boolean(msg.uiComponent);
+                const isPending = msg.role === "assistant" && !msg.content && !hasCards;
 
-              {isLoading && (
-                <MessageRow $isUser={false}>
-                  <AvatarCircle>
-                    <Bot size={16} color="#0061ff" />
-                  </AvatarCircle>
-                  <LoadingBubble>
-                    <Dot $delay={0} />
-                    <Dot $delay={0.2} />
-                    <Dot $delay={0.4} />
-                  </LoadingBubble>
-                </MessageRow>
-              )}
+                return (
+                  <MessageRow key={msg.id} $isUser={msg.role === "user"}>
+                    {msg.role === "assistant" && (
+                      <AvatarCircle>
+                        <Bot size={16} color="#0061ff" />
+                      </AvatarCircle>
+                    )}
+                    <MessageBubbleGroup $isUser={msg.role === "user"}>
+                      {isPending ? (
+                        <LoadingBubble>
+                          <Dot $delay={0} />
+                          <Dot $delay={0.2} />
+                          <Dot $delay={0.4} />
+                          {streamingStatus && (
+                            <StreamingStatusText>{streamingStatus}</StreamingStatusText>
+                          )}
+                        </LoadingBubble>
+                      ) : (
+                        Boolean(msg.content) && (
+                          <Bubble $isUser={msg.role === "user"}>{msg.content}</Bubble>
+                        )
+                      )}
+
+                      {hasCards && (
+                        <AgentGenerativeCards
+                          components={msg.uiComponents}
+                          component={msg.uiComponent}
+                          onNavigate={onClose}
+                        />
+                      )}
+
+                      {msg.suggestedActions && msg.suggestedActions.length > 0 && (
+                        <FollowUpChipsContainer>
+                          {msg.suggestedActions.map((action, aIdx) => (
+                            <FollowUpChip key={aIdx} onClick={() => handleSend(action)}>
+                              <span>💡</span> {action}
+                            </FollowUpChip>
+                          ))}
+                        </FollowUpChipsContainer>
+                      )}
+                    </MessageBubbleGroup>
+                  </MessageRow>
+                );
+              })}
 
               {/* Suggestions */}
               {messages.length === 1 && !isLoading && (
@@ -560,6 +664,41 @@ const SendButton = styled.button`
 
   &:not(:disabled):hover {
     background-color: #0052d9;
+  }
+`;
+
+const StreamingStatusText = styled.span`
+  font-size: 11.5px;
+  color: #8b95a1;
+  font-weight: 500;
+  margin-left: 6px;
+`;
+
+const FollowUpChipsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+`;
+
+const FollowUpChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  border-radius: 16px;
+  background-color: #f0f7ff;
+  border: 1px solid #c7e0ff;
+  color: #0056e0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #e0efff;
+    border-color: #0061ff;
+    transform: translateY(-1px);
   }
 `;
 
