@@ -18,11 +18,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 
-interface CafeteriaDetail {
-  구성원가: string;
-  칼로리: string;
-}
-
 interface CafeteriaListContentProps {
   cafeteria: string;
   nowday: number;
@@ -36,20 +31,14 @@ const CafeteriaListContent = ({
   weekDates,
   onDayChange,
 }: CafeteriaListContentProps) => {
-  const [cafeteriaDetail, setCafeteriaDetail] = useState<(CafeteriaDetail | null)[]>([]);
-  const [cafeteriaInfo, setCafeteriaInfo] = useState<(string | null)[]>([]);
+  const [cafeteriaMenus, setCafeteriaMenus] = useState<(string | null)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchCafeteriaData = async (date: number) => {
     try {
       setIsLoading(true);
       const response = await getCafeterias(cafeteria, date);
-      const processedData = response.data.map((info: string) =>
-        extractValues(info),
-      );
-      const infoData = response.data.map((info: string) => extractMenu(info));
-      setCafeteriaInfo(infoData);
-      setCafeteriaDetail(processedData);
+      setCafeteriaMenus(response.data);
       setIsLoading(false);
 
       const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -57,23 +46,6 @@ const CafeteriaListContent = ({
     } catch (error) {
       console.error("학식 메뉴 가져오기 실패", error);
     }
-  };
-
-  const extractValues = (input: string): CafeteriaDetail | null => {
-    const price = input.match(/([0-9,]+)원/);
-    const calory = input.match(/[0-9,]+kcal/);
-    if (price && calory) {
-      return {
-        구성원가: price[0],
-        칼로리: calory[0],
-      };
-    }
-    return null;
-  };
-
-  const extractMenu = (input: string): string | null => {
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    return match ? match[1].trim() : input;
   };
 
   useEffect(() => {
@@ -95,8 +67,7 @@ const CafeteriaListContent = ({
       />
       <CafeteriaInfoContainer
         title={cafeteria}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
+        cafeteriaMenus={cafeteriaMenus}
         isLoading={isLoading}
       />
     </>

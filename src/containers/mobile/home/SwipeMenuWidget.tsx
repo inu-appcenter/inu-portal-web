@@ -5,6 +5,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { getCafeterias } from "@/apis/cafeterias";
 import { cafeterias } from "@/resources/strings/cafeterias";
+import {
+  firstMenuOf,
+  groupSectionsForWidget,
+  parseCafeteriaSections,
+} from "@/utils/cafeteriaMenu";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -51,62 +56,20 @@ export default function SwipeMenuWidget() {
     return now.getHours() + now.getMinutes() / 60;
   }, []);
 
-  // 식사 시간대별 인덱스 및 라벨 매핑
-  const getMealInfo = (cafeteriaName: string, hour: number): { indices: number[]; label: string } => {
-    if (cafeteriaName === "학생식당") {
-      if (hour >= 14.5) {
-        return { indices: [2], label: "석식" };
-      } else {
-        return { indices: [0, 1], label: "중식" };
-      }
-    }
-
-    const hasBreakfast =
-      cafeteriaName === "제1기숙사식당" || cafeteriaName === "27호관식당";
+  // 식사 시간대별 슬롯 및 라벨 매핑
+  const getMealInfo = (
+    cafeteriaName: string,
+    hour: number,
+  ): { index: number; label: string } => {
+    const hasBreakfast = cafeteriaName === "제1기숙사식당";
 
     if (hasBreakfast && hour < 9.5) {
-      return { indices: [0], label: "조식" };
+      return { index: 0, label: "조식" };
     } else if (hour >= 14.5) {
-      return { indices: [2], label: "석식" };
+      return { index: 2, label: "석식" };
     } else {
-      return { indices: [1], label: "중식" };
+      return { index: 1, label: "중식" };
     }
-  };
-
-  // 학생식당 코너 라벨 변환
-  const getCornerLabel = (cafeteriaName: string, index: number): string => {
-    if (cafeteriaName === "학생식당") {
-      if (index === 0) return "1코너 (백반)";
-      if (index === 1) return "2코너 (일품)";
-      return "석식";
-    }
-    if (index === 0) return "조식";
-    if (index === 1) return "중식";
-    return "석식";
-  };
-
-  // 메뉴 텍스트 추출 (가격/칼로리 정보 제거 후 공백(" ") 기준 첫 번째 메뉴만 추출)
-  const extractMenu = (input: string): string => {
-    if (!input) return "";
-    
-    // 1. 가격 및 칼로리 제거를 위해 가격 매칭 전까지만 추출
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    const cleanText = match ? match[1].trim() : input.trim();
-    
-    // 예외 처리: "오늘은 쉽니다" 또는 "업데이트 전" 등 안내 메시지는 split 하지 않고 그대로 반환
-    if (
-      cleanText === "오늘은 쉽니다" ||
-      cleanText === "업데이트 전" ||
-      cleanText.includes("정보가 없습니다")
-    ) {
-      return cleanText;
-    }
-    
-    // 2. MobileMenuPage/CafeteriaItem이 공백(" ")을 기준으로 줄바꿈하는 것을 참고하여
-    //    공백(" ")으로 쪼갠 뒤 가장 첫 번째 메뉴(index 0)만 추출
-    const firstMenu = cleanText.split(/\s+/)[0];
-    
-    return firstMenu ? firstMenu.trim() : cleanText;
   };
 
   // 식단표 데이터 병렬 페칭
@@ -148,6 +111,23 @@ export default function SwipeMenuWidget() {
 
     fetchAllMenus();
   }, [today]);
+
+  const slides = useMemo(
+    () =>
+      cafeterias.flatMap((caf) => {
+        const mealInfo = getMealInfo(caf.title, currentHour);
+        const sections = parseCafeteriaSections(
+          menuDataList[caf.title]?.menus?.[mealInfo.index],
+        );
+        return groupSectionsForWidget(caf.title, sections).map((group, index) => ({
+          key: `${caf.title}-${index}`,
+          cafeteria: caf.title,
+          mealInfo,
+          sections: group,
+        }));
+      }),
+    [menuDataList, currentHour],
+  );
 
   const handleCardClick = (cafeteriaName: string) => {
     if (isDraggingRef.current) return;
@@ -196,16 +176,16 @@ export default function SwipeMenuWidget() {
             isDraggingRef.current = false;
           }}
       >
-        {cafeterias.map((caf) => {
-          const cafData = menuDataList[caf.title];
-          const mealInfo = getMealInfo(caf.title, currentHour);
+        {slides.map((slide) => {
+          const cafData = menuDataList[slide.cafeteria];
+          const mealInfo = slide.mealInfo;
 
           return (
-            <SwiperSlide key={caf.title}>
-              <SlideContent onClick={() => handleCardClick(caf.title)}>
+            <SwiperSlide key={slide.key}>
+              <SlideContent onClick={() => handleCardClick(slide.cafeteria)}>
                 <WidgetHeader>
                   <WidgetTitle>식당 메뉴</WidgetTitle>
-                  <WidgetSubTitle>{caf.title}</WidgetSubTitle>
+                  <WidgetSubTitle>{slide.cafeteria}</WidgetSubTitle>
                 </WidgetHeader>
 
                 <MenuArea>
@@ -215,22 +195,24 @@ export default function SwipeMenuWidget() {
                       <Skeleton width="90%" height={16} />
                     </SkeletonContainer>
                   ) : (
-                    mealInfo.indices.map((index) => {
-                      const rawMenu = cafData?.menus?.[index];
-                      const cleanMenu = rawMenu ? extractMenu(rawMenu) : "";
-                      const hasMenu = cleanMenu && cleanMenu !== "없음" && cleanMenu.trim() !== "";
-
-                      return (
-                        <MenuInfoRow key={index}>
-                          <MenuCorner>
-                            {getCornerLabel(caf.title, index)}
-                          </MenuCorner>
-                          <MenuName $isEmpty={!hasMenu}>
-                            {hasMenu ? cleanMenu : "메뉴 정보가 없습니다."}
-                          </MenuName>
+                    (() => {
+                      // 코너가 여럿인 끼니는 코너마다 한 줄씩 보여준다.
+                      const sections = slide.sections;
+                      if (sections.length === 0) {
+                        return (
+                          <MenuInfoRow>
+                            <MenuCorner>{mealInfo.label}</MenuCorner>
+                            <MenuName $isEmpty>메뉴 정보가 없습니다.</MenuName>
+                          </MenuInfoRow>
+                        );
+                      }
+                      return sections.map((section, index) => (
+                        <MenuInfoRow key={section.title ?? index}>
+                          <MenuCorner>{section.title ?? mealInfo.label}</MenuCorner>
+                          <MenuName $isEmpty={false}>{firstMenuOf(section)}</MenuName>
                         </MenuInfoRow>
-                      );
-                    })
+                      ));
+                    })()
                   )}
                 </MenuArea>
               </SlideContent>
@@ -241,15 +223,15 @@ export default function SwipeMenuWidget() {
       </CardWrapper>
 
       <PaginationDots ref={paginationRef} aria-label="식당 메뉴 위젯 페이지네이션">
-        {cafeterias.map((caf, index) => (
+        {slides.map((slide, index) => (
           <PaginationDot
-            key={caf.title}
+            key={slide.key}
             type="button"
             $active={index === activeIndex}
             onClick={() => {
               swiperInstance?.slideTo(index);
             }}
-            aria-label={`${caf.title} 식단 보기`}
+            aria-label={`${slide.cafeteria} 식단 보기`}
             aria-current={index === activeIndex}
           />
         ))}

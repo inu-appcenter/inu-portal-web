@@ -3,28 +3,15 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Box from "@/components/common/Box";
 import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton"; // 스켈레톤 컴포넌트 임포트
+import { CafeteriaSection } from "@/utils/cafeteriaMenu";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 
-interface CafeteriaDeatilProps {
-  구성원가: string;
-  칼로리: string;
-}
-
-interface CafeteriaBreakfastProps {
-  typeIndex: number;
-  cafeteriaTypes: string[];
-  cafeteriaDetail: (CafeteriaDeatilProps | null)[];
-  cafeteriaInfo: (string | null)[];
+interface CafeteriaItemProps {
+  section?: CafeteriaSection & { title: string };
   isLoading: boolean;
 }
 
-export default function CafeteriaItem({
-  typeIndex,
-  cafeteriaTypes,
-  cafeteriaDetail,
-  cafeteriaInfo,
-  isLoading,
-}: CafeteriaBreakfastProps) {
+export default function CafeteriaItem({ section, isLoading }: CafeteriaItemProps) {
   // 로딩 상태 레이아웃
   if (isLoading) {
     return (
@@ -54,46 +41,32 @@ export default function CafeteriaItem({
     );
   }
 
-  // 데이터 부재 시 처리
-  if (cafeteriaTypes[typeIndex] === "없음") {
+  if (!section) {
     return null;
   }
 
   return (
-    <TitleContentArea title={cafeteriaTypes[typeIndex]}>
+    <TitleContentArea title={section.title}>
       <Box>
         <DetailWrapper>
-          {cafeteriaTypes[typeIndex] !== "없음" && (
-            <p className="info">
-              {cafeteriaInfo[typeIndex] === "오늘은 쉽니다" ? (
-                <>오늘은 쉽니다</>
-              ) : cafeteriaInfo[typeIndex] === "업데이트 전" ? (
-                <>
-                  아직 업데이트 되지 않았습니다.
-                  <br />
-                  2기숙사 식당은 당일 식사 시간 전에 업데이트 됩니다!
-                </>
-              ) : (
-                cafeteriaInfo[typeIndex]?.split(" ").map((line, index) => (
-                  <span key={index}>
-                    {line}
-                    <br />
-                  </span>
-                ))
-              )}
-            </p>
-          )}
+          <p className="info">
+            {section.menu === "업데이트 전" ? (
+              <>
+                아직 업데이트 되지 않았습니다.
+                <br />
+                2기숙사 식당은 당일 식사 시간 전에 업데이트 됩니다!
+              </>
+            ) : (
+              section.menu
+            )}
+          </p>
           <Divider />
-          {cafeteriaDetail[typeIndex] && (
+          {section.price && section.calorie && (
             <div className="detail-wrapper">
               <div className="sub-detail-wrapper">
-                <span className="price">
-                  {cafeteriaDetail[typeIndex].칼로리}
-                </span>
+                <span className="price">{section.calorie}</span>
                 <TinyCircle />
-                <span className="calory">
-                  {cafeteriaDetail[typeIndex].구성원가}
-                </span>
+                <span className="calory">{section.price}</span>
               </div>
             </div>
           )}
@@ -125,6 +98,8 @@ const DetailWrapper = styled.div`
     font-weight: 500;
     color: #404040;
     margin: 0;
+    /* 서버가 코너와 메뉴를 개행으로 구분해 내려준다. */
+    white-space: pre-line;
   }
 
   .detail-wrapper {
