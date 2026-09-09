@@ -303,14 +303,6 @@ const ChatBubbleIcon = () => (
   </svg>
 );
 
-const ShareIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <polyline points="16 6 12 2 8 6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="2" x2="12" y2="15" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
 interface UserProfileModalProps {
   memberId?: number | null;
   chatRoomMemberId?: number | null;
@@ -605,17 +597,6 @@ export default function UserProfileModal({
     }
   };
 
-  const handleShareProfile = () => {
-    if (!profile) return;
-    const targetFriendId = profile.friendId || friendId;
-    const shareUrl = `${window.location.origin}/mobile/friends?ids=${targetFriendId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("프로필 링크가 클립보드에 복사되었습니다.");
-    }).catch(() => {
-      alert("링크 복사에 실패했습니다.");
-    });
-  };
-
   const isMe = isSelfProfile || userInfo?.nickname === profile?.nickname;
 
   const canManage =
@@ -743,16 +724,6 @@ export default function UserProfileModal({
                           title="채팅하기"
                         >
                           <ChatBubbleIcon />
-                        </CircleActionButton>
-
-                        <CircleActionButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShareProfile();
-                          }}
-                          title="이 프로필 공유하기"
-                        >
-                          <ShareIcon />
                         </CircleActionButton>
 
                         {onToggleFavorite && (

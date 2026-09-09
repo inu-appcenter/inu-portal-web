@@ -202,9 +202,10 @@ export default function MobileFriendListPage() {
       setIsSelectionMode(false);
     } else {
       setIsSelectionMode(true);
+      setSelectedIds(filteredFriends.map((f) => f.friendId));
       closeAddMenu();
     }
-  }, [isSelectionMode, closeAddMenu]);
+  }, [isSelectionMode, filteredFriends, closeAddMenu]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -405,11 +406,12 @@ export default function MobileFriendListPage() {
       )}
 
       {/* Floating Area (always rendered for animation) */}
-      <FloatingActionsOuter>
+      <FloatingActionsOuter $isMenuOpen={isAddMenuOpen}>
         <FloatingActionsWrapper>
           {/* Plus button - scale out when selection mode is active */}
           <PlusButtonWrapper
             $visible={!isSelectionMode && !isSearchActive && !isShareMode}
+            $isMenuOpen={isAddMenuOpen}
           >
             <AddFriendMenuCard
               open={isAddMenuOpen}
@@ -528,13 +530,13 @@ const EmptyTitle = styled.h3`
   text-align: center;
 `;
 
-const FloatingActionsOuter = styled.div`
+const FloatingActionsOuter = styled.div<{ $isMenuOpen?: boolean }>`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 0px);
   right: 0;
   left: 0;
   width: 100%;
-  z-index: 99;
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 99)};
   pointer-events: none;
   background: linear-gradient(
     180deg,
@@ -559,7 +561,7 @@ const FloatingActionsWrapper = styled.div`
   }
 `;
 
-const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
+const PlusButtonWrapper = styled.div<{ $visible: boolean; $isMenuOpen?: boolean }>`
   position: relative;
   display: flex;
   justify-content: flex-end;
@@ -567,6 +569,7 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
   pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1002 : 1)};
   transition:
     transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 0.25s ease,

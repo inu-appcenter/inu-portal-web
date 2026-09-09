@@ -229,8 +229,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
 
   const handleEnterSelectionMode = useCallback(() => {
     setIsSelectionMode(true);
+    setSelectedIds(allFriendIds);
     window.history.pushState({ modal: "selection" }, "");
-  }, []);
+  }, [allFriendIds]);
 
   const handleExitSelectionMode = useCallback(() => {
     setIsSelectionMode(false);
@@ -817,7 +818,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
       </Swiper>
 
       {!isSearching && !isSelectionMode && isLoggedIn && (
-        <FabAnchor>
+        <FabAnchor $isMenuOpen={isAddMenuOpen}>
           {selectedCategory === "친구" && (
             <AddFriendMenuCard
               open={isAddMenuOpen}
@@ -987,11 +988,11 @@ const ListWrapper = styled.div`
   flex-direction: column;
 `;
 
-const FabAnchor = styled.div`
+const FabAnchor = styled.div<{ $isMenuOpen?: boolean }>`
   position: fixed;
   bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   right: 24px;
-  z-index: 10;
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 10)};
   display: flex;
   flex-direction: column;
   align-items: flex-end;

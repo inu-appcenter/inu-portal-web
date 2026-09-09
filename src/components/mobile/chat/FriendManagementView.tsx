@@ -501,7 +501,19 @@ export default function FriendManagementView({
               onClick={() => handleRowClick(friend.friendId, rowId)}
             >
               <Ripple />
-              <ProfileArea>
+              <ProfileArea
+                onClick={(e) => {
+                  if (isShareMode) return;
+                  e.stopPropagation();
+                  if (preventClick.current) {
+                    preventClick.current = false;
+                    return;
+                  }
+                  navigate(
+                    `${ROUTES.TIMETABLE.COMPARE}?ids=${friend.friendId}`,
+                  );
+                }}
+              >
                 <ProfileImage
                   src={`https://portal.inuappcenter.kr/images/profile/${safeFireId}`}
                   alt="Profile"
@@ -935,6 +947,13 @@ const ProfileArea = styled.div`
   height: 40px;
   flex-shrink: 0;
   position: relative;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;
 
 const ProfileImage = styled.img`
