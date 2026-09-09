@@ -191,6 +191,8 @@ const SingleCardItem: React.FC<{
         return <KeywordConfirmCard data={component.data} />;
       case "SETTING_RESULT":
         return <SettingResultCard data={component.data} />;
+      case "REMINDER_SETTING_RESULT":
+        return <ReminderSettingResultCard data={component.data} onNavigate={onNavigate} />;
       case "MY_SETTINGS":
         return <MySettingsCard data={component.data} />;
       case "DYNAMIC_DATA":
@@ -488,6 +490,60 @@ const SettingResultCard: React.FC<{ data: any }> = ({ data }) => {
     </ActionCardBox>
   );
 };
+
+/* --- 10-1. Reminder Setting Result Card --- */
+const ReminderSettingResultCard: React.FC<{
+  data: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  if (!data) return null;
+
+  return (
+    <ActionCardBox>
+      <CardHeader>
+        <Bell size={16} color="#0061ff" />
+        <CardTitle>{data.title || "AI 맞춤 알림"}</CardTitle>
+        <SettingBadge $enabled={true}>
+          {data.statusText || `${data.targetTime || "08:30"} 예약`}
+        </SettingBadge>
+      </CardHeader>
+      <ActionDescription>
+        {data.repeatTypeDesc || "평일"} {data.targetTime || "08:30"}에 맞춤 알림이 예약되었어요.
+      </ActionDescription>
+      <ReminderManageButton
+        type="button"
+        onClick={() => {
+          if (onNavigate) onNavigate();
+          navigate("/mobile/daily-brief?tab=agent");
+        }}
+      >
+        <span>내 맞춤 알림 관리</span>
+        <ExternalLink size={13} />
+      </ReminderManageButton>
+    </ActionCardBox>
+  );
+};
+
+const ReminderManageButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #f1f5f9;
+  color: #0061ff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+
+  &:hover {
+    background-color: #e2e8f0;
+  }
+`;
 
 /* --- 11. My Settings Card --- */
 const MySettingsCard: React.FC<{ data: any }> = ({ data }) => {
