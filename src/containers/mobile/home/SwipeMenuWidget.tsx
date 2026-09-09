@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import { getCafeterias } from "@/apis/cafeterias";
 import { cafeterias } from "@/resources/strings/cafeterias";
+import { firstMenuOf, parseCafeteriaSections } from "@/utils/cafeteriaMenu";
 import { ROUTES } from "@/constants/routes";
 import Skeleton from "@/components/common/Skeleton";
 
@@ -51,54 +52,20 @@ export default function SwipeMenuWidget() {
     return now.getHours() + now.getMinutes() / 60;
   }, []);
 
-  // 식사 시간대별 인덱스 및 라벨 매핑
-  const getMealInfo = (cafeteriaName: string, hour: number): { indices: number[]; label: string } => {
+  // 식사 시간대별 슬롯 및 라벨 매핑
+  const getMealInfo = (
+    cafeteriaName: string,
+    hour: number,
+  ): { index: number; label: string } => {
     const hasBreakfast = cafeteriaName === "제1기숙사식당";
 
     if (hasBreakfast && hour < 9.5) {
-      return { indices: [0], label: "조식" };
+      return { index: 0, label: "조식" };
     } else if (hour >= 14.5) {
-      return { indices: [2], label: "석식" };
+      return { index: 2, label: "석식" };
     } else {
-      return { indices: [1], label: "중식" };
+      return { index: 1, label: "중식" };
     }
-  };
-
-  const getCornerLabel = (_cafeteriaName: string, index: number): string => {
-    if (index === 0) return "조식";
-    if (index === 1) return "중식";
-    return "석식";
-  };
-
-  // 대표 메뉴 한 개만 추출 (코너 머리말과 가격/칼로리 줄은 건너뛴다)
-  const extractMenu = (input: string): string => {
-    if (!input) return "";
-
-    const lines = input
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    const firstLine = lines[0] ?? input.trim();
-    if (
-      firstLine === "오늘은 쉽니다" ||
-      firstLine === "업데이트 전" ||
-      firstLine.includes("정보가 없습니다")
-    ) {
-      return firstLine;
-    }
-
-    // "[1코너(백반)]" 같은 머리말은 걷어내고, 가격/칼로리만 있는 줄은 건너뛴다.
-    const menu = lines
-      .map((line) => line.replace(/^\[[^\]]*\]\s*/, "").trim())
-      .find(
-        (line) =>
-          line.length > 0 &&
-          !/^"?[0-9,]+원/.test(line) &&
-          !/^[0-9,\s/]*kcal/i.test(line),
-      );
-
-    return (menu ?? firstLine).replace(/\s*"?[0-9,]+원.*$/, "").trim();
   };
 
   // 식단표 데이터 병렬 페칭
@@ -207,22 +174,26 @@ export default function SwipeMenuWidget() {
                       <Skeleton width="90%" height={16} />
                     </SkeletonContainer>
                   ) : (
-                    mealInfo.indices.map((index) => {
-                      const rawMenu = cafData?.menus?.[index];
-                      const cleanMenu = rawMenu ? extractMenu(rawMenu) : "";
-                      const hasMenu = cleanMenu && cleanMenu !== "없음" && cleanMenu.trim() !== "";
-
-                      return (
-                        <MenuInfoRow key={index}>
-                          <MenuCorner>
-                            {getCornerLabel(caf.title, index)}
-                          </MenuCorner>
-                          <MenuName $isEmpty={!hasMenu}>
-                            {hasMenu ? cleanMenu : "메뉴 정보가 없습니다."}
-                          </MenuName>
-                        </MenuInfoRow>
+                    (() => {
+                      // 코너가 여럿인 끼니는 코너마다 한 줄씩 보여준다.
+                      const sections = parseCafeteriaSections(
+                        cafData?.menus?.[mealInfo.index],
                       );
-                    })
+                      if (sections.length === 0) {
+                        return (
+                          <MenuInfoRow>
+                            <MenuCorner>{mealInfo.label}</MenuCorner>
+                            <MenuName $isEmpty>메뉴 정보가 없습니다.</MenuName>
+                          </MenuInfoRow>
+                        );
+                      }
+                      return sections.map((section, index) => (
+                        <MenuInfoRow key={section.title ?? index}>
+                          <MenuCorner>{section.title ?? mealInfo.label}</MenuCorner>
+                          <MenuName $isEmpty={false}>{firstMenuOf(section)}</MenuName>
+                        </MenuInfoRow>
+                      ));
+                    })()
                   )}
                 </MenuArea>
               </SlideContent>

@@ -18,11 +18,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 
-interface CafeteriaDetail {
-  구성원가: string;
-  칼로리: string;
-}
-
 interface CafeteriaListContentProps {
   cafeteria: string;
   nowday: number;
@@ -36,20 +31,14 @@ const CafeteriaListContent = ({
   weekDates,
   onDayChange,
 }: CafeteriaListContentProps) => {
-  const [cafeteriaDetail, setCafeteriaDetail] = useState<(CafeteriaDetail | null)[]>([]);
-  const [cafeteriaInfo, setCafeteriaInfo] = useState<(string | null)[]>([]);
+  const [cafeteriaMenus, setCafeteriaMenus] = useState<(string | null)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchCafeteriaData = async (date: number) => {
     try {
       setIsLoading(true);
       const response = await getCafeterias(cafeteria, date);
-      const processedData = response.data.map((info: string) =>
-        extractValues(info),
-      );
-      const infoData = response.data.map((info: string) => extractMenu(info));
-      setCafeteriaInfo(infoData);
-      setCafeteriaDetail(processedData);
+      setCafeteriaMenus(response.data);
       setIsLoading(false);
 
       const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -57,37 +46,6 @@ const CafeteriaListContent = ({
     } catch (error) {
       console.error("학식 메뉴 가져오기 실패", error);
     }
-  };
-
-  // 코너가 여럿인 끼니(학생식당 중식 등)는 코너마다 가격/칼로리가 있어 하나로 뽑을 수 없다.
-  const isSingleCorner = (input: string) =>
-    (input.match(/[0-9,]+kcal/gi) ?? []).length === 1;
-
-  const extractValues = (input: string): CafeteriaDetail | null => {
-    if (!isSingleCorner(input)) {
-      return null;
-    }
-    const price = input.match(/([0-9,]+)원/);
-    const calory = input.match(/[0-9,]+kcal/i);
-    if (price && calory) {
-      return {
-        구성원가: price[0],
-        칼로리: calory[0],
-      };
-    }
-    return null;
-  };
-
-  // 코너가 하나면 꼬리의 가격/칼로리 줄을 떼어 하단에 따로 보여준다.
-  const extractMenu = (input: string): string | null => {
-    if (!isSingleCorner(input)) {
-      return input;
-    }
-    const lines = input.split("\n");
-    while (lines.length > 0 && /[0-9,]+원|kcal/i.test(lines[lines.length - 1])) {
-      lines.pop();
-    }
-    return lines.join("\n").trim() || input;
   };
 
   useEffect(() => {
@@ -109,8 +67,7 @@ const CafeteriaListContent = ({
       />
       <CafeteriaInfoContainer
         title={cafeteria}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
+        cafeteriaMenus={cafeteriaMenus}
         isLoading={isLoading}
       />
     </>
