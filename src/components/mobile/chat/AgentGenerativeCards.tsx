@@ -99,6 +99,9 @@ const SingleCardItem: React.FC<{
 
   // 1. 공식 INTIP 컴포넌트 직접 재사용 (버스, 학식, 시간표)
   if (component.type === "BUS") {
+    if (component.data?.mode === "HISTORY") {
+      return <BusHistoryCard data={component.data} onNavigate={onNavigate} />;
+    }
     return (
       <WidgetCardWrapper>
         <SwipeBusWidget
@@ -144,7 +147,13 @@ const SingleCardItem: React.FC<{
             data={component.data}
             onItemClick={(item) => {
               if (onNavigate) onNavigate();
-              if (item.id) {
+              if (item.isDepartment) {
+                if (item.department) {
+                  navigate(ROUTES.BOARD.DEPT_NOTICE_DETAIL(item.department));
+                } else {
+                  navigate(ROUTES.BOARD.DEPT_NOTICE);
+                }
+              } else if (item.id) {
                 navigate(ROUTES.BOARD.NOTICE_DETAIL(item.id));
               } else if (item.url) {
                 window.open(item.url, "_blank", "noopener,noreferrer");
@@ -288,13 +297,14 @@ const ScheduleCard: React.FC<{
         <EmptyMessage>예정된 일정이 없습니다.</EmptyMessage>
       ) : (
         <ScheduleList>
-          {schedules.slice(0, 3).map((s, idx) => {
+          {schedules.slice(0, 4).map((s, idx) => {
+            const isDept = s.type === "dept" || Boolean(s.aiGenerated) || Boolean(s.department);
             const eventItemProps: any = {
               id: s.id ?? idx,
               title: s.title || "",
               start: s.start || s.startDate || "",
               end: s.end || s.endDate || s.start || "",
-              type: s.type === "dept" ? "dept" : "school",
+              type: isDept ? "dept" : "school",
               department: s.department || null,
               description: s.description || null,
               aiGenerated: Boolean(s.aiGenerated),
@@ -307,6 +317,64 @@ const ScheduleCard: React.FC<{
         </ScheduleList>
       )}
     </ScheduleBox>
+  );
+};
+
+/* --- 6-1. Bus History Card --- */
+const BusHistoryCard: React.FC<{
+  data: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  if (!data) return null;
+
+  const records: any[] = Array.isArray(data.historyRecords) ? data.historyRecords : [];
+  const avgMin = data.averageIntervalMinutes || 0;
+  const targetDate = data.targetDate || "";
+  const tabName = data.tabName || data.stopName || "인천대 버스";
+
+  const handleGoBus = () => {
+    if (onNavigate) onNavigate();
+    const cat = data.category ? encodeURIComponent(data.category) : "go-school";
+    const tab = data.tabName ? encodeURIComponent(data.tabName) : "";
+    navigate(`/bus/info?type=${cat}&category=${tab}`);
+  };
+
+  return (
+    <BusHistoryBox onClick={handleGoBus} style={{ cursor: "pointer" }}>
+      <CardHeader>
+        <Clock size={16} color="#0061ff" />
+        <CardTitle>[{tabName}] 과거 버스 시간표 / 배차</CardTitle>
+      </CardHeader>
+
+      {avgMin > 0 && (
+        <BusAvgBadge>
+          <span>동일 요일 최근 4주 평균 배차:</span>
+          <strong>약 {avgMin}분</strong>
+        </BusAvgBadge>
+      )}
+
+      {targetDate && <BusHistoryDateText>기준 일자: {targetDate}</BusHistoryDateText>}
+
+      {records.length === 0 ? (
+        <EmptyMessage>해당 일자 버스 정차 이력이 없습니다.</EmptyMessage>
+      ) : (
+        <BusRecordList>
+          {records.slice(0, 4).map((r, idx) => (
+            <BusRecordItem key={idx}>
+              <BusRouteBadge>{r.routeNo}번</BusRouteBadge>
+              <BusPlateText>{r.busNumPlate || ""}</BusPlateText>
+              <BusTimeText>{r.time} 정차</BusTimeText>
+            </BusRecordItem>
+          ))}
+        </BusRecordList>
+      )}
+
+      <CardFooterLink>
+        <span>인입런 버스 정보 바로가기</span>
+        <ExternalLink size={13} />
+      </CardFooterLink>
+    </BusHistoryBox>
   );
 };
 
@@ -1111,6 +1179,80 @@ const NoGapNotice = styled.div`
   color: #6b7684;
   background-color: #f9fafb;
   border-radius: 10px;
+`;
+
+const BusHistoryBox = styled.div`
+  background-color: var(--surface-primary, #ffffff);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const BusAvgBadge = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #eff6ff;
+  color: #0061ff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  strong {
+    font-weight: 700;
+  }
+`;
+
+const BusHistoryDateText = styled.div`
+  font-size: 11.5px;
+  color: #8b95a1;
+  font-weight: 500;
+`;
+
+const BusRecordList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const BusRecordItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  font-size: 12.5px;
+`;
+
+const BusRouteBadge = styled.span`
+  font-weight: 700;
+  color: #191f28;
+  background-color: #e5e8eb;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const BusPlateText = styled.span`
+  color: #8b95a1;
+  font-size: 11.5px;
+`;
+
+const BusTimeText = styled.span`
+  font-weight: 600;
+  color: #0061ff;
+`;
+
+const CardFooterLink = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 12px;
+  color: #8b95a1;
+  margin-top: 4px;
 `;
 
 export default AgentGenerativeCards;
