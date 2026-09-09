@@ -7,10 +7,7 @@ import { broadcastSync } from "@/stores/middleware/broadcastSync";
 import { safeLocalStorage } from "@/utils/safeStorage";
 import { queryClient } from "@/lib/queryClient";
 import { getMemberIdFromToken } from "@/utils/token";
-import {
-  TIMETABLES_QUERY_KEY,
-  useTimetableStore,
-} from "@/stores/useTimetableStore";
+import { useTimetableStore } from "@/stores/useTimetableStore";
 
 interface UserState {
   tokenInfo: TokenInfo;
@@ -29,7 +26,10 @@ const handleUserAuthChange = (
 
   if (prevMemberId !== nextMemberId) {
     useTimetableStore.getState().reloadTimetableCache(nextMemberId);
-    queryClient.removeQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    // 시간표뿐 아니라 성적/메모/친구/알림 등 유저별로 캐시된 모든 쿼리를 함께
+    // 비운다. removeQueries(TIMETABLES_QUERY_KEY)만으로는 그 외 쿼리가 로그아웃
+    // 후에도(또는 다른 계정 로그인 후에도) 화면에 이전 유저 데이터로 남는다.
+    queryClient.clear();
   }
 };
 

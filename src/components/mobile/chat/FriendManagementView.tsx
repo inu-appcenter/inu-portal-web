@@ -571,8 +571,11 @@ export default function FriendManagementView({
         primaryButton={{
           text: confirmModal?.type === "accept" ? "수락" : "거절",
           variant: confirmModal?.type === "accept" ? "brand" : "danger",
+          // 요청이 진행 중일 때 연타로 수락/거절이 중복 전송되지 않도록 막는다.
+          disabled: acceptMutation.isPending || deleteMutation.isPending,
           onClick: () => {
             if (!confirmModal) return;
+            if (acceptMutation.isPending || deleteMutation.isPending) return;
             if (confirmModal.type === "accept") {
               acceptMutation.mutate(confirmModal.friendId);
             } else {
