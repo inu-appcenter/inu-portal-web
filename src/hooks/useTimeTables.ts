@@ -15,6 +15,7 @@ import {
   getTimeTablesBySemester,
   getTimeTableDetail,
   updateTimeTableCustomItem,
+  updateTimeTableItemMemo,
   updateTimeTableName,
   updateTimeTablePrimary,
   updateTimeTableVisibility,
@@ -325,6 +326,27 @@ export const useUpdateTimeTableCustomItem = () => {
         queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
       });
       return syncTimeTableDetail(queryClient, timeTableId);
+    },
+  });
+};
+
+export const useUpdateTimeTableItemMemo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      timeTableId,
+      timeTableItemId,
+      memo,
+    }: {
+      timeTableId: number;
+      timeTableItemId: number;
+      memo: string | null;
+    }) => updateTimeTableItemMemo(timeTableId, timeTableItemId, memo),
+    onSuccess: (_data, { timeTableId }) => {
+      queryClient.invalidateQueries({
+        queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId],
+      });
     },
   });
 };

@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useUpdateTimeTableItemMemo } from "@/hooks/useTimeTables";
 import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 
@@ -86,6 +87,7 @@ export default function ClassDetailBottomSheet({
   const [isEditingMemo, setIsEditingMemo] = useState(false);
   const [memoInput, setMemoInput] = useState("");
   const memoInputRef = useRef<HTMLTextAreaElement>(null);
+  const updateMemoMutation = useUpdateTimeTableItemMemo();
 
   const liveClass = selectedClass
     ? allEvents.find(
@@ -214,20 +216,44 @@ export default function ClassDetailBottomSheet({
   const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
   const canEditMemo = !liveClass.isFriendOwned && !readOnly;
 
-  const handleSaveMemo = () => {
-    if (activeTimetableId === null) return;
-    const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
-    if (!activeTimetable) return;
+  // 빈 문자열/공백만 남은 입력은 메모 삭제로 취급해 서버(공백 메모 거부)와 맞춘다.
+  const trimmedMemoInput = memoInput.trim();
+  const nextMemoValue = trimmedMemoInput === "" ? null : memoInput;
 
+  const applyMemoToEvents = (timetableId: number, memo: string | null) => {
+    const activeTimetable = timetables.find((t) => t.id === timetableId);
+    if (!activeTimetable) return;
     const updatedEvents = activeTimetable.events.map((e) => {
       if (e.id === liveClass.id || e.name === liveClass.name) {
-        return { ...e, memo: memoInput };
+        return { ...e, memo: memo ?? undefined };
       }
       return e;
     });
+    updateTimetableEvents(timetableId, updatedEvents);
+  };
 
-    updateTimetableEvents(activeTimetableId, updatedEvents);
+  const handleSaveMemo = async () => {
+    if (activeTimetableId === null) return;
+    if (!timetables.some((t) => t.id === activeTimetableId)) return;
+
+    const timeTableId = activeTimetableId;
+    const previousMemo = liveClass.memo ?? null;
+
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 먼저 화면/로컬 캐시에 반영한다.
+    applyMemoToEvents(timeTableId, nextMemoValue);
     setIsEditingMemo(false);
+
+    try {
+      await updateMemoMutation.mutateAsync({
+        timeTableId,
+        timeTableItemId: liveClass.id,
+        memo: nextMemoValue,
+      });
+    } catch {
+      // 네트워크 오류 등으로 저장에 실패하면 기존 메모로 되돌려 데이터가 사라지지 않게 한다.
+      applyMemoToEvents(timeTableId, previousMemo);
+      alert("메모 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -557,6 +583,8 @@ const FieldValue = styled.span`
   font-style: normal;
   font-weight: 400;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 `;
 
 const FooterSection = styled.div`

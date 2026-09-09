@@ -23,6 +23,7 @@ import {
   mockGetTimeTables,
   mockGetTimeTablesBySemester,
   mockUpdateTimeTableCustomItem,
+  mockUpdateTimeTableItemMemo,
   mockUpdateTimeTableName,
   mockUpdateTimeTablePrimary,
   mockUpdateTimeTableVisibility,
@@ -210,6 +211,26 @@ export const updateTimeTableCustomItem = async (
   const response = await tokenInstance.patch<ApiResponse<TimeTableItemSummary>>(
     `/api/timetables/${timeTableId}/customSchedule/${customScheduleId}`,
     body,
+  );
+  return response.data.data;
+};
+
+/**
+ * 시간표 요소 메모 수정 (강의/커스텀 일정 공통)
+ */
+export const updateTimeTableItemMemo = async (
+  timeTableId: number,
+  timeTableItemId: number,
+  memo: string | null,
+): Promise<TimeTableItemSummary> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockUpdateTimeTableItemMemo(timeTableId, timeTableItemId, memo);
+  }
+
+  const response = await tokenInstance.patch<ApiResponse<TimeTableItemSummary>>(
+    `/api/timetables/${timeTableId}/timeTableItem/${timeTableItemId}`,
+    { memo },
   );
   return response.data.data;
 };

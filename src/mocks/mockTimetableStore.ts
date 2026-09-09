@@ -236,6 +236,30 @@ export const mockUpdateTimeTableCustomItem = (
   return { id: match?.id ?? customScheduleId, type: "CUSTOM", title: body.title, memo: body.memo ?? null };
 };
 
+export const mockUpdateTimeTableItemMemo = (
+  timeTableId: number,
+  timeTableItemId: number,
+  memo: string | null,
+): TimeTableItemSummary => {
+  // 서버(TimeTableItem.updateMemo)와 동일하게, null은 메모 삭제로 허용하되
+  // 공백만 있는 문자열은 거부한다. 호출부는 빈 입력을 null로 변환해서 보내야 한다.
+  if (memo !== null && memo.trim() === "") {
+    throw new MockApiError("메모는 공백일 수 없습니다.", 400);
+  }
+
+  const items = itemsByTimeTableId.get(timeTableId) ?? [];
+  const target = items.find((i) => i.id === timeTableItemId);
+  if (!target) throw new MockApiError("존재하지 않는 시간표 요소입니다.", 404);
+
+  const updated = items.map((item) =>
+    item.id === timeTableItemId ? { ...item, memo } : item,
+  );
+  itemsByTimeTableId.set(timeTableId, updated);
+
+  const title = target.course?.title ?? target.customSchedule?.title ?? "";
+  return { id: timeTableItemId, type: target.type, title, memo };
+};
+
 export const mockDeleteTimeTableItem = (timeTableId: number, timeTableItemId: number): number => {
   const items = itemsByTimeTableId.get(timeTableId) ?? [];
   itemsByTimeTableId.set(
