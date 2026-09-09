@@ -9,6 +9,7 @@ import {
   LogIn,
   Bell,
   Sliders,
+  Layers,
 } from "lucide-react";
 import {
   FALLBACK_SKY_CONDITION_SLUG,
@@ -192,6 +193,8 @@ const SingleCardItem: React.FC<{
         return <SettingResultCard data={component.data} />;
       case "MY_SETTINGS":
         return <MySettingsCard data={component.data} />;
+      case "DYNAMIC_DATA":
+        return <DynamicDataCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;
     }
@@ -527,6 +530,75 @@ const MySettingsCard: React.FC<{ data: any }> = ({ data }) => {
         )}
       </SettingsList>
     </ActionCardBox>
+  );
+};
+
+/* --- 12. Dynamic Data Card (OpenAPI Discovery) --- */
+const DynamicDataCard: React.FC<{
+  data: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  if (!data) return null;
+
+  const items: any[] = Array.isArray(data.items) ? data.items : [];
+  const title = data.title || "조회 결과";
+  const totalCount = data.totalCount ?? items.length;
+  const redirectUrl = data.redirectUrl;
+
+  const handleClick = () => {
+    if (redirectUrl) {
+      if (onNavigate) onNavigate();
+      if (redirectUrl.startsWith("http")) {
+        window.open(redirectUrl, "_blank", "noopener,noreferrer");
+      } else {
+        navigate(redirectUrl);
+      }
+    }
+  };
+
+  return (
+    <DynamicBox onClick={handleClick} $clickable={Boolean(redirectUrl)}>
+      <CardHeader>
+        <Layers size={16} color="#0061ff" />
+        <CardTitle>{title}</CardTitle>
+        {totalCount > 0 && <DynamicCountBadge>총 {totalCount}건</DynamicCountBadge>}
+      </CardHeader>
+
+      {items.length === 0 ? (
+        <EmptyMessage>조회된 내역이 없습니다.</EmptyMessage>
+      ) : (
+        <DynamicItemList>
+          {items.slice(0, 4).map((item, idx) => {
+            const itemTitle =
+              item.name || item.title || item.clubName || (typeof item === "string" ? item : "항목");
+            const itemCategory = item.category || item.subCategory || "";
+            const itemContent = item.content || item.description || "";
+            const itemDate = item.createDate || item.date || "";
+
+            return (
+              <DynamicItemRow key={idx}>
+                <DynamicItemMain>
+                  <DynamicItemTitleRow>
+                    {itemCategory && <DynamicCatTag>{itemCategory}</DynamicCatTag>}
+                    <DynamicItemTitle>{itemTitle}</DynamicItemTitle>
+                  </DynamicItemTitleRow>
+                  {itemContent && <DynamicItemSub>{itemContent}</DynamicItemSub>}
+                </DynamicItemMain>
+                {itemDate && <DynamicItemDate>{itemDate}</DynamicItemDate>}
+              </DynamicItemRow>
+            );
+          })}
+        </DynamicItemList>
+      )}
+
+      {redirectUrl && (
+        <CardFooterLink>
+          <span>자세히 보기</span>
+          <ExternalLink size={13} />
+        </CardFooterLink>
+      )}
+    </DynamicBox>
   );
 };
 
@@ -1253,6 +1325,91 @@ const CardFooterLink = styled.div`
   font-size: 12px;
   color: #8b95a1;
   margin-top: 4px;
+`;
+
+const DynamicBox = styled.div<{ $clickable?: boolean }>`
+  background-color: var(--surface-primary, #ffffff);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
+`;
+
+const DynamicCountBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #0061ff;
+  background-color: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+`;
+
+const DynamicItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const DynamicItemRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background-color: #f9fafb;
+  border-radius: 10px;
+  gap: 8px;
+`;
+
+const DynamicItemMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+`;
+
+const DynamicItemTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+`;
+
+const DynamicCatTag = styled.span`
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #4e5968;
+  background-color: #e5e8eb;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+`;
+
+const DynamicItemTitle = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #191f28;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const DynamicItemSub = styled.span`
+  font-size: 11.5px;
+  color: #8b95a1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const DynamicItemDate = styled.span`
+  font-size: 11px;
+  color: #b0b8c1;
+  flex-shrink: 0;
 `;
 
 export default AgentGenerativeCards;
