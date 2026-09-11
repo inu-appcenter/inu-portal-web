@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import Skeleton from "@/components/common/Skeleton";
 import { Bell, Clock, Trash2, RefreshCw, Smartphone, Cloud, BookOpen, GraduationCap } from "lucide-react";
 
 export interface UnifiedWatchJob {
@@ -151,7 +152,24 @@ export default function MobileSmartWatchManagementPage() {
         </RefreshButton>
       </SectionHeader>
 
-      {activeJobs.length === 0 ? (
+      {isLoading ? (
+        <JobList>
+          {Array.from({ length: 2 }).map((_, idx) => (
+            <JobCard key={`watch-skel-${idx}`}>
+              <CardTop>
+                <Skeleton width="100px" height="20px" style={{ borderRadius: "5px" }} />
+                <Skeleton width="80px" height="18px" style={{ borderRadius: "4px" }} />
+              </CardTop>
+              <Skeleton width="160px" height="20px" style={{ margin: "10px 0 6px" }} />
+              <Skeleton width="220px" height="14px" />
+              <CardFooter>
+                <Skeleton width="90px" height="14px" />
+                <Skeleton width="70px" height="26px" style={{ borderRadius: "6px" }} />
+              </CardFooter>
+            </JobCard>
+          ))}
+        </JobList>
+      ) : activeJobs.length === 0 ? (
         <EmptyBox>
           <Bell size={24} color="#94a3b8" />
           <EmptyText>현재 진행 중인 실시간 빈자리 감시가 없습니다.</EmptyText>

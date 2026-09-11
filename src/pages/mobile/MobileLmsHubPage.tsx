@@ -15,6 +15,7 @@ import {
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import Skeleton from "@/components/common/Skeleton";
 import {
   GraduationCap,
   Calendar,
@@ -118,7 +119,32 @@ export default function MobileLmsHubPage() {
         </ToastBanner>
       )}
 
-      {!isLinked ? (
+      {isLoading ? (
+        <SectionWrapper>
+          <SectionTop>
+            <Skeleton width="160px" height="18px" />
+            <Skeleton width="60px" height="18px" />
+          </SectionTop>
+          <ListContainer>
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <CardItem key={`lms-skel-${idx}`}>
+                <CardMain>
+                  <AssignTop>
+                    <Skeleton width="100px" height="18px" style={{ borderRadius: "4px" }} />
+                    <Skeleton width="50px" height="18px" style={{ borderRadius: "4px" }} />
+                  </AssignTop>
+                  <Skeleton width="180px" height="18px" style={{ margin: "10px 0 6px" }} />
+                  <Skeleton width="140px" height="14px" />
+                </CardMain>
+                <SmartActionRow>
+                  <Skeleton width="120px" height="30px" style={{ borderRadius: "20px" }} />
+                  <Skeleton width="90px" height="30px" style={{ borderRadius: "20px" }} />
+                </SmartActionRow>
+              </CardItem>
+            ))}
+          </ListContainer>
+        </SectionWrapper>
+      ) : !isLinked ? (
         <EmptyBox>
           <GraduationCap size={36} color="#94a3b8" />
           <EmptyTitle>사이버캠퍼스(LMS) 계정 연동이 필요해요</EmptyTitle>

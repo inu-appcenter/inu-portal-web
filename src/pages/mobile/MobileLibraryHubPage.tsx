@@ -20,6 +20,7 @@ import {
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import Skeleton from "@/components/common/Skeleton";
 import {
   BookOpen,
   Users,
@@ -207,44 +208,61 @@ export default function MobileLibraryHubPage() {
           </SectionTop>
 
           <ListContainer>
-            {rooms.map((room) => {
-              const total = room.seats?.total ?? room.totalSeats ?? 0;
-              const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
-              const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
-              const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
-              const isCrowded = available <= 5;
-
-              return (
-                <CardItem key={room.id}>
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <CardItem key={`seat-skel-${idx}`}>
                   <CardMain>
                     <RoomHeader>
-                      <RoomName>{room.name}</RoomName>
-                      <SeatCount>
-                        <AvailCount $urgent={isCrowded}>{available}석</AvailCount> / {total}석
-                      </SeatCount>
+                      <Skeleton width="140px" height="18px" />
+                      <Skeleton width="70px" height="16px" />
                     </RoomHeader>
-                    <ProgressBarTrack>
-                      <ProgressBarFill $percent={percent} $warning={isCrowded} />
-                    </ProgressBarTrack>
+                    <Skeleton width="100%" height="8px" style={{ marginTop: "12px", borderRadius: "4px" }} />
                   </CardMain>
-
-                  {/* 맥락형 추천 스마트 액션 바 */}
                   <SmartActionRow>
-                    {isCrowded ? (
-                      <ActionChip $primary onClick={() => handleRegisterSeatSniper(room)}>
-                        <Crosshair size={13} />
-                        <span>자리 나면 알림 받기 (스나이퍼)</span>
-                      </ActionChip>
-                    ) : (
-                      <ActionChip onClick={() => window.open("https://lib.inu.ac.kr", "_blank")}>
-                        <CheckCircle size={13} />
-                        <span>도서관 앱에서 바로 배정</span>
-                      </ActionChip>
-                    )}
+                    <Skeleton width="160px" height="30px" style={{ borderRadius: "20px" }} />
                   </SmartActionRow>
                 </CardItem>
-              );
-            })}
+              ))
+            ) : (
+              rooms.map((room) => {
+                const total = room.seats?.total ?? room.totalSeats ?? 0;
+                const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
+                const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
+                const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+                const isCrowded = available <= 5;
+
+                return (
+                  <CardItem key={room.id}>
+                    <CardMain>
+                      <RoomHeader>
+                        <RoomName>{room.name}</RoomName>
+                        <SeatCount>
+                          <AvailCount $urgent={isCrowded}>{available}석</AvailCount> / {total}석
+                        </SeatCount>
+                      </RoomHeader>
+                      <ProgressBarTrack>
+                        <ProgressBarFill $percent={percent} $warning={isCrowded} />
+                      </ProgressBarTrack>
+                    </CardMain>
+
+                    {/* 맥락형 추천 스마트 액션 바 */}
+                    <SmartActionRow>
+                      {isCrowded ? (
+                        <ActionChip $primary onClick={() => handleRegisterSeatSniper(room)}>
+                          <Crosshair size={13} />
+                          <span>자리 나면 알림 받기 (스나이퍼)</span>
+                        </ActionChip>
+                      ) : (
+                        <ActionChip onClick={() => window.open("https://lib.inu.ac.kr", "_blank")}>
+                          <CheckCircle size={13} />
+                          <span>도서관 앱에서 바로 배정</span>
+                        </ActionChip>
+                      )}
+                    </SmartActionRow>
+                  </CardItem>
+                );
+              })
+            )}
           </ListContainer>
         </SectionWrapper>
       )}
@@ -258,37 +276,56 @@ export default function MobileLibraryHubPage() {
           </SectionTop>
 
           <ListContainer>
-            {studyRooms.map((sRoom) => (
-              <CardItem key={sRoom.id}>
-                <CardMain>
-                  <RoomHeader>
-                    <div>
-                      <RoomName>{sRoom.name}</RoomName>
-                      <RoomSub>{sRoom.location} · 정원 {sRoom.quota}</RoomSub>
-                    </div>
-                  </RoomHeader>
-                  {sRoom.tags && sRoom.tags.length > 0 && (
-                    <TagRow>
-                      {sRoom.tags.map((t, idx) => (
-                        <Tag key={idx}>{t}</Tag>
-                      ))}
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, idx) => (
+                <CardItem key={`study-skel-${idx}`}>
+                  <CardMain>
+                    <Skeleton width="180px" height="18px" />
+                    <Skeleton width="120px" height="14px" style={{ marginTop: "6px" }} />
+                    <TagRow style={{ marginTop: "10px" }}>
+                      <Skeleton width="50px" height="20px" style={{ borderRadius: "6px" }} />
+                      <Skeleton width="50px" height="20px" style={{ borderRadius: "6px" }} />
                     </TagRow>
-                  )}
-                </CardMain>
+                  </CardMain>
+                  <SmartActionRow>
+                    <Skeleton width="170px" height="30px" style={{ borderRadius: "20px" }} />
+                    <Skeleton width="100px" height="30px" style={{ borderRadius: "20px" }} />
+                  </SmartActionRow>
+                </CardItem>
+              ))
+            ) : (
+              studyRooms.map((sRoom) => (
+                <CardItem key={sRoom.id}>
+                  <CardMain>
+                    <RoomHeader>
+                      <div>
+                        <RoomName>{sRoom.name}</RoomName>
+                        <RoomSub>{sRoom.location} · 정원 {sRoom.quota}</RoomSub>
+                      </div>
+                    </RoomHeader>
+                    {sRoom.tags && sRoom.tags.length > 0 && (
+                      <TagRow>
+                        {sRoom.tags.map((t, idx) => (
+                          <Tag key={idx}>{t}</Tag>
+                        ))}
+                      </TagRow>
+                    )}
+                  </CardMain>
 
-                {/* 맥락형 추천 스마트 액션 바 */}
-                <SmartActionRow>
-                  <ActionChip $primary onClick={() => handleRegisterStudySniper(sRoom)}>
-                    <Crosshair size={13} />
-                    <span>취소표 생기면 알림 (스나이퍼)</span>
-                  </ActionChip>
-                  <ActionChip onClick={() => window.open("https://lib.inu.ac.kr/#/facility/study-room", "_blank")}>
-                    <ExternalLink size={13} />
-                    <span>도서관 예약</span>
-                  </ActionChip>
-                </SmartActionRow>
-              </CardItem>
-            ))}
+                  {/* 맥락형 추천 스마트 액션 바 */}
+                  <SmartActionRow>
+                    <ActionChip $primary onClick={() => handleRegisterStudySniper(sRoom)}>
+                      <Crosshair size={13} />
+                      <span>취소표 생기면 알림 (스나이퍼)</span>
+                    </ActionChip>
+                    <ActionChip onClick={() => window.open("https://lib.inu.ac.kr/#/facility/study-room", "_blank")}>
+                      <ExternalLink size={13} />
+                      <span>도서관 예약</span>
+                    </ActionChip>
+                  </SmartActionRow>
+                </CardItem>
+              ))
+            )}
           </ListContainer>
         </SectionWrapper>
       )}
@@ -300,7 +337,18 @@ export default function MobileLibraryHubPage() {
             <SectionTitle>현재 내 좌석 이용 정보</SectionTitle>
           </SectionTop>
 
-          {!isLinked ? (
+          {isLoading ? (
+            <CardItem>
+              <CardMain>
+                <Skeleton width="60px" height="22px" style={{ borderRadius: "6px", marginBottom: "8px" }} />
+                <Skeleton width="200px" height="22px" style={{ marginBottom: "8px" }} />
+                <Skeleton width="160px" height="16px" />
+              </CardMain>
+              <SmartActionRow style={{ marginTop: "16px" }}>
+                <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
+              </SmartActionRow>
+            </CardItem>
+          ) : !isLinked ? (
             <EmptyBox>
               <Users size={32} color="#94a3b8" />
               <EmptyTitle>도서관 계정이 연동되지 않았습니다</EmptyTitle>
