@@ -260,6 +260,10 @@ const SingleCardItem: React.FC<{
       case "LMS_AUTH_REQUIRED":
       case "LMS_ACTION":
         return <LmsAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
+      case "CAMPUS_WATCH_RESULT":
+        return <CampusWatchResultCard data={component.data} onNavigate={onNavigate} />;
+      case "CAMPUS_WATCH_LIST":
+        return <CampusWatchListCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;
     }
@@ -2230,6 +2234,204 @@ const LmsItemDue = styled.span<{ $urgent?: boolean }>`
   background: ${({ $urgent }) => ($urgent ? "#fee8e8" : "#eefaf3")};
   color: ${({ $urgent }) => ($urgent ? "#f04452" : "#00a651")};
   flex-shrink: 0;
+`;
+
+/**
+ * 스마트 감시 등록 결과 카드
+ */
+const CampusWatchResultCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  const targetName = data?.targetName || "힐링존";
+  const remainingMinutes = data?.remainingMinutes || data?.job?.remainingMinutes || 90;
+
+  return (
+    <WatchCardBox>
+      <CardHeader>
+        <Bell size={17} color="#0061ff" />
+        <CardTitle>실시간 빈자리 감시 시작</CardTitle>
+        <WatchLiveBadge>감시 중</WatchLiveBadge>
+      </CardHeader>
+      <WatchBody>
+        <WatchTargetTitle>{targetName} 빈자리 스나이퍼</WatchTargetTitle>
+        <WatchDesc>
+          서버가 45초마다 안전하게 감시 중입니다. 빈자리 발생 시 즉시 푸시 알림을 보내드릴게요!
+        </WatchDesc>
+        <WatchTimeInfo>
+          <Clock size={13} color="#f59e0b" />
+          <span>최대 감시 시간: 약 {remainingMinutes}분 (만료 시 자동 종료)</span>
+        </WatchTimeInfo>
+      </WatchBody>
+      <WatchManageBtn
+        type="button"
+        onClick={() => {
+          if (onNavigate) onNavigate();
+          navigate(ROUTES.MYPAGE.SMART_WATCH);
+        }}
+      >
+        감시 목록 & 관리 페이지 열기
+      </WatchManageBtn>
+    </WatchCardBox>
+  );
+};
+
+/**
+ * 스마트 감시 목록 카드
+ */
+const CampusWatchListCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  const jobs: any[] = Array.isArray(data?.jobs) ? data.jobs : [];
+  const activeJobs = jobs.filter((j: any) => j.status === "ACTIVE");
+
+  return (
+    <WatchCardBox>
+      <CardHeader>
+        <Bell size={17} color="#0061ff" />
+        <CardTitle>내 스마트 감시 현황</CardTitle>
+        <WatchCountBadge>{activeJobs.length}건 진행 중</WatchCountBadge>
+      </CardHeader>
+      {activeJobs.length === 0 ? (
+        <WatchEmptyText>현재 진행 중인 실시간 빈자리 감시가 없습니다.</WatchEmptyText>
+      ) : (
+        <WatchMiniList>
+          {activeJobs.slice(0, 4).map((job: any) => (
+            <WatchMiniItem key={job.id}>
+              <div>
+                <WatchMiniName>{job.targetName}</WatchMiniName>
+                <WatchMiniSub>{job.domainDescription || "도서관"}</WatchMiniSub>
+              </div>
+              <WatchMiniTime>약 {job.remainingMinutes}분 남음</WatchMiniTime>
+            </WatchMiniItem>
+          ))}
+        </WatchMiniList>
+      )}
+      <WatchManageBtn
+        type="button"
+        onClick={() => {
+          if (onNavigate) onNavigate();
+          navigate(ROUTES.MYPAGE.SMART_WATCH);
+        }}
+      >
+        스마트 감시 관리 대시보드
+      </WatchManageBtn>
+    </WatchCardBox>
+  );
+};
+
+const WatchCardBox = styled.div`
+  padding: 16px;
+  background: #ffffff;
+`;
+
+const WatchLiveBadge = styled.span`
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+const WatchCountBadge = styled.span`
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0061ff;
+  background: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+const WatchBody = styled.div`
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const WatchTargetTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+const WatchDesc = styled.div`
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+`;
+
+const WatchTimeInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #d97706;
+  font-weight: 600;
+  margin-top: 4px;
+`;
+
+const WatchManageBtn = styled.button`
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0061ff;
+  background: #eff6ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  &:hover {
+    background: #dbeafe;
+  }
+`;
+
+const WatchEmptyText = styled.div`
+  padding: 16px 0;
+  font-size: 12.5px;
+  color: #94a3b8;
+  text-align: center;
+`;
+
+const WatchMiniList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+`;
+
+const WatchMiniItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+`;
+
+const WatchMiniName = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const WatchMiniSub = styled.div`
+  font-size: 11px;
+  color: #64748b;
+`;
+
+const WatchMiniTime = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59e0b;
 `;
 
 export default AgentGenerativeCards;

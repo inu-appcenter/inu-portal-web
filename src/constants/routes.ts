@@ -74,6 +74,7 @@ export const ROUTES = {
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
     DAILY_BRIEF: "/mypage/notification/daily-brief",
+    SMART_WATCH: "/mypage/notification/smart-watch",
   },
 
   // 게시판 및 기능

@@ -168,3 +168,35 @@ export const streamAgentChat = async (
     throw err;
   }
 };
+
+export interface CampusWatchJob {
+  id: number;
+  domain: string;
+  domainDescription: string;
+  targetId: string;
+  targetName: string;
+  conditionType: string;
+  status: "ACTIVE" | "NOTIFIED" | "EXPIRED" | "CANCELLED";
+  statusDescription: string;
+  createdAt: string;
+  expiresAt: string;
+  notifiedAt?: string | null;
+  remainingMinutes: number;
+}
+
+export const getMyCampusWatchJobs = async (): Promise<ApiResponse<CampusWatchJob[]>> => {
+  return await tokenInstance.get("/api/v1/agent/watch-jobs");
+};
+
+export const postRegisterCampusWatch = async (data: {
+  domain: string;
+  targetId: string;
+  targetName: string;
+  durationMinutes?: number;
+}): Promise<ApiResponse<CampusWatchJob>> => {
+  return await tokenInstance.post("/api/v1/agent/watch-jobs", data);
+};
+
+export const deleteCancelCampusWatch = async (jobId: number): Promise<ApiResponse<void>> => {
+  return await tokenInstance.delete(`/api/v1/agent/watch-jobs/${jobId}`);
+};
