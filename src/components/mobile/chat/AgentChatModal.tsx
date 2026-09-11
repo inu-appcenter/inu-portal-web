@@ -318,6 +318,166 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       }
     }
 
+    // [Client-Side Agent Action]: 도서관 스터디룸/세미나실 조회 및 예약 인텐트인 경우
+    const isStudyRoomIntent =
+      lowerText.includes("스터디룸") ||
+      lowerText.includes("세미나실") ||
+      lowerText.includes("세미나룸") ||
+      (lowerText.includes("도서관") && (lowerText.includes("예약") || lowerText.includes("방") || lowerText.includes("룸")));
+
+    if (isStudyRoomIntent) {
+      setStreamingStatus("학산도서관 스터디룸 예약 현황을 조회하고 있습니다...");
+      try {
+        let studyRoomsList: any[] = [];
+
+        // 모바일 앱 환경이면 네이티브 브릿지 호출 (자동 로그인 토큰 활용)
+        if (isMobileAppEnvironment()) {
+          const roomsRes = await executeAgentActionBridge({
+            actionId: `act_study_rooms_${Date.now()}`,
+            authDomain: "LIBRARY",
+            request: {
+              method: "GET",
+              url: "https://lib.inu.ac.kr/pyxis-api/1/api/rooms",
+              params: { branchGroupId: 1 },
+            },
+          });
+
+          if (roomsRes.success && (roomsRes.data?.data?.list || roomsRes.data?.data)) {
+            const rawList: any[] = roomsRes.data?.data?.list || roomsRes.data?.data;
+            const filtered = rawList.filter((r: any) =>
+              (r.roomType?.name || "").includes("스터디룸") || (r.name || "").includes("스터디룸")
+            );
+
+            // 상위 스터디룸들의 오늘 예약 타임라인 병렬 조회
+            const todayStr = new Date().toISOString().split("T")[0];
+            const detailPromises = filtered.slice(0, 8).map(async (r: any) => {
+              try {
+                const detailRes = await executeAgentActionBridge({
+                  actionId: `act_study_timeline_${r.id}_${Date.now()}`,
+                  authDomain: "LIBRARY",
+                  request: {
+                    method: "GET",
+                    url: `https://lib.inu.ac.kr/pyxis-api/1/api/rooms/${r.id}`,
+                    params: { hopeDate: todayStr, smufMethodCode: "PC" },
+                  },
+                });
+                const d = detailRes.data?.data;
+                let freeCount = 0;
+                let slotSummary = "";
+                if (d?.timeLine) {
+                  const slots: string[] = [];
+                  for (const tl of d.timeLine) {
+                    const selectables = tl.minutes?.filter((m: any) => m.selectable && m.class !== "disabled").length || 0;
+                    if (selectables > 0) {
+                      freeCount++;
+                      if (slots.length < 3) {
+                        slots.push(`${tl.hour}시`);
+                      }
+                    }
+                  }
+                  slotSummary = slots.length > 0 ? `${slots.join(", ")} 등 가능` : "당일 예약 마감";
+                }
+                return {
+                  id: r.id,
+                  name: r.name,
+                  location: r.roomType?.name ? `${r.roomType.name} ${r.floor?.label || (r.floor?.value ? r.floor.value + "층" : "")}` : "도서관",
+                  quota: r.quota || (r.minQuota && r.maxQuota ? `${r.minQuota}~${r.maxQuota}명` : "2~8명"),
+                  availableSummary: slotSummary || "예약 가능",
+                  tags: r.minQuota >= 4 ? ["그룹 스터디", "전자칠판"] : ["소형 스터디", "화이트보드"],
+                };
+              } catch (e) {
+                return {
+                  id: r.id,
+                  name: r.name,
+                  location: r.floor?.label || "도서관",
+                  quota: `${r.minQuota || 2}~${r.maxQuota || 8}명`,
+                  tags: ["스터디룸"],
+                };
+              }
+            });
+
+            studyRoomsList = await Promise.all(detailPromises);
+          }
+        }
+
+        // 웹 환경이거나 계정 미연동으로 실시간 조회가 불가능한 경우
+        if (!studyRoomsList || studyRoomsList.length === 0) {
+          const authComponent = {
+            type: "LIBRARY_AUTH_REQUIRED",
+            data: {},
+          };
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: "학산도서관 스터디룸 및 세미나실의 실시간 예약 가능 시간대를 확인하려면 도서관 계정 연동이 필요합니다. 아래 버튼을 눌러 계정을 연동해 주세요! 📚",
+                    uiComponent: authComponent,
+                    uiComponents: [authComponent],
+                    thoughts: [
+                      {
+                        hop: 1,
+                        thought: "학산도서관 시설예약 시스템 조회를 위해 보안 계정 연동 상태를 확인합니다.",
+                        tools: ["LIBRARY_AUTH"],
+                      },
+                    ],
+                    suggestedActions: [
+                      "도서관 열람실 실시간 잔여 좌석 현황",
+                      "오늘 학식 메뉴 뭐야?",
+                      "정문 버스 도착 정보",
+                    ],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        }
+
+        const studyComponent = {
+          type: "LIBRARY_STUDY_ROOMS",
+          data: {
+            rooms: studyRoomsList,
+            notice: "스터디룸은 1회 최대 2시간 당일 예약이 가능합니다. (이용 시작 20분 이내 50% 이상 입실 필수)",
+          },
+        };
+
+        const availableCount = studyRoomsList.filter((r: any) => !r.availableSummary?.includes("마감")).length;
+        const summaryMsg = `학산도서관 실시간 스터디룸 예약 현황입니다! 📚\n현재 총 ${studyRoomsList.length}개 룸 중 ${availableCount}개 룸에서 당일 예약이 가능합니다. 원하시는 룸의 '예약하기'를 눌러 즉시 신청하실 수 있습니다.`;
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId
+              ? {
+                  ...msg,
+                  content: summaryMsg,
+                  uiComponent: studyComponent,
+                  uiComponents: [studyComponent],
+                  thoughts: [
+                    {
+                      hop: 1,
+                      thought: "학산도서관 시설예약 시스템(pyxis)에서 스터디룸 목록 및 예약 가능 시간대를 조회합니다.",
+                      tools: ["LIBRARY_STUDY_ROOMS"],
+                    },
+                  ],
+                  suggestedActions: [
+                    "중앙관 205호 예약 시간대 보여줘",
+                    "도서관 열람실 잔여 좌석 현황",
+                    "오늘 학식 메뉴 뭐야?",
+                  ],
+                }
+              : msg
+          )
+        );
+        setIsLoading(false);
+        setStreamingStatus("");
+        return;
+      } catch (err: any) {
+        console.error("Study room fetch error:", err);
+      }
+    }
+
     // [Client-Side Agent Action]: LMS(사이버캠퍼스) 과제 및 강좌 조회 인텐트인 경우 브릿지 실행
     const isLmsIntent =
       lowerText.includes("lms") ||

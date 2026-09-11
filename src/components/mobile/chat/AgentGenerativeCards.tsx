@@ -13,6 +13,7 @@ import {
   GraduationCap,
   BookOpen,
   KeyRound,
+  Users,
 } from "lucide-react";
 import {
   FALLBACK_SKY_CONDITION_SLUG,
@@ -250,6 +251,8 @@ const SingleCardItem: React.FC<{
         return <PortalAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_ROOMS":
         return <LibraryRoomsCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_STUDY_ROOMS":
+        return <LibraryStudyRoomsCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_AUTH_REQUIRED":
         return <LibraryAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       case "LMS_ASSIGNMENTS":
@@ -1822,6 +1825,72 @@ const LibraryRoomsCard: React.FC<{
 };
 
 /**
+ * 도서관 스터디룸 및 세미나실 목록/예약 인터랙티브 카드
+ */
+const LibraryStudyRoomsCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data }) => {
+  const rooms: any[] = Array.isArray(data?.rooms) ? data.rooms : (Array.isArray(data) ? data : []);
+  const notice: string = data?.notice || "스터디룸 예약은 1회 최대 2시간, 당일 예약 가능합니다.";
+
+  const handleBookRoom = (roomId: number, roomName?: string) => {
+    console.log(`[LibraryStudyRoomsCard] Booking room ${roomId}: ${roomName}`);
+    window.open(`https://lib.inu.ac.kr/#/facility/study-room`, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <LibraryCardBox>
+      <CardHeader>
+        <Users size={17} color="#0061ff" />
+        <CardTitle>학산도서관 스터디룸</CardTitle>
+        <StudyRoomCountBadge>예약 가능</StudyRoomCountBadge>
+      </CardHeader>
+      <StudyNoticeBox>
+        <span>💡 {notice}</span>
+      </StudyNoticeBox>
+      <StudyRoomList>
+        {rooms.map((room: any, idx: number) => {
+          const location = room.location || (room.floor?.label ? `${room.roomType?.name || ''} ${room.floor.label}` : "도서관");
+          const quota = room.quota || (room.minQuota && room.maxQuota ? `${room.minQuota}~${room.maxQuota}명` : "정원 문의");
+          const tags: string[] = Array.isArray(room.tags) ? room.tags : [];
+          const availSummary = room.availableSummary || room.availableHoursSummary;
+
+          return (
+            <StudyRoomItem key={room.id ?? idx}>
+              <StudyRoomTop>
+                <div>
+                  <StudyRoomName>{room.name}</StudyRoomName>
+                  <StudyRoomLocation>{location} · 정원 {quota}</StudyRoomLocation>
+                </div>
+                <StudyBookButton
+                  type="button"
+                  onClick={() => handleBookRoom(room.id, room.name)}
+                >
+                  예약하기
+                </StudyBookButton>
+              </StudyRoomTop>
+              {availSummary && (
+                <StudyAvailSlotBadge>
+                  ⏰ 가능: {availSummary}
+                </StudyAvailSlotBadge>
+              )}
+              {tags.length > 0 && (
+                <StudyTagRow>
+                  {tags.map((t, tIdx) => (
+                    <StudyTag key={tIdx}>{t}</StudyTag>
+                  ))}
+                </StudyTagRow>
+              )}
+            </StudyRoomItem>
+          );
+        })}
+      </StudyRoomList>
+    </LibraryCardBox>
+  );
+};
+
+/**
  * 도서관 계정 연동 안내 카드
  */
 const LibraryAuthRequiredCard: React.FC<{
@@ -1915,6 +1984,101 @@ const LibProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
   background: ${({ $warning }) => ($warning ? "#f04452" : "#3182f6")};
   border-radius: 3px;
   transition: width 0.3s ease;
+`;
+
+const StudyRoomCountBadge = styled.span`
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0061ff;
+  background: #eff6ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+const StudyNoticeBox = styled.div`
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: #475569;
+  line-height: 1.4;
+`;
+
+const StudyRoomList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+`;
+
+const StudyRoomItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+`;
+
+const StudyRoomTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const StudyRoomName = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const StudyRoomLocation = styled.div`
+  font-size: 11.5px;
+  color: #64748b;
+  margin-top: 2px;
+`;
+
+const StudyBookButton = styled.button`
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #0061ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover {
+    background: #0050d4;
+  }
+`;
+
+const StudyAvailSlotBadge = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: #0284c7;
+  background: #f0f9ff;
+  padding: 3px 6px;
+  border-radius: 4px;
+  width: fit-content;
+`;
+
+const StudyTagRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+`;
+
+const StudyTag = styled.span`
+  font-size: 10.5px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
 `;
 
 /**
