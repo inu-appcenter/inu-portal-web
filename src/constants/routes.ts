@@ -63,6 +63,13 @@ export const ROUTES = {
     },
   },
 
+  // 스마트 캠퍼스 서비스 허브 (도서관, LMS 등)
+  SERVICES: {
+    ROOT: "/services",
+    LIBRARY: "/services/library",
+    LMS: "/services/lms",
+  },
+
   // 마이페이지
   MYPAGE: {
     ROOT: "/mypage",

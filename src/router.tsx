@@ -88,6 +88,8 @@ import InviteChatMembersPage from "@/pages/mobile/InviteChatMembersPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
 import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
+import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
+import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 
 export const router = createBrowserRouter([
   {
@@ -196,6 +198,17 @@ export const router = createBrowserRouter([
               },
             ],
           },
+
+          // 스마트 캠퍼스 서비스 허브 (도서관, LMS)
+          {
+            path: ROUTES.SERVICES.LIBRARY,
+            element: <MobileLibraryHubPage />,
+          },
+          {
+            path: ROUTES.SERVICES.LMS,
+            element: <MobileLmsHubPage />,
+          },
+
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,

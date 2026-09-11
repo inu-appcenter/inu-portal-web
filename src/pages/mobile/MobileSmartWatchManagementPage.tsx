@@ -8,8 +8,10 @@ import {
   LocalWatchJob,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Bell, Clock, Trash2, RefreshCw, Smartphone, Cloud } from "lucide-react";
+import { Bell, Clock, Trash2, RefreshCw, Smartphone, Cloud, BookOpen, GraduationCap } from "lucide-react";
 
 export interface UnifiedWatchJob {
   source: 'SERVER' | 'LOCAL';
@@ -115,8 +117,32 @@ export default function MobileSmartWatchManagementPage() {
   const activeJobs = unifiedList.filter((j) => j.status === "ACTIVE");
   const pastJobs = unifiedList.filter((j) => j.status !== "ACTIVE");
 
+  const navigate = useNavigate();
+
   return (
     <Container>
+      {/* 도메인 허브 바로가기 배너 */}
+      <HubBannerContainer>
+        <HubBannerCard onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
+          <HubBannerIconWrapper $bgColor="#eff6ff" $iconColor="#2563eb">
+            <BookOpen size={18} />
+          </HubBannerIconWrapper>
+          <HubBannerInfo>
+            <HubBannerTitle>학산도서관 허브</HubBannerTitle>
+            <HubBannerDesc>열람실/스터디룸 실시간 조회 & 스나이퍼</HubBannerDesc>
+          </HubBannerInfo>
+        </HubBannerCard>
+        <HubBannerCard onClick={() => navigate(ROUTES.SERVICES.LMS)}>
+          <HubBannerIconWrapper $bgColor="#f0fdf4" $iconColor="#16a34a">
+            <GraduationCap size={18} />
+          </HubBannerIconWrapper>
+          <HubBannerInfo>
+            <HubBannerTitle>사이버캠퍼스 허브</HubBannerTitle>
+            <HubBannerDesc>과제·퀴즈 마감일정 & 정시 리마인더</HubBannerDesc>
+          </HubBannerInfo>
+        </HubBannerCard>
+      </HubBannerContainer>
+
       <SectionHeader>
         <SectionTitle>실시간 감시 중 ({activeJobs.length})</SectionTitle>
         <RefreshButton onClick={fetchAllJobs} disabled={isLoading}>
@@ -130,7 +156,7 @@ export default function MobileSmartWatchManagementPage() {
           <Bell size={24} color="#94a3b8" />
           <EmptyText>현재 진행 중인 실시간 빈자리 감시가 없습니다.</EmptyText>
           <EmptySubText>
-            캠퍼스 비서에게 "힐링존 자리 나면 알려줘", "오늘 3시 205호 스터디룸 취소표 나면 알려줘"라고 요청해 보세요!
+            도서관/LMS 허브에서 직접 둘러보며 스나이퍼를 설정하거나, AI 비서에게 "힐링존 자리 나면 알려줘"라고 요청해 보세요!
           </EmptySubText>
         </EmptyBox>
       ) : (
@@ -199,6 +225,58 @@ const Container = styled.div`
   padding: 16px ${MOBILE_PAGE_GUTTER} 40px;
   display: flex;
   flex-direction: column;
+`;
+
+const HubBannerContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+`;
+
+const HubBannerCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:active {
+    background: #f8fafc;
+    transform: scale(0.98);
+  }
+`;
+
+const HubBannerIconWrapper = styled.div<{ $bgColor: string; $iconColor: string }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: ${({ $bgColor }) => $bgColor};
+  color: ${({ $iconColor }) => $iconColor};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+`;
+
+const HubBannerInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const HubBannerTitle = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const HubBannerDesc = styled.div`
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.3;
 `;
 
 const SectionHeader = styled.div`

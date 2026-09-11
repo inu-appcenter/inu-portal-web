@@ -96,17 +96,17 @@ const SingleCardItem: React.FC<{
   const handleLinkClick = (url: string) => {
     if (!url) return;
 
-    // 1. 도서관 바로가기 처리 (실제 도서관 포털로 안전하게 연결)
-    if (url === "/library" || url.startsWith("/library")) {
+    // 1. 도서관 스마트 허브 바로가기 처리
+    if (url === "/library" || url === ROUTES.SERVICES.LIBRARY) {
       if (onNavigate) onNavigate();
-      window.open("https://lib.inu.ac.kr", "_blank", "noopener,noreferrer");
+      navigate(ROUTES.SERVICES.LIBRARY);
       return;
     }
 
-    // 2. LMS 바로가기 처리 (실제 사이버캠퍼스로 안전하게 연결)
-    if (url === "/lms" || url.startsWith("/lms")) {
+    // 2. LMS 스마트 허브 바로가기 처리
+    if (url === "/lms" || url === ROUTES.SERVICES.LMS) {
       if (onNavigate) onNavigate();
-      window.open("https://lms.inu.ac.kr", "_blank", "noopener,noreferrer");
+      navigate(ROUTES.SERVICES.LMS);
       return;
     }
 

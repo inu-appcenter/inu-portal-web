@@ -12,7 +12,7 @@ import {
 } from "@/resources/assets/icons/mobile-home/chip";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
-import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
+import { LuFlaskConical, LuPartyPopper, LuBookOpen, LuGraduationCap } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { usePromotion } from "@/hooks/usePromotion";
@@ -85,6 +85,28 @@ const HomeChipGroup = () => {
         navigate(ROUTES.AI.ROOT);
       },
       isAIButton: true,
+    },
+    {
+      id: "library-hub",
+      iconComponent: LuBookOpen,
+      iconColor: "#2563eb",
+      iconSize: 20,
+      title: "학산도서관",
+      onClick: () => {
+        mixpanelTrack.featureClicked("학산도서관 허브", "Home Chip");
+        navigate(ROUTES.SERVICES.LIBRARY);
+      },
+    },
+    {
+      id: "lms-hub",
+      iconComponent: LuGraduationCap,
+      iconColor: "#00a651",
+      iconSize: 20,
+      title: "사이버캠퍼스",
+      onClick: () => {
+        mixpanelTrack.featureClicked("사이버캠퍼스 허브", "Home Chip");
+        navigate(ROUTES.SERVICES.LMS);
+      },
     },
 
     {
