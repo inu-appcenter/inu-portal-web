@@ -187,6 +187,34 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           setIsLoading(false);
           setStreamingStatus("");
           return;
+        } else {
+          // 조회 실패 (로그인 실패, ERP 오류, 네트워크 오류 등)
+          const errorMsg =
+            academicRes.errorMessage ||
+            (academicRes.errorCode === "LOGIN_FAILED"
+              ? "포털 로그인에 실패했습니다. 학번과 비밀번호를 다시 확인해 주세요."
+              : "학적 정보를 조회하는 도중 오류가 발생했습니다.");
+          
+          const authReqComponent = {
+            type: "PORTAL_AUTH_REQUIRED",
+            data: {},
+          };
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: `⚠️ ${errorMsg}\n\n포털 비밀번호가 변경되었거나 일치하지 않을 수 있습니다. 아래 버튼을 눌러 계정 정보를 다시 등록해 주세요.`,
+                    uiComponent: authReqComponent,
+                    uiComponents: [authReqComponent],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
         }
       } catch (err: any) {
         console.error("Academic fetch failed:", err);

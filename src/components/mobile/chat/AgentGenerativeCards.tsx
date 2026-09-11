@@ -1546,7 +1546,7 @@ const AcademicInfoCard: React.FC<{
 const PortalAuthRequiredCard: React.FC<{
   data?: any;
   onNavigate?: () => void;
-}> = ({ onNavigate }) => {
+}> = () => {
   return (
     <PortalAuthContainer>
       <PortalAuthIconWrap>
@@ -1561,7 +1561,6 @@ const PortalAuthRequiredCard: React.FC<{
       <PortalAuthActionBtn
         type="button"
         onClick={() => {
-          if (onNavigate) onNavigate();
           window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
       >
