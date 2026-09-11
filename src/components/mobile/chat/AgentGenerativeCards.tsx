@@ -93,11 +93,45 @@ const SingleCardItem: React.FC<{
   const navigate = useNavigate();
 
   const handleLinkClick = (url: string) => {
+    if (!url) return;
+
+    // 1. 도서관 바로가기 처리 (실제 도서관 포털로 안전하게 연결)
+    if (url === "/library" || url.startsWith("/library")) {
+      if (onNavigate) onNavigate();
+      window.open("https://lib.inu.ac.kr", "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // 2. LMS 바로가기 처리 (실제 사이버캠퍼스로 안전하게 연결)
+    if (url === "/lms" || url.startsWith("/lms")) {
+      if (onNavigate) onNavigate();
+      window.open("https://lms.inu.ac.kr", "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // 3. 포털 계정 연동 / 학적 바로가기 처리 (계정 모달 호출)
+    if (url === "/academic" || url.startsWith("/academic")) {
+      if (onNavigate) onNavigate();
+      window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
+      return;
+    }
+
+    // 4. my-page 오타 보정 -> /mypage
+    let resolvedUrl = url;
+    if (resolvedUrl === "/my-page" || resolvedUrl.startsWith("/my-page")) {
+      resolvedUrl = resolvedUrl.replace("/my-page", "/mypage");
+    }
+
+    // 5. /mobile/daily-brief 오타 보정 -> /mypage/notification/daily-brief
+    if (resolvedUrl.startsWith("/mobile/daily-brief")) {
+      resolvedUrl = resolvedUrl.replace("/mobile/daily-brief", "/mypage/notification/daily-brief");
+    }
+
     if (onNavigate) onNavigate();
-    if (url.startsWith("http")) {
-      window.open(url, "_blank");
+    if (resolvedUrl.startsWith("http://") || resolvedUrl.startsWith("https://")) {
+      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
     } else {
-      navigate(url);
+      navigate(resolvedUrl);
     }
   };
 
