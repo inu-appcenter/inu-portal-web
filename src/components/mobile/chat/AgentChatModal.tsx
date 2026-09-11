@@ -248,21 +248,35 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       (lowerText.includes("도서관") || lowerText.includes("열람실") || lowerText.includes("노트북실") || lowerText.includes("자리") || lowerText.includes("좌석")) &&
       (lowerText.includes("자리") || lowerText.includes("현황") || lowerText.includes("얼마나") || lowerText.includes("남았") || lowerText.includes("있어") || lowerText.includes("조회"));
 
-    if (isLibrarySeatIntent && isMobileAppEnvironment()) {
+    if (isLibrarySeatIntent) {
       setStreamingStatus("학산도서관 실시간 좌석 현황을 조회하고 있습니다...");
       try {
-        const libActionRes = await executeAgentActionBridge({
-          actionId: `act_lib_web_${Date.now()}`,
-          authDomain: "NONE",
-          request: {
-            method: "GET",
-            url: "https://lib.inu.ac.kr/pyxis-api/1/seat-rooms",
-            params: { branchGroupId: 1, smufMethodCode: "PC" },
-          },
-        });
+        let roomList: any[] = [];
+        if (isMobileAppEnvironment()) {
+          const libActionRes = await executeAgentActionBridge({
+            actionId: `act_lib_web_${Date.now()}`,
+            authDomain: "NONE",
+            request: {
+              method: "GET",
+              url: "https://lib.inu.ac.kr/pyxis-api/1/seat-rooms",
+              params: { branchGroupId: 1, smufMethodCode: "PC" },
+            },
+          });
+          if (libActionRes.success && libActionRes.data?.data) {
+            roomList = libActionRes.data.data.list || libActionRes.data.data;
+          }
+        }
 
-        if (libActionRes.success && libActionRes.data?.data) {
-          const roomList = libActionRes.data.data.list || libActionRes.data.data;
+        // 웹 브라우저 환경이거나 브릿지 응답이 비어있을 경우 직접 pyxis-api 호출 (CORS * 허용됨)
+        if (!roomList || roomList.length === 0) {
+          const res = await fetch("https://lib.inu.ac.kr/pyxis-api/1/seat-rooms?branchGroupId=1&smufMethodCode=PC");
+          if (res.ok) {
+            const json = await res.json();
+            roomList = json?.data?.list || [];
+          }
+        }
+
+        if (roomList && roomList.length > 0) {
           const libComponent = {
             type: "LIBRARY_ROOMS",
             data: { rooms: roomList },
