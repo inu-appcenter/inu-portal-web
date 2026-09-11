@@ -10,6 +10,9 @@ import {
   Bell,
   Sliders,
   Layers,
+  GraduationCap,
+  BookOpen,
+  KeyRound,
 } from "lucide-react";
 import {
   FALLBACK_SKY_CONDITION_SLUG,
@@ -197,6 +200,10 @@ const SingleCardItem: React.FC<{
         return <MySettingsCard data={component.data} />;
       case "DYNAMIC_DATA":
         return <DynamicDataCard data={component.data} onNavigate={onNavigate} />;
+      case "ACADEMIC_INFO":
+        return <AcademicInfoCard data={component.data} onNavigate={onNavigate} />;
+      case "PORTAL_AUTH_REQUIRED":
+        return <PortalAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;
     }
@@ -1466,6 +1473,258 @@ const DynamicItemDate = styled.span`
   font-size: 11px;
   color: #b0b8c1;
   flex-shrink: 0;
+`;
+
+/**
+ * 학적 정보 카드 (Client-side SSO 결과)
+ */
+const AcademicInfoCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data }) => {
+  if (!data) return null;
+
+  const {
+    koreanName,
+    studentId,
+    departmentName,
+    collegeName,
+    enrollmentStatus,
+    completedSemesterCount,
+    acquiredCredits,
+    gradeAverage,
+    advisorProfessorName,
+  } = data;
+
+  return (
+    <AcademicCardContainer>
+      <AcademicHeader>
+        <AcademicIconWrap>
+          <GraduationCap size={20} color="#3182f6" />
+        </AcademicIconWrap>
+        <AcademicTitleWrap>
+          <AcademicTitle>{koreanName || "학우님"}의 학적 정보</AcademicTitle>
+          <AcademicSubtitle>
+            {studentId} · {collegeName ? `${collegeName} ` : ""}{departmentName}
+          </AcademicSubtitle>
+        </AcademicTitleWrap>
+        <StatusBadge $status={enrollmentStatus}>
+          {enrollmentStatus || "재학"}
+        </StatusBadge>
+      </AcademicHeader>
+
+      <AcademicStatGrid>
+        <AcademicStatItem>
+          <AcademicStatLabel>취득 학점</AcademicStatLabel>
+          <AcademicStatValue>{acquiredCredits ? `${acquiredCredits}학점` : "-"}</AcademicStatValue>
+        </AcademicStatItem>
+        <StatDivider />
+        <AcademicStatItem>
+          <AcademicStatLabel>평점 평균</AcademicStatLabel>
+          <AcademicStatValue>{gradeAverage ? `${gradeAverage}` : "-"}</AcademicStatValue>
+        </AcademicStatItem>
+        <StatDivider />
+        <AcademicStatItem>
+          <AcademicStatLabel>이수 학기</AcademicStatLabel>
+          <AcademicStatValue>{completedSemesterCount || "-"}</AcademicStatValue>
+        </AcademicStatItem>
+      </AcademicStatGrid>
+
+      {advisorProfessorName && (
+        <AdvisorInfoRow>
+          <BookOpen size={13} color="#8b95a1" />
+          <span>지도교수: {advisorProfessorName} 교수님</span>
+        </AdvisorInfoRow>
+      )}
+    </AcademicCardContainer>
+  );
+};
+
+/**
+ * 포털 계정 1회 연동 안내 카드 (학적 조회를 위해 연동이 필요한 경우)
+ */
+const PortalAuthRequiredCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ onNavigate }) => {
+  return (
+    <PortalAuthContainer>
+      <PortalAuthIconWrap>
+        <KeyRound size={22} color="#f04452" />
+      </PortalAuthIconWrap>
+      <PortalAuthTextWrap>
+        <PortalAuthTitle>포털 계정 1회 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthDesc>
+          학적 정보 조회를 위해 최초 1회 포털 로그인이 필요합니다. 입력하신 정보는 기기 보안 영역(KeyStore)에만 안전하게 보관됩니다.
+        </PortalAuthDesc>
+      </PortalAuthTextWrap>
+      <PortalAuthActionBtn
+        type="button"
+        onClick={() => {
+          if (onNavigate) onNavigate();
+          window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
+        }}
+      >
+        포털 계정 연동하기
+      </PortalAuthActionBtn>
+    </PortalAuthContainer>
+  );
+};
+
+const AcademicCardContainer = styled.div`
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f2f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const AcademicHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const AcademicIconWrap = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #e8f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const AcademicTitleWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+`;
+
+const AcademicTitle = styled.span`
+  font-size: 15px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const AcademicSubtitle = styled.span`
+  font-size: 12px;
+  color: #8b95a1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const StatusBadge = styled.span<{ $status?: string }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: ${({ $status }) =>
+    $status === "휴학" ? "#fee8e8" : "#e8f8f0"};
+  color: ${({ $status }) =>
+    $status === "휴학" ? "#f04452" : "#00a651"};
+  flex-shrink: 0;
+`;
+
+const AcademicStatGrid = styled.div`
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  justify-content: space-around;
+`;
+
+const AcademicStatItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+`;
+
+const AcademicStatLabel = styled.span`
+  font-size: 11.5px;
+  color: #8b95a1;
+`;
+
+const AcademicStatValue = styled.span`
+  font-size: 15px;
+  font-weight: 700;
+  color: #333d4b;
+`;
+
+const StatDivider = styled.div`
+  width: 1px;
+  height: 24px;
+  background: #e5e8eb;
+`;
+
+const AdvisorInfoRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #8b95a1;
+  padding-left: 2px;
+`;
+
+const PortalAuthContainer = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #fee8e8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+`;
+
+const PortalAuthIconWrap = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fde8e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const PortalAuthTextWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const PortalAuthTitle = styled.span`
+  font-size: 15px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const PortalAuthDesc = styled.span`
+  font-size: 12px;
+  color: #6b7684;
+  line-height: 1.4;
+`;
+
+const PortalAuthActionBtn = styled.button`
+  width: 100%;
+  padding: 10px 0;
+  background: #3182f6;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
 `;
 
 export default AgentGenerativeCards;

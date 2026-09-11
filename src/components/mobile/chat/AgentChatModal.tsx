@@ -4,6 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, X, Bot, RotateCcw } from "lucide-react";
 import { postAgentChat, streamAgentChat, AgentChatResponse } from "@/apis/agent";
 import AgentGenerativeCards from "./AgentGenerativeCards";
+import { PortalAccountModal } from "../agent/PortalAccountModal";
+import {
+  isMobileAppEnvironment,
+  fetchAcademicInfoFromApp,
+} from "@/apis/mobileAgentBridge";
 
 interface Message {
   id: string;
@@ -21,6 +26,7 @@ interface AgentChatModalProps {
 }
 
 const SUGGESTED_PROMPTS = [
+  "내 학적 정보랑 취득 학점 알려줘",
   "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
   "오늘 나 공강 시간 언제고 우주공강 있어?",
   "오늘 점심 학식이랑 날씨 알려줘",
@@ -38,15 +44,22 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       id: "welcome",
       role: "assistant",
       content:
-        "안녕하세요! 무엇을 도와드릴까요? 학식, 실시간 버스, 시간표, 공강 분석, 공지사항, 학사일정, 교내 연락처 등을 물어보실 수 있습니다.",
+        "안녕하세요! 무엇을 도와드릴까요? 학적 정보 및 학점, 학식, 실시간 버스, 시간표, 공강 분석, 공지사항, 학사일정, 교내 연락처 등을 물어보실 수 있습니다.",
       createdAt: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [streamingStatus, setStreamingStatus] = useState<string>("");
+  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleOpenModal = () => setIsPortalModalOpen(true);
+    window.addEventListener("openPortalAccountModal", handleOpenModal);
+    return () => window.removeEventListener("openPortalAccountModal", handleOpenModal);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,6 +106,93 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     setMessages((prev) => [...prev, userMessage, pendingAssistantMessage]);
     if (!textToSend) setInputValue("");
     setIsLoading(true);
+
+    // [Client-Side Agent Action]: 학적 정보 조회 인텐트인 경우 모바일 브릿지 우선 실행
+    const lowerText = text.toLowerCase();
+    const isAcademicIntent =
+      lowerText.includes("학적") ||
+      lowerText.includes("취득 학점") ||
+      lowerText.includes("취득학점") ||
+      lowerText.includes("이수 학점") ||
+      lowerText.includes("이수학점") ||
+      lowerText.includes("내 학점");
+
+    if (isAcademicIntent) {
+      if (!isMobileAppEnvironment()) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId
+              ? {
+                  ...msg,
+                  content:
+                    "학적 정보 조회는 학교 포털 보안 연동을 위해 **INTIP 모바일 앱** 환경에서 이용하실 수 있습니다. 스마트폰 앱에서 다시 질문해 주세요!",
+                }
+              : msg
+          )
+        );
+        setIsLoading(false);
+        setStreamingStatus("");
+        return;
+      }
+
+      setStreamingStatus("기기 보안 영역에서 포털 시스템에 연결하고 있습니다...");
+      try {
+        const academicRes = await fetchAcademicInfoFromApp();
+
+        if (academicRes.success && academicRes.data) {
+          const info = academicRes.data;
+          const summaryText = `${info.koreanName || "학우"}님의 최신 학적 정보입니다.\n현재 ${info.departmentName} ${info.enrollmentStatus} 상태이시며, 총 ${info.acquiredCredits}학점(평점 ${info.gradeAverage})을 취득하셨습니다! 🎓`;
+          const academicComponent = {
+            type: "ACADEMIC_INFO",
+            data: info,
+          };
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: summaryText,
+                    uiComponent: academicComponent,
+                    uiComponents: [academicComponent],
+                    suggestedActions: [
+                      "이번 달 학사일정 알려줘",
+                      "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
+                    ],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        } else if (academicRes.errorCode === "NO_CREDENTIALS") {
+          const authReqComponent = {
+            type: "PORTAL_AUTH_REQUIRED",
+            data: {},
+          };
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content:
+                      "학적 정보를 조회하려면 최초 1회 포털 계정 연동이 필요해요. 아래 버튼을 눌러 안전하게 등록해 주세요!",
+                    uiComponent: authReqComponent,
+                    uiComponents: [authReqComponent],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        }
+      } catch (err: any) {
+        console.error("Academic fetch failed:", err);
+      }
+    }
+
     setStreamingStatus("질문 의도를 분석하고 있습니다...");
 
     try {
@@ -359,6 +459,11 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
               </SendButton>
             </InputContainer>
           </ModalContainer>
+          <PortalAccountModal
+            isOpen={isPortalModalOpen}
+            onClose={() => setIsPortalModalOpen(false)}
+            onSuccess={() => handleSend("내 학적 정보랑 취득 학점 알려줘")}
+          />
         </>
       )}
     </AnimatePresence>
