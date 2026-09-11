@@ -13,18 +13,25 @@ import useUserStore from "@/stores/useUserStore";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
+import { BookOpen, GraduationCap, Radar } from "lucide-react";
+import React from "react";
 
 interface AppItemProps {
   iconSrc?: string | null;
+  iconElement?: React.ReactNode;
   title: string;
   description: string;
   onClick?: () => void;
 }
 
-const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
+const AppItem = ({ iconSrc, iconElement, title, description, onClick }: AppItemProps) => {
   return (
     <AppItemWrapper onClick={onClick}>
-      {iconSrc && <Icon src={iconSrc || "/default-icon.png"} alt={title} />}
+      {iconElement ? (
+        <IconWrapper>{iconElement}</IconWrapper>
+      ) : (
+        iconSrc && <Icon src={iconSrc || "/default-icon.png"} alt={title} />
+      )}
       <ContentArea>
         <div className="title">{title}</div>
         <div className="description">{description}</div>
@@ -87,6 +94,40 @@ const LabsPage = () => {
         {/* 우측 영역: 타이틀 및 앱 리스트 */}
         <ContentSection>
           <TitleContentArea description="실험 기능을 사용해 보세요. 실험실 기능은 바람처럼 나타났다 소리 없이 사라질 수 있어요." />
+
+          <TitleContentArea title={"캠퍼스 스마트 서비스"}>
+            <Box>
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}>
+                <AppItem
+                  iconElement={<BookOpen size={24} color="#2563eb" />}
+                  title={"학산도서관 스마트 허브"}
+                  description={
+                    "실시간 열람실·스터디룸 현황 조회 및 빈자리/취소표 스나이퍼 알림"
+                  }
+                  onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}
+                />
+                <Divider />
+                <AppItem
+                  iconElement={<GraduationCap size={24} color="#16a34a" />}
+                  title={"사이버캠퍼스 LMS 스마트 허브"}
+                  description={
+                    "이번 학기 수강 강좌 확인 및 과제·퀴즈 마감 전 정시 리마인더 예약"
+                  }
+                  onClick={() => navigate(ROUTES.SERVICES.LMS)}
+                />
+                <Divider />
+                <AppItem
+                  iconElement={<Radar size={24} color="#9333ea" />}
+                  title={"실시간 스마트 감시 관리"}
+                  description={
+                    "현재 백그라운드에서 실행 중인 좌석·스터디룸 실시간 감시 목록 확인 및 관리"
+                  }
+                  onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}
+                />
+              </div>
+            </Box>
+          </TitleContentArea>
+
           <TitleContentArea title={"포털 관련 기능"}>
             <Box>
               <div style={{ width: "100%" }}>
@@ -149,6 +190,24 @@ const Icon = styled.img`
   border-radius: 8px;
   object-fit: cover;
   background-color: #f0f0f0;
+`;
+
+const IconWrapper = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const Divider = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: #f1f5f9;
 `;
 
 const ContentArea = styled.div`
