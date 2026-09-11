@@ -329,7 +329,41 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       lowerText.includes("수강강좌") ||
       (lowerText.includes("강의") && (lowerText.includes("목록") || lowerText.includes("진도")));
 
-    if (isLmsIntent && isMobileAppEnvironment()) {
+    if (isLmsIntent) {
+      if (!isMobileAppEnvironment()) {
+        const authComponent = {
+          type: "LMS_AUTH_REQUIRED",
+          data: {},
+        };
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantId
+              ? {
+                  ...msg,
+                  content: "사이버캠퍼스(LMS) 과제 및 강의 조회를 위해 LMS 계정 연동이 필요합니다. 아래 버튼을 눌러 계정을 연동해 주세요! 📝",
+                  uiComponent: authComponent,
+                  uiComponents: [authComponent],
+                  thoughts: [
+                    {
+                      hop: 1,
+                      thought: "사이버캠퍼스(LMS) 과제 조회를 위해 보안 계정 연동 상태를 확인합니다.",
+                      tools: ["LMS_AUTH"],
+                    },
+                  ],
+                  suggestedActions: [
+                    "이번 달 학사일정 알려줘",
+                    "도서관 열람실 좌석 현황 알려줘",
+                    "오늘 학식 메뉴 뭐야?",
+                  ],
+                }
+              : msg
+          )
+        );
+        setIsLoading(false);
+        setStreamingStatus("");
+        return;
+      }
+
       setStreamingStatus("사이버캠퍼스(LMS) 과제 및 일정을 조회하고 있습니다...");
       try {
         const nowSec = Math.floor(Date.now() / 1000);
@@ -351,14 +385,40 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
 
         if (lmsActionRes.success && lmsActionRes.data) {
           const events = lmsActionRes.data.events || [];
+          let courses: any[] = [];
+
+          // 과제가 없거나 강좌 확인이 필요할 때 수강 강좌도 함께 조회
+          try {
+            const courseRes = await executeAgentActionBridge({
+              actionId: `act_lms_courses_${Date.now()}`,
+              authDomain: "LMS",
+              request: {
+                method: "GET",
+                url: "https://lms.inu.ac.kr/webservice/rest/server.php",
+                params: {
+                  wsfunction: "core_enrol_get_users_courses",
+                  moodlewsrestformat: "json",
+                  userid: lmsActionRes.data.userid || 0,
+                },
+              },
+            });
+            if (courseRes.success && Array.isArray(courseRes.data)) {
+              courses = courseRes.data;
+            }
+          } catch (e) {
+            // 강좌 조회는 부가 정보이므로 실패해도 무시
+          }
+
           const lmsComponent = {
             type: "LMS_ASSIGNMENTS",
-            data: { events },
+            data: { events, courses },
           };
 
           const summaryText = events.length > 0
             ? `현재 사이버캠퍼스(LMS)에 등록된 마감 예정 과제 및 일정이 총 ${events.length}건 있습니다! 📝`
-            : `현재 2주 이내에 예정된 LMS 과제나 마감 일정이 없습니다! 편안한 시간 보내세요. 👍`;
+            : courses.length > 0
+              ? `현재 2주 이내에 마감 예정인 과제는 없습니다! 편안한 시간 보내세요. 👍 (현재 수강 중인 강좌 ${courses.length}개를 함께 안내해 드려요)`
+              : `현재 2주 이내에 예정된 LMS 과제나 마감 일정이 없습니다! 편안한 시간 보내세요. 👍`;
 
           setMessages((prev) =>
             prev.map((msg) =>
@@ -371,7 +431,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                     thoughts: [
                       {
                         hop: 1,
-                        thought: "인천대학교 사이버캠퍼스(Moodle WebService) 토큰을 확인하고 다가오는 마감 과제 및 캘린더 일정을 조회합니다.",
+                        thought: "인천대학교 사이버캠퍼스(Moodle WebService) 토큰을 확인하고 다가오는 마감 과제 및 강좌 정보를 조회합니다.",
                         tools: ["LMS_CALENDAR", "LMS_ASSIGNMENTS"],
                       },
                     ],
@@ -387,7 +447,8 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           setIsLoading(false);
           setStreamingStatus("");
           return;
-        } else if (lmsActionRes.errorCode === "AUTH_REQUIRED") {
+        } else {
+          // 인증이 필요하거나 실패한 경우 LMS 연동 카드 출력
           const authComponent = {
             type: "LMS_AUTH_REQUIRED",
             data: {},
@@ -397,9 +458,21 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
               msg.id === assistantId
                 ? {
                     ...msg,
-                    content: "사이버캠퍼스(LMS) 과제 조회를 위해 LMS 계정 연동이 필요합니다. 아래 버튼을 눌러 연동해 주세요!",
+                    content: "사이버캠퍼스(LMS) 과제 조회를 위해 LMS 계정 연동이 필요합니다. 아래 버튼을 눌러 연동해 주세요! 📝",
                     uiComponent: authComponent,
                     uiComponents: [authComponent],
+                    thoughts: [
+                      {
+                        hop: 1,
+                        thought: "LMS 계정 연동 토큰이 필요하여 연동 모달 카드를 안내합니다.",
+                        tools: ["LMS_AUTH"],
+                      },
+                    ],
+                    suggestedActions: [
+                      "도서관 열람실 좌석 현황 알려줘",
+                      "이번 달 학사일정 알려줘",
+                      "오늘 학식 메뉴 뭐야?",
+                    ],
                   }
                 : msg
             )

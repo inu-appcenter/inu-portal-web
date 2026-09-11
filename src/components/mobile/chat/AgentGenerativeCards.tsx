@@ -109,8 +109,18 @@ const SingleCardItem: React.FC<{
       return;
     }
 
-    // 3. 포털 계정 연동 / 학적 바로가기 처리 (계정 모달 호출)
-    if (url === "/academic" || url.startsWith("/academic")) {
+    // 3. 계정 연동 모달 바로가기 이벤트 처리
+    if (url === "openLmsAccountModal" || url === "/lms-account") {
+      if (onNavigate) onNavigate();
+      window.dispatchEvent(new CustomEvent("openLmsAccountModal"));
+      return;
+    }
+    if (url === "openLibraryAccountModal" || url === "/library-account") {
+      if (onNavigate) onNavigate();
+      window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+      return;
+    }
+    if (url === "openPortalAccountModal" || url === "/portal-account" || url === "/academic" || url.startsWith("/academic")) {
       if (onNavigate) onNavigate();
       window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
       return;
@@ -245,6 +255,7 @@ const SingleCardItem: React.FC<{
       case "LMS_ASSIGNMENTS":
         return <LmsAssignmentsCard data={component.data} onNavigate={onNavigate} />;
       case "LMS_AUTH_REQUIRED":
+      case "LMS_ACTION":
         return <LmsAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;

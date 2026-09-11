@@ -57,11 +57,14 @@ function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 1500
       if (detail && detail.type === expectedResultType) {
         clearTimeout(timer);
         window.removeEventListener('intipAgentResult', handler);
+        const resolvedData = detail.data?.data !== undefined ? detail.data.data : detail.data;
+        const resolvedErrorCode = detail.errorCode || detail.data?.errorCode;
+        const resolvedErrorMessage = detail.errorMessage || detail.data?.errorMessage;
         resolve({
           success: detail.success,
-          data: detail.data,
-          errorCode: detail.errorCode,
-          errorMessage: detail.errorMessage,
+          data: resolvedData,
+          errorCode: resolvedErrorCode,
+          errorMessage: resolvedErrorMessage,
         });
       }
     };
