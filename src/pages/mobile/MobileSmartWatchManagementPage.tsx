@@ -41,10 +41,14 @@ export default function MobileSmartWatchManagementPage() {
     setIsLoading(true);
     try {
       // 1. 서버 감시 목록 조회
-      const serverRes = await getMyCampusWatchJobs().catch(() => ({ data: [] }));
-      if (serverRes.data) {
-        setServerJobs(serverRes.data);
-      }
+      // tokenInstance 인터셉터는 axios response 전체를 반환하므로
+      // 런타임: serverRes.data = ApiResponse body = { data: CampusWatchJob[], msg: "" }
+      // TS 타입과 실제 런타임 구조가 다르므로 unknown으로 캐스팅 후 안전하게 접근
+      const serverRes = await getMyCampusWatchJobs().catch(() => null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rawData: any = serverRes?.data;
+      const rawJobs = Array.isArray(rawData) ? rawData : rawData?.data;
+      setServerJobs(Array.isArray(rawJobs) ? (rawJobs as CampusWatchJob[]) : []);
 
       // 2. 모바일 앱 로컬 감시 목록 조회 (INTIP 앱 환경인 경우)
       if (isMobileAppEnvironment()) {
@@ -84,7 +88,7 @@ export default function MobileSmartWatchManagementPage() {
 
   // 서버 + 로컬 목록을 하나의 통합 구조로 정규화
   const unifiedList: UnifiedWatchJob[] = [
-    ...serverJobs.map((s): UnifiedWatchJob => ({
+    ...(Array.isArray(serverJobs) ? serverJobs : []).map((s): UnifiedWatchJob => ({
       source: 'SERVER',
       id: s.id,
       domainName: s.domainDescription || "도서관 열람실",
@@ -95,7 +99,7 @@ export default function MobileSmartWatchManagementPage() {
       createdAt: s.createdAt,
       sourceDesc: "서버 45초 단일 감시",
     })),
-    ...localJobs.map((l): UnifiedWatchJob => {
+    ...(Array.isArray(localJobs) ? localJobs : []).map((l): UnifiedWatchJob => {
       const now = Date.now();
       const remainMs = Math.max(0, l.expiresAt - now);
       const remainMin = Math.ceil(remainMs / (60 * 1000));
