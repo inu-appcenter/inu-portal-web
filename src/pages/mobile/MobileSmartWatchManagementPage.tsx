@@ -2,11 +2,30 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { getMyCampusWatchJobs, deleteCancelCampusWatch, CampusWatchJob } from "@/apis/agent";
+import {
+  getLocalWatchJobsFromApp,
+  cancelLocalWatchJobInApp,
+  LocalWatchJob,
+  isMobileAppEnvironment,
+} from "@/apis/mobileAgentBridge";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-import { Bell, Clock, Trash2, RefreshCw } from "lucide-react";
+import { Bell, Clock, Trash2, RefreshCw, Smartphone, Cloud } from "lucide-react";
+
+export interface UnifiedWatchJob {
+  source: 'SERVER' | 'LOCAL';
+  id: string | number;
+  domainName: string;
+  targetName: string;
+  conditionDesc: string;
+  status: 'ACTIVE' | 'NOTIFIED' | 'EXPIRED' | 'CANCELLED';
+  remainingMinutes?: number;
+  createdAt: string | number;
+  sourceDesc: string;
+}
 
 export default function MobileSmartWatchManagementPage() {
-  const [jobs, setJobs] = useState<CampusWatchJob[]>([]);
+  const [serverJobs, setServerJobs] = useState<CampusWatchJob[]>([]);
+  const [localJobs, setLocalJobs] = useState<LocalWatchJob[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useHeader({
@@ -15,12 +34,21 @@ export default function MobileSmartWatchManagementPage() {
     hasback: true,
   });
 
-  const fetchJobs = async () => {
+  const fetchAllJobs = async () => {
     setIsLoading(true);
     try {
-      const res = await getMyCampusWatchJobs();
-      if (res.data) {
-        setJobs(res.data);
+      // 1. 서버 감시 목록 조회
+      const serverRes = await getMyCampusWatchJobs().catch(() => ({ data: [] }));
+      if (serverRes.data) {
+        setServerJobs(serverRes.data);
+      }
+
+      // 2. 모바일 앱 로컬 감시 목록 조회 (INTIP 앱 환경인 경우)
+      if (isMobileAppEnvironment()) {
+        const localRes = await getLocalWatchJobsFromApp().catch(() => ({ success: false, data: [] }));
+        if (localRes.success && localRes.data) {
+          setLocalJobs(localRes.data);
+        }
       }
     } catch (e) {
       console.error("감시 목록 로드 실패:", e);
@@ -30,28 +58,68 @@ export default function MobileSmartWatchManagementPage() {
   };
 
   useEffect(() => {
-    fetchJobs();
+    fetchAllJobs();
   }, []);
 
-  const handleCancel = async (jobId: number) => {
-    if (!window.confirm("이 빈자리 감시를 취소하시겠습니까?")) return;
+  const handleCancel = async (job: UnifiedWatchJob) => {
+    if (!window.confirm(`'${job.targetName}' 감시를 취소하시겠습니까?`)) return;
     try {
-      await deleteCancelCampusWatch(jobId);
-      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+      if (job.source === 'SERVER') {
+        await deleteCancelCampusWatch(Number(job.id));
+        setServerJobs((prev) => prev.filter((j) => j.id !== Number(job.id)));
+      } else {
+        await cancelLocalWatchJobInApp(String(job.id));
+        setLocalJobs((prev) =>
+          prev.map((j) => (j.id === String(job.id) ? { ...j, status: 'CANCELLED' } : j))
+        );
+      }
     } catch (e) {
       console.error("감시 취소 실패:", e);
       alert("감시 취소에 실패했습니다.");
     }
   };
 
-  const activeJobs = jobs.filter((j) => j.status === "ACTIVE");
-  const pastJobs = jobs.filter((j) => j.status !== "ACTIVE");
+  // 서버 + 로컬 목록을 하나의 통합 구조로 정규화
+  const unifiedList: UnifiedWatchJob[] = [
+    ...serverJobs.map((s): UnifiedWatchJob => ({
+      source: 'SERVER',
+      id: s.id,
+      domainName: s.domainDescription || "도서관 열람실",
+      targetName: s.targetName,
+      conditionDesc: "빈자리(1석 이상) 발생 즉시 FCM 푸시 알림이 발송됩니다.",
+      status: s.status,
+      remainingMinutes: s.remainingMinutes,
+      createdAt: s.createdAt,
+      sourceDesc: "서버 45초 단일 감시",
+    })),
+    ...localJobs.map((l): UnifiedWatchJob => {
+      const now = Date.now();
+      const remainMs = Math.max(0, l.expiresAt - now);
+      const remainMin = Math.ceil(remainMs / (60 * 1000));
+      return {
+        source: 'LOCAL',
+        id: l.id,
+        domainName: l.type === 'STUDY_ROOM_SNIPER' ? "스터디룸 취소표" : "도서관 좌석 리마인더",
+        targetName: l.title || l.targetName,
+        conditionDesc: l.type === 'STUDY_ROOM_SNIPER'
+          ? "취소표 발생 시 상단 헤드업 알림으로 즉시 안내합니다."
+          : "만료 20분 전 정시 알림을 발송합니다.",
+        status: l.status,
+        remainingMinutes: remainMin,
+        createdAt: l.createdAt,
+        sourceDesc: "기기 내 백그라운드 감시",
+      };
+    }),
+  ];
+
+  const activeJobs = unifiedList.filter((j) => j.status === "ACTIVE");
+  const pastJobs = unifiedList.filter((j) => j.status !== "ACTIVE");
 
   return (
     <Container>
       <SectionHeader>
         <SectionTitle>실시간 감시 중 ({activeJobs.length})</SectionTitle>
-        <RefreshButton onClick={fetchJobs} disabled={isLoading}>
+        <RefreshButton onClick={fetchAllJobs} disabled={isLoading}>
           <RefreshCw size={14} className={isLoading ? "spin" : ""} />
           <span>새로고침</span>
         </RefreshButton>
@@ -62,27 +130,33 @@ export default function MobileSmartWatchManagementPage() {
           <Bell size={24} color="#94a3b8" />
           <EmptyText>현재 진행 중인 실시간 빈자리 감시가 없습니다.</EmptyText>
           <EmptySubText>
-            캠퍼스 비서에게 "힐링존 자리 나면 알려줘", "제1열람실 빈자리 감시해줘"라고 요청해 보세요!
+            캠퍼스 비서에게 "힐링존 자리 나면 알려줘", "오늘 3시 205호 스터디룸 취소표 나면 알려줘"라고 요청해 보세요!
           </EmptySubText>
         </EmptyBox>
       ) : (
         <JobList>
           {activeJobs.map((job) => (
-            <JobCard key={job.id}>
+            <JobCard key={`${job.source}_${job.id}`}>
               <CardTop>
-                <DomainBadge>{job.domainDescription || "도서관"}</DomainBadge>
-                <RemainingTimeBadge>
-                  <Clock size={12} />
-                  <span>약 {job.remainingMinutes}분 남음</span>
-                </RemainingTimeBadge>
+                <BadgeGroup>
+                  <DomainBadge>{job.domainName}</DomainBadge>
+                  <SourceBadge $isServer={job.source === 'SERVER'}>
+                    {job.source === 'SERVER' ? <Cloud size={10} /> : <Smartphone size={10} />}
+                    <span>{job.source === 'SERVER' ? '서버 감시' : '기기 감시'}</span>
+                  </SourceBadge>
+                </BadgeGroup>
+                {job.remainingMinutes !== undefined && (
+                  <RemainingTimeBadge>
+                    <Clock size={12} />
+                    <span>약 {job.remainingMinutes}분 남음</span>
+                  </RemainingTimeBadge>
+                )}
               </CardTop>
-              <TargetName>{job.targetName} 빈자리 스나이퍼</TargetName>
-              <ConditionDesc>
-                빈자리(1석 이상) 감지 즉시 FCM 푸시 알림이 발송됩니다.
-              </ConditionDesc>
+              <TargetName>{job.targetName}</TargetName>
+              <ConditionDesc>{job.conditionDesc}</ConditionDesc>
               <CardFooter>
-                <NoticeText>서버가 45초마다 안전하게 감시 중입니다.</NoticeText>
-                <CancelButton onClick={() => handleCancel(job.id)}>
+                <NoticeText>{job.sourceDesc}</NoticeText>
+                <CancelButton onClick={() => handleCancel(job)}>
                   <Trash2 size={13} />
                   <span>감시 취소</span>
                 </CancelButton>
@@ -98,17 +172,22 @@ export default function MobileSmartWatchManagementPage() {
             최근 완료된 감시 ({pastJobs.length})
           </SectionTitle>
           <JobList>
-            {pastJobs.slice(0, 5).map((job) => (
-              <PastJobCard key={job.id}>
-                <div>
-                  <PastJobTitle>{job.targetName}</PastJobTitle>
-                  <PastJobTime>{new Date(job.createdAt).toLocaleDateString()} {new Date(job.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</PastJobTime>
-                </div>
-                <StatusTag $status={job.status}>
-                  {job.status === "NOTIFIED" ? "알림 완료" : job.status === "EXPIRED" ? "시간 만료" : "취소됨"}
-                </StatusTag>
-              </PastJobCard>
-            ))}
+            {pastJobs.slice(0, 5).map((job) => {
+              const dateObj = new Date(job.createdAt);
+              return (
+                <PastJobCard key={`${job.source}_${job.id}`}>
+                  <div>
+                    <PastJobTitle>{job.targetName}</PastJobTitle>
+                    <PastJobTime>
+                      {dateObj.toLocaleDateString()} {dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </PastJobTime>
+                  </div>
+                  <StatusTag $status={job.status}>
+                    {job.status === "NOTIFIED" ? "알림 완료" : job.status === "EXPIRED" ? "시간 만료" : "취소됨"}
+                  </StatusTag>
+                </PastJobCard>
+              );
+            })}
           </JobList>
         </>
       )}
@@ -149,7 +228,8 @@ const RefreshButton = styled.button`
     animation: spin 1s linear infinite;
   }
   @keyframes spin {
-    100% { transform: rotate(360deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 `;
 
@@ -158,25 +238,25 @@ const EmptyBox = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
-  background: #ffffff;
+  padding: 48px 24px;
+  background: #f8fafc;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  gap: 8px;
 `;
 
 const EmptyText = styled.div`
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  color: #334155;
-  margin-top: 10px;
+  color: #475569;
+  margin-top: 4px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 12px;
-  color: #64748b;
-  margin-top: 6px;
-  line-height: 1.4;
+  color: #94a3b8;
+  line-height: 1.5;
+  max-width: 260px;
 `;
 
 const JobList = styled.div`
@@ -200,6 +280,12 @@ const CardTop = styled.div`
   margin-bottom: 8px;
 `;
 
+const BadgeGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
 const DomainBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
@@ -207,6 +293,18 @@ const DomainBadge = styled.span`
   background: #eff6ff;
   padding: 2px 7px;
   border-radius: 5px;
+`;
+
+const SourceBadge = styled.span<{ $isServer: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: ${({ $isServer }) => ($isServer ? "#f0fdf4" : "#fdf4ff")};
+  color: ${({ $isServer }) => ($isServer ? "#16a34a" : "#9333ea")};
 `;
 
 const RemainingTimeBadge = styled.div`

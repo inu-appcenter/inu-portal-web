@@ -160,3 +160,47 @@ export async function checkLmsAccountLinked(): Promise<{ linked: boolean; user?:
 export async function saveLmsAccount(username: string, password: string): Promise<AgentActionResult<any>> {
   return sendBridgeAction('saveLmsAccount', { username, password });
 }
+
+export interface LocalWatchJob {
+  id: string;
+  type: 'STUDY_ROOM_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
+  title: string;
+  targetName: string;
+  targetId?: string | number;
+  hopeDate?: string;
+  targetHour?: number;
+  createdAt: number;
+  expiresAt: number;
+  status: 'ACTIVE' | 'NOTIFIED' | 'EXPIRED' | 'CANCELLED';
+}
+
+/**
+ * 모바일 기기 로컬 감시(스터디룸 스나이퍼 등) 목록 조회
+ */
+export async function getLocalWatchJobsFromApp(): Promise<AgentActionResult<LocalWatchJob[]>> {
+  return sendBridgeAction<LocalWatchJob[]>('getLocalWatchJobs');
+}
+
+/**
+ * 모바일 기기 로컬 감시 등록
+ */
+export async function registerLocalWatchJobInApp(payload: {
+  watchType: 'STUDY_ROOM_SNIPER' | 'SEAT_EXPIRATION';
+  roomId?: number;
+  roomName?: string;
+  hopeDate?: string;
+  targetHour?: number;
+  durationMinutes?: number;
+  seatName?: string;
+  endTime?: string;
+}): Promise<AgentActionResult<LocalWatchJob>> {
+  return sendBridgeAction<LocalWatchJob>('registerLocalWatchJob', payload);
+}
+
+/**
+ * 모바일 기기 로컬 감시 취소
+ */
+export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionResult<{ id: string; cancelled: boolean }>> {
+  return sendBridgeAction<{ id: string; cancelled: boolean }>('cancelLocalWatchJob', { id });
+}
+
