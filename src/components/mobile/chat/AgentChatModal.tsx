@@ -383,27 +383,47 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           },
         });
 
-        if (lmsActionRes.success && lmsActionRes.data) {
-          const events = lmsActionRes.data.events || [];
+        if (
+          lmsActionRes.success &&
+          lmsActionRes.data &&
+          !lmsActionRes.data.error &&
+          !lmsActionRes.data.exception
+        ) {
+          const events = Array.isArray(lmsActionRes.data.events) ? lmsActionRes.data.events : [];
           let courses: any[] = [];
 
           // 과제가 없거나 강좌 확인이 필요할 때 수강 강좌도 함께 조회
           try {
-            const courseRes = await executeAgentActionBridge({
-              actionId: `act_lms_courses_${Date.now()}`,
+            const siteRes = await executeAgentActionBridge({
+              actionId: `act_lms_site_${Date.now()}`,
               authDomain: "LMS",
               request: {
                 method: "GET",
                 url: "https://lms.inu.ac.kr/webservice/rest/server.php",
                 params: {
-                  wsfunction: "core_enrol_get_users_courses",
+                  wsfunction: "core_webservice_get_site_info",
                   moodlewsrestformat: "json",
-                  userid: lmsActionRes.data.userid || 0,
                 },
               },
             });
-            if (courseRes.success && Array.isArray(courseRes.data)) {
-              courses = courseRes.data;
+            const validUserId = siteRes.data?.userid;
+            if (validUserId) {
+              const courseRes = await executeAgentActionBridge({
+                actionId: `act_lms_courses_${Date.now()}`,
+                authDomain: "LMS",
+                request: {
+                  method: "GET",
+                  url: "https://lms.inu.ac.kr/webservice/rest/server.php",
+                  params: {
+                    wsfunction: "core_enrol_get_users_courses",
+                    moodlewsrestformat: "json",
+                    userid: validUserId,
+                  },
+                },
+              });
+              if (courseRes.success && Array.isArray(courseRes.data)) {
+                courses = courseRes.data;
+              }
             }
           } catch (e) {
             // 강좌 조회는 부가 정보이므로 실패해도 무시

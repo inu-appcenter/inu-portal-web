@@ -72,7 +72,7 @@ export const PortalAccountModal: React.FC<Props> = ({
         <SecurityNotice>
           <ShieldCheck size={18} color="#00a651" />
           <SecurityNoticeText>
-            <strong>안심하세요!</strong> 입력하신 비밀번호는 서버로 전송되지 않으며, 스마트폰 기기 내부의 보안 영역(KeyStore/Keychain)에만 안전하게 암호화 보관됩니다.
+            <strong>안심하세요!</strong> 인천대 포털, LMS, 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 등록하시면 기기 보안 영역(KeyStore)에만 암호화 보관되며, 포털 학적·LMS 과제·도서관 좌석이 한 번에 자동 연동됩니다.
           </SecurityNoticeText>
         </SecurityNotice>
 
