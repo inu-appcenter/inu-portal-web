@@ -139,3 +139,21 @@ export async function saveLibraryAccount(loginId: string, password: string): Pro
 export async function executeAgentActionBridge(instruction: any): Promise<AgentActionResult<any>> {
   return sendBridgeAction('executeAgentAction', { instruction }, 20000);
 }
+
+/**
+ * LMS(사이버캠퍼스) 계정 연동 상태 확인
+ */
+export async function checkLmsAccountLinked(): Promise<{ linked: boolean; user?: any }> {
+  const res = await sendBridgeAction<{ linked: boolean; user?: any }>('checkLmsAccount');
+  return {
+    linked: Boolean(res.success && res.data?.linked),
+    user: res.data?.user,
+  };
+}
+
+/**
+ * LMS 계정 정보 기기 보안 저장소에 등록
+ */
+export async function saveLmsAccount(username: string, password: string): Promise<AgentActionResult<any>> {
+  return sendBridgeAction('saveLmsAccount', { username, password });
+}

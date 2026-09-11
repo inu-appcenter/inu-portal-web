@@ -208,6 +208,10 @@ const SingleCardItem: React.FC<{
         return <LibraryRoomsCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_AUTH_REQUIRED":
         return <LibraryAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
+      case "LMS_ASSIGNMENTS":
+        return <LmsAssignmentsCard data={component.data} onNavigate={onNavigate} />;
+      case "LMS_AUTH_REQUIRED":
+        return <LmsAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;
     }
@@ -1868,5 +1872,157 @@ const LibProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
   transition: width 0.3s ease;
 `;
 
+/**
+ * LMS 과제 및 마감 일정 인터랙티브 카드
+ */
+const LmsAssignmentsCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data }) => {
+  const events: any[] = Array.isArray(data?.events) ? data.events : (Array.isArray(data) ? data : []);
+  const courses: any[] = Array.isArray(data?.courses) ? data.courses : [];
+
+  return (
+    <LibraryCardBox>
+      <CardHeader>
+        <GraduationCap size={18} color="#00a651" />
+        <CardTitle>사이버캠퍼스(LMS) 과제 & 강좌</CardTitle>
+        <LmsCountBadge>
+          {events.length > 0 ? `마감 예정 ${events.length}건` : `수강 중 ${courses.length}과목`}
+        </LmsCountBadge>
+      </CardHeader>
+
+      {events.length === 0 && courses.length === 0 ? (
+        <EmptyMessage>예정된 과제나 일정이 없습니다. 👍</EmptyMessage>
+      ) : events.length > 0 ? (
+        <LmsItemList>
+          {events.slice(0, 5).map((ev: any, idx: number) => {
+            const dueDate = ev.timesort ? new Date(ev.timesort * 1000) : null;
+            const diffDays = dueDate ? Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+            const isUrgent = diffDays !== null && diffDays <= 2;
+
+            return (
+              <LmsItem key={ev.id ?? idx}>
+                <LmsItemMain>
+                  <LmsItemCourse>{ev.course?.fullname || "강좌"}</LmsItemCourse>
+                  <LmsItemTitle>{ev.name}</LmsItemTitle>
+                </LmsItemMain>
+                <LmsItemDue $urgent={Boolean(isUrgent)}>
+                  {diffDays !== null ? (diffDays <= 0 ? "오늘 마감" : `D-${diffDays}`) : "기한 있음"}
+                </LmsItemDue>
+              </LmsItem>
+            );
+          })}
+        </LmsItemList>
+      ) : (
+        <LmsItemList>
+          {courses.slice(0, 5).map((c: any, idx: number) => (
+            <LmsItem key={c.id ?? idx}>
+              <LmsItemMain>
+                <LmsItemTitle style={{ fontSize: 13 }}>{c.fullname}</LmsItemTitle>
+                <LmsItemCourse>{c.shortname}</LmsItemCourse>
+              </LmsItemMain>
+            </LmsItem>
+          ))}
+        </LmsItemList>
+      )}
+    </LibraryCardBox>
+  );
+};
+
+/**
+ * LMS 계정 연동 안내 카드
+ */
+const LmsAuthRequiredCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = () => {
+  return (
+    <PortalAuthContainer style={{ border: '1px solid #e1f5eb' }}>
+      <PortalAuthIconWrap style={{ background: '#e8f8f0' }}>
+        <GraduationCap size={22} color="#00a651" />
+      </PortalAuthIconWrap>
+      <PortalAuthTextWrap>
+        <PortalAuthTitle>사이버캠퍼스(LMS) 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthDesc>
+          강좌별 과제 마감 일정 및 미제출 과제를 확인하려면 LMS 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+        </PortalAuthDesc>
+      </PortalAuthTextWrap>
+      <PortalAuthActionBtn
+        type="button"
+        style={{ background: '#00a651' }}
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent("openLmsAccountModal"));
+        }}
+      >
+        LMS 계정 연동하기
+      </PortalAuthActionBtn>
+    </PortalAuthContainer>
+  );
+};
+
+const LmsCountBadge = styled.span`
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #00a651;
+  background: #e8f8f0;
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+const LmsItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+`;
+
+const LmsItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  gap: 10px;
+`;
+
+const LmsItemMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const LmsItemCourse = styled.span`
+  font-size: 11px;
+  color: #8b95a1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LmsItemTitle = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #191f28;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LmsItemDue = styled.span<{ $urgent?: boolean }>`
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: ${({ $urgent }) => ($urgent ? "#fee8e8" : "#eefaf3")};
+  color: ${({ $urgent }) => ($urgent ? "#f04452" : "#00a651")};
+  flex-shrink: 0;
+`;
+
 export default AgentGenerativeCards;
+
 

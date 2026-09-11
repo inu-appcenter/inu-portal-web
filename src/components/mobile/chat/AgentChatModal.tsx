@@ -6,6 +6,7 @@ import { postAgentChat, streamAgentChat, AgentChatResponse } from "@/apis/agent"
 import AgentGenerativeCards from "./AgentGenerativeCards";
 import { PortalAccountModal } from "../agent/PortalAccountModal";
 import { LibraryAccountModal } from "../agent/LibraryAccountModal";
+import { LmsAccountModal } from "../agent/LmsAccountModal";
 import {
   isMobileAppEnvironment,
   fetchAcademicInfoFromApp,
@@ -55,17 +56,21 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const [streamingStatus, setStreamingStatus] = useState<string>("");
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleOpenPortalModal = () => setIsPortalModalOpen(true);
     const handleOpenLibraryModal = () => setIsLibraryModalOpen(true);
+    const handleOpenLmsModal = () => setIsLmsModalOpen(true);
     window.addEventListener("openPortalAccountModal", handleOpenPortalModal);
     window.addEventListener("openLibraryAccountModal", handleOpenLibraryModal);
+    window.addEventListener("openLmsAccountModal", handleOpenLmsModal);
     return () => {
       window.removeEventListener("openPortalAccountModal", handleOpenPortalModal);
       window.removeEventListener("openLibraryAccountModal", handleOpenLibraryModal);
+      window.removeEventListener("openLmsAccountModal", handleOpenLmsModal);
     };
   }, []);
 
@@ -280,6 +285,93 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         }
       } catch (err: any) {
         console.error("Library seats fetch error:", err);
+      }
+    }
+
+    // [Client-Side Agent Action]: LMS(사이버캠퍼스) 과제 및 강좌 조회 인텐트인 경우 브릿지 실행
+    const isLmsIntent =
+      lowerText.includes("lms") ||
+      lowerText.includes("과제") ||
+      lowerText.includes("사이버캠퍼스") ||
+      lowerText.includes("레포트") ||
+      lowerText.includes("숙제") ||
+      lowerText.includes("수강 강좌") ||
+      lowerText.includes("수강강좌") ||
+      (lowerText.includes("강의") && (lowerText.includes("목록") || lowerText.includes("진도")));
+
+    if (isLmsIntent && isMobileAppEnvironment()) {
+      setStreamingStatus("사이버캠퍼스(LMS) 과제 및 강좌 정보를 확인하고 있습니다...");
+      try {
+        const nowSec = Math.floor(Date.now() / 1000);
+        const lmsActionRes = await executeAgentActionBridge({
+          actionId: `act_lms_web_${Date.now()}`,
+          authDomain: "LMS",
+          request: {
+            method: "GET",
+            url: "https://lms.inu.ac.kr/webservice/rest/server.php",
+            params: {
+              wsfunction: "core_calendar_get_action_events_by_timesort",
+              timesortfrom: nowSec - 86400 * 2,
+              timesortto: nowSec + 86400 * 14,
+              limitnum: 15,
+            },
+          },
+        });
+
+        if (lmsActionRes.success && lmsActionRes.data) {
+          const events = lmsActionRes.data.events || [];
+          const lmsComponent = {
+            type: "LMS_ASSIGNMENTS",
+            data: { events },
+          };
+
+          const summaryText = events.length > 0
+            ? `현재 사이버캠퍼스(LMS)에 마감 예정인 과제/일정이 **총 ${events.length}건** 있습니다! 📝`
+            : `현재 2주 이내에 예정된 LMS 과제나 마감 일정이 없습니다! 편안한 시간 보내세요. 👍`;
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: summaryText,
+                    uiComponent: lmsComponent,
+                    uiComponents: [lmsComponent],
+                    suggestedActions: [
+                      "이번 달 학사일정 알려줘",
+                      "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
+                      "도서관 열람실 좌석 현황 알려줘",
+                    ],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        } else if (lmsActionRes.errorCode === "AUTH_REQUIRED") {
+          const authComponent = {
+            type: "LMS_AUTH_REQUIRED",
+            data: {},
+          };
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: "사이버캠퍼스(LMS) 과제 조회를 위해 LMS 계정 연동이 필요합니다. 아래 버튼을 눌러 연동해 주세요!",
+                    uiComponent: authComponent,
+                    uiComponents: [authComponent],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        }
+      } catch (err: any) {
+        console.error("LMS events fetch error:", err);
       }
     }
 
@@ -558,6 +650,11 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}
             onSuccess={() => handleSend("도서관 열람실 좌석 현황 알려줘")}
+          />
+          <LmsAccountModal
+            isOpen={isLmsModalOpen}
+            onClose={() => setIsLmsModalOpen(false)}
+            onSuccess={() => handleSend("사이버캠퍼스 과제 마감 일정 알려줘")}
           />
         </>
       )}
