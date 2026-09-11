@@ -52,12 +52,15 @@ export interface AgentStreamPacket {
   delta?: string;
   suggestedActions?: string[];
   finishReason?: string;
+  thought?: string;
+  hop?: number;
 }
 
 export interface StreamAgentChatCallbacks {
   onStatus?: (status: string, message?: string) => void;
   onTools?: (tools: string[], uiComponents: UiComponent[]) => void;
   onDelta?: (delta: string) => void;
+  onThought?: (hop: number, thought: string, tools?: string[]) => void;
   onDone?: (suggestedActions: string[]) => void;
   onError?: (err: any) => void;
 }
@@ -133,7 +136,11 @@ export const streamAgentChat = async (
           if (!dataStr) continue;
           try {
             const packet: AgentStreamPacket = JSON.parse(dataStr);
-            if (
+            if (currentEvent === "thought" || packet.status === "THOUGHT") {
+              if (packet.thought) {
+                callbacks.onThought?.(packet.hop || 1, packet.thought, packet.tools);
+              }
+            } else if (
               currentEvent === "status" ||
               packet.status === "ROUTING" ||
               packet.status === "EXECUTING" ||

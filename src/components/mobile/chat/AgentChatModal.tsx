@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Send, X, Bot, RotateCcw } from "lucide-react";
 import { postAgentChat, streamAgentChat, AgentChatResponse } from "@/apis/agent";
 import AgentGenerativeCards from "./AgentGenerativeCards";
+import { AgentReasoningAccordion, AgentThoughtItem } from "./AgentReasoningAccordion";
 import { PortalAccountModal } from "../agent/PortalAccountModal";
 import { LibraryAccountModal } from "../agent/LibraryAccountModal";
 import { LmsAccountModal } from "../agent/LmsAccountModal";
@@ -20,6 +21,7 @@ interface Message {
   uiComponent?: AgentChatResponse["uiComponent"];
   uiComponents?: AgentChatResponse["uiComponents"];
   suggestedActions?: string[] | null;
+  thoughts?: AgentThoughtItem[];
   createdAt: Date;
 }
 
@@ -168,6 +170,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                     content: summaryText,
                     uiComponent: academicComponent,
                     uiComponents: [academicComponent],
+                    thoughts: [
+                      {
+                        hop: 1,
+                        thought: "모바일 단말 보안 저장소(SecureStore)의 포털 계정으로 통합 학사 행정 시스템에 직접 접근하여 학적/성적 정보를 안전하게 조회합니다.",
+                        tools: ["ACADEMIC_SSO"],
+                      },
+                    ],
                     suggestedActions: [
                       "이번 달 학사일정 알려줘",
                       "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
@@ -270,6 +279,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                     content: summaryText,
                     uiComponent: libComponent,
                     uiComponents: [libComponent],
+                    thoughts: [
+                      {
+                        hop: 1,
+                        thought: "학산도서관 실시간 좌석 관제 API(pyxis)를 호출하여 열람실별 실시간 잔여 좌석 현황을 수집합니다.",
+                        tools: ["LIBRARY_SEATS"],
+                      },
+                    ],
                     suggestedActions: [
                       "제1노트북실 자리 있어?",
                       "스터디룸 예약 가능한 곳 보여줘",
@@ -300,7 +316,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       (lowerText.includes("강의") && (lowerText.includes("목록") || lowerText.includes("진도")));
 
     if (isLmsIntent && isMobileAppEnvironment()) {
-      setStreamingStatus("사이버캠퍼스(LMS) 과제 및 강좌 정보를 확인하고 있습니다...");
+      setStreamingStatus("사이버캠퍼스(LMS) 과제 및 일정을 조회하고 있습니다...");
       try {
         const nowSec = Math.floor(Date.now() / 1000);
         const lmsActionRes = await executeAgentActionBridge({
@@ -311,7 +327,8 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             url: "https://lms.inu.ac.kr/webservice/rest/server.php",
             params: {
               wsfunction: "core_calendar_get_action_events_by_timesort",
-              timesortfrom: nowSec - 86400 * 2,
+              moodlewsrestformat: "json",
+              timesortfrom: nowSec - 86400,
               timesortto: nowSec + 86400 * 14,
               limitnum: 15,
             },
@@ -326,7 +343,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           };
 
           const summaryText = events.length > 0
-            ? `현재 사이버캠퍼스(LMS)에 마감 예정인 과제/일정이 **총 ${events.length}건** 있습니다! 📝`
+            ? `현재 사이버캠퍼스(LMS)에 등록된 마감 예정 과제 및 일정이 총 ${events.length}건 있습니다! 📝`
             : `현재 2주 이내에 예정된 LMS 과제나 마감 일정이 없습니다! 편안한 시간 보내세요. 👍`;
 
           setMessages((prev) =>
@@ -337,6 +354,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                     content: summaryText,
                     uiComponent: lmsComponent,
                     uiComponents: [lmsComponent],
+                    thoughts: [
+                      {
+                        hop: 1,
+                        thought: "인천대학교 사이버캠퍼스(Moodle WebService) 토큰을 확인하고 다가오는 마감 과제 및 캘린더 일정을 조회합니다.",
+                        tools: ["LMS_CALENDAR", "LMS_ASSIGNMENTS"],
+                      },
+                    ],
                     suggestedActions: [
                       "이번 달 학사일정 알려줘",
                       "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
@@ -384,6 +408,23 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           history: recentHistory,
         },
         {
+          onThought: (hop, thought, tools) => {
+            setStreamingStatus("");
+            setMessages((prev) =>
+              prev.map((msg) => {
+                if (msg.id !== assistantId) return msg;
+                const existing = msg.thoughts || [];
+                const alreadyExists = existing.some(
+                  (t) => t.hop === hop && t.thought === thought
+                );
+                if (alreadyExists) return msg;
+                return {
+                  ...msg,
+                  thoughts: [...existing, { hop, thought, tools }],
+                };
+              })
+            );
+          },
           onStatus: (_status, message) => {
             if (message) setStreamingStatus(message);
           },
@@ -568,6 +609,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                       </AvatarCircle>
                     )}
                     <MessageBubbleGroup $isUser={msg.role === "user"}>
+                      {msg.role === "assistant" && msg.thoughts && msg.thoughts.length > 0 && (
+                        <AgentReasoningAccordion
+                          thoughts={msg.thoughts}
+                          isStreaming={isLoading && msg.id === messages[messages.length - 1]?.id}
+                        />
+                      )}
+
                       {isPending ? (
                         <LoadingBubble>
                           <Dot $delay={0} />
