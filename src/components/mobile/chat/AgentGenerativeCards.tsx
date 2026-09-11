@@ -204,6 +204,10 @@ const SingleCardItem: React.FC<{
         return <AcademicInfoCard data={component.data} onNavigate={onNavigate} />;
       case "PORTAL_AUTH_REQUIRED":
         return <PortalAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_ROOMS":
+        return <LibraryRoomsCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_AUTH_REQUIRED":
+        return <LibraryAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       default:
         return null;
     }
@@ -1726,4 +1730,143 @@ const PortalAuthActionBtn = styled.button`
   margin-top: 4px;
 `;
 
+/**
+ * 도서관 열람실 실시간 잔여석 인터랙티브 카드
+ */
+const LibraryRoomsCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data }) => {
+  const rooms: any[] = Array.isArray(data?.rooms) ? data.rooms : (Array.isArray(data) ? data : []);
+
+  return (
+    <LibraryCardBox>
+      <CardHeader>
+        <BookOpen size={17} color="#3182f6" />
+        <CardTitle>학산도서관 실시간 열람실</CardTitle>
+        <LibCountBadge>실시간 현황</LibCountBadge>
+      </CardHeader>
+      <LibRoomList>
+        {rooms.slice(0, 5).map((room: any, idx: number) => {
+          const total = room.seats?.total ?? room.totalSeats ?? 0;
+          const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
+          const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
+          const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+          return (
+            <LibRoomItem key={room.id ?? idx}>
+              <LibRoomHeader>
+                <LibRoomName>{room.name}</LibRoomName>
+                <LibRoomSeats>
+                  <LibAvailable>{available}석</LibAvailable> / {total}석
+                </LibRoomSeats>
+              </LibRoomHeader>
+              <LibProgressBarTrack>
+                <LibProgressBarFill $percent={percent} $warning={percent >= 85} />
+              </LibProgressBarTrack>
+            </LibRoomItem>
+          );
+        })}
+      </LibRoomList>
+    </LibraryCardBox>
+  );
+};
+
+/**
+ * 도서관 계정 연동 안내 카드
+ */
+const LibraryAuthRequiredCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = () => {
+  return (
+    <PortalAuthContainer>
+      <PortalAuthIconWrap style={{ background: '#e8f3ff' }}>
+        <BookOpen size={22} color="#3182f6" />
+      </PortalAuthIconWrap>
+      <PortalAuthTextWrap>
+        <PortalAuthTitle>도서관 계정 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthDesc>
+          좌석 예약, 이용 연장 및 스터디룸 신청을 위해 도서관 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+        </PortalAuthDesc>
+      </PortalAuthTextWrap>
+      <PortalAuthActionBtn
+        type="button"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+        }}
+      >
+        도서관 계정 연동하기
+      </PortalAuthActionBtn>
+    </PortalAuthContainer>
+  );
+};
+
+const LibraryCardBox = styled.div`
+  padding: 16px;
+  background: #ffffff;
+`;
+
+const LibCountBadge = styled.span`
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: #3182f6;
+  background: #e8f3ff;
+  padding: 2px 8px;
+  border-radius: 6px;
+`;
+
+const LibRoomList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+`;
+
+const LibRoomItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const LibRoomHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const LibRoomName = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #191f28;
+`;
+
+const LibRoomSeats = styled.span`
+  font-size: 12.5px;
+  color: #8b95a1;
+`;
+
+const LibAvailable = styled.strong`
+  color: #3182f6;
+  font-weight: 700;
+`;
+
+const LibProgressBarTrack = styled.div`
+  width: 100%;
+  height: 6px;
+  background: #f2f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+`;
+
+const LibProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
+  height: 100%;
+  width: ${({ $percent }) => Math.min(100, Math.max(0, $percent))}%;
+  background: ${({ $warning }) => ($warning ? "#f04452" : "#3182f6")};
+  border-radius: 3px;
+  transition: width 0.3s ease;
+`;
+
 export default AgentGenerativeCards;
+

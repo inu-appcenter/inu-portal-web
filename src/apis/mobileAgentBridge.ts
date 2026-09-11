@@ -114,3 +114,28 @@ export async function deletePortalAccount(): Promise<AgentActionResult<{ linked:
 export async function fetchAcademicInfoFromApp(): Promise<AgentActionResult<AcademicInfoData>> {
   return sendBridgeAction<AcademicInfoData>('fetchAcademicInfo', null, 25000);
 }
+
+/**
+ * 도서관 계정 연동 상태 확인
+ */
+export async function checkLibraryAccountLinked(): Promise<{ linked: boolean; user?: any }> {
+  const res = await sendBridgeAction<{ linked: boolean; user?: any }>('checkLibraryAccount');
+  return {
+    linked: Boolean(res.success && res.data?.linked),
+    user: res.data?.user,
+  };
+}
+
+/**
+ * 도서관 계정 정보 기기 보안 저장소에 등록
+ */
+export async function saveLibraryAccount(loginId: string, password: string): Promise<AgentActionResult<any>> {
+  return sendBridgeAction('saveLibraryAccount', { loginId, password });
+}
+
+/**
+ * AI 에이전트 범용 액션 실행 브릿지 호출 (모바일 기기에서 학교 시스템 직접 실행)
+ */
+export async function executeAgentActionBridge(instruction: any): Promise<AgentActionResult<any>> {
+  return sendBridgeAction('executeAgentAction', { instruction }, 20000);
+}

@@ -5,9 +5,11 @@ import { Sparkles, Send, X, Bot, RotateCcw } from "lucide-react";
 import { postAgentChat, streamAgentChat, AgentChatResponse } from "@/apis/agent";
 import AgentGenerativeCards from "./AgentGenerativeCards";
 import { PortalAccountModal } from "../agent/PortalAccountModal";
+import { LibraryAccountModal } from "../agent/LibraryAccountModal";
 import {
   isMobileAppEnvironment,
   fetchAcademicInfoFromApp,
+  executeAgentActionBridge,
 } from "@/apis/mobileAgentBridge";
 
 interface Message {
@@ -52,13 +54,19 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [streamingStatus, setStreamingStatus] = useState<string>("");
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handleOpenModal = () => setIsPortalModalOpen(true);
-    window.addEventListener("openPortalAccountModal", handleOpenModal);
-    return () => window.removeEventListener("openPortalAccountModal", handleOpenModal);
+    const handleOpenPortalModal = () => setIsPortalModalOpen(true);
+    const handleOpenLibraryModal = () => setIsLibraryModalOpen(true);
+    window.addEventListener("openPortalAccountModal", handleOpenPortalModal);
+    window.addEventListener("openLibraryAccountModal", handleOpenLibraryModal);
+    return () => {
+      window.removeEventListener("openPortalAccountModal", handleOpenPortalModal);
+      window.removeEventListener("openLibraryAccountModal", handleOpenLibraryModal);
+    };
   }, []);
 
   const scrollToBottom = () => {
@@ -218,6 +226,60 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         }
       } catch (err: any) {
         console.error("Academic fetch failed:", err);
+      }
+    }
+
+    // [Client-Side Agent Action]: 도서관 열람실 잔여 좌석 조회 인텐트인 경우 브릿지 실행
+    const isLibrarySeatIntent =
+      (lowerText.includes("도서관") || lowerText.includes("열람실") || lowerText.includes("노트북실") || lowerText.includes("자리") || lowerText.includes("좌석")) &&
+      (lowerText.includes("자리") || lowerText.includes("현황") || lowerText.includes("얼마나") || lowerText.includes("남았") || lowerText.includes("있어") || lowerText.includes("조회"));
+
+    if (isLibrarySeatIntent && isMobileAppEnvironment()) {
+      setStreamingStatus("학산도서관 실시간 좌석 현황을 조회하고 있습니다...");
+      try {
+        const libActionRes = await executeAgentActionBridge({
+          actionId: `act_lib_web_${Date.now()}`,
+          authDomain: "NONE",
+          request: {
+            method: "GET",
+            url: "https://lib.inu.ac.kr/pyxis-api/1/seat-rooms",
+            params: { branchGroupId: 1, smufMethodCode: "PC" },
+          },
+        });
+
+        if (libActionRes.success && libActionRes.data?.data) {
+          const roomList = libActionRes.data.data.list || libActionRes.data.data;
+          const libComponent = {
+            type: "LIBRARY_ROOMS",
+            data: { rooms: roomList },
+          };
+
+          const topRooms = roomList.slice(0, 3).map((r: any) => `${r.name}(잔여 ${r.seats?.available ?? r.availableSeats}석)`).join(", ");
+          const summaryText = `현재 학산도서관 실시간 잔여 좌석 현황입니다! 📚\n${topRooms} 등 즉시 이용 가능합니다.`;
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantId
+                ? {
+                    ...msg,
+                    content: summaryText,
+                    uiComponent: libComponent,
+                    uiComponents: [libComponent],
+                    suggestedActions: [
+                      "제1노트북실 자리 있어?",
+                      "스터디룸 예약 가능한 곳 보여줘",
+                      "오늘 수업 끝나고 집 갈 때 버스 뭐 타?",
+                    ],
+                  }
+                : msg
+            )
+          );
+          setIsLoading(false);
+          setStreamingStatus("");
+          return;
+        }
+      } catch (err: any) {
+        console.error("Library seats fetch error:", err);
       }
     }
 
@@ -491,6 +553,11 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             isOpen={isPortalModalOpen}
             onClose={() => setIsPortalModalOpen(false)}
             onSuccess={() => handleSend("내 학적 정보랑 취득 학점 알려줘")}
+          />
+          <LibraryAccountModal
+            isOpen={isLibraryModalOpen}
+            onClose={() => setIsLibraryModalOpen(false)}
+            onSuccess={() => handleSend("도서관 열람실 좌석 현황 알려줘")}
           />
         </>
       )}
