@@ -10,6 +10,7 @@ export interface AcademicInfoData {
   advisorProfessorName?: string;
   entranceDate?: string;
   latestEnrollmentChange?: string;
+  rawFields: Record<string, string>;
 }
 
 /**
@@ -262,6 +263,9 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
       tasks.push(
         fetchAcademicInfoFromApp().then((res) => {
           if (res?.success && res.data) {
+            // 사용자 본인에게 표시할 전체 학적 데이터. INUChat 전달용 academic과
+            // 분리되어 있으며, 외부 AI 도구는 이 객체를 읽지 않는다.
+            context.academicDisplay = res.data;
             context.academic = toAnonymousAcademicContext(res.data);
           }
           // Preserve the distinction between an unlinked account and a
