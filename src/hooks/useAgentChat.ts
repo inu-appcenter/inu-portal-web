@@ -150,7 +150,7 @@ export const useAgentChat = () => {
       const history: AgentChatMessageHistory[] = currentRoom.messages
         .slice(-6)
         .map((m) => ({
-          role: m.role,
+          role: m.role === "user" ? "user" : "assistant",
           content: m.content,
         }));
 

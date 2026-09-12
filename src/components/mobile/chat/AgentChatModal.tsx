@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Maximize2,
-  PanelLeft,
-  RotateCcw,
-  Sparkles,
+  PanelLeftClose,
+  Menu,
+  Plus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAgentChat } from "@/hooks/useAgentChat";
@@ -17,6 +17,8 @@ import { GuideScreen } from "@/components/agent/GuideScreen";
 import { PortalAccountModal } from "../agent/PortalAccountModal";
 import { LibraryAccountModal } from "../agent/LibraryAccountModal";
 import { LmsAccountModal } from "../agent/LmsAccountModal";
+import { COLORS } from "@/components/agent/colors";
+import ellipse2 from "@/resources/assets/illustrations/ellipse2.svg";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -47,7 +49,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const chatAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleOpenPortalModal = () => setIsPortalModalOpen(true);
@@ -63,11 +65,10 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     };
   }, []);
 
-  // 메시지 업데이트 시 스크롤
   useEffect(() => {
-    if (scrollRef.current && isOpen) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
+    if (chatAreaRef.current && isOpen) {
+      chatAreaRef.current.scrollTo({
+        top: chatAreaRef.current.scrollHeight,
         behavior: "smooth",
       });
     }
@@ -76,6 +77,16 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const handleFullscreen = () => {
     onClose();
     navigate("/agent");
+  };
+
+  const handleSelectRoom = (id: string) => {
+    setCurrentRoomId(id);
+    if (window.innerWidth <= 768) setIsSidebarOpen(false);
+  };
+
+  const handleNewChat = () => {
+    createNewRoom();
+    if (window.innerWidth <= 768) setIsSidebarOpen(false);
   };
 
   return (
@@ -95,74 +106,62 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", stiffness: 450, damping: 35 }}
             >
-              {/* 모달 내부 사이드바 (채팅 이력 및 대화방 목록) */}
+              {/* 모달 내 사이드바 */}
               <Sidebar
                 isOpen={isSidebarOpen}
                 rooms={rooms}
                 currentRoomId={currentRoomId}
-                onSelectRoom={(id) => {
-                  setCurrentRoomId(id);
-                  if (window.innerWidth <= 768) setIsSidebarOpen(false);
-                }}
-                onNewChat={() => {
-                  createNewRoom();
-                  if (window.innerWidth <= 768) setIsSidebarOpen(false);
-                }}
+                onSelectRoom={handleSelectRoom}
+                onNewChat={handleNewChat}
                 onDeleteRoom={deleteRoom}
                 onUpdateRoomTitle={updateRoomTitle}
                 onClearHistory={clearHistory}
                 onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
               />
 
-              {/* 모달 메인 채팅 영역 */}
-              <ChatAreaContainer>
-                <ModalHeader>
+              {/* UNIDorm-AIChat-Web MainArea 1:1 복사 */}
+              <MainArea>
+                <AmbientOrb src={ellipse2} alt="" />
+
+                {/* Header */}
+                <HeaderContainer>
                   <HeaderLeft>
                     <IconButton
-                      type="button"
                       onClick={() => setIsSidebarOpen((prev) => !prev)}
-                      title="대화 목록 (사이드바)"
+                      title="사이드바 토글"
                     >
-                      <PanelLeft size={18} />
+                      {isSidebarOpen ? (
+                        <PanelLeftClose size={20} />
+                      ) : (
+                        <Menu size={20} />
+                      )}
                     </IconButton>
-                    <HeaderTitleGroup>
-                      <TitleRow>
-                        <TitleText>인팁 캠퍼스 비서</TitleText>
+                    <HeaderTitleContainer>
+                      <HeaderTitle>
+                        <span>인팁 비서</span>
                         <BetaBadge>AI</BetaBadge>
-                        <InuAiTag>
-                          <Sparkles size={11} /> inuai 학사 RAG
-                        </InuAiTag>
-                      </TitleRow>
-                      <SubtitleText>{currentRoom.title || "새로운 대화"}</SubtitleText>
-                    </HeaderTitleGroup>
+                      </HeaderTitle>
+                    </HeaderTitleContainer>
                   </HeaderLeft>
 
                   <HeaderRight>
-                    <IconButton
-                      type="button"
-                      onClick={createNewRoom}
-                      title="새 대화 시작"
-                    >
-                      <RotateCcw size={16} />
+                    <IconButton onClick={handleNewChat} title="새로운 대화">
+                      <Plus size={22} />
                     </IconButton>
                     <IconButton
-                      type="button"
                       onClick={handleFullscreen}
                       title="전체 화면으로 열기"
                     >
-                      <Maximize2 size={16} />
+                      <Maximize2 size={18} />
                     </IconButton>
-                    <IconButton
-                      type="button"
-                      onClick={onClose}
-                      title="닫기"
-                    >
-                      <X size={18} />
+                    <IconButton onClick={onClose} title="닫기">
+                      <X size={20} />
                     </IconButton>
                   </HeaderRight>
-                </ModalHeader>
+                </HeaderContainer>
 
-                <MessagesScroll ref={scrollRef}>
+                {/* UNIDorm-AIChat-Web ChatArea 1:1 복사 */}
+                <ChatArea ref={chatAreaRef}>
                   {currentRoom.messages.length === 0 ? (
                     <GuideScreen onSelectSuggestion={(q) => sendMessage(q)} />
                   ) : (
@@ -174,20 +173,20 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                       />
                     ))
                   )}
-                </MessagesScroll>
+                </ChatArea>
 
+                {/* UNIDorm-AIChat-Web ChatInput 1:1 복사 */}
                 <ChatInput
                   onSendMessage={sendMessage}
                   isLoading={isLoading}
                   onStopGeneration={stopGeneration}
                 />
-              </ChatAreaContainer>
+              </MainArea>
             </ModalWrapper>
           </>
         )}
       </AnimatePresence>
 
-      {/* 클라이언트 액션 모달들 */}
       <PortalAccountModal
         isOpen={isPortalModalOpen}
         onClose={() => setIsPortalModalOpen(false)}
@@ -212,28 +211,39 @@ export default AgentChatModal;
 const Backdrop = styled(motion.div)`
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 9998;
 `;
 
 const ModalWrapper = styled(motion.div)`
   position: fixed;
-  top: 5%;
+  top: 4%;
   left: 50%;
   transform: translateX(-50%);
   width: 92%;
   max-width: 960px;
-  height: 88vh;
-  height: 88dvh;
-  background: #ffffff;
+  height: 90vh;
+  height: 90dvh;
+  background: linear-gradient(
+    163.11deg,
+    rgb(240, 240, 255) 10.193%,
+    rgb(253, 253, 255) 111.84%
+  );
   border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   display: flex;
   overflow: hidden;
   z-index: 9999;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    sans-serif;
 
   @media (max-width: 768px) {
     top: 0;
@@ -246,127 +256,133 @@ const ModalWrapper = styled(motion.div)`
   }
 `;
 
-const ChatAreaContainer = styled.div`
+const MainArea = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 100%;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(
-    circle at 50% 10%,
-    rgba(219, 234, 254, 0.45) 0%,
-    rgba(248, 250, 252, 0.95) 75%
-  );
 `;
 
-const ModalHeader = styled.header`
-  height: 56px;
+const AmbientOrb = styled.img`
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 30%);
+  width: 512px;
+  max-width: 120vw;
+  height: auto;
+  aspect-ratio: 512 / 549.5;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+`;
+
+const HeaderContainer = styled.div`
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 20px;
+  background-color: transparent;
+  color: ${COLORS.textDark};
   z-index: 10;
+  position: relative;
 `;
 
 const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 `;
 
-const HeaderTitleGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const TitleRow = styled.div`
+const HeaderTitleContainer = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
 `;
 
-const TitleText = styled.span`
-  font-size: 15px;
+const HeaderTitle = styled.div`
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
-`;
-
-const SubtitleText = styled.span`
-  font-size: 11px;
-  color: #64748b;
-  max-width: 220px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  color: ${COLORS.textDark};
 `;
 
 const BetaBadge = styled.span`
-  background: linear-gradient(135deg, #0958d9 0%, #7c3aed 100%);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 5px;
-  border-radius: 5px;
+  background: linear-gradient(142deg, #007aff 26.94%, #570099 87.68%);
+  color: #fafafa;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
 `;
 
-const InuAiTag = styled.span`
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 5px;
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: ${COLORS.textDark};
   display: flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
 
-  @media (max-width: 640px) {
-    display: none;
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
   }
 `;
 
 const HeaderRight = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 `;
 
-const IconButton = styled.button`
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-  }
-`;
-
-const MessagesScroll = styled.div`
+const ChatArea = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 16px 16px 140px;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+  padding: 10px 20px 100px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 1;
+
+  will-change: scroll-position;
+  transform: translateZ(0);
+  overscroll-behavior-y: contain;
+
+  scrollbar-width: auto;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 14px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.45);
+    background-clip: content-box;
   }
 `;
