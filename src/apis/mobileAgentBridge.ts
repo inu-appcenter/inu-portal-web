@@ -232,12 +232,12 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 학적 요약 정보 수집 (최대 2.5초 대기)
+    // 포털 계정이 연동되어 있으면 학적 요약 정보 수집 (최대 10초 대기)
     if (portalLinked) {
       tasks.push(
         Promise.race([
           fetchAcademicInfoFromApp(),
-          new Promise<null>((r) => setTimeout(() => r(null), 2500)),
+          new Promise<null>((r) => setTimeout(() => r(null), 10000)),
         ]).then((res: any) => {
           if (res?.success && res.data) {
             context.academic = res.data;

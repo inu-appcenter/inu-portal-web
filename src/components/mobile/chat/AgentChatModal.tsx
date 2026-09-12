@@ -87,7 +87,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         behavior: "smooth",
       });
     }
-  }, [currentRoom.messages, isOpen]);
+  }, [currentRoom.messages.length, isOpen]);
 
   const handleFullscreen = () => {
     onClose();

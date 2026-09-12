@@ -40,7 +40,7 @@ export default function AgentPage() {
         behavior: "smooth",
       });
     }
-  }, [currentRoom.messages, currentRoom.messages[currentRoom.messages.length - 1]?.content]);
+  }, [currentRoom.messages.length]);
 
   const handleSelectRoom = (id: string) => {
     setCurrentRoomId(id);
