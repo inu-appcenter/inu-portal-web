@@ -8,6 +8,7 @@ import {
   getMyCurrentSeat,
   renewCurrentSeat,
   returnCurrentSeat,
+  cancelSeatReservation,
   getRoomSeats,
   reserveSeat,
   checkinSeat,
@@ -48,6 +49,7 @@ import {
   X,
   MapPin,
   KeyRound,
+  AlertCircle,
 } from "lucide-react";
 import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
@@ -328,18 +330,36 @@ export default function MobileLibraryHubPage() {
   };
 
   const handleReturnSeat = async () => {
-    if (!mySeat || !window.confirm("정말 퇴실 반납하시겠습니까?")) return;
+    if (!mySeat) return;
+    const isTemp = mySeat.isTempCharge;
+    const confirmMsg = isTemp
+      ? "아직 입실하지 않은 임시 배정 상태입니다.\n좌석 배정을 취소하시겠습니까?"
+      : "정말 퇴실 반납하시겠습니까?";
+
+    if (!window.confirm(confirmMsg)) return;
+
     try {
-      const ok = await returnCurrentSeat(mySeat.chargeId);
-      if (ok) {
-        showToast("🚪 좌석이 정상 반납되었습니다.");
+      if (isTemp) {
+        const cancelRes = await cancelSeatReservation(mySeat.chargeId);
+        if (cancelRes.success) {
+          showToast("🚪 좌석 배정이 정상 취소되었습니다.");
+          setMySeat(null);
+          loadData();
+          return;
+        }
+      }
+
+      const res = await returnCurrentSeat(mySeat.chargeId);
+      if (res.success) {
+        showToast(res.message || "🚪 좌석이 정상 반납되었습니다.");
         setMySeat(null);
         loadData();
       } else {
-        alert("좌석 반납에 실패했습니다.");
+        alert(res.message || "좌석 반납/취소에 실패했습니다.");
       }
     } catch (e) {
       console.error(e);
+      alert("좌석 반납/취소 중 오류가 발생했습니다.");
     }
   };
 
@@ -682,11 +702,22 @@ export default function MobileLibraryHubPage() {
           {mySeat ? (
             <ActiveSeatCard>
               <ActiveSeatHeader>
-                <ActiveBadge>이용 중</ActiveBadge>
+                <ActiveBadge $isTemp={mySeat.isTempCharge}>
+                  {mySeat.isTempCharge ? "임시 배정 (미입실)" : "이용 중"}
+                </ActiveBadge>
                 <SeatRoomTitle>
                   {mySeat.roomName} <strong>{mySeat.seatName}</strong>
                 </SeatRoomTitle>
               </ActiveSeatHeader>
+
+              {mySeat.isTempCharge && (
+                <TempNoticeBox>
+                  <AlertCircle size={14} color="#b45309" style={{ flexShrink: 0, marginTop: "1px" }} />
+                  <span>
+                    좌석 배정 후 20분 내에 도서관 게이트 또는 키오스크에서 입실 확인을 완료해야 합니다. 미확인 시 자동으로 배정이 취소됩니다.
+                  </span>
+                </TempNoticeBox>
+              )}
 
               <SeatTimeInfo>
                 <Clock size={16} color="#2563eb" />
@@ -703,13 +734,15 @@ export default function MobileLibraryHubPage() {
                   <CheckCircle size={14} />
                   <span>입실 확인</span>
                 </ActionButton>
-                <ActionButton onClick={handleRenewSeat}>
-                  <RotateCw size={14} />
-                  <span>1시간 연장</span>
-                </ActionButton>
+                {!mySeat.isTempCharge && (
+                  <ActionButton onClick={handleRenewSeat}>
+                    <RotateCw size={14} />
+                    <span>1시간 연장</span>
+                  </ActionButton>
+                )}
                 <ActionButton onClick={handleReturnSeat} $danger>
                   <LogOut size={14} />
-                  <span>퇴실 반납</span>
+                  <span>{mySeat.isTempCharge ? "배정 취소" : "퇴실 반납"}</span>
                 </ActionButton>
               </ActionRow>
 
@@ -1319,13 +1352,28 @@ const ActiveSeatHeader = styled.div`
   margin-bottom: 10px;
 `;
 
-const ActiveBadge = styled.span`
+const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
   font-size: 11px;
   font-weight: 700;
-  background: #2563eb;
-  color: #ffffff;
+  background: ${({ $isTemp }) => ($isTemp ? "#fef3c7" : "#2563eb")};
+  color: ${({ $isTemp }) => ($isTemp ? "#b45309" : "#ffffff")};
+  border: 1px solid ${({ $isTemp }) => ($isTemp ? "#fde68a" : "#2563eb")};
   padding: 2px 6px;
   border-radius: 4px;
+`;
+
+const TempNoticeBox = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  margin-bottom: 12px;
 `;
 
 const SeatRoomTitle = styled.span`

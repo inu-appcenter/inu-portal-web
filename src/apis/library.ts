@@ -80,6 +80,10 @@ export interface CurrentSeatInfo {
   roomName: string;
   beginTime: string;
   endTime: string;
+  isTempCharge?: boolean;
+  isReturnable?: boolean;
+  isRenewable?: boolean;
+  checkinExpiryDate?: string;
 }
 
 export interface StudyRoomReserveParams {
@@ -442,19 +446,26 @@ export async function getMyCurrentSeat(): Promise<CurrentSeatInfo | null> {
     request: {
       method: 'GET',
       url: 'https://lib.inu.ac.kr/pyxis-api/1/api/seat-charges',
+      params: { isMy: true },
     },
   });
 
   if (res.success && res.data) {
-    const d = res.data?.seat || res.data?.seatCharge ? res.data : (res.data?.data?.seat ? res.data.data : null);
+    const list = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+    const d = list.length > 0 ? list[0] : (res.data?.seat || res.data?.seatCharge ? res.data : null);
     if (d) {
+      const isTemp = d.state?.code === 'TEMP_CHARGE' || d.state?.name?.includes('임시');
       return {
         chargeId: d.id || d.seatCharge?.id,
         seatId: d.seat?.id,
-        seatName: d.seat?.name || '좌석',
-        roomName: d.seat?.room?.name || '열람실',
+        seatName: d.seat?.name || d.seat?.code || '좌석',
+        roomName: d.room?.name || d.seat?.room?.name || '열람실',
         beginTime: d.beginTime,
         endTime: d.endTime,
+        isTempCharge: isTemp,
+        isReturnable: Boolean(d.isReturnable),
+        isRenewable: Boolean(d.isRenewable),
+        checkinExpiryDate: d.checkinExpiryDate,
       };
     }
   }
@@ -485,8 +496,8 @@ export async function renewCurrentSeat(chargeId: number): Promise<boolean> {
 /**
  * 13. 내 좌석 반납(퇴실)하기
  */
-export async function returnCurrentSeat(chargeId: number): Promise<boolean> {
-  if (!isMobileAppEnvironment()) return false;
+export async function returnCurrentSeat(chargeId: number): Promise<{ success: boolean; message?: string }> {
+  if (!isMobileAppEnvironment()) return { success: false, message: '모바일 앱 환경에서만 가능합니다.' };
 
   const res = await executeAgentActionBridge({
     actionId: `act_return_${chargeId}_${Date.now()}`,
@@ -500,5 +511,46 @@ export async function returnCurrentSeat(chargeId: number): Promise<boolean> {
       },
     },
   });
-  return Boolean(res.success);
+
+  if (res.success) {
+    return { success: true };
+  }
+
+  // 임시배정 상태로 인해 반납 불가 에러인 경우, 배정 취소(cancelSeatReservation)로 자동 대체 처리
+  const msg = res.errorMessage || (res.data?.message ? String(res.data.message) : '');
+  if (msg.includes('임시배정') || msg.includes('불가한 상태')) {
+    const cancelRes = await cancelSeatReservation(chargeId);
+    if (cancelRes.success) {
+      return { success: true, message: '임시 배정 좌석이 정상 취소되었습니다.' };
+    }
+  }
+
+  return {
+    success: false,
+    message: res.errorMessage || res.data?.message || '좌석 반납에 실패했습니다.',
+  };
+}
+
+/**
+ * 14. 열람실 좌석 배정/예약 취소하기 (임시배정 또는 예약 상태일 때)
+ */
+export async function cancelSeatReservation(chargeId: number): Promise<{ success: boolean; message?: string }> {
+  if (!isMobileAppEnvironment()) return { success: false, message: '모바일 앱 환경에서만 가능합니다.' };
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_cancel_seat_${chargeId}_${Date.now()}`,
+    authDomain: 'LIBRARY',
+    request: {
+      method: 'POST',
+      url: `https://lib.inu.ac.kr/pyxis-api/1/api/seat-charges/${chargeId}?smufMethodCode=MOBILE`,
+      headers: {
+        'X-HTTP-Method-Override': 'DELETE',
+      },
+    },
+  });
+
+  return {
+    success: Boolean(res.success),
+    message: res.errorMessage || (res.data?.message ? String(res.data.message) : undefined),
+  };
 }
