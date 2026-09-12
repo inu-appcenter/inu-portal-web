@@ -11,6 +11,7 @@ import {
   cancelSeatReservation,
   setFavoriteSeat,
   unsetFavoriteSeat,
+  getFavoriteSeats,
   getRoomSeats,
   reserveSeat,
   checkinSeat,
@@ -63,9 +64,11 @@ export default function MobileLibraryHubPage() {
   const [studyRooms, setStudyRooms] = useState<LibraryStudyRoom[]>([]);
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
   const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
-  const [isLinked, setIsLinked] = useState<boolean>(false);
+  const [favoriteSeats, setFavoriteSeats] = useState<LibrarySeat[]>([]);
+  const [isLinked, setIsLinked] = useState<boolean | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingMy, setIsLoadingMy] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // 1. 열람실 좌석 선택 모달 상태
@@ -113,8 +116,8 @@ export default function MobileLibraryHubPage() {
       try {
         const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
         if (res.success) {
-          showToast("🎉 도서관 게이트 입실이 확인되어 좌석 배정이 자동으로 확정되었습니다!");
-          loadData();
+          showToast("🎉 도서관 게이트 입실이 감지되어 좌석 배정이 자동으로 확정되었습니다!");
+          loadMyStatus();
         }
       } catch {}
     }, 15000);
@@ -128,7 +131,8 @@ export default function MobileLibraryHubPage() {
     hasback: true,
   });
 
-  const loadData = async () => {
+  // 열람실/스터디룸 전체 목록 조회 (독립 실행)
+  const loadRoomsData = async () => {
     setIsLoading(true);
     try {
       const [roomsData, studyData] = await Promise.all([
@@ -137,22 +141,36 @@ export default function MobileLibraryHubPage() {
       ]);
       setRooms(roomsData);
       setStudyRooms(studyData);
-
-      if (isMobileAppEnvironment()) {
-        const linkRes = await checkLibraryAccountLinked().catch(() => ({ linked: false }));
-        setIsLinked(linkRes.linked);
-        if (linkRes.linked) {
-          const [seat, studyRes] = await Promise.all([
-            getMyCurrentSeat().catch(() => null),
-            getMyStudyRoomReservations().catch(() => []),
-          ]);
-          setMySeat(seat);
-          setMyStudyReservations(studyRes);
-        }
-      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 내 이용 현황 및 선호좌석 조회 (병렬 독립 실행 및 즉각 갱신)
+  const loadMyStatus = async () => {
+    if (!isMobileAppEnvironment()) return;
+    setIsLoadingMy(true);
+    try {
+      const linkRes = await checkLibraryAccountLinked().catch(() => ({ linked: false }));
+      setIsLinked(linkRes.linked);
+      if (linkRes.linked) {
+        const [seat, studyRes, favs] = await Promise.all([
+          getMyCurrentSeat().catch(() => null),
+          getMyStudyRoomReservations().catch(() => []),
+          getFavoriteSeats().catch(() => []),
+        ]);
+        setMySeat(seat);
+        setMyStudyReservations(studyRes);
+        setFavoriteSeats(favs);
+      }
+    } finally {
+      setIsLoadingMy(false);
+    }
+  };
+
+  const loadData = () => {
+    loadRoomsData();
+    loadMyStatus();
   };
 
   useEffect(() => {
@@ -164,6 +182,13 @@ export default function MobileLibraryHubPage() {
       window.removeEventListener("openLibraryAccountModal", handleOpenModal);
     };
   }, []);
+
+  // 탭이 '내 이용 현황'으로 바뀔 때 즉시 최신 내역 단독 재조회
+  useEffect(() => {
+    if (activeTab === "my") {
+      loadMyStatus();
+    }
+  }, [activeTab]);
 
   const showToast = (msg: string) => {
     setActionMessage(msg);
@@ -221,7 +246,9 @@ export default function MobileLibraryHubPage() {
         showToast(`🎉 ${seat.code}번 좌석이 성공적으로 배정되었습니다!`);
         setSelectedSeatRoom(null);
         setActiveTab("my");
-        loadData();
+        // 내 이용 현황을 즉시 먼저 갱신하여 탭 전환 시 바로 표시되도록 보장
+        await loadMyStatus();
+        loadRoomsData();
       } else if (res.errorCode === "AUTH_REQUIRED" || res.message?.includes("로그인")) {
         alert("좌석 배정을 위해 학산도서관 계정 연동이 필요합니다.");
         window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
@@ -231,6 +258,47 @@ export default function MobileLibraryHubPage() {
     } catch (e) {
       console.error(e);
       alert("좌석 배정 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 선호좌석 삭제
+  const handleRemoveFavoriteSeat = async (seatId: number) => {
+    if (!window.confirm("선호좌석 지정을 해제하시겠습니까?")) return;
+    try {
+      const ok = await unsetFavoriteSeat(seatId);
+      if (ok) {
+        showToast("⭐ 선호좌석이 해제되었습니다.");
+        loadMyStatus();
+      } else {
+        alert("선호좌석 해제에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // 선호좌석 빈자리 감시 등록
+  const handleRegisterFavSeatSniper = async (fav: LibrarySeat) => {
+    if (!isMobileAppEnvironment()) {
+      alert("특정 좌석 빈자리 실시간 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
+      return;
+    }
+    if (!window.confirm(`[${fav.name}]\n현재 이용 중인 좌석입니다.\n자리가 비었을 때(퇴실/반납 시) 알림을 받으시겠습니까?`)) {
+      return;
+    }
+    try {
+      await registerLocalWatchJobInApp({
+        watchType: "SPECIFIC_SEAT_SNIPER",
+        roomId: 0,
+        roomName: fav.name || "선호좌석",
+        seatId: fav.id,
+        seatNo: fav.code,
+        durationMinutes: 90,
+      });
+      showToast(`🎯 [${fav.name}] 빈자리 감시가 시작되었습니다! (최대 90분)`);
+    } catch (e) {
+      console.error(e);
+      alert("빈자리 감시 등록에 실패했습니다.");
     }
   };
 
@@ -586,7 +654,7 @@ export default function MobileLibraryHubPage() {
       </TabBar>
 
       {/* 도서관 계정 연동 유도 배너 */}
-      {!isLinked && (
+      {isLinked === false && (
         <AuthBannerCard onClick={() => setIsAuthModalOpen(true)}>
           <BannerLeft>
             <KeyRound size={18} color="#d97706" />
@@ -622,6 +690,46 @@ export default function MobileLibraryHubPage() {
       {/* ================= 1. 열람실 좌석 탭 ================= */}
       {activeTab === "seats" && (
         <Section>
+          {/* 내 선호좌석 퀵 리스트 */}
+          {favoriteSeats.length > 0 && (
+            <FavSection>
+              <FavHeader>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Star size={15} color="#f59e0b" fill="#f59e0b" />
+                  <FavTitle>내 선호좌석 ({favoriteSeats.length})</FavTitle>
+                </div>
+              </FavHeader>
+              <FavGrid>
+                {favoriteSeats.map((fav) => (
+                  <FavCard key={fav.id}>
+                    <FavCardTop>
+                      <FavName>{fav.name}</FavName>
+                      <FavBadge $isAvail={!fav.isOccupied}>
+                        {!fav.isOccupied ? "배정 가능" : "이용 중"}
+                      </FavBadge>
+                    </FavCardTop>
+                    <FavBtnRow>
+                      {!fav.isOccupied ? (
+                        <FavActionBtn onClick={() => handleAssignSeat(fav)}>
+                          <CheckCircle size={13} />
+                          <span>즉시 배정</span>
+                        </FavActionBtn>
+                      ) : (
+                        <FavActionBtn onClick={() => handleRegisterFavSeatSniper(fav)}>
+                          <Crosshair size={13} />
+                          <span>빈자리 알림</span>
+                        </FavActionBtn>
+                      )}
+                      <FavDeleteBtn onClick={() => handleRemoveFavoriteSeat(fav.id)} title="선호좌석 해제">
+                        <X size={14} />
+                      </FavDeleteBtn>
+                    </FavBtnRow>
+                  </FavCard>
+                ))}
+              </FavGrid>
+            </FavSection>
+          )}
+
           <SectionHeader>
             <SectionTitle>실시간 열람실 좌석 현황</SectionTitle>
             <RefreshButton onClick={loadData}>
@@ -814,32 +922,51 @@ export default function MobileLibraryHubPage() {
               </SeatTimeInfo>
 
               <ActionRow>
-                <ActionButton
-                  onClick={handleCheckinSeat}
-                  style={{ background: "#2563eb", color: "#fff", border: "none" }}
-                >
-                  <CheckCircle size={14} />
-                  <span>배정 확정</span>
-                </ActionButton>
                 {mySeat.isTempCharge ? (
-                  <ActionButton onClick={handleToggleFavoriteSeat}>
-                    <Star
-                      size={14}
-                      color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
-                      fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
-                    />
-                    <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
-                  </ActionButton>
+                  <>
+                    <ActionButton
+                      onClick={handleCheckinSeat}
+                      style={{ background: "#2563eb", color: "#fff", border: "none" }}
+                    >
+                      <CheckCircle size={14} />
+                      <span>배정 확정</span>
+                    </ActionButton>
+                    <ActionButton onClick={handleToggleFavoriteSeat}>
+                      <Star
+                        size={14}
+                        color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
+                        fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
+                      />
+                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
+                    </ActionButton>
+                    <ActionButton onClick={handleReturnSeat} $danger>
+                      <LogOut size={14} />
+                      <span>예약 취소</span>
+                    </ActionButton>
+                  </>
                 ) : (
-                  <ActionButton onClick={handleRenewSeat}>
-                    <RotateCw size={14} />
-                    <span>1시간 연장</span>
-                  </ActionButton>
+                  <>
+                    <ActionButton
+                      onClick={handleRenewSeat}
+                      style={{ background: "#2563eb", color: "#fff", border: "none" }}
+                    >
+                      <RotateCw size={14} />
+                      <span>1시간 연장</span>
+                    </ActionButton>
+                    <ActionButton onClick={handleToggleFavoriteSeat}>
+                      <Star
+                        size={14}
+                        color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
+                        fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
+                      />
+                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
+                    </ActionButton>
+                    <ActionButton onClick={handleReturnSeat} $danger>
+                      <LogOut size={14} />
+                      <span>퇴실 반납</span>
+                    </ActionButton>
+                  </>
                 )}
-                <ActionButton onClick={handleReturnSeat} $danger>
-                  <LogOut size={14} />
-                  <span>{mySeat.isTempCharge ? "예약 취소" : "퇴실 반납"}</span>
-                </ActionButton>
               </ActionRow>
 
               <ReminderRow onClick={handleRegisterSeatReminder}>
@@ -847,6 +974,8 @@ export default function MobileLibraryHubPage() {
                 <span>종료 20분 전 정각 알람 신청하기</span>
               </ReminderRow>
             </ActiveSeatCard>
+          ) : isLoadingMy ? (
+            <EmptyBox>좌석 이용 현황 확인 중...</EmptyBox>
           ) : (
             <EmptyBox>현재 배정된 열람실 좌석이 없습니다.</EmptyBox>
           )}
@@ -889,6 +1018,41 @@ export default function MobileLibraryHubPage() {
             </ReservationList>
           ) : (
             <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
+          )}
+
+          {/* 3-3. 내 선호좌석 목록 섹션 */}
+          <SubTitle style={{ marginTop: "24px" }}>내 선호좌석 목록 ({favoriteSeats.length})</SubTitle>
+          {favoriteSeats.length > 0 ? (
+            <FavGrid>
+              {favoriteSeats.map((fav) => (
+                <FavCard key={fav.id}>
+                  <FavCardTop>
+                    <FavName>{fav.name}</FavName>
+                    <FavBadge $isAvail={!fav.isOccupied}>
+                      {!fav.isOccupied ? "배정 가능" : "이용 중"}
+                    </FavBadge>
+                  </FavCardTop>
+                  <FavBtnRow>
+                    {!fav.isOccupied ? (
+                      <FavActionBtn onClick={() => handleAssignSeat(fav)}>
+                        <CheckCircle size={13} />
+                        <span>즉시 배정</span>
+                      </FavActionBtn>
+                    ) : (
+                      <FavActionBtn onClick={() => handleRegisterFavSeatSniper(fav)}>
+                        <Crosshair size={13} />
+                        <span>빈자리 알림</span>
+                      </FavActionBtn>
+                    )}
+                    <FavDeleteBtn onClick={() => handleRemoveFavoriteSeat(fav.id)} title="선호좌석 해제">
+                      <X size={14} />
+                    </FavDeleteBtn>
+                  </FavBtnRow>
+                </FavCard>
+              ))}
+            </FavGrid>
+          ) : (
+            <EmptyBox>등록된 선호좌석이 없습니다. 열람실 좌석에서 ★을 눌러 등록해보세요.</EmptyBox>
           )}
         </Section>
       )}
@@ -1976,3 +2140,108 @@ const StudySniperSlotBtn = styled.button`
     transform: scale(0.98);
   }
 `;
+
+const FavSection = styled.div`
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const FavHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const FavTitle = styled.h3`
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #854d0e;
+  margin: 0;
+`;
+
+const FavGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+`;
+
+const FavCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #fde047;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+`;
+
+const FavCardTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const FavName = styled.span`
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const FavBadge = styled.span<{ $isAvail: boolean }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "#f1f5f9")};
+  color: ${({ $isAvail }) => ($isAvail ? "#16a34a" : "#64748b")};
+`;
+
+const FavBtnRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const FavActionBtn = styled.button`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #1d4ed8;
+  }
+`;
+
+const FavDeleteBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+`;
+

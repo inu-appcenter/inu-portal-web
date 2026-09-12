@@ -624,3 +624,39 @@ export async function unsetFavoriteSeat(seatId: number): Promise<boolean> {
   });
   return Boolean(res.success);
 }
+
+/**
+ * 17. 내 선호좌석 목록 조회 (실시간 점유 상태 포함)
+ */
+export async function getFavoriteSeats(): Promise<LibrarySeat[]> {
+  if (!isMobileAppEnvironment()) return [];
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_fav_seats_${Date.now()}`,
+    authDomain: 'LIBRARY',
+    request: {
+      method: 'GET',
+      url: 'https://lib.inu.ac.kr/pyxis-api/1/api/favorite-seats',
+      params: { smufMethodCode: 'MOBILE' },
+    },
+  });
+
+  const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+  return rawList.map((s: any) => {
+    const isOccupied = Boolean(s.isOccupied) || s.seatChargeState === 'CHARGE';
+    const isActive = s.isActive !== false;
+    const roomName = s.room?.name || '';
+    const seatCode = s.code || String(s.id);
+    const fullName = roomName ? `${roomName} ${seatCode}번` : `${seatCode}번`;
+
+    return {
+      id: s.id,
+      code: seatCode,
+      name: fullName,
+      isActive,
+      isReservable: !isOccupied && isActive,
+      isOccupied,
+      remainingTime: s.remainingTime,
+    };
+  });
+}
