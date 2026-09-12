@@ -526,12 +526,27 @@ export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<
 
   if (code.includes('needCompanionList') || message.includes('needCompanionList')) {
     message = '동반 이용자 명단을 필수로 등록해야 예약할 수 있는 스터디룸입니다.';
+  } else if (code.includes('roomHasNoChargeableHour') || message.includes('roomHasNoChargeableHour')) {
+    message = '선택하신 날짜에는 해당 스터디룸을 예약할 수 없습니다. (휴관일 또는 운영 시간 외)';
+  } else if (code.includes('hasReservation') || message.includes('hasReservation')) {
+    message = '해당 시간대에 이미 예약된 내역이 있습니다. 다른 시간대를 선택해주세요.';
   } else if (code.includes('duplicate') || message.includes('duplicate')) {
     message = '해당 시간대에 이미 예약된 내역이 있습니다.';
   } else if (code.includes('minQuota') || message.includes('minQuota')) {
     message = '스터디룸 최소 수용 인원을 충족해야 합니다.';
+  } else if (code.includes('sanction') || code.includes('penalty') || message.includes('sanction') || message.includes('penalty')) {
+    message = '도서관 이용 제재(페널티) 상태로 예약이 불가합니다.';
   } else if (code.includes('time') || message.includes('timeLimit')) {
     message = '이용 가능한 예약 시간 범위를 확인해주세요.';
+  } else if (message.includes('No message found under code') || message.includes('for locale')) {
+    // Pyxis 서버가 번역 메시지를 찾지 못할 경우 에러 코드 추출하여 안내
+    const codeMatch = message.match(/code\s+'([^']+)'/);
+    const extractedCode = codeMatch ? codeMatch[1] : code;
+    if (extractedCode.includes('NoChargeableHour') || extractedCode.includes('noChargeableHour')) {
+      message = '선택하신 날짜에는 해당 스터디룸을 예약할 수 없습니다. (휴관일 또는 운영 시간 외)';
+    } else {
+      message = `예약에 실패했습니다. (${extractedCode || '알 수 없는 오류'})`;
+    }
   }
 
   return { success: false, message, errorCode: code };

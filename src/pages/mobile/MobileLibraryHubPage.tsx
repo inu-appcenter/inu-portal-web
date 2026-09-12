@@ -60,6 +60,7 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Check,
 } from "lucide-react";
 import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
@@ -1672,13 +1673,11 @@ export default function MobileLibraryHubPage() {
               })()}
 
               {/* 동반이용자 개인정보 수집 및 이용 동의 (필수) */}
-              <PrivacyAgreeContainer>
+              <PrivacyAgreeContainer onClick={() => setIsPrivacyAgreed((prev) => !prev)}>
                 <PrivacyAgreeLabel>
-                  <PrivacyCheckbox
-                    type="checkbox"
-                    checked={isPrivacyAgreed}
-                    onChange={(e) => setIsPrivacyAgreed(e.target.checked)}
-                  />
+                  <CustomCheckbox $checked={isPrivacyAgreed}>
+                    {isPrivacyAgreed && <Check size={11} color="#fff" strokeWidth={3} />}
+                  </CustomCheckbox>
                   <span>
                     동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "#ef4444" }}>*필수</span>
                   </span>
@@ -2899,7 +2898,7 @@ const PrivacyAgreeContainer = styled.div`
   gap: 6px;
 `;
 
-const PrivacyAgreeLabel = styled.label`
+const PrivacyAgreeLabel = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2907,20 +2906,28 @@ const PrivacyAgreeLabel = styled.label`
   font-weight: 700;
   color: #1e3a8a;
   cursor: pointer;
+  pointer-events: none;
 `;
 
-const PrivacyCheckbox = styled.input`
-  width: 16px;
-  height: 16px;
-  accent-color: #2563eb;
-  cursor: pointer;
+const CustomCheckbox = styled.div<{ $checked: boolean }>`
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 2px solid ${({ $checked }) => ($checked ? "#2563eb" : "#94a3b8")};
+  background: ${({ $checked }) => ($checked ? "#2563eb" : "#ffffff")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
 `;
 
 const PrivacyNoticeText = styled.span`
   font-size: 11px;
   color: #3b82f6;
   line-height: 1.4;
-  padding-left: 24px;
+  padding-left: 25px;
 `;
+
 
 
