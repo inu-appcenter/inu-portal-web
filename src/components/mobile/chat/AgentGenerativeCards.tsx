@@ -87,7 +87,7 @@ export const AgentGenerativeCards: React.FC<Props> = ({
   );
 };
 
-const SingleCardItem: React.FC<{
+export const SingleCardItem: React.FC<{
   component: UiComponent;
   onNavigate?: () => void;
 }> = ({ component, onNavigate }) => {

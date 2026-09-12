@@ -282,6 +282,9 @@ const COMBINED_LINK_REGEX =
 const preprocessMarkdown = (rawText: string): string => {
   if (!rawText) return rawText;
   let text = rawText;
+  // 스트리밍 도중 잘려 들어올 수 있는 [CHIPS... 태그 완벽 제거
+  text = text.replace(/\[\s*CHIPS[\s\S]*$/i, "");
+  text = text.replace(/\[CHIPS:[^\]]*\]?/gi, "");
   text = text.replace(/^[ \t]*(?:[-*+]|\d+\.)?[ \t]*\[[^\]]*\]\(\s*\)[ \t]*\r?\n?/gm, "");
   text = text.replace(/\[[^\]]*\]\(\s*\)/g, "");
   text = text.replace(/(.)\n(={3,}|-{3,})(\n|$)/g, "$1\n\n$2$3");

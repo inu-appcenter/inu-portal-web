@@ -3,14 +3,11 @@ import styled from "styled-components";
 import {
   ExternalLink,
   BookOpen,
-  Bus,
-  Utensils,
-  Calendar,
   Smartphone,
   ShieldAlert,
-  Sparkles,
 } from "lucide-react";
 import { UiComponent } from "@/apis/agent";
+import { SingleCardItem } from "@/components/mobile/chat/AgentGenerativeCards";
 
 const CardsContainer = styled.div`
   display: flex;
@@ -225,82 +222,8 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
           );
         }
 
-        // 3. 버스 정보 카드
-        if (type.includes("BUS")) {
-          return (
-            <CardBase key={idx}>
-              <CardHeader>
-                <CardTitle>
-                  <Bus size={16} color="#059669" />
-                  실시간 셔틀 및 시내버스 도착 정보
-                </CardTitle>
-                <CardLinkButton href="/home/bus">
-                  전체 노선 보기 <ExternalLink size={12} />
-                </CardLinkButton>
-              </CardHeader>
-              <div style={{ color: "#334155" }}>
-                정문/공대/자연대 정류장 실시간 버스 도착 데이터가 조회되었습니다.
-              </div>
-            </CardBase>
-          );
-        }
-
-        // 4. 학식 정보 카드
-        if (type.includes("CAFETERIA")) {
-          return (
-            <CardBase key={idx}>
-              <CardHeader>
-                <CardTitle>
-                  <Utensils size={16} color="#d97706" />
-                  캠퍼스 식당 메뉴 안내
-                </CardTitle>
-                <CardLinkButton href="/home/cafeteria">
-                  주간 식단표 <ExternalLink size={12} />
-                </CardLinkButton>
-              </CardHeader>
-              <div style={{ color: "#334155" }}>
-                학생식당 및 기숙사 식당의 최신 식단 정보가 반영되었습니다.
-              </div>
-            </CardBase>
-          );
-        }
-
-        // 5. 시간표 / 학사일정 카드
-        if (type.includes("TIMETABLE") || type.includes("SCHEDULE")) {
-          return (
-            <CardBase key={idx}>
-              <CardHeader>
-                <CardTitle>
-                  <Calendar size={16} color="#7c3aed" />
-                  학사일정 및 시간표 정보
-                </CardTitle>
-                <CardLinkButton href="/home/calendar">
-                  캘린더 열기 <ExternalLink size={12} />
-                </CardLinkButton>
-              </CardHeader>
-              <div style={{ color: "#334155" }}>
-                공식 학사일정 및 사용자 시간표 조회가 연동되었습니다.
-              </div>
-            </CardBase>
-          );
-        }
-
-        // 6. 기본 링크 카드
-        return (
-          <CardBase key={idx}>
-            <CardHeader>
-              <CardTitle>
-                <Sparkles size={16} color="#0958d9" />
-                캠퍼스 연계 정보 ({type})
-              </CardTitle>
-              {component.link && (
-                <CardLinkButton href={component.link.route}>
-                  {component.link.label} <ExternalLink size={12} />
-                </CardLinkButton>
-              )}
-            </CardHeader>
-          </CardBase>
-        );
+        // 3. 인팁 캠퍼스 도구 카드 (MY_SETTINGS, BUS, CAFETERIA, TIMETABLE, WEATHER, NOTICE_LIST 등 20여 종)
+        return <SingleCardItem key={idx} component={component} />;
       })}
     </CardsContainer>
   );

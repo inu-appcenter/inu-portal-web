@@ -236,9 +236,13 @@ export const useAgentChat = () => {
                   const msgs = [...room.messages];
                   const lastIdx = msgs.length - 1;
                   if (lastIdx >= 0 && msgs[lastIdx].role === "assistant") {
+                    let newContent = (msgs[lastIdx].content || "") + delta;
+                    if (newContent.includes("[CHIPS") || newContent.includes("[chips")) {
+                      newContent = newContent.replace(/\[\s*CHIPS[\s\S]*$/i, "");
+                    }
                     msgs[lastIdx] = {
                       ...msgs[lastIdx],
-                      content: (msgs[lastIdx].content || "") + delta,
+                      content: newContent,
                     };
                   }
                   return { ...room, messages: msgs };
@@ -254,8 +258,13 @@ export const useAgentChat = () => {
                   const lastIdx = msgs.length - 1;
                   if (lastIdx >= 0 && msgs[lastIdx].role === "assistant") {
                     const prevProc = msgs[lastIdx].process || { status: "DONE" };
+                    const cleanedContent = (msgs[lastIdx].content || "")
+                      .replace(/\[\s*CHIPS[\s\S]*$/i, "")
+                      .replace(/\[CHIPS:[^\]]*\]?/gi, "")
+                      .trim();
                     msgs[lastIdx] = {
                       ...msgs[lastIdx],
+                      content: cleanedContent,
                       isStreaming: false,
                       process: {
                         ...prevProc,
