@@ -121,7 +121,9 @@ export async function deletePortalAccount(): Promise<AgentActionResult<{ linked:
  * 모바일 앱 백그라운드 SSO를 통해 최신 학적 정보 조회 실행
  */
 export async function fetchAcademicInfoFromApp(): Promise<AgentActionResult<AcademicInfoData>> {
-  return sendBridgeAction<AcademicInfoData>('fetchAcademicInfo', null, 25000);
+  // The native SSO flow can include portal login and an ERP redirect. Its own
+  // scraper budget is 35 seconds, so this must remain longer than that budget.
+  return sendBridgeAction<AcademicInfoData>('fetchAcademicInfo', null, 45000);
 }
 
 /**
@@ -232,16 +234,25 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 학적 요약 정보 수집 (최대 10초 대기)
+    // 포털 계정이 연동되어 있으면 학적 요약 정보를 끝까지 수집한다.
+    // A portal SSO + ERP redirect regularly exceeds 10 seconds; racing it
+    // against a shorter timer discarded valid linked-account results and made
+    // the server render the "account linking required" card.
     if (portalLinked) {
       tasks.push(
-        Promise.race([
-          fetchAcademicInfoFromApp(),
-          new Promise<null>((r) => setTimeout(() => r(null), 10000)),
-        ]).then((res: any) => {
+        fetchAcademicInfoFromApp().then((res) => {
           if (res?.success && res.data) {
             context.academic = res.data;
           }
+          // Preserve the distinction between an unlinked account and a
+          // temporary SSO/ERP failure for diagnostics and future UI handling.
+          context.portal = {
+            linked: true,
+            ...(res?.success ? {} : {
+              academicErrorCode: res?.errorCode,
+              academicErrorMessage: res?.errorMessage,
+            }),
+          };
         }).catch(() => {})
       );
     }
@@ -284,4 +295,3 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
   return context;
 }
-

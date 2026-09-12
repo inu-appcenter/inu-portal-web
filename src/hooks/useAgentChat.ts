@@ -156,8 +156,9 @@ export const useAgentChat = () => {
           content: m.content,
         }));
 
+      let clientContext: Record<string, any> | undefined;
       try {
-        const clientContext = await resolveClientContext();
+        clientContext = await resolveClientContext();
         await streamAgentChat(
           {
             message: content,
@@ -315,6 +316,7 @@ export const useAgentChat = () => {
           const res = await postAgentChat({
             message: content,
             history,
+            clientContext: clientContext && Object.keys(clientContext).length > 0 ? clientContext : undefined,
           });
           const data = res?.data;
           setRooms((prev) =>
