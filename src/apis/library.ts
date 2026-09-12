@@ -162,15 +162,23 @@ export async function getRoomSeats(roomId: number, hopeDate?: string): Promise<{
   // 데이터 언래핑: res.data가 { list: [...] } 이거나 { data: { list: [...] } } 이거나 배열일 수 있음
   const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
 
-  const seats = rawList.map((s: any) => ({
-    id: s.id,
-    code: s.code || String(s.id),
-    name: s.name || s.code,
-    isActive: Boolean(s.isActive),
-    isReservable: Boolean(s.isReservable),
-    isOccupied: Boolean(s.isOccupied),
-    remainingTime: s.remainingTime,
-  }));
+  const seats = rawList.map((s: any) => {
+    const isOccupied = Boolean(s.isOccupied) || s.seatChargeState === 'CHARGE';
+    const isActive = s.isActive !== false;
+    // 학산도서관 열람실은 당일 현장 즉시 배정 방식이므로 API상 isReservable이 false라도
+    // 비어있고 활성화된 좌석이면 즉시 배정(isReservable: true) 가능함
+    const isReservable = Boolean(s.isReservable) || (!isOccupied && isActive);
+
+    return {
+      id: s.id,
+      code: s.code || String(s.id),
+      name: s.name || s.code,
+      isActive,
+      isReservable,
+      isOccupied,
+      remainingTime: s.remainingTime,
+    };
+  });
 
   return { success: true, seats };
 }

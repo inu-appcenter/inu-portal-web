@@ -156,7 +156,7 @@ export default function MobileLibraryHubPage() {
 
   // 좌석 배정 신청
   const handleAssignSeat = async (seat: LibrarySeat) => {
-    if (!seat.isReservable || seat.isOccupied) {
+    if (seat.isOccupied || seat.isActive === false) {
       alert("현재 배정할 수 없는 좌석입니다.");
       return;
     }
@@ -790,7 +790,7 @@ export default function MobileLibraryHubPage() {
                 <SeatLegendRow>
                   <SeatLegendItem>
                     <SeatLegendBox $color="#eff6ff" $border="#93c5fd" />
-                    <span>배정 가능</span>
+                    <span>배정 가능 (터치 시 배정)</span>
                   </SeatLegendItem>
                   <SeatLegendItem>
                     <SeatLegendBox $color="#fef2f2" $border="#fca5a5" />
@@ -800,21 +800,25 @@ export default function MobileLibraryHubPage() {
 
                 <SeatGridContainer>
                   {roomSeats.map((seat) => {
-                    const isAvailable = seat.isReservable && !seat.isOccupied;
+                    const isAvailable = !seat.isOccupied && seat.isActive !== false;
                     return (
                       <SeatButton
                         key={seat.id}
                         $isOccupied={seat.isOccupied}
-                        $isReservable={seat.isReservable}
+                        $isReservable={isAvailable}
+                        $isDisabled={seat.isActive === false}
+                        disabled={seat.isActive === false}
                         title={
                           isAvailable
                             ? `${seat.code}번 좌석 배정하기`
-                            : `${seat.code}번 좌석 빈자리 알림받기`
+                            : seat.isOccupied
+                            ? `${seat.code}번 좌석 빈자리 알림받기`
+                            : `${seat.code}번 미운영 좌석`
                         }
                         onClick={() => {
                           if (isAvailable) {
                             handleAssignSeat(seat);
-                          } else {
+                          } else if (seat.isOccupied) {
                             handleRegisterSpecificSeatSniper(seat);
                           }
                         }}
@@ -1581,13 +1585,17 @@ const SeatGridContainer = styled.div`
   overflow-y: auto;
 `;
 
-const SeatButton = styled.button<{ $isOccupied: boolean; $isReservable: boolean }>`
+const SeatButton = styled.button<{
+  $isOccupied: boolean;
+  $isReservable: boolean;
+  $isDisabled?: boolean;
+}>`
   aspect-ratio: 1;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   border: 1px solid
     ${({ $isOccupied, $isReservable }) =>
@@ -1596,11 +1604,20 @@ const SeatButton = styled.button<{ $isOccupied: boolean; $isReservable: boolean 
     $isOccupied ? "#fef2f2" : $isReservable ? "#eff6ff" : "#f8fafc"};
   color: ${({ $isOccupied, $isReservable }) =>
     $isOccupied ? "#dc2626" : $isReservable ? "#1d4ed8" : "#94a3b8"};
-  cursor: pointer;
+  cursor: ${({ $isDisabled }) => ($isDisabled ? "not-allowed" : "pointer")};
   transition: all 0.15s ease;
 
+  &:hover {
+    ${({ $isReservable, $isOccupied }) =>
+      $isReservable
+        ? "background: #dbeafe; border-color: #60a5fa;"
+        : $isOccupied
+        ? "background: #fee2e2; border-color: #f87171;"
+        : ""}
+  }
+
   &:active {
-    transform: scale(0.93);
+    ${({ $isDisabled }) => (!$isDisabled ? "transform: scale(0.93);" : "")}
   }
 `;
 
