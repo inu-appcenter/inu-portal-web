@@ -58,6 +58,7 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
+import AgentPage from "@/pages/AgentPage";
 import MobileFriendQrPage from "@/pages/mobile/MobileFriendQrPage";
 import MobileFriendInvitePage from "@/pages/mobile/MobileFriendInvitePage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
@@ -353,6 +354,8 @@ export const router = createBrowserRouter([
         element: <FullscreenSubLayout backgroundColor="#ffffff" />,
         children: [
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+          { path: "/agent", element: <AgentPage /> },
+          { path: "/assistant", element: <AgentPage /> },
         ],
       },
     ],
