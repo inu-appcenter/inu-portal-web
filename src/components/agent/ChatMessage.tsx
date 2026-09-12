@@ -368,14 +368,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           />
         )}
 
-        {/* Generative UI 카드 (옵션 A 모바일 안내, inuai 출처, 학식/버스/시간표) */}
-        {!isUser && message.uiComponents && message.uiComponents.length > 0 && (
-          <GenerativeCardRenderer
-            uiComponents={message.uiComponents}
-            onNavigate={onNavigate}
-          />
-        )}
-
         <MessageBubble $isUser={isUser}>
           {isLoading ? (
             <LoadingGif src={LoadingAnimation} alt="답변 생성 중..." />
@@ -395,6 +387,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </ReactMarkdown>
           )}
         </MessageBubble>
+
+        {/* Generative UI 카드 (inuai 학사 지식베이스 출처 및 캠퍼스 위젯 - AI 답변 맨 끝에 표출) */}
+        {!isUser && message.uiComponents && message.uiComponents.length > 0 && (
+          <GenerativeCardRenderer
+            uiComponents={message.uiComponents}
+            onNavigate={onNavigate}
+          />
+        )}
 
         {!isLoading && (
           <MessageFooter $isUser={isUser}>
