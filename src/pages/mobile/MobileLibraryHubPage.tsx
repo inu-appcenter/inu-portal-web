@@ -9,6 +9,8 @@ import {
   renewCurrentSeat,
   returnCurrentSeat,
   cancelSeatReservation,
+  setFavoriteSeat,
+  unsetFavoriteSeat,
   getRoomSeats,
   reserveSeat,
   checkinSeat,
@@ -50,6 +52,7 @@ import {
   MapPin,
   KeyRound,
   AlertCircle,
+  Star,
 } from "lucide-react";
 import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
@@ -302,15 +305,36 @@ export default function MobileLibraryHubPage() {
   const handleCheckinSeat = async () => {
     if (!mySeat) return;
     try {
-      const ok = await checkinSeat(mySeat.chargeId);
-      if (ok) {
-        showToast("✅ 좌석 입실 확인이 완료되었습니다.");
+      const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
+      if (res.success) {
+        showToast("🎉 좌석 배정이 정상 확정되었습니다!");
         loadData();
       } else {
-        alert("입실 체크인 가능 시간이 아니거나 처리되지 않았습니다.");
+        alert(
+          res.message ||
+            "도서관 게이트(출입구) 통과 기록이 확인되지 않았습니다.\n도서관 게이트 통과 후 '배정 확정'을 다시 누르시거나 도서관 키오스크에서 태그해주세요."
+        );
       }
     } catch (e) {
       console.error(e);
+      alert("배정 확정 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleToggleFavoriteSeat = async () => {
+    if (!mySeat) return;
+    try {
+      if (mySeat.isFavoriteSeat) {
+        await unsetFavoriteSeat(mySeat.seatId);
+        showToast("⭐ 선호좌석 지정이 해제되었습니다.");
+      } else {
+        await setFavoriteSeat(mySeat.seatId);
+        showToast("⭐ 선호좌석으로 정상 등록되었습니다!");
+      }
+      loadData();
+    } catch (e) {
+      console.error(e);
+      alert("선호좌석 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -712,10 +736,16 @@ export default function MobileLibraryHubPage() {
 
               {mySeat.isTempCharge && (
                 <TempNoticeBox>
-                  <AlertCircle size={14} color="#b45309" style={{ flexShrink: 0, marginTop: "1px" }} />
-                  <span>
-                    좌석 배정 후 20분 내에 도서관 게이트 또는 키오스크에서 입실 확인을 완료해야 합니다. 미확인 시 자동으로 배정이 취소됩니다.
-                  </span>
+                  <AlertCircle size={15} color="#b45309" style={{ flexShrink: 0, marginTop: "2px" }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                    <strong style={{ fontSize: "12px", color: "#78350f" }}>배정 확정 안내</strong>
+                    <span>
+                      학산도서관 내에서 열람석을 예약하셨을 경우 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시거나 잠시 대기하면 자동으로 배정 확정됩니다.
+                    </span>
+                    <span style={{ fontSize: "10.5px", color: "#92400e" }}>
+                      • 이용 시작 시간 20분이 지난 후에도 이용하지 않은 경우 예약이 자동 취소되며 이용이 제한될 수 있습니다.
+                    </span>
+                  </div>
                 </TempNoticeBox>
               )}
 
@@ -732,9 +762,18 @@ export default function MobileLibraryHubPage() {
                   style={{ background: "#2563eb", color: "#fff", border: "none" }}
                 >
                   <CheckCircle size={14} />
-                  <span>입실 확인</span>
+                  <span>배정 확정</span>
                 </ActionButton>
-                {!mySeat.isTempCharge && (
+                {mySeat.isTempCharge ? (
+                  <ActionButton onClick={handleToggleFavoriteSeat}>
+                    <Star
+                      size={14}
+                      color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
+                      fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
+                    />
+                    <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
+                  </ActionButton>
+                ) : (
                   <ActionButton onClick={handleRenewSeat}>
                     <RotateCw size={14} />
                     <span>1시간 연장</span>
@@ -742,7 +781,7 @@ export default function MobileLibraryHubPage() {
                 )}
                 <ActionButton onClick={handleReturnSeat} $danger>
                   <LogOut size={14} />
-                  <span>{mySeat.isTempCharge ? "배정 취소" : "퇴실 반납"}</span>
+                  <span>{mySeat.isTempCharge ? "예약 취소" : "퇴실 반납"}</span>
                 </ActionButton>
               </ActionRow>
 

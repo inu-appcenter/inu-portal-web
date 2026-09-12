@@ -77,12 +77,14 @@ export interface CurrentSeatInfo {
   chargeId: number;
   seatId: number;
   seatName: string;
+  roomId?: number;
   roomName: string;
   beginTime: string;
   endTime: string;
   isTempCharge?: boolean;
   isReturnable?: boolean;
   isRenewable?: boolean;
+  isFavoriteSeat?: boolean;
   checkinExpiryDate?: string;
 }
 
@@ -223,22 +225,50 @@ export async function reserveSeat(
 }
 
 /**
- * 4. 열람실 좌석 입실 체크인
+ * 4. 열람실 좌석 배정 확정 (입실 체크인)
  */
-export async function checkinSeat(seatChargeId: number): Promise<boolean> {
-  if (!isMobileAppEnvironment()) return false;
+export async function checkinSeat(seatChargeId: number, roomId?: number): Promise<{ success: boolean; message?: string }> {
+  if (!isMobileAppEnvironment()) return { success: false, message: '모바일 앱 환경에서만 가능합니다.' };
 
+  // 1. 도서관 게이트 출입 확인 시도
+  if (roomId) {
+    try {
+      await executeAgentActionBridge({
+        actionId: `act_check_arrival_${roomId}_${Date.now()}`,
+        authDomain: 'LIBRARY',
+        request: {
+          method: 'POST',
+          url: `https://lib.inu.ac.kr/pyxis-api/1/api/rooms/${roomId}/check-arrival`,
+          body: { methodCode: 'GATE' },
+        },
+      });
+    } catch {}
+  }
+
+  // 2. 좌석 배정 확정 (체크인) 호출 (WAF 호환 Method Override 사용)
   const res = await executeAgentActionBridge({
     actionId: `act_checkin_seat_${seatChargeId}_${Date.now()}`,
     authDomain: 'LIBRARY',
     request: {
-      method: 'PUT',
-      url: `https://lib.inu.ac.kr/pyxis-api/1/api/seat-charges/${seatChargeId}`,
-      params: { smufMethodCode: 'MOBILE' },
+      method: 'POST',
+      url: `https://lib.inu.ac.kr/pyxis-api/1/api/seat-charges/${seatChargeId}?smufMethodCode=MOBILE`,
+      headers: {
+        'X-HTTP-Method-Override': 'PUT',
+      },
     },
   });
 
-  return Boolean(res.success);
+  if (res.success) {
+    return { success: true };
+  }
+
+  return {
+    success: false,
+    message:
+      res.errorMessage ||
+      res.data?.message ||
+      '도서관 게이트(출입구) 통과 기록이 확인되지 않았습니다. 게이트 통과 후 다시 시도하거나 키오스크에서 태그해주세요.',
+  };
 }
 
 /**
@@ -459,12 +489,14 @@ export async function getMyCurrentSeat(): Promise<CurrentSeatInfo | null> {
         chargeId: d.id || d.seatCharge?.id,
         seatId: d.seat?.id,
         seatName: d.seat?.name || d.seat?.code || '좌석',
+        roomId: d.room?.id || d.seat?.room?.id,
         roomName: d.room?.name || d.seat?.room?.name || '열람실',
         beginTime: d.beginTime,
         endTime: d.endTime,
         isTempCharge: isTemp,
         isReturnable: Boolean(d.isReturnable),
         isRenewable: Boolean(d.isRenewable),
+        isFavoriteSeat: Boolean(d.isFavoriteSeat),
         checkinExpiryDate: d.checkinExpiryDate,
       };
     }
@@ -553,4 +585,42 @@ export async function cancelSeatReservation(chargeId: number): Promise<{ success
     success: Boolean(res.success),
     message: res.errorMessage || (res.data?.message ? String(res.data.message) : undefined),
   };
+}
+
+/**
+ * 15. 선호좌석 지정 등록
+ */
+export async function setFavoriteSeat(seatId: number): Promise<boolean> {
+  if (!isMobileAppEnvironment()) return false;
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_set_fav_${seatId}_${Date.now()}`,
+    authDomain: 'LIBRARY',
+    request: {
+      method: 'POST',
+      url: 'https://lib.inu.ac.kr/pyxis-api/1/api/favorite-seats',
+      body: { seat: seatId },
+    },
+  });
+  return Boolean(res.success);
+}
+
+/**
+ * 16. 선호좌석 지정 해제
+ */
+export async function unsetFavoriteSeat(seatId: number): Promise<boolean> {
+  if (!isMobileAppEnvironment()) return false;
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_unset_fav_${seatId}_${Date.now()}`,
+    authDomain: 'LIBRARY',
+    request: {
+      method: 'POST',
+      url: `https://lib.inu.ac.kr/pyxis-api/1/api/favorite-seats/${seatId}`,
+      headers: {
+        'X-HTTP-Method-Override': 'DELETE',
+      },
+    },
+  });
+  return Boolean(res.success);
 }
