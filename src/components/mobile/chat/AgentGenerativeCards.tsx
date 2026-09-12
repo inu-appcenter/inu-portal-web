@@ -1560,12 +1560,7 @@ const AcademicInfoCard: React.FC<{
     acquiredCredits,
     gradeAverage,
     advisorProfessorName,
-    rawFields,
   } = data;
-
-  const extraFields = Object.entries(rawFields || {}).filter(([key, value]) =>
-    key !== "_RowType_" && value && !["stuno", "korNm", "engNm", "schregStGbn", "acqHp", "mrksAvg"].includes(key)
-  );
 
   return (
     <AcademicCardContainer>
@@ -1608,19 +1603,6 @@ const AcademicInfoCard: React.FC<{
         </AdvisorInfoRow>
       )}
 
-      {extraFields.length > 0 && (
-        <details style={{ fontSize: 12, color: "#4e5968" }}>
-          <summary style={{ cursor: "pointer", fontWeight: 600 }}>ERP 학적 상세 항목 전체 보기</summary>
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(96px, 1fr) 2fr", gap: "7px 10px", marginTop: 12 }}>
-            {extraFields.map(([key, value]) => (
-              <React.Fragment key={key}>
-                <span style={{ color: "#8b95a1" }}>{key}</span>
-                <span style={{ wordBreak: "break-word" }}>{String(value)}</span>
-              </React.Fragment>
-            ))}
-          </div>
-        </details>
-      )}
     </AcademicCardContainer>
   );
 };
