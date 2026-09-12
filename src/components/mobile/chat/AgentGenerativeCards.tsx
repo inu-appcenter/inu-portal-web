@@ -154,7 +154,8 @@ export const SingleCardItem: React.FC<{
     return (
       <WidgetCardWrapper>
         <SwipeBusWidget
-          initialStopName={component.data?.stopName || component.data?.tabName}
+          initialStopName={component.data?.tabName || component.data?.stopName}
+          initialType={component.data?.category}
         />
       </WidgetCardWrapper>
     );

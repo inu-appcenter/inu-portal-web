@@ -290,9 +290,10 @@ function BusStopCard({
 
 export interface SwipeBusWidgetProps {
   initialStopName?: string;
+  initialType?: "go-school" | "go-home" | string;
 }
 
-export default function SwipeBusWidget({ initialStopName }: SwipeBusWidgetProps = {}) {
+export default function SwipeBusWidget({ initialStopName, initialType }: SwipeBusWidgetProps = {}) {
   const navigate = useNavigate();
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
@@ -320,13 +321,27 @@ export default function SwipeBusWidget({ initialStopName }: SwipeBusWidgetProps 
     };
   }, []);
 
-  // 등교/하교 기준 시간대 판별 (14:00 이전 등교, 이후 하교)
-  const isMorning = useMemo(() => {
+  // 등교/하교 기준 시간대 또는 질의된 정류장 방향 판별
+  const resolvedType = useMemo(() => {
+    if (initialType === "go-home" || initialType === "go-school") {
+      return initialType;
+    }
+    if (initialStopName) {
+      const homeKeywords = ["정문", "공과대", "자연대", "공학", "본관", "기숙사", "대학본부", "솔찬"];
+      if (homeKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-home";
+      }
+      const schoolKeywords = ["송도역", "테크노", "지정단", "2번출구", "인입"];
+      if (schoolKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-school";
+      }
+    }
     const now = new Date();
-    return now.getHours() < 14;
-  }, []);
+    return now.getHours() < 14 ? "go-school" : "go-home";
+  }, [initialType, initialStopName]);
 
-  const currentType = isMorning ? "go-school" : "go-home";
+  const currentType = resolvedType;
+  const isMorning = currentType === "go-school";
   const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(currentType);
 
   // 시간대 기준 정류장 데이터 구성 (순수 서버 API 데이터 기반)
