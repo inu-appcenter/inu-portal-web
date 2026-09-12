@@ -8,9 +8,20 @@ import {
   getMyCurrentSeat,
   renewCurrentSeat,
   returnCurrentSeat,
+  getRoomSeats,
+  reserveSeat,
+  checkinSeat,
+  getStudyRoomDetail,
+  reserveStudyRoom,
+  getMyStudyRoomReservations,
+  cancelStudyRoomReservation,
+  checkinStudyRoom,
   LibrarySeatRoom,
+  LibrarySeat,
   LibraryStudyRoom,
   CurrentSeatInfo,
+  StudyRoomDetail,
+  StudyRoomReservation,
 } from "@/apis/library";
 import { postRegisterCampusWatch } from "@/apis/agent";
 import {
@@ -28,11 +39,14 @@ import {
   Crosshair,
   RefreshCw,
   CheckCircle,
-  ExternalLink,
   RotateCw,
   LogOut,
   Bell,
   Sparkles,
+  Calendar,
+  ChevronRight,
+  X,
+  MapPin,
 } from "lucide-react";
 
 export default function MobileLibraryHubPage() {
@@ -41,9 +55,26 @@ export default function MobileLibraryHubPage() {
   const [rooms, setRooms] = useState<LibrarySeatRoom[]>([]);
   const [studyRooms, setStudyRooms] = useState<LibraryStudyRoom[]>([]);
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
-  const [isLinked, setIsLinked] = useState<boolean>(false);
+  const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
+  const [, setIsLinked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  // 1. 열람실 좌석 선택 모달 상태
+  const [selectedSeatRoom, setSelectedSeatRoom] = useState<LibrarySeatRoom | null>(null);
+  const [roomSeats, setRoomSeats] = useState<LibrarySeat[]>([]);
+  const [isLoadingSeats, setIsLoadingSeats] = useState<boolean>(false);
+
+  // 2. 스터디룸 타임라인 & 예약 모달 상태
+  const [selectedStudyRoom, setSelectedStudyRoom] = useState<LibraryStudyRoom | null>(null);
+  const [studyRoomDetail, setStudyRoomDetail] = useState<StudyRoomDetail | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [reserveBeginTime, setReserveBeginTime] = useState<string>("14:00");
+  const [reserveDurationHours, setReserveDurationHours] = useState<number>(2);
+  const [reserveCompanionCnt, setReserveCompanionCnt] = useState<number>(4);
+  const [reservePurpose, setReservePurpose] = useState<string>("학습 및 스터디");
+  const [isLoadingTimeline, setIsLoadingTimeline] = useState<boolean>(false);
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState<boolean>(false);
 
   useHeader({
     title: "학산도서관 스마트 허브",
@@ -65,8 +96,12 @@ export default function MobileLibraryHubPage() {
         const linkRes = await checkLibraryAccountLinked().catch(() => ({ linked: false }));
         setIsLinked(linkRes.linked);
         if (linkRes.linked) {
-          const seat = await getMyCurrentSeat().catch(() => null);
+          const [seat, studyRes] = await Promise.all([
+            getMyCurrentSeat().catch(() => null),
+            getMyStudyRoomReservations().catch(() => []),
+          ]);
           setMySeat(seat);
+          setMyStudyReservations(studyRes);
         }
       }
     } finally {
@@ -83,7 +118,203 @@ export default function MobileLibraryHubPage() {
     setTimeout(() => setActionMessage(null), 3500);
   };
 
-  // 1. 열람실 빈자리 스나이퍼 등록 (서버 싱글플라이트)
+  // --- 열람실 좌석 선택 모달 열기 ---
+  const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
+    if (!isMobileAppEnvironment()) {
+      alert("좌석 선택 및 즉시 배정은 INTIP 모바일 앱 환경에서 이용하실 수 있습니다.");
+      return;
+    }
+    setSelectedSeatRoom(room);
+    setIsLoadingSeats(true);
+    try {
+      const seats = await getRoomSeats(room.id);
+      setRoomSeats(seats);
+    } catch (e) {
+      console.error(e);
+      alert("좌석 목록을 불러오지 못했습니다.");
+    } finally {
+      setIsLoadingSeats(false);
+    }
+  };
+
+  // 좌석 배정 신청
+  const handleAssignSeat = async (seat: LibrarySeat) => {
+    if (!seat.isReservable || seat.isOccupied) {
+      alert("현재 배정할 수 없는 좌석입니다.");
+      return;
+    }
+    if (!window.confirm(`'${seat.code}'번 좌석을 지금 배정하시겠습니까?`)) return;
+
+    try {
+      const res = await reserveSeat(seat.id);
+      if (res.success) {
+        showToast(`🎉 ${seat.code}번 좌석이 성공적으로 배정되었습니다!`);
+        setSelectedSeatRoom(null);
+        setActiveTab("my");
+        loadData();
+      } else {
+        alert(res.message || "좌석 배정에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("좌석 배정 중 오류가 발생했습니다.");
+    }
+  };
+
+  // --- 스터디룸 타임라인 & 예약 모달 열기 ---
+  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
+    if (!isMobileAppEnvironment()) {
+      alert("스터디룸 타임라인 조회 및 예약은 INTIP 모바일 앱 환경에서 지원됩니다.");
+      return;
+    }
+    setSelectedStudyRoom(sRoom);
+    setReserveCompanionCnt(sRoom.minQuota || 4);
+    await loadStudyTimeline(sRoom.id, selectedDate);
+  };
+
+  const loadStudyTimeline = async (roomId: number, dateStr: string) => {
+    setIsLoadingTimeline(true);
+    try {
+      const detail = await getStudyRoomDetail(roomId, dateStr);
+      setStudyRoomDetail(detail);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingTimeline(false);
+    }
+  };
+
+  const handleDateChange = (newDate: string) => {
+    setSelectedDate(newDate);
+    if (selectedStudyRoom) {
+      loadStudyTimeline(selectedStudyRoom.id, newDate);
+    }
+  };
+
+  // 스터디룸 예약 제출
+  const handleSubmitStudyBooking = async () => {
+    if (!selectedStudyRoom) return;
+    const startHour = parseInt(reserveBeginTime.split(":")[0], 10);
+    const startMin = reserveBeginTime.split(":")[1];
+    const endHour = startHour + reserveDurationHours;
+    const endHourStr = endHour < 10 ? `0${endHour}` : `${endHour}`;
+    const endTime = `${endHourStr}:${startMin}`;
+
+    const beginFull = `${selectedDate} ${reserveBeginTime}`;
+    const endFull = `${selectedDate} ${endTime}`;
+
+    if (
+      !window.confirm(
+        `[${selectedStudyRoom.name}]\n일시: ${beginFull} ~ ${endTime}\n인원: ${reserveCompanionCnt}명\n예약하시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    setIsSubmittingBooking(true);
+    try {
+      const res = await reserveStudyRoom({
+        roomId: selectedStudyRoom.id,
+        beginTime: beginFull,
+        endTime: endFull,
+        companionCnt: reserveCompanionCnt,
+        patronMessage: reservePurpose,
+      });
+
+      if (res.success) {
+        showToast(`🎉 '${selectedStudyRoom.name}' 예약이 완료되었습니다!`);
+        setSelectedStudyRoom(null);
+        setActiveTab("my");
+        loadData();
+      } else {
+        alert(res.message || "스터디룸 예약에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("예약 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmittingBooking(false);
+    }
+  };
+
+  // --- 스터디룸 예약 취소 및 체크인 ---
+  const handleCancelStudyReservation = async (chargeId: number, roomName: string) => {
+    if (!window.confirm(`'${roomName}' 스터디룸 예약을 취소하시겠습니까?`)) return;
+    try {
+      const ok = await cancelStudyRoomReservation(chargeId);
+      if (ok) {
+        showToast("스터디룸 예약이 취소되었습니다.");
+        loadData();
+      } else {
+        alert("예약 취소에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCheckinStudyReservation = async (chargeId: number) => {
+    try {
+      const ok = await checkinStudyRoom(chargeId);
+      if (ok) {
+        showToast("✅ 스터디룸 입실 체크인이 완료되었습니다!");
+        loadData();
+      } else {
+        alert("체크인 가능 시간이 아니거나 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // --- 열람실 좌석 체크인, 연장, 반납 ---
+  const handleCheckinSeat = async () => {
+    if (!mySeat) return;
+    try {
+      const ok = await checkinSeat(mySeat.chargeId);
+      if (ok) {
+        showToast("✅ 좌석 입실 확인이 완료되었습니다.");
+        loadData();
+      } else {
+        alert("입실 체크인 가능 시간이 아니거나 처리되지 않았습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRenewSeat = async () => {
+    if (!mySeat) return;
+    try {
+      const ok = await renewCurrentSeat(mySeat.chargeId);
+      if (ok) {
+        showToast("🔄 좌석 이용 시간이 1시간 정상 연장되었습니다.");
+        loadData();
+      } else {
+        alert("좌석 연장 가능 시간이 아니거나 연장에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleReturnSeat = async () => {
+    if (!mySeat || !window.confirm("정말 퇴실 반납하시겠습니까?")) return;
+    try {
+      const ok = await returnCurrentSeat(mySeat.chargeId);
+      if (ok) {
+        showToast("🚪 좌석이 정상 반납되었습니다.");
+        setMySeat(null);
+        loadData();
+      } else {
+        alert("좌석 반납에 실패했습니다.");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // --- 감시 알림 등록 ---
   const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
     try {
       await postRegisterCampusWatch({
@@ -99,7 +330,6 @@ export default function MobileLibraryHubPage() {
     }
   };
 
-  // 2. 스터디룸 취소표 스나이퍼 등록 (단말기 로컬 감시)
   const handleRegisterStudySniper = async (sRoom: LibraryStudyRoom) => {
     if (!isMobileAppEnvironment()) {
       alert("취소표 백그라운드 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
@@ -110,7 +340,7 @@ export default function MobileLibraryHubPage() {
         watchType: "STUDY_ROOM_SNIPER",
         roomId: sRoom.id,
         roomName: sRoom.name,
-        targetHour: 15, // 기본 오후 3시 타임스탬프 스나이퍼
+        targetHour: 15,
         durationMinutes: 60,
       });
       showToast(`🎯 '${sRoom.name}' 취소표 감시가 기기에서 시작되었습니다! (60분)`);
@@ -120,7 +350,6 @@ export default function MobileLibraryHubPage() {
     }
   };
 
-  // 3. 내 좌석 만료 20분 전 알람 등록 (단말 정밀 알람)
   const handleRegisterSeatReminder = async () => {
     if (!mySeat) return;
     try {
@@ -136,585 +365,1206 @@ export default function MobileLibraryHubPage() {
     }
   };
 
-  // 4. 내 좌석 연장
-  const handleRenewSeat = async () => {
-    if (!mySeat) return;
-    try {
-      const ok = await renewCurrentSeat(mySeat.chargeId);
-      if (ok) {
-        showToast("🔄 좌석 이용 시간이 정상 연장되었습니다.");
-        loadData();
-      } else {
-        alert("좌석 연장 가능 시간이 아니거나 연장 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // 5. 내 좌석 반납
-  const handleReturnSeat = async () => {
-    if (!mySeat || !window.confirm("정말 퇴실 반납하시겠습니까?")) return;
-    try {
-      const ok = await returnCurrentSeat(mySeat.chargeId);
-      if (ok) {
-        showToast("🚪 좌석이 정상 반납되었습니다.");
-        setMySeat(null);
-      } else {
-        alert("좌석 반납에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // 날짜 옵션 생성 (오늘, 내일, 모레)
+  const dateOptions = [0, 1, 2].map((offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    const str = d.toISOString().split("T")[0];
+    const label = offset === 0 ? "오늘" : offset === 1 ? "내일" : "모레";
+    return { value: str, label: `${label} (${str.slice(5)})` };
+  });
 
   return (
     <Container>
-      {/* 상단 탭 내비게이션 */}
+      {/* 상단 탭 네비게이션 */}
       <TabBar>
-        <TabButton $active={activeTab === "seats"} onClick={() => setActiveTab("seats")}>
+        <TabItem $active={activeTab === "seats"} onClick={() => setActiveTab("seats")}>
           <BookOpen size={16} />
-          <span>열람실 현황</span>
-        </TabButton>
-        <TabButton $active={activeTab === "study"} onClick={() => setActiveTab("study")}>
+          <span>열람실 좌석</span>
+        </TabItem>
+        <TabItem $active={activeTab === "study"} onClick={() => setActiveTab("study")}>
           <Users size={16} />
-          <span>스터디룸</span>
-        </TabButton>
-        <TabButton $active={activeTab === "my"} onClick={() => setActiveTab("my")}>
+          <span>스터디룸 예약</span>
+        </TabItem>
+        <TabItem $active={activeTab === "my"} onClick={() => setActiveTab("my")}>
           <Clock size={16} />
           <span>내 이용 현황</span>
-          {mySeat && <ActiveDot />}
-        </TabButton>
+          {(mySeat || myStudyReservations.length > 0) && <BadgeDot />}
+        </TabItem>
       </TabBar>
 
-      {/* 액션 안내 토스트 배너 */}
+      {/* 스마트 감시 대시보드 바로가기 배너 */}
+      <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
+        <BannerLeft>
+          <Sparkles size={18} color="#2563eb" />
+          <BannerText>
+            <strong>스마트 감시 & 리마인더 관리</strong>
+            <span>실시간 빈자리 감시 및 자동 만료 알람 내역</span>
+          </BannerText>
+        </BannerLeft>
+        <ChevronRight size={18} color="#94a3b8" />
+      </BannerCard>
+
+      {/* 액션 피드백 토스트 */}
       {actionMessage && (
-        <ToastBanner>
-          <Sparkles size={16} />
+        <ToastMessage>
+          <CheckCircle size={16} color="#16a34a" />
           <span>{actionMessage}</span>
-          <button onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>관리 보기</button>
-        </ToastBanner>
+        </ToastMessage>
       )}
 
-      {/* 탭 1: 열람실 좌석 현황 */}
+      {/* ================= 1. 열람실 좌석 탭 ================= */}
       {activeTab === "seats" && (
-        <SectionWrapper>
-          <SectionTop>
-            <SectionTitle>학산도서관 열람실 실시간 현황</SectionTitle>
-            <RefreshBtn onClick={loadData} disabled={isLoading}>
-              <RefreshCw size={13} className={isLoading ? "spin" : ""} />
+        <Section>
+          <SectionHeader>
+            <SectionTitle>실시간 열람실 좌석 현황</SectionTitle>
+            <RefreshButton onClick={loadData}>
+              <RefreshCw size={14} />
               <span>새로고침</span>
-            </RefreshBtn>
-          </SectionTop>
-
-          <ListContainer>
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, idx) => (
-                <CardItem key={`seat-skel-${idx}`}>
-                  <CardMain>
-                    <RoomHeader>
-                      <Skeleton width="140px" height="18px" />
-                      <Skeleton width="70px" height="16px" />
-                    </RoomHeader>
-                    <Skeleton width="100%" height="8px" style={{ marginTop: "12px", borderRadius: "4px" }} />
-                  </CardMain>
-                  <SmartActionRow>
-                    <Skeleton width="160px" height="30px" style={{ borderRadius: "20px" }} />
-                  </SmartActionRow>
-                </CardItem>
-              ))
-            ) : (
-              rooms.map((room) => {
-                const total = room.seats?.total ?? room.totalSeats ?? 0;
-                const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
-                const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
-                const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
-                const isCrowded = available <= 5;
-
-                return (
-                  <CardItem key={room.id}>
-                    <CardMain>
-                      <RoomHeader>
-                        <RoomName>{room.name}</RoomName>
-                        <SeatCount>
-                          <AvailCount $urgent={isCrowded}>{available}석</AvailCount> / {total}석
-                        </SeatCount>
-                      </RoomHeader>
-                      <ProgressBarTrack>
-                        <ProgressBarFill $percent={percent} $warning={isCrowded} />
-                      </ProgressBarTrack>
-                    </CardMain>
-
-                    {/* 맥락형 추천 스마트 액션 바 */}
-                    <SmartActionRow>
-                      {isCrowded ? (
-                        <ActionChip $primary onClick={() => handleRegisterSeatSniper(room)}>
-                          <Crosshair size={13} />
-                          <span>자리 나면 알림 받기 (스나이퍼)</span>
-                        </ActionChip>
-                      ) : (
-                        <ActionChip onClick={() => window.open("https://lib.inu.ac.kr", "_blank")}>
-                          <CheckCircle size={13} />
-                          <span>도서관 앱에서 바로 배정</span>
-                        </ActionChip>
-                      )}
-                    </SmartActionRow>
-                  </CardItem>
-                );
-              })
-            )}
-          </ListContainer>
-        </SectionWrapper>
-      )}
-
-      {/* 탭 2: 스터디룸 및 공간 */}
-      {activeTab === "study" && (
-        <SectionWrapper>
-          <SectionTop>
-            <SectionTitle>스터디룸 & 세미나실 공간</SectionTitle>
-            <NoticeText>이용 시작 20분 내 50% 이상 입실 필수</NoticeText>
-          </SectionTop>
-
-          <ListContainer>
-            {isLoading ? (
-              Array.from({ length: 3 }).map((_, idx) => (
-                <CardItem key={`study-skel-${idx}`}>
-                  <CardMain>
-                    <Skeleton width="180px" height="18px" />
-                    <Skeleton width="120px" height="14px" style={{ marginTop: "6px" }} />
-                    <TagRow style={{ marginTop: "10px" }}>
-                      <Skeleton width="50px" height="20px" style={{ borderRadius: "6px" }} />
-                      <Skeleton width="50px" height="20px" style={{ borderRadius: "6px" }} />
-                    </TagRow>
-                  </CardMain>
-                  <SmartActionRow>
-                    <Skeleton width="170px" height="30px" style={{ borderRadius: "20px" }} />
-                    <Skeleton width="100px" height="30px" style={{ borderRadius: "20px" }} />
-                  </SmartActionRow>
-                </CardItem>
-              ))
-            ) : (
-              studyRooms.map((sRoom) => (
-                <CardItem key={sRoom.id}>
-                  <CardMain>
-                    <RoomHeader>
-                      <div>
-                        <RoomName>{sRoom.name}</RoomName>
-                        <RoomSub>{sRoom.location} · 정원 {sRoom.quota}</RoomSub>
-                      </div>
-                    </RoomHeader>
-                    {sRoom.tags && sRoom.tags.length > 0 && (
-                      <TagRow>
-                        {sRoom.tags.map((t, idx) => (
-                          <Tag key={idx}>{t}</Tag>
-                        ))}
-                      </TagRow>
-                    )}
-                  </CardMain>
-
-                  {/* 맥락형 추천 스마트 액션 바 */}
-                  <SmartActionRow>
-                    <ActionChip $primary onClick={() => handleRegisterStudySniper(sRoom)}>
-                      <Crosshair size={13} />
-                      <span>취소표 생기면 알림 (스나이퍼)</span>
-                    </ActionChip>
-                    <ActionChip onClick={() => window.open("https://lib.inu.ac.kr/#/facility/study-room", "_blank")}>
-                      <ExternalLink size={13} />
-                      <span>도서관 예약</span>
-                    </ActionChip>
-                  </SmartActionRow>
-                </CardItem>
-              ))
-            )}
-          </ListContainer>
-        </SectionWrapper>
-      )}
-
-      {/* 탭 3: 내 이용 현황 */}
-      {activeTab === "my" && (
-        <SectionWrapper>
-          <SectionTop>
-            <SectionTitle>현재 내 좌석 이용 정보</SectionTitle>
-          </SectionTop>
+            </RefreshButton>
+          </SectionHeader>
 
           {isLoading ? (
-            <CardItem>
-              <CardMain>
-                <Skeleton width="60px" height="22px" style={{ borderRadius: "6px", marginBottom: "8px" }} />
-                <Skeleton width="200px" height="22px" style={{ marginBottom: "8px" }} />
-                <Skeleton width="160px" height="16px" />
-              </CardMain>
-              <SmartActionRow style={{ marginTop: "16px" }}>
-                <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
-              </SmartActionRow>
-            </CardItem>
-          ) : !isLinked ? (
-            <EmptyBox>
-              <Users size={32} color="#94a3b8" />
-              <EmptyTitle>도서관 계정이 연동되지 않았습니다</EmptyTitle>
-              <EmptyDesc>학번/비밀번호를 기기에 1회 등록하면 좌석 현황과 스마트 연장 기능을 사용할 수 있어요.</EmptyDesc>
-              <PrimaryBtn onClick={() => navigate(ROUTES.MYPAGE.ROOT)}>계정 연동하기</PrimaryBtn>
-            </EmptyBox>
-          ) : mySeat ? (
-            <MySeatCard>
-              <MySeatBadge>이용 중</MySeatBadge>
-              <MySeatRoom>{mySeat.roomName} {mySeat.seatName}</MySeatRoom>
-              <MySeatTimeInfo>
-                <span>이용 종료 예정: <strong>{mySeat.endTime}</strong></span>
-              </MySeatTimeInfo>
+            <SkeletonList>
+              {[1, 2, 3, 4].map((i) => (
+                <SkeletonCard key={i}>
+                  <Skeleton width="45%" height="20px" style={{ borderRadius: "6px" }} />
+                  <Skeleton width="100%" height="10px" style={{ borderRadius: "999px" }} />
+                  <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
+                </SkeletonCard>
+              ))}
+            </SkeletonList>
+          ) : rooms.length === 0 ? (
+            <EmptyBox>현재 조회 가능한 열람실이 없습니다.</EmptyBox>
+          ) : (
+            <RoomGrid>
+              {rooms.map((room) => {
+                const total = room.seats?.total ?? room.totalSeats ?? 0;
+                const available = room.seats?.available ?? room.availableSeats ?? 0;
+                const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
+                const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+                const isFull = available === 0 && total > 0;
 
-              {/* 맥락형 추천 스마트 액션 버튼들 */}
-              <MySeatActionGroup>
-                <ActionButton $highlight onClick={handleRegisterSeatReminder}>
-                  <Bell size={14} />
-                  <span>만료 20분 전 알림 예약</span>
+                return (
+                  <RoomCard key={room.id} $isFull={isFull}>
+                    <RoomHeader>
+                      <RoomName>{room.name}</RoomName>
+                      <SeatBadge $isFull={isFull}>
+                        {isFull ? "만석" : `잔여 ${available}석`}
+                      </SeatBadge>
+                    </RoomHeader>
+
+                    {/* 점유율 프로그레스 바 */}
+                    <ProgressBarContainer>
+                      <ProgressBarFill $rate={occupancyRate} $isFull={isFull} />
+                    </ProgressBarContainer>
+                    <SeatStatRow>
+                      <span>총 {total}석</span>
+                      <span>
+                        이용 중 {occupied}석 ({occupancyRate}%)
+                      </span>
+                    </SeatStatRow>
+
+                    {/* 버튼 영역: 좌석 직접 배정 + 빈자리 감시 */}
+                    <ButtonRow>
+                      <PrimaryActionBtn onClick={() => handleOpenSeatPicker(room)}>
+                        <BookOpen size={14} />
+                        <span>좌석 선택 배정</span>
+                      </PrimaryActionBtn>
+
+                      {isFull && (
+                        <SniperActionBtn onClick={() => handleRegisterSeatSniper(room)}>
+                          <Crosshair size={14} />
+                          <span>빈자리 알림</span>
+                        </SniperActionBtn>
+                      )}
+                    </ButtonRow>
+                  </RoomCard>
+                );
+              })}
+            </RoomGrid>
+          )}
+        </Section>
+      )}
+
+      {/* ================= 2. 스터디룸 예약 탭 ================= */}
+      {activeTab === "study" && (
+        <Section>
+          <SectionHeader>
+            <SectionTitle>스터디룸 시간대 확인 및 예약</SectionTitle>
+            <RefreshButton onClick={loadData}>
+              <RefreshCw size={14} />
+              <span>새로고침</span>
+            </RefreshButton>
+          </SectionHeader>
+
+          <NoticeBanner>
+            💡 날짜별 10분 단위 예약 현황을 실시간으로 확인하고 직접 예약할 수 있습니다.
+          </NoticeBanner>
+
+          {isLoading ? (
+            <SkeletonList>
+              {[1, 2, 3].map((i) => (
+                <SkeletonCard key={i}>
+                  <Skeleton width="50%" height="20px" style={{ borderRadius: "6px" }} />
+                  <Skeleton width="80%" height="14px" style={{ borderRadius: "4px" }} />
+                  <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
+                </SkeletonCard>
+              ))}
+            </SkeletonList>
+          ) : (
+            <StudyGrid>
+              {studyRooms.map((s) => (
+                <StudyCard key={s.id}>
+                  <StudyHeader>
+                    <div>
+                      <StudyName>{s.name}</StudyName>
+                      <StudyLocation>
+                        <MapPin size={12} />
+                        <span>{s.location}</span>
+                      </StudyLocation>
+                    </div>
+                    <QuotaBadge>{s.quota}</QuotaBadge>
+                  </StudyHeader>
+
+                  {s.tags && s.tags.length > 0 && (
+                    <TagRow>
+                      {s.tags.map((t, idx) => (
+                        <TagChip key={idx}>{t}</TagChip>
+                      ))}
+                    </TagRow>
+                  )}
+
+                  <ButtonRow>
+                    <PrimaryActionBtn onClick={() => handleOpenStudyBooking(s)}>
+                      <Calendar size={14} />
+                      <span>시간표 조회 & 예약</span>
+                    </PrimaryActionBtn>
+                    <SniperActionBtn onClick={() => handleRegisterStudySniper(s)}>
+                      <Crosshair size={14} />
+                      <span>취소표 감시</span>
+                    </SniperActionBtn>
+                  </ButtonRow>
+                </StudyCard>
+              ))}
+            </StudyGrid>
+          )}
+        </Section>
+      )}
+
+      {/* ================= 3. 내 이용 현황 탭 ================= */}
+      {activeTab === "my" && (
+        <Section>
+          <SectionHeader>
+            <SectionTitle>내 도서관 이용 및 예약 현황</SectionTitle>
+            <RefreshButton onClick={loadData}>
+              <RefreshCw size={14} />
+              <span>새로고침</span>
+            </RefreshButton>
+          </SectionHeader>
+
+          {/* 3-1. 열람실 좌석 섹션 */}
+          <SubTitle>현재 이용 중인 열람실 좌석</SubTitle>
+          {mySeat ? (
+            <ActiveSeatCard>
+              <ActiveSeatHeader>
+                <ActiveBadge>이용 중</ActiveBadge>
+                <SeatRoomTitle>
+                  {mySeat.roomName} <strong>{mySeat.seatName}</strong>
+                </SeatRoomTitle>
+              </ActiveSeatHeader>
+
+              <SeatTimeInfo>
+                <Clock size={16} color="#2563eb" />
+                <span>
+                  이용 시간: {mySeat.beginTime.slice(11, 16)} ~ {mySeat.endTime.slice(11, 16)}
+                </span>
+              </SeatTimeInfo>
+
+              <ActionRow>
+                <ActionButton
+                  onClick={handleCheckinSeat}
+                  style={{ background: "#2563eb", color: "#fff", border: "none" }}
+                >
+                  <CheckCircle size={14} />
+                  <span>입실 확인</span>
                 </ActionButton>
                 <ActionButton onClick={handleRenewSeat}>
                   <RotateCw size={14} />
-                  <span>좌석 연장하기</span>
+                  <span>1시간 연장</span>
                 </ActionButton>
-                <ActionButton $danger onClick={handleReturnSeat}>
+                <ActionButton onClick={handleReturnSeat} $danger>
                   <LogOut size={14} />
                   <span>퇴실 반납</span>
                 </ActionButton>
-              </MySeatActionGroup>
-            </MySeatCard>
+              </ActionRow>
+
+              <ReminderRow onClick={handleRegisterSeatReminder}>
+                <Bell size={14} color="#d97706" />
+                <span>종료 20분 전 정각 알람 신청하기</span>
+              </ReminderRow>
+            </ActiveSeatCard>
           ) : (
-            <EmptyBox>
-              <BookOpen size={32} color="#94a3b8" />
-              <EmptyTitle>현재 이용 중인 좌석이 없습니다</EmptyTitle>
-              <EmptyDesc>열람실 현황 탭에서 잔여석을 확인하고 바로 배정받아 보세요!</EmptyDesc>
-              <SecondaryBtn onClick={() => setActiveTab("seats")}>열람실 좌석 보러가기</SecondaryBtn>
-            </EmptyBox>
+            <EmptyBox>현재 배정된 열람실 좌석이 없습니다.</EmptyBox>
           )}
-        </SectionWrapper>
+
+          {/* 3-2. 스터디룸 예약 섹션 */}
+          <SubTitle style={{ marginTop: "24px" }}>내 스터디룸 예약 내역</SubTitle>
+          {myStudyReservations.length > 0 ? (
+            <ReservationList>
+              {myStudyReservations.map((res) => (
+                <ReservationCard key={res.id}>
+                  <ReservationTop>
+                    <strong>{res.roomName}</strong>
+                    <ReservationStatus>{res.status || "예약됨"}</ReservationStatus>
+                  </ReservationTop>
+                  <ReservationTime>
+                    <Clock size={13} />
+                    <span>
+                      {res.beginTime} ~ {res.endTime}
+                    </span>
+                  </ReservationTime>
+                  {res.companionCnt && (
+                    <ReservationNote>동반 인원: {res.companionCnt}명</ReservationNote>
+                  )}
+
+                  <ReservationActionRow>
+                    <SmallActionBtn onClick={() => handleCheckinStudyReservation(res.id)}>
+                      <CheckCircle size={13} />
+                      <span>입실 체크인</span>
+                    </SmallActionBtn>
+                    <SmallActionBtn
+                      $danger
+                      onClick={() => handleCancelStudyReservation(res.id, res.roomName)}
+                    >
+                      <X size={13} />
+                      <span>예약 취소</span>
+                    </SmallActionBtn>
+                  </ReservationActionRow>
+                </ReservationCard>
+              ))}
+            </ReservationList>
+          ) : (
+            <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
+          )}
+        </Section>
+      )}
+
+      {/* ================= 모달 1: 열람실 좌석 선택 모달 ================= */}
+      {selectedSeatRoom && (
+        <ModalOverlay onClick={() => setSelectedSeatRoom(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>{selectedSeatRoom.name} 좌석 선택</ModalTitle>
+                <ModalSubtitle>비어있는 파란색 좌석을 터치하여 배정하세요.</ModalSubtitle>
+              </div>
+              <CloseBtn onClick={() => setSelectedSeatRoom(null)}>
+                <X size={20} />
+              </CloseBtn>
+            </ModalHeader>
+
+            {isLoadingSeats ? (
+              <ModalLoading>
+                <RefreshCw size={24} className="spin" />
+                <span>좌석 배치도를 불러오는 중...</span>
+              </ModalLoading>
+            ) : roomSeats.length === 0 ? (
+              <EmptyBox>조회된 좌석이 없습니다.</EmptyBox>
+            ) : (
+              <SeatGridContainer>
+                {roomSeats.map((seat) => (
+                  <SeatButton
+                    key={seat.id}
+                    $isOccupied={seat.isOccupied}
+                    $isReservable={seat.isReservable}
+                    disabled={!seat.isReservable || seat.isOccupied}
+                    onClick={() => handleAssignSeat(seat)}
+                  >
+                    <span>{seat.code}</span>
+                  </SeatButton>
+                ))}
+              </SeatGridContainer>
+            )}
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* ================= 모달 2: 스터디룸 타임라인 & 예약 모달 ================= */}
+      {selectedStudyRoom && (
+        <ModalOverlay onClick={() => setSelectedStudyRoom(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <div>
+                <ModalTitle>{selectedStudyRoom.name} 예약</ModalTitle>
+                <ModalSubtitle>
+                  {selectedStudyRoom.location} ({selectedStudyRoom.quota})
+                </ModalSubtitle>
+              </div>
+              <CloseBtn onClick={() => setSelectedStudyRoom(null)}>
+                <X size={20} />
+              </CloseBtn>
+            </ModalHeader>
+
+            {/* 날짜 선택 */}
+            <DateSelectorRow>
+              {dateOptions.map((opt) => (
+                <DateBtn
+                  key={opt.value}
+                  $active={selectedDate === opt.value}
+                  onClick={() => handleDateChange(opt.value)}
+                >
+                  {opt.label}
+                </DateBtn>
+              ))}
+            </DateSelectorRow>
+
+            {/* 10분 단위 타임라인 시각화 */}
+            <TimelineSection>
+              <TimelineHeader>
+                <span>시간대별 점유 현황 (10분 단위)</span>
+                <LegendRow>
+                  <LegendItem>
+                    <LegendDot $type="avail" /> 가능
+                  </LegendItem>
+                  <LegendItem>
+                    <LegendDot $type="occ" /> 점유됨
+                  </LegendItem>
+                  <LegendItem>
+                    <LegendDot $type="past" /> 만료
+                  </LegendItem>
+                </LegendRow>
+              </TimelineHeader>
+
+              {isLoadingTimeline ? (
+                <ModalLoading>
+                  <RefreshCw size={20} className="spin" />
+                  <span>타임라인 로딩 중...</span>
+                </ModalLoading>
+              ) : studyRoomDetail?.timeLine ? (
+                <TimelineGrid>
+                  {studyRoomDetail.timeLine.map((slot) => (
+                    <HourSlot key={slot.hour}>
+                      <HourLabel>{slot.hour}시</HourLabel>
+                      <MinuteBars>
+                        {slot.minutes.map((m, mIdx) => {
+                          const isPast = m.class === "disabled";
+                          const isOcc = m.class === "occupied";
+                          return (
+                            <MinuteBar
+                              key={mIdx}
+                              $type={isPast ? "past" : isOcc ? "occ" : "avail"}
+                              title={`${slot.hour}:${mIdx * 10}분`}
+                            />
+                          );
+                        })}
+                      </MinuteBars>
+                    </HourSlot>
+                  ))}
+                </TimelineGrid>
+              ) : (
+                <EmptyBox>해당 일자의 타임라인 정보를 불러올 수 없습니다.</EmptyBox>
+              )}
+            </TimelineSection>
+
+            {/* 예약 입력 폼 */}
+            <BookingForm>
+              <FormGroup>
+                <FormLabel>시작 시간</FormLabel>
+                <FormSelect
+                  value={reserveBeginTime}
+                  onChange={(e) => setReserveBeginTime(e.target.value)}
+                >
+                  {[
+                    "09:00",
+                    "10:00",
+                    "11:00",
+                    "12:00",
+                    "13:00",
+                    "14:00",
+                    "15:00",
+                    "16:00",
+                    "17:00",
+                    "18:00",
+                    "19:00",
+                    "20:00",
+                  ].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </FormSelect>
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>이용 시간</FormLabel>
+                <DurationBtnGroup>
+                  {[1, 2, 3].map((hr) => (
+                    <DurationBtn
+                      key={hr}
+                      $active={reserveDurationHours === hr}
+                      onClick={() => setReserveDurationHours(hr)}
+                    >
+                      {hr}시간
+                    </DurationBtn>
+                  ))}
+                </DurationBtnGroup>
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>이용 인원</FormLabel>
+                <FormInput
+                  type="number"
+                  min={selectedStudyRoom.minQuota || 1}
+                  max={selectedStudyRoom.maxQuota || 10}
+                  value={reserveCompanionCnt}
+                  onChange={(e) => setReserveCompanionCnt(parseInt(e.target.value, 10) || 1)}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <FormLabel>사용 목적</FormLabel>
+                <FormInput
+                  type="text"
+                  value={reservePurpose}
+                  onChange={(e) => setReservePurpose(e.target.value)}
+                  placeholder="예: 조별 과제 및 토의"
+                />
+              </FormGroup>
+
+              <SubmitBtn disabled={isSubmittingBooking} onClick={handleSubmitStudyBooking}>
+                {isSubmittingBooking ? "예약 처리 중..." : "위 조건으로 예약 신청하기"}
+              </SubmitBtn>
+            </BookingForm>
+          </ModalContent>
+        </ModalOverlay>
       )}
     </Container>
   );
 }
 
+// ================= STYLES =================
 const Container = styled.div`
-  padding: 12px ${MOBILE_PAGE_GUTTER} 40px;
-  display: flex;
-  flex-direction: column;
+  padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #f8fafc;
 `;
 
 const TabBar = styled.div`
   display: flex;
-  background: #f1f5f9;
+  background: #ffffff;
   padding: 4px;
   border-radius: 12px;
   margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
+const TabItem = styled.button<{ $active: boolean }>`
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 10px 0;
-  border-radius: 9px;
-  border: none;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
-  color: ${({ $active }) => ($active ? "#0f172a" : "#64748b")};
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  box-shadow: ${({ $active }) => ($active ? "0 2px 6px rgba(0,0,0,0.05)" : "none")};
+  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
+  background: ${({ $active }) => ($active ? "#eff6ff" : "transparent")};
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
   position: relative;
 `;
 
-const ActiveDot = styled.div`
+const BadgeDot = styled.span`
+  position: absolute;
+  top: 6px;
+  right: 12px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #ef4444;
-  position: absolute;
-  top: 8px;
-  right: 14px;
 `;
 
-const ToastBanner = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  animation: fadeIn 0.3s ease;
-  button {
-    margin-left: auto;
-    background: #2563eb;
-    color: #fff;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    cursor: pointer;
-  }
-`;
-
-const SectionWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const SectionTop = styled.div`
+const BannerCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 15px;
+const BannerLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const BannerText = styled.div`
+  display: flex;
+  flex-direction: column;
+  strong {
+    font-size: 14px;
+    color: #1e40af;
+  }
+  span {
+    font-size: 12px;
+    color: #3b82f6;
+  }
+`;
+
+const ToastMessage = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 14px;
+`;
+
+const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 16px;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
 `;
 
-const RefreshBtn = styled.button`
+const SubTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+  margin: 0 0 8px 0;
+`;
+
+const RefreshButton = styled.button`
   display: flex;
   align-items: center;
   gap: 4px;
-  background: none;
-  border: none;
   font-size: 12px;
   color: #64748b;
+  background: none;
+  border: none;
   cursor: pointer;
-  .spin {
-    animation: spin 1s linear infinite;
-  }
 `;
 
-const NoticeText = styled.span`
-  font-size: 11.5px;
-  color: #94a3b8;
+const NoticeBanner = styled.div`
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #475569;
 `;
 
-const ListContainer = styled.div`
+const RoomGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
 `;
 
-const CardItem = styled.div`
+const RoomCard = styled.div<{ $isFull: boolean }>`
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  border: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const CardMain = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  border: 1px solid ${({ $isFull }) => ($isFull ? "#fecaca" : "#e2e8f0")};
 `;
 
 const RoomHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 10px;
 `;
 
 const RoomName = styled.span`
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
+  color: #0f172a;
 `;
 
-const RoomSub = styled.div`
-  font-size: 11.5px;
-  color: #64748b;
-  margin-top: 2px;
-`;
-
-const SeatCount = styled.span`
-  font-size: 12.5px;
-  color: #64748b;
-`;
-
-const AvailCount = styled.strong<{ $urgent: boolean }>`
-  font-size: 14px;
+const SeatBadge = styled.span<{ $isFull: boolean }>`
+  font-size: 12px;
   font-weight: 700;
-  color: ${({ $urgent }) => ($urgent ? "#ef4444" : "#2563eb")};
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: ${({ $isFull }) => ($isFull ? "#fee2e2" : "#dbeafe")};
+  color: ${({ $isFull }) => ($isFull ? "#b91c1c" : "#1d4ed8")};
 `;
 
-const ProgressBarTrack = styled.div`
-  width: 100%;
-  height: 6px;
+const ProgressBarContainer = styled.div`
+  height: 8px;
   background: #f1f5f9;
-  border-radius: 3px;
+  border-radius: 999px;
   overflow: hidden;
-  margin-top: 4px;
+  margin-bottom: 6px;
 `;
 
-const ProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
+const ProgressBarFill = styled.div<{ $rate: number; $isFull: boolean }>`
   height: 100%;
-  width: ${({ $percent }) => Math.min(100, Math.max(0, $percent))}%;
-  background: ${({ $warning }) => ($warning ? "#ef4444" : "#2563eb")};
-  border-radius: 3px;
+  width: ${({ $rate }) => `${Math.min(100, $rate)}%`};
+  background: ${({ $isFull }) => ($isFull ? "#ef4444" : "#3b82f6")};
   transition: width 0.3s ease;
 `;
 
-const TagRow = styled.div`
+const SeatStatRow = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
-`;
-
-const Tag = styled.span`
-  font-size: 10.5px;
+  justify-content: space-between;
+  font-size: 11px;
   color: #64748b;
-  background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
+  margin-bottom: 12px;
 `;
 
-const SmartActionRow = styled.div`
+const ButtonRow = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const PrimaryActionBtn = styled.button`
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 1px solid #f8fafc;
-  overflow-x: auto;
-`;
-
-const ActionChip = styled.button<{ $primary?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 0;
   border-radius: 8px;
-  border: 1px solid ${({ $primary }) => ($primary ? "#bfdbfe" : "#e2e8f0")};
-  background: ${({ $primary }) => ($primary ? "#eff6ff" : "#ffffff")};
-  color: ${({ $primary }) => ($primary ? "#1d4ed8" : "#475569")};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
   cursor: pointer;
-  white-space: nowrap;
-  &:hover {
-    background: ${({ $primary }) => ($primary ? "#dbeafe" : "#f8fafc")};
-  }
 `;
 
-const MySeatCard = styled.div`
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+const SniperActionBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f8fafc;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  cursor: pointer;
+`;
+
+const StudyGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
 `;
 
-const MySeatBadge = styled.span`
-  align-self: flex-start;
-  font-size: 11px;
+const StudyCard = styled.div`
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+`;
+
+const StudyHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+`;
+
+const StudyName = styled.h4`
+  font-size: 15px;
   font-weight: 700;
-  color: #16a34a;
-  background: #dcfce7;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+`;
+
+const StudyLocation = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+`;
+
+const QuotaBadge = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
   padding: 3px 8px;
   border-radius: 6px;
 `;
 
-const MySeatRoom = styled.div`
-  font-size: 18px;
-  font-weight: 800;
+const TagRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+`;
+
+const TagChip = styled.span`
+  font-size: 11px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const ActiveSeatCard = styled.div`
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1.5px solid #3b82f6;
+`;
+
+const ActiveSeatHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+`;
+
+const ActiveBadge = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const SeatRoomTitle = styled.span`
+  font-size: 15px;
   color: #0f172a;
 `;
 
-const MySeatTimeInfo = styled.div`
-  font-size: 13px;
-  color: #64748b;
-  strong {
-    color: #1e293b;
-  }
-`;
-
-const MySeatActionGroup = styled.div`
+const SeatTimeInfo = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #334155;
+  margin-bottom: 14px;
 `;
 
-const ActionButton = styled.button<{ $highlight?: boolean; $danger?: boolean }>`
+const ActionRow = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+`;
+
+const ActionButton = styled.button<{ $danger?: boolean }>`
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
+  padding: 9px 0;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
+  background: ${({ $danger }) => ($danger ? "#fee2e2" : "#f1f5f9")};
+  color: ${({ $danger }) => ($danger ? "#b91c1c" : "#334155")};
+  border: 1px solid ${({ $danger }) => ($danger ? "#fca5a5" : "#cbd5e1")};
   cursor: pointer;
-  color: ${({ $highlight, $danger }) => ($danger ? "#ef4444" : $highlight ? "#ffffff" : "#334155")};
-  background: ${({ $highlight, $danger }) => ($danger ? "#fef2f2" : $highlight ? "#2563eb" : "#f1f5f9")};
-  &:hover {
-    opacity: 0.9;
+`;
+
+const ReminderRow = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+`;
+
+const ReservationList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const ReservationCard = styled.div`
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+`;
+
+const ReservationTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  strong {
+    font-size: 14px;
+    color: #0f172a;
   }
 `;
 
+const ReservationStatus = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const ReservationTime = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 4px;
+`;
+
+const ReservationNote = styled.div`
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 8px;
+`;
+
+const ReservationActionRow = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const SmallActionBtn = styled.button<{ $danger?: boolean }>`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: ${({ $danger }) => ($danger ? "#fee2e2" : "#f1f5f9")};
+  color: ${({ $danger }) => ($danger ? "#b91c1c" : "#334155")};
+  border: 1px solid ${({ $danger }) => ($danger ? "#fca5a5" : "#e2e8f0")};
+  cursor: pointer;
+`;
+
 const EmptyBox = styled.div`
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
+`;
+
+const SkeletonList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const SkeletonCard = styled.div`
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+// ================= MODAL STYLES =================
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+`;
+
+const ModalContent = styled.div`
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 20px 16px 36px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+`;
+
+const ModalSubtitle = styled.p`
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+`;
+
+const CloseBtn = styled.button`
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+`;
+
+const ModalLoading = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  gap: 8px;
+  padding: 40px 0;
+  color: #64748b;
+  font-size: 13px;
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const SeatGridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  padding: 10px 0;
+  max-height: 55vh;
+  overflow-y: auto;
+`;
+
+const SeatButton = styled.button<{ $isOccupied: boolean; $isReservable: boolean }>`
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid
+    ${({ $isOccupied, $isReservable }) =>
+      $isOccupied ? "#e2e8f0" : $isReservable ? "#93c5fd" : "#f1f5f9"};
+  background: ${({ $isOccupied, $isReservable }) =>
+    $isOccupied ? "#f1f5f9" : $isReservable ? "#eff6ff" : "#f8fafc"};
+  color: ${({ $isOccupied, $isReservable }) =>
+    $isOccupied ? "#94a3b8" : $isReservable ? "#1d4ed8" : "#cbd5e1"};
+  cursor: ${({ $isOccupied, $isReservable }) =>
+    !$isOccupied && $isReservable ? "pointer" : "not-allowed"};
+
+  &:active {
+    ${({ $isOccupied, $isReservable }) =>
+      !$isOccupied && $isReservable && "transform: scale(0.95);"}
+  }
+`;
+
+const DateSelectorRow = styled.div`
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+`;
+
+const DateBtn = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
+  border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e2e8f0")};
+  cursor: pointer;
+`;
+
+const TimelineSection = styled.div`
   background: #f8fafc;
-  border-radius: 16px;
-  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+`;
+
+const TimelineHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+`;
+
+const LegendRow = styled.div`
+  display: flex;
   gap: 8px;
 `;
 
-const EmptyTitle = styled.div`
-  font-size: 15px;
-  font-weight: 700;
-  color: #334155;
-  margin-top: 6px;
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: #64748b;
 `;
 
-const EmptyDesc = styled.div`
+const LegendDot = styled.span<{ $type: "avail" | "occ" | "past" }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#60a5fa" : $type === "occ" ? "#475569" : "#cbd5e1"};
+`;
+
+const TimelineGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+`;
+
+const HourSlot = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const HourLabel = styled.span`
+  width: 34px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+`;
+
+const MinuteBars = styled.div`
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  height: 16px;
+`;
+
+const MinuteBar = styled.div<{ $type: "avail" | "occ" | "past" }>`
+  border-radius: 3px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "#e2e8f0"};
+`;
+
+const BookingForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const FormLabel = styled.label`
   font-size: 12px;
-  color: #94a3b8;
-  line-height: 1.5;
-  max-width: 260px;
-`;
-
-const PrimaryBtn = styled.button`
-  margin-top: 10px;
-  padding: 10px 18px;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
-`;
-
-const SecondaryBtn = styled.button`
-  margin-top: 10px;
-  padding: 10px 18px;
-  background: #e2e8f0;
   color: #334155;
-  border: none;
+`;
+
+const FormSelect = styled.select`
+  padding: 8px 10px;
   border-radius: 8px;
+  border: 1px solid #cbd5e1;
   font-size: 13px;
+  background: #ffffff;
+`;
+
+const DurationBtnGroup = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const DurationBtn = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
+  background: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
+  border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e2e8f0")};
   cursor: pointer;
+`;
+
+const FormInput = styled.input`
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+`;
+
+const SubmitBtn = styled.button`
+  padding: 12px 0;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+
+  &:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
 `;

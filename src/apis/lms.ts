@@ -9,10 +9,15 @@ export interface LmsAssignmentEvent {
     fullname: string;
     shortname?: string;
   };
+  modulename?: string;
+  activityname?: string;
   timesort: number; // unix timestamp (seconds)
   formattedTime?: string;
   isUrgent?: boolean;
   daysRemaining?: number;
+  url?: string;
+  actionName?: string;
+  isCompleted?: boolean;
 }
 
 export interface LmsCourse {
@@ -22,10 +27,33 @@ export interface LmsCourse {
   enrolledusercount?: number;
 }
 
+export interface LmsModule {
+  id: number; // cmid
+  name: string;
+  modname: string; // 'vod', 'assign', 'quiz', 'ubboard', 'resource', 'folder'
+  instance?: number;
+  url?: string;
+  isCompleted?: boolean;
+}
+
+export interface LmsSection {
+  id: number;
+  name: string;
+  summary?: string;
+  modules: LmsModule[];
+}
+
+export interface LmsCourseGrade {
+  courseid: number;
+  grade: string;
+  rawgrade?: string;
+  rank?: number;
+}
+
 const LMS_SERVER_URL = 'https://lms.inu.ac.kr/webservice/rest/server.php';
 
 /**
- * 1. 다가오는 과제 및 퀴즈 일정 조회 (core_calendar_get_action_events_by_timesort)
+ * 1. 다가오는 과제, 퀴즈 및 동영상 학습 일정 조회
  */
 export async function getUpcomingLmsAssignments(daysAhead = 14): Promise<LmsAssignmentEvent[]> {
   if (!isMobileAppEnvironment()) {
@@ -46,7 +74,7 @@ export async function getUpcomingLmsAssignments(daysAhead = 14): Promise<LmsAssi
         wsfunction: 'core_calendar_get_action_events_by_timesort',
         timesortfrom,
         timesortto,
-        limitnum: 20,
+        limitnum: 25,
       },
     },
   });
@@ -62,9 +90,13 @@ export async function getUpcomingLmsAssignments(daysAhead = 14): Promise<LmsAssi
         name: ev.name,
         description: ev.description,
         course: ev.course,
+        modulename: ev.modulename,
+        activityname: ev.activityname,
         timesort: ev.timesort,
         daysRemaining: days,
         isUrgent: days <= 2,
+        url: ev.url || ev.action?.url,
+        actionName: ev.action?.name,
       };
     });
   }
@@ -80,7 +112,6 @@ export async function getMyLmsCourses(): Promise<LmsCourse[]> {
     return [];
   }
 
-  // 먼저 사용자 정보 조회
   const lmsStatus = await checkLmsAccountLinked();
   const userId = lmsStatus.user?.id;
   if (!userId) return [];
@@ -104,6 +135,115 @@ export async function getMyLmsCourses(): Promise<LmsCourse[]> {
       fullname: c.fullname,
       shortname: c.shortname,
       enrolledusercount: c.enrolledusercount,
+    }));
+  }
+
+  return [];
+}
+
+/**
+ * 3. 강좌별 주차/섹션 학습 콘텐츠 목록 조회 (core_course_get_contents)
+ */
+export async function getCourseContents(courseId: number): Promise<LmsSection[]> {
+  if (!isMobileAppEnvironment()) {
+    return [];
+  }
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_course_contents_${courseId}_${Date.now()}`,
+    authDomain: 'LMS',
+    request: {
+      method: 'GET',
+      url: LMS_SERVER_URL,
+      params: {
+        wsfunction: 'core_course_get_contents',
+        courseid: courseId,
+      },
+    },
+  });
+
+  if (res.success && Array.isArray(res.data)) {
+    return res.data.map((sec: any) => ({
+      id: sec.id,
+      name: sec.name || '주차',
+      summary: sec.summary,
+      modules: (sec.modules || []).map((m: any) => ({
+        id: m.id, // cmid
+        name: m.name,
+        modname: m.modname,
+        instance: m.instance,
+        url: m.url,
+      })),
+    }));
+  }
+
+  return [];
+}
+
+/**
+ * 4. 강좌별 학습 활동 완료 상태 조회 (core_completion_get_activities_completion_status)
+ * 반환값: Record<cmid, isCompleted>
+ */
+export async function getCourseCompletionMap(courseId: number): Promise<Record<number, boolean>> {
+  if (!isMobileAppEnvironment()) {
+    return {};
+  }
+
+  const lmsStatus = await checkLmsAccountLinked();
+  const userId = lmsStatus.user?.id;
+  if (!userId) return {};
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_course_completion_${courseId}_${Date.now()}`,
+    authDomain: 'LMS',
+    request: {
+      method: 'GET',
+      url: LMS_SERVER_URL,
+      params: {
+        wsfunction: 'core_completion_get_activities_completion_status',
+        courseid: courseId,
+        userid: userId,
+      },
+    },
+  });
+
+  const completionMap: Record<number, boolean> = {};
+  if (res.success && res.data?.statuses && Array.isArray(res.data.statuses)) {
+    res.data.statuses.forEach((st: any) => {
+      // state: 1 = complete, 2 = complete pass, 3 = complete fail
+      completionMap[st.cmid] = st.state === 1 || st.state === 2 || Boolean(st.isoverallcomplete);
+    });
+  }
+
+  return completionMap;
+}
+
+/**
+ * 5. 강좌 성적 개요 조회 (gradereport_overview_get_course_grades)
+ */
+export async function getCourseGradesOverview(): Promise<LmsCourseGrade[]> {
+  if (!isMobileAppEnvironment()) {
+    return [];
+  }
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_course_grades_${Date.now()}`,
+    authDomain: 'LMS',
+    request: {
+      method: 'GET',
+      url: LMS_SERVER_URL,
+      params: {
+        wsfunction: 'gradereport_overview_get_course_grades',
+      },
+    },
+  });
+
+  if (res.success && res.data?.grades && Array.isArray(res.data.grades)) {
+    return res.data.grades.map((g: any) => ({
+      courseid: g.courseid,
+      grade: g.grade,
+      rawgrade: g.rawgrade,
+      rank: g.rank,
     }));
   }
 
