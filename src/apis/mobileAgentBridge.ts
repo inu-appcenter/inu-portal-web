@@ -12,6 +12,26 @@ export interface AcademicInfoData {
   latestEnrollmentChange?: string;
 }
 
+/**
+ * AI 요청에 포함해도 되는 비식별 학적 요약만 만든다.
+ * 원본 학번·이름·지도교수 등 개인 식별 정보는 이 경계를 절대 넘지 않는다.
+ */
+function toAnonymousAcademicContext(data: AcademicInfoData) {
+  const entryYear = /^\d{4}/.test(data.studentId) ? data.studentId.slice(0, 4) : undefined;
+
+  return {
+    ...(entryYear ? { entryYear } : {}),
+    departmentName: data.departmentName,
+    ...(data.collegeName ? { collegeName: data.collegeName } : {}),
+    enrollmentStatus: data.enrollmentStatus,
+    ...(data.completedSemesterCount ? { completedSemesterCount: data.completedSemesterCount } : {}),
+    acquiredCredits: data.acquiredCredits,
+    gradeAverage: data.gradeAverage,
+    ...(data.entranceDate ? { entranceDate: data.entranceDate.slice(0, 4) } : {}),
+    ...(data.latestEnrollmentChange ? { latestEnrollmentChange: data.latestEnrollmentChange } : {}),
+  };
+}
+
 export interface AgentActionResult<T = any> {
   success: boolean;
   data?: T;
@@ -242,7 +262,7 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
       tasks.push(
         fetchAcademicInfoFromApp().then((res) => {
           if (res?.success && res.data) {
-            context.academic = res.data;
+            context.academic = toAnonymousAcademicContext(res.data);
           }
           // Preserve the distinction between an unlinked account and a
           // temporary SSO/ERP failure for diagnostics and future UI handling.
