@@ -42,6 +42,7 @@ export interface AgentChatRequest {
   message: string;
   history?: AgentChatMessageHistory[];
   conversationHistory?: AgentChatMessageHistory[];
+  clientContext?: Record<string, any>;
 }
 
 export interface AgentStreamPacket {
@@ -52,12 +53,15 @@ export interface AgentStreamPacket {
   delta?: string;
   suggestedActions?: string[];
   finishReason?: string;
+  thought?: string;
+  hop?: number;
 }
 
 export interface StreamAgentChatCallbacks {
   onStatus?: (status: string, message?: string) => void;
   onTools?: (tools: string[], uiComponents: UiComponent[]) => void;
   onDelta?: (delta: string) => void;
+  onThought?: (hop: number, thought: string, tools?: string[]) => void;
   onDone?: (suggestedActions: string[]) => void;
   onError?: (err: any) => void;
 }
@@ -83,8 +87,9 @@ export const streamAgentChat = async (
   request: AgentChatRequest,
   callbacks: StreamAgentChatCallbacks
 ): Promise<void> => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-  const url = `${baseUrl}/api/agent/chat/stream`;
+  const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+  const cleanBase = rawBase.replace(/\/+$/, "");
+  const url = `${cleanBase}/api/agent/chat/stream`;
 
   const { accessToken } = useUserStore.getState().tokenInfo;
   const headers: Record<string, string> = {
@@ -98,10 +103,13 @@ export const streamAgentChat = async (
   const reqBody = {
     message: request.message,
     history: request.history || request.conversationHistory || [],
+    clientContext: request.clientContext,
   };
 
   const response = await fetch(url, {
     method: "POST",
+    mode: "cors",
+    credentials: "include",
     headers,
     body: JSON.stringify(reqBody),
   });
@@ -133,7 +141,11 @@ export const streamAgentChat = async (
           if (!dataStr) continue;
           try {
             const packet: AgentStreamPacket = JSON.parse(dataStr);
-            if (
+            if (currentEvent === "thought" || packet.status === "THOUGHT") {
+              if (packet.thought) {
+                callbacks.onThought?.(packet.hop || 1, packet.thought, packet.tools);
+              }
+            } else if (
               currentEvent === "status" ||
               packet.status === "ROUTING" ||
               packet.status === "EXECUTING" ||
@@ -160,4 +172,36 @@ export const streamAgentChat = async (
     callbacks.onError?.(err);
     throw err;
   }
+};
+
+export interface CampusWatchJob {
+  id: number;
+  domain: string;
+  domainDescription: string;
+  targetId: string;
+  targetName: string;
+  conditionType: string;
+  status: "ACTIVE" | "NOTIFIED" | "EXPIRED" | "CANCELLED";
+  statusDescription: string;
+  createdAt: string;
+  expiresAt: string;
+  notifiedAt?: string | null;
+  remainingMinutes: number;
+}
+
+export const getMyCampusWatchJobs = async (): Promise<ApiResponse<CampusWatchJob[]>> => {
+  return await tokenInstance.get("/api/v1/agent/watch-jobs");
+};
+
+export const postRegisterCampusWatch = async (data: {
+  domain: string;
+  targetId: string;
+  targetName: string;
+  durationMinutes?: number;
+}): Promise<ApiResponse<CampusWatchJob>> => {
+  return await tokenInstance.post("/api/v1/agent/watch-jobs", data);
+};
+
+export const deleteCancelCampusWatch = async (jobId: number): Promise<ApiResponse<void>> => {
+  return await tokenInstance.delete(`/api/v1/agent/watch-jobs/${jobId}`);
 };

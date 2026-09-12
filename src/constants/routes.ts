@@ -63,6 +63,13 @@ export const ROUTES = {
     },
   },
 
+  // 스마트 캠퍼스 서비스 허브 (도서관, LMS 등)
+  SERVICES: {
+    ROOT: "/services",
+    LIBRARY: "/services/library",
+    LMS: "/services/lms",
+  },
+
   // 마이페이지
   MYPAGE: {
     ROOT: "/mypage",
@@ -74,6 +81,7 @@ export const ROUTES = {
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
     DAILY_BRIEF: "/mypage/notification/daily-brief",
+    SMART_WATCH: "/mypage/notification/smart-watch",
   },
 
   // 게시판 및 기능
