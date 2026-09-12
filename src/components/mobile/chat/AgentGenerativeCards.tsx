@@ -167,6 +167,7 @@ export const SingleCardItem: React.FC<{
       <WidgetCardWrapper>
         <SwipeMenuWidget
           initialCafeteria={component.data?.cafeteria || component.data?.name}
+          initialMealType={component.data?.targetMeal || component.data?.mealLabel}
           onNavigate={onNavigate}
         />
       </WidgetCardWrapper>

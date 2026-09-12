@@ -16,10 +16,11 @@ interface MenuData {
 
 export interface SwipeMenuWidgetProps {
   initialCafeteria?: string;
+  initialMealType?: string;
   onNavigate?: () => void;
 }
 
-export default function SwipeMenuWidget({ initialCafeteria, onNavigate }: SwipeMenuWidgetProps = {}) {
+export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onNavigate }: SwipeMenuWidgetProps = {}) {
   const navigate = useNavigate();
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
 
@@ -77,7 +78,33 @@ export default function SwipeMenuWidget({ initialCafeteria, onNavigate }: SwipeM
   }, []);
 
   // 식사 시간대별 인덱스 및 라벨 매핑
-  const getMealInfo = (cafeteriaName: string, hour: number): { indices: number[]; label: string } => {
+  const getMealInfo = (cafeteriaName: string, hour: number, requestedMeal?: string): { indices: number[]; label: string } => {
+    // 1. 명시적으로 requestedMeal이 전달된 경우 우선 적용
+    if (requestedMeal) {
+      const meal = requestedMeal.trim();
+      if (meal.includes("조식") || meal.includes("아침")) {
+        return { indices: [0], label: "조식" };
+      }
+      if (meal.includes("석식") || meal.includes("저녁")) {
+        return { indices: [2], label: "석식" };
+      }
+      if (meal.includes("중식") || meal.includes("점심")) {
+        if (cafeteriaName === "학생식당") {
+          return { indices: [0, 1], label: "중식" };
+        }
+        return { indices: [1], label: "중식" };
+      }
+    }
+
+    // 2. 시간대 기반 자동 판별
+    // 심야/새벽(08:00 이전)에는 대부분의 식당 조식이 미운영이므로 당일 중식을 기본으로 표출
+    if (hour < 8.0) {
+      if (cafeteriaName === "학생식당") {
+        return { indices: [0, 1], label: "중식" };
+      }
+      return { indices: [1], label: "중식" };
+    }
+
     if (cafeteriaName === "학생식당") {
       if (hour >= 14.5) {
         return { indices: [2], label: "석식" };
@@ -225,7 +252,7 @@ export default function SwipeMenuWidget({ initialCafeteria, onNavigate }: SwipeM
       >
         {cafeterias.map((caf) => {
           const cafData = menuDataList[caf.title];
-          const mealInfo = getMealInfo(caf.title, currentHour);
+          const mealInfo = getMealInfo(caf.title, currentHour, initialMealType);
 
           return (
             <SwiperSlide key={caf.title}>
