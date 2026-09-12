@@ -103,14 +103,27 @@ export default function MobileSmartWatchManagementPage() {
       const now = Date.now();
       const remainMs = Math.max(0, l.expiresAt - now);
       const remainMin = Math.ceil(remainMs / (60 * 1000));
+      
+      let domainName = "기기 감시";
+      let conditionDesc = "조건 만족 시 상단 헤드업 알림으로 즉시 안내합니다.";
+
+      if (l.type === 'STUDY_ROOM_SNIPER') {
+        domainName = "스터디룸 취소표";
+        conditionDesc = "희망 시간대 취소표 발생 시 상단 헤드업 알림으로 즉시 안내합니다.";
+      } else if (l.type === 'SPECIFIC_SEAT_SNIPER') {
+        domainName = "열람실 특정 좌석";
+        conditionDesc = "해당 좌석 퇴실/반납 시 상단 헤드업 알림으로 즉시 안내합니다.";
+      } else if (l.type === 'SEAT_EXPIRATION') {
+        domainName = "좌석 만료 리마인더";
+        conditionDesc = "이용 만료 20분 전 정시 알림을 발송합니다.";
+      }
+
       return {
         source: 'LOCAL',
         id: l.id,
-        domainName: l.type === 'STUDY_ROOM_SNIPER' ? "스터디룸 취소표" : "도서관 좌석 리마인더",
+        domainName,
         targetName: l.title || l.targetName,
-        conditionDesc: l.type === 'STUDY_ROOM_SNIPER'
-          ? "취소표 발생 시 상단 헤드업 알림으로 즉시 안내합니다."
-          : "만료 20분 전 정시 알림을 발송합니다.",
+        conditionDesc,
         status: l.status,
         remainingMinutes: remainMin,
         createdAt: l.createdAt,

@@ -163,10 +163,14 @@ export async function saveLmsAccount(username: string, password: string): Promis
 
 export interface LocalWatchJob {
   id: string;
-  type: 'STUDY_ROOM_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
+  type: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
   title: string;
   targetName: string;
   targetId?: string | number;
+  roomId?: number;
+  roomName?: string;
+  seatId?: number;
+  seatNo?: string;
   hopeDate?: string;
   targetHour?: number;
   createdAt: number;
@@ -185,9 +189,11 @@ export async function getLocalWatchJobsFromApp(): Promise<AgentActionResult<Loca
  * 모바일 기기 로컬 감시 등록
  */
 export async function registerLocalWatchJobInApp(payload: {
-  watchType: 'STUDY_ROOM_SNIPER' | 'SEAT_EXPIRATION';
+  watchType: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION';
   roomId?: number;
   roomName?: string;
+  seatId?: number;
+  seatNo?: string;
   hopeDate?: string;
   targetHour?: number;
   durationMinutes?: number;

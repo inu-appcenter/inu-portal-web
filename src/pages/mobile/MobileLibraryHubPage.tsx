@@ -344,6 +344,7 @@ export default function MobileLibraryHubPage() {
   };
 
   // --- 감시 알림 등록 ---
+  // 1. 열람실 전체 빈자리 감시 (서버 FCM)
   const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
     try {
       await postRegisterCampusWatch({
@@ -359,20 +360,90 @@ export default function MobileLibraryHubPage() {
     }
   };
 
+  // 2. 열람실 특정 좌석 번호 빈자리 감시 (모바일 기기 로컬 폴러)
+  const handleRegisterSpecificSeatSniper = async (seat: LibrarySeat) => {
+    if (!selectedSeatRoom) return;
+    if (!isMobileAppEnvironment()) {
+      alert("특정 좌석 빈자리 실시간 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
+      return;
+    }
+
+    const seatDisplay = `${selectedSeatRoom.name} ${seat.code}번 좌석`;
+    if (!window.confirm(`[${seatDisplay}]\n현재 다른 학우가 사용 중인 좌석입니다.\n자리가 비었을 때(퇴실/반납 시) 알림을 받으시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      await registerLocalWatchJobInApp({
+        watchType: "SPECIFIC_SEAT_SNIPER",
+        roomId: selectedSeatRoom.id,
+        roomName: selectedSeatRoom.name,
+        seatId: seat.id,
+        seatNo: seat.code,
+        durationMinutes: 90,
+      });
+      showToast(`🎯 [${seatDisplay}] 빈자리 감시가 시작되었습니다! (최대 90분)`);
+      setSelectedSeatRoom(null);
+    } catch (e) {
+      console.error(e);
+      alert("특정 좌석 빈자리 감시 등록에 실패했습니다.");
+    }
+  };
+
+  // 3. 스터디룸 희망 시간대 취소표 감시 (모바일 기기 로컬 폴러)
+  const handleRegisterStudySlotSniper = async () => {
+    if (!selectedStudyRoom) return;
+    if (!isMobileAppEnvironment()) {
+      alert("스터디룸 취소표 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
+      return;
+    }
+
+    const startHour = parseInt(reserveBeginTime.split(":")[0], 10);
+    const dateLabel = selectedDate === new Date().toISOString().split("T")[0] ? "오늘" : selectedDate;
+
+    if (
+      !window.confirm(
+        `[${selectedStudyRoom.name}]\n일자: ${dateLabel} (${selectedDate})\n희망 시간: ${startHour}:00 (${reserveDurationHours}시간)\n취소표가 발생했을 때 즉시 알림을 받으시겠습니까?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await registerLocalWatchJobInApp({
+        watchType: "STUDY_ROOM_SNIPER",
+        roomId: selectedStudyRoom.id,
+        roomName: selectedStudyRoom.name,
+        hopeDate: selectedDate,
+        targetHour: startHour,
+        durationMinutes: 60,
+      });
+      showToast(`🎯 [${selectedStudyRoom.name} ${startHour}시] 취소표 감시가 시작되었습니다!`);
+      setSelectedStudyRoom(null);
+    } catch (e) {
+      console.error(e);
+      alert("취소표 감시 등록에 실패했습니다.");
+    }
+  };
+
   const handleRegisterStudySniper = async (sRoom: LibraryStudyRoom) => {
     if (!isMobileAppEnvironment()) {
       alert("취소표 백그라운드 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
       return;
     }
+    // 카드에서 바로 누를 때는 현재 시간 기준 다음 정시 또는 기본 15시
+    const nextHour = Math.min(20, Math.max(9, new Date().getHours() + 1));
+    const today = new Date().toISOString().split("T")[0];
     try {
       await registerLocalWatchJobInApp({
         watchType: "STUDY_ROOM_SNIPER",
         roomId: sRoom.id,
         roomName: sRoom.name,
-        targetHour: 15,
+        hopeDate: today,
+        targetHour: nextHour,
         durationMinutes: 60,
       });
-      showToast(`🎯 '${sRoom.name}' 취소표 감시가 기기에서 시작되었습니다! (60분)`);
+      showToast(`🎯 '${sRoom.name}' 오늘 ${nextHour}시 취소표 감시가 시작되었습니다! (60분)`);
     } catch (e) {
       console.error(e);
       alert("취소표 감시 등록에 실패했습니다.");
@@ -715,19 +786,45 @@ export default function MobileLibraryHubPage() {
             ) : roomSeats.length === 0 ? (
               <EmptyBox>조회된 좌석이 없습니다.</EmptyBox>
             ) : (
-              <SeatGridContainer>
-                {roomSeats.map((seat) => (
-                  <SeatButton
-                    key={seat.id}
-                    $isOccupied={seat.isOccupied}
-                    $isReservable={seat.isReservable}
-                    disabled={!seat.isReservable || seat.isOccupied}
-                    onClick={() => handleAssignSeat(seat)}
-                  >
-                    <span>{seat.code}</span>
-                  </SeatButton>
-                ))}
-              </SeatGridContainer>
+              <>
+                <SeatLegendRow>
+                  <SeatLegendItem>
+                    <SeatLegendBox $color="#eff6ff" $border="#93c5fd" />
+                    <span>배정 가능</span>
+                  </SeatLegendItem>
+                  <SeatLegendItem>
+                    <SeatLegendBox $color="#fef2f2" $border="#fca5a5" />
+                    <span>사용 중 (터치 시 빈자리 알림)</span>
+                  </SeatLegendItem>
+                </SeatLegendRow>
+
+                <SeatGridContainer>
+                  {roomSeats.map((seat) => {
+                    const isAvailable = seat.isReservable && !seat.isOccupied;
+                    return (
+                      <SeatButton
+                        key={seat.id}
+                        $isOccupied={seat.isOccupied}
+                        $isReservable={seat.isReservable}
+                        title={
+                          isAvailable
+                            ? `${seat.code}번 좌석 배정하기`
+                            : `${seat.code}번 좌석 빈자리 알림받기`
+                        }
+                        onClick={() => {
+                          if (isAvailable) {
+                            handleAssignSeat(seat);
+                          } else {
+                            handleRegisterSpecificSeatSniper(seat);
+                          }
+                        }}
+                      >
+                        <span>{seat.code}</span>
+                      </SeatButton>
+                    );
+                  })}
+                </SeatGridContainer>
+              </>
             )}
           </ModalContent>
         </ModalOverlay>
@@ -875,9 +972,15 @@ export default function MobileLibraryHubPage() {
                 />
               </FormGroup>
 
-              <SubmitBtn disabled={isSubmittingBooking} onClick={handleSubmitStudyBooking}>
-                {isSubmittingBooking ? "예약 처리 중..." : "위 조건으로 예약 신청하기"}
-              </SubmitBtn>
+              <ModalActionBtnGroup>
+                <SubmitBtn disabled={isSubmittingBooking} onClick={handleSubmitStudyBooking}>
+                  {isSubmittingBooking ? "예약 처리 중..." : "위 조건으로 즉시 예약"}
+                </SubmitBtn>
+                <StudySniperSlotBtn type="button" onClick={handleRegisterStudySlotSniper}>
+                  <Crosshair size={14} />
+                  <span>이 시간대 취소표 알림받기</span>
+                </StudySniperSlotBtn>
+              </ModalActionBtnGroup>
             </BookingForm>
           </ModalContent>
         </ModalOverlay>
@@ -1443,12 +1546,38 @@ const ModalLoading = styled.div`
   }
 `;
 
+const SeatLegendRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+`;
+
+const SeatLegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #475569;
+`;
+
+const SeatLegendBox = styled.span<{ $color: string; $border: string }>`
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: ${({ $color }) => $color};
+  border: 1px solid ${({ $border }) => $border};
+`;
+
 const SeatGridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
-  padding: 10px 0;
-  max-height: 55vh;
+  padding: 6px 0 16px;
+  max-height: 50vh;
   overflow-y: auto;
 `;
 
@@ -1458,21 +1587,20 @@ const SeatButton = styled.button<{ $isOccupied: boolean; $isReservable: boolean 
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   border: 1px solid
     ${({ $isOccupied, $isReservable }) =>
-      $isOccupied ? "#e2e8f0" : $isReservable ? "#93c5fd" : "#f1f5f9"};
+      $isOccupied ? "#fca5a5" : $isReservable ? "#93c5fd" : "#e2e8f0"};
   background: ${({ $isOccupied, $isReservable }) =>
-    $isOccupied ? "#f1f5f9" : $isReservable ? "#eff6ff" : "#f8fafc"};
+    $isOccupied ? "#fef2f2" : $isReservable ? "#eff6ff" : "#f8fafc"};
   color: ${({ $isOccupied, $isReservable }) =>
-    $isOccupied ? "#94a3b8" : $isReservable ? "#1d4ed8" : "#cbd5e1"};
-  cursor: ${({ $isOccupied, $isReservable }) =>
-    !$isOccupied && $isReservable ? "pointer" : "not-allowed"};
+    $isOccupied ? "#dc2626" : $isReservable ? "#1d4ed8" : "#94a3b8"};
+  cursor: pointer;
+  transition: all 0.15s ease;
 
   &:active {
-    ${({ $isOccupied, $isReservable }) =>
-      !$isOccupied && $isReservable && "transform: scale(0.95);"}
+    transform: scale(0.93);
   }
 `;
 
@@ -1618,7 +1746,15 @@ const FormInput = styled.input`
   font-size: 13px;
 `;
 
+const ModalActionBtnGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
 const SubmitBtn = styled.button`
+  width: 100%;
   padding: 12px 0;
   border-radius: 10px;
   background: #2563eb;
@@ -1627,10 +1763,33 @@ const SubmitBtn = styled.button`
   font-weight: 700;
   border: none;
   cursor: pointer;
-  margin-top: 8px;
 
   &:disabled {
     background: #94a3b8;
     cursor: not-allowed;
+  }
+`;
+
+const StudySniperSlotBtn = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 0;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #dbeafe;
+  }
+  &:active {
+    transform: scale(0.98);
   }
 `;
