@@ -291,9 +291,10 @@ function BusStopCard({
 export interface SwipeBusWidgetProps {
   initialStopName?: string;
   initialType?: "go-school" | "go-home" | string;
+  onNavigate?: () => void;
 }
 
-export default function SwipeBusWidget({ initialStopName, initialType }: SwipeBusWidgetProps = {}) {
+export default function SwipeBusWidget({ initialStopName, initialType, onNavigate }: SwipeBusWidgetProps = {}) {
   const navigate = useNavigate();
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
@@ -410,11 +411,13 @@ export default function SwipeBusWidget({ initialStopName, initialType }: SwipeBu
 
   const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     navigate(getPreferredBusUiRoute(type, category));
   };
 
   const handleBusClick = (bus: BusData, stopName: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     if (bus.number === "셔틀") {
       navigate(`${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`);
     } else {

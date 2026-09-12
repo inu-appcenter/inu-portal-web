@@ -125,10 +125,12 @@ const CitationItem = styled.a`
 
 interface GenerativeCardRendererProps {
   uiComponents?: UiComponent[];
+  onNavigate?: () => void;
 }
 
 export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
   uiComponents,
+  onNavigate,
 }) => {
   if (!uiComponents || uiComponents.length === 0) return null;
 
@@ -223,7 +225,7 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
         }
 
         // 3. 인팁 캠퍼스 도구 카드 (MY_SETTINGS, BUS, CAFETERIA, TIMETABLE, WEATHER, NOTICE_LIST 등 20여 종)
-        return <SingleCardItem key={idx} component={component} />;
+        return <SingleCardItem key={idx} component={component} onNavigate={onNavigate} />;
       })}
     </CardsContainer>
   );

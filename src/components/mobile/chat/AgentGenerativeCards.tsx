@@ -156,6 +156,7 @@ export const SingleCardItem: React.FC<{
         <SwipeBusWidget
           initialStopName={component.data?.tabName || component.data?.stopName}
           initialType={component.data?.category}
+          onNavigate={onNavigate}
         />
       </WidgetCardWrapper>
     );
@@ -166,6 +167,7 @@ export const SingleCardItem: React.FC<{
       <WidgetCardWrapper>
         <SwipeMenuWidget
           initialCafeteria={component.data?.cafeteria || component.data?.name}
+          onNavigate={onNavigate}
         />
       </WidgetCardWrapper>
     );

@@ -8,7 +8,7 @@ import {
   Menu,
   Plus,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAgentChat } from "@/hooks/useAgentChat";
 import { Sidebar } from "@/components/agent/Sidebar";
 import { ChatMessage } from "@/components/agent/ChatMessage";
@@ -64,6 +64,21 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       window.removeEventListener("openLmsAccountModal", handleOpenLmsModal);
     };
   }, []);
+
+  const location = useLocation();
+  const initialLocationRef = useRef(location.pathname + location.search);
+
+  useEffect(() => {
+    if (isOpen) {
+      initialLocationRef.current = location.pathname + location.search;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && initialLocationRef.current !== location.pathname + location.search) {
+      onClose();
+    }
+  }, [location.pathname, location.search, isOpen, onClose]);
 
   useEffect(() => {
     if (chatAreaRef.current && isOpen) {
@@ -170,6 +185,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
                         key={msg.id}
                         message={msg}
                         onChipClick={(chip) => sendMessage(chip)}
+                        onNavigate={onClose}
                       />
                     ))
                   )}

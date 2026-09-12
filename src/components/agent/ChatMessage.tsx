@@ -324,12 +324,14 @@ interface ChatMessageProps {
   message: MessageItem;
   onChipClick?: (chipText: string) => void;
   onRegenerate?: () => void;
+  onNavigate?: () => void;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   onChipClick,
   onRegenerate,
+  onNavigate,
 }) => {
   const isUser = message.role === "user";
   const isLoading = !isUser && message.content === "";
@@ -368,7 +370,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
         {/* Generative UI 카드 (옵션 A 모바일 안내, inuai 출처, 학식/버스/시간표) */}
         {!isUser && message.uiComponents && message.uiComponents.length > 0 && (
-          <GenerativeCardRenderer uiComponents={message.uiComponents} />
+          <GenerativeCardRenderer
+            uiComponents={message.uiComponents}
+            onNavigate={onNavigate}
+          />
         )}
 
         <MessageBubble $isUser={isUser}>
