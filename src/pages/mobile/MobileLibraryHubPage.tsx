@@ -97,7 +97,15 @@ export default function MobileLibraryHubPage() {
     }
 
     const calcRemaining = () => {
-      const expiry = new Date(mySeat.checkinExpiryDate!).getTime();
+      if (!mySeat?.checkinExpiryDate) {
+        setRemainingCheckinSec(null);
+        return;
+      }
+      const expiry = new Date(mySeat.checkinExpiryDate).getTime();
+      if (isNaN(expiry)) {
+        setRemainingCheckinSec(null);
+        return;
+      }
       const now = Date.now();
       const diffSec = Math.max(0, Math.floor((expiry - now) / 1000));
       setRemainingCheckinSec(diffSec);
@@ -162,7 +170,7 @@ export default function MobileLibraryHubPage() {
         setMySeat(seat);
         // 스터디룸 예약 목록에 현재 배정된 열람실 좌석이 중복 포함되지 않도록 안전 필터링
         const filteredStudyRes = (studyRes || []).filter(
-          (res) => !res.roomName.includes("열람실") && (!seat || res.id !== seat.chargeId)
+          (res) => !(res.roomName || "").includes("열람실") && (!seat || res.id !== seat.chargeId)
         );
         setMyStudyReservations(filteredStudyRes);
         setFavoriteSeats(favs);
@@ -921,7 +929,18 @@ export default function MobileLibraryHubPage() {
               <SeatTimeInfo>
                 <Clock size={16} color="#2563eb" />
                 <span>
-                  이용 시간: {mySeat.beginTime.slice(11, 16)} ~ {mySeat.endTime.slice(11, 16)}
+                  이용 시간:{" "}
+                  {mySeat.beginTime
+                    ? mySeat.beginTime.length >= 16
+                      ? mySeat.beginTime.slice(11, 16)
+                      : mySeat.beginTime
+                    : "-"}
+                  {" ~ "}
+                  {mySeat.endTime
+                    ? mySeat.endTime.length >= 16
+                      ? mySeat.endTime.slice(11, 16)
+                      : mySeat.endTime
+                    : "-"}
                 </span>
               </SeatTimeInfo>
 

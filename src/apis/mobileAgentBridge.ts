@@ -49,24 +49,29 @@ function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 1500
     }
 
     const expectedResultType = `${type}Result`;
+    const requestId = `req_${type}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     let timer: NodeJS.Timeout;
 
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent;
       const detail = customEvent.detail;
-      if (detail && detail.type === expectedResultType) {
-        clearTimeout(timer);
-        window.removeEventListener('intipAgentResult', handler);
-        const resolvedData = detail.data?.data !== undefined ? detail.data.data : detail.data;
-        const resolvedErrorCode = detail.errorCode || detail.data?.errorCode;
-        const resolvedErrorMessage = detail.errorMessage || detail.data?.errorMessage;
-        resolve({
-          success: detail.success,
-          data: resolvedData,
-          errorCode: resolvedErrorCode,
-          errorMessage: resolvedErrorMessage,
-        });
-      }
+      if (!detail) return;
+
+      // detail에 requestId가 있으면 requestId로 매칭, 없으면(하위 호환) type으로 매칭
+      const isMatch = detail.requestId ? detail.requestId === requestId : detail.type === expectedResultType;
+      if (!isMatch) return;
+
+      clearTimeout(timer);
+      window.removeEventListener('intipAgentResult', handler);
+      const resolvedData = detail.data?.data !== undefined ? detail.data.data : detail.data;
+      const resolvedErrorCode = detail.errorCode || detail.data?.errorCode;
+      const resolvedErrorMessage = detail.errorMessage || detail.data?.errorMessage;
+      resolve({
+        success: detail.success,
+        data: resolvedData,
+        errorCode: resolvedErrorCode,
+        errorMessage: resolvedErrorMessage,
+      });
     };
 
     window.addEventListener('intipAgentResult', handler);
@@ -83,6 +88,7 @@ function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 1500
     window.ReactNativeWebView?.postMessage(
       JSON.stringify({
         type,
+        requestId,
         payload,
       })
     );
