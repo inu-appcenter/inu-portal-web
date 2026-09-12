@@ -42,6 +42,7 @@ export interface AgentChatRequest {
   message: string;
   history?: AgentChatMessageHistory[];
   conversationHistory?: AgentChatMessageHistory[];
+  clientContext?: Record<string, any>;
 }
 
 export interface AgentStreamPacket {
@@ -101,6 +102,7 @@ export const streamAgentChat = async (
   const reqBody = {
     message: request.message,
     history: request.history || request.conversationHistory || [],
+    clientContext: request.clientContext,
   };
 
   const response = await fetch(url, {

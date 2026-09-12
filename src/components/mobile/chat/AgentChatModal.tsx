@@ -8,6 +8,7 @@ import { AgentReasoningAccordion, AgentThoughtItem } from "./AgentReasoningAccor
 import { PortalAccountModal } from "../agent/PortalAccountModal";
 import { LibraryAccountModal } from "../agent/LibraryAccountModal";
 import { LmsAccountModal } from "../agent/LmsAccountModal";
+import { resolveClientContext } from "@/apis/mobileAgentBridge";
 
 interface Message {
   id: string;
@@ -119,10 +120,14 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     setStreamingStatus("질문 의도를 분석하고 있습니다...");
 
     try {
+      // 기기 보안 영역(SSO)에서 사용자의 학적/LMS 세션 데이터를 신속 조회하여 함께 전송
+      const clientContext = await resolveClientContext();
+
       await streamAgentChat(
         {
           message: text,
           history: recentHistory,
+          clientContext,
         },
         {
           onThought: (hop, thought, tools) => {
@@ -193,9 +198,11 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     } catch (err: any) {
       console.warn("SSE streaming failed, falling back to sync chat:", err);
       try {
+        const clientContext = await resolveClientContext();
         const res = await postAgentChat({
           message: text,
           history: recentHistory,
+          clientContext,
         });
 
         const components =

@@ -204,3 +204,72 @@ export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionR
   return sendBridgeAction<{ id: string; cancelled: boolean }>('cancelLocalWatchJob', { id });
 }
 
+/**
+ * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
+ */
+export async function resolveClientContext(): Promise<Record<string, any>> {
+  if (!isMobileAppEnvironment()) return {};
+
+  const context: Record<string, any> = {};
+
+  try {
+    const [portalLinked, lmsLinked] = await Promise.all([
+      checkPortalAccountLinked(),
+      checkLmsAccountLinked(),
+    ]);
+
+    const tasks: Promise<any>[] = [];
+
+    // 포털 계정이 연동되어 있으면 학적 요약 정보 수집 (최대 2.5초 대기)
+    if (portalLinked) {
+      tasks.push(
+        Promise.race([
+          fetchAcademicInfoFromApp(),
+          new Promise<null>((r) => setTimeout(() => r(null), 2500)),
+        ]).then((res: any) => {
+          if (res?.success && res.data) {
+            context.academic = res.data;
+          }
+        }).catch(() => {})
+      );
+    }
+
+    // LMS 계정이 연동되어 있으면 과제 일정 수집 (최대 2.5초 대기)
+    if (lmsLinked) {
+      const nowSec = Math.floor(Date.now() / 1000);
+      tasks.push(
+        Promise.race([
+          executeAgentActionBridge({
+            actionId: `ctx_lms_${Date.now()}`,
+            authDomain: 'LMS',
+            request: {
+              method: 'GET',
+              url: 'https://lms.inu.ac.kr/webservice/rest/server.php',
+              params: {
+                wsfunction: 'core_calendar_get_action_events_by_timesort',
+                moodlewsrestformat: 'json',
+                timesortfrom: nowSec - 86400,
+                timesortto: nowSec + 86400 * 14,
+                limitnum: 10,
+              },
+            },
+          }),
+          new Promise<null>((r) => setTimeout(() => r(null), 2500)),
+        ]).then((res: any) => {
+          if (res?.success && res.data && !res.data.error) {
+            context.lms = {
+              events: Array.isArray(res.data.events) ? res.data.events : [],
+            };
+          }
+        }).catch(() => {})
+      );
+    }
+
+    await Promise.all(tasks);
+  } catch (err) {
+    console.debug('[resolveClientContext] non-blocking context gathering error:', err);
+  }
+
+  return context;
+}
+
