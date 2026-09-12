@@ -253,6 +253,8 @@ export const SingleCardItem: React.FC<{
         return <AcademicInfoCard data={component.data} onNavigate={onNavigate} />;
       case "PORTAL_AUTH_REQUIRED":
         return <PortalAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
+      case "ACADEMIC_FETCH_FAILED":
+        return <AcademicFetchFailedCard data={component.data} />;
       case "LIBRARY_ROOMS":
         return <LibraryRoomsCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_STUDY_ROOMS":
@@ -1630,6 +1632,29 @@ const PortalAuthRequiredCard: React.FC<{
       >
         포털 계정 연동하기
       </PortalAuthActionBtn>
+    </PortalAuthContainer>
+  );
+};
+
+/**
+ * An already linked portal account could not complete its live SSO/ERP query.
+ * This must remain distinct from the first-time account-linking card.
+ */
+const AcademicFetchFailedCard: React.FC<{ data?: any }> = ({ data }) => {
+  const detail = data?.message || "포털 또는 ERP 응답을 확인하지 못했습니다.";
+
+  return (
+    <PortalAuthContainer>
+      <PortalAuthIconWrap style={{ background: "#fff4e5" }}>
+        <KeyRound size={22} color="#f59e0b" />
+      </PortalAuthIconWrap>
+      <PortalAuthTextWrap>
+        <PortalAuthTitle>연동된 포털에서 학적 정보를 가져오지 못했어요</PortalAuthTitle>
+        <PortalAuthDesc>
+          계정 연동은 유지되어 있습니다. 잠시 후 같은 질문을 다시 보내주세요. 계속되면 포털 로그인 상태 또는 학교 ERP 시스템을 확인해 주세요.
+        </PortalAuthDesc>
+        <PortalAuthDesc style={{ color: "#8b95a1" }}>{detail}</PortalAuthDesc>
+      </PortalAuthTextWrap>
     </PortalAuthContainer>
   );
 };
