@@ -63,6 +63,28 @@ import {
 } from "lucide-react";
 import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
+/**
+ * 한국 표준시(KST, UTC+9) 기준 YYYY-MM-DD 문자열을 반환합니다.
+ * @param offsetDays 오늘 기준 날짜 오프셋 (0: 오늘, 1: 내일, 2: 모레)
+ */
+function getKstDateString(offsetDays: number = 0): string {
+  const d = new Date();
+  if (offsetDays !== 0) {
+    d.setDate(d.getDate() + offsetDays);
+  }
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+  } catch {
+    const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    return kst.toISOString().split("T")[0];
+  }
+}
+
 export default function MobileLibraryHubPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"seats" | "study" | "my">("seats");
@@ -85,7 +107,7 @@ export default function MobileLibraryHubPage() {
   // 2. 스터디룸 타임라인 & 예약 모달 상태
   const [selectedStudyRoom, setSelectedStudyRoom] = useState<LibraryStudyRoom | null>(null);
   const [studyRoomDetail, setStudyRoomDetail] = useState<StudyRoomDetail | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
+  const [selectedDate, setSelectedDate] = useState<string>(() => getKstDateString(0));
   const [reserveBeginTime, setReserveBeginTime] = useState<string>("10:00");
   const [reserveEndTime, setReserveEndTime] = useState<string>("12:00");
   const [reserveDurationHours, setReserveDurationHours] = useState<number>(2);
@@ -360,7 +382,9 @@ export default function MobileLibraryHubPage() {
       alert("스터디룸 타임라인 조회 및 예약은 INTIP 모바일 앱 환경에서 지원됩니다.");
       return;
     }
+    const todayStr = getKstDateString(0);
     setSelectedStudyRoom(sRoom);
+    setSelectedDate(todayStr);
     setCompanions([]);
     setCompanionName("");
     setCompanionMemberNo("");
@@ -371,7 +395,7 @@ export default function MobileLibraryHubPage() {
     setReserveEndTime("12:00");
     setReserveDurationHours(2);
     setShowAttention(true);
-    await loadStudyTimeline(sRoom.id, selectedDate);
+    await loadStudyTimeline(sRoom.id, todayStr);
   };
 
   const loadStudyTimeline = async (roomId: number, dateStr: string) => {
@@ -744,7 +768,7 @@ export default function MobileLibraryHubPage() {
     }
 
     const startHour = parseInt(reserveBeginTime.split(":")[0], 10);
-    const dateLabel = selectedDate === new Date().toISOString().split("T")[0] ? "오늘" : selectedDate;
+    const dateLabel = selectedDate === getKstDateString(0) ? "오늘" : selectedDate;
 
     if (
       !window.confirm(
@@ -778,7 +802,7 @@ export default function MobileLibraryHubPage() {
     }
     // 카드에서 바로 누를 때는 현재 시간 기준 다음 정시 또는 기본 15시
     const nextHour = Math.min(20, Math.max(9, new Date().getHours() + 1));
-    const today = new Date().toISOString().split("T")[0];
+    const today = getKstDateString(0);
     try {
       await registerLocalWatchJobInApp({
         watchType: "STUDY_ROOM_SNIPER",
@@ -810,11 +834,9 @@ export default function MobileLibraryHubPage() {
     }
   };
 
-  // 날짜 옵션 생성 (오늘, 내일, 모레)
+  // 날짜 옵션 생성 (오늘, 내일, 모레 - 한국 시간 KST 기준)
   const dateOptions = [0, 1, 2].map((offset) => {
-    const d = new Date();
-    d.setDate(d.getDate() + offset);
-    const str = d.toISOString().split("T")[0];
+    const str = getKstDateString(offset);
     const label = offset === 0 ? "오늘" : offset === 1 ? "내일" : "모레";
     return { value: str, label: `${label} (${str.slice(5)})` };
   });

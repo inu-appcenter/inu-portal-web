@@ -389,6 +389,24 @@ export async function getStudyRoomDetail(roomId: number, hopeDate: string): Prom
 }
 
 /**
+ * 한국 시간(KST) 기준 YYYY-MM-DD 반환
+ */
+function getKoreanTodayString(): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+  } catch {
+    const d = new Date();
+    d.setHours(d.getHours() + 9);
+    return d.toISOString().split('T')[0];
+  }
+}
+
+/**
  * 6-1. 동반이용자 검색 및 검증 (이름, 학번)
  */
 export async function checkCompanionPatron(
@@ -401,38 +419,66 @@ export async function checkCompanionPatron(
     return { success: false, message: '모바일 앱 환경에서만 조회 가능합니다.', errorCode: 'NOT_IN_APP' };
   }
 
-  const res = await executeAgentActionBridge({
+  const todayKst = getKoreanTodayString();
+  // 과거 일자 방지: 전달된 hopeDate가 오늘(KST) 이전이면 오늘 날짜로 보정
+  const validHopeDate = (!hopeDate || hopeDate < todayKst) ? todayKst : hopeDate;
+
+  // 학산도서관 공식 API 엔드포인트: /pyxis-api/api/rooms/{roomId}/check-companions (홈페이지ID 경로 없음)
+  let res = await executeAgentActionBridge({
     actionId: `act_check_companion_${roomId}_${Date.now()}`,
     authDomain: 'LIBRARY',
     request: {
       method: 'GET',
-      url: `https://lib.inu.ac.kr/pyxis-api/1/api/rooms/${roomId}/check-companions`,
+      url: `https://lib.inu.ac.kr/pyxis-api/api/rooms/${roomId}/check-companions`,
       params: {
         name: name.trim(),
         memberNo: memberNo.trim(),
-        hopeDate,
+        hopeDate: validHopeDate,
       },
     },
   });
 
-  if (res.success && res.data && res.data.id) {
+  // 혹시 경로 차이로 실패했을 경우 /1/api/... 로 1회 fallback 시도
+  if (!res.success && (res.errorCode === 'HTTP_404' || res.errorCode === 'HTTP_400' || res.errorMessage?.includes('bad request'))) {
+    res = await executeAgentActionBridge({
+      actionId: `act_check_companion_fallback_${roomId}_${Date.now()}`,
+      authDomain: 'LIBRARY',
+      request: {
+        method: 'GET',
+        url: `https://lib.inu.ac.kr/pyxis-api/1/api/rooms/${roomId}/check-companions`,
+        params: {
+          name: name.trim(),
+          memberNo: memberNo.trim(),
+          hopeDate: validHopeDate,
+        },
+      },
+    });
+  }
+
+  const patronData = res.data?.id ? res.data : (res.data?.data?.id ? res.data.data : null);
+  if (res.success && patronData) {
     return {
       success: true,
       patron: {
-        id: res.data.id,
-        name: res.data.name || name,
-        memberNo: res.data.memberNo || memberNo,
-        department: res.data.department?.name || res.data.patronType?.name || '',
+        id: patronData.id,
+        name: patronData.name || name,
+        memberNo: patronData.memberNo || memberNo,
+        department: patronData.department?.name || patronData.patronType?.name || '',
       },
     };
   }
 
   let errorMsg = res.errorMessage || '동반 이용자를 찾을 수 없습니다.';
   if (res.data?.message) errorMsg = res.data.message;
-  if (res.data?.code === 'error.patron.notMatched' || res.errorCode === 'error.patron.notMatched') {
+
+  if (errorMsg === 'This is a bad request' || errorMsg.toLowerCase().includes('bad request')) {
+    errorMsg = '동반 이용자 조회에 실패했습니다. 이름 또는 학번이 올바른지 확인해주세요.';
+  } else if (res.data?.code === 'error.patron.notMatched' || res.errorCode === 'error.patron.notMatched') {
     errorMsg = '이름 또는 학번이 일치하지 않는 사용자입니다.';
   } else if (res.data?.code?.includes('penalty') || errorMsg.includes('penalty')) {
     errorMsg = '해당 사용자는 도서관 이용 제재(페널티) 상태입니다.';
+  } else if (res.data?.code?.includes('reservation') || errorMsg.includes('reservation')) {
+    errorMsg = '해당 사용자는 해당 시간대에 이미 다른 예약이 있습니다.';
   }
 
   return {
