@@ -84,6 +84,44 @@ export default function MobileLibraryHubPage() {
   const [isLoadingTimeline, setIsLoadingTimeline] = useState<boolean>(false);
   const [isSubmittingBooking, setIsSubmittingBooking] = useState<boolean>(false);
 
+  // 임시 배정 남은 시간(초) 카운트다운
+  const [remainingCheckinSec, setRemainingCheckinSec] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!mySeat?.isTempCharge || !mySeat?.checkinExpiryDate) {
+      setRemainingCheckinSec(null);
+      return;
+    }
+
+    const calcRemaining = () => {
+      const expiry = new Date(mySeat.checkinExpiryDate!).getTime();
+      const now = Date.now();
+      const diffSec = Math.max(0, Math.floor((expiry - now) / 1000));
+      setRemainingCheckinSec(diffSec);
+    };
+
+    calcRemaining();
+    const timer = setInterval(calcRemaining, 1000);
+    return () => clearInterval(timer);
+  }, [mySeat?.isTempCharge, mySeat?.checkinExpiryDate]);
+
+  // 임시 배정 상태일 때 15초 주기로 도서관 게이트 출입 로그 기반 자동 배정 확정 폴러
+  useEffect(() => {
+    if (!mySeat?.isTempCharge || !mySeat?.chargeId) return;
+
+    const autoConfirmTimer = setInterval(async () => {
+      try {
+        const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
+        if (res.success) {
+          showToast("🎉 도서관 게이트 입실이 확인되어 좌석 배정이 자동으로 확정되었습니다!");
+          loadData();
+        }
+      } catch {}
+    }, 15000);
+
+    return () => clearInterval(autoConfirmTimer);
+  }, [mySeat?.isTempCharge, mySeat?.chargeId, mySeat?.roomId]);
+
   useHeader({
     title: "학산도서관 스마트 허브",
     subHeader: null,
@@ -165,7 +203,17 @@ export default function MobileLibraryHubPage() {
       alert("현재 배정할 수 없는 좌석입니다.");
       return;
     }
-    if (!window.confirm(`'${seat.code}'번 좌석을 지금 배정하시겠습니까?`)) return;
+
+    const roomName = selectedSeatRoom?.name || "열람실";
+    const confirmPrompt =
+      `[${roomName}] ${seat.code}번 좌석을 배정하시겠습니까?\n\n` +
+      `⚠️ [배정 확정 및 이용 규정 안내]\n` +
+      `• 배정 즉시 20분간 '임시 배정' 상태가 됩니다.\n` +
+      `• 20분 내로 도서관 1층 게이트를 통과하시거나 키오스크에서 입실 확인을 완료해야 합니다.\n` +
+      `• 20분이 지나도 미입실 시 예약이 자동 취소되며, 3회 누적 시 7일간 도서관 이용이 정지됩니다.\n` +
+      `• 도착이 어려울 경우 20분 내 [예약 취소]를 누르면 페널티 없이 취소됩니다.`;
+
+    if (!window.confirm(confirmPrompt)) return;
 
     try {
       const res = await reserveSeat(seat.id);
@@ -736,15 +784,24 @@ export default function MobileLibraryHubPage() {
 
               {mySeat.isTempCharge && (
                 <TempNoticeBox>
-                  <AlertCircle size={15} color="#b45309" style={{ flexShrink: 0, marginTop: "2px" }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                    <strong style={{ fontSize: "12px", color: "#78350f" }}>배정 확정 안내</strong>
-                    <span>
-                      학산도서관 내에서 열람석을 예약하셨을 경우 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시거나 잠시 대기하면 자동으로 배정 확정됩니다.
+                  <AlertCircle size={16} color="#b45309" style={{ flexShrink: 0, marginTop: "2px" }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                      <strong style={{ fontSize: "13px", color: "#78350f" }}>배정 확정 안내</strong>
+                      {remainingCheckinSec !== null && (
+                        <ExpiryBadge $urgent={remainingCheckinSec < 300}>
+                          ⏳ 남은 시간: {Math.floor(remainingCheckinSec / 60)}분{" "}
+                          {(remainingCheckinSec % 60) < 10 ? `0${remainingCheckinSec % 60}` : remainingCheckinSec % 60}초
+                        </ExpiryBadge>
+                      )}
+                    </div>
+                    <span style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.45 }}>
+                      학산도서관 1층 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시거나, 도서관 내에 계시면 잠시 후 자동으로 배정이 확정됩니다.
                     </span>
-                    <span style={{ fontSize: "10.5px", color: "#92400e" }}>
-                      • 이용 시작 시간 20분이 지난 후에도 이용하지 않은 경우 예약이 자동 취소되며 이용이 제한될 수 있습니다.
-                    </span>
+                    <NoticeBulletList>
+                      <li>• 20분 내 미입실 시 예약이 자동 취소되며, <strong>누적 3회 시 7일간 이용이 정지</strong>됩니다.</li>
+                      <li>• 지금 이용하기 어려우실 경우 20분 내 <strong>[예약 취소]</strong>를 누르시면 페널티 없이 취소됩니다.</li>
+                    </NoticeBulletList>
                   </div>
                 </TempNoticeBox>
               )}
@@ -1404,15 +1461,37 @@ const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
 const TempNoticeBox = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
   background: #fffbeb;
   border: 1px solid #fde68a;
   color: #92400e;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: 8px;
   font-size: 11.5px;
   line-height: 1.45;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+`;
+
+const ExpiryBadge = styled.span<{ $urgent?: boolean }>`
+  font-size: 11px;
+  font-weight: 700;
+  background: ${({ $urgent }) => ($urgent ? "#fee2e2" : "#fef3c7")};
+  color: ${({ $urgent }) => ($urgent ? "#dc2626" : "#b45309")};
+  border: 1px solid ${({ $urgent }) => ($urgent ? "#fca5a5" : "#fde68a")};
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+`;
+
+const NoticeBulletList = styled.ul`
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: #a16207;
 `;
 
 const SeatRoomTitle = styled.span`
