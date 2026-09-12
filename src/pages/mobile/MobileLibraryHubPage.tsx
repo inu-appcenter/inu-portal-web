@@ -17,6 +17,8 @@ import {
   checkinSeat,
   getStudyRoomDetail,
   reserveStudyRoom,
+  checkCompanionPatron,
+  CompanionPatron,
   getMyStudyRoomReservations,
   cancelStudyRoomReservation,
   checkinStudyRoom,
@@ -54,6 +56,10 @@ import {
   KeyRound,
   AlertCircle,
   Star,
+  UserPlus,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
@@ -80,10 +86,17 @@ export default function MobileLibraryHubPage() {
   const [selectedStudyRoom, setSelectedStudyRoom] = useState<LibraryStudyRoom | null>(null);
   const [studyRoomDetail, setStudyRoomDetail] = useState<StudyRoomDetail | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split("T")[0]);
-  const [reserveBeginTime, setReserveBeginTime] = useState<string>("14:00");
+  const [reserveBeginTime, setReserveBeginTime] = useState<string>("10:00");
+  const [reserveEndTime, setReserveEndTime] = useState<string>("12:00");
   const [reserveDurationHours, setReserveDurationHours] = useState<number>(2);
-  const [reserveCompanionCnt, setReserveCompanionCnt] = useState<number>(4);
-  const [reservePurpose, setReservePurpose] = useState<string>("학습 및 스터디");
+  const [reservePurpose, setReservePurpose] = useState<string>("조별 과제 및 토의");
+  const [reserveNotes, setReserveNotes] = useState<string>("");
+  const [companions, setCompanions] = useState<CompanionPatron[]>([]);
+  const [companionName, setCompanionName] = useState<string>("");
+  const [companionMemberNo, setCompanionMemberNo] = useState<string>("");
+  const [isSearchingCompanion, setIsSearchingCompanion] = useState<boolean>(false);
+  const [isPrivacyAgreed, setIsPrivacyAgreed] = useState<boolean>(false);
+  const [showAttention, setShowAttention] = useState<boolean>(true);
   const [isLoadingTimeline, setIsLoadingTimeline] = useState<boolean>(false);
   const [isSubmittingBooking, setIsSubmittingBooking] = useState<boolean>(false);
 
@@ -314,6 +327,33 @@ export default function MobileLibraryHubPage() {
     }
   };
 
+  // Helper: 시간 변환 및 10분 단위 옵션
+  const parseTimeToMinutes = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
+  const formatMinutesToTime = (totalMinutes: number) => {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    const hh = h < 10 ? `0${h}` : `${h}`;
+    const mm = m < 10 ? `0${m}` : `${m}`;
+    return `${hh}:${mm}`;
+  };
+
+  const timeOptions10Min: string[] = (() => {
+    const list: string[] = [];
+    for (let h = 9; h <= 22; h++) {
+      for (let m = 0; m < 60; m += 10) {
+        if (h === 22 && m > 0) break;
+        const hh = h < 10 ? `0${h}` : `${h}`;
+        const mm = m < 10 ? `0${m}` : `${m}`;
+        list.push(`${hh}:${mm}`);
+      }
+    }
+    return list;
+  })();
+
   // --- 스터디룸 타임라인 & 예약 모달 열기 ---
   const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
     if (!isMobileAppEnvironment()) {
@@ -321,7 +361,16 @@ export default function MobileLibraryHubPage() {
       return;
     }
     setSelectedStudyRoom(sRoom);
-    setReserveCompanionCnt(sRoom.minQuota || 4);
+    setCompanions([]);
+    setCompanionName("");
+    setCompanionMemberNo("");
+    setIsPrivacyAgreed(false);
+    setReservePurpose("조별 과제 및 토의");
+    setReserveNotes("");
+    setReserveBeginTime("10:00");
+    setReserveEndTime("12:00");
+    setReserveDurationHours(2);
+    setShowAttention(true);
     await loadStudyTimeline(sRoom.id, selectedDate);
   };
 
@@ -353,23 +402,145 @@ export default function MobileLibraryHubPage() {
     }
   };
 
+  // 시작 시간 변경 시 자동 종료시간 및 지속시간 재계산
+  const handleBeginTimeChange = (newBegin: string) => {
+    setReserveBeginTime(newBegin);
+    const startMin = parseTimeToMinutes(newBegin);
+    const currentEndMin = parseTimeToMinutes(reserveEndTime);
+    const duration = currentEndMin - startMin;
+    const minTime = studyRoomDetail?.rule?.minTime || 30;
+    const maxTime = studyRoomDetail?.rule?.maxTime || 240;
+
+    if (duration < minTime || duration > maxTime) {
+      const defDuration = Math.min(120, maxTime);
+      const newEnd = Math.min(22 * 60, startMin + defDuration);
+      setReserveEndTime(formatMinutesToTime(newEnd));
+      setReserveDurationHours(Math.max(1, Math.round(defDuration / 60)));
+    } else {
+      setReserveDurationHours(Math.max(1, Math.round(duration / 60)));
+    }
+  };
+
+  // 빠른 이용 시간 선택 버튼
+  const handleSelectDuration = (minutes: number) => {
+    const startMin = parseTimeToMinutes(reserveBeginTime);
+    const newEnd = Math.min(22 * 60, startMin + minutes);
+    setReserveEndTime(formatMinutesToTime(newEnd));
+    setReserveDurationHours(Math.max(1, Math.round(minutes / 60)));
+  };
+
+  // 동반이용자 검색 및 추가
+  const handleAddCompanion = async () => {
+    if (!selectedStudyRoom) return;
+    const name = companionName.trim();
+    const memberNo = companionMemberNo.trim();
+    if (!name || !memberNo) {
+      alert("동반 이용자의 이름과 학번을 모두 입력해주세요.");
+      return;
+    }
+    if (companions.some((c) => c.memberNo === memberNo)) {
+      alert("이미 등록된 동반 이용자입니다.");
+      return;
+    }
+    const maxCompanions = Math.max(
+      0,
+      (studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10) - 1
+    );
+    if (companions.length >= maxCompanions) {
+      alert(`최대 동반 가능 인원(${maxCompanions}명)을 초과할 수 없습니다.`);
+      return;
+    }
+
+    setIsSearchingCompanion(true);
+    try {
+      const res = await checkCompanionPatron(selectedStudyRoom.id, name, memberNo, selectedDate);
+      if (res.success && res.patron) {
+        setCompanions((prev) => [...prev, res.patron!]);
+        setCompanionName("");
+        setCompanionMemberNo("");
+        showToast(`✅ 동반 이용자 '${res.patron.name}'님이 추가되었습니다.`);
+      } else {
+        alert(res.message || "동반 이용자를 찾을 수 없습니다. 이름과 학번을 확인해주세요.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("동반 이용자 확인 중 오류가 발생했습니다.");
+    } finally {
+      setIsSearchingCompanion(false);
+    }
+  };
+
+  // 동반이용자 삭제
+  const handleRemoveCompanion = (id: number) => {
+    setCompanions((prev) => prev.filter((c) => c.id !== id));
+  };
+
   // 스터디룸 예약 제출
   const handleSubmitStudyBooking = async () => {
     if (!selectedStudyRoom) return;
-    const startHour = parseInt(reserveBeginTime.split(":")[0], 10);
-    const startMin = reserveBeginTime.split(":")[1];
-    const endHour = startHour + reserveDurationHours;
-    const endHourStr = endHour < 10 ? `0${endHour}` : `${endHour}`;
-    const endTime = `${endHourStr}:${startMin}`;
+
+    if (!reservePurpose.trim()) {
+      alert("예약 용도(사용 목적)를 입력해주세요.");
+      return;
+    }
+
+    const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1;
+    const maxQuota = studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10;
+    const minCompanions = Math.max(0, minQuota - 1);
+    const maxCompanions = Math.max(0, maxQuota - 1);
+
+    if (minCompanions > 0 && companions.length < minCompanions) {
+      alert(
+        `[${selectedStudyRoom.name}]은(는) 본인 포함 최소 ${minQuota}인실입니다.\n동반 이용자를 최소 ${minCompanions}명 이상 등록해야 예약할 수 있습니다. (현재: ${companions.length}명 등록됨)`
+      );
+      return;
+    }
+
+    if (companions.length > maxCompanions) {
+      alert(`최대 동반 가능 인원(${maxCompanions}명)을 초과할 수 없습니다.`);
+      return;
+    }
+
+    if (!isPrivacyAgreed) {
+      alert("동반이용자 개인정보 수집 및 이용에 동의해야 예약할 수 있습니다.");
+      return;
+    }
+
+    const startMin = parseTimeToMinutes(reserveBeginTime);
+    const endMin = parseTimeToMinutes(reserveEndTime);
+    const durationMin = endMin - startMin;
+    const minTimeAllowed = studyRoomDetail?.rule?.minTime || 30;
+    const maxTimeAllowed = studyRoomDetail?.rule?.maxTime || 240;
+
+    if (durationMin <= 0) {
+      alert("종료 시간은 시작 시간 이후여야 합니다.");
+      return;
+    }
+
+    if (durationMin < minTimeAllowed || durationMin > maxTimeAllowed) {
+      alert(
+        `이용 가능 시간은 ${minTimeAllowed}분 ~ ${maxTimeAllowed}분입니다. (선택된 시간: ${durationMin}분)`
+      );
+      return;
+    }
 
     const beginFull = `${selectedDate} ${reserveBeginTime}`;
-    const endFull = `${selectedDate} ${endTime}`;
+    const endFull = `${selectedDate} ${reserveEndTime}`;
 
-    if (
-      !window.confirm(
-        `[${selectedStudyRoom.name}]\n일시: ${beginFull} ~ ${endTime}\n인원: ${reserveCompanionCnt}명\n예약하시겠습니까?`
-      )
-    ) {
+    const companionListText =
+      companions.length > 0
+        ? `\n동반자 (${companions.length}명): ${companions.map((c) => `${c.name}(${c.memberNo})`).join(", ")}`
+        : "";
+
+    const confirmMsg =
+      `[${selectedStudyRoom.name}]\n` +
+      `일시: ${beginFull} ~ ${reserveEndTime} (${durationMin}분)\n` +
+      `총 인원: ${companions.length + 1}명 (본인 + 동반자 ${companions.length}명)${companionListText}\n` +
+      `용도: ${reservePurpose}\n` +
+      (reserveNotes.trim() ? `요청사항: ${reserveNotes.trim()}\n` : "") +
+      `\n위 내용으로 예약하시겠습니까?`;
+
+    if (!window.confirm(confirmMsg)) {
       return;
     }
 
@@ -379,8 +550,10 @@ export default function MobileLibraryHubPage() {
         roomId: selectedStudyRoom.id,
         beginTime: beginFull,
         endTime: endFull,
-        companionCnt: reserveCompanionCnt,
-        patronMessage: reservePurpose,
+        companionCnt: companions.length,
+        companionPatrons: companions.map((c) => c.id),
+        purpose: reservePurpose,
+        patronMessage: reserveNotes,
       });
 
       if (res.success) {
@@ -1169,14 +1342,65 @@ export default function MobileLibraryHubPage() {
             <ModalHeader>
               <div>
                 <ModalTitle>{selectedStudyRoom.name} 예약</ModalTitle>
-                <ModalSubtitle>
-                  {selectedStudyRoom.location} ({selectedStudyRoom.quota})
-                </ModalSubtitle>
+                <RoomInfoBadgesRow>
+                  <RoomInfoBadgeItem>
+                    <MapPin size={12} />
+                    <span>
+                      {studyRoomDetail?.building?.name || "중앙관"}{" "}
+                      {studyRoomDetail?.floor?.name || selectedStudyRoom.location}
+                    </span>
+                  </RoomInfoBadgeItem>
+                  <RoomInfoBadgeItem>
+                    <Users size={12} />
+                    <span>
+                      수용 {studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1} ~{" "}
+                      {studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10}명
+                    </span>
+                  </RoomInfoBadgeItem>
+                  <RoomInfoBadgeItem>
+                    <Clock size={12} />
+                    <span>
+                      {studyRoomDetail?.rule?.minTime || 30} ~{" "}
+                      {studyRoomDetail?.rule?.maxTime || 240}분
+                    </span>
+                  </RoomInfoBadgeItem>
+                </RoomInfoBadgesRow>
               </div>
               <CloseBtn onClick={() => setSelectedStudyRoom(null)}>
                 <X size={20} />
               </CloseBtn>
             </ModalHeader>
+
+            {/* 안내 및 주의사항 카드 */}
+            {(studyRoomDetail?.description || studyRoomDetail?.attention) && (
+              <NoticeCard>
+                <NoticeHeader onClick={() => setShowAttention((prev) => !prev)}>
+                  <NoticeTitle>
+                    <Info size={15} color="#2563eb" />
+                    <span>공간 설명 및 이용 주의사항</span>
+                  </NoticeTitle>
+                  <NoticeToggleBtn type="button">
+                    {showAttention ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </NoticeToggleBtn>
+                </NoticeHeader>
+                {showAttention && (
+                  <NoticeBody>
+                    {studyRoomDetail.description && (
+                      <NoticeSection>
+                        <NoticeSubTitle>📌 공간 설명</NoticeSubTitle>
+                        <NoticeText>{studyRoomDetail.description}</NoticeText>
+                      </NoticeSection>
+                    )}
+                    {studyRoomDetail.attention && (
+                      <NoticeSection>
+                        <NoticeSubTitle>⚠️ 이용 주의사항 (필독)</NoticeSubTitle>
+                        <NoticeText>{studyRoomDetail.attention}</NoticeText>
+                      </NoticeSection>
+                    )}
+                  </NoticeBody>
+                )}
+              </NoticeCard>
+            )}
 
             {/* 날짜 선택 */}
             <DateSelectorRow>
@@ -1222,11 +1446,20 @@ export default function MobileLibraryHubPage() {
                         {slot.minutes.map((m, mIdx) => {
                           const isPast = m.class === "disabled";
                           const isOcc = m.class === "occupied";
+                          const timeStr = `${slot.hour < 10 ? `0${slot.hour}` : slot.hour}:${
+                            mIdx * 10 === 0 ? "00" : mIdx * 10
+                          }`;
                           return (
                             <MinuteBar
                               key={mIdx}
                               $type={isPast ? "past" : isOcc ? "occ" : "avail"}
-                              title={`${slot.hour}:${mIdx * 10}분`}
+                              title={`${timeStr} ${isPast ? "(만료)" : isOcc ? "(점유됨)" : "(선택 가능)"}`}
+                              style={{ cursor: !isPast && !isOcc ? "pointer" : "default" }}
+                              onClick={() => {
+                                if (!isPast && !isOcc) {
+                                  handleBeginTimeChange(timeStr);
+                                }
+                              }}
                             />
                           );
                         })}
@@ -1241,66 +1474,206 @@ export default function MobileLibraryHubPage() {
 
             {/* 예약 입력 폼 */}
             <BookingForm>
-              <FormGroup>
-                <FormLabel>시작 시간</FormLabel>
-                <FormSelect
-                  value={reserveBeginTime}
-                  onChange={(e) => setReserveBeginTime(e.target.value)}
-                >
-                  {[
-                    "09:00",
-                    "10:00",
-                    "11:00",
-                    "12:00",
-                    "13:00",
-                    "14:00",
-                    "15:00",
-                    "16:00",
-                    "17:00",
-                    "18:00",
-                    "19:00",
-                    "20:00",
-                  ].map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </FormSelect>
-              </FormGroup>
+              {/* 시작 시간 & 종료 시간 (10분 단위) */}
+              <TimeRangeRow>
+                <TimeSelectBox>
+                  <FormLabel>시작 시간 (10분 단위)</FormLabel>
+                  <FormSelect
+                    value={reserveBeginTime}
+                    onChange={(e) => handleBeginTimeChange(e.target.value)}
+                  >
+                    {timeOptions10Min.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </TimeSelectBox>
+                <TimeSelectBox>
+                  <FormLabel>
+                    종료 시간
+                    <DurationSummaryText>
+                      ({parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime)}분)
+                    </DurationSummaryText>
+                  </FormLabel>
+                  <FormSelect
+                    value={reserveEndTime}
+                    onChange={(e) => {
+                      setReserveEndTime(e.target.value);
+                      const diff = parseTimeToMinutes(e.target.value) - parseTimeToMinutes(reserveBeginTime);
+                      setReserveDurationHours(Math.max(1, Math.round(diff / 60)));
+                    }}
+                  >
+                    {timeOptions10Min
+                      .filter((t) => parseTimeToMinutes(t) > parseTimeToMinutes(reserveBeginTime))
+                      .map((t) => {
+                        const diffMin = parseTimeToMinutes(t) - parseTimeToMinutes(reserveBeginTime);
+                        return (
+                          <option key={t} value={t}>
+                            {t} ({diffMin}분)
+                          </option>
+                        );
+                      })}
+                  </FormSelect>
+                </TimeSelectBox>
+              </TimeRangeRow>
 
+              {/* 빠른 이용 시간 선택 */}
               <FormGroup>
-                <FormLabel>이용 시간</FormLabel>
+                <FormLabel>이용 시간 빠른 선택</FormLabel>
                 <DurationBtnGroup>
-                  {[1, 2, 3].map((hr) => (
-                    <DurationBtn
-                      key={hr}
-                      $active={reserveDurationHours === hr}
-                      onClick={() => setReserveDurationHours(hr)}
-                    >
-                      {hr}시간
-                    </DurationBtn>
-                  ))}
+                  {[30, 60, 120, 180, 240].map((mins) => {
+                    const minAllowed = studyRoomDetail?.rule?.minTime || 30;
+                    const maxAllowed = studyRoomDetail?.rule?.maxTime || 240;
+                    if (mins < minAllowed || mins > maxAllowed) return null;
+                    const currentDuration =
+                      parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime);
+                    return (
+                      <DurationBtn
+                        key={mins}
+                        $active={currentDuration === mins}
+                        onClick={() => handleSelectDuration(mins)}
+                      >
+                        {mins < 60 ? `${mins}분` : `${mins / 60}시간`}
+                      </DurationBtn>
+                    );
+                  })}
                 </DurationBtnGroup>
               </FormGroup>
 
+              {/* 사용 목적 (용도 - 필수) */}
               <FormGroup>
-                <FormLabel>이용 인원</FormLabel>
-                <FormInput
-                  type="number"
-                  min={selectedStudyRoom.minQuota || 1}
-                  max={selectedStudyRoom.maxQuota || 10}
-                  value={reserveCompanionCnt}
-                  onChange={(e) => setReserveCompanionCnt(parseInt(e.target.value, 10) || 1)}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel>사용 목적</FormLabel>
+                <FormLabel>
+                  사용 용도 <span style={{ color: "#ef4444" }}>*필수</span>
+                </FormLabel>
                 <FormInput
                   type="text"
                   value={reservePurpose}
                   onChange={(e) => setReservePurpose(e.target.value)}
                   placeholder="예: 조별 과제 및 토의"
+                />
+              </FormGroup>
+
+              {/* 동반 이용자 등록 섹션 (필수) */}
+              {(() => {
+                const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1;
+                const maxQuota = studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10;
+                const minCompanions = Math.max(0, minQuota - 1);
+                const maxCompanions = Math.max(0, maxQuota - 1);
+                const isSatisfied = companions.length >= minCompanions;
+
+                return (
+                  <CompanionSection>
+                    <CompanionHeader>
+                      <div>
+                        <CompanionTitle>동반 이용자 등록</CompanionTitle>
+                        {minCompanions > 0 && (
+                          <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "6px" }}>
+                            (본인 포함 {minQuota}~{maxQuota}인실)
+                          </span>
+                        )}
+                      </div>
+                      <CompanionQuotaBadge $isSatisfied={isSatisfied}>
+                        {minCompanions > 0
+                          ? `동반자 ${companions.length}/${minCompanions}명 (최대 ${maxCompanions}명) ${
+                              isSatisfied ? "충족" : "필요"
+                            }`
+                          : `동반자 ${companions.length}/${maxCompanions}명`}
+                      </CompanionQuotaBadge>
+                    </CompanionHeader>
+
+                    {minCompanions > 0 && !isSatisfied && (
+                      <span style={{ fontSize: "11.5px", color: "#ef4444" }}>
+                        ※ 본인을 제외하고 동반 이용자를 최소 {minCompanions}명 이상 등록해야 예약이 가능합니다.
+                      </span>
+                    )}
+
+                    <CompanionInputRow>
+                      <CompanionInput
+                        type="text"
+                        placeholder="이름 (예: 홍길동)"
+                        value={companionName}
+                        onChange={(e) => setCompanionName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddCompanion();
+                          }
+                        }}
+                      />
+                      <CompanionInput
+                        type="text"
+                        placeholder="학번 (예: 202301234)"
+                        value={companionMemberNo}
+                        onChange={(e) => setCompanionMemberNo(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddCompanion();
+                          }
+                        }}
+                      />
+                      <CompanionAddBtn
+                        type="button"
+                        disabled={isSearchingCompanion || !companionName.trim() || !companionMemberNo.trim()}
+                        onClick={handleAddCompanion}
+                      >
+                        {isSearchingCompanion ? (
+                          <RefreshCw size={14} className="spin" />
+                        ) : (
+                          <UserPlus size={14} />
+                        )}
+                        <span>추가</span>
+                      </CompanionAddBtn>
+                    </CompanionInputRow>
+
+                    {companions.length > 0 && (
+                      <CompanionChipList>
+                        {companions.map((c) => (
+                          <CompanionChip key={c.id}>
+                            <span>
+                              {c.name} ({c.memberNo})
+                            </span>
+                            <CompanionChipDeleteBtn
+                              type="button"
+                              onClick={() => handleRemoveCompanion(c.id)}
+                              title="삭제"
+                            >
+                              <X size={14} />
+                            </CompanionChipDeleteBtn>
+                          </CompanionChip>
+                        ))}
+                      </CompanionChipList>
+                    )}
+                  </CompanionSection>
+                );
+              })()}
+
+              {/* 동반이용자 개인정보 수집 및 이용 동의 (필수) */}
+              <PrivacyAgreeContainer>
+                <PrivacyAgreeLabel>
+                  <PrivacyCheckbox
+                    type="checkbox"
+                    checked={isPrivacyAgreed}
+                    onChange={(e) => setIsPrivacyAgreed(e.target.checked)}
+                  />
+                  <span>
+                    동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "#ef4444" }}>*필수</span>
+                  </span>
+                </PrivacyAgreeLabel>
+                <PrivacyNoticeText>
+                  스터디룸 이용 및 입실 확인, 이용 내역 관리를 위해 동반이용자의 이름 및 학번 정보를 수집·이용하는 것에 동의합니다.
+                </PrivacyNoticeText>
+              </PrivacyAgreeContainer>
+
+              {/* 요청사항 (선택) */}
+              <FormGroup>
+                <FormLabel>기타 요청사항 (선택)</FormLabel>
+                <FormInput
+                  type="text"
+                  value={reserveNotes}
+                  onChange={(e) => setReserveNotes(e.target.value)}
+                  placeholder="예: 마이크 사용 희망 등"
                 />
               </FormGroup>
 
@@ -2279,4 +2652,253 @@ const FavDeleteBtn = styled.button`
     color: #ef4444;
   }
 `;
+
+const RoomInfoBadgesRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+`;
+
+const RoomInfoBadgeItem = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+`;
+
+const NoticeCard = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+`;
+
+const NoticeHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f1f5f9;
+  cursor: pointer;
+  user-select: none;
+`;
+
+const NoticeTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+`;
+
+const NoticeToggleBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+`;
+
+const NoticeBody = styled.div`
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #475569;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const NoticeSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const NoticeSubTitle = styled.div`
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 12px;
+`;
+
+const NoticeText = styled.div`
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #ffffff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  font-size: 11.5px;
+  color: #334155;
+`;
+
+const TimeRangeRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+`;
+
+const TimeSelectBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const DurationSummaryText = styled.span`
+  font-size: 11.5px;
+  color: #2563eb;
+  font-weight: 600;
+  margin-left: 6px;
+`;
+
+const CompanionSection = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const CompanionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const CompanionTitle = styled.span`
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: ${({ $isSatisfied }) => ($isSatisfied ? "#dcfce7" : "#fee2e2")};
+  color: ${({ $isSatisfied }) => ($isSatisfied ? "#16a34a" : "#dc2626")};
+`;
+
+const CompanionInputRow = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const CompanionInput = styled.input`
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 12.5px;
+  background: #ffffff;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+`;
+
+const CompanionAddBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+`;
+
+const CompanionChipList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const CompanionChip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 8px 5px 10px;
+  font-size: 12px;
+  color: #1e293b;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+`;
+
+const CompanionChipDeleteBtn = styled.button`
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+
+  &:hover {
+    color: #ef4444;
+  }
+`;
+
+const PrivacyAgreeContainer = styled.div`
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const PrivacyAgreeLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e3a8a;
+  cursor: pointer;
+`;
+
+const PrivacyCheckbox = styled.input`
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  cursor: pointer;
+`;
+
+const PrivacyNoticeText = styled.span`
+  font-size: 11px;
+  color: #3b82f6;
+  line-height: 1.4;
+  padding-left: 24px;
+`;
+
 

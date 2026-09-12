@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   streamAgentChat,
+  postAgentChat,
   AgentChatMessageHistory,
 } from "@/apis/agent";
 import { MessageItem } from "@/components/agent/ChatMessage";
@@ -297,8 +298,66 @@ export const useAgentChat = () => {
           }
         );
       } catch (err: any) {
-        console.error("채팅 요청 실패:", err);
-        setIsLoading(false);
+        console.warn("스트리밍 통신 실패, 동기식 API로 fallback 시도:", err);
+        try {
+          const res = await postAgentChat({
+            message: content,
+            history,
+          });
+          const data = res?.data;
+          setRooms((prev) =>
+            prev.map((room) => {
+              if (room.id !== currentRoomId) return room;
+              const msgs = [...room.messages];
+              const lastIdx = msgs.length - 1;
+              if (lastIdx >= 0 && msgs[lastIdx].role === "assistant") {
+                const uiComponents =
+                  data?.uiComponents && data.uiComponents.length > 0
+                    ? data.uiComponents
+                    : data?.uiComponent
+                    ? [data.uiComponent]
+                    : [];
+
+                msgs[lastIdx] = {
+                  ...msgs[lastIdx],
+                  isStreaming: false,
+                  content: data?.message || "답변을 가져왔습니다.",
+                  process: {
+                    status: "DONE",
+                    message: "답변이 완료되었습니다.",
+                  },
+                  uiComponents,
+                  suggestedActions: data?.suggestedActions || [],
+                };
+              }
+              return { ...room, messages: msgs };
+            })
+          );
+        } catch (fallbackErr: any) {
+          console.error("채팅 요청 최종 실패:", fallbackErr);
+          setRooms((prev) =>
+            prev.map((room) => {
+              if (room.id !== currentRoomId) return room;
+              const msgs = [...room.messages];
+              const lastIdx = msgs.length - 1;
+              if (lastIdx >= 0 && msgs[lastIdx].role === "assistant") {
+                msgs[lastIdx] = {
+                  ...msgs[lastIdx],
+                  isStreaming: false,
+                  content:
+                    "⚠️ 네트워크 연결 또는 서버 응답에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+                  process: {
+                    status: "DONE",
+                    message: "연결 오류로 중단되었습니다.",
+                  },
+                };
+              }
+              return { ...room, messages: msgs };
+            })
+          );
+        } finally {
+          setIsLoading(false);
+        }
       }
     },
     [currentRoom, currentRoomId, isLoading]

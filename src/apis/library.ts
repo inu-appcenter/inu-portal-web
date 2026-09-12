@@ -48,18 +48,34 @@ export interface StudyRoomTimeSlot {
   minutes: StudyRoomMinute[];
 }
 
+export interface StudyRoomRule {
+  minTime?: number;
+  maxTime?: number;
+  timeUnit?: string;
+  useCompanionRegistration?: boolean;
+  useOutsiderRegistration?: boolean;
+}
+
 export interface StudyRoomDetail {
   id: number;
   name: string;
   minQuota: number;
   maxQuota: number;
   quota: string;
-  floor?: { value: number; label: string };
-  building?: { name: string };
+  floor?: { value?: number; label?: string; name?: string };
+  building?: { id?: number; name?: string };
   description?: string;
   attention?: string;
   isChargeable: boolean;
   timeLine?: StudyRoomTimeSlot[];
+  rule?: StudyRoomRule;
+}
+
+export interface CompanionPatron {
+  id: number;
+  name: string;
+  memberNo: string;
+  department?: string;
 }
 
 export interface StudyRoomReservation {
@@ -94,6 +110,8 @@ export interface StudyRoomReserveParams {
   beginTime: string; // 'YYYY-MM-DD HH:mm'
   endTime: string;   // 'YYYY-MM-DD HH:mm'
   companionCnt: number;
+  companionPatrons?: number[];
+  purpose?: string;
   patronMessage?: string;
 }
 
@@ -356,11 +374,72 @@ export async function getStudyRoomDetail(roomId: number, hopeDate: string): Prom
         attention: d.attention,
         isChargeable: Boolean(d.isChargeable),
         timeLine: d.timeLine,
+        rule: d.rule ? {
+          minTime: d.rule.minTime,
+          maxTime: d.rule.maxTime,
+          timeUnit: d.rule.timeUnit,
+          useCompanionRegistration: d.rule.useCompanionRegistration,
+          useOutsiderRegistration: d.rule.useOutsiderRegistration,
+        } : undefined,
       },
     };
   }
 
   return { success: false, detail: null };
+}
+
+/**
+ * 6-1. 동반이용자 검색 및 검증 (이름, 학번)
+ */
+export async function checkCompanionPatron(
+  roomId: number,
+  name: string,
+  memberNo: string,
+  hopeDate: string
+): Promise<{ success: boolean; patron?: CompanionPatron; message?: string; errorCode?: string }> {
+  if (!isMobileAppEnvironment()) {
+    return { success: false, message: '모바일 앱 환경에서만 조회 가능합니다.', errorCode: 'NOT_IN_APP' };
+  }
+
+  const res = await executeAgentActionBridge({
+    actionId: `act_check_companion_${roomId}_${Date.now()}`,
+    authDomain: 'LIBRARY',
+    request: {
+      method: 'GET',
+      url: `https://lib.inu.ac.kr/pyxis-api/1/api/rooms/${roomId}/check-companions`,
+      params: {
+        name: name.trim(),
+        memberNo: memberNo.trim(),
+        hopeDate,
+      },
+    },
+  });
+
+  if (res.success && res.data && res.data.id) {
+    return {
+      success: true,
+      patron: {
+        id: res.data.id,
+        name: res.data.name || name,
+        memberNo: res.data.memberNo || memberNo,
+        department: res.data.department?.name || res.data.patronType?.name || '',
+      },
+    };
+  }
+
+  let errorMsg = res.errorMessage || '동반 이용자를 찾을 수 없습니다.';
+  if (res.data?.message) errorMsg = res.data.message;
+  if (res.data?.code === 'error.patron.notMatched' || res.errorCode === 'error.patron.notMatched') {
+    errorMsg = '이름 또는 학번이 일치하지 않는 사용자입니다.';
+  } else if (res.data?.code?.includes('penalty') || errorMsg.includes('penalty')) {
+    errorMsg = '해당 사용자는 도서관 이용 제재(페널티) 상태입니다.';
+  }
+
+  return {
+    success: false,
+    message: errorMsg,
+    errorCode: res.errorCode || res.data?.code,
+  };
 }
 
 /**
@@ -370,6 +449,8 @@ export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<
   if (!isMobileAppEnvironment()) {
     return { success: false, message: '모바일 앱 환경에서만 예약할 수 있습니다.', errorCode: 'NOT_IN_APP' };
   }
+
+  const combinedMessage = [params.purpose?.trim(), params.patronMessage?.trim()].filter(Boolean).join(' / ') || '학습 및 회의';
 
   const res = await executeAgentActionBridge({
     actionId: `act_reserve_study_room_${params.roomId}_${Date.now()}`,
@@ -383,7 +464,8 @@ export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<
         beginTime: params.beginTime,
         endTime: params.endTime,
         companionCnt: params.companionCnt,
-        patronMessage: params.patronMessage || '학습 및 회의',
+        companionPatrons: params.companionPatrons && params.companionPatrons.length > 0 ? params.companionPatrons : undefined,
+        patronMessage: combinedMessage,
         smufMethodCode: 'MOBILE',
       },
     },
@@ -392,7 +474,21 @@ export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<
   if (res.success) {
     return { success: true };
   }
-  return { success: false, message: res.errorMessage || '스터디룸 예약에 실패했습니다.', errorCode: res.errorCode };
+
+  let message = res.errorMessage || '스터디룸 예약에 실패했습니다.';
+  const code = res.errorCode || res.data?.code || '';
+
+  if (code.includes('needCompanionList') || message.includes('needCompanionList')) {
+    message = '동반 이용자 명단을 필수로 등록해야 예약할 수 있는 스터디룸입니다.';
+  } else if (code.includes('duplicate') || message.includes('duplicate')) {
+    message = '해당 시간대에 이미 예약된 내역이 있습니다.';
+  } else if (code.includes('minQuota') || message.includes('minQuota')) {
+    message = '스터디룸 최소 수용 인원을 충족해야 합니다.';
+  } else if (code.includes('time') || message.includes('timeLimit')) {
+    message = '이용 가능한 예약 시간 범위를 확인해주세요.';
+  }
+
+  return { success: false, message, errorCode: code };
 }
 
 /**

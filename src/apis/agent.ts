@@ -87,8 +87,9 @@ export const streamAgentChat = async (
   request: AgentChatRequest,
   callbacks: StreamAgentChatCallbacks
 ): Promise<void> => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-  const url = `${baseUrl}/api/agent/chat/stream`;
+  const rawBase = import.meta.env.VITE_API_BASE_URL || "";
+  const cleanBase = rawBase.replace(/\/+$/, "");
+  const url = `${cleanBase}/api/agent/chat/stream`;
 
   const { accessToken } = useUserStore.getState().tokenInfo;
   const headers: Record<string, string> = {
@@ -107,6 +108,8 @@ export const streamAgentChat = async (
 
   const response = await fetch(url, {
     method: "POST",
+    mode: "cors",
+    credentials: "include",
     headers,
     body: JSON.stringify(reqBody),
   });
