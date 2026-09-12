@@ -7,6 +7,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { UiComponent } from "@/apis/agent";
+import { isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
 import { SingleCardItem } from "@/components/mobile/chat/AgentGenerativeCards";
 
 const CardsContainer = styled.div`
@@ -95,6 +96,25 @@ const AppDownloadButton = styled.a`
   }
 `;
 
+const ActionModalButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #0958d9;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #003eb3;
+  }
+`;
+
 /* inuai 출처 카드 (Perplexity Citation Card) */
 const CitationList = styled.div`
   display: flex;
@@ -145,12 +165,13 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
           type.includes("AUTH_REQUIRED") ||
           type.includes("CLIENT_ACTION")
         ) {
+          const inApp = isMobileAppEnvironment();
           return (
             <AuthWarningCard key={idx}>
               <CardHeader>
                 <CardTitle style={{ color: "#b45309" }}>
                   <ShieldAlert size={16} color="#d97706" />
-                  포털 보안 계정 연동 안내 (모바일 앱 전용)
+                  {inApp ? "포털 보안 계정 연동 필요" : "포털 보안 계정 연동 안내 (모바일 앱 전용)"}
                 </CardTitle>
                 <span style={{ fontSize: "11px", color: "#b45309" }}>Zero-Knowledge 보안</span>
               </CardHeader>
@@ -158,20 +179,32 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
                 <Smartphone size={28} color="#d97706" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
                   <div style={{ fontWeight: 500 }}>
-                    개인 학적·출결·LMS 연동은 모바일 환경에서만 지원됩니다.
+                    {inApp
+                      ? "학적 정보 및 실시간 학점 조회를 위해 포털 계정 연동이 필요합니다."
+                      : "개인 학적·출결·LMS 연동은 모바일 환경에서만 지원됩니다."}
                   </div>
                   <div style={{ fontSize: "12px", color: "#78350f", marginTop: "4px" }}>
-                    학생의 비밀번호와 학적 데이터를 서버에 저장하지 않는 보안(Zero-Knowledge) 원칙에 따라,
-                    학교 시스템 실시간 조작은 <strong>INTIP 모바일 앱</strong>의 보안 영역에서 직접 수행됩니다.
+                    {inApp
+                      ? "학생의 비밀번호와 학적 데이터를 서버에 저장하지 않고, 기기 내 보안 저장소(SecureStorage)에 1회 안전하게 연동하여 실시간 학점과 학적을 조회합니다."
+                      : "학생의 비밀번호와 학적 데이터를 서버에 저장하지 않는 보안(Zero-Knowledge) 원칙에 따라, 학교 시스템 실시간 조작은 INTIP 모바일 앱의 보안 영역에서 직접 수행됩니다."}
                   </div>
                   <AppBadgeGroup>
-                    <AppDownloadButton
-                      href="https://apps.apple.com/kr/app/intip/id6478953139"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Smartphone size={14} /> INTIP 앱 열기 / 설치
-                    </AppDownloadButton>
+                    {inApp ? (
+                      <ActionModalButton
+                        type="button"
+                        onClick={() => window.dispatchEvent(new CustomEvent("openPortalAccountModal"))}
+                      >
+                        <Smartphone size={14} /> 포털 계정 연동하기
+                      </ActionModalButton>
+                    ) : (
+                      <AppDownloadButton
+                        href="https://apps.apple.com/kr/app/intip/id6478953139"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Smartphone size={14} /> INTIP 앱 열기 / 설치
+                      </AppDownloadButton>
+                    )}
                   </AppBadgeGroup>
                 </div>
               </WarningContent>

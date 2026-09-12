@@ -4,6 +4,7 @@ import {
   postAgentChat,
   AgentChatMessageHistory,
 } from "@/apis/agent";
+import { resolveClientContext } from "@/apis/mobileAgentBridge";
 import { MessageItem } from "@/components/agent/ChatMessage";
 
 const STORAGE_KEY = "intip_agent_rooms_v1";
@@ -156,10 +157,12 @@ export const useAgentChat = () => {
         }));
 
       try {
+        const clientContext = await resolveClientContext();
         await streamAgentChat(
           {
             message: content,
             history,
+            clientContext: Object.keys(clientContext).length > 0 ? clientContext : undefined,
           },
           {
             onStatus: (status, message) => {
