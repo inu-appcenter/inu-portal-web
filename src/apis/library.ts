@@ -410,19 +410,32 @@ export async function getMyStudyRoomReservations(): Promise<StudyRoomReservation
     },
   });
 
+  if (!res.success || !res.data || res.data?.code === 'success.noRecord') {
+    return [];
+  }
+
   const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
 
-  if (res.success && rawList.length > 0) {
-    return rawList.map((r: any) => ({
-      id: r.id,
-      roomId: r.room?.id,
-      roomName: r.room?.name || '스터디룸',
-      beginTime: r.beginTime,
-      endTime: r.endTime,
-      status: r.status || 'RESERVED',
-      companionCnt: r.companionCnt,
-      patronMessage: r.patronMessage,
-    }));
+  if (rawList.length > 0) {
+    return rawList
+      .filter((r: any) => {
+        // 1. 좌석 정보(seat)가 있거나 열람실 좌석 배정 건인 경우 스터디룸 예약에서 제외
+        if (r.seat || r.seatCharge) return false;
+        // 2. 방 이름이 '열람실'인 경우 제외
+        const name = r.room?.name || '';
+        if (name.includes('열람실')) return false;
+        return true;
+      })
+      .map((r: any) => ({
+        id: r.id,
+        roomId: r.room?.id,
+        roomName: r.room?.name || '스터디룸',
+        beginTime: r.beginTime,
+        endTime: r.endTime,
+        status: r.state?.name || r.status || 'RESERVED',
+        companionCnt: r.companionCnt,
+        patronMessage: r.patronMessage,
+      }));
   }
 
   return [];

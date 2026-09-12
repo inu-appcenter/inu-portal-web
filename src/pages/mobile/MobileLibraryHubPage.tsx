@@ -160,7 +160,11 @@ export default function MobileLibraryHubPage() {
           getFavoriteSeats().catch(() => []),
         ]);
         setMySeat(seat);
-        setMyStudyReservations(studyRes);
+        // 스터디룸 예약 목록에 현재 배정된 열람실 좌석이 중복 포함되지 않도록 안전 필터링
+        const filteredStudyRes = (studyRes || []).filter(
+          (res) => !res.roomName.includes("열람실") && (!seat || res.id !== seat.chargeId)
+        );
+        setMyStudyReservations(filteredStudyRes);
         setFavoriteSeats(favs);
       }
     } finally {
@@ -984,38 +988,50 @@ export default function MobileLibraryHubPage() {
           <SubTitle style={{ marginTop: "24px" }}>내 스터디룸 예약 내역</SubTitle>
           {myStudyReservations.length > 0 ? (
             <ReservationList>
-              {myStudyReservations.map((res) => (
-                <ReservationCard key={res.id}>
-                  <ReservationTop>
-                    <strong>{res.roomName}</strong>
-                    <ReservationStatus>{res.status || "예약됨"}</ReservationStatus>
-                  </ReservationTop>
-                  <ReservationTime>
-                    <Clock size={13} />
-                    <span>
-                      {res.beginTime} ~ {res.endTime}
-                    </span>
-                  </ReservationTime>
-                  {res.companionCnt && (
-                    <ReservationNote>동반 인원: {res.companionCnt}명</ReservationNote>
-                  )}
+              {myStudyReservations.map((res) => {
+                const isCheckinCompleted =
+                  res.status === "USE" ||
+                  res.status === "이용중" ||
+                  res.status === "입실" ||
+                  res.status === "CHARGE";
 
-                  <ReservationActionRow>
-                    <SmallActionBtn onClick={() => handleCheckinStudyReservation(res.id)}>
-                      <CheckCircle size={13} />
-                      <span>입실 체크인</span>
-                    </SmallActionBtn>
-                    <SmallActionBtn
-                      $danger
-                      onClick={() => handleCancelStudyReservation(res.id, res.roomName)}
-                    >
-                      <X size={13} />
-                      <span>예약 취소</span>
-                    </SmallActionBtn>
-                  </ReservationActionRow>
-                </ReservationCard>
-              ))}
+                return (
+                  <ReservationCard key={res.id}>
+                    <ReservationTop>
+                      <strong>{res.roomName}</strong>
+                      <ReservationStatus>{res.status || "예약됨"}</ReservationStatus>
+                    </ReservationTop>
+                    <ReservationTime>
+                      <Clock size={13} />
+                      <span>
+                        {res.beginTime} ~ {res.endTime}
+                      </span>
+                    </ReservationTime>
+                    {res.companionCnt && (
+                      <ReservationNote>동반 인원: {res.companionCnt}명</ReservationNote>
+                    )}
+
+                    <ReservationActionRow>
+                      {!isCheckinCompleted && (
+                        <SmallActionBtn onClick={() => handleCheckinStudyReservation(res.id)}>
+                          <CheckCircle size={13} />
+                          <span>입실 체크인</span>
+                        </SmallActionBtn>
+                      )}
+                      <SmallActionBtn
+                        $danger
+                        onClick={() => handleCancelStudyReservation(res.id, res.roomName)}
+                      >
+                        <X size={13} />
+                        <span>예약 취소</span>
+                      </SmallActionBtn>
+                    </ReservationActionRow>
+                  </ReservationCard>
+                );
+              })}
             </ReservationList>
+          ) : isLoadingMy ? (
+            <EmptyBox>스터디룸 예약 내역 확인 중...</EmptyBox>
           ) : (
             <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
           )}
