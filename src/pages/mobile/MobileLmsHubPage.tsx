@@ -38,7 +38,9 @@ import {
   Award,
   ChevronRight,
   X,
+  KeyRound,
 } from "lucide-react";
+import { LmsAccountModal } from "@/components/mobile/agent/LmsAccountModal";
 
 export default function MobileLmsHubPage() {
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ export default function MobileLmsHubPage() {
   const [courses, setCourses] = useState<LmsCourse[]>([]);
   const [grades, setGrades] = useState<LmsCourseGrade[]>([]);
   const [isLinked, setIsLinked] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -87,6 +90,12 @@ export default function MobileLmsHubPage() {
 
   useEffect(() => {
     loadData();
+
+    const handleOpenModal = () => setIsAuthModalOpen(true);
+    window.addEventListener("openLmsAccountModal", handleOpenModal);
+    return () => {
+      window.removeEventListener("openLmsAccountModal", handleOpenModal);
+    };
   }, []);
 
   const showToast = (msg: string) => {
@@ -226,9 +235,16 @@ export default function MobileLmsHubPage() {
           <GraduationCap size={36} color="#94a3b8" />
           <EmptyTitle>사이버캠퍼스(LMS) 계정 연동이 필요해요</EmptyTitle>
           <EmptyDesc>
-            INTIP 모바일 앱의 <strong>설정 &gt; 계정 연동</strong>에서 포털 SSO 로그인을 완료하면 실시간 과제
-            및 수강 강좌 정보를 확인할 수 있습니다.
+            포털 SSO 계정(학번/비밀번호)을 연동하면 실시간 과제 마감 일정, 주차별 강의 영상 출석 현황,
+            성적 정보를 확인하실 수 있습니다.
           </EmptyDesc>
+          <PrimaryActionBtn
+            style={{ marginTop: "16px", padding: "10px 24px" }}
+            onClick={() => setIsAuthModalOpen(true)}
+          >
+            <KeyRound size={15} />
+            <span>LMS 계정 연동하기</span>
+          </PrimaryActionBtn>
         </EmptyBox>
       ) : (
         <>
@@ -444,11 +460,36 @@ export default function MobileLmsHubPage() {
           </ModalContent>
         </ModalOverlay>
       )}
+
+      {/* LMS 계정 연동 모달 */}
+      <LmsAccountModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => {
+          setIsAuthModalOpen(false);
+          showToast("🎉 LMS 계정이 성공적으로 연동되었습니다!");
+          loadData();
+        }}
+      />
     </Container>
   );
 }
 
 // ================= STYLES =================
+const PrimaryActionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+`;
+
 const Container = styled.div`
   padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
   max-width: 600px;

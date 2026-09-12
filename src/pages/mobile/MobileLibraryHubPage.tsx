@@ -47,7 +47,9 @@ import {
   ChevronRight,
   X,
   MapPin,
+  KeyRound,
 } from "lucide-react";
+import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
 
 export default function MobileLibraryHubPage() {
   const navigate = useNavigate();
@@ -56,7 +58,8 @@ export default function MobileLibraryHubPage() {
   const [studyRooms, setStudyRooms] = useState<LibraryStudyRoom[]>([]);
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
   const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
-  const [, setIsLinked] = useState<boolean>(false);
+  const [isLinked, setIsLinked] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -111,6 +114,12 @@ export default function MobileLibraryHubPage() {
 
   useEffect(() => {
     loadData();
+
+    const handleOpenModal = () => setIsAuthModalOpen(true);
+    window.addEventListener("openLibraryAccountModal", handleOpenModal);
+    return () => {
+      window.removeEventListener("openLibraryAccountModal", handleOpenModal);
+    };
   }, []);
 
   const showToast = (msg: string) => {
@@ -127,8 +136,16 @@ export default function MobileLibraryHubPage() {
     setSelectedSeatRoom(room);
     setIsLoadingSeats(true);
     try {
-      const seats = await getRoomSeats(room.id);
-      setRoomSeats(seats);
+      const res = await getRoomSeats(room.id);
+      if (res.success) {
+        setRoomSeats(res.seats);
+      } else if (res.errorCode === "AUTH_REQUIRED" || res.errorMessage?.includes("로그인")) {
+        alert("열람실 좌석 조회를 위해 학산도서관 계정 연동이 필요합니다.");
+        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+        setSelectedSeatRoom(null);
+      } else {
+        alert(res.errorMessage || "좌석 목록을 불러오지 못했습니다.");
+      }
     } catch (e) {
       console.error(e);
       alert("좌석 목록을 불러오지 못했습니다.");
@@ -152,6 +169,9 @@ export default function MobileLibraryHubPage() {
         setSelectedSeatRoom(null);
         setActiveTab("my");
         loadData();
+      } else if (res.errorCode === "AUTH_REQUIRED" || res.message?.includes("로그인")) {
+        alert("좌석 배정을 위해 학산도서관 계정 연동이 필요합니다.");
+        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       } else {
         alert(res.message || "좌석 배정에 실패했습니다.");
       }
@@ -175,10 +195,19 @@ export default function MobileLibraryHubPage() {
   const loadStudyTimeline = async (roomId: number, dateStr: string) => {
     setIsLoadingTimeline(true);
     try {
-      const detail = await getStudyRoomDetail(roomId, dateStr);
-      setStudyRoomDetail(detail);
+      const res = await getStudyRoomDetail(roomId, dateStr);
+      if (res.success && res.detail) {
+        setStudyRoomDetail(res.detail);
+      } else if (res.errorCode === "AUTH_REQUIRED" || res.errorMessage?.includes("로그인")) {
+        alert("스터디룸 시간표 조회를 위해 학산도서관 계정 연동이 필요합니다.");
+        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+        setSelectedStudyRoom(null);
+      } else {
+        setStudyRoomDetail(null);
+      }
     } catch (e) {
       console.error(e);
+      setStudyRoomDetail(null);
     } finally {
       setIsLoadingTimeline(false);
     }
@@ -392,6 +421,20 @@ export default function MobileLibraryHubPage() {
           {(mySeat || myStudyReservations.length > 0) && <BadgeDot />}
         </TabItem>
       </TabBar>
+
+      {/* 도서관 계정 연동 유도 배너 */}
+      {!isLinked && (
+        <AuthBannerCard onClick={() => setIsAuthModalOpen(true)}>
+          <BannerLeft>
+            <KeyRound size={18} color="#d97706" />
+            <BannerText>
+              <strong style={{ color: "#92400e" }}>도서관 계정 연동하기</strong>
+              <span style={{ color: "#b45309" }}>학산도서관 계정을 연동하면 좌석 배정 및 스터디룸 예약이 가능해요</span>
+            </BannerText>
+          </BannerLeft>
+          <ChevronRight size={18} color="#d97706" />
+        </AuthBannerCard>
+      )}
 
       {/* 스마트 감시 대시보드 바로가기 배너 */}
       <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
@@ -839,6 +882,17 @@ export default function MobileLibraryHubPage() {
           </ModalContent>
         </ModalOverlay>
       )}
+
+      {/* 도서관 계정 연동 모달 */}
+      <LibraryAccountModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => {
+          setIsAuthModalOpen(false);
+          showToast("🎉 학산도서관 계정이 성공적으로 연동되었습니다!");
+          loadData();
+        }}
+      />
     </Container>
   );
 }
@@ -886,6 +940,18 @@ const BadgeDot = styled.span`
   height: 6px;
   border-radius: 50%;
   background: #ef4444;
+`;
+
+const AuthBannerCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
 `;
 
 const BannerCard = styled.div`

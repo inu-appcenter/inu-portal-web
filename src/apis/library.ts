@@ -101,15 +101,15 @@ export async function getReadingRooms(): Promise<LibrarySeatRoom[]> {
     const res = await fetch(PUBLIC_LIB_URL);
     if (res.ok) {
       const data = await res.json();
-      if (data.success && data.data?.list) {
-        return data.data.list;
+      const list = data?.data?.list || data?.list;
+      if (Array.isArray(list)) {
+        return list;
       }
     }
   } catch (e) {
     console.warn('[LibraryApi] Direct fetch failed, trying agent bridge:', e);
   }
 
-  // Fallback: 모바일 앱 브릿지를 통해 조회
   if (isMobileAppEnvironment()) {
     const res = await executeAgentActionBridge({
       actionId: `act_rooms_${Date.now()}`,
@@ -120,8 +120,9 @@ export async function getReadingRooms(): Promise<LibrarySeatRoom[]> {
         params: { branchGroupId: 1, smufMethodCode: 'PC' },
       },
     });
-    if (res.success && res.data?.data?.list) {
-      return res.data.data.list;
+    const list = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+    if (list.length > 0) {
+      return list;
     }
   }
 
@@ -131,8 +132,10 @@ export async function getReadingRooms(): Promise<LibrarySeatRoom[]> {
 /**
  * 2. 열람실 개별 좌석 목록 조회
  */
-export async function getRoomSeats(roomId: number, hopeDate?: string): Promise<LibrarySeat[]> {
-  if (!isMobileAppEnvironment()) return [];
+export async function getRoomSeats(roomId: number, hopeDate?: string): Promise<{ success: boolean; seats: LibrarySeat[]; errorCode?: string; errorMessage?: string }> {
+  if (!isMobileAppEnvironment()) {
+    return { success: false, seats: [], errorCode: 'NOT_IN_APP', errorMessage: '모바일 앱 환경에서만 조회 가능합니다.' };
+  }
 
   const params: Record<string, any> = {};
   if (hopeDate) params.hopeDate = hopeDate;
@@ -147,19 +150,29 @@ export async function getRoomSeats(roomId: number, hopeDate?: string): Promise<L
     },
   });
 
-  if (res.success && res.data?.data?.list) {
-    return res.data.data.list.map((s: any) => ({
-      id: s.id,
-      code: s.code || String(s.id),
-      name: s.name || s.code,
-      isActive: Boolean(s.isActive),
-      isReservable: Boolean(s.isReservable),
-      isOccupied: Boolean(s.isOccupied),
-      remainingTime: s.remainingTime,
-    }));
+  if (!res.success) {
+    return {
+      success: false,
+      seats: [],
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage || '도서관 좌석 조회를 실패했습니다.',
+    };
   }
 
-  return [];
+  // 데이터 언래핑: res.data가 { list: [...] } 이거나 { data: { list: [...] } } 이거나 배열일 수 있음
+  const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+
+  const seats = rawList.map((s: any) => ({
+    id: s.id,
+    code: s.code || String(s.id),
+    name: s.name || s.code,
+    isActive: Boolean(s.isActive),
+    isReservable: Boolean(s.isReservable),
+    isOccupied: Boolean(s.isOccupied),
+    remainingTime: s.remainingTime,
+  }));
+
+  return { success: true, seats };
 }
 
 /**
@@ -169,9 +182,9 @@ export async function reserveSeat(
   seatId: number,
   beginTime?: string,
   endTime?: string
-): Promise<{ success: boolean; message?: string }> {
+): Promise<{ success: boolean; message?: string; errorCode?: string }> {
   if (!isMobileAppEnvironment()) {
-    return { success: false, message: '모바일 앱 환경에서만 좌석 배정이 가능합니다.' };
+    return { success: false, message: '모바일 앱 환경에서만 좌석 배정이 가능합니다.', errorCode: 'NOT_IN_APP' };
   }
 
   const body: Record<string, any> = {
@@ -194,7 +207,7 @@ export async function reserveSeat(
   if (res.success) {
     return { success: true };
   }
-  return { success: false, message: res.errorMessage || '좌석 배정에 실패했습니다.' };
+  return { success: false, message: res.errorMessage || '좌석 배정에 실패했습니다.', errorCode: res.errorCode };
 }
 
 /**
@@ -230,9 +243,9 @@ export async function getStudyRooms(): Promise<LibraryStudyRoom[]> {
         params: { branchGroupId: 1 },
       },
     });
-    if (res.success && (res.data?.data?.list || Array.isArray(res.data?.data))) {
-      const list = res.data.data.list || res.data.data;
-      return list.map((r: any) => ({
+    const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+    if (res.success && rawList.length > 0) {
+      return rawList.map((r: any) => ({
         id: r.id,
         name: r.name,
         location: r.building?.name ? `${r.building.name} ${r.floor?.label || ''}` : (r.floor?.label || '중앙관'),
@@ -261,8 +274,10 @@ export async function getStudyRooms(): Promise<LibraryStudyRoom[]> {
 /**
  * 6. 스터디룸 상세 및 날짜별 시간대 타임라인 조회
  */
-export async function getStudyRoomDetail(roomId: number, hopeDate: string): Promise<StudyRoomDetail | null> {
-  if (!isMobileAppEnvironment()) return null;
+export async function getStudyRoomDetail(roomId: number, hopeDate: string): Promise<{ success: boolean; detail: StudyRoomDetail | null; errorCode?: string; errorMessage?: string }> {
+  if (!isMobileAppEnvironment()) {
+    return { success: false, detail: null, errorCode: 'NOT_IN_APP', errorMessage: '모바일 앱 환경에서만 조회 가능합니다.' };
+  }
 
   const res = await executeAgentActionBridge({
     actionId: `act_study_room_detail_${roomId}_${Date.now()}`,
@@ -274,32 +289,44 @@ export async function getStudyRoomDetail(roomId: number, hopeDate: string): Prom
     },
   });
 
-  if (res.success && res.data?.data) {
-    const d = res.data.data;
+  if (!res.success) {
     return {
-      id: d.id,
-      name: d.name,
-      minQuota: d.minQuota,
-      maxQuota: d.maxQuota,
-      quota: d.quota,
-      floor: d.floor,
-      building: d.building,
-      description: d.description,
-      attention: d.attention,
-      isChargeable: Boolean(d.isChargeable),
-      timeLine: d.timeLine,
+      success: false,
+      detail: null,
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage || '스터디룸 상세 조회를 실패했습니다.',
     };
   }
 
-  return null;
+  const d = res.data?.id ? res.data : (res.data?.data?.id ? res.data.data : null);
+  if (d) {
+    return {
+      success: true,
+      detail: {
+        id: d.id,
+        name: d.name,
+        minQuota: d.minQuota,
+        maxQuota: d.maxQuota,
+        quota: d.quota,
+        floor: d.floor,
+        building: d.building,
+        description: d.description,
+        attention: d.attention,
+        isChargeable: Boolean(d.isChargeable),
+        timeLine: d.timeLine,
+      },
+    };
+  }
+
+  return { success: false, detail: null };
 }
 
 /**
  * 7. 스터디룸 예약 생성
  */
-export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<{ success: boolean; message?: string }> {
+export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<{ success: boolean; message?: string; errorCode?: string }> {
   if (!isMobileAppEnvironment()) {
-    return { success: false, message: '모바일 앱 환경에서만 예약할 수 있습니다.' };
+    return { success: false, message: '모바일 앱 환경에서만 예약할 수 있습니다.', errorCode: 'NOT_IN_APP' };
   }
 
   const res = await executeAgentActionBridge({
@@ -323,7 +350,7 @@ export async function reserveStudyRoom(params: StudyRoomReserveParams): Promise<
   if (res.success) {
     return { success: true };
   }
-  return { success: false, message: res.errorMessage || '스터디룸 예약에 실패했습니다.' };
+  return { success: false, message: res.errorMessage || '스터디룸 예약에 실패했습니다.', errorCode: res.errorCode };
 }
 
 /**
@@ -341,8 +368,10 @@ export async function getMyStudyRoomReservations(): Promise<StudyRoomReservation
     },
   });
 
-  if (res.success && res.data?.data?.list) {
-    return res.data.data.list.map((r: any) => ({
+  const rawList: any[] = res.data?.list || res.data?.data?.list || (Array.isArray(res.data) ? res.data : []);
+
+  if (res.success && rawList.length > 0) {
+    return rawList.map((r: any) => ({
       id: r.id,
       roomId: r.room?.id,
       roomName: r.room?.name || '스터디룸',
@@ -408,9 +437,9 @@ export async function getMyCurrentSeat(): Promise<CurrentSeatInfo | null> {
     },
   });
 
-  if (res.success && res.data?.data) {
-    const d = res.data.data;
-    if (d.id || d.seatCharge?.id) {
+  if (res.success && res.data) {
+    const d = res.data?.seat || res.data?.seatCharge ? res.data : (res.data?.data?.seat ? res.data.data : null);
+    if (d) {
       return {
         chargeId: d.id || d.seatCharge?.id,
         seatId: d.seat?.id,
