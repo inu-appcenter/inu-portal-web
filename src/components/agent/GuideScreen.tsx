@@ -208,10 +208,10 @@ export const GuideScreen: React.FC<GuideScreenProps> = ({
       </LogoContainer>
       <TextBlock>
         <TitleText>
-          {"안녕하세요!\n인천대학교 인팁 AI 캠퍼스 비서예요!"}
+          {"안녕하세요!\n인천대학교 캠퍼스 어시스턴트 '챗불이'예요!"}
         </TitleText>
         <SubtitleText>
-          {"학칙과 학사 공지사항(inuai)부터 실시간 학식, 버스,\n시간표까지 무엇이든 물어보세요."}
+          {"학칙과 학사 규정(inuai)부터 실시간 학식, 버스,\n시간표까지 무엇이든 물어보세요."}
         </SubtitleText>
       </TextBlock>
       <ChipsContainer>
