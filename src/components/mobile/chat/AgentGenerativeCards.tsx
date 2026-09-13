@@ -39,6 +39,14 @@ import {
   returnCurrentSeat,
   cancelStudyRoomReservation,
   checkinStudyRoom,
+  getReadingRooms,
+  getRoomSeats,
+  reserveSeat,
+  getStudyRooms,
+  reserveStudyRoom,
+  getStudyRoomDetail,
+  LibrarySeat,
+  StudyRoomDetail,
 } from "@/apis/library";
 import { registerLocalWatchJobInApp } from "@/apis/mobileAgentBridge";
 
@@ -268,6 +276,10 @@ export const SingleCardItem: React.FC<{
         return <LibraryRoomsCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_STUDY_ROOMS":
         return <LibraryStudyRoomsCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_SEAT_CONFIRM":
+        return <LibrarySeatConfirmCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_STUDY_ROOM_CONFIRM":
+        return <LibraryStudyRoomConfirmCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_AUTH_REQUIRED":
         return <LibraryAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_CLIENT_ACTION":
@@ -1888,8 +1900,27 @@ const PortalAuthActionBtn = styled.button`
 const LibraryRoomsCard: React.FC<{
   data?: any;
   onNavigate?: () => void;
-}> = ({ data }) => {
-  const rooms: any[] = Array.isArray(data?.rooms) ? data.rooms : (Array.isArray(data) ? data : []);
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  const [rooms, setRooms] = React.useState<any[]>(() =>
+    Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : []
+  );
+  const [loading, setLoading] = React.useState<boolean>(rooms.length === 0);
+
+  React.useEffect(() => {
+    if (rooms.length === 0) {
+      getReadingRooms()
+        .then((list) => {
+          if (list && list.length > 0) setRooms(list);
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [rooms.length]);
+
+  const handleSelectRoom = (room: any) => {
+    if (onNavigate) onNavigate();
+    navigate(`${ROUTES.SERVICES.LIBRARY}?tab=seats&roomId=${room.id}`);
+  };
 
   return (
     <LibraryCardBox>
@@ -1898,28 +1929,43 @@ const LibraryRoomsCard: React.FC<{
         <CardTitle>학산도서관 실시간 열람실</CardTitle>
         <LibCountBadge>실시간 현황</LibCountBadge>
       </CardHeader>
-      <LibRoomList>
-        {rooms.slice(0, 5).map((room: any, idx: number) => {
-          const total = room.seats?.total ?? room.totalSeats ?? 0;
-          const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
-          const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
-          const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
+      {loading ? (
+        <StudyNoticeBox>
+          <span>⏳ 실시간 열람실 좌석 현황을 불러오고 있습니다...</span>
+        </StudyNoticeBox>
+      ) : (
+        <LibRoomList>
+          {rooms.slice(0, 6).map((room: any, idx: number) => {
+            const total = room.seats?.total ?? room.totalSeats ?? 0;
+            const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
+            const available = room.seats?.available ?? room.availableSeats ?? Math.max(0, total - occupied);
+            const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
 
-          return (
-            <LibRoomItem key={room.id ?? idx}>
-              <LibRoomHeader>
-                <LibRoomName>{room.name}</LibRoomName>
-                <LibRoomSeats>
-                  <LibAvailable>{available}석</LibAvailable> / {total}석
-                </LibRoomSeats>
-              </LibRoomHeader>
-              <LibProgressBarTrack>
-                <LibProgressBarFill $percent={percent} $warning={percent >= 85} />
-              </LibProgressBarTrack>
-            </LibRoomItem>
-          );
-        })}
-      </LibRoomList>
+            return (
+              <LibRoomItem
+                key={room.id ?? idx}
+                style={{ cursor: "pointer" }}
+                onClick={() => handleSelectRoom(room)}
+              >
+                <LibRoomHeader>
+                  <LibRoomName>
+                    {room.name}
+                    <span style={{ fontSize: "11px", fontWeight: 400, color: "#64748b", marginLeft: "6px" }}>
+                      터치 시 좌석 선택
+                    </span>
+                  </LibRoomName>
+                  <LibRoomSeats>
+                    <LibAvailable>{available}석</LibAvailable> / {total}석
+                  </LibRoomSeats>
+                </LibRoomHeader>
+                <LibProgressBarTrack>
+                  <LibProgressBarFill $percent={percent} $warning={percent >= 85} />
+                </LibProgressBarTrack>
+              </LibRoomItem>
+            );
+          })}
+        </LibRoomList>
+      )}
     </LibraryCardBox>
   );
 };
@@ -1930,13 +1976,15 @@ const LibraryRoomsCard: React.FC<{
 const LibraryStudyRoomsCard: React.FC<{
   data?: any;
   onNavigate?: () => void;
-}> = ({ data }) => {
-  const rooms: any[] = Array.isArray(data?.rooms) ? data.rooms : (Array.isArray(data) ? data : []);
-  const notice: string = data?.notice || "스터디룸 예약은 1회 최대 2시간, 당일 예약 가능합니다.";
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+  const rooms: any[] = Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : [];
+  const notice: string = data?.notice || "스터디룸 예약은 1회 최대 2시간, 당일 및 사전 예약 가능합니다.";
 
   const handleBookRoom = (roomId: number, roomName?: string) => {
     console.log(`[LibraryStudyRoomsCard] Booking room ${roomId}: ${roomName}`);
-    window.open(`https://lib.inu.ac.kr/#/facility/study-room`, "_blank", "noopener,noreferrer");
+    if (onNavigate) onNavigate();
+    navigate(`${ROUTES.SERVICES.LIBRARY}?tab=study&roomId=${roomId}`);
   };
 
   return (
@@ -1951,7 +1999,7 @@ const LibraryStudyRoomsCard: React.FC<{
       </StudyNoticeBox>
       <StudyRoomList>
         {rooms.map((room: any, idx: number) => {
-          const location = room.location || (room.floor?.label ? `${room.roomType?.name || ''} ${room.floor.label}` : "도서관");
+          const location = room.location || (room.floor?.label ? `${room.roomType?.name || ""} ${room.floor.label}` : "도서관");
           const quota = room.quota || (room.minQuota && room.maxQuota ? `${room.minQuota}~${room.maxQuota}명` : "정원 문의");
           const tags: string[] = Array.isArray(room.tags) ? room.tags : [];
           const availSummary = room.availableSummary || room.availableHoursSummary;
@@ -1977,7 +2025,7 @@ const LibraryStudyRoomsCard: React.FC<{
               )}
               {tags.length > 0 && (
                 <StudyTagRow>
-                  {tags.map((t, tIdx) => (
+                  {tags.map((t: string, tIdx: number) => (
                     <StudyTag key={tIdx}>{t}</StudyTag>
                   ))}
                 </StudyTagRow>
@@ -1986,6 +2034,827 @@ const LibraryStudyRoomsCard: React.FC<{
           );
         })}
       </StudyRoomList>
+    </LibraryCardBox>
+  );
+};
+
+/**
+ * 1. 열람실 좌석 배정 대화형 단계별 최종 확인 카드 (정밀 검증 & 환각 방지)
+ */
+const LibrarySeatConfirmCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+
+  // 기본 사용 가능한 열람실 목록
+  const DEFAULT_ROOMS = [
+    { id: 1, name: "제1열람실" },
+    { id: 2, name: "제2열람실" },
+    { id: 3, name: "제3열람실" },
+    { id: 4, name: "제1노트북실" },
+    { id: 124, name: "제3노트북실" },
+    { id: 107, name: "힐링존" },
+  ];
+
+  // 파라미터 초기화 및 정규화
+  const initialRoomId = data?.roomId ? Number(data.roomId) : undefined;
+  const initialRoomName = data?.roomName || "제1열람실";
+  const initialSeatNo = data?.seatNo ? String(data.seatNo).replace(/[^a-zA-Z0-9]/g, "").trim() : "";
+
+  const [readingRooms, setReadingRooms] = React.useState<any[]>(DEFAULT_ROOMS);
+  const [selectedRoomId, setSelectedRoomId] = React.useState<number>(() => {
+    if (initialRoomId) return initialRoomId;
+    const clean = initialRoomName.replaceAll(" ", "").toLowerCase();
+    if (clean.contains("1노트북") || clean.contains("제1노트북")) return 4;
+    if (clean.contains("3노트북") || clean.contains("제3노트북")) return 124;
+    if (clean.contains("2열람") || clean.contains("제2열람")) return 2;
+    if (clean.contains("3열람") || clean.contains("제3열람")) return 3;
+    if (clean.contains("힐링")) return 107;
+    return 1;
+  });
+
+  const [roomSeats, setRoomSeats] = React.useState<LibrarySeat[]>([]);
+  const [loadingSeats, setLoadingSeats] = React.useState<boolean>(true);
+  const [selectedSeat, setSelectedSeat] = React.useState<LibrarySeat | null>(null);
+  const [targetSeatNo, setTargetSeatNo] = React.useState<string>(initialSeatNo);
+  const [isSeatNotFound, setIsSeatNotFound] = React.useState<boolean>(false);
+  const [showSeatGrid, setShowSeatGrid] = React.useState<boolean>(false);
+  const [seatFilterOnlyAvailable, setSeatFilterOnlyAvailable] = React.useState<boolean>(true);
+
+  const [busy, setBusy] = React.useState<boolean>(false);
+  const [actionStatus, setActionStatus] = React.useState<"IDLE" | "SUCCESS" | "ERROR">("IDLE");
+  const [statusMessage, setStatusMessage] = React.useState<string>("");
+
+  // 열람실 전체 목록 조회
+  React.useEffect(() => {
+    getReadingRooms()
+      .then((list) => {
+        if (list && list.length > 0) {
+          const chargeable = list.filter((r: any) => r.isChargeable !== false);
+          if (chargeable.length > 0) setReadingRooms(chargeable);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const currentRoomObj = readingRooms.find((r) => r.id === selectedRoomId) || {
+    id: selectedRoomId,
+    name: initialRoomName,
+  };
+
+  // 선택된 열람실의 실제 좌석 목록 조회 및 좌석 매칭
+  React.useEffect(() => {
+    let isMounted = true;
+    setLoadingSeats(true);
+    setIsSeatNotFound(false);
+    setSelectedSeat(null);
+
+    const fetchSeats = async () => {
+      try {
+        const res = await getRoomSeats(selectedRoomId);
+        if (!isMounted) return;
+        if (res.success && res.seats && res.seats.length > 0) {
+          setRoomSeats(res.seats);
+
+          // 사용자가 입력한 좌석번호 매칭 시도
+          if (targetSeatNo) {
+            const cleanTarget = targetSeatNo.toUpperCase().trim();
+            const found = res.seats.find((s) => {
+              const codeClean = String(s.code).toUpperCase().trim();
+              const nameClean = String(s.name || "").toUpperCase().trim();
+              return codeClean === cleanTarget || nameClean === cleanTarget || codeClean.endsWith(cleanTarget);
+            });
+
+            if (found) {
+              setSelectedSeat(found);
+              setIsSeatNotFound(false);
+            } else {
+              setIsSeatNotFound(true);
+              setShowSeatGrid(true);
+            }
+          } else {
+            setShowSeatGrid(true);
+          }
+        } else {
+          setRoomSeats([]);
+          if (res.errorCode === "AUTH_REQUIRED") {
+            setStatusMessage("도서관 좌석 조회를 위해 학산도서관 계정 연동이 필요합니다.");
+          }
+        }
+      } catch (e) {
+        console.error("좌석 목록 조회 실패:", e);
+      } finally {
+        if (isMounted) setLoadingSeats(false);
+      }
+    };
+
+    fetchSeats();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedRoomId, targetSeatNo]);
+
+  // 좌석 배정 신청 실행 (사용자 최종 확인 버튼 클릭 시)
+  const handleAssign = async (seatToAssign?: LibrarySeat) => {
+    const target = seatToAssign || selectedSeat;
+    if (!target) {
+      setShowSeatGrid(true);
+      return;
+    }
+
+    if (target.isOccupied) {
+      handleWatchRegister(target);
+      return;
+    }
+
+    setBusy(true);
+    setActionStatus("IDLE");
+    try {
+      const res = await reserveSeat(target.id);
+      if (res.success) {
+        setActionStatus("SUCCESS");
+        setStatusMessage(
+          `🎉 [${currentRoomObj.name}] ${target.code}번 좌석 배정이 성공적으로 완료되었습니다!\n20분 내로 도서관 1층 게이트를 통과하거나 키오스크에서 입실 확인을 완료해 주세요.`
+        );
+      } else {
+        setActionStatus("ERROR");
+        if (res.errorCode === "AUTH_REQUIRED" || res.message?.includes("로그인")) {
+          setStatusMessage("좌석 배정을 위해 학산도서관 계정 연동이 필요합니다.");
+        } else {
+          setStatusMessage(res.message || "좌석 배정에 실패했습니다.");
+        }
+      }
+    } catch (e: any) {
+      setActionStatus("ERROR");
+      setStatusMessage("좌석 배정 중 오류가 발생했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // 빈자리 알림(스나이퍼) 등록
+  const handleWatchRegister = async (occupiedSeat: LibrarySeat) => {
+    setBusy(true);
+    try {
+      const res = await registerLocalWatchJobInApp({
+        watchType: "SPECIFIC_SEAT_SNIPER",
+        roomId: selectedRoomId,
+        roomName: currentRoomObj.name,
+        seatNo: occupiedSeat.code,
+        seatId: occupiedSeat.id,
+        durationMinutes: 120,
+      });
+      if (res.success) {
+        setActionStatus("SUCCESS");
+        setStatusMessage(
+          `🎯 [${currentRoomObj.name}] ${occupiedSeat.code}번 좌석 빈자리 알림(스나이퍼)이 기기에 등록되었습니다! 자리가 나는 즉시 푸시 알림을 보내드립니다.`
+        );
+      } else {
+        setActionStatus("ERROR");
+        setStatusMessage(res.errorMessage || "빈자리 알림 등록에 실패했습니다.");
+      }
+    } catch (e) {
+      setActionStatus("ERROR");
+      setStatusMessage("알림 등록 중 오류가 발생했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const availableSeatsCount = roomSeats.filter((s) => !s.isOccupied && s.isActive !== false).length;
+  const filteredSeats = seatFilterOnlyAvailable
+    ? roomSeats.filter((s) => !s.isOccupied && s.isActive !== false)
+    : roomSeats;
+
+  return (
+    <LibraryCardBox>
+      <CardHeader>
+        <BookOpen size={17} color="#3182f6" />
+        <CardTitle>학산도서관 좌석 배정 확인</CardTitle>
+        <LibCountBadge>실시간 연동</LibCountBadge>
+      </CardHeader>
+
+      {/* 1. 열람실 선택 탭 */}
+      <RoomSelectScroll>
+        {readingRooms.map((r) => (
+          <RoomTabPill
+            key={r.id}
+            type="button"
+            $active={r.id === selectedRoomId}
+            onClick={() => {
+              if (selectedRoomId !== r.id) {
+                setSelectedRoomId(r.id);
+                setTargetSeatNo("");
+                setSelectedSeat(null);
+                setShowSeatGrid(true);
+              }
+            }}
+          >
+            {r.name}
+          </RoomTabPill>
+        ))}
+      </RoomSelectScroll>
+
+      {/* 상태 및 액션 피드백 메시지 */}
+      {actionStatus !== "IDLE" ? (
+        <div style={{ padding: "12px 0" }}>
+          <div
+            style={{
+              padding: "12px",
+              borderRadius: "8px",
+              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "#fef2f2",
+              border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
+              color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
+              fontSize: "13px",
+              lineHeight: "1.5",
+              fontWeight: 600,
+              whiteSpace: "pre-line",
+            }}
+          >
+            {statusMessage}
+          </div>
+          {actionStatus === "SUCCESS" ? (
+            <StudyBookButton
+              type="button"
+              style={{ marginTop: "10px", width: "100%", padding: "10px 0" }}
+              onClick={() => {
+                if (onNavigate) onNavigate();
+                navigate(`${ROUTES.SERVICES.LIBRARY}?tab=my`);
+              }}
+            >
+              내 좌석 이용증 확인하기
+            </StudyBookButton>
+          ) : statusMessage.includes("계정 연동") ? (
+            <PortalAuthActionBtn
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+              }}
+            >
+              도서관 계정 연동하기
+            </PortalAuthActionBtn>
+          ) : (
+            <StudyBookButton
+              type="button"
+              style={{ marginTop: "10px", width: "100%", background: "#64748b" }}
+              onClick={() => setActionStatus("IDLE")}
+            >
+              다시 시도하기
+            </StudyBookButton>
+          )}
+        </div>
+      ) : loadingSeats ? (
+        <StudyNoticeBox>
+          <span>⏳ [{currentRoomObj.name}] 실시간 좌석 상태를 조회하고 있습니다...</span>
+        </StudyNoticeBox>
+      ) : (
+        <div>
+          {/* 존재하지 않는 좌석 번호 경고 배너 */}
+          {isSeatNotFound && targetSeatNo && (
+            <StudyNoticeBox style={{ background: "#fffbeb", borderLeft: "3px solid #f59e0b", margin: "8px 0" }}>
+              <span style={{ color: "#b45309", fontWeight: 600 }}>
+                ⚠️ 입력하신 <strong>'{targetSeatNo}'번 좌석</strong>은 [{currentRoomObj.name}]에 존재하지 않는 번호입니다.
+              </span>
+              <div style={{ fontSize: "11px", color: "#92400e", marginTop: "2px" }}>
+                아래 실시간 좌석 목록에서 원하시는 좌석을 직접 선택해 주세요.
+              </div>
+            </StudyNoticeBox>
+          )}
+
+          {/* 최종 선택된 좌석이 있고 배치도 닫힘 상태일 때: 최종 확인 카드 */}
+          {selectedSeat && !showSeatGrid ? (
+            <div>
+              {selectedSeat.isOccupied ? (
+                <div>
+                  <StudyNoticeBox style={{ background: "#fff1f2", borderLeft: "3px solid #f43f5e", margin: "8px 0" }}>
+                    <span style={{ color: "#9f1239" }}>
+                      🚨 <strong>[{currentRoomObj.name}] {selectedSeat.code}번 좌석</strong>은 현재 다른 학생이 이용 중입니다.
+                    </span>
+                  </StudyNoticeBox>
+                  <p style={{ fontSize: "12px", color: "#475569", margin: "8px 0 12px", lineHeight: "1.4" }}>
+                    💡 이 좌석이 반납되거나 비는 순간 즉시 푸시 알림을 받으시겠습니까?
+                  </p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <StudyBookButton
+                      type="button"
+                      disabled={busy}
+                      style={{ flex: 1, background: "#0061ff" }}
+                      onClick={() => handleWatchRegister(selectedSeat)}
+                    >
+                      {busy ? "알림 등록 중..." : "🎯 빈자리 알림 받기"}
+                    </StudyBookButton>
+                    <StudyBookButton
+                      type="button"
+                      style={{ flex: 1, background: "#f1f5f9", color: "#334155" }}
+                      onClick={() => setShowSeatGrid(true)}
+                    >
+                      다른 좌석 선택
+                    </StudyBookButton>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", margin: "8px 0 12px", border: "1px solid #e2e8f0" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                      <div style={{ fontSize: "14.5px", fontWeight: 700, color: "#1e293b" }}>
+                        📍 {currentRoomObj.name} {selectedSeat.code}번 좌석
+                      </div>
+                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "#16a34a", background: "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
+                        배정 가능
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "11.5px", color: "#64748b", lineHeight: "1.45" }}>
+                      • 배정 즉시 20분간 <strong>임시 배정</strong> 상태가 됩니다.<br />
+                      • 20분 내 도서관 1층 게이트를 통과하거나 키오스크에서 입실 확인을 완료해 주세요.<br />
+                      • 미입실 시 예약이 자동 취소되며 패널티가 부과될 수 있습니다.
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <StudyBookButton
+                      type="button"
+                      disabled={busy}
+                      style={{ flex: 1.4, background: "#3182f6", padding: "10px 0", fontSize: "13px" }}
+                      onClick={() => handleAssign(selectedSeat)}
+                    >
+                      {busy ? "배정 진행 중..." : "확인 및 배정 신청하기"}
+                    </StudyBookButton>
+                    <StudyBookButton
+                      type="button"
+                      style={{ flex: 1, background: "#f1f5f9", color: "#475569", padding: "10px 0", fontSize: "12.5px" }}
+                      onClick={() => setShowSeatGrid(true)}
+                    >
+                      다른 좌석 선택
+                    </StudyBookButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* 좌석 선택 그리드 화면 */
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "8px 0 6px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#334155" }}>
+                  💡 좌석을 터치하여 배정 신청을 진행하세요 (잔여 {availableSeatsCount}석)
+                </span>
+                <button
+                  type="button"
+                  style={{
+                    fontSize: "11px",
+                    color: "#3182f6",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                  onClick={() => setSeatFilterOnlyAvailable((prev) => !prev)}
+                >
+                  {seatFilterOnlyAvailable ? "전체 보기" : "배정 가능만 보기"}
+                </button>
+              </div>
+
+              {filteredSeats.length === 0 ? (
+                <EmptyBox style={{ padding: "16px 0", fontSize: "12px" }}>
+                  현재 이용 가능한 좌석이 없습니다.
+                </EmptyBox>
+              ) : (
+                <SeatGridContainer>
+                  {filteredSeats.map((seat) => {
+                    const isSelected = selectedSeat?.id === seat.id;
+                    return (
+                      <SeatGridBtn
+                        key={seat.id}
+                        type="button"
+                        $isOccupied={seat.isOccupied}
+                        $isSelected={isSelected}
+                        disabled={seat.isActive === false}
+                        onClick={() => {
+                          setSelectedSeat(seat);
+                          setShowSeatGrid(false);
+                        }}
+                      >
+                        {seat.code}
+                      </SeatGridBtn>
+                    );
+                  })}
+                </SeatGridContainer>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </LibraryCardBox>
+  );
+};
+
+/**
+ * 2. 스터디룸 예약 대화형 최종 확인 카드 (정밀 검증 & 단계별 예약)
+ */
+/**
+ * 2. 스터디룸 예약 대화형 최종 확인 카드 (정밀 검증 & 단계별 예약 & 실시간 시간대별 점유 타임라인 연동)
+ */
+const LibraryStudyRoomConfirmCard: React.FC<{
+  data?: any;
+  onNavigate?: () => void;
+}> = ({ data, onNavigate }) => {
+  const navigate = useNavigate();
+
+  const DEFAULT_STUDY_ROOMS = [
+    { id: 9, name: "205호", quota: "4~8명", minQuota: 4, maxQuota: 8 },
+    { id: 10, name: "206호", quota: "4~8명", minQuota: 4, maxQuota: 8 },
+    { id: 11, name: "207호", quota: "2~4명", minQuota: 2, maxQuota: 4 },
+    { id: 12, name: "208호", quota: "2~4명", minQuota: 2, maxQuota: 4 },
+    { id: 13, name: "209호", quota: "4~8명", minQuota: 4, maxQuota: 8 },
+    { id: 14, name: "305호", quota: "7~14명", minQuota: 7, maxQuota: 14 },
+    { id: 15, name: "306호", quota: "7~14명", minQuota: 7, maxQuota: 14 },
+    { id: 41, name: "스터디룸-1", quota: "2~4명", minQuota: 2, maxQuota: 4 },
+    { id: 42, name: "스터디룸-2", quota: "2~4명", minQuota: 2, maxQuota: 4 },
+    { id: 45, name: "스터디룸-5", quota: "4~8명", minQuota: 4, maxQuota: 8 },
+  ];
+
+  const initialRoomId = data?.roomId ? Number(data.roomId) : undefined;
+  const initialRoomName = data?.roomName || "205호";
+  const date = data?.date || "당일 (오늘)";
+  const initialBegin = data?.beginTime || "10:00";
+  const initialEnd = data?.endTime || "12:00";
+  const purpose = data?.purpose || "조별 과제 및 토의";
+
+  const [studyRooms, setStudyRooms] = React.useState<any[]>(DEFAULT_STUDY_ROOMS);
+  const [selectedRoomId, setSelectedRoomId] = React.useState<number>(() => {
+    if (initialRoomId) return initialRoomId;
+    if (initialRoomName.includes("205")) return 9;
+    if (initialRoomName.includes("206")) return 10;
+    if (initialRoomName.includes("207")) return 11;
+    if (initialRoomName.includes("208")) return 12;
+    if (initialRoomName.includes("209")) return 13;
+    if (initialRoomName.includes("305")) return 14;
+    if (initialRoomName.includes("306")) return 15;
+    if (initialRoomName.includes("1호") || initialRoomName.includes("스터디룸-1")) return 41;
+    if (initialRoomName.includes("2호") || initialRoomName.includes("스터디룸-2")) return 42;
+    if (initialRoomName.includes("5호") || initialRoomName.includes("스터디룸-5")) return 45;
+    return 9;
+  });
+
+  const [beginTime, setBeginTime] = React.useState<string>(initialBegin);
+  const [endTime, setEndTime] = React.useState<string>(initialEnd);
+  const [studyRoomDetail, setStudyRoomDetail] = React.useState<StudyRoomDetail | null>(null);
+  const [isLoadingTimeline, setIsLoadingTimeline] = React.useState<boolean>(false);
+  const [showTimelineGrid, setShowTimelineGrid] = React.useState<boolean>(false);
+
+  const [busy, setBusy] = React.useState<boolean>(false);
+  const [actionStatus, setActionStatus] = React.useState<"IDLE" | "SUCCESS" | "ERROR">("IDLE");
+  const [statusMessage, setStatusMessage] = React.useState<string>("");
+
+  React.useEffect(() => {
+    getStudyRooms()
+      .then((list) => {
+        if (list && list.length > 0) setStudyRooms(list);
+      })
+      .catch(() => {});
+  }, []);
+
+  // 선택된 스터디룸의 실시간 타임라인 조회
+  React.useEffect(() => {
+    let isMounted = true;
+    setIsLoadingTimeline(true);
+
+    let targetDateStr = "";
+    try {
+      if (date && date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        targetDateStr = date;
+      } else {
+        const d = new Date();
+        d.setHours(d.getHours() + 9);
+        targetDateStr = d.toISOString().split("T")[0];
+      }
+    } catch {
+      targetDateStr = new Date().toISOString().split("T")[0];
+    }
+
+    getStudyRoomDetail(selectedRoomId, targetDateStr)
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.success && res.detail) {
+          setStudyRoomDetail(res.detail);
+        } else {
+          setStudyRoomDetail(null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setStudyRoomDetail(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoadingTimeline(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedRoomId, date]);
+
+  const currentRoomObj = studyRooms.find((r) => r.id === selectedRoomId) || {
+    id: selectedRoomId,
+    name: initialRoomName,
+    quota: "4~8명",
+    minQuota: 4,
+  };
+
+  // 실시간 점유 시간대 분석
+  const { occupiedRanges, isCurrentOccupied, hasTimeConflict } = React.useMemo(() => {
+    if (!studyRoomDetail?.timeLine) {
+      return { occupiedRanges: [], isCurrentOccupied: false, hasTimeConflict: false };
+    }
+
+    const ranges: string[] = [];
+    let curRangeStart: string | null = null;
+    let curRangeEnd: string | null = null;
+    let currentOccupiedNow = false;
+
+    const now = new Date();
+    const currentHour = (now.getUTCHours() + 9) % 24;
+    const currentMinute = now.getUTCMinutes();
+
+    const parseMinutes = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+
+    const reqStartMin = parseMinutes(beginTime);
+    const reqEndMin = parseMinutes(endTime);
+    let conflict = false;
+
+    studyRoomDetail.timeLine.forEach((slot) => {
+      slot.minutes.forEach((m, mIdx) => {
+        const timeSlotMin = slot.hour * 60 + mIdx * 10;
+        const timeStr = `${slot.hour < 10 ? `0${slot.hour}` : slot.hour}:${mIdx === 0 ? "00" : mIdx * 10}`;
+
+        if (slot.hour === currentHour && currentMinute >= mIdx * 10 && currentMinute < (mIdx + 1) * 10) {
+          if (m.class === "occupied") currentOccupiedNow = true;
+        }
+
+        if (m.class === "occupied") {
+          // 사용자 선택 시간과의 충돌 검사
+          if (timeSlotMin >= reqStartMin && timeSlotMin < reqEndMin) {
+            conflict = true;
+          }
+
+          if (!curRangeStart) {
+            curRangeStart = timeStr;
+          }
+          const nextMin = timeSlotMin + 10;
+          const nextHour = Math.floor(nextMin / 60);
+          const nextRemMin = nextMin % 60;
+          curRangeEnd = `${nextHour < 10 ? `0${nextHour}` : nextHour}:${nextRemMin === 0 ? "00" : nextRemMin}`;
+        } else {
+          if (curRangeStart && curRangeEnd) {
+            ranges.push(`${curRangeStart} ~ ${curRangeEnd}`);
+            curRangeStart = null;
+            curRangeEnd = null;
+          }
+        }
+      });
+    });
+
+    if (curRangeStart && curRangeEnd) {
+      ranges.push(`${curRangeStart} ~ ${curRangeEnd}`);
+    }
+
+    return { occupiedRanges: ranges, isCurrentOccupied: currentOccupiedNow, hasTimeConflict: conflict };
+  }, [studyRoomDetail, beginTime, endTime]);
+
+  const handleSelectSlotTime = (timeStr: string) => {
+    setBeginTime(timeStr);
+    const [h, m] = timeStr.split(":").map(Number);
+    const endH = Math.min(22, (h || 0) + 2);
+    setEndTime(`${endH < 10 ? `0${endH}` : endH}:${m === 0 ? "00" : m}`);
+  };
+
+  const handleReserve = async () => {
+    setBusy(true);
+    setActionStatus("IDLE");
+    try {
+      const res = await reserveStudyRoom({
+        roomId: selectedRoomId,
+        beginTime: `${beginTime.length === 5 ? beginTime + ":00" : beginTime}`,
+        endTime: `${endTime.length === 5 ? endTime + ":00" : endTime}`,
+        purpose: purpose.trim() || "조별 과제 및 토의",
+        companionCnt: Math.max(0, (currentRoomObj.minQuota || 2) - 1),
+      });
+
+      if (res.success) {
+        setActionStatus("SUCCESS");
+        setStatusMessage(
+          `🎉 [${currentRoomObj.name}] 스터디룸 예약이 정상 완료되었습니다!\n이용 시작 시간 20분 내 동반 인원 포함 50% 이상 입실 확인(체크인)을 완료해 주세요.`
+        );
+      } else {
+        setActionStatus("ERROR");
+        setStatusMessage(res.message || "스터디룸 예약에 실패했습니다.");
+      }
+    } catch (e: any) {
+      setActionStatus("ERROR");
+      setStatusMessage("스터디룸 예약 중 오류가 발생했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <LibraryCardBox>
+      <CardHeader>
+        <Users size={17} color="#0061ff" />
+        <CardTitle>학산도서관 스터디룸 예약 확인</CardTitle>
+        <StudyRoomCountBadge>
+          {isCurrentOccupied ? "🔴 현재 이용중" : "🟢 현재 비어있음"}
+        </StudyRoomCountBadge>
+      </CardHeader>
+
+      {/* 스터디룸 선택 탭 */}
+      <RoomSelectScroll>
+        {studyRooms.slice(0, 7).map((r) => (
+          <RoomTabPill
+            key={r.id}
+            type="button"
+            $active={r.id === selectedRoomId}
+            onClick={() => setSelectedRoomId(r.id)}
+          >
+            {r.name}
+          </RoomTabPill>
+        ))}
+      </RoomSelectScroll>
+
+      {actionStatus !== "IDLE" ? (
+        <div style={{ padding: "12px 0" }}>
+          <div
+            style={{
+              padding: "12px",
+              borderRadius: "8px",
+              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "#fef2f2",
+              border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
+              color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
+              fontSize: "13px",
+              lineHeight: "1.5",
+              fontWeight: 600,
+              whiteSpace: "pre-line",
+            }}
+          >
+            {statusMessage}
+          </div>
+          {actionStatus === "SUCCESS" ? (
+            <StudyBookButton
+              type="button"
+              style={{ marginTop: "10px", width: "100%", padding: "10px 0" }}
+              onClick={() => {
+                if (onNavigate) onNavigate();
+                navigate(`${ROUTES.SERVICES.LIBRARY}?tab=my`);
+              }}
+            >
+              내 스터디룸 예약 내역 확인하기
+            </StudyBookButton>
+          ) : (
+            <StudyBookButton
+              type="button"
+              style={{ marginTop: "10px", width: "100%", background: "#64748b" }}
+              onClick={() => setActionStatus("IDLE")}
+            >
+              다시 시도하기
+            </StudyBookButton>
+          )}
+        </div>
+      ) : (
+        <div>
+          <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", margin: "8px 0 10px", border: "1px solid #e2e8f0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div style={{ fontSize: "14.5px", fontWeight: 700, color: "#1e293b" }}>
+                🏢 {currentRoomObj.name} ({currentRoomObj.quota || "2~4인실"})
+              </div>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "#dc2626" : "#16a34a", background: isCurrentOccupied ? "#fee2e2" : "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
+                {isCurrentOccupied ? "이용 중" : "지금 이용 가능"}
+              </span>
+            </div>
+
+            <div style={{ fontSize: "12.5px", color: "#334155", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div>📅 <strong>이용 일자:</strong> {date}</div>
+              <div>⏰ <strong>이용 시간:</strong> {beginTime} ~ {endTime}</div>
+              <div>🎯 <strong>이용 목적:</strong> {purpose}</div>
+            </div>
+
+            {/* 실시간 시간대별 점유 현황 요약 */}
+            <div style={{ marginTop: "8px", paddingTop: "6px", borderTop: "1px dashed #cbd5e1", fontSize: "11.5px" }}>
+              {isLoadingTimeline ? (
+                <span style={{ color: "#64748b" }}>⏳ 실시간 타임라인 점유 현황 확인 중...</span>
+              ) : occupiedRanges.length > 0 ? (
+                <div style={{ color: "#b91c1c", fontWeight: 600 }}>
+                  ⚠️ 예약된 시간대: {occupiedRanges.join(", ")}
+                </div>
+              ) : (
+                <div style={{ color: "#15803d", fontWeight: 600 }}>
+                  ✨ 현재 전 시간대 예약 가능합니다.
+                </div>
+              )}
+            </div>
+
+            {hasTimeConflict && (
+              <div style={{ marginTop: "6px", padding: "6px 8px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", color: "#dc2626", fontSize: "11.5px", fontWeight: 600 }}>
+                🚨 선택하신 시간({beginTime} ~ {endTime})은 이미 점유되어 있습니다. 아래 타임라인에서 비어있는 시간을 선택해주세요.
+              </div>
+            )}
+          </div>
+
+          {/* 타임라인 미니 시각화 뷰 토글 */}
+          {studyRoomDetail?.timeLine && (
+            <div style={{ marginBottom: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  fontSize: "11.5px",
+                  fontWeight: 600,
+                  color: "#0061ff",
+                  cursor: "pointer",
+                  padding: "4px 0",
+                }}
+                onClick={() => setShowTimelineGrid((prev) => !prev)}
+              >
+                <span>📊 시간대별 10분 단위 점유 현황 {showTimelineGrid ? "접기 ▲" : "펼쳐보기 ▼"}</span>
+                <span style={{ fontSize: "10px", color: "#64748b" }}>
+                  {showTimelineGrid ? "클릭 시 시작시간 변경" : "타임라인 확인"}
+                </span>
+              </div>
+
+              {showTimelineGrid && (
+                <StudyTimelineBox>
+                  <StudyTimelineHeader>
+                    <span>09:00 ~ 22:00 시간표</span>
+                    <div style={{ display: "flex", gap: "6px", fontSize: "10px", fontWeight: 500, color: "#64748b" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
+                        <span style={{ width: 8, height: 8, background: "#93c5fd", borderRadius: 2, display: "inline-block" }} /> 가능
+                      </span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
+                        <span style={{ width: 8, height: 8, background: "#475569", borderRadius: 2, display: "inline-block" }} /> 점유됨
+                      </span>
+                    </div>
+                  </StudyTimelineHeader>
+                  <StudyTimelineSlotsRow>
+                    {studyRoomDetail.timeLine.map((slot) => (
+                      <MiniHourRow key={slot.hour}>
+                        <MiniHourLabel>{slot.hour}시</MiniHourLabel>
+                        <MiniMinuteBars>
+                          {slot.minutes.map((m, mIdx) => {
+                            const isPast = m.class === "disabled";
+                            const isOcc = m.class === "occupied";
+                            const timeStr = `${slot.hour < 10 ? `0${slot.hour}` : slot.hour}:${mIdx === 0 ? "00" : mIdx * 10}`;
+                            return (
+                              <MiniMinuteBar
+                                key={mIdx}
+                                $type={isPast ? "past" : isOcc ? "occ" : "avail"}
+                                title={`${timeStr} ${isPast ? "(만료)" : isOcc ? "(예약됨)" : "(선택 가능 - 클릭 시 시작시간 세팅)"}`}
+                                style={{ cursor: !isPast && !isOcc ? "pointer" : "default" }}
+                                onClick={() => {
+                                  if (!isPast && !isOcc) {
+                                    handleSelectSlotTime(timeStr);
+                                  }
+                                }}
+                              />
+                            );
+                          })}
+                        </MiniMinuteBars>
+                      </MiniHourRow>
+                    ))}
+                  </StudyTimelineSlotsRow>
+                </StudyTimelineBox>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: "8px" }}>
+            <StudyBookButton
+              type="button"
+              disabled={busy || hasTimeConflict}
+              style={{
+                flex: 1.4,
+                background: hasTimeConflict ? "#94a3b8" : "#0061ff",
+                padding: "10px 0",
+                fontSize: "13px",
+              }}
+              onClick={handleReserve}
+            >
+              {busy ? "신청 중..." : hasTimeConflict ? "시간 중복 (예약 불가)" : "확인 및 예약 확정하기"}
+            </StudyBookButton>
+            <StudyBookButton
+              type="button"
+              style={{ flex: 1, background: "#f1f5f9", color: "#475569", padding: "10px 0", fontSize: "12.5px" }}
+              onClick={() => {
+                if (onNavigate) onNavigate();
+                navigate(`${ROUTES.SERVICES.LIBRARY}?tab=study&roomId=${selectedRoomId}`);
+              }}
+            >
+              상세 시간 변경
+            </StudyBookButton>
+          </div>
+        </div>
+      )}
     </LibraryCardBox>
   );
 };
@@ -2222,6 +3091,143 @@ const StudyTag = styled.span`
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
+`;
+
+const RoomSelectScroll = styled.div`
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  margin-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const RoomTabPill = styled.button<{ $active: boolean }>`
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
+  background: ${({ $active }) => ($active ? "#3182f6" : "#f1f5f9")};
+  border: 1px solid ${({ $active }) => ($active ? "#3182f6" : "#e2e8f0")};
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+`;
+
+const SeatGridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 6px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+`;
+
+const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean }>`
+  height: 38px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
+  transition: all 0.15s ease;
+
+  ${({ $isOccupied, $isSelected }) => {
+    if ($isSelected) {
+      return `
+        background: #3182f6;
+        color: #ffffff;
+        border: 2px solid #1d4ed8;
+      `;
+    }
+    if ($isOccupied) {
+      return `
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+      `;
+    }
+    return `
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+      &:hover {
+        background: #dbeafe;
+      }
+    `;
+  }}
+`;
+
+const EmptyBox = styled.div`
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+`;
+
+const StudyTimelineBox = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 6px;
+`;
+
+const StudyTimelineHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+`;
+
+const StudyTimelineSlotsRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 2px;
+`;
+
+const MiniHourRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const MiniHourLabel = styled.span`
+  width: 28px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748b;
+`;
+
+const MiniMinuteBars = styled.div`
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  height: 12px;
+`;
+
+const MiniMinuteBar = styled.div<{ $type: "avail" | "occ" | "past" }>`
+  border-radius: 2px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "#e2e8f0"};
+  transition: all 0.15s ease;
 `;
 
 /**

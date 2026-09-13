@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import {
   getReadingRooms,
@@ -86,11 +86,163 @@ function getKstDateString(offsetDays: number = 0): string {
   }
 }
 
+export interface Study2HourOccupancyInfo {
+  isCurrentOccupied: boolean;
+  currentOccupiedUntil: string | null;
+  availableMinutesFromNow: number;
+  summaryText: string;
+  badgeLabel: string;
+  badgeType: "avail" | "warning" | "occupied" | "closed";
+  previewSlots: Array<{
+    timeStr: string;
+    type: "avail" | "occ" | "past";
+    label: string;
+  }>;
+}
+
+export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined): Study2HourOccupancyInfo {
+  if (!detail || !detail.timeLine || detail.timeLine.length === 0) {
+    return {
+      isCurrentOccupied: false,
+      currentOccupiedUntil: null,
+      availableMinutesFromNow: 120,
+      summaryText: "실시간 시간표 확인 가능",
+      badgeLabel: "현황 확인",
+      badgeType: "avail",
+      previewSlots: [],
+    };
+  }
+
+  const now = new Date();
+  const kstHours = (now.getUTCHours() + 9) % 24;
+  const kstMinutes = now.getUTCMinutes();
+  const currentSlotIndex = Math.floor(kstMinutes / 10);
+  const currentTotalMin = kstHours * 60 + currentSlotIndex * 10;
+
+  if (kstHours < 9 || kstHours >= 22) {
+    return {
+      isCurrentOccupied: false,
+      currentOccupiedUntil: null,
+      availableMinutesFromNow: 0,
+      summaryText: "현재 운영 시간 외 (09:00 ~ 22:00 운영)",
+      badgeLabel: "운영 종료",
+      badgeType: "closed",
+      previewSlots: [],
+    };
+  }
+
+  const slotMap = new Map<number, { isOcc: boolean; isPast: boolean }>();
+  detail.timeLine.forEach((slot) => {
+    slot.minutes.forEach((m, mIdx) => {
+      const minKey = slot.hour * 60 + mIdx * 10;
+      slotMap.set(minKey, {
+        isOcc: m.class === "occupied",
+        isPast: m.class === "disabled",
+      });
+    });
+  });
+
+  const previewSlots: Array<{ timeStr: string; type: "avail" | "occ" | "past"; label: string }> = [];
+  let availableConsecutiveMin = 0;
+  let isCountingConsecutive = true;
+  let isCurrentOccupied = false;
+  let occupiedUntilMin: number | null = null;
+
+  for (let i = 0; i < 12; i++) {
+    const slotMin = currentTotalMin + i * 10;
+    const h = Math.floor(slotMin / 60);
+    const m = slotMin % 60;
+    const timeStr = `${h < 10 ? `0${h}` : h}:${m === 0 ? "00" : m}`;
+
+    if (h >= 22) {
+      previewSlots.push({ timeStr, type: "past", label: `${timeStr} (마감)` });
+      isCountingConsecutive = false;
+      continue;
+    }
+
+    const slotData = slotMap.get(slotMin);
+    const isOcc = slotData ? slotData.isOcc : false;
+    const isPast = slotData ? slotData.isPast : false;
+
+    if (i === 0) {
+      isCurrentOccupied = isOcc;
+    }
+
+    if (isCurrentOccupied && isOcc && occupiedUntilMin === null) {
+      // continues
+    } else if (isCurrentOccupied && !isOcc && occupiedUntilMin === null) {
+      occupiedUntilMin = slotMin;
+    }
+
+    if (!isOcc && !isPast && isCountingConsecutive) {
+      availableConsecutiveMin += 10;
+    } else {
+      isCountingConsecutive = false;
+    }
+
+    previewSlots.push({
+      timeStr,
+      type: isPast ? "past" : isOcc ? "occ" : "avail",
+      label: `${timeStr} ${isPast ? "(만료)" : isOcc ? "(점유됨)" : "(이용 가능)"}`,
+    });
+  }
+
+  let currentOccupiedUntilStr: string | null = null;
+  if (occupiedUntilMin !== null) {
+    const oh = Math.floor(occupiedUntilMin / 60);
+    const om = occupiedUntilMin % 60;
+    currentOccupiedUntilStr = `${oh < 10 ? `0${oh}` : oh}:${om === 0 ? "00" : om}`;
+  }
+
+  let summaryText = "";
+  let badgeLabel = "";
+  let badgeType: "avail" | "warning" | "occupied" | "closed" = "avail";
+
+  if (isCurrentOccupied) {
+    badgeType = "occupied";
+    badgeLabel = "현재 이용 중";
+    summaryText = currentOccupiedUntilStr
+      ? `🔴 현재 이용 중 (~${currentOccupiedUntilStr}까지 점유됨)`
+      : "🔴 현재 이용 중 (예약 있음)";
+  } else if (availableConsecutiveMin >= 120) {
+    badgeType = "avail";
+    badgeLabel = "지금 2시간 가능";
+    summaryText = "✨ 지금부터 2시간 연속 예약 가능";
+  } else if (availableConsecutiveMin > 0) {
+    badgeType = "warning";
+    const hrs = Math.floor(availableConsecutiveMin / 60);
+    const remMins = availableConsecutiveMin % 60;
+    badgeLabel = `~${hrs > 0 ? `${hrs}시간 ` : ""}${remMins > 0 ? `${remMins}분 ` : ""}가능`;
+    summaryText = `⚡ 지금부터 ${availableConsecutiveMin}분간 이용 가능 (이후 예약 있음)`;
+  } else {
+    badgeType = "occupied";
+    badgeLabel = "점유됨";
+    summaryText = "🔴 현재 예약이 차있습니다.";
+  }
+
+  return {
+    isCurrentOccupied,
+    currentOccupiedUntil: currentOccupiedUntilStr,
+    availableMinutesFromNow: availableConsecutiveMin,
+    summaryText,
+    badgeLabel,
+    badgeType,
+    previewSlots,
+  };
+}
+
 export default function MobileLibraryHubPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"seats" | "study" | "my">("seats");
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<"seats" | "study" | "my">(() => {
+    if (urlTab === "study") return "study";
+    if (urlTab === "my") return "my";
+    return "seats";
+  });
   const [rooms, setRooms] = useState<LibrarySeatRoom[]>([]);
   const [studyRooms, setStudyRooms] = useState<LibraryStudyRoom[]>([]);
+  const [studyDetailsMap, setStudyDetailsMap] = useState<Record<number, StudyRoomDetail>>({});
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
   const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
   const [favoriteSeats, setFavoriteSeats] = useState<LibrarySeat[]>([]);
@@ -185,6 +337,22 @@ export default function MobileLibraryHubPage() {
       ]);
       setRooms(roomsData);
       setStudyRooms(studyData);
+
+      // 스터디룸별 당일 실시간 타임라인 점유 정보 병렬 로드
+      if (studyData && studyData.length > 0) {
+        const todayStr = getKstDateString(0);
+        Promise.allSettled(
+          studyData.map((r) => getStudyRoomDetail(r.id, todayStr))
+        ).then((results) => {
+          const map: Record<number, StudyRoomDetail> = {};
+          results.forEach((res, idx) => {
+            if (res.status === "fulfilled" && res.value.success && res.value.detail) {
+              map[studyData[idx].id] = res.value.detail;
+            }
+          });
+          setStudyDetailsMap(map);
+        }).catch(() => {});
+      }
     } finally {
       setIsLoading(false);
     }
@@ -231,12 +399,25 @@ export default function MobileLibraryHubPage() {
     };
   }, []);
 
-  // 탭이 '내 이용 현황'으로 바뀔 때 즉시 최신 내역 단독 재조회
+  // URL query의 roomId 처리 (외부나 에이전트 카드에서 진입 시 자동 모달 열기)
   useEffect(() => {
-    if (activeTab === "my") {
-      loadMyStatus();
+    const rawRoomId = searchParams.get("roomId");
+    if (!rawRoomId) return;
+    const targetRoomId = Number(rawRoomId);
+    if (isNaN(targetRoomId)) return;
+
+    if (activeTab === "study" && studyRooms.length > 0 && !selectedStudyRoom) {
+      const matched = studyRooms.find((r) => r.id === targetRoomId);
+      if (matched) {
+        handleOpenStudyBooking(matched);
+      }
+    } else if (activeTab === "seats" && rooms.length > 0 && !selectedSeatRoom) {
+      const matched = rooms.find((r) => r.id === targetRoomId);
+      if (matched) {
+        handleOpenSeatPicker(matched);
+      }
     }
-  }, [activeTab]);
+  }, [searchParams, activeTab, rooms, studyRooms]);
 
   const showToast = (msg: string) => {
     setActionMessage(msg);
@@ -1036,39 +1217,71 @@ export default function MobileLibraryHubPage() {
             </SkeletonList>
           ) : (
             <StudyGrid>
-              {studyRooms.map((s) => (
-                <StudyCard key={s.id}>
-                  <StudyHeader>
-                    <div>
-                      <StudyName>{s.name}</StudyName>
-                      <StudyLocation>
-                        <MapPin size={12} />
-                        <span>{s.location}</span>
-                      </StudyLocation>
-                    </div>
-                    <QuotaBadge>{s.quota}</QuotaBadge>
-                  </StudyHeader>
+              {studyRooms.map((s) => {
+                const occInfo = computeStudyRoom2HourStatus(studyDetailsMap[s.id]);
+                return (
+                  <StudyCard key={s.id}>
+                    <StudyHeader>
+                      <div>
+                        <StudyName>{s.name}</StudyName>
+                        <StudyLocation>
+                          <MapPin size={12} />
+                          <span>{s.location}</span>
+                        </StudyLocation>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                        <StudyOccupancyBadge $type={occInfo.badgeType}>
+                          {occInfo.badgeLabel}
+                        </StudyOccupancyBadge>
+                        <QuotaBadge>{s.quota}</QuotaBadge>
+                      </div>
+                    </StudyHeader>
 
-                  {s.tags && s.tags.length > 0 && (
-                    <TagRow>
-                      {s.tags.map((t, idx) => (
-                        <TagChip key={idx}>{t}</TagChip>
-                      ))}
-                    </TagRow>
-                  )}
+                    {/* 향후 2시간 실시간 점유 프리뷰 바 */}
+                    {occInfo.previewSlots.length > 0 && (
+                      <StudyPreviewBarBox>
+                        <StudyPreviewHeader>
+                          <span>{occInfo.summaryText}</span>
+                          <span style={{ fontSize: "10.5px", color: "#64748b" }}>향후 2시간</span>
+                        </StudyPreviewHeader>
+                        <StudyPreviewSlotRow>
+                          {occInfo.previewSlots.map((slot, sIdx) => (
+                            <StudyPreviewSlot
+                              key={sIdx}
+                              $type={slot.type}
+                              title={slot.label}
+                            />
+                          ))}
+                        </StudyPreviewSlotRow>
+                        <StudyPreviewTimeLabels>
+                          <span>지금</span>
+                          <span>+1시간</span>
+                          <span>+2시간</span>
+                        </StudyPreviewTimeLabels>
+                      </StudyPreviewBarBox>
+                    )}
 
-                  <ButtonRow>
-                    <PrimaryActionBtn onClick={() => handleOpenStudyBooking(s)}>
-                      <Calendar size={14} />
-                      <span>시간표 조회 & 예약</span>
-                    </PrimaryActionBtn>
-                    <SniperActionBtn onClick={() => handleRegisterStudySniper(s)}>
-                      <Crosshair size={14} />
-                      <span>취소표 감시</span>
-                    </SniperActionBtn>
-                  </ButtonRow>
-                </StudyCard>
-              ))}
+                    {s.tags && s.tags.length > 0 && (
+                      <TagRow>
+                        {s.tags.map((t, idx) => (
+                          <TagChip key={idx}>{t}</TagChip>
+                        ))}
+                      </TagRow>
+                    )}
+
+                    <ButtonRow>
+                      <PrimaryActionBtn onClick={() => handleOpenStudyBooking(s)}>
+                        <Calendar size={14} />
+                        <span>시간표 조회 & 예약</span>
+                      </PrimaryActionBtn>
+                      <SniperActionBtn onClick={() => handleRegisterStudySniper(s)}>
+                        <Crosshair size={14} />
+                        <span>취소표 감시</span>
+                      </SniperActionBtn>
+                    </ButtonRow>
+                  </StudyCard>
+                );
+              })}
             </StudyGrid>
           )}
         </Section>
@@ -2025,6 +2238,67 @@ const TagChip = styled.span`
   color: #475569;
   padding: 2px 6px;
   border-radius: 4px;
+`;
+
+const StudyOccupancyBadge = styled.span<{ $type: "avail" | "warning" | "occupied" | "closed" }>`
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  ${({ $type }) => {
+    switch ($type) {
+      case "avail":
+        return "background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;";
+      case "warning":
+        return "background: #fef9c3; color: #a16207; border: 1px solid #fde047;";
+      case "occupied":
+        return "background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;";
+      case "closed":
+      default:
+        return "background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;";
+    }
+  }}
+`;
+
+const StudyPreviewBarBox = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+`;
+
+const StudyPreviewHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+`;
+
+const StudyPreviewSlotRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+  height: 12px;
+  margin-bottom: 4px;
+`;
+
+const StudyPreviewSlot = styled.div<{ $type: "avail" | "occ" | "past" }>`
+  border-radius: 2px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#60a5fa" : $type === "occ" ? "#475569" : "#cbd5e1"};
+  transition: all 0.15s ease;
+`;
+
+const StudyPreviewTimeLabels = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
 `;
 
 const ActiveSeatCard = styled.div`
