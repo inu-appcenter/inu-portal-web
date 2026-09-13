@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ExternalLink,
   Phone,
+  Mail,
   Calendar,
   Clock,
   LogIn,
@@ -486,30 +487,49 @@ const DirectoryCard: React.FC<{
         <EmptyMessage>연락처 검색 결과가 없습니다.</EmptyMessage>
       ) : (
         <DirectoryList>
-          {contacts.slice(0, 3).map((c, idx) => (
-            <DirectoryItem
-              key={c.id ?? idx}
-              onClick={() => {
-                if (onNavigate) onNavigate();
-                navigate(ROUTES.PHONEBOOK.ROOT);
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              <DirectoryMeta>
-                <DeptName>{c.departmentName || c.name}</DeptName>
-                <CollegeName>{c.collegeName || c.position || ""}</CollegeName>
-              </DirectoryMeta>
-              {c.officePhoneNumber && (
-                <CallButton
-                  href={`tel:${c.officePhoneNumber}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Phone size={12} />
-                  <span>{c.officePhoneNumber}</span>
-                </CallButton>
-              )}
-            </DirectoryItem>
-          ))}
+          {contacts.slice(0, 3).map((c, idx) => {
+            const phone = c.phoneNumber || c.officePhoneNumber;
+            const title = c.name
+              ? `${c.name}${c.position ? ` (${c.position})` : ""}`
+              : c.departmentName;
+            const subtitleParts = [
+              c.affiliation,
+              c.detailAffiliation,
+              c.collegeName,
+              c.officeLocation,
+            ].filter(Boolean);
+            const uniqueSubtitle = Array.from(new Set(subtitleParts)).join(" · ");
+
+            return (
+              <DirectoryItem
+                key={c.id ?? idx}
+                onClick={() => {
+                  if (onNavigate) onNavigate();
+                  navigate(ROUTES.PHONEBOOK.ROOT);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <DirectoryMeta>
+                  <DeptName>{title}</DeptName>
+                  {uniqueSubtitle && <CollegeName>{uniqueSubtitle}</CollegeName>}
+                </DirectoryMeta>
+                <DirectoryActions onClick={(e) => e.stopPropagation()}>
+                  {phone && (
+                    <CallButton href={`tel:${phone}`}>
+                      <Phone size={12} />
+                      <span>{phone}</span>
+                    </CallButton>
+                  )}
+                  {c.email && (
+                    <EmailButton href={`mailto:${c.email}`} title={c.email}>
+                      <Mail size={12} />
+                      <span>이메일</span>
+                    </EmailButton>
+                  )}
+                </DirectoryActions>
+              </DirectoryItem>
+            );
+          })}
         </DirectoryList>
       )}
     </DirectoryBox>
@@ -948,6 +968,30 @@ const CallButton = styled.a`
 
   &:hover {
     background-color: #dbeafe;
+  }
+`;
+
+const DirectoryActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+`;
+
+const EmailButton = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #e2e8f0;
   }
 `;
 
