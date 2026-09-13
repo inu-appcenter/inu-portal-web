@@ -219,7 +219,7 @@ export async function getLocalWatchJobsFromApp(): Promise<AgentActionResult<Loca
  * 모바일 기기 로컬 감시 등록
  */
 export async function registerLocalWatchJobInApp(payload: {
-  watchType: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION';
+  watchType: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
   roomId?: number;
   roomName?: string;
   seatId?: number;
@@ -287,7 +287,8 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
       const nowSec = Math.floor(Date.now() / 1000);
       tasks.push(
         Promise.race([
-          executeAgentActionBridge({
+          Promise.all([
+            executeAgentActionBridge({
             actionId: `ctx_lms_${Date.now()}`,
             authDomain: 'LMS',
             request: {
@@ -301,12 +302,24 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
                 limitnum: 10,
               },
             },
-          }),
+            }),
+            lmsLinked.user?.id ? executeAgentActionBridge({
+              actionId: `ctx_lms_courses_${Date.now()}`,
+              authDomain: 'LMS',
+              request: {
+                method: 'GET',
+                url: 'https://lms.inu.ac.kr/webservice/rest/server.php',
+                params: { wsfunction: 'core_enrol_get_users_courses', userid: lmsLinked.user.id, moodlewsrestformat: 'json' },
+              },
+            }) : Promise.resolve(null),
+          ]),
           new Promise<null>((r) => setTimeout(() => r(null), 2500)),
-        ]).then((res: any) => {
+        ]).then((result: any) => {
+          const [res, coursesRes] = Array.isArray(result) ? result : [];
           if (res?.success && res.data && !res.data.error) {
             context.lms = {
               events: Array.isArray(res.data.events) ? res.data.events : [],
+              courses: coursesRes?.success && Array.isArray(coursesRes.data) ? coursesRes.data : [],
             };
           }
         }).catch(() => {})

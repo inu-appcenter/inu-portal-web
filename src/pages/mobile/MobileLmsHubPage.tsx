@@ -138,7 +138,7 @@ export default function MobileLmsHubPage() {
     try {
       const dueIso = new Date(item.timesort * 1000).toISOString();
       await registerLocalWatchJobInApp({
-        watchType: "SEAT_EXPIRATION",
+        watchType: "ASSIGNMENT_REMINDER",
         seatName: `[과제/학습 마감] ${item.course?.fullname || "LMS"}: ${item.name}`,
         endTime: dueIso,
       });

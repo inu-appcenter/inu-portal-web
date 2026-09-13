@@ -32,6 +32,14 @@ import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import TodayTimetableWidget from "@/components/mobile/home/TodayTimetableWidget";
 import SchoolNoticeItem from "@/components/mobile/notice/SchoolNoticeItem";
 import EventItem from "@/components/mobile/calendar/EventItem";
+import {
+  getMyCurrentSeat,
+  renewCurrentSeat,
+  returnCurrentSeat,
+  cancelStudyRoomReservation,
+  checkinStudyRoom,
+} from "@/apis/library";
+import { registerLocalWatchJobInApp } from "@/apis/mobileAgentBridge";
 
 interface Props {
   component?: UiComponent | null;
@@ -261,6 +269,10 @@ export const SingleCardItem: React.FC<{
         return <LibraryStudyRoomsCard data={component.data} onNavigate={onNavigate} />;
       case "LIBRARY_AUTH_REQUIRED":
         return <LibraryAuthRequiredCard data={component.data} onNavigate={onNavigate} />;
+      case "LIBRARY_CLIENT_ACTION":
+        return <LibraryClientActionCard data={component.data} onNavigate={onNavigate} />;
+      case "LOCAL_WATCH_ACTION":
+        return <LocalWatchActionCard data={component.data} onNavigate={onNavigate} />;
       case "LMS_ASSIGNMENTS":
         return <LmsAssignmentsCard data={component.data} onNavigate={onNavigate} />;
       case "LMS_AUTH_REQUIRED":
@@ -1962,6 +1974,49 @@ const LibraryAuthRequiredCard: React.FC<{
       </PortalAuthActionBtn>
     </PortalAuthContainer>
   );
+};
+
+/** 서버는 의도만 전달하고, 인증이 필요한 실제 요청은 앱에 등록된 동작만 실행한다. */
+const LibraryClientActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = ({ data, onNavigate }) => {
+  const [message, setMessage] = React.useState<string>();
+  const [busy, setBusy] = React.useState(false);
+  const action = String(data?.action || "");
+  const run = async () => {
+    setBusy(true);
+    try {
+      if (action === "MY_SEAT" || action === "RENEW_SEAT" || action === "RETURN_SEAT") {
+        const seat = await getMyCurrentSeat();
+        if (!seat?.chargeId) { setMessage("현재 이용 중인 좌석이 없습니다."); return; }
+        if (action === "MY_SEAT") { setMessage(`${seat.roomName} ${seat.seatName} · ${seat.endTime || "이용 종료 시간 확인 필요"}`); return; }
+        if (!window.confirm(action === "RENEW_SEAT" ? "현재 좌석을 연장할까요?" : "현재 좌석을 반납할까요?")) return;
+        const result = action === "RENEW_SEAT" ? await renewCurrentSeat(seat.chargeId) : await returnCurrentSeat(seat.chargeId);
+        setMessage(typeof result === "boolean" ? (result ? "좌석 연장이 완료되었습니다." : "좌석 연장에 실패했습니다.") : (result.success ? (result.message || "좌석 반납이 완료되었습니다.") : (result.message || "좌석 반납에 실패했습니다.")));
+        return;
+      }
+      const chargeId = Number(data?.chargeId);
+      if ((action === "CANCEL_STUDY_ROOM" || action === "CHECKIN_STUDY_ROOM") && chargeId) {
+        if (!window.confirm(action === "CANCEL_STUDY_ROOM" ? "스터디룸 예약을 취소할까요?" : "스터디룸에 체크인할까요?")) return;
+        const ok = action === "CANCEL_STUDY_ROOM" ? await cancelStudyRoomReservation(chargeId) : await checkinStudyRoom(chargeId);
+        setMessage(ok ? (action === "CANCEL_STUDY_ROOM" ? "예약을 취소했습니다." : "체크인했습니다.") : "요청 처리에 실패했습니다.");
+        return;
+      }
+      onNavigate?.();
+      window.location.assign(ROUTES.SERVICES.LIBRARY);
+    } finally { setBusy(false); }
+  };
+  const label: Record<string, string> = { MY_SEAT: "내 좌석 확인", RENEW_SEAT: "좌석 연장", RETURN_SEAT: "좌석 반납", RESERVE_STUDY_ROOM: "스터디룸 예약하기", CANCEL_STUDY_ROOM: "예약 취소", CHECKIN_STUDY_ROOM: "체크인" };
+  return <LibraryCardBox><CardHeader><BookOpen size={17} color="#3182f6" /><CardTitle>도서관 앱 연동</CardTitle></CardHeader><p>{message || "앱에 안전하게 연결된 도서관 기능입니다."}</p><StudyBookButton type="button" disabled={busy} onClick={run}>{busy ? "처리 중…" : (label[action] || "도서관 열기")}</StudyBookButton></LibraryCardBox>;
+};
+
+const LocalWatchActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = ({ data, onNavigate }) => {
+  const [message, setMessage] = React.useState<string>();
+  const register = async () => {
+    // 방/좌석 ID는 공개 목록에서 확정해야 하므로 부족하면 기존 상세 화면으로 이동한다.
+    if (!data?.roomId) { onNavigate?.(); window.location.assign(ROUTES.SERVICES.LIBRARY); return; }
+    const res = await registerLocalWatchJobInApp({ watchType: data.watchType, roomId: Number(data.roomId), roomName: data.targetName, seatNo: data.seatNo, targetHour: data.targetHour, hopeDate: data.hopeDate, durationMinutes: Number(data.durationMinutes || 90) });
+    setMessage(res.success ? "기기 알림 감시를 등록했습니다." : (res.errorMessage || "감시 등록에 실패했습니다."));
+  };
+  return <LibraryCardBox><CardHeader><Bell size={17} color="#3182f6" /><CardTitle>기기 내 빈자리 감시</CardTitle></CardHeader><p>{message || `${data?.targetName || "대상"}의 빈자리를 앱에서 감시합니다.`}</p><StudyBookButton type="button" onClick={register}>{data?.roomId ? "감시 등록" : "대상 선택하기"}</StudyBookButton></LibraryCardBox>;
 };
 
 const LibraryCardBox = styled.div`
