@@ -10,6 +10,7 @@ export interface AcademicInfoData {
   advisorProfessorName?: string;
   entranceDate?: string;
   latestEnrollmentChange?: string;
+  displayFields?: Record<string, string>;
   rawFields: Record<string, string>;
 }
 

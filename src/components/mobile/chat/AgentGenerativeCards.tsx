@@ -1602,6 +1602,16 @@ const AcademicInfoCard: React.FC<{
           <span>지도교수: {advisorProfessorName} 교수님</span>
         </AdvisorInfoRow>
       )}
+      {data.displayFields && (
+        <details>
+          <summary>학적 상세 정보</summary>
+          <dl>
+            {Object.entries(data.displayFields).map(([label, value]) => (
+              <div key={label}><dt>{label}</dt><dd>{String(value || '확인 불가')}</dd></div>
+            ))}
+          </dl>
+        </details>
+      )}
 
     </AcademicCardContainer>
   );
