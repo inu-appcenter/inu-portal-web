@@ -61,11 +61,20 @@ const MobileAlertPage = () => {
       });
     }
 
-    if (alert.memberFcmMessageId && !alert.isRead) {
+    // 조회수 기반 자동 읽음(알림함을 두 번 이상 열면 서버가 미리 읽음 처리한다)이 걸린
+    // 알림은 사용자가 실제로 누르기 전부터 isRead가 이미 true다. 여기서 !alert.isRead로
+    // 걸러버리면 그런 알림은 실제로 눌러도 읽음 API를 아예 안 보내게 되어, 클릭 집계(#466)의
+    // 분자(INBOX 클릭)가 활성 사용자일수록 누락된다. 그래서 isRead와 무관하게 항상 보낸다
+    // (서버가 멱등하게 처리하며, 이미 읽은 행이면 클릭 경로로 승격만 한다). 뱃지/목록 갱신만
+    // 원래 안 읽었던 경우로 좁혀 불필요한 리페치를 피한다.
+    if (alert.memberFcmMessageId) {
+      const wasUnread = !alert.isRead;
       try {
         await readNotification(alert.memberFcmMessageId);
-        void queryClient.invalidateQueries({ queryKey: UNREAD_NOTIFICATION_QUERY_KEY });
-        void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+        if (wasUnread) {
+          void queryClient.invalidateQueries({ queryKey: UNREAD_NOTIFICATION_QUERY_KEY });
+          void queryClient.invalidateQueries({ queryKey: ["alerts"] });
+        }
       } catch (e) {
         console.error("Failed to mark notification as read", e);
       }
