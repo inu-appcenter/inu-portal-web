@@ -31,7 +31,7 @@ export default function AgentPage() {
     "";
 
   const resolvedAgentUrl = useMemo(() => {
-    let url = import.meta.env.VITE_AGENT_WEB_URL || "http://localhost:3000";
+    let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";
     if (url.includes("localhost") && window.location.hostname && window.location.hostname !== "localhost") {
       url = url.replace("localhost", window.location.hostname);
     }
