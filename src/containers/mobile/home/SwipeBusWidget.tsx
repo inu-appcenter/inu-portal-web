@@ -288,7 +288,13 @@ function BusStopCard({
   );
 }
 
-export default function SwipeBusWidget() {
+export interface SwipeBusWidgetProps {
+  initialStopName?: string;
+  initialType?: "go-school" | "go-home" | string;
+  onNavigate?: () => void;
+}
+
+export default function SwipeBusWidget({ initialStopName, initialType, onNavigate }: SwipeBusWidgetProps = {}) {
   const navigate = useNavigate();
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
@@ -316,13 +322,27 @@ export default function SwipeBusWidget() {
     };
   }, []);
 
-  // 등교/하교 기준 시간대 판별 (14:00 이전 등교, 이후 하교)
-  const isMorning = useMemo(() => {
+  // 등교/하교 기준 시간대 또는 질의된 정류장 방향 판별
+  const resolvedType = useMemo(() => {
+    if (initialType === "go-home" || initialType === "go-school") {
+      return initialType;
+    }
+    if (initialStopName) {
+      const homeKeywords = ["정문", "공과대", "자연대", "공학", "본관", "기숙사", "대학본부", "솔찬"];
+      if (homeKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-home";
+      }
+      const schoolKeywords = ["송도역", "테크노", "지정단", "2번출구", "인입"];
+      if (schoolKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-school";
+      }
+    }
     const now = new Date();
-    return now.getHours() < 14;
-  }, []);
+    return now.getHours() < 14 ? "go-school" : "go-home";
+  }, [initialType, initialStopName]);
 
-  const currentType = isMorning ? "go-school" : "go-home";
+  const currentType = resolvedType;
+  const isMorning = currentType === "go-school";
   const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(currentType);
 
   // 시간대 기준 정류장 데이터 구성 (순수 서버 API 데이터 기반)
@@ -356,6 +376,16 @@ export default function SwipeBusWidget() {
     : "swipe_bus_index_afternoon";
 
   const initialActiveIndex = useMemo(() => {
+    if (initialStopName && busStops.length > 0) {
+      const matchedIdx = busStops.findIndex(
+        (s) =>
+          s.stopName.includes(initialStopName) ||
+          initialStopName.includes(s.stopName) ||
+          s.sectionLabel.includes(initialStopName),
+      );
+      if (matchedIdx !== -1) return matchedIdx;
+    }
+
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
@@ -368,17 +398,26 @@ export default function SwipeBusWidget() {
       console.error("Failed to read bus swipe index", e);
     }
     return 0;
-  }, [busStops.length, storageKey]);
+  }, [busStops, initialStopName, storageKey]);
 
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
 
+  useEffect(() => {
+    if (swiperInstance && initialActiveIndex !== activeIndex) {
+      swiperInstance.slideTo(initialActiveIndex);
+      setActiveIndex(initialActiveIndex);
+    }
+  }, [initialActiveIndex, swiperInstance]);
+
   const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     navigate(getPreferredBusUiRoute(type, category));
   };
 
   const handleBusClick = (bus: BusData, stopName: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     if (bus.number === "셔틀") {
       navigate(`${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`);
     } else {

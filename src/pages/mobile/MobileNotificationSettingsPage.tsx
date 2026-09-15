@@ -135,6 +135,21 @@ export default function MobileNotificationSettingsPage() {
               </RowContent>
               <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
+
+            <Divider margin="0" />
+
+            <SettingRow onClick={() => {
+              mixpanelTrack.mypageMenuClicked("알림설정 - 스마트 감시 관리");
+              navigate(ROUTES.MYPAGE.SMART_WATCH);
+            }}>
+              <RowContent>
+                <RowTitle>스마트 감시 & 리마인더</RowTitle>
+                <RowDescription>
+                  힐링존/열람실 빈자리 감시 및 LMS 과제, 좌석 연장 알림을 확인해요.
+                </RowDescription>
+              </RowContent>
+              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+            </SettingRow>
           </Box>
         </TitleContentArea>
 

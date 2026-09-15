@@ -19,10 +19,29 @@ interface MenuData {
   isLoading: boolean;
 }
 
-export default function SwipeMenuWidget() {
+export interface SwipeMenuWidgetProps {
+  initialCafeteria?: string;
+  initialMealType?: string;
+  onNavigate?: () => void;
+}
+
+export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onNavigate }: SwipeMenuWidgetProps = {}) {
   const navigate = useNavigate();
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
-  const [activeIndex, setActiveIndex] = useState(0);
+
+  const initialSlideIndex = useMemo(() => {
+    if (initialCafeteria) {
+      const idx = cafeterias.findIndex(
+        (c) =>
+          c.title.includes(initialCafeteria) ||
+          initialCafeteria.includes(c.title),
+      );
+      if (idx !== -1) return idx;
+    }
+    return 0;
+  }, [initialCafeteria]);
+
+  const [activeIndex, setActiveIndex] = useState(initialSlideIndex);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
@@ -48,6 +67,13 @@ export default function SwipeMenuWidget() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (swiperInstance && initialSlideIndex !== activeIndex) {
+      swiperInstance.slideTo(initialSlideIndex);
+      setActiveIndex(initialSlideIndex);
+    }
+  }, [initialSlideIndex, swiperInstance]);
 
   // 날짜 및 시간 구하기
   const today = useMemo(() => new Date().getDay(), []);
@@ -131,6 +157,7 @@ export default function SwipeMenuWidget() {
 
   const handleCardClick = (cafeteriaName: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     navigate(`${ROUTES.BOARD.MENU}?category=${cafeteriaName}`);
   };
 
@@ -138,6 +165,7 @@ export default function SwipeMenuWidget() {
     <WidgetContainer ref={widgetContainerRef}>
       <CardWrapper>
         <SwiperContainer
+          initialSlide={initialSlideIndex}
           slidesPerView={1}
           spaceBetween={0}
           speed={300}

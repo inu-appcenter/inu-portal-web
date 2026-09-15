@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import Icon from "@/components/common/Icon";
@@ -6,6 +6,8 @@ import { chatBubbleButton as ChatBulButtonImg } from "@/resources/assets/illustr
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import useAIChatStore from "@/stores/useAIChatStore";
+import AIChatMenuCard from "./AIChatMenuCard";
+import AgentChatModal from "@/components/mobile/chat/AgentChatModal";
 
 interface AIChatFloatingButtonProps {
   isFloatingButtonVisible?: boolean;
@@ -14,11 +16,17 @@ interface AIChatFloatingButtonProps {
 const AIChatFloatingButton = ({
   isFloatingButtonVisible = true,
 }: AIChatFloatingButtonProps) => {
-  const { isOpen, closeChat, toggleChat } = useAIChatStore();
-  useSheetBackHandler(isOpen, closeChat);
+  const { isOpen, isAgentOpen, closeChat, openChat, closeAgent, openAgent } =
+    useAIChatStore();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useSheetBackHandler(isOpen || isAgentOpen, () => {
+    if (isOpen) closeChat();
+    if (isAgentOpen) closeAgent();
+  });
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || isAgentOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -26,10 +34,18 @@ const AIChatFloatingButton = ({
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen]);
+  }, [isOpen, isAgentOpen]);
 
-  const handleToggleChat = () => {
-    toggleChat();
+  const handleButtonClick = () => {
+    if (isOpen) {
+      closeChat();
+      return;
+    }
+    if (isAgentOpen) {
+      closeAgent();
+      return;
+    }
+    setIsMenuOpen((prev) => !prev);
   };
 
   const modalVariants: Variants = {
@@ -71,6 +87,10 @@ const AIChatFloatingButton = ({
 
   return (
     <>
+      {/* 1. New INTIP Agent Chat Modal */}
+      <AgentChatModal isOpen={isAgentOpen} onClose={closeAgent} />
+
+      {/* 2. Legacy ChatBul Modal */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -107,19 +127,35 @@ const AIChatFloatingButton = ({
         )}
       </AnimatePresence>
 
+      {/* 3. Floating Button & Menu Card */}
       {isFloatingButtonVisible && (
-        <FloatingButton
-          animate={{ y: [0, -8, 0] }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          onClick={handleToggleChat}
-          aria-label="학사 AI 챗봇 열기"
-        >
-          <img src={ChatBulButtonImg} alt="AI 챗봇" />
-        </FloatingButton>
+        <FloatingButtonWrapper>
+          <AIChatMenuCard
+            open={isMenuOpen}
+            onScrimClick={() => setIsMenuOpen(false)}
+            onSelectAgent={() => {
+              setIsMenuOpen(false);
+              openAgent();
+            }}
+            onSelectLegacyChatBul={() => {
+              setIsMenuOpen(false);
+              openChat();
+            }}
+          />
+
+          <FloatingButton
+            animate={{ y: [0, -8, 0] }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            onClick={handleButtonClick}
+            aria-label="AI 비서 메뉴 열기"
+          >
+            <img src={ChatBulButtonImg} alt="AI 챗봇" />
+          </FloatingButton>
+        </FloatingButtonWrapper>
       )}
     </>
   );
@@ -135,30 +171,35 @@ const Backdrop = styled(motion.div)`
   z-index: 1001;
 `;
 
-const FloatingButton = styled(motion.button)`
+const FloatingButtonWrapper = styled.div`
   position: fixed;
   bottom: calc(${BOTTOM_NAV_SAFE_HEIGHT} + 12px);
   right: 15px;
   width: 75px;
   height: 75px;
+  z-index: 1002;
+
+  @media (min-width: 1024px) {
+    bottom: 85px;
+    right: calc(50% - 600px + 15px);
+  }
+`;
+
+const FloatingButton = styled(motion.button)`
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 1002;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
 
   img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-
-  @media (min-width: 1024px) {
-    bottom: 85px;
-    right: calc(50% - 600px + 15px);
   }
 `;
 

@@ -48,12 +48,14 @@ import { NoticeRecommendKeywords } from "@/resources/strings/NoticeRecommendKeyw
 import { Loader2 } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
+import MobileAgentReminderSetting from "@/components/mobile/dailyBrief/MobileAgentReminderSetting";
 
 export const DAILY_BRIEF_TABS = [
   { label: "시간표", value: "timetable" },
   { label: "학사일정", value: "schedule" },
   { label: "학교 공지", value: "school" },
   { label: "학과 공지", value: "dept" },
+  { label: "AI 맞춤 알림", value: "agent" },
 ];
 
 const PRE_ALERT_PRESETS = [
@@ -854,6 +856,15 @@ export default function MobileDailyBriefSettingPage() {
           >
             <SlideInnerWrapper>
               <MobileDeptAlarmSetting location="Daily Brief Page" />
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 5: AI 맞춤 알림 */}
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
+            <SlideInnerWrapper>
+              <MobileAgentReminderSetting />
             </SlideInnerWrapper>
           </SwiperSlide>
         </Swiper>

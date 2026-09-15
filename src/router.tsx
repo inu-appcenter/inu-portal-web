@@ -58,6 +58,7 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
+import AgentPage from "@/pages/AgentPage";
 import MobileFriendQrPage from "@/pages/mobile/MobileFriendQrPage";
 import MobileFriendInvitePage from "@/pages/mobile/MobileFriendInvitePage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
@@ -87,6 +88,9 @@ import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
 import InviteChatMembersPage from "@/pages/mobile/InviteChatMembersPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
+import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
+import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
+import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 
 export const router = createBrowserRouter([
   {
@@ -195,6 +199,17 @@ export const router = createBrowserRouter([
               },
             ],
           },
+
+          // 스마트 캠퍼스 서비스 허브 (도서관, LMS)
+          {
+            path: ROUTES.SERVICES.LIBRARY,
+            element: <MobileLibraryHubPage />,
+          },
+          {
+            path: ROUTES.SERVICES.LMS,
+            element: <MobileLmsHubPage />,
+          },
+
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,
@@ -278,6 +293,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
           { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
+          { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
@@ -338,6 +354,8 @@ export const router = createBrowserRouter([
         element: <FullscreenSubLayout backgroundColor="#ffffff" />,
         children: [
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+          { path: "/agent", element: <AgentPage /> },
+          { path: "/assistant", element: <AgentPage /> },
         ],
       },
     ],
