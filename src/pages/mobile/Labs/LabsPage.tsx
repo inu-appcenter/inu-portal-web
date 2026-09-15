@@ -1,6 +1,8 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
+import Divider from "@/components/common/Divider";
+import Ripple from "@/components/common/Ripple";
 
 import { labsBanner as 실험실배너 } from "@/resources/assets/illustrations/features";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
@@ -13,22 +15,32 @@ import useUserStore from "@/stores/useUserStore";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
+import { BookOpen, GraduationCap, Radar } from "lucide-react";
+import React from "react";
 
 interface AppItemProps {
   iconSrc?: string | null;
+  iconElement?: React.ReactNode;
   title: string;
   description: string;
   onClick?: () => void;
 }
 
-const AppItem = ({ iconSrc, title, description, onClick }: AppItemProps) => {
+const AppItem = ({ iconSrc, iconElement, title, description, onClick }: AppItemProps) => {
   return (
     <AppItemWrapper onClick={onClick}>
-      {iconSrc && <Icon src={iconSrc || "/default-icon.png"} alt={title} />}
-      <ContentArea>
-        <div className="title">{title}</div>
-        <div className="description">{description}</div>
-      </ContentArea>
+      <Ripple />
+      <InnerContent>
+        {iconElement ? (
+          <IconWrapper>{iconElement}</IconWrapper>
+        ) : (
+          <Icon src={iconSrc || "/default-icon.png"} alt={title} />
+        )}
+        <ContentArea>
+          <div className="title">{title}</div>
+          <div className="description">{description}</div>
+        </ContentArea>
+      </InnerContent>
     </AppItemWrapper>
   );
 };
@@ -87,6 +99,40 @@ const LabsPage = () => {
         {/* 우측 영역: 타이틀 및 앱 리스트 */}
         <ContentSection>
           <TitleContentArea description="실험 기능을 사용해 보세요. 실험실 기능은 바람처럼 나타났다 소리 없이 사라질 수 있어요." />
+
+          <TitleContentArea title={"캠퍼스 스마트 서비스"}>
+            <Box>
+              <div style={{ width: "100%" }}>
+                <AppItem
+                  iconElement={<BookOpen size={22} color="#2563eb" />}
+                  title={"학산도서관 스마트 허브"}
+                  description={
+                    "실시간 열람실·스터디룸 현황 조회 및 빈자리/취소표 스나이퍼 알림"
+                  }
+                  onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}
+                />
+                <Divider margin="0" />
+                <AppItem
+                  iconElement={<GraduationCap size={22} color="#16a34a" />}
+                  title={"사이버캠퍼스 LMS 스마트 허브"}
+                  description={
+                    "이번 학기 수강 강좌 확인 및 과제·퀴즈 마감 전 정시 리마인더 예약"
+                  }
+                  onClick={() => navigate(ROUTES.SERVICES.LMS)}
+                />
+                <Divider margin="0" />
+                <AppItem
+                  iconElement={<Radar size={22} color="#9333ea" />}
+                  title={"실시간 스마트 감시 관리"}
+                  description={
+                    "현재 백그라운드에서 실행 중인 좌석·스터디룸 실시간 감시 목록 확인 및 관리"
+                  }
+                  onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}
+                />
+              </div>
+            </Box>
+          </TitleContentArea>
+
           <TitleContentArea title={"포털 관련 기능"}>
             <Box>
               <div style={{ width: "100%" }}>
@@ -123,24 +169,36 @@ export default LabsPage;
 const MoreAppsPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-
   gap: 24px;
-
   padding: 0 16px;
 `;
 
-const AppItemWrapper = styled.div`
+const InnerContent = styled.div`
   display: flex;
   flex-direction: row;
   gap: 12px;
   align-items: center;
   justify-content: start;
-  box-sizing: border-box;
-  text-align: start;
-  //padding: 8px 0;
-  cursor: pointer;
-
   width: 100%;
+  transition: transform 0.12s ease-in-out;
+`;
+
+const AppItemWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  &.active-touch {
+    ${InnerContent} {
+      transform: scale(0.97);
+    }
+  }
 `;
 
 const Icon = styled.img`
@@ -149,23 +207,35 @@ const Icon = styled.img`
   border-radius: 8px;
   object-fit: cover;
   background-color: #f0f0f0;
+  flex-shrink: 0;
+`;
+
+const IconWrapper = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 `;
 
 const ContentArea = styled.div`
   display: flex;
   flex-direction: column;
-  //gap: 4px;
+  gap: 4px;
 
   .title {
     color: #000;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
   }
   .description {
     color: #969696;
     font-size: 12px;
     font-weight: 500;
-    //white-space: nowrap;
     text-overflow: ellipsis;
   }
 `;
