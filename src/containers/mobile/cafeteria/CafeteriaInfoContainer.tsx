@@ -1,60 +1,54 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
 import { cafeterias } from "@/resources/strings/cafeterias";
 import CafeteriaItem from "@/components/mobile/cafeteria/CafeteriaItem";
+import { parseCafeteriaSections } from "@/utils/cafeteriaMenu";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
-
-interface CafeteriaDeatilProps {
-  구성원가: string;
-  칼로리: string;
-}
 
 interface CafeteriaInfoWrapperProps {
   title: string;
-  cafeteriaDetail: (CafeteriaDeatilProps | null)[];
-  cafeteriaInfo: (string | null)[];
+  cafeteriaMenus: (string | null)[];
   isLoading: boolean;
 }
 
+const MEAL_COUNT = 3;
+
 export default function CafeteriaInfoContainer({
   title,
-  cafeteriaDetail,
-  cafeteriaInfo,
+  cafeteriaMenus,
   isLoading,
 }: CafeteriaInfoWrapperProps) {
-  const [cafeteriaTypes, setCafeteriaTypes] = useState<string[]>([]);
+  // 한 끼니 안에 코너가 여럿이면 코너마다 카드를 만든다.
+  const cards = useMemo(() => {
+    const mealLabels = cafeterias.find((list) => list.title === title)?.info ?? [];
 
-  // Use effect to update cafeteriaTypes based on title
-  useEffect(() => {
-    const selectedCafeteria = cafeterias.find((list) => list.title === title);
-    if (selectedCafeteria) {
-      setCafeteriaTypes(selectedCafeteria.info);
-    }
-  }, [title]);
+    return cafeteriaMenus.flatMap((menu, mealIndex) => {
+      const mealLabel = mealLabels[mealIndex];
+      if (!mealLabel || mealLabel === "없음") {
+        return [];
+      }
+      return parseCafeteriaSections(menu).map((section) => ({
+        ...section,
+        title: section.title ? `${mealLabel} ${section.title}` : mealLabel,
+      }));
+    });
+  }, [title, cafeteriaMenus]);
+
+  if (isLoading) {
+    return (
+      <CafeteriaInfoWrapper>
+        {Array.from({ length: MEAL_COUNT }, (_, index) => (
+          <CafeteriaItem key={index} isLoading />
+        ))}
+      </CafeteriaInfoWrapper>
+    );
+  }
 
   return (
     <CafeteriaInfoWrapper>
-      <CafeteriaItem
-        typeIndex={0}
-        cafeteriaTypes={cafeteriaTypes}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
-        isLoading={isLoading}
-      />
-      <CafeteriaItem
-        typeIndex={1}
-        cafeteriaTypes={cafeteriaTypes}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
-        isLoading={isLoading}
-      />
-      <CafeteriaItem
-        typeIndex={2}
-        cafeteriaTypes={cafeteriaTypes}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
-        isLoading={isLoading}
-      />
+      {cards.map((card) => (
+        <CafeteriaItem key={card.title} section={card} isLoading={false} />
+      ))}
     </CafeteriaInfoWrapper>
   );
 }
