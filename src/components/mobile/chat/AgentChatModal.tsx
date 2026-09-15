@@ -1,24 +1,8 @@
-import React, { useRef, useEffect, useState } from "react";
-import styled from "styled-components";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Maximize2,
-  PanelLeftClose,
-  Menu,
-  Plus,
-} from "lucide-react";
+import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAgentChat } from "@/hooks/useAgentChat";
-import { Sidebar } from "@/components/agent/Sidebar";
-import { ChatMessage } from "@/components/agent/ChatMessage";
-import { ChatInput } from "@/components/agent/ChatInput";
-import { GuideScreen } from "@/components/agent/GuideScreen";
-import { PortalAccountModal } from "../agent/PortalAccountModal";
-import { LibraryAccountModal } from "../agent/LibraryAccountModal";
-import { LmsAccountModal } from "../agent/LmsAccountModal";
-import { COLORS } from "@/components/agent/colors";
-import ellipse2 from "@/resources/assets/illustrations/ellipse2.svg";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -30,47 +14,14 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
-  const {
-    rooms,
-    currentRoom,
-    currentRoomId,
-    setCurrentRoomId,
-    isLoading,
-    isSidebarOpen,
-    setIsSidebarOpen,
-    createNewRoom,
-    deleteRoom,
-    updateRoomTitle,
-    clearHistory,
-    stopGeneration,
-    sendMessage,
-  } = useAgentChat();
-
-  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
-  const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
-  const chatAreaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOpenPortalModal = () => setIsPortalModalOpen(true);
-    const handleOpenLibraryModal = () => setIsLibraryModalOpen(true);
-    const handleOpenLmsModal = () => setIsLmsModalOpen(true);
-    window.addEventListener("openPortalAccountModal", handleOpenPortalModal);
-    window.addEventListener("openLibraryAccountModal", handleOpenLibraryModal);
-    window.addEventListener("openLmsAccountModal", handleOpenLmsModal);
-    return () => {
-      window.removeEventListener("openPortalAccountModal", handleOpenPortalModal);
-      window.removeEventListener("openLibraryAccountModal", handleOpenLibraryModal);
-      window.removeEventListener("openLmsAccountModal", handleOpenLmsModal);
-    };
-  }, []);
-
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname + location.search);
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       initialLocationRef.current = location.pathname + location.search;
+      setIsIframeLoaded(false);
     }
   }, [isOpen]);
 
@@ -80,325 +31,216 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     }
   }, [location.pathname, location.search, isOpen, onClose]);
 
+  // Listen for INTIP_NAVIGATE / Action messages from the AI Agent Webview/Iframe
   useEffect(() => {
-    if (chatAreaRef.current && isOpen) {
-      chatAreaRef.current.scrollTo({
-        top: chatAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (data?.type === "INTIP_NAVIGATE" && data?.url) {
+          onClose();
+          if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
+            window.open(data.url, "_blank", "noopener,noreferrer");
+          } else {
+            navigate(data.url);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [navigate, onClose]);
+
+  const authToken =
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("accessToken") ||
+    "";
+
+  const resolvedAgentUrl = useMemo(() => {
+    let url = import.meta.env.VITE_AGENT_WEB_URL || "http://localhost:3000";
+    if (url.includes("localhost") && window.location.hostname && window.location.hostname !== "localhost") {
+      url = url.replace("localhost", window.location.hostname);
     }
-  }, [currentRoom.messages.length, isOpen]);
+    return url;
+  }, []);
+
+  const iframeSrc = `${resolvedAgentUrl}?token=${encodeURIComponent(authToken)}&client=INTIP`;
 
   const handleFullscreen = () => {
     onClose();
-    navigate("/agent");
-  };
-
-  const handleSelectRoom = (id: string) => {
-    setCurrentRoomId(id);
-    if (window.innerWidth <= 768) setIsSidebarOpen(false);
-  };
-
-  const handleNewChat = () => {
-    createNewRoom();
-    if (window.innerWidth <= 768) setIsSidebarOpen(false);
+    if (resolvedAgentUrl.startsWith("http://") || resolvedAgentUrl.startsWith("https://")) {
+      window.open(iframeSrc, "_blank", "noopener,noreferrer");
+    } else {
+      navigate("/agent");
+    }
   };
 
   return (
-    <>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <Backdrop
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onClose}
+    <AnimatePresence>
+      {isOpen && (
+        <ModalContainer>
+          <Backdrop
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <ModalWrapper
+            initial={{ scale: 0.95, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 15 }}
+            transition={{ type: "spring", stiffness: 450, damping: 35 }}
+          >
+            <HeaderControlBar>
+              <ControlButtons>
+                <IconButton onClick={handleFullscreen} title="새 탭으로 열기">
+                  <Maximize2 size={16} />
+                </IconButton>
+                <IconButton onClick={onClose} title="닫기">
+                  <X size={18} />
+                </IconButton>
+              </ControlButtons>
+            </HeaderControlBar>
+
+            {!isIframeLoaded && (
+              <LoadingOverlay>
+                <SpinIcon size={28} />
+                <LoadingText>캠퍼스 비서 불러오는 중...</LoadingText>
+              </LoadingOverlay>
+            )}
+
+            <IframeFrame
+              src={iframeSrc}
+              title="INU AI Campus Assistant"
+              allow="clipboard-write; clipboard-read"
+              onLoad={() => setIsIframeLoaded(true)}
             />
-            <ModalWrapper
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ type: "spring", stiffness: 450, damping: 35 }}
-            >
-              {/* 모달 내 사이드바 */}
-              <Sidebar
-                isOpen={isSidebarOpen}
-                rooms={rooms}
-                currentRoomId={currentRoomId}
-                onSelectRoom={handleSelectRoom}
-                onNewChat={handleNewChat}
-                onDeleteRoom={deleteRoom}
-                onUpdateRoomTitle={updateRoomTitle}
-                onClearHistory={clearHistory}
-                onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-              />
-
-              {/* UNIDorm-AIChat-Web MainArea 1:1 복사 */}
-              <MainArea>
-                <AmbientOrb src={ellipse2} alt="" />
-
-                {/* Header */}
-                <HeaderContainer>
-                  <HeaderLeft>
-                    <IconButton
-                      onClick={() => setIsSidebarOpen((prev) => !prev)}
-                      title="사이드바 토글"
-                    >
-                      {isSidebarOpen ? (
-                        <PanelLeftClose size={20} />
-                      ) : (
-                        <Menu size={20} />
-                      )}
-                    </IconButton>
-                    <HeaderTitleContainer>
-                      <HeaderTitle>
-                        <span>인팁 비서</span>
-                        <BetaBadge>AI</BetaBadge>
-                      </HeaderTitle>
-                    </HeaderTitleContainer>
-                  </HeaderLeft>
-
-                  <HeaderRight>
-                    <IconButton onClick={handleNewChat} title="새로운 대화">
-                      <Plus size={22} />
-                    </IconButton>
-                    <IconButton
-                      onClick={handleFullscreen}
-                      title="전체 화면으로 열기"
-                    >
-                      <Maximize2 size={18} />
-                    </IconButton>
-                    <IconButton onClick={onClose} title="닫기">
-                      <X size={20} />
-                    </IconButton>
-                  </HeaderRight>
-                </HeaderContainer>
-
-                {/* UNIDorm-AIChat-Web ChatArea 1:1 복사 */}
-                <ChatArea ref={chatAreaRef}>
-                  {currentRoom.messages.length === 0 ? (
-                    <GuideScreen onSelectSuggestion={(q) => sendMessage(q)} />
-                  ) : (
-                    currentRoom.messages.map((msg) => (
-                      <ChatMessage
-                        key={msg.id}
-                        message={msg}
-                        onChipClick={(chip) => sendMessage(chip)}
-                        onNavigate={onClose}
-                      />
-                    ))
-                  )}
-                </ChatArea>
-
-                {/* UNIDorm-AIChat-Web ChatInput 1:1 복사 */}
-                <ChatInput
-                  onSendMessage={sendMessage}
-                  isLoading={isLoading}
-                  onStopGeneration={stopGeneration}
-                />
-              </MainArea>
-            </ModalWrapper>
-          </>
-        )}
-      </AnimatePresence>
-
-      <PortalAccountModal
-        isOpen={isPortalModalOpen}
-        onClose={() => setIsPortalModalOpen(false)}
-        onSuccess={() => setIsPortalModalOpen(false)}
-      />
-      <LibraryAccountModal
-        isOpen={isLibraryModalOpen}
-        onClose={() => setIsLibraryModalOpen(false)}
-        onSuccess={() => setIsLibraryModalOpen(false)}
-      />
-      <LmsAccountModal
-        isOpen={isLmsModalOpen}
-        onClose={() => setIsLmsModalOpen(false)}
-        onSuccess={() => setIsLmsModalOpen(false)}
-      />
-    </>
+          </ModalWrapper>
+        </ModalContainer>
+      )}
+    </AnimatePresence>
   );
 };
 
 export default AgentChatModal;
 
-const Backdrop = styled(motion.div)`
+const ModalContainer = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
+`;
+
+const Backdrop = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 9998;
 `;
 
 const ModalWrapper = styled(motion.div)`
-  position: fixed;
-  top: 4%;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   width: 92%;
   max-width: 960px;
   height: 90vh;
   height: 90dvh;
-  background: linear-gradient(
-    163.11deg,
-    rgb(240, 240, 255) 10.193%,
-    rgb(253, 253, 255) 111.84%
-  );
+  background: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: flex;
+  flex-direction: column;
   overflow: hidden;
-  z-index: 9999;
+  z-index: 1;
   border: 1px solid rgba(255, 255, 255, 0.8);
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    Roboto,
-    sans-serif;
 
   @media (max-width: 768px) {
-    top: 0;
-    left: 0;
-    transform: none;
     width: 100%;
     height: 100vh;
     height: 100dvh;
     border-radius: 0;
+    border: none;
   }
 `;
 
-const MainArea = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-`;
-
-const AmbientOrb = styled.img`
+const HeaderControlBar = styled.div`
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, 30%);
-  width: 512px;
-  max-width: 120vw;
-  height: auto;
-  aspect-ratio: 512 / 549.5;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.6;
+  top: 12px;
+  right: 14px;
+  z-index: 20;
+  pointer-events: auto;
 `;
 
-const HeaderContainer = styled.div`
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  background-color: transparent;
-  color: ${COLORS.textDark};
-  z-index: 10;
-  position: relative;
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const HeaderTitleContainer = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const HeaderTitle = styled.div`
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  user-select: none;
-  color: ${COLORS.textDark};
-`;
-
-const BetaBadge = styled.span`
-  background: linear-gradient(142deg, #007aff 26.94%, #570099 87.68%);
-  color: #fafafa;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 2px;
-`;
-
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  color: ${COLORS.textDark};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-`;
-
-const HeaderRight = styled.div`
+const ControlButtons = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
 `;
 
-const ChatArea = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  overflow-anchor: none;
-  scrollbar-gutter: stable;
-  padding: 10px 20px 100px 20px;
+const IconButton = styled.button`
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 6px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: #ffffff;
+    color: #0f172a;
+    transform: scale(1.05);
+  }
+`;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 1;
-
-  will-change: scroll-position;
-  transform: translateZ(0);
-  overscroll-behavior-y: contain;
-
-  scrollbar-width: auto;
-  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
-
-  &::-webkit-scrollbar {
-    width: 14px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.45);
-    background-clip: content-box;
-  }
+  justify-content: center;
+  background: #f8faff;
+  z-index: 5;
+  gap: 12px;
 `;
+
+const SpinIcon = styled(Loader2)`
+  animation: ${spin} 1s linear infinite;
+  color: #2563eb;
+`;
+
+const LoadingText = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+`;
+
+const IframeFrame = styled.iframe`
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+`;
+

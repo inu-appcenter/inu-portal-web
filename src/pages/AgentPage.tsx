@@ -1,102 +1,70 @@
-import { useRef, useEffect } from "react";
-import { useAgentChat } from "@/hooks/useAgentChat";
-import { Sidebar } from "@/components/agent/Sidebar";
-import { ChatHeader } from "@/components/agent/ChatHeader";
-import { ChatMessage } from "@/components/agent/ChatMessage";
-import { ChatInput } from "@/components/agent/ChatInput";
-import { GuideScreen } from "@/components/agent/GuideScreen";
-import {
-  AppContainer,
-  Overlay,
-  MainArea,
-  AmbientOrb,
-  ChatArea,
-} from "@/components/agent/AppLayout";
-import ellipse2 from "@/resources/assets/illustrations/ellipse2.svg";
+import { useEffect, useMemo } from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 export default function AgentPage() {
-  const {
-    rooms,
-    currentRoom,
-    currentRoomId,
-    setCurrentRoomId,
-    isLoading,
-    isSidebarOpen,
-    setIsSidebarOpen,
-    createNewRoom,
-    deleteRoom,
-    updateRoomTitle,
-    clearHistory,
-    stopGeneration,
-    sendMessage,
-  } = useAgentChat();
+  const navigate = useNavigate();
 
-  const chatAreaRef = useRef<HTMLDivElement>(null);
-
+  // Listen for INTIP_NAVIGATE messages from the standalone inu-agent-web
   useEffect(() => {
-    if (chatAreaRef.current) {
-      chatAreaRef.current.scrollTo({
-        top: chatAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (data?.type === "INTIP_NAVIGATE" && data?.url) {
+          if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
+            window.open(data.url, "_blank", "noopener,noreferrer");
+          } else {
+            navigate(data.url);
+          }
+        }
+      } catch {}
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [navigate]);
+
+  const authToken =
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("token") ||
+    sessionStorage.getItem("accessToken") ||
+    "";
+
+  const resolvedAgentUrl = useMemo(() => {
+    let url = import.meta.env.VITE_AGENT_WEB_URL || "http://localhost:3000";
+    if (url.includes("localhost") && window.location.hostname && window.location.hostname !== "localhost") {
+      url = url.replace("localhost", window.location.hostname);
     }
-  }, [currentRoom.messages.length]);
+    return url;
+  }, []);
 
-  const handleSelectRoom = (id: string) => {
-    setCurrentRoomId(id);
-    if (window.innerWidth <= 768) setIsSidebarOpen(false);
-  };
-
-  const handleNewChat = () => {
-    createNewRoom();
-    if (window.innerWidth <= 768) setIsSidebarOpen(false);
-  };
+  const iframeSrc = `${resolvedAgentUrl}?token=${encodeURIComponent(authToken)}&client=INTIP`;
 
   return (
-    <AppContainer>
-      <Overlay $isOpen={isSidebarOpen} onClick={() => setIsSidebarOpen(false)} />
-
-      <Sidebar
-        isOpen={isSidebarOpen}
-        rooms={rooms}
-        currentRoomId={currentRoomId}
-        onSelectRoom={handleSelectRoom}
-        onNewChat={handleNewChat}
-        onDeleteRoom={deleteRoom}
-        onUpdateRoomTitle={updateRoomTitle}
-        onClearHistory={clearHistory}
-        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+    <FullPageContainer>
+      <IframeElement
+        src={iframeSrc}
+        title="INU AI Campus Assistant"
+        allow="clipboard-write; clipboard-read"
       />
-
-      <MainArea>
-        <AmbientOrb src={ellipse2} alt="" />
-
-        <ChatHeader
-          isSidebarOpen={isSidebarOpen}
-          onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-          onNewChat={handleNewChat}
-        />
-
-        <ChatArea ref={chatAreaRef}>
-          {currentRoom.messages.length === 0 ? (
-            <GuideScreen onSelectSuggestion={(q) => sendMessage(q)} />
-          ) : (
-            currentRoom.messages.map((msg) => (
-              <ChatMessage
-                key={msg.id}
-                message={msg}
-                onChipClick={(chip) => sendMessage(chip)}
-              />
-            ))
-          )}
-        </ChatArea>
-
-        <ChatInput
-          onSendMessage={sendMessage}
-          isLoading={isLoading}
-          onStopGeneration={stopGeneration}
-        />
-      </MainArea>
-    </AppContainer>
+    </FullPageContainer>
   );
 }
+
+const FullPageContainer = styled.div`
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8faff;
+  overflow: hidden;
+`;
+
+const IframeElement = styled.iframe`
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+`;
+
