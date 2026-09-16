@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 
 export default function AgentPage() {
   const navigate = useNavigate();
@@ -52,6 +53,9 @@ export default function AgentPage() {
 
   return (
     <FullPageContainer>
+      <CloseButton onClick={() => navigate(-1)} title="닫기">
+        <X size={18} />
+      </CloseButton>
       <IframeElement
         src={iframeSrc}
         title="INU AI Campus Assistant"
@@ -62,6 +66,7 @@ export default function AgentPage() {
 }
 
 const FullPageContainer = styled.div`
+  position: relative;
   width: 100%;
   height: 100vh;
   height: 100dvh;
@@ -69,6 +74,32 @@ const FullPageContainer = styled.div`
   flex-direction: column;
   background-color: #f8faff;
   overflow: hidden;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 12px));
+  right: max(14px, env(safe-area-inset-right, 14px));
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #ffffff;
+    color: #0f172a;
+    transform: scale(1.05);
+  }
 `;
 
 const IframeElement = styled.iframe`

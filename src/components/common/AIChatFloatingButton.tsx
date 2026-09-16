@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { motion, AnimatePresence, Variants } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/common/Icon";
 import { chatBubbleButton as ChatBulButtonImg } from "@/resources/assets/illustrations/ai";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
@@ -16,6 +17,7 @@ interface AIChatFloatingButtonProps {
 const AIChatFloatingButton = ({
   isFloatingButtonVisible = true,
 }: AIChatFloatingButtonProps) => {
+  const navigate = useNavigate();
   const { isOpen, isAgentOpen, closeChat, openChat, closeAgent, openAgent } =
     useAIChatStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -135,7 +137,11 @@ const AIChatFloatingButton = ({
             onScrimClick={() => setIsMenuOpen(false)}
             onSelectAgent={() => {
               setIsMenuOpen(false);
-              openAgent();
+              if (window.innerWidth <= 768) {
+                navigate("/agent");
+              } else {
+                openAgent();
+              }
             }}
             onSelectLegacyChatBul={() => {
               setIsMenuOpen(false);
