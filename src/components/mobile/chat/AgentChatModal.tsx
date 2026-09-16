@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { resolveClientContext, executeAgentActionBridge } from "@/apis/mobileAgentBridge";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname + location.search);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const sendClientContextToIframe = async () => {
@@ -74,6 +76,8 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           } else {
             navigate(data.url);
           }
+        } else if (data.type === "OPEN_PORTAL_ACCOUNT_MODAL" || data.type === "openPortalAccountModal") {
+          setIsPortalModalOpen(true);
         } else if (data.type === "GET_CLIENT_CONTEXT") {
           sendClientContextToIframe();
         } else if (data.type === "EXECUTE_AGENT_ACTION" && data.instruction) {
@@ -93,8 +97,16 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       } catch {}
     };
 
+    const handleCustomPortalEvent = () => {
+      setIsPortalModalOpen(true);
+    };
+
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
+    window.addEventListener("openPortalAccountModal", handleCustomPortalEvent);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      window.removeEventListener("openPortalAccountModal", handleCustomPortalEvent);
+    };
   }, [navigate, onClose]);
 
   const authToken =
@@ -169,6 +181,14 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           </ModalWrapper>
         </ModalContainer>
       )}
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe();
+        }}
+      />
     </AnimatePresence>
   );
 };
