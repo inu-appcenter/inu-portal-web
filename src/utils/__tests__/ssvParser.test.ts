@@ -36,12 +36,12 @@ describe("Academic SSV Parser (Web Centralized)", () => {
     );
   });
 
-  it("rawSsv envelope 객체를 정상 파싱하고 학과 코드를 단과대/학과명으로 매핑해야 한다", () => {
+  it("rawSsv envelope 객체를 정상 파싱하고 학과 코드 및 졸업유예/지도교수를 매핑해야 한다", () => {
     const rawSsv = [
       "ErrorCode:int=0",
       "Dataset:DS_SREG101",
-      "_RowType_\u001fstuno\u001fkorNm\u001fhgCd\u001fschregStGbn\u001facqHp\u001fmrksAvg",
-      "N\u001f202001518\u001f배현준\u001f0000077\u001f70\u001f140\u001f4.24",
+      "_RowType_\u001fstuno\u001fkorNm\u001fhgCd\u001fschregStGbn\u001fflSchregModGbn\u001facqHp\u001fmrksAvg\u001fprofNm",
+      "N\u001f202001518\u001f배현준\u001f0000077\u001f70\u001f0701\u001f140\u001f4.24\u001f박문주",
     ].join(RECORD_SEPARATOR);
 
     const result = parseAcademicBasicInfo(JSON.stringify({ rawSsv }));
@@ -49,8 +49,11 @@ describe("Academic SSV Parser (Web Centralized)", () => {
     expect(result.koreanName).toBe("배현준");
     expect(result.departmentName).toBe("컴퓨터공학부");
     expect(result.collegeName).toBe("정보기술대학");
-    expect(result.enrollmentStatus).toBe("수료");
+    expect(result.enrollmentStatus).toBe("졸업유예");
+    expect(result.latestEnrollmentChange).toBe("졸업유예");
     expect(result.acquiredCredits).toBe("140");
     expect(result.gradeAverage).toBe("4.24");
+    expect(result.advisorProfessorName).toBe("박문주");
+    expect(result.displayFields?.["지도교수"]).toBe("박문주 교수님");
   });
 });

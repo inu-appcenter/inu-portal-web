@@ -239,12 +239,36 @@ export function parseAcademicBasicInfo(responseBody: string): AcademicBasicInfo 
     getCollegeByDepartmentCode(departmentCode) ||
     "";
 
+  // 학적 변동 코드 한글 매핑 기본값
+  const SCHREG_MOD_MAP: Record<string, string> = {
+    "0101": "신입학",
+    "0102": "편입학",
+    "0201": "일반휴학",
+    "0202": "군휴학",
+    "0301": "일반복학",
+    "0302": "제대복학",
+    "0501": "자퇴",
+    "0601": "제적",
+    "0701": "졸업유예",
+    "0702": "수료",
+    "0801": "졸업",
+  };
+
   // 학적 상태 한글 매핑 기본값
   let status = row["schregStGbn"] || "재학";
+  const modGbn = row["flSchregModGbn"] || "";
   if (status === "10" || status === "1") status = "재학";
   else if (status === "20" || status === "2") status = "휴학";
   else if (status === "30" || status === "3") status = "졸업";
-  else if (status === "70") status = "수료";
+  else if (status === "70") {
+    if (modGbn === "0701" || modGbn === "07") {
+      status = "졸업유예";
+    } else {
+      status = "수료";
+    }
+  }
+
+  const latestModName = SCHREG_MOD_MAP[modGbn] || modGbn;
 
   const baseResult: AcademicBasicInfo = {
     studentId: row["stuno"] || "",
@@ -254,7 +278,7 @@ export function parseAcademicBasicInfo(responseBody: string): AcademicBasicInfo 
     entranceClassification: row["entrClsfGbn"],
     entranceType: row["entrGbn"],
     entranceDate: formatNexacroDate(row["entrDt"]),
-    latestEnrollmentChange: row["flSchregModGbn"],
+    latestEnrollmentChange: latestModName,
     latestEnrollmentChangeDate: formatNexacroDate(row["flSchregModDt"]),
     gender: row["genGbn"] === "1" ? "남" : row["genGbn"] === "2" ? "여" : row["genGbn"],
     birthDate: formatNexacroDate(row["birthDt"]),
