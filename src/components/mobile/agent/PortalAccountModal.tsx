@@ -54,6 +54,12 @@ export const PortalAccountModal: React.FC<Props> = ({
         // 최초 1회 학적 정보 스크래핑을 직접 수행하여 유효성 검증 및 사전 캐싱 완료
         const academicRes = await fetchAcademicInfoFromApp();
         if (academicRes.success) {
+          if (academicRes.data) {
+            try {
+              localStorage.setItem("portal_student_info", JSON.stringify(academicRes.data));
+              localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+            } catch {}
+          }
           if (onSuccess) onSuccess();
           onClose();
         } else {
