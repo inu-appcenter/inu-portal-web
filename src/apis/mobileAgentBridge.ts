@@ -20,18 +20,21 @@ export interface AcademicInfoData {
  * AI 요청에 포함해도 되는 비식별 학적 요약만 만든다.
  * 원본 학번·이름·지도교수 등 개인 식별 정보는 이 경계를 절대 넘지 않는다.
  */
-function toAnonymousAcademicContext(data: AcademicInfoData) {
-  const entryYear = /^\d{4}/.test(data.studentId) ? data.studentId.slice(0, 4) : undefined;
+function toAnonymousAcademicContext(data: any) {
+  const studentId = data.studentId || data.student_id || "";
+  const entryYear = /^\d{4}/.test(studentId) ? studentId.slice(0, 4) : undefined;
+  const dept = data.departmentName || data.majorName || data.department_name || "";
+  const status = data.enrollmentStatus || data.enrollmentStatusName || data.enrollment_status || "재학";
 
   return {
     ...(entryYear ? { entryYear } : {}),
-    departmentName: data.departmentName,
+    departmentName: dept,
     ...(data.collegeName ? { collegeName: data.collegeName } : {}),
-    enrollmentStatus: data.enrollmentStatus,
-    ...(data.completedSemesterCount ? { completedSemesterCount: data.completedSemesterCount } : {}),
-    acquiredCredits: data.acquiredCredits,
-    gradeAverage: data.gradeAverage,
-    ...(data.entranceDate ? { entranceDate: data.entranceDate.slice(0, 4) } : {}),
+    enrollmentStatus: status,
+    ...(data.completedSemesterCount ? { completedSemesterCount: String(data.completedSemesterCount) } : {}),
+    acquiredCredits: String(data.acquiredCredits || "0"),
+    gradeAverage: String(data.gradeAverage || "0.0"),
+    ...(data.entranceDate ? { entranceDate: String(data.entranceDate).slice(0, 4) } : {}),
     ...(data.latestEnrollmentChange ? { latestEnrollmentChange: data.latestEnrollmentChange } : {}),
     ...(data.advisorProfessorName ? { advisorProfessorName: data.advisorProfessorName } : {}),
   };
@@ -238,6 +241,9 @@ export interface LocalWatchJob {
   seatNo?: string;
   hopeDate?: string;
   targetHour?: number;
+  durationMinutes?: number;
+  seatName?: string;
+  endTime?: string;
   createdAt: number;
   expiresAt: number;
   status: 'ACTIVE' | 'NOTIFIED' | 'EXPIRED' | 'CANCELLED';
@@ -279,9 +285,24 @@ export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionR
  * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {
-  if (!isMobileAppEnvironment()) return {};
-
   const context: Record<string, any> = {};
+
+  // 1. 실험실 또는 로컬 스토리지에 이미 저장된 학적 정보가 있으면 1차로 즉시 탑재
+  try {
+    const saved = localStorage.getItem("portal_student_info");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        context.academicDisplay = parsed;
+        context.academic = toAnonymousAcademicContext(parsed);
+        context.portal = { linked: true };
+      }
+    }
+  } catch (e) {
+    console.debug("[resolveClientContext] localStorage parse error:", e);
+  }
+
+  if (!isMobileAppEnvironment()) return context;
 
   try {
     const [portalLinked, lmsLinked] = await Promise.all([
@@ -291,21 +312,19 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 학적 요약 정보를 끝까지 수집한다.
-    // A portal SSO + ERP redirect regularly exceeds 10 seconds; racing it
-    // against a shorter timer discarded valid linked-account results and made
-    // the server render the "account linking required" card.
+    // 포털 계정이 연동되어 있으면 학적 최신 정보를 수집하고 로컬 스토리지도 동기화한다.
     if (portalLinked) {
+      context.portal = { linked: true };
       tasks.push(
         fetchAcademicInfoFromApp().then((res) => {
           if (res?.success && res.data) {
-            // 사용자 본인에게 표시할 전체 학적 데이터. INUChat 전달용 academic과
-            // 분리되어 있으며, 외부 AI 도구는 이 객체를 읽지 않는다.
             context.academicDisplay = res.data;
             context.academic = toAnonymousAcademicContext(res.data);
+            try {
+              localStorage.setItem("portal_student_info", JSON.stringify(res.data));
+              localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+            } catch {}
           }
-          // Preserve the distinction between an unlinked account and a
-          // temporary SSO/ERP failure for diagnostics and future UI handling.
           context.portal = {
             linked: true,
             ...(res?.success ? {} : {
