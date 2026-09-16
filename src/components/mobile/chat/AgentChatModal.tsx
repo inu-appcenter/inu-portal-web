@@ -140,9 +140,9 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           >
             <HeaderControlBar>
               <ControlButtons>
-                <IconButton onClick={handleFullscreen} title="새 탭으로 열기">
+                <MaximizeButton onClick={handleFullscreen} title="새 탭으로 열기">
                   <Maximize2 size={16} />
-                </IconButton>
+                </MaximizeButton>
                 <IconButton onClick={onClose} title="닫기">
                   <X size={18} />
                 </IconButton>
@@ -227,12 +227,44 @@ const HeaderControlBar = styled.div`
   right: 14px;
   z-index: 20;
   pointer-events: auto;
+
+  @media (max-width: 768px) {
+    top: max(12px, env(safe-area-inset-top, 12px));
+    right: max(14px, env(safe-area-inset-right, 14px));
+  }
 `;
 
 const ControlButtons = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+`;
+
+const MaximizeButton = styled.button`
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 6px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: #ffffff;
+    color: #0f172a;
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const IconButton = styled.button`
