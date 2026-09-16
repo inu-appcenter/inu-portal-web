@@ -3,6 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { resolveClientContext, executeAgentActionBridge } from "@/apis/mobileAgentBridge";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -17,6 +18,24 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname + location.search);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const sendClientContextToIframe = async () => {
+    try {
+      const clientContext = await resolveClientContext();
+      if (iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          {
+            type: "INTIP_CLIENT_CONTEXT",
+            clientContext,
+          },
+          "*"
+        );
+      }
+    } catch (err) {
+      console.warn("[AgentChatModal] Failed to resolve client context:", err);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -33,15 +52,32 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
 
   // Listen for INTIP_NAVIGATE / Action messages from the AI Agent Webview/Iframe
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (data?.type === "INTIP_NAVIGATE" && data?.url) {
+        if (!data || typeof data !== "object") return;
+
+        if (data.type === "INTIP_NAVIGATE" && data.url) {
           onClose();
           if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
             window.open(data.url, "_blank", "noopener,noreferrer");
           } else {
             navigate(data.url);
+          }
+        } else if (data.type === "GET_CLIENT_CONTEXT") {
+          sendClientContextToIframe();
+        } else if (data.type === "EXECUTE_AGENT_ACTION" && data.instruction) {
+          console.log("[AgentChatModal] Relaying action to native bridge:", data.instruction);
+          const result = await executeAgentActionBridge(data.instruction);
+          if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(
+              {
+                type: "AGENT_ACTION_RESULT",
+                requestId: data.requestId,
+                result,
+              },
+              "*"
+            );
           }
         }
       } catch {}
@@ -111,10 +147,14 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             )}
 
             <IframeFrame
+              ref={iframeRef}
               src={iframeSrc}
               title="INU AI Campus Assistant"
               allow="clipboard-write; clipboard-read"
-              onLoad={() => setIsIframeLoaded(true)}
+              onLoad={() => {
+                setIsIframeLoaded(true);
+                sendClientContextToIframe();
+              }}
             />
           </ModalWrapper>
         </ModalContainer>
