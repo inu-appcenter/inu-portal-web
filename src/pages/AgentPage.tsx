@@ -1,39 +1,14 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
+import { useAgentBridge } from "@/hooks/useAgentBridge";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 
 export default function AgentPage() {
   const navigate = useNavigate();
-
-  // Listen for INTIP_NAVIGATE messages from the standalone inu-agent-web
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (data?.type === "INTIP_NAVIGATE" && data?.url) {
-          if (data.url.startsWith("tel:") || data.url.startsWith("mailto:")) {
-            window.location.href = data.url;
-            return;
-          }
-          if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
-            if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(
-                JSON.stringify({ type: "openUrl", payload: { url: data.url } })
-              );
-            } else {
-              window.open(data.url, "_blank", "noopener,noreferrer");
-            }
-          } else {
-            navigate(data.url);
-          }
-        }
-      } catch {}
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [navigate]);
+  const { iframeRef, isPortalModalOpen, setIsPortalModalOpen, sendClientContextToIframe } =
+    useAgentBridge({ onClose: () => navigate(-1) });
 
   const authToken =
     localStorage.getItem("accessToken") ||
@@ -57,9 +32,21 @@ export default function AgentPage() {
         <X size={18} />
       </CloseButton>
       <IframeElement
+        ref={iframeRef}
         src={iframeSrc}
         title="INU AI Campus Assistant"
         allow="clipboard-write; clipboard-read"
+        onLoad={() => {
+          sendClientContextToIframe();
+        }}
+      />
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe(true);
+        }}
       />
     </FullPageContainer>
   );

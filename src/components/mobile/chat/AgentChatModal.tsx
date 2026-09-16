@@ -3,7 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { resolveClientContext, executeAgentActionBridge } from "@/apis/mobileAgentBridge";
+import { useAgentBridge } from "@/hooks/useAgentBridge";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 
 interface AgentChatModalProps {
@@ -19,50 +19,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const location = useLocation();
   const initialLocationRef = useRef(location.pathname + location.search);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
-  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const pendingContextPromiseRef = useRef<Promise<Record<string, any>> | null>(null);
-  const cachedClientContextRef = useRef<Record<string, any> | null>(null);
 
-  const sendClientContextToIframe = async (forceRefresh = false) => {
-    try {
-      // 캐시된 컨텍스트가 있고 강제 새로고침이 아니면 즉시 전송
-      if (cachedClientContextRef.current && !forceRefresh) {
-        iframeRef.current?.contentWindow?.postMessage(
-          {
-            type: "INTIP_CLIENT_CONTEXT",
-            clientContext: cachedClientContextRef.current,
-          },
-          "*"
-        );
-        return cachedClientContextRef.current;
-      }
-
-      // 이미 스크래핑/컨텍스트 조회가 진행 중이면 해당 프로미스를 공유 (스크래퍼 충돌 방지)
-      if (!pendingContextPromiseRef.current) {
-        pendingContextPromiseRef.current = resolveClientContext().finally(() => {
-          pendingContextPromiseRef.current = null;
-        });
-      }
-
-      const clientContext = await pendingContextPromiseRef.current;
-      cachedClientContextRef.current = clientContext;
-
-      if (iframeRef.current?.contentWindow) {
-        iframeRef.current.contentWindow.postMessage(
-          {
-            type: "INTIP_CLIENT_CONTEXT",
-            clientContext,
-          },
-          "*"
-        );
-      }
-      return clientContext;
-    } catch (err) {
-      console.warn("[AgentChatModal] Failed to resolve client context:", err);
-      return {};
-    }
-  };
+  const {
+    iframeRef,
+    isPortalModalOpen,
+    setIsPortalModalOpen,
+    sendClientContextToIframe,
+  } = useAgentBridge({ onClose });
 
   useEffect(() => {
     if (isOpen) {
@@ -76,63 +39,6 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       onClose();
     }
   }, [location.pathname, location.search, isOpen, onClose]);
-
-  // Listen for INTIP_NAVIGATE / Action messages from the AI Agent Webview/Iframe
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (!data || typeof data !== "object") return;
-
-        if (data.type === "INTIP_NAVIGATE" && data.url) {
-          if (data.url.startsWith("tel:") || data.url.startsWith("mailto:")) {
-            window.location.href = data.url;
-            return;
-          }
-          onClose();
-          if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
-            if (window.ReactNativeWebView) {
-              window.ReactNativeWebView.postMessage(
-                JSON.stringify({ type: "openUrl", payload: { url: data.url } })
-              );
-            } else {
-              window.open(data.url, "_blank", "noopener,noreferrer");
-            }
-          } else {
-            navigate(data.url);
-          }
-        } else if (data.type === "OPEN_PORTAL_ACCOUNT_MODAL" || data.type === "openPortalAccountModal") {
-          setIsPortalModalOpen(true);
-        } else if (data.type === "GET_CLIENT_CONTEXT") {
-          sendClientContextToIframe();
-        } else if (data.type === "EXECUTE_AGENT_ACTION" && data.instruction) {
-          console.log("[AgentChatModal] Relaying action to native bridge:", data.instruction);
-          const result = await executeAgentActionBridge(data.instruction);
-          if (iframeRef.current?.contentWindow) {
-            iframeRef.current.contentWindow.postMessage(
-              {
-                type: "AGENT_ACTION_RESULT",
-                requestId: data.requestId,
-                result,
-              },
-              "*"
-            );
-          }
-        }
-      } catch {}
-    };
-
-    const handleCustomPortalEvent = () => {
-      setIsPortalModalOpen(true);
-    };
-
-    window.addEventListener("message", handleMessage);
-    window.addEventListener("openPortalAccountModal", handleCustomPortalEvent);
-    return () => {
-      window.removeEventListener("message", handleMessage);
-      window.removeEventListener("openPortalAccountModal", handleCustomPortalEvent);
-    };
-  }, [navigate, onClose]);
 
   const authToken =
     localStorage.getItem("accessToken") ||

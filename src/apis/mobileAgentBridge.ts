@@ -287,22 +287,9 @@ export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionR
 export async function resolveClientContext(): Promise<Record<string, any>> {
   const context: Record<string, any> = {};
 
-  // 1. 실험실 또는 로컬 스토리지에 이미 저장된 학적 정보가 있으면 1차로 즉시 탑재
-  try {
-    const saved = localStorage.getItem("portal_student_info");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object') {
-        context.academicDisplay = parsed;
-        context.academic = toAnonymousAcademicContext(parsed);
-        context.portal = { linked: true };
-      }
-    }
-  } catch (e) {
-    console.debug("[resolveClientContext] localStorage parse error:", e);
+  if (!isMobileAppEnvironment()) {
+    return context;
   }
-
-  if (!isMobileAppEnvironment()) return context;
 
   try {
     const [portalLinked, lmsLinked] = await Promise.all([
@@ -312,28 +299,38 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 학적 최신 정보를 수집하고 로컬 스토리지도 동기화한다.
+    // 포털 계정이 연동되어 있으면 실시간 최신 학적 정보를 모바일 앱 브릿지로 조회
     if (portalLinked) {
       context.portal = { linked: true };
       tasks.push(
-        fetchAcademicInfoFromApp().then((res) => {
-          if (res?.success && res.data) {
-            context.academicDisplay = res.data;
-            context.academic = toAnonymousAcademicContext(res.data);
-            try {
-              localStorage.setItem("portal_student_info", JSON.stringify(res.data));
-              localStorage.setItem("portal_info_last_updated", new Date().toISOString());
-            } catch {}
-          }
-          context.portal = {
-            linked: true,
-            ...(res?.success ? {} : {
-              academicErrorCode: res?.errorCode,
-              academicErrorMessage: res?.errorMessage,
-            }),
-          };
-        }).catch(() => {})
+        fetchAcademicInfoFromApp()
+          .then((res) => {
+            if (res?.success && res.data) {
+              context.academicDisplay = res.data;
+              context.academic = toAnonymousAcademicContext(res.data);
+              try {
+                localStorage.setItem("portal_student_info", JSON.stringify(res.data));
+                localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+              } catch {}
+            }
+            context.portal = {
+              linked: true,
+              ...(res?.success ? {} : {
+                academicErrorCode: res?.errorCode,
+                academicErrorMessage: res?.errorMessage,
+              }),
+            };
+          })
+          .catch((err) => {
+            context.portal = {
+              linked: true,
+              academicErrorCode: 'FETCH_ERROR',
+              academicErrorMessage: err?.message || '학적 정보 조회 중 오류가 발생했습니다.',
+            };
+          })
       );
+    } else {
+      context.portal = { linked: false };
     }
 
     // LMS 계정이 연동되어 있으면 과제 일정 수집 (최대 2.5초 대기)
