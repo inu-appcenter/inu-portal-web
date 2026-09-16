@@ -86,7 +86,6 @@ const HomeChipGroup = () => {
       },
       isAIButton: true,
     },
-
     {
       id: "more-apps",
       iconSrc: AppcenterLogo_NoText,

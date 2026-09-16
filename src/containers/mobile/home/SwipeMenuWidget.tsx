@@ -21,9 +21,11 @@ interface MenuData {
 
 export interface SwipeMenuWidgetProps {
   initialCafeteria?: string;
+  initialMealType?: string;
+  onNavigate?: () => void;
 }
 
-export default function SwipeMenuWidget({ initialCafeteria }: SwipeMenuWidgetProps = {}) {
+export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onNavigate }: SwipeMenuWidgetProps = {}) {
   const navigate = useNavigate();
   const [menuDataList, setMenuDataList] = useState<Record<string, MenuData>>({});
 
@@ -155,6 +157,7 @@ export default function SwipeMenuWidget({ initialCafeteria }: SwipeMenuWidgetPro
 
   const handleCardClick = (cafeteriaName: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     navigate(`${ROUTES.BOARD.MENU}?category=${cafeteriaName}`);
   };
 
