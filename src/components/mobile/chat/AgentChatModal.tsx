@@ -21,10 +21,33 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pendingContextPromiseRef = useRef<Promise<Record<string, any>> | null>(null);
+  const cachedClientContextRef = useRef<Record<string, any> | null>(null);
 
-  const sendClientContextToIframe = async () => {
+  const sendClientContextToIframe = async (forceRefresh = false) => {
     try {
-      const clientContext = await resolveClientContext();
+      // 캐시된 컨텍스트가 있고 강제 새로고침이 아니면 즉시 전송
+      if (cachedClientContextRef.current && !forceRefresh) {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: "INTIP_CLIENT_CONTEXT",
+            clientContext: cachedClientContextRef.current,
+          },
+          "*"
+        );
+        return cachedClientContextRef.current;
+      }
+
+      // 이미 스크래핑/컨텍스트 조회가 진행 중이면 해당 프로미스를 공유 (스크래퍼 충돌 방지)
+      if (!pendingContextPromiseRef.current) {
+        pendingContextPromiseRef.current = resolveClientContext().finally(() => {
+          pendingContextPromiseRef.current = null;
+        });
+      }
+
+      const clientContext = await pendingContextPromiseRef.current;
+      cachedClientContextRef.current = clientContext;
+
       if (iframeRef.current?.contentWindow) {
         iframeRef.current.contentWindow.postMessage(
           {
@@ -34,8 +57,10 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           "*"
         );
       }
+      return clientContext;
     } catch (err) {
       console.warn("[AgentChatModal] Failed to resolve client context:", err);
+      return {};
     }
   };
 
@@ -186,7 +211,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         onClose={() => setIsPortalModalOpen(false)}
         onSuccess={() => {
           setIsPortalModalOpen(false);
-          sendClientContextToIframe();
+          sendClientContextToIframe(true);
         }}
       />
     </AnimatePresence>
