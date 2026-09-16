@@ -218,6 +218,11 @@ const ModalWrapper = styled(motion.div)`
     height: 100dvh;
     border-radius: 0;
     border: none;
+    padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+    padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+    padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+    padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
   }
 `;
 
@@ -229,8 +234,8 @@ const HeaderControlBar = styled.div`
   pointer-events: auto;
 
   @media (max-width: 768px) {
-    top: max(12px, env(safe-area-inset-top, 12px));
-    right: max(14px, env(safe-area-inset-right, 14px));
+    top: calc(var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px)) + 12px);
+    right: calc(var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px)) + 14px);
   }
 `;
 

@@ -179,8 +179,11 @@ export default function RootLayout() {
     location.pathname === ROUTES.ROOT;
 
   const isChatRoom = location.pathname.startsWith("/chat/");
+  const isAgent =
+    location.pathname.startsWith("/agent") ||
+    location.pathname.startsWith("/assistant");
   const hasBottomNav = isMainTabPath(location.pathname);
-  const hideBottomFade = isChatRoom || hasBottomNav;
+  const hideBottomFade = isChatRoom || hasBottomNav || isAgent;
 
   return (
     <HeaderProvider>

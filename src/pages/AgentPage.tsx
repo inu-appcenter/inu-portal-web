@@ -74,12 +74,17 @@ const FullPageContainer = styled.div`
   flex-direction: column;
   background-color: #f8faff;
   overflow: hidden;
+  padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+  padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+  padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
 `;
 
 const CloseButton = styled.button`
   position: absolute;
-  top: max(12px, env(safe-area-inset-top, 12px));
-  right: max(14px, env(safe-area-inset-right, 14px));
+  top: calc(var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px)) + 14px);
+  right: calc(var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px)) + 14px);
   z-index: 50;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
