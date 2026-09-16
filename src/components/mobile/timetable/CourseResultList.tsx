@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { MessagesSquare, SearchX } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
@@ -36,7 +38,7 @@ export interface CourseResult {
 }
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
-  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
+  "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
 const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
@@ -128,6 +130,7 @@ const CourseResultList = ({
   emptyTitle = "조회된 강의가 없습니다",
   emptyDescription = "검색어나 필터 조건을 변경해 보세요",
 }: CourseResultListProps) => {
+  const navigate = useNavigate();
   const listRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -292,7 +295,17 @@ const CourseResultList = ({
                           <SecondaryActionButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                              if (course.id === undefined) {
+                                alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                                return;
+                              }
+                              navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                                state: {
+                                  courseOfferingId: course.id,
+                                  courseName: course.name,
+                                  professor: course.professor,
+                                },
+                              });
                             }}
                           >
                             <Icon name="file-document" size={20} />

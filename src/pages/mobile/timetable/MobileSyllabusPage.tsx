@@ -1,156 +1,39 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
+import Skeleton from "@/components/common/Skeleton";
+import EmptyState from "@/components/common/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import { useSyllabus } from "@/hooks/useSyllabus";
+import type { SyllabusContent } from "@/types/syllabus";
 
-// --- 타입 정의 ---
-interface TimeSlot {
-  day: string;
-  time: string;
-}
+// 진행률 표(수업방식비율/기자재활용비율/성적평가비율) 세그먼트에 순서대로 돌려쓰는 색상.
+// 디자인 토큰에 없는 항목 수까지 대비해 고정 hex로 넉넉히 둔다.
+const RATIO_COLORS = [
+  "#0061ff",
+  "#ffc72c",
+  "#10b981",
+  "#f43f5e",
+  "#8b5cf6",
+  "#0ea5e9",
+  "#f97316",
+  "#64748b",
+];
 
-interface SyllabusData {
-  courseName: string;
-  professor: string;
-  credits: string;
-  isMajor: string;
-  gradingType: string;
-  department: string;
-  grade: string;
-  courseCode: string;
-  schedule: TimeSlot[];
-  classroom: string;
-  overview: {
-    paragraphs: string[];
-  };
-  objectives: string[];
-  deliveryMethod: {
-    classTypes: { name: string; value: string }[];
-    equipmentTypes: { name: string; value: string }[];
-  };
-  evaluation: { name: string; value: number; color: string }[];
-  references: {
-    title: string;
-    author: string;
-    type: string;
-    details: string;
-  }[];
-  weeklyPlan: { week: string; desc: string }[];
-  assignment: {
-    title: string;
-    type: string;
-    objective: string;
-    method: string;
-    reference: string;
-  };
-  weights: {
-    core: string[];
-    major: string[];
-  };
-}
+// 값이 0(혹은 null)인 항목은 표에서 굳이 강조할 필요가 없어 걸러낸다.
+const toRatioEntries = (record?: Record<string, number | null> | null) =>
+  Object.entries(record ?? {}).filter(([, v]) => v !== null && v !== undefined);
 
-// --- 기본 데이터 (피그마 데이터 반영) ---
-const DEFAULT_SYLLABUS_DATA: SyllabusData = {
-  courseName: "프로그래밍언어",
-  professor: "최욱",
-  credits: "3학점",
-  isMajor: "전공심화",
-  gradingType: "상대평가",
-  department: "전자공학부",
-  grade: "3학년",
-  courseCode: "EPC6046001",
-  schedule: [
-    { day: "화(야1-2A)", time: "18:00-19:15" },
-    { day: "수(2B-3)", time: "10:45-12:00" },
-  ],
-  classroom: "08-326",
-  overview: {
-    paragraphs: [
-      "본 과목은 전자공학에서 배우는 다양한 과목들에 대한 심도 있는 이해를 위한 인생의 동반자로 Python을 잘 활용하는 것을 목적으로 함. 다음과 같은 활동을 통해 본 목적을 달성할 계획임.",
-      "1. Python을 활용한 수학, 물리, 회로이론, 디지털 신호처리, 주식시장의 문제 해결, 데이터 분석, 시각화",
-      "2. Python 패키지 활용: NumPy, Matplotlib, SymPy, Pandas, Scipy, Scikit-Learn 등 이로 인해 인천대학교 전자공학부 학생들이 1학년 1학기부터 2학년 1학기에 걸쳐서 배우는 대학수학, 물리, 선형대수학, 회로이론, 전자기학, 복소함수 및 벡터와 같은 과목들에 대해서 더욱 심도 있는 복습 및 문제 해결이 가능해 질 뿐만 아니라 추후 배우게 될 디지털 신호처리와 같은 과목에 대해서도 강력한 시각화를 통해 미리 물리적 개념을 잘 이해하여 효과적인 예습을 할 수 있음.",
-    ],
-  },
-  objectives: [
-    "1. Python 활용 능력 증대: NumPy, Matplotlib, Pandas와 같은 기본 패키지 뿐만 아니라 SymPy, Scipy, Scikit-Learn과 같은 scientific computing을 위한 패키지 활용 능력 증대",
-    "2. 전자공학 교과목 이해도 증대: 기본 코드를 응용하여 다양한 입력에 대한 결과 값이 어떻게 시각화 되는지를 파악. 이론적으로만 배웠던 내용들에 대한 심도 있는 이해.",
-    "3. 인공지능 활용 능력 증대: Python 코딩을 위해서 생성형 AI를 활용. 생성된 코드의 정확성을 검증하며 디버깅 수행 능력 함양. AI 와 함께 살아가야 하는 신인류가 되기 위한 발판 마련.",
-  ],
-  deliveryMethod: {
-    classTypes: [
-      { name: "강의", value: "0%" },
-      { name: "토론", value: "0%" },
-      { name: "세미나", value: "0%" },
-      { name: "실습", value: "0%" },
-      { name: "시청각", value: "0%" },
-      { name: "유인물", value: "0%" },
-      { name: "견학", value: "0%" },
-      { name: "기타", value: "0%" },
-    ],
-    equipmentTypes: [
-      { name: "판서", value: "0%" },
-      { name: "OHP", value: "0%" },
-      { name: "슬라이드", value: "0%" },
-      { name: "차트", value: "0%" },
-      { name: "비디오", value: "0%" },
-      { name: "오디오", value: "0%" },
-      { name: "컴퓨터", value: "0%" },
-      { name: "기타", value: "0%" },
-    ],
-  },
-  evaluation: [
-    { name: "시험", value: 40, color: "var(--border-brand, #0061ff)" },
-    { name: "출석", value: 20, color: "var(--border-warn, #ffc72c)" },
-    { name: "과제", value: 40, color: "var(--text-success, #10b981)" },
-  ],
-  references: [
-    {
-      title: "인천대학교 최욱 교수의 강의 노트",
-      author: "최욱",
-      type: "주교재",
-      details: "2026",
-    },
-    {
-      title: "점프 투 파이썬",
-      author: "박응용",
-      type: "기타서적",
-      details: "https://wikidocs.net/book/1",
-    },
-  ],
-  weeklyPlan: [
-    { week: "1주차", desc: "오리엔테이션, 개발 환경 구축" },
-    { week: "2주차", desc: "Python 기본 문법 I – 자료형, 조건문, 반복문, 예외 처리" },
-    { week: "3주차", desc: "Python 기본 문법 II – 함수, 클래스, 모듈, 파일 입출력" },
-    { week: "4주차", desc: "NumPy – 선형대수학" },
-    { week: "5주차", desc: "Matplotlib – 다양한 그래프 그리기" },
-    { week: "6주차", desc: "SymPy – 미적분과 미분 방정식" },
-    { week: "7주차", desc: "Matplotlib – 매개변수 곡선, 전자기장 그리기" },
-    { week: "8주차", desc: "중간고사" },
-    { week: "9주차", desc: "Pandas – 데이터 분석 기초" },
-    { week: "10주차", desc: "Pandas – 주식 데이터 다루기" },
-    { week: "11주차", desc: "Scipy – 최적화, 미적분, 수치해석" },
-    { week: "12주차", desc: "Scipy – 신호처리" },
-    { week: "13주차", desc: "Scikit-Learn – 주성분 분석" },
-    { week: "14주차", desc: "Scikit-Learn – 선형 회귀" },
-    { week: "15주차", desc: "기말고사" },
-  ],
-  assignment: {
-    title: "매주 코딩 숙제",
-    type: "과제 1",
-    objective: "Python을 활용한 문제 해결 능력 함양",
-    method: "실습 시간에 배운 내용을 응용해 매주 과제 코드 제출",
-    reference: "-",
-  },
-  weights: {
-    core: ["문제해결", "창의융합", "협업인성"],
-    major: ["실습설계", "AI활용"],
-  },
-};
+const splitLines = (text?: string | null) =>
+  (text ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
 
 // --- 아코디언 컴포넌트 ---
 interface AccordionProps {
@@ -187,14 +70,27 @@ const Accordion = ({ title, isOpen, onToggle, children }: AccordionProps) => {
   );
 };
 
+interface SyllabusLocationState {
+  courseOfferingId?: number;
+  courseName?: string;
+  professor?: string;
+}
+
 // --- 메인 페이지 컴포넌트 ---
 const MobileSyllabusPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const state = (location.state ?? {}) as SyllabusLocationState;
+  const courseOfferingId = state.courseOfferingId;
 
-  // state 데이터 또는 기본값 적용
-  const courseName = location.state?.courseName || "프로그래밍언어";
-  const professor = location.state?.professor || "최욱";
+  const {
+    syllabus,
+    isLoading,
+    isError,
+    refetch,
+  } = useSyllabus(courseOfferingId, { enabled: courseOfferingId !== undefined });
+
+  const content: SyllabusContent | null = syllabus?.content ?? null;
 
   // 헤더 설정
   useHeader({
@@ -222,71 +118,120 @@ const MobileSyllabusPage = () => {
     }));
   };
 
-  // 선택 과목에 따른 다이내믹 정보 연산
-  const data = useMemo(() => {
-    if (courseName.includes("웹프로그래밍")) {
-      return {
-        ...DEFAULT_SYLLABUS_DATA,
-        courseName: "웹프로그래밍",
-        professor: professor || "박기석",
-        credits: "2학점",
-        isMajor: "전공",
-        department: "컴퓨터공학과",
-        courseCode: "0008868001",
-        schedule: [{ day: "화", time: "17:00-18:45" }],
-        classroom: "07-304",
-      };
-    } else if (courseName.includes("운영체제")) {
-      return {
-        ...DEFAULT_SYLLABUS_DATA,
-        courseName: "운영체제",
-        professor: professor || "문주팍",
-        credits: "1학점",
-        isMajor: "전공",
-        department: "컴퓨터공학과",
-        courseCode: "0008868001",
-        schedule: [{ day: "화", time: "17:00-18:45" }],
-        classroom: "07-304",
-      };
-    } else if (courseName.includes("창의적사고")) {
-      return {
-        ...DEFAULT_SYLLABUS_DATA,
-        courseName: "창의적사고와문제해결",
-        professor: professor || "김창의",
-        credits: "2학점",
-        isMajor: "교양",
-        department: "교양학부",
-        courseCode: "0001234001",
-        schedule: [{ day: "목", time: "13:00-15:00" }],
-        classroom: "05-202",
-      };
-    }
-    return DEFAULT_SYLLABUS_DATA;
-  }, [courseName, professor]);
+  const courseName = content?.과목명 || state.courseName || "-";
+  const professor = content?.교수 || state.professor || "-";
+
+  const deliveryRows = useMemo(
+    () => toRatioEntries(content?.수업방식비율),
+    [content],
+  );
+  const equipmentRows = useMemo(
+    () => toRatioEntries(content?.기자재활용비율),
+    [content],
+  );
+  const evaluationRows = useMemo(
+    () => toRatioEntries(content?.성적평가비율),
+    [content],
+  );
+  const coreCompetencyRows = useMemo(
+    () => toRatioEntries(content?.핵심역량가중치),
+    [content],
+  );
+  const overviewParagraphs = useMemo(
+    () => splitLines(content?.교과목개요및목적),
+    [content],
+  );
+  const objectiveLines = useMemo(() => splitLines(content?.수업목표), [content]);
 
   const handleAddToTimetable = () => {
-    alert(`"${data.courseName}" 과목이 시간표에 추가되었습니다.`);
+    alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
     navigate(ROUTES.TIMETABLE.EDIT, { replace: true });
   };
+
+  if (courseOfferingId === undefined) {
+    return (
+      <PageWrapper>
+        <EmptyState padding="120px 24px">
+          강의 정보를 찾을 수 없어요. 시간표에서 다시 시도해 주세요.
+        </EmptyState>
+      </PageWrapper>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <HeaderBlock>
+          <Skeleton variant="text" width="60%" height={28} />
+          <Skeleton variant="text" width="30%" height={20} />
+        </HeaderBlock>
+        <CatalogInfo>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              variant="card"
+              height={48}
+              style={{ marginBottom: 8 }}
+            />
+          ))}
+        </CatalogInfo>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper>
+        <EmptyState padding="120px 24px">
+          강의계획서를 불러오지 못했어요.
+          <RetryButton type="button" onClick={() => refetch()}>
+            다시 시도
+          </RetryButton>
+        </EmptyState>
+      </PageWrapper>
+    );
+  }
+
+  if (!content) {
+    return (
+      <PageWrapper>
+        <HeaderBlock>
+          <CourseTitleWrapper>
+            <CourseTitle>{courseName}</CourseTitle>
+            {professor !== "-" && <ProfessorName>{professor}</ProfessorName>}
+          </CourseTitleWrapper>
+        </HeaderBlock>
+        <EmptyState padding="80px 24px">
+          아직 등록된 강의계획서가 없어요.
+        </EmptyState>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
       {/* 1. 헤더 블록 */}
       <HeaderBlock>
         <CourseTitleWrapper>
-          <CourseTitle>{data.courseName}</CourseTitle>
-          <ProfessorName>{data.professor}</ProfessorName>
+          <CourseTitle>{courseName}</CourseTitle>
+          <ProfessorName>{professor}</ProfessorName>
         </CourseTitleWrapper>
         <ChipRow>
-          <Chip>
-            <span>{data.credits}</span>
-          </Chip>
-          <Chip>
-            <span>{data.isMajor}</span>
-          </Chip>
-          <Chip>
-            <span>{data.gradingType}</span>
-          </Chip>
+          {content.학점 && (
+            <Chip>
+              <span>{content.학점}학점</span>
+            </Chip>
+          )}
+          {content.이수구분 && (
+            <Chip>
+              <span>{content.이수구분}</span>
+            </Chip>
+          )}
+          {content.성적평가방법 && (
+            <Chip>
+              <span>{content.성적평가방법}</span>
+            </Chip>
+          )}
         </ChipRow>
       </HeaderBlock>
 
@@ -294,31 +239,32 @@ const MobileSyllabusPage = () => {
       <CatalogInfo>
         <CatalogInfoRow>
           <InfoLabel>학과</InfoLabel>
-          <InfoValue>{data.department}</InfoValue>
+          <InfoValue>{content.학과 || content.소속 || "-"}</InfoValue>
         </CatalogInfoRow>
         <CatalogInfoRow>
           <InfoLabel>학년</InfoLabel>
-          <InfoValue>{data.grade}</InfoValue>
+          <InfoValue>{content.학년 ? `${content.학년}학년` : "-"}</InfoValue>
         </CatalogInfoRow>
         <CatalogInfoRow>
           <InfoLabel>과목코드</InfoLabel>
-          <InfoValue>{data.courseCode}</InfoValue>
+          <InfoValue>{content.과목코드 || "-"}</InfoValue>
         </CatalogInfoRow>
         <CatalogInfoRow>
-          <InfoLabel>시간</InfoLabel>
-          <TimeSlotList>
-            {data.schedule.map((sch, i) => (
-              <TimeSlotItem key={i}>
-                <span className="day">{sch.day}</span>
-                <span className="time">{sch.time}</span>
-              </TimeSlotItem>
-            ))}
-          </TimeSlotList>
+          <InfoLabel>요일/교시/강의실</InfoLabel>
+          <InfoValue>{content.요일교시강의실 || "-"}</InfoValue>
         </CatalogInfoRow>
-        <CatalogInfoRow>
-          <InfoLabel>강의실</InfoLabel>
-          <InfoValue>{data.classroom}</InfoValue>
-        </CatalogInfoRow>
+        {content.면담가능시간 && (
+          <CatalogInfoRow>
+            <InfoLabel>면담가능시간</InfoLabel>
+            <InfoValue>{content.면담가능시간}</InfoValue>
+          </CatalogInfoRow>
+        )}
+        {content.전화번호 && (
+          <CatalogInfoRow>
+            <InfoLabel>연락처</InfoLabel>
+            <InfoValue>{content.전화번호}</InfoValue>
+          </CatalogInfoRow>
+        )}
       </CatalogInfo>
 
       {/* 3. 아코디언 섹션 목록 */}
@@ -329,11 +275,15 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.overview}
           onToggle={() => toggleSection("overview")}
         >
-          <OverviewText>
-            {data.overview.paragraphs.map((p, idx) => (
-              <p key={idx}>{p}</p>
-            ))}
-          </OverviewText>
+          {overviewParagraphs.length > 0 ? (
+            <OverviewText>
+              {overviewParagraphs.map((p, idx) => (
+                <p key={idx}>{p}</p>
+              ))}
+            </OverviewText>
+          ) : (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
 
         {/* 수업목표 */}
@@ -342,11 +292,15 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.objectives}
           onToggle={() => toggleSection("objectives")}
         >
-          <BulletList>
-            {data.objectives.map((obj, idx) => (
-              <li key={idx}>{obj}</li>
-            ))}
-          </BulletList>
+          {objectiveLines.length > 0 ? (
+            <BulletList>
+              {objectiveLines.map((obj, idx) => (
+                <li key={idx}>{obj}</li>
+              ))}
+            </BulletList>
+          ) : (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
 
         {/* 수업진행방법 */}
@@ -355,33 +309,46 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.delivery}
           onToggle={() => toggleSection("delivery")}
         >
-          <TableTitle>수업방식</TableTitle>
-          <DeliveryTable>
-            {data.deliveryMethod.classTypes.map((type, idx) => (
-              <TableCell key={idx}>
-                <div className="label-container">
-                  <span className="label-text">{type.name}</span>
-                </div>
-                <div className="value-container">
-                  <span className="value-text">{type.value}</span>
-                </div>
-              </TableCell>
-            ))}
-          </DeliveryTable>
+          {content.수업진행방법 && <OverviewText><p>{content.수업진행방법}</p></OverviewText>}
+          {deliveryRows.length > 0 && (
+            <>
+              <TableTitle>수업방식</TableTitle>
+              <DeliveryTable $columns={deliveryRows.length}>
+                {deliveryRows.map(([name, value]) => (
+                  <TableCell key={name}>
+                    <div className="label-container">
+                      <span className="label-text">{name}</span>
+                    </div>
+                    <div className="value-container">
+                      <span className="value-text">{value}%</span>
+                    </div>
+                  </TableCell>
+                ))}
+              </DeliveryTable>
+            </>
+          )}
 
-          <TableTitle style={{ marginTop: "8px" }}>기자재활용</TableTitle>
-          <DeliveryTable>
-            {data.deliveryMethod.equipmentTypes.map((type, idx) => (
-              <TableCell key={idx}>
-                <div className="label-container">
-                  <span className="label-text">{type.name}</span>
-                </div>
-                <div className="value-container">
-                  <span className="value-text">{type.value}</span>
-                </div>
-              </TableCell>
-            ))}
-          </DeliveryTable>
+          {equipmentRows.length > 0 && (
+            <>
+              <TableTitle style={{ marginTop: "8px" }}>기자재활용</TableTitle>
+              <DeliveryTable $columns={equipmentRows.length}>
+                {equipmentRows.map(([name, value]) => (
+                  <TableCell key={name}>
+                    <div className="label-container">
+                      <span className="label-text">{name}</span>
+                    </div>
+                    <div className="value-container">
+                      <span className="value-text">{value}%</span>
+                    </div>
+                  </TableCell>
+                ))}
+              </DeliveryTable>
+            </>
+          )}
+
+          {deliveryRows.length === 0 && equipmentRows.length === 0 && !content.수업진행방법 && (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
 
         {/* 학습평가방법 */}
@@ -390,25 +357,39 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.grading}
           onToggle={() => toggleSection("grading")}
         >
-          <GradingProgressBar>
-            {data.evaluation.map((ev, idx) => (
-              <GradingProgressSegment
-                key={idx}
-                $width={ev.value}
-                $bgColor={ev.color}
-              />
-            ))}
-          </GradingProgressBar>
-          <GradingLegendRow>
-            {data.evaluation.map((ev, idx) => (
-              <GradingLegendItem key={idx}>
-                <div className="dot" style={{ backgroundColor: ev.color }} />
-                <span className="text">
-                  {ev.name} {ev.value}%
-                </span>
-              </GradingLegendItem>
-            ))}
-          </GradingLegendRow>
+          {content.학습평가방법 && <OverviewText><p>{content.학습평가방법}</p></OverviewText>}
+          {evaluationRows.length > 0 ? (
+            <>
+              <GradingProgressBar>
+                {evaluationRows.map(([name, value], idx) => (
+                  <GradingProgressSegment
+                    key={name}
+                    $width={value ?? 0}
+                    $bgColor={RATIO_COLORS[idx % RATIO_COLORS.length]}
+                  />
+                ))}
+              </GradingProgressBar>
+              <GradingLegendRow>
+                {evaluationRows.map(([name, value], idx) => (
+                  <GradingLegendItem key={name}>
+                    <div
+                      className="dot"
+                      style={{
+                        backgroundColor: RATIO_COLORS[idx % RATIO_COLORS.length],
+                      }}
+                    />
+                    <span className="text">
+                      {name} {value}%
+                    </span>
+                  </GradingLegendItem>
+                ))}
+              </GradingLegendRow>
+            </>
+          ) : (
+            !content.학습평가방법 && (
+              <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+            )
+          )}
         </Accordion>
 
         {/* 주교재/참고서적 */}
@@ -417,21 +398,71 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.books}
           onToggle={() => toggleSection("books")}
         >
-          {data.references.map((ref, idx) => (
-            <ReferenceCard key={idx}>
+          {content.교재?.주교재?.map((ref, idx) => (
+            <ReferenceCard key={`main-${idx}`}>
               <ReferenceHeaderRow>
-                <ReferenceTitle>{ref.title}</ReferenceTitle>
+                <ReferenceTitle>{ref.교재명 || "-"}</ReferenceTitle>
                 <ReferenceChip>
-                  <span>{ref.type}</span>
+                  <span>주교재</span>
                 </ReferenceChip>
               </ReferenceHeaderRow>
               <ReferenceDetailsRow>
-                <span className="author">{ref.author}</span>
-                <span className="separator">·</span>
-                <span className="details">{ref.details}</span>
+                <span className="author">{ref.저자 || "-"}</span>
+                {ref.출판사 && (
+                  <>
+                    <span className="separator">·</span>
+                    <span className="details">{ref.출판사}</span>
+                  </>
+                )}
+                {ref.발행년도 && (
+                  <>
+                    <span className="separator">·</span>
+                    <span className="details">{ref.발행년도}</span>
+                  </>
+                )}
               </ReferenceDetailsRow>
             </ReferenceCard>
           ))}
+          {content.교재?.참고서적?.map((ref, idx) => (
+            <ReferenceCard key={`ref-${idx}`}>
+              <ReferenceHeaderRow>
+                <ReferenceTitle>{ref.교재명 || "-"}</ReferenceTitle>
+                <ReferenceChip>
+                  <span>참고서적</span>
+                </ReferenceChip>
+              </ReferenceHeaderRow>
+              <ReferenceDetailsRow>
+                <span className="author">{ref.저자 || "-"}</span>
+                {ref.출판사 && (
+                  <>
+                    <span className="separator">·</span>
+                    <span className="details">{ref.출판사}</span>
+                  </>
+                )}
+                {ref.발행년도 && (
+                  <>
+                    <span className="separator">·</span>
+                    <span className="details">{ref.발행년도}</span>
+                  </>
+                )}
+              </ReferenceDetailsRow>
+            </ReferenceCard>
+          ))}
+          {content.교재?.기타서적 && (
+            <ReferenceCard>
+              <ReferenceHeaderRow>
+                <ReferenceTitle>{content.교재.기타서적}</ReferenceTitle>
+                <ReferenceChip>
+                  <span>기타서적</span>
+                </ReferenceChip>
+              </ReferenceHeaderRow>
+            </ReferenceCard>
+          )}
+          {!content.교재?.주교재?.length &&
+            !content.교재?.참고서적?.length &&
+            !content.교재?.기타서적 && (
+              <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+            )}
         </Accordion>
 
         {/* 주별 세부 수업계획 */}
@@ -440,14 +471,18 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.weekly}
           onToggle={() => toggleSection("weekly")}
         >
-          {data.weeklyPlan.map((plan, idx) => (
-            <WeeklyPlanItem key={idx}>
-              <WeeklyChip>
-                <span>{plan.week}</span>
-              </WeeklyChip>
-              <WeeklyDesc>{plan.desc}</WeeklyDesc>
-            </WeeklyPlanItem>
-          ))}
+          {content.주별수업계획?.length ? (
+            content.주별수업계획.map((plan, idx) => (
+              <WeeklyPlanItem key={idx}>
+                <WeeklyChip>
+                  <span>{plan.주차 ? `${plan.주차}주차` : "-"}</span>
+                </WeeklyChip>
+                <WeeklyDesc>{plan.내용 || "-"}</WeeklyDesc>
+              </WeeklyPlanItem>
+            ))
+          ) : (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
 
         {/* 과제 */}
@@ -456,26 +491,46 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.assignments}
           onToggle={() => toggleSection("assignments")}
         >
-          <AssignmentCard>
-            <AssignmentTitleRow>
-              <AssignmentTitle>{data.assignment.title}</AssignmentTitle>
-              <AssignmentChip>
-                <span>{data.assignment.type}</span>
-              </AssignmentChip>
-            </AssignmentTitleRow>
-            <AssignmentField>
-              <span className="label">목표</span>
-              <span className="value">{data.assignment.objective}</span>
-            </AssignmentField>
-            <AssignmentField>
-              <span className="label">진행방법</span>
-              <span className="value">{data.assignment.method}</span>
-            </AssignmentField>
-            <AssignmentField>
-              <span className="label">참고자료</span>
-              <span className="value">{data.assignment.reference}</span>
-            </AssignmentField>
-          </AssignmentCard>
+          {content.과제?.length ? (
+            content.과제.map((assignment, idx) => (
+              <AssignmentCard key={idx}>
+                <AssignmentTitleRow>
+                  <AssignmentTitle>{assignment.과제명 || "-"}</AssignmentTitle>
+                  {assignment.번호 !== null && assignment.번호 !== undefined && (
+                    <AssignmentChip>
+                      <span>과제 {assignment.번호}</span>
+                    </AssignmentChip>
+                  )}
+                </AssignmentTitleRow>
+                {assignment.제출일 && (
+                  <AssignmentField>
+                    <span className="label">제출일</span>
+                    <span className="value">{assignment.제출일}</span>
+                  </AssignmentField>
+                )}
+                {assignment.목표 && (
+                  <AssignmentField>
+                    <span className="label">목표</span>
+                    <span className="value">{assignment.목표}</span>
+                  </AssignmentField>
+                )}
+                {assignment.진행방법및유의사항 && (
+                  <AssignmentField>
+                    <span className="label">진행방법</span>
+                    <span className="value">{assignment.진행방법및유의사항}</span>
+                  </AssignmentField>
+                )}
+                {assignment.참고자료 && (
+                  <AssignmentField>
+                    <span className="label">참고자료</span>
+                    <span className="value">{assignment.참고자료}</span>
+                  </AssignmentField>
+                )}
+              </AssignmentCard>
+            ))
+          ) : (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
 
         {/* 핵심역량 / 전공능력 가중치 */}
@@ -484,26 +539,37 @@ const MobileSyllabusPage = () => {
           isOpen={openSections.weights}
           onToggle={() => toggleSection("weights")}
         >
-          <WeightsSection>
-            <span className="title">핵심역량</span>
-            <TagChipRow>
-              {data.weights.core.map((tag, idx) => (
-                <TagChip key={idx}>
-                  <span>{tag}</span>
-                </TagChip>
-              ))}
-            </TagChipRow>
-          </WeightsSection>
-          <WeightsSection style={{ marginTop: "8px" }}>
-            <span className="title">전공능력</span>
-            <TagChipRow>
-              {data.weights.major.map((tag, idx) => (
-                <TagChip key={idx}>
-                  <span>{tag}</span>
-                </TagChip>
-              ))}
-            </TagChipRow>
-          </WeightsSection>
+          {coreCompetencyRows.length > 0 && (
+            <WeightsSection>
+              <span className="title">핵심역량</span>
+              <TagChipRow>
+                {coreCompetencyRows.map(([name, value]) => (
+                  <TagChip key={name}>
+                    <span>
+                      {name} {value}
+                    </span>
+                  </TagChip>
+                ))}
+              </TagChipRow>
+            </WeightsSection>
+          )}
+          {!!content.전공능력가중치?.length && (
+            <WeightsSection style={{ marginTop: "8px" }}>
+              <span className="title">전공능력</span>
+              <TagChipRow>
+                {content.전공능력가중치.map((w, idx) => (
+                  <TagChip key={idx}>
+                    <span>
+                      {w.전공능력} {w.가중치}
+                    </span>
+                  </TagChip>
+                ))}
+              </TagChipRow>
+            </WeightsSection>
+          )}
+          {coreCompetencyRows.length === 0 && !content.전공능력가중치?.length && (
+            <EmptyState padding="8px 0">등록된 내용이 없어요.</EmptyState>
+          )}
         </Accordion>
       </AccordionSectionGroup>
 
@@ -511,11 +577,17 @@ const MobileSyllabusPage = () => {
       <DisabilitySupportBox>
         <DisabilityTitle>장애학생 학습지원</DisabilityTitle>
         <DisabilityContent>
-          <p>
-            장애학생은 수강 시 필요한 지원 사항에 대하여 담당 교수 및
-            장애학생지원센터에 요청할 수 있어요.
-          </p>
-          <p>예) 학습도우미, 과제제출, 시험시간 연장 등</p>
+          {content.장애학생학습지원 ? (
+            <p>{content.장애학생학습지원}</p>
+          ) : (
+            <>
+              <p>
+                장애학생은 수강 시 필요한 지원 사항에 대하여 담당 교수 및
+                장애학생지원센터에 요청할 수 있어요.
+              </p>
+              <p>예) 학습도우미, 과제제출, 시험시간 연장 등</p>
+            </>
+          )}
         </DisabilityContent>
       </DisabilitySupportBox>
 
@@ -557,6 +629,19 @@ const PageWrapper = styled.div`
   }
 `;
 
+const RetryButton = styled.button`
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 16px;
+  border-radius: var(--radius-full, 999px);
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-subtle, #f8f9fb);
+  color: var(--text-secondary, #333d4b);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
 const HeaderBlock = styled.div`
   display: flex;
   flex-direction: column;
@@ -591,6 +676,7 @@ const ChipRow = styled.div`
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
 `;
 
 const Chip = styled.div`
@@ -641,29 +727,6 @@ const InfoValue = styled.span`
   font-weight: 400;
   line-height: 24px;
   color: var(--text-secondary, #333d4b);
-`;
-
-const TimeSlotList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const TimeSlotItem = styled.div`
-  display: flex;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 24px;
-
-  .day {
-    color: var(--text-secondary, #333d4b);
-    width: 92px;
-  }
-
-  .time {
-    color: var(--text-tertiary, #8b95a1);
-  }
 `;
 
 const AccordionSectionGroup = styled.div`
@@ -752,9 +815,9 @@ const TableTitle = styled.h3`
   margin: 0 0 6px;
 `;
 
-const DeliveryTable = styled.div`
+const DeliveryTable = styled.div<{ $columns: number }>`
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(${({ $columns }) => Math.max($columns, 1)}, 1fr);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 8px;
   overflow: hidden;
@@ -832,6 +895,7 @@ const GradingLegendRow = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
+  flex-wrap: wrap;
 `;
 
 const GradingLegendItem = styled.div`
@@ -975,6 +1039,11 @@ const AssignmentCard = styled.div`
   border-radius: var(--radius-xl, 16px);
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 8px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const AssignmentTitleRow = styled.div`
@@ -989,6 +1058,7 @@ const AssignmentTitle = styled.h4`
   line-height: 24px;
   color: var(--text-secondary, #333d4b);
   margin: 0;
+  flex: 1;
 `;
 
 const AssignmentChip = styled.div`
@@ -996,6 +1066,7 @@ const AssignmentChip = styled.div`
   border: 1px solid var(--border-brand-subtle, #d3e5ff);
   padding: 2px 8px;
   border-radius: var(--radius-full, 999px);
+  flex-shrink: 0;
 
   span {
     font-size: 12px;

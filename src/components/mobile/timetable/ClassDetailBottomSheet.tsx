@@ -12,7 +12,7 @@ import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
-  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
+  "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
 const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
@@ -413,7 +413,22 @@ export default function ClassDetailBottomSheet({
                   <SyllabusButton
                     type="button"
                     onClick={() => {
-                      alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                      // liveClass.courseOfferingId는 시간표 상세 응답에 이미 실려 오므로
+                      // (utils/timetable.ts) 이걸 우선 쓴다. offering?.id는 로컬 개설강의
+                      // 목록과의 조인 결과라 조회 조건(연도/학기)이 안 갖춰지면 비어 있을 수 있다.
+                      const syllabusOfferingId =
+                        liveClass.courseOfferingId ?? offering?.id;
+                      if (syllabusOfferingId === undefined) {
+                        alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                        return;
+                      }
+                      navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                        state: {
+                          courseOfferingId: syllabusOfferingId,
+                          courseName: liveClass.name,
+                          professor: professorName,
+                        },
+                      });
                     }}
                   >
                     강의계획서

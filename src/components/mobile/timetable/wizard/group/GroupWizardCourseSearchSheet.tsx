@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -55,7 +57,7 @@ const SHEET_SNAP_POINTS = [
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
-  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
+  "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
 const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
@@ -150,6 +152,7 @@ const CourseSheetScrollableContent = ({
 };
 
 const GroupWizardCourseSearchSheet = () => {
+  const navigate = useNavigate();
   const target = useTimetableGroupWizardStore((s) => s.search.target);
   const snapIndex = useTimetableGroupWizardStore((s) => s.search.snapIndex);
   const expandedOfferingId = useTimetableGroupWizardStore(
@@ -457,7 +460,17 @@ const GroupWizardCourseSearchSheet = () => {
                               <SecondaryActionButton
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                                  if (row.offeringId === undefined) {
+                                    alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                                    return;
+                                  }
+                                  navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                                    state: {
+                                      courseOfferingId: row.offeringId,
+                                      courseName: row.title,
+                                      professor: row.professor,
+                                    },
+                                  });
                                 }}
                               >
                                 <Icon name="file-document" size={20} />
