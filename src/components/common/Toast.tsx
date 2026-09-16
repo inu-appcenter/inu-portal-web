@@ -93,7 +93,7 @@ const ToastCard = styled(motion.div)`
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #ffffff;
-  border-radius: 9999px;
+  border-radius: 20px;
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   word-break: break-word;

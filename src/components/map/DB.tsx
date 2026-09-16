@@ -481,7 +481,7 @@ export const places: Place[] = [
   {
     latitude: "37.3718872841",
     longitude: "126.6326281161",
-    location: "27호관",
+    location: "28호관",
     place_name: "도시과학대학",
     category: "송도캠퍼스",
     restareaInfo: null,
@@ -500,13 +500,16 @@ export const places: Place[] = [
   {
     latitude: "37.3722445837",
     longitude: "126.6330779615",
-    location: "28호관",
+    location: "27호관",
     place_name: "제2공동실습관",
     category: "송도캠퍼스",
     restareaInfo: null,
     schoolPlaceInfo: null, // 실습관은 학과 정보가 없음
     cafePlaceInfo: null, // 추가된 필드
-    restaurantInfo: null, // 추가된 필드
+    restaurantInfo: {
+      name: "27호관식당",
+      // 추가적인 식당 정보가 있다면 여기에 추가
+    },
     note: "",
   },
   {
@@ -984,16 +987,13 @@ export const restaurantPlaces: Place[] = [
   {
     latitude: "37.3718872841",
     longitude: "126.6326281161",
-    location: "27호관",
+    location: "28호관",
     place_name: "도시과학대학",
     category: "식당",
     restareaInfo: null,
     schoolPlaceInfo: null,
     cafePlaceInfo: null,
-    restaurantInfo: {
-      name: "27호관식당",
-      // 추가적인 식당 정보가 있다면 여기에 추가
-    },
+    restaurantInfo: null,
     note: "",
   },
   {
