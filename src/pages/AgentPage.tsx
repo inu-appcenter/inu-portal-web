@@ -11,8 +11,18 @@ export default function AgentPage() {
       try {
         const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
         if (data?.type === "INTIP_NAVIGATE" && data?.url) {
+          if (data.url.startsWith("tel:") || data.url.startsWith("mailto:")) {
+            window.location.href = data.url;
+            return;
+          }
           if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
-            window.open(data.url, "_blank", "noopener,noreferrer");
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(
+                JSON.stringify({ type: "openUrl", payload: { url: data.url } })
+              );
+            } else {
+              window.open(data.url, "_blank", "noopener,noreferrer");
+            }
           } else {
             navigate(data.url);
           }

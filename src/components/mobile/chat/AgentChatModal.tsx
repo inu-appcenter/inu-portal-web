@@ -58,9 +58,19 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
         if (!data || typeof data !== "object") return;
 
         if (data.type === "INTIP_NAVIGATE" && data.url) {
+          if (data.url.startsWith("tel:") || data.url.startsWith("mailto:")) {
+            window.location.href = data.url;
+            return;
+          }
           onClose();
           if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
-            window.open(data.url, "_blank", "noopener,noreferrer");
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(
+                JSON.stringify({ type: "openUrl", payload: { url: data.url } })
+              );
+            } else {
+              window.open(data.url, "_blank", "noopener,noreferrer");
+            }
           } else {
             navigate(data.url);
           }

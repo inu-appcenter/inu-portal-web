@@ -113,6 +113,17 @@ export const SingleCardItem: React.FC<{
   const handleLinkClick = (url: string) => {
     if (!url) return;
 
+    // 0. 전화걸기(tel:) 및 메일(mailto:) 스키마 처리
+    if (url.startsWith("tel:") || url.startsWith("mailto:")) {
+      if ((window as any).ReactNativeWebView) {
+        (window as any).ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "openUrl", payload: { url } })
+        );
+      }
+      window.location.href = url;
+      return;
+    }
+
     // 1. 도서관 스마트 허브 바로가기 처리
     if (url === "/library" || url === ROUTES.SERVICES.LIBRARY) {
       if (onNavigate) onNavigate();
@@ -157,7 +168,13 @@ export const SingleCardItem: React.FC<{
 
     if (onNavigate) onNavigate();
     if (resolvedUrl.startsWith("http://") || resolvedUrl.startsWith("https://")) {
-      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+      if ((window as any).ReactNativeWebView) {
+        (window as any).ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "openUrl", payload: { url: resolvedUrl } })
+        );
+      } else {
+        window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+      }
     } else {
       navigate(resolvedUrl);
     }
@@ -1618,17 +1635,41 @@ const AcademicInfoCard: React.FC<{
 }> = ({ data }) => {
   if (!data) return null;
 
-  const {
-    koreanName,
-    studentId,
-    departmentName,
-    collegeName,
-    enrollmentStatus,
-    completedSemesterCount,
-    acquiredCredits,
-    gradeAverage,
-    advisorProfessorName,
-  } = data;
+  const koreanName =
+    data.koreanName || data.name || data.studentName || data.korNm || "학우님";
+  const studentId =
+    data.studentId ||
+    data.id ||
+    data.stdNo ||
+    data.hakbeon ||
+    (data.entryYear ? `${data.entryYear}학번` : "");
+  const departmentName =
+    data.departmentName ||
+    data.department ||
+    data.dept ||
+    data.major ||
+    data.deptName ||
+    "";
+  const collegeName = data.collegeName || data.colgNm || "";
+  const enrollmentStatus =
+    data.enrollmentStatus || data.status || data.academicStatus || "재학";
+  const latestEnrollmentChange =
+    data.latestEnrollmentChange || data.flSchregModGbn || "";
+  const completedSemesterCount =
+    data.completedSemesterCount ||
+    data.completedSemesterName ||
+    (data.grade ? `${data.grade}학년` : "");
+  const acquiredCredits =
+    data.acquiredCredits || data.totalCredits || data.credits || "";
+  const gradeAverage =
+    data.gradeAverage || data.gpa || data.mrksAvg || "";
+  const advisorProfessorName =
+    data.advisorProfessorName || data.advisor || data.profNm || "";
+
+  const badgeText =
+    latestEnrollmentChange && latestEnrollmentChange !== enrollmentStatus
+      ? `${enrollmentStatus} · ${latestEnrollmentChange}`
+      : enrollmentStatus || "재학";
 
   return (
     <AcademicCardContainer>
@@ -1637,13 +1678,13 @@ const AcademicInfoCard: React.FC<{
           <GraduationCap size={20} color="#3182f6" />
         </AcademicIconWrap>
         <AcademicTitleWrap>
-          <AcademicTitle>{koreanName || "학우님"}의 학적 정보</AcademicTitle>
+          <AcademicTitle>{koreanName}의 학적 정보</AcademicTitle>
           <AcademicSubtitle>
-            {studentId} · {collegeName ? `${collegeName} ` : ""}{departmentName}
+            {[studentId, [collegeName, departmentName].filter(Boolean).join(" ")].filter(Boolean).join(" · ")}
           </AcademicSubtitle>
         </AcademicTitleWrap>
         <StatusBadge $status={enrollmentStatus}>
-          {enrollmentStatus || "재학"}
+          {badgeText}
         </StatusBadge>
       </AcademicHeader>
 

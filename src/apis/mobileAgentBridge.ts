@@ -31,6 +31,7 @@ function toAnonymousAcademicContext(data: AcademicInfoData) {
     gradeAverage: data.gradeAverage,
     ...(data.entranceDate ? { entranceDate: data.entranceDate.slice(0, 4) } : {}),
     ...(data.latestEnrollmentChange ? { latestEnrollmentChange: data.latestEnrollmentChange } : {}),
+    ...(data.advisorProfessorName ? { advisorProfessorName: data.advisorProfessorName } : {}),
   };
 }
 
