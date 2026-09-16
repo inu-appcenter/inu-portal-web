@@ -175,7 +175,7 @@ export async function executeAgentActionBridge(instruction: any): Promise<AgentA
 }
 
 /**
- * LMS(사이버캠퍼스) 계정 연동 상태 확인
+ * 이러닝(LMS) 계정 연동 상태 확인
  */
 export async function checkLmsAccountLinked(): Promise<{ linked: boolean; user?: any }> {
   const res = await sendBridgeAction<{ linked: boolean; user?: any }>('checkLmsAccount');

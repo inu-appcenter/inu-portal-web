@@ -114,7 +114,7 @@ const LabsPage = () => {
                 <Divider margin="0" />
                 <AppItem
                   iconElement={<GraduationCap size={22} color="#16a34a" />}
-                  title={"사이버캠퍼스 LMS 스마트 허브"}
+                  title={"이러닝(LMS) 스마트 허브"}
                   description={
                     "이번 학기 수강 강좌 확인 및 과제·퀴즈 마감 전 정시 리마인더 예약"
                   }

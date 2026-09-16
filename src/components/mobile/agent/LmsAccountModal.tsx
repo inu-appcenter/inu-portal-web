@@ -50,7 +50,7 @@ export const LmsAccountModal: React.FC<Props> = ({
         if (onSuccess) onSuccess();
         onClose();
       } else {
-        setErrorMessage(res.errorMessage || "사이버캠퍼스 로그인에 실패했습니다.");
+        setErrorMessage(res.errorMessage || "이러닝(LMS) 로그인에 실패했습니다.");
       }
     } catch (err: any) {
       setErrorMessage(err?.message || "오류가 발생했습니다.");
@@ -65,7 +65,7 @@ export const LmsAccountModal: React.FC<Props> = ({
         <Header>
           <TitleRow>
             <GraduationCap size={20} color="#00a651" />
-            <Title>사이버캠퍼스(LMS) 계정 연동</Title>
+            <Title>이러닝(LMS) 계정 연동</Title>
           </TitleRow>
           <CloseButton onClick={onClose} type="button">
             <X size={20} />
@@ -74,7 +74,7 @@ export const LmsAccountModal: React.FC<Props> = ({
 
         <Form onSubmit={handleSubmit}>
           <NoticeBox>
-            💡 인천대 포털, 사이버캠퍼스(LMS), 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 연동하시면 포털 학적, LMS 과제, 도서관 좌석까지 모든 캠퍼스 서비스가 안전하게 한 번에 자동 연동됩니다. (기기 보안 영역 SecureStore 보관)
+            💡 인천대 포털, 이러닝(LMS), 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 연동하시면 포털 학적, LMS 과제, 도서관 좌석까지 모든 캠퍼스 서비스가 안전하게 한 번에 자동 연동됩니다. (기기 보안 영역 SecureStore 보관)
           </NoticeBox>
 
           <InputGroup>
@@ -98,7 +98,7 @@ export const LmsAccountModal: React.FC<Props> = ({
               <Lock size={16} color="#8b95a1" />
               <Input
                 type="password"
-                placeholder="사이버캠퍼스 비밀번호"
+                placeholder="이러닝 비밀번호 (포털 비밀번호)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}

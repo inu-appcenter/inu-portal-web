@@ -1739,7 +1739,7 @@ const PortalAuthRequiredCard: React.FC<{
         <KeyRound size={22} color="#f04452" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>포털 계정 1회 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
           학적 정보 조회를 위해 최초 1회 포털 로그인이 필요합니다. 입력하신 정보는 기기 보안 영역(KeyStore)에만 안전하게 보관됩니다.
         </PortalAuthDesc>
@@ -2913,18 +2913,18 @@ const LibraryAuthRequiredCard: React.FC<{
         <BookOpen size={22} color="#3182f6" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>도서관 계정 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
-          좌석 예약, 이용 연장 및 스터디룸 신청을 위해 도서관 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+          도서관 좌석 및 시설 이용을 위해 포털 계정 연동이 필요합니다. 포털, 이러닝(LMS), 도서관은 동일한 계정을 사용하므로 1회 연동으로 자동 연동됩니다. (기기 보안 영역 보관)
         </PortalAuthDesc>
       </PortalAuthTextWrap>
       <PortalAuthActionBtn
         type="button"
         onClick={() => {
-          window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+          window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
       >
-        도서관 계정 연동하기
+        포털 계정 연동하기
       </PortalAuthActionBtn>
     </PortalAuthContainer>
   );
@@ -3285,7 +3285,7 @@ const LmsAssignmentsCard: React.FC<{
     <LibraryCardBox>
       <CardHeader>
         <GraduationCap size={18} color="#00a651" />
-        <CardTitle>사이버캠퍼스(LMS) 과제 & 강좌</CardTitle>
+        <CardTitle>이러닝(LMS) 과제 & 강좌</CardTitle>
         <LmsCountBadge>
           {events.length > 0 ? `마감 예정 ${events.length}건` : `수강 중 ${courses.length}과목`}
         </LmsCountBadge>
@@ -3342,19 +3342,19 @@ const LmsAuthRequiredCard: React.FC<{
         <GraduationCap size={22} color="#00a651" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>사이버캠퍼스(LMS) 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
-          강좌별 과제 마감 일정 및 미제출 과제를 확인하려면 LMS 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+          강좌별 과제 마감 일정 및 미제출 과제를 확인하려면 포털 계정 연동이 필요합니다. 포털, 이러닝(LMS), 도서관은 동일한 계정을 사용하므로 1회 연동으로 자동 연동됩니다. (기기 보안 영역 보관)
         </PortalAuthDesc>
       </PortalAuthTextWrap>
       <PortalAuthActionBtn
         type="button"
         style={{ background: '#00a651' }}
         onClick={() => {
-          window.dispatchEvent(new CustomEvent("openLmsAccountModal"));
+          window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
       >
-        LMS 계정 연동하기
+        포털 계정 연동하기
       </PortalAuthActionBtn>
     </PortalAuthContainer>
   );
