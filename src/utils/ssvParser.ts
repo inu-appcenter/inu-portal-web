@@ -293,7 +293,7 @@ export function parseAcademicBasicInfo(responseBody: string): AcademicBasicInfo 
   };
 }
 
-function enrichAcademicRow(row: Record<string, string>, codes: string, departments: Record<string, string>) {
+function enrichAcademicRow(row: Record<string, string>, codes: string, departments: Record<string, string>): Record<string, any> {
   const displayFields: Record<string, string> = {};
   const fields: Record<string, string> = {};
   const mappings = [

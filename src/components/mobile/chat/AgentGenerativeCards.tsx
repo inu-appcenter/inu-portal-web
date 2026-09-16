@@ -115,11 +115,6 @@ export const SingleCardItem: React.FC<{
 
     // 0. 전화걸기(tel:) 및 메일(mailto:) 스키마 처리
     if (url.startsWith("tel:") || url.startsWith("mailto:")) {
-      if ((window as any).ReactNativeWebView) {
-        (window as any).ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "openUrl", payload: { url } })
-        );
-      }
       window.location.href = url;
       return;
     }
@@ -149,32 +144,43 @@ export const SingleCardItem: React.FC<{
       window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       return;
     }
-    if (url === "openPortalAccountModal" || url === "/portal-account" || url === "/academic" || url.startsWith("/academic")) {
+    if (
+      url === "openPortalAccountModal" ||
+      url === "/portal-account" ||
+      url === "/academic" ||
+      url.startsWith("/academic")
+    ) {
       if (onNavigate) onNavigate();
       window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
       return;
     }
 
-    // 4. my-page 오타 보정 -> /mypage
     let resolvedUrl = url;
-    if (resolvedUrl === "/my-page" || resolvedUrl.startsWith("/my-page")) {
-      resolvedUrl = resolvedUrl.replace("/my-page", "/mypage");
-    }
 
-    // 5. /mobile/daily-brief 오타 보정 -> /mypage/notification/daily-brief
-    if (resolvedUrl.startsWith("/mobile/daily-brief")) {
+    // 4. 경로 보정 및 정규화
+    if (resolvedUrl === "/notice" || resolvedUrl.startsWith("/notice/")) {
+      resolvedUrl = resolvedUrl.replace("/notice", "/home/notice");
+    } else if (resolvedUrl === "/deptnotice" || resolvedUrl.startsWith("/deptnotice?")) {
+      resolvedUrl = resolvedUrl.replace("/deptnotice", "/home/deptnotice");
+    } else if (resolvedUrl === "/menu" || resolvedUrl.startsWith("/menu?")) {
+      resolvedUrl = resolvedUrl.replace("/menu", "/home/menu");
+    } else if (resolvedUrl === "/calendar" || resolvedUrl.startsWith("/calendar?")) {
+      resolvedUrl = resolvedUrl.replace("/calendar", "/home/calendar");
+    } else if (resolvedUrl === "/tips" || resolvedUrl.startsWith("/tips/")) {
+      resolvedUrl = resolvedUrl.replace("/tips", "/home/tips");
+    } else if (resolvedUrl === "/my-page" || resolvedUrl.startsWith("/my-page")) {
+      resolvedUrl = resolvedUrl.replace("/my-page", "/mypage");
+    } else if (resolvedUrl.startsWith("/mobile/daily-brief")) {
       resolvedUrl = resolvedUrl.replace("/mobile/daily-brief", "/mypage/notification/daily-brief");
+    } else if (resolvedUrl === "/mypage/notification/reminder" || resolvedUrl.startsWith("/mypage/notification/reminder")) {
+      resolvedUrl = "/mypage/notification/daily-brief?tab=agent";
+    } else if (resolvedUrl === "/mypage/notification/keyword" || resolvedUrl.startsWith("/mypage/notification/keyword")) {
+      resolvedUrl = "/mypage/notification";
     }
 
     if (onNavigate) onNavigate();
     if (resolvedUrl.startsWith("http://") || resolvedUrl.startsWith("https://")) {
-      if ((window as any).ReactNativeWebView) {
-        (window as any).ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "openUrl", payload: { url: resolvedUrl } })
-        );
-      } else {
-        window.open(resolvedUrl, "_blank", "noopener,noreferrer");
-      }
+      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
     } else {
       navigate(resolvedUrl);
     }
@@ -649,7 +655,7 @@ const ReminderSettingResultCard: React.FC<{
         type="button"
         onClick={() => {
           if (onNavigate) onNavigate();
-          navigate("/mobile/daily-brief?tab=agent");
+          navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=agent`);
         }}
       >
         <span>내 맞춤 알림 관리</span>
