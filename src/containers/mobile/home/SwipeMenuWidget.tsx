@@ -86,7 +86,28 @@ export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onN
   const getMealInfo = (
     cafeteriaName: string,
     hour: number,
+    requestedMeal?: string,
   ): { index: number; label: string } => {
+    // 1. 명시적으로 requestedMeal이 전달된 경우 우선 적용
+    if (requestedMeal) {
+      const meal = requestedMeal.trim();
+      if (meal.includes("조식") || meal.includes("아침")) {
+        return { index: 0, label: "조식" };
+      }
+      if (meal.includes("석식") || meal.includes("저녁")) {
+        return { index: 2, label: "석식" };
+      }
+      if (meal.includes("중식") || meal.includes("점심")) {
+        return { index: 1, label: "중식" };
+      }
+    }
+
+    // 2. 시간대 기반 자동 판별
+    // 심야/새벽(08:00 이전)에는 당일 중식을 기본으로 표출
+    if (hour < 8.0) {
+      return { index: 1, label: "중식" };
+    }
+
     const hasBreakfast = cafeteriaName === "제1기숙사식당";
 
     if (hasBreakfast && hour < 9.5) {
@@ -141,7 +162,7 @@ export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onN
   const slides = useMemo(
     () =>
       cafeterias.flatMap((caf) => {
-        const mealInfo = getMealInfo(caf.title, currentHour);
+        const mealInfo = getMealInfo(caf.title, currentHour, initialMealType);
         const sections = parseCafeteriaSections(
           menuDataList[caf.title]?.menus?.[mealInfo.index],
         );
@@ -152,7 +173,7 @@ export default function SwipeMenuWidget({ initialCafeteria, initialMealType, onN
           sections: group,
         }));
       }),
-    [menuDataList, currentHour],
+    [menuDataList, currentHour, initialMealType],
   );
 
   const handleCardClick = (cafeteriaName: string) => {
