@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { X, ShieldCheck, Lock, User } from "lucide-react";
-import { savePortalAccount, isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
+import { savePortalAccount, deletePortalAccount, fetchAcademicInfoFromApp, isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
 
 interface Props {
   isOpen: boolean;
@@ -17,6 +17,7 @@ export const PortalAccountModal: React.FC<Props> = ({
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export const PortalAccountModal: React.FC<Props> = ({
       setStudentId("");
       setPassword("");
       setErrorMessage("");
+      setLoadingMessage("");
     }
   }, [isOpen]);
 
@@ -42,13 +44,31 @@ export const PortalAccountModal: React.FC<Props> = ({
     }
 
     setLoading(true);
+    setLoadingMessage("기기 보안 영역에 저장 중...");
     setErrorMessage("");
 
     try {
       const res = await savePortalAccount(studentId.trim(), password.trim());
       if (res.success) {
-        if (onSuccess) onSuccess();
-        onClose();
+        setLoadingMessage("포털 로그인 및 학적 정보를 확인 중입니다... (약 10초)");
+        // 최초 1회 학적 정보 스크래핑을 직접 수행하여 유효성 검증 및 사전 캐싱 완료
+        const academicRes = await fetchAcademicInfoFromApp();
+        if (academicRes.success) {
+          if (onSuccess) onSuccess();
+          onClose();
+        } else {
+          // 학적 조회가 실패한 경우 (로그인 실패 등)
+          const errText = academicRes.errorMessage || "포털 로그인에 실패했습니다.";
+          const isCredError = errText.includes("비밀번호") || errText.includes("아이디") || errText.includes("틀렸습니다") || errText.includes("휴면");
+          if (isCredError) {
+            await deletePortalAccount().catch(() => {});
+            setErrorMessage("학번 또는 비밀번호가 일치하지 않습니다. 다시 확인해 주세요.");
+          } else {
+            // 일시적 ERP 오류인 경우 계정 저장은 유지하고 성공 처리
+            if (onSuccess) onSuccess();
+            onClose();
+          }
+        }
       } else {
         setErrorMessage(res.errorMessage || "계정 연동에 실패했습니다.");
       }
@@ -56,6 +76,7 @@ export const PortalAccountModal: React.FC<Props> = ({
       setErrorMessage(err?.message || "오류가 발생했습니다.");
     } finally {
       setLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -108,7 +129,7 @@ export const PortalAccountModal: React.FC<Props> = ({
           {errorMessage && <ErrorText>{errorMessage}</ErrorText>}
 
           <SubmitButton type="submit" disabled={loading}>
-            {loading ? "기기에 안전하게 저장 중..." : "계정 연동 완료"}
+            {loading ? (loadingMessage || "기기에 안전하게 저장 중...") : "계정 연동 완료"}
           </SubmitButton>
         </Form>
       </ModalContainer>
