@@ -58,6 +58,7 @@ export const ROUTES = {
   //실험실
   LABS: {
     ROOT: "/labs",
+    ROUTINE: "/labs/routine",
     PORTAL: {
       BASIC_INFO: "/labs/portal/basic-info",
     },

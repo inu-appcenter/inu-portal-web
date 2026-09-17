@@ -45,6 +45,31 @@ export const toggleAgentReminder = async (
 };
 
 /**
+ * AI 맞춤 알림 / 루틴 신규 등록
+ */
+export const createAgentReminder = async (
+  req: import("@/types/agentReminder").AgentReminderCreateRequest,
+): Promise<ApiResponse<AgentReminder>> => {
+  const response = await tokenInstance.post<ApiResponse<AgentReminder>>(
+    "/api/agent/reminders",
+    req,
+  );
+  return response.data;
+};
+
+/**
+ * AI 맞춤 알림 즉시 테스트 발송
+ */
+export const testAgentReminder = async (
+  id: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    `/api/agent/reminders/${id}/test`,
+  );
+  return response.data;
+};
+
+/**
  * AI 맞춤 알림 삭제
  */
 export const deleteAgentReminder = async (
@@ -55,3 +80,4 @@ export const deleteAgentReminder = async (
   );
   return response.data;
 };
+

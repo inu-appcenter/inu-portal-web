@@ -79,6 +79,7 @@ import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotific
 import MobileAdminChatPage from "@/pages/mobile/Admin/MobileAdminChatPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
+import LabsRoutinePage from "@/pages/mobile/Labs/LabsRoutinePage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
@@ -191,6 +192,11 @@ export const router = createBrowserRouter([
               {
                 index: true,
                 element: <LabsPage />,
+              },
+              {
+                /* 실제 경로: /labs/routine */
+                path: "routine",
+                element: <LabsRoutinePage />,
               },
               {
                 /* 실제 경로: /labs/portal/basic-info */

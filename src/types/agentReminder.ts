@@ -19,6 +19,17 @@ export interface AgentReminder {
   createdAt: string;
 }
 
+export interface AgentReminderCreateRequest {
+  title: string;
+  targetTime: string;
+  repeatType: AgentReminderRepeatType;
+  targetTool: string;
+  toolParamsJson?: string;
+  titleTemplate?: string;
+  bodyTemplate?: string;
+  route?: string;
+}
+
 export interface AgentReminderUpdateRequest {
   title?: string;
   targetTime?: string;
@@ -29,3 +40,4 @@ export interface AgentReminderUpdateRequest {
   route?: string;
   enabled?: boolean;
 }
+
