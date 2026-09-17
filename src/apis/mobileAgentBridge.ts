@@ -145,45 +145,59 @@ export async function deletePortalAccount(): Promise<AgentActionResult<{ linked:
   return sendBridgeAction<{ linked: boolean }>('deletePortalAccount');
 }
 
+let inflightAcademicPromise: Promise<AgentActionResult<AcademicInfoData>> | null = null;
+
 /**
  * 모바일 앱 백그라운드 SSO를 통해 최신 학적 정보 조회 실행 및 웹 중앙화 파서 적용
  */
-export async function fetchAcademicInfoFromApp(): Promise<AgentActionResult<AcademicInfoData>> {
-  // The native SSO flow can include portal login and an ERP redirect. Its own
-  // scraper budget is 35 seconds, so this must remain longer than that budget.
-  const bridgeRes = await sendBridgeAction<any>('fetchAcademicInfo', null, 45000);
-  if (!bridgeRes.success) {
-    return {
-      success: false,
-      errorCode: bridgeRes.errorCode,
-      errorMessage: bridgeRes.errorMessage,
-    };
+export async function fetchAcademicInfoFromApp(forceRefresh = false): Promise<AgentActionResult<AcademicInfoData>> {
+  if (inflightAcademicPromise && !forceRefresh) {
+    return inflightAcademicPromise;
   }
 
-  try {
-    const rawPayload = bridgeRes.data?.rawSsv || bridgeRes.data;
-    if (typeof rawPayload === 'string') {
-      const parsed = parseAcademicBasicInfo(rawPayload);
-      return {
-        success: true,
-        data: parsed as unknown as AcademicInfoData,
-      };
-    } else if (rawPayload && typeof rawPayload === 'object' && rawPayload.studentId) {
-      // 이미 파싱된 객체인 경우 (하위 호환)
-      return {
-        success: true,
-        data: rawPayload as AcademicInfoData,
-      };
-    } else {
-      throw new Error('ERP 원본 학적 응답 데이터가 비어있습니다.');
+  inflightAcademicPromise = (async () => {
+    try {
+      // The native SSO flow can include portal login and an ERP redirect. Its own
+      // scraper budget is 35 seconds, so this must remain longer than that budget.
+      const bridgeRes = await sendBridgeAction<any>('fetchAcademicInfo', null, 45000);
+      if (!bridgeRes.success) {
+        return {
+          success: false,
+          errorCode: bridgeRes.errorCode,
+          errorMessage: bridgeRes.errorMessage,
+        };
+      }
+
+      try {
+        const rawPayload = bridgeRes.data?.rawSsv || bridgeRes.data;
+        if (typeof rawPayload === 'string') {
+          const parsed = parseAcademicBasicInfo(rawPayload);
+          return {
+            success: true,
+            data: parsed as unknown as AcademicInfoData,
+          };
+        } else if (rawPayload && typeof rawPayload === 'object' && rawPayload.studentId) {
+          // 이미 파싱된 객체인 경우 (하위 호환)
+          return {
+            success: true,
+            data: rawPayload as AcademicInfoData,
+          };
+        } else {
+          throw new Error('ERP 원본 학적 응답 데이터가 비어있습니다.');
+        }
+      } catch (err: any) {
+        return {
+          success: false,
+          errorCode: 'ERP_ERROR',
+          errorMessage: err?.message || '학적 데이터 파싱 오류',
+        };
+      }
+    } finally {
+      inflightAcademicPromise = null;
     }
-  } catch (err: any) {
-    return {
-      success: false,
-      errorCode: 'ERP_ERROR',
-      errorMessage: err?.message || '학적 데이터 파싱 오류',
-    };
-  }
+  })();
+
+  return inflightAcademicPromise;
 }
 
 /**
