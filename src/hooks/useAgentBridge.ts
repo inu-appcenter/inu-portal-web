@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { resolveClientContext, executeAgentActionBridge } from "@/apis/mobileAgentBridge";
+import {
+  resolveClientContext,
+  executeAgentActionBridge,
+  registerLocalWatchJobInApp,
+  cancelLocalWatchJobInApp,
+} from "@/apis/mobileAgentBridge";
 
 interface UseAgentBridgeOptions {
   onClose?: () => void;
@@ -92,6 +97,12 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
               "*"
             );
           }
+        } else if (data.type === "REGISTER_LOCAL_WATCH_JOB" && data.payload) {
+          console.log("[useAgentBridge] Registering local watch job:", data.payload);
+          await registerLocalWatchJobInApp(data.payload);
+        } else if (data.type === "CANCEL_LOCAL_WATCH_JOB" && data.id) {
+          console.log("[useAgentBridge] Cancelling local watch job:", data.id);
+          await cancelLocalWatchJobInApp(data.id);
         }
       } catch {}
     };
