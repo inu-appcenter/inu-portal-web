@@ -12,7 +12,8 @@ export interface Place {
     | "미추홀캠퍼스"
     | "카페"
     | "식당"
-    | "편의점";
+    | "편의점"
+    | "텀블러 세척기";
   restareaInfo: RestArea | null;
   schoolPlaceInfo: Department[] | null; // 수정된 부분
   cafePlaceInfo: Cafe | null;
@@ -1205,6 +1206,58 @@ export const restaurantPlaces: Place[] = [
       name: "emart24도서관",
       // 추가적인 식당 정보가 있다면 여기에 추가
     },
+    note: "",
+  },
+];
+
+//텀블러 세척기 위치 정보
+export const tumblerPlaces: Place[] = [
+  {
+    latitude: "37.375637411134655",
+    longitude: "126.63469004660143",
+    location: "5호관 A동 1층",
+    place_name: "자연과학대학",
+    category: "텀블러 세척기",
+    restareaInfo: null,
+    schoolPlaceInfo: null,
+    cafePlaceInfo: null,
+    restaurantInfo: null,
+    note: "",
+  },
+  {
+    latitude: "37.37465466",
+    longitude: "126.6337549",
+    location: "7호관 B동 1층",
+    place_name: "정보기술대학",
+    category: "텀블러 세척기",
+    restareaInfo: null,
+    schoolPlaceInfo: null,
+    cafePlaceInfo: null,
+    restaurantInfo: null,
+    note: "",
+  },
+  {
+    latitude: "37.37402624",
+    longitude: "126.6330411",
+    location: "8호관 C동 1층",
+    place_name: "공과대학",
+    category: "텀블러 세척기",
+    restareaInfo: null,
+    schoolPlaceInfo: null,
+    cafePlaceInfo: null,
+    restaurantInfo: null,
+    note: "",
+  },
+  {
+    latitude: "37.37559782839164",
+    longitude: "126.6328188884216",
+    location: "12호관 1층",
+    place_name: "컨벤션센터",
+    category: "텀블러 세척기",
+    restareaInfo: null,
+    schoolPlaceInfo: null,
+    cafePlaceInfo: null,
+    restaurantInfo: null,
     note: "",
   },
 ];
