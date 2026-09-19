@@ -42,38 +42,22 @@ import {
   createAgentReminder,
   updateAgentReminder,
 } from "@/apis/agentReminder";
-import {
-  getDailyBriefSettings,
-  updateDailyBriefSettings,
-  getLocalDailyBriefSettings,
-} from "@/apis/dailyBrief";
-import {
-  getKeywords,
-  createKeyword,
-  deleteKeyword,
-  getKeywordsNotice,
-  subscribeKeywordsNotice,
-  getSubscribedDepartments,
-  subscribeSchoolDepartment,
-} from "@/apis/notices";
 import { getSchoolDepartments, type SchoolDepartment } from "@/apis/departments";
 import { getSchoolNoticeCategories } from "@/apis/categories";
-import type { AgentReminder, AgentReminderRepeatType, RoutineScheduleItem } from "@/types/agentReminder";
-import type { DailyBriefSettings, ScheduleScope } from "@/types/dailyBrief";
-import type { Keyword } from "@/types/notices";
+import type {
+  AgentReminder,
+  AgentReminderRepeatType,
+  RoutineScheduleItem,
+  RoutineTriggerCondition,
+  RoutineTriggerType,
+  RoutineActionBlock,
+  RoutineActionType,
+} from "@/types/agentReminder";
+import type { ScheduleScope } from "@/types/dailyBrief";
 import Skeleton from "@/components/common/Skeleton";
 import { trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
 import Ripple from "@/components/common/Ripple";
-
-export interface RoutineTimeCondition {
-  id: string;
-  ampm: "AM" | "PM";
-  targetHour: string;
-  targetMinute: string;
-  selectedDays: string[];
-  repeatType: AgentReminderRepeatType;
-}
 
 export interface RoutinePreset {
   id: string;
@@ -92,7 +76,6 @@ export interface RoutinePreset {
 }
 
 export const ROUTINE_PRESETS: RoutinePreset[] = [
-  // 이동할 때 유용한
   {
     id: "preset-bus-inip",
     category: "transit",
@@ -123,7 +106,6 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenSubtitle: "오후 05:30\n평일 (월~금)",
     whatTitle: "인천대 정문 정류소 실시간 버스 도착",
   },
-  // 특정 시간이나 장소에서 유용한
   {
     id: "preset-now-brief",
     category: "time_place",
@@ -154,21 +136,20 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenSubtitle: "오전 11:30\n평일 (월~금)",
     whatTitle: "학생식당 & 기숙사 식당 중식 메뉴",
   },
-  // 수업 및 학업
   {
     id: "preset-timetable",
     category: "study",
-    title: "오늘의 강의 & 날씨 알림",
-    description: "당일 첫 수업 강의실 위치와 캠퍼스 날씨 알림을 받아요.",
+    title: "오늘의 강의 & 시간표 알림",
+    description: "당일 첫 수업 강의실 위치와 시작 시간 알림을 받아요.",
     targetTime: "08:30",
     repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE", "WEATHER"],
+    targetTools: ["TIMETABLE"],
     toolParams: { iconType: "timetable", iconBg: "#a855f7" },
     iconType: "timetable",
     iconBg: "#a855f7",
     whenTitle: "강의 시작 전",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "오늘의 강의실 위치 및 캠퍼스 날씨",
+    whatTitle: "오늘의 강의실 위치 및 시간표",
   },
   {
     id: "preset-notice",
@@ -189,39 +170,53 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
 
 export const AVAILABLE_ACTIONS = [
   {
-    id: "WEATHER",
-    title: "캠퍼스 날씨",
-    description: "송도 캠퍼스 기온 및 강수 정보 알림을 받아요",
-    icon: <Sun size={24} color="#5c9cf8" />,
-    iconBg: "#5c9cf8",
-  },
-  {
-    id: "BUS",
-    title: "실시간 버스",
-    description: "지정한 정류소 실시간 버스 도착 알림을 받아요",
-    icon: <Bus size={24} color="#ff7a00" />,
+    id: "DEPT_NOTICE" as RoutineActionType,
+    title: "학과 공지 알림",
+    description: "선택한 학과의 새 공지 및 학과별 키워드 알림을 받아요",
+    icon: <Building2 size={24} color="#ff7a00" />,
     iconBg: "#ff7a00",
   },
   {
-    id: "CAFETERIA",
-    title: "학식 식단",
-    description: "선택한 식당의 당일 식사 메뉴 알림을 받아요",
-    icon: <Utensils size={24} color="#22c55e" />,
-    iconBg: "#22c55e",
+    id: "SCHOOL_NOTICE" as RoutineActionType,
+    title: "학교 공지 알림",
+    description: "학교 홈페이지 새 공지 및 카테고리/키워드 알림을 받아요",
+    icon: <Bell size={24} color="#5c9cf8" />,
+    iconBg: "#5c9cf8",
   },
   {
-    id: "TIMETABLE",
+    id: "TIMETABLE" as RoutineActionType,
     title: "시간표 / 강의실",
     description: "오늘 첫 수업 시간과 강의실 위치 알림을 받아요",
     icon: <Calendar size={24} color="#a855f7" />,
     iconBg: "#a855f7",
   },
   {
-    id: "NOTICE",
-    title: "새 공지사항",
-    description: "학교 및 학과 최신 주요 공지 알림을 받아요",
-    icon: <Bell size={24} color="#3b82f6" />,
+    id: "SCHEDULE" as RoutineActionType,
+    title: "학사일정 알림",
+    description: "다가오는 주요 학사일정 및 D-day 사전 알림을 받아요",
+    icon: <GraduationCap size={24} color="#3b82f6" />,
     iconBg: "#3b82f6",
+  },
+  {
+    id: "WEATHER" as RoutineActionType,
+    title: "캠퍼스 날씨",
+    description: "송도 캠퍼스 기온 및 강수 정보 알림을 받아요",
+    icon: <Sun size={24} color="#5c9cf8" />,
+    iconBg: "#5c9cf8",
+  },
+  {
+    id: "BUS" as RoutineActionType,
+    title: "실시간 버스",
+    description: "지정한 정류소 실시간 버스 도착 알림을 받아요",
+    icon: <Bus size={24} color="#ff7a00" />,
+    iconBg: "#ff7a00",
+  },
+  {
+    id: "CAFETERIA" as RoutineActionType,
+    title: "학식 식단",
+    description: "선택한 식당의 당일 식사 메뉴 알림을 받아요",
+    icon: <Utensils size={24} color="#22c55e" />,
+    iconBg: "#22c55e",
   },
 ];
 
@@ -242,6 +237,7 @@ export const ROUTINE_ICONS = [
   { id: "lightbulb", label: "아이디어/팁" },
   { id: "smile", label: "응원/횃불이" },
   { id: "shield", label: "보안/출석" },
+  { id: "dept", label: "학과/전공" },
 ];
 
 export const ROUTINE_COLORS = [
@@ -304,7 +300,9 @@ export const getDefaultIconAndBgForTools = (toolsStr?: string) => {
   if (upper.includes("BUS")) return { iconId: "bus", bg: "#ff7a00" };
   if (upper.includes("CAFETERIA")) return { iconId: "cafeteria", bg: "#22c55e" };
   if (upper.includes("TIMETABLE")) return { iconId: "timetable", bg: "#a855f7" };
+  if (upper.includes("DEPT_NOTICE")) return { iconId: "dept", bg: "#ff7a00" };
   if (upper.includes("NOTICE")) return { iconId: "notice", bg: "#3b82f6" };
+  if (upper.includes("SCHEDULE")) return { iconId: "graduation", bg: "#3b82f6" };
   if (upper.includes("WEATHER")) return { iconId: "sun", bg: "#5c9cf8" };
   return { iconId: "sparkles", bg: "#5c9cf8" };
 };
@@ -349,23 +347,6 @@ const SCHEDULE_SCOPE_OPTIONS = [
   { label: "학교 및 학과 전체 학사일정", value: "ALL" as ScheduleScope },
   { label: "학교 공식 학사일정만", value: "SCHOOL_ONLY" as ScheduleScope },
   { label: "내 학과 학사일정만", value: "DEPT_ONLY" as ScheduleScope },
-];
-
-const BRIEF_TIME_OPTIONS = [
-  "07:00",
-  "07:30",
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "12:00",
-  "13:00",
-  "18:00",
-  "20:00",
-  "22:00",
 ];
 
 const DAYS = [
@@ -418,7 +399,7 @@ export default function MobileRoutineDetailPage() {
     );
   }, [id, isSystemRoutine]);
 
-  // System routine sub-type mapping with backwards compatibility
+  // System routine sub-type mapping
   const systemType = useMemo<SystemRoutineType | null>(() => {
     if (id === "system-timetable-brief" || id === "system-timetable") return "timetable-brief";
     if (id === "system-timetable-pre") return "timetable-pre";
@@ -430,32 +411,15 @@ export default function MobileRoutineDetailPage() {
 
   const [reminder, setReminder] = useState<AgentReminder | null>(null);
   const [preset, setPreset] = useState<RoutinePreset | null>(null);
-  const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
   
   // Notice & Categories & Departments states
   const [schoolCategories, setSchoolCategories] = useState<string[]>([]);
-  const [subscribedSchoolCategories, setSubscribedSchoolCategories] = useState<string[]>([]);
   const [allDepartments, setAllDepartments] = useState<SchoolDepartment[]>([]);
-  const [subscribedDeptCodes, setSubscribedDeptCodes] = useState<string[]>([]);
-  const [deptSearchQuery, setDeptSearchQuery] = useState("");
-  const [schoolKeywords, setSchoolKeywords] = useState<Keyword[]>([]);
-  const [deptKeywords, setDeptKeywords] = useState<Keyword[]>([]);
-  const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState(true);
-  const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState(true);
 
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isEditing, setIsEditing] = useState(isNew);
   const [isTesting, setIsTesting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isToolDrawerOpen, setIsToolDrawerOpen] = useState(false);
-
-  // Modals for Actions
-  const [isBriefTimeModalOpen, setIsBriefTimeModalOpen] = useState(false);
-  const [isPreAlertMinutesModalOpen, setIsPreAlertMinutesModalOpen] = useState(false);
-  const [isScheduleTimeModalOpen, setIsScheduleTimeModalOpen] = useState(false);
-  const [isScheduleScopeModalOpen, setIsScheduleScopeModalOpen] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
 
   // Icon & Theme Color modal
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
@@ -464,35 +428,61 @@ export default function MobileRoutineDetailPage() {
   const [tempIcon, setTempIcon] = useState<string>("sparkles");
   const [tempColor, setTempColor] = useState<string>("#5c9cf8");
 
-  // Condition Modal
-  const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
-  const [editingConditionId, setEditingConditionId] = useState<string | "new" | null>(null);
+  // Routine Form States (Custom & Builder)
+  const [title, setTitle] = useState("");
+  const [triggers, setTriggers] = useState<RoutineTriggerCondition[]>([]);
+  const [actions, setActions] = useState<RoutineActionBlock[]>([]);
+
+  // Trigger Selection & Configuration Modals
+  const [isTriggerSelectModalOpen, setIsTriggerSelectModalOpen] = useState(false);
+  const [isTimeConditionModalOpen, setIsTimeConditionModalOpen] = useState(false);
+  const [editingTriggerId, setEditingTriggerId] = useState<string | "new" | null>(null);
   const [modalAmpm, setModalAmpm] = useState<"AM" | "PM">("AM");
   const [modalHour, setModalHour] = useState("08");
   const [modalMinute, setModalMinute] = useState("30");
-  const [modalSelectedDays, setModalSelectedDays] = useState<string[]>(["MON"]);
+  const [modalSelectedDays, setModalSelectedDays] = useState<string[]>(["MON", "TUE", "WED", "THU", "FRI"]);
+
+  // Action Selection & Configuration Modals
+  const [isActionSelectDrawerOpen, setIsActionSelectDrawerOpen] = useState(false);
+  const [editingActionId, setEditingActionId] = useState<string | null>(null);
+
+  // Department Action Modal (특정 학과 선택 + 전용 키워드 세부 설정)
+  const [isDeptActionModalOpen, setIsDeptActionModalOpen] = useState(false);
+  const [tempDeptCode, setTempDeptCode] = useState("");
+  const [tempDeptName, setTempDeptName] = useState("");
+  const [tempDeptIncludeKeywords, setTempDeptIncludeKeywords] = useState<string[]>([]);
+  const [tempDeptExcludeKeywords, setTempDeptExcludeKeywords] = useState<string[]>([]);
+  const [deptKeywordInput, setDeptKeywordInput] = useState("");
+  const [deptKeywordTab, setDeptKeywordTab] = useState<"include" | "exclude">("include");
+  const [deptSearchQuery, setDeptSearchQuery] = useState("");
+
+  // School Notice Action Modal
+  const [isSchoolNoticeActionModalOpen, setIsSchoolNoticeActionModalOpen] = useState(false);
+  const [tempSchoolCategories, setTempSchoolCategories] = useState<string[]>([]);
+  const [tempSchoolIncludeKeywords, setTempSchoolIncludeKeywords] = useState<string[]>([]);
+  const [tempSchoolExcludeKeywords, setTempSchoolExcludeKeywords] = useState<string[]>([]);
+  const [schoolKeywordInput, setSchoolKeywordInput] = useState("");
+  const [schoolKeywordTab, setSchoolKeywordTab] = useState<"include" | "exclude">("include");
+
+  // Bus Action Modal
+  const [isBusActionModalOpen, setIsBusActionModalOpen] = useState(false);
+  const [tempBusStop, setTempBusStop] = useState("인천대입구역 1번출구");
+
+  // Cafeteria Action Modal
+  const [isCafeteriaActionModalOpen, setIsCafeteriaActionModalOpen] = useState(false);
+  const [tempCafeteria, setTempCafeteria] = useState("전체");
+  const [tempMealType, setTempMealType] = useState<"AUTO" | "LUNCH" | "DINNER">("AUTO");
+
+  // Schedule Action Modal
+  const [isScheduleActionModalOpen, setIsScheduleActionModalOpen] = useState(false);
+  const [tempScheduleScope, setTempScheduleScope] = useState<ScheduleScope>("ALL");
+  const [tempScheduleAdvanceDays, setTempScheduleAdvanceDays] = useState(1);
+
+  // Before Class Trigger Modal
+  const [isBeforeClassTriggerModalOpen, setIsBeforeClassTriggerModalOpen] = useState(false);
+  const [tempBeforeClassMinutes, setTempBeforeClassMinutes] = useState(10);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  // Keyword Add Modal
-  const [isAddKeywordModalOpen, setIsAddKeywordModalOpen] = useState(false);
-  const [newKeywordInput, setNewKeywordInput] = useState("");
-  const [isKeywordExcluded, setIsKeywordExcluded] = useState(false);
-  const [keywordFilterTab, setKeywordFilterTab] = useState<"include" | "exclude">("include");
-
-  // Form states (for custom routines)
-  const [title, setTitle] = useState("");
-  const [timeConditions, setTimeConditions] = useState<RoutineTimeCondition[]>([]);
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [selectedCafeteria, setSelectedCafeteria] = useState("전체");
-  const [selectedMealType, setSelectedMealType] = useState("AUTO");
-  const [selectedBusStop, setSelectedBusStop] = useState("인천대입구역 1번출구");
-
-  // System Routine Form States
-  const [tempBriefTime, setTempBriefTime] = useState("08:00");
-  const [tempPreAlertMinutes, setTempPreAlertMinutes] = useState(10);
-  const [tempScheduleTime, setTempScheduleTime] = useState("08:30");
-  const [tempScheduleAdvanceDays, setTempScheduleAdvanceDays] = useState(1);
 
   const syncFormFromData = useCallback(
     (rem: AgentReminder | null, pre: RoutinePreset | null) => {
@@ -501,14 +491,16 @@ export default function MobileRoutineDetailPage() {
 
         let customIconVal = "";
         let customColorVal = "";
+        let parsedTriggers: RoutineTriggerCondition[] = [];
+        let parsedActions: RoutineActionBlock[] = [];
+
         if (rem.toolParamsJson) {
           try {
             const parsed = JSON.parse(rem.toolParamsJson);
             if (parsed.iconType) customIconVal = parsed.iconType;
             if (parsed.iconBg) customColorVal = parsed.iconBg;
-            if (parsed.cafeteria) setSelectedCafeteria(parsed.cafeteria);
-            if (parsed.mealType) setSelectedMealType(parsed.mealType);
-            if (parsed.stopName) setSelectedBusStop(parsed.stopName);
+            if (parsed.triggers && Array.isArray(parsed.triggers)) parsedTriggers = parsed.triggers;
+            if (parsed.actions && Array.isArray(parsed.actions)) parsedActions = parsed.actions;
           } catch (ignored) {}
         }
 
@@ -516,83 +508,141 @@ export default function MobileRoutineDetailPage() {
         setSelectedIcon(customIconVal || fallback.iconId);
         setSelectedColor(customColorVal || fallback.bg);
 
-        if (rem.schedulesJson) {
-          try {
-            const parsedSchedules: RoutineScheduleItem[] = JSON.parse(rem.schedulesJson);
-            if (Array.isArray(parsedSchedules) && parsedSchedules.length > 0) {
-              const conds: RoutineTimeCondition[] = parsedSchedules.map((item, idx) => {
-                const parts = (item.time || "08:30").split(":");
+        // Fallback for triggers if not in toolParamsJson
+        if (parsedTriggers.length === 0) {
+          if (rem.schedulesJson) {
+            try {
+              const schedules: RoutineScheduleItem[] = JSON.parse(rem.schedulesJson);
+              parsedTriggers = schedules.map((s, idx) => {
+                const parts = (s.time || "08:30").split(":");
                 const rawHour = parseInt(parts[0] || "8", 10);
                 const rawMin = parts[1] || "30";
-
-                let ampmVal: "AM" | "PM" = "AM";
-                let hourVal = "08";
-                if (rawHour >= 12) {
-                  ampmVal = "PM";
-                  hourVal = String(rawHour === 12 ? 12 : rawHour - 12).padStart(2, "0");
-                } else {
-                  ampmVal = "AM";
-                  hourVal = String(rawHour === 0 ? 12 : rawHour).padStart(2, "0");
-                }
-
-                let days = item.days || ["MON", "TUE", "WED", "THU", "FRI"];
-                let rep = item.repeatType || "WEEKDAYS";
-                if (days.length === 7) rep = "EVERYDAY";
-                else if (days.length === 2 && ["SUN", "SAT"].every((d) => days.includes(d))) rep = "WEEKENDS";
-
+                const isPm = rawHour >= 12;
+                const h = isPm ? (rawHour === 12 ? 12 : rawHour - 12) : (rawHour === 0 ? 12 : rawHour);
+                const days = s.days || ["MON", "TUE", "WED", "THU", "FRI"];
                 return {
-                  id: `time-${idx + 1}`,
-                  ampm: ampmVal,
-                  targetHour: hourVal,
-                  targetMinute: rawMin,
-                  selectedDays: days,
-                  repeatType: rep,
+                  id: `trigger-time-${idx + 1}`,
+                  type: "TIME",
+                  title: `${formatDaysSummary(days)} 알림`,
+                  subtitle: `${isPm ? "오후" : "오전"} ${String(h).padStart(2, "0")}:${rawMin}`,
+                  timeParams: {
+                    ampm: isPm ? "PM" : "AM",
+                    hour: String(h).padStart(2, "0"),
+                    minute: rawMin,
+                    selectedDays: days,
+                    repeatType: s.repeatType || "WEEKDAYS",
+                  },
                 };
               });
-              setTimeConditions(conds);
-            }
-          } catch (ignored) {}
-        } else {
-          const parts = (rem.targetTime || "08:30").split(":");
-          const rawHour = parseInt(parts[0] || "8", 10);
-          const rawMin = parts[1] || "30";
-
-          let ampmVal: "AM" | "PM" = "AM";
-          let hourVal = "08";
-          if (rawHour >= 12) {
-            ampmVal = "PM";
-            hourVal = String(rawHour === 12 ? 12 : rawHour - 12).padStart(2, "0");
-          } else {
-            ampmVal = "AM";
-            hourVal = String(rawHour === 0 ? 12 : rawHour).padStart(2, "0");
+            } catch (ignored) {}
+          } else if (rem.targetTime) {
+            const parts = rem.targetTime.split(":");
+            const rawHour = parseInt(parts[0] || "8", 10);
+            const rawMin = parts[1] || "30";
+            const isPm = rawHour >= 12;
+            const h = isPm ? (rawHour === 12 ? 12 : rawHour - 12) : (rawHour === 0 ? 12 : rawHour);
+            const days = rem.repeatType === "WEEKDAYS" ? ["MON", "TUE", "WED", "THU", "FRI"] : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+            parsedTriggers = [
+              {
+                id: "trigger-time-1",
+                type: "TIME",
+                title: `${formatDaysSummary(days)} 알림`,
+                subtitle: `${isPm ? "오후" : "오전"} ${String(h).padStart(2, "0")}:${rawMin}`,
+                timeParams: {
+                  ampm: isPm ? "PM" : "AM",
+                  hour: String(h).padStart(2, "0"),
+                  minute: rawMin,
+                  selectedDays: days,
+                  repeatType: rem.repeatType || "WEEKDAYS",
+                },
+              },
+            ];
           }
-
-          let days = ["MON", "TUE", "WED", "THU", "FRI"];
-          if (rem.repeatType === "WEEKDAYS") {
-            days = ["MON", "TUE", "WED", "THU", "FRI"];
-          } else if (rem.repeatType === "EVERYDAY") {
-            days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-          } else if (rem.repeatType === "WEEKENDS") {
-            days = ["SUN", "SAT"];
-          }
-
-          setTimeConditions([
-            {
-              id: "time-1",
-              ampm: ampmVal,
-              targetHour: hourVal,
-              targetMinute: rawMin,
-              selectedDays: days,
-              repeatType: rem.repeatType || "WEEKDAYS",
-            },
-          ]);
         }
+        setTriggers(parsedTriggers);
 
-        const tools = (rem.targetTool || "")
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-        setSelectedTools(tools);
+        // Fallback for actions if not in toolParamsJson
+        if (parsedActions.length === 0 && rem.targetTool) {
+          const tools = rem.targetTool.split(",").map((s) => s.trim().toUpperCase());
+          parsedActions = tools.map((tool, idx) => {
+            if (tool === "BUS") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "BUS",
+                title: "실시간 버스",
+                subtitle: "인천대입구역 1번출구",
+                iconBg: "#ff7a00",
+                busParams: { stopName: "인천대입구역 1번출구" },
+              };
+            }
+            if (tool === "CAFETERIA") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "CAFETERIA",
+                title: "학식 식단",
+                subtitle: "전체 식당 • 당일 메뉴",
+                iconBg: "#22c55e",
+                cafeteriaParams: { restaurant: "전체", mealType: "AUTO" },
+              };
+            }
+            if (tool === "TIMETABLE") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "TIMETABLE",
+                title: "시간표 / 강의실",
+                subtitle: "당일 첫 수업 시간 및 강의실 위치",
+                iconBg: "#a855f7",
+              };
+            }
+            if (tool === "SCHEDULE") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "SCHEDULE",
+                title: "학사일정 알림",
+                subtitle: "학교 및 학과 전체 학사일정",
+                iconBg: "#3b82f6",
+                scheduleParams: { scope: "ALL", advanceDays: 1 },
+              };
+            }
+            if (tool === "DEPT_NOTICE") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "DEPT_NOTICE",
+                title: "학과 공지 알림",
+                subtitle: "내 학과 새 공지사항",
+                iconBg: "#ff7a00",
+                deptNoticeParams: {
+                  deptCode: "",
+                  deptName: "내 학과",
+                  includeKeywords: [],
+                  excludeKeywords: [],
+                },
+              };
+            }
+            if (tool === "NOTICE") {
+              return {
+                id: `act-${idx + 1}`,
+                type: "SCHOOL_NOTICE",
+                title: "학교 공지 알림",
+                subtitle: "학교 홈페이지 전체 새 공지사항",
+                iconBg: "#5c9cf8",
+                schoolNoticeParams: {
+                  categories: [],
+                  includeKeywords: [],
+                  excludeKeywords: [],
+                },
+              };
+            }
+            return {
+              id: `act-${idx + 1}`,
+              type: "WEATHER",
+              title: "캠퍼스 날씨",
+              subtitle: "송도 캠퍼스 당일 기온 및 강수 정보",
+              iconBg: "#5c9cf8",
+            };
+          });
+        }
+        setActions(parsedActions);
       } else if (pre) {
         setTitle(pre.title);
         setSelectedIcon(pre.iconType || "sun");
@@ -601,51 +651,85 @@ export default function MobileRoutineDetailPage() {
         const parts = (pre.targetTime || "08:30").split(":");
         const rawHour = parseInt(parts[0] || "8", 10);
         const rawMin = parts[1] || "30";
+        const isPm = rawHour >= 12;
+        const h = isPm ? (rawHour === 12 ? 12 : rawHour - 12) : (rawHour === 0 ? 12 : rawHour);
+        const days = pre.repeatType === "WEEKDAYS" ? ["MON", "TUE", "WED", "THU", "FRI"] : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-        let ampmVal: "AM" | "PM" = "AM";
-        let hourVal = "08";
-        if (rawHour >= 12) {
-          ampmVal = "PM";
-          hourVal = String(rawHour === 12 ? 12 : rawHour - 12).padStart(2, "0");
-        } else {
-          ampmVal = "AM";
-          hourVal = String(rawHour === 0 ? 12 : rawHour).padStart(2, "0");
-        }
-
-        let days = ["MON", "TUE", "WED", "THU", "FRI"];
-        if (pre.repeatType === "WEEKDAYS") {
-          days = ["MON", "TUE", "WED", "THU", "FRI"];
-        } else if (pre.repeatType === "EVERYDAY") {
-          days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-        }
-
-        setTimeConditions([
+        setTriggers([
           {
-            id: "time-1",
-            ampm: ampmVal,
-            targetHour: hourVal,
-            targetMinute: rawMin,
-            selectedDays: days,
-            repeatType: pre.repeatType || "WEEKDAYS",
+            id: "trigger-time-1",
+            type: "TIME",
+            title: pre.whenTitle || `${formatDaysSummary(days)} 알림`,
+            subtitle: pre.whenSubtitle || `${isPm ? "오후" : "오전"} ${String(h).padStart(2, "0")}:${rawMin}`,
+            timeParams: {
+              ampm: isPm ? "PM" : "AM",
+              hour: String(h).padStart(2, "0"),
+              minute: rawMin,
+              selectedDays: days,
+              repeatType: pre.repeatType || "WEEKDAYS",
+            },
           },
         ]);
 
-        setSelectedTools(pre.targetTools || ["WEATHER"]);
-
-        if (pre.toolParams) {
-          if (pre.toolParams.cafeteria) setSelectedCafeteria(pre.toolParams.cafeteria);
-          if (pre.toolParams.mealType) setSelectedMealType(pre.toolParams.mealType);
-          if (pre.toolParams.stopName) setSelectedBusStop(pre.toolParams.stopName);
-        }
+        const preActions: RoutineActionBlock[] = (pre.targetTools || ["WEATHER"]).map((tool, idx) => {
+          if (tool === "BUS") {
+            return {
+              id: `act-${idx + 1}`,
+              type: "BUS",
+              title: "실시간 버스",
+              subtitle: pre.toolParams?.stopName || "인천대입구역 1번출구",
+              iconBg: "#ff7a00",
+              busParams: { stopName: pre.toolParams?.stopName || "인천대입구역 1번출구" },
+            };
+          }
+          if (tool === "CAFETERIA") {
+            return {
+              id: `act-${idx + 1}`,
+              type: "CAFETERIA",
+              title: "학식 식단",
+              subtitle: `${pre.toolParams?.cafeteria || "전체"} • ${pre.toolParams?.mealType === "DINNER" ? "석식" : "중식"}`,
+              iconBg: "#22c55e",
+              cafeteriaParams: {
+                restaurant: pre.toolParams?.cafeteria || "전체",
+                mealType: pre.toolParams?.mealType || "LUNCH",
+              },
+            };
+          }
+          if (tool === "TIMETABLE") {
+            return {
+              id: `act-${idx + 1}`,
+              type: "TIMETABLE",
+              title: "시간표 / 강의실",
+              subtitle: "당일 첫 수업 시간 및 강의실 위치",
+              iconBg: "#a855f7",
+            };
+          }
+          if (tool === "NOTICE") {
+            return {
+              id: `act-${idx + 1}`,
+              type: "SCHOOL_NOTICE",
+              title: "학교 공지 알림",
+              subtitle: "학교 홈페이지 전체 새 공지사항",
+              iconBg: "#3b82f6",
+              schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
+            };
+          }
+          return {
+            id: `act-${idx + 1}`,
+            type: "WEATHER",
+            title: "캠퍼스 날씨",
+            subtitle: "송도 캠퍼스 당일 기온 및 강수 정보",
+            iconBg: "#5c9cf8",
+          };
+        });
+        setActions(preActions);
       } else {
+        // [나만의 새 루틴 만들기] 기본 템플릿
         setTitle("");
-        setTimeConditions([]);
-        setSelectedTools([]);
+        setTriggers([]);
+        setActions([]);
         setSelectedIcon("sparkles");
         setSelectedColor("#5c9cf8");
-        setSelectedCafeteria("전체");
-        setSelectedMealType("AUTO");
-        setSelectedBusStop("인천대입구역 1번출구");
       }
     },
     [],
@@ -659,48 +743,15 @@ export default function MobileRoutineDetailPage() {
     }
     setIsLoading(true);
     try {
+      const [noticeCatRes, deptsRes] = await Promise.all([
+        getSchoolNoticeCategories().catch(() => ({ data: [] })),
+        getSchoolDepartments().catch(() => ({ data: [] })),
+      ]);
+
+      if (noticeCatRes?.data) setSchoolCategories(noticeCatRes.data);
+      if (deptsRes?.data) setAllDepartments(deptsRes.data);
+
       if (isSystemRoutine) {
-        const [briefRes, keywordsRes, noticeCatRes, subCatRes, deptsRes, subDeptsRes] = await Promise.all([
-          getDailyBriefSettings().catch(() => ({ data: null })),
-          getKeywords().catch(() => ({ data: [] })),
-          getSchoolNoticeCategories().catch(() => ({ data: [] })),
-          getKeywordsNotice().catch(() => ({ data: [] })),
-          getSchoolDepartments().catch(() => ({ data: [] })),
-          getSubscribedDepartments().catch(() => ({ data: [] })),
-        ]);
-
-        const curSettings = briefRes?.data || getLocalDailyBriefSettings();
-        setDailyBriefSettings(curSettings);
-        setTempBriefTime(curSettings.timetableDailyBriefTime || "08:00");
-        setTempPreAlertMinutes(curSettings.timetablePreAlertMinutes || 10);
-        setTempScheduleTime(curSettings.scheduleDailyBriefTime || "08:30");
-        setTempScheduleAdvanceDays(curSettings.advanceDays ?? 1);
-        if (noticeCatRes?.data) {
-          setSchoolCategories(noticeCatRes.data);
-        }
-        if (subCatRes?.data) {
-          setSubscribedSchoolCategories(subCatRes.data.map((k) => k.category || ""));
-        }
-
-        if (deptsRes?.data) {
-          setAllDepartments(deptsRes.data);
-        }
-        if (subDeptsRes?.data) {
-          const subCodes = subDeptsRes.data
-            .map((k) => (k as any).departmentCode || k.department || "")
-            .filter(Boolean);
-          setSubscribedDeptCodes(subCodes);
-        }
-
-        if (keywordsRes?.data) {
-          const schoolKeys = keywordsRes.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null);
-          const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
-          setSchoolKeywords(schoolKeys);
-          setDeptKeywords(deptKeys);
-          const hasDeptAll = keywordsRes.data.some((k) => k.type === "DEPARTMENT" && k.keyword === null);
-          setIsDeptNoticeEnabled(hasDeptAll || (subDeptsRes?.data && subDeptsRes.data.length > 0) || true);
-        }
-
         if (systemType === "timetable-brief") {
           setSelectedIcon("timetable");
           setSelectedColor("#a855f7");
@@ -762,428 +813,441 @@ export default function MobileRoutineDetailPage() {
     rightArea: null,
   });
 
-  // System Routine Toggles
-  const handleToggleTimetableBrief = async () => {
-    const next = !dailyBriefSettings.timetableDailyBriefEnabled;
-    setDailyBriefSettings((prev) => ({ ...prev, timetableDailyBriefEnabled: next }));
-    try {
-      await updateDailyBriefSettings({ timetableDailyBriefEnabled: next });
-      trackEvent("[Daily Brief] 당일 시간표 브리핑 토글", { enabled: next });
-    } catch {
-      setDailyBriefSettings((prev) => ({ ...prev, timetableDailyBriefEnabled: !next }));
-      alert("설정을 변경하지 못했어요.");
-    }
-  };
+  // =========================================================================
+  // 1. 트리거 조건 (Trigger) 핸들러
+  // =========================================================================
 
-  const handleToggleTimetablePre = async () => {
-    const next = !dailyBriefSettings.timetablePreAlertEnabled;
-    setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: next }));
-    try {
-      await updateDailyBriefSettings({ timetablePreAlertEnabled: next });
-      trackEvent("[Daily Brief] 강의 시작 전 알림 토글", { enabled: next });
-    } catch {
-      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
-      alert("설정을 변경하지 못했어요.");
-    }
-  };
+  // 트리거 추가 선택 모달에서 특정 트리거 클릭
+  const handleSelectTriggerType = (type: RoutineTriggerType) => {
+    setIsTriggerSelectModalOpen(false);
 
-  const handleToggleSchedule = async () => {
-    const next = !dailyBriefSettings.scheduleAlertEnabled;
-    setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: next }));
-    try {
-      await updateDailyBriefSettings({ scheduleAlertEnabled: next });
-      trackEvent("[Daily Brief] 시스템 학사일정 알림 토글", { enabled: next });
-    } catch {
-      setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: !next }));
-      alert("설정을 변경하지 못했어요.");
-    }
-  };
-
-  const handleToggleSchoolNotice = () => {
-    const next = !isSchoolNoticeEnabled;
-    setIsSchoolNoticeEnabled(next);
-    trackEvent("[Daily Brief] 학교 공지 알림 토글", { enabled: next });
-  };
-
-  const handleToggleDeptNotice = () => {
-    const next = !isDeptNoticeEnabled;
-    setIsDeptNoticeEnabled(next);
-    trackEvent("[Daily Brief] 학과 공지 알림 토글", { enabled: next });
-  };
-
-  // 1. 당일 브리핑 시간 저장
-  const handleConfirmBriefTime = async () => {
-    setIsBriefTimeModalOpen(false);
-    try {
-      const res = await updateDailyBriefSettings({ timetableDailyBriefTime: tempBriefTime });
-      if (res?.data) setDailyBriefSettings(res.data);
-      trackEvent("[Daily Brief] 시간표 브리핑 시간 변경", { time: tempBriefTime });
-    } catch {
-      alert("브리핑 시간을 저장하지 못했어요.");
-    }
-  };
-
-  // 2. 강의 시작 전 n분 저장
-  const handleConfirmPreAlertMinutes = async () => {
-    setIsPreAlertMinutesModalOpen(false);
-    try {
-      const res = await updateDailyBriefSettings({ timetablePreAlertMinutes: tempPreAlertMinutes });
-      if (res?.data) setDailyBriefSettings(res.data);
-      trackEvent("[Daily Brief] 사전 알림 분 변경", { minutes: tempPreAlertMinutes });
-    } catch {
-      alert("사전 알림 시간을 저장하지 못했어요.");
-    }
-  };
-
-  // 3. 학사일정 브리핑 시간 및 사전 일수 저장
-  const handleConfirmScheduleTime = async () => {
-    setIsScheduleTimeModalOpen(false);
-    try {
-      const res = await updateDailyBriefSettings({
-        scheduleDailyBriefTime: tempScheduleTime,
-        advanceDays: tempScheduleAdvanceDays,
-      });
-      if (res?.data) setDailyBriefSettings(res.data);
-      trackEvent("[Daily Brief] 학사일정 시간/사전알림 변경", {
-        time: tempScheduleTime,
-        advanceDays: tempScheduleAdvanceDays,
-      });
-    } catch {
-      alert("학사일정 알림 설정을 저장하지 못했어요.");
-    }
-  };
-
-  // 4. 학사일정 범위 저장
-  const handleConfirmScheduleScope = async (scope: ScheduleScope) => {
-    setIsScheduleScopeModalOpen(false);
-    try {
-      const res = await updateDailyBriefSettings({ scheduleScope: scope });
-      if (res?.data) setDailyBriefSettings(res.data);
-      trackEvent("[Daily Brief] 학사일정 범위 변경", { scope });
-    } catch {
-      alert("학사일정 범위를 저장하지 못했어요.");
-    }
-  };
-
-  // 5. 카테고리 구독 토글
-  const handleToggleSchoolCategory = async (catName: string) => {
-    const isSubscribed = subscribedSchoolCategories.includes(catName);
-    const updated = isSubscribed
-      ? subscribedSchoolCategories.filter((c) => c !== catName)
-      : [...subscribedSchoolCategories, catName];
-
-    setSubscribedSchoolCategories(updated);
-    try {
-      await subscribeKeywordsNotice(updated);
-      trackEvent("[Daily Brief] 학교 공지 카테고리 구독 변경", { categories: updated });
-    } catch {
-      setSubscribedSchoolCategories(subscribedSchoolCategories);
-      alert("카테고리 설정을 변경하지 못했어요.");
-    }
-  };
-
-  const handleToggleAllSchoolCategories = async (selectAll: boolean) => {
-    const updated = selectAll ? [...schoolCategories] : [];
-    setSubscribedSchoolCategories(updated);
-    try {
-      await subscribeKeywordsNotice(updated);
-      trackEvent("[Daily Brief] 학교 공지 카테고리 전체 변경", { count: updated.length });
-    } catch {
-      setSubscribedSchoolCategories(subscribedSchoolCategories);
-      alert("카테고리 설정을 변경하지 못했어요.");
-    }
-  };
-
-  // 6. 학과 다중 구독 토글
-  const handleToggleDepartmentCode = async (deptCode: string) => {
-    const isSubscribed = subscribedDeptCodes.includes(deptCode);
-    const updated = isSubscribed
-      ? subscribedDeptCodes.filter((c) => c !== deptCode)
-      : [...subscribedDeptCodes, deptCode];
-
-    setSubscribedDeptCodes(updated);
-    try {
-      await subscribeSchoolDepartment(updated);
-      trackEvent("[Daily Brief] 학과 공지 구독 변경", { deptCodes: updated });
-    } catch {
-      setSubscribedDeptCodes(subscribedDeptCodes);
-      alert("학과 공지 구독 설정을 변경하지 못했어요.");
-    }
-  };
-
-  // Custom routine On/Off Toggle
-  const handleToggle = async () => {
-    if (!reminder) return;
-    const nextEnabled = !reminder.enabled;
-    setReminder({ ...reminder, enabled: nextEnabled });
-    try {
-      await toggleAgentReminder(reminder.id, nextEnabled);
-      trackEvent("[Daily Brief] 맞춤 루틴 토글", {
-        id: reminder.id,
-        enabled: nextEnabled,
-      });
-      alert(`루틴이 ${nextEnabled ? "켜졌어요." : "꺼졌어요."}`);
-    } catch (error) {
-      console.error("맞춤 루틴 토글 실패:", error);
-      setReminder({ ...reminder, enabled: !nextEnabled });
-      alert("루틴 상태를 변경하지 못했어요.");
-    }
-  };
-
-  const handleTestDispatch = async () => {
-    if (isSystemRoutine) {
-      setIsTesting(true);
-      setTimeout(() => {
-        setIsTesting(false);
-        if (systemType === "timetable-brief") {
-          alert("당일 강의 & 시간표 브리핑 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "timetable-pre") {
-          alert("강의 시작 전 알림 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "schedule") {
-          alert("학사일정 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "school-notice") {
-          alert("학교 공지사항 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else {
-          alert("학과 공지사항 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        }
-      }, 400);
-      return;
-    }
-
-    if (!reminder) {
-      alert("내 루틴으로 저장한 후 테스트 발송을 할 수 있어요!");
-      return;
-    }
-    setIsTesting(true);
-    try {
-      await testAgentReminder(reminder.id);
-      alert(`'${reminder.title}' 테스트 알림을 보냈어요!\n(잠시 후 알림이 도착해요)`);
-      trackEvent("[Daily Brief] 맞춤 루틴 테스트 발송", {
-        id: reminder.id,
-        title: reminder.title,
-      });
-    } catch (error) {
-      console.error("테스트 발송 실패:", error);
-      alert("테스트 알림 발송 중 오류가 발생했어요.");
-    } finally {
-      setIsTesting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!reminder) return;
-    setIsDeleteModalOpen(false);
-    try {
-      await deleteAgentReminder(reminder.id);
-      trackEvent("[Daily Brief] 맞춤 루틴 삭제", {
-        id: reminder.id,
-        title: reminder.title,
-      });
-      navigate(-1);
-    } catch (error) {
-      console.error("루틴 삭제 실패:", error);
-      alert("루틴을 삭제하지 못했어요.");
-    }
-  };
-
-  const handleSavePresetDirect = async () => {
-    if (!preset) return;
-    try {
-      const toolParams = {
-        ...(preset.toolParams || {}),
-        iconType: preset.iconType,
-        iconBg: preset.iconBg,
+    if (type === "TIME") {
+      setEditingTriggerId("new");
+      setModalAmpm("AM");
+      setModalHour("08");
+      setModalMinute("30");
+      setModalSelectedDays(["MON", "TUE", "WED", "THU", "FRI"]);
+      setIsTimeConditionModalOpen(true);
+    } else if (type === "SCHOOL_NOTICE") {
+      const newTrigger: RoutineTriggerCondition = {
+        id: `trigger-school-${Date.now()}`,
+        type: "SCHOOL_NOTICE",
+        title: "새 학교 공지 등록 시",
+        subtitle: "학교 홈페이지에 새 글이 등록되면 실시간 즉시 알림",
       };
-      const toolParamsJson = JSON.stringify(toolParams);
+      setTriggers((prev) => [...prev, newTrigger]);
 
-      const schedules: RoutineScheduleItem[] = [
-        {
-          days: preset.repeatType === "WEEKDAYS" ? ["MON", "TUE", "WED", "THU", "FRI"] : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
-          time: preset.targetTime,
-          repeatType: preset.repeatType,
-        },
-      ];
-
-      await createAgentReminder({
-        title: preset.title,
-        targetTime: preset.targetTime,
-        repeatType: preset.repeatType,
-        targetTool: preset.targetTools.join(","),
-        toolParamsJson,
-        schedulesJson: JSON.stringify(schedules),
-        titleTemplate: `🔔 ${preset.title}`,
-        bodyTemplate: "",
-        route: "/home",
-      });
-      alert(`'${preset.title}' 루틴을 내 루틴에 등록했어요!`);
-      trackEvent("[Daily Brief] 프리셋 루틴 등록", { title: preset.title });
-      navigate(-1);
-    } catch (error) {
-      console.error("루틴 등록 실패:", error);
-      alert("루틴을 등록하지 못했어요. 다시 시도해 주세요.");
-    }
-  };
-
-  // Keyword Management (for Notice Routines)
-  const handleOpenAddKeyword = () => {
-    setNewKeywordInput("");
-    setIsKeywordExcluded(keywordFilterTab === "exclude");
-    setIsAddKeywordModalOpen(true);
-  };
-
-  const handleConfirmAddKeyword = async () => {
-    if (!newKeywordInput.trim()) {
-      alert("키워드를 입력해 주세요.");
-      return;
-    }
-    try {
-      const targetType = systemType === "dept-notice" ? "DEPARTMENT" : "SCHOOL_NOTICE";
-      const deptCode = systemType === "dept-notice" ? (userInfo.departmentCode || userInfo.department) : undefined;
-      await createKeyword(newKeywordInput.trim(), deptCode, undefined, isKeywordExcluded);
-      alert(`'${newKeywordInput.trim()}' ${isKeywordExcluded ? "제외" : "관심"} 키워드를 등록했어요!`);
-      setIsAddKeywordModalOpen(false);
-      setNewKeywordInput("");
-      
-      const res = await getKeywords();
-      if (res?.data) {
-        if (targetType === "SCHOOL_NOTICE") {
-          setSchoolKeywords(res.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null));
-        } else {
-          setDeptKeywords(res.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null));
-        }
+      // 종속 동작 자동 연동: 학교 공지 동작이 없으면 추천 추가
+      if (!actions.some((a) => a.type === "SCHOOL_NOTICE")) {
+        const autoAction: RoutineActionBlock = {
+          id: `act-school-${Date.now()}`,
+          type: "SCHOOL_NOTICE",
+          title: "학교 공지 알림",
+          subtitle: "모든 카테고리 실시간 알림",
+          iconBg: "#5c9cf8",
+          schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
+        };
+        setActions((prev) => [...prev, autoAction]);
       }
-    } catch (error) {
-      console.error("키워드 등록 실패:", error);
-      alert("키워드를 등록하지 못했어요.");
+    } else if (type === "DEPT_NOTICE") {
+      // 학과 선택 모달 열기
+      setTempDeptCode(userInfo.departmentCode || "");
+      setTempDeptName(userInfo.department || "학과 선택");
+      setTempDeptIncludeKeywords([]);
+      setTempDeptExcludeKeywords([]);
+      setDeptSearchQuery("");
+      setEditingActionId(null);
+      setIsDeptActionModalOpen(true);
+    } else if (type === "BEFORE_CLASS") {
+      setTempBeforeClassMinutes(10);
+      setIsBeforeClassTriggerModalOpen(true);
     }
   };
 
-  const handleDeleteKeyword = async (keywordId: number, kwText: string) => {
-    if (!window.confirm(`'${kwText}' 키워드를 삭제할까요?`)) return;
-    try {
-      await deleteKeyword(keywordId);
-      if (systemType === "dept-notice") {
-        setDeptKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
-      } else {
-        setSchoolKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
-      }
-    } catch (error) {
-      console.error("키워드 삭제 실패:", error);
-      alert("키워드를 삭제하지 못했어요.");
-    }
-  };
-
-  // Icon Modal Handlers
-  const handleOpenIconModal = () => {
-    if (!isEditing || isSystemRoutine) return;
-    setTempIcon(selectedIcon);
-    setTempColor(selectedColor);
-    setIsIconModalOpen(true);
-  };
-
-  const handleConfirmIconModal = () => {
-    setSelectedIcon(tempIcon);
-    setSelectedColor(tempColor);
-    setIsIconModalOpen(false);
-  };
-
-  // Condition Modal Handlers
-  const handleOpenEditCondition = (condition: RoutineTimeCondition) => {
-    setEditingConditionId(condition.id);
-    setModalAmpm(condition.ampm);
-    setModalHour(condition.targetHour);
-    setModalMinute(condition.targetMinute);
-    setModalSelectedDays(condition.selectedDays);
-    setIsConditionModalOpen(true);
-  };
-
-  const handleOpenAddCondition = () => {
-    setEditingConditionId("new");
-    setModalAmpm("AM");
-    setModalHour("08");
-    setModalMinute("30");
-    setModalSelectedDays(["MON", "TUE", "WED", "THU", "FRI"]);
-    setIsConditionModalOpen(true);
-  };
-
-  const toggleModalDay = (dayKey: string) => {
-    setModalSelectedDays((prev) => {
-      if (prev.includes(dayKey)) {
-        if (prev.length === 1) return prev;
-        return prev.filter((d) => d !== dayKey);
-      } else {
-        return [...prev, dayKey];
-      }
-    });
-  };
-
-  const handleSaveConditionModal = () => {
+  // 시간 트리거 모달 저장
+  const handleSaveTimeConditionModal = () => {
     if (modalSelectedDays.length === 0) {
       alert("최소 1개 이상의 요일을 선택해 주세요.");
       return;
     }
 
     let calculatedRepeatType: AgentReminderRepeatType = "WEEKDAYS";
-    if (modalSelectedDays.length === 7) {
-      calculatedRepeatType = "EVERYDAY";
-    } else if (
-      modalSelectedDays.length === 5 &&
-      ["MON", "TUE", "WED", "THU", "FRI"].every((d) => modalSelectedDays.includes(d))
-    ) {
-      calculatedRepeatType = "WEEKDAYS";
-    } else if (
-      modalSelectedDays.length === 2 &&
-      ["SUN", "SAT"].every((d) => modalSelectedDays.includes(d))
-    ) {
-      calculatedRepeatType = "WEEKENDS";
-    }
+    if (modalSelectedDays.length === 7) calculatedRepeatType = "EVERYDAY";
+    else if (modalSelectedDays.length === 5 && ["MON", "TUE", "WED", "THU", "FRI"].every((d) => modalSelectedDays.includes(d))) calculatedRepeatType = "WEEKDAYS";
+    else if (modalSelectedDays.length === 2 && ["SUN", "SAT"].every((d) => modalSelectedDays.includes(d))) calculatedRepeatType = "WEEKENDS";
 
-    if (editingConditionId === "new") {
-      const newCond: RoutineTimeCondition = {
-        id: `time-${Date.now()}`,
-        ampm: modalAmpm,
-        targetHour: modalHour,
-        targetMinute: modalMinute,
-        selectedDays: modalSelectedDays,
-        repeatType: calculatedRepeatType,
+    const daysSummary = formatDaysSummary(modalSelectedDays);
+    const timeSubtitle = `${modalAmpm === "AM" ? "오전" : "오후"} ${modalHour}:${modalMinute}`;
+
+    if (editingTriggerId === "new") {
+      const newTrigger: RoutineTriggerCondition = {
+        id: `trigger-time-${Date.now()}`,
+        type: "TIME",
+        title: `${daysSummary} 알림`,
+        subtitle: timeSubtitle,
+        timeParams: {
+          ampm: modalAmpm,
+          hour: modalHour,
+          minute: modalMinute,
+          selectedDays: modalSelectedDays,
+          repeatType: calculatedRepeatType,
+        },
       };
-      setTimeConditions((prev) => [...prev, newCond]);
-    } else if (editingConditionId) {
-      setTimeConditions((prev) =>
-        prev.map((c) =>
-          c.id === editingConditionId
+      setTriggers((prev) => [...prev, newTrigger]);
+    } else if (editingTriggerId) {
+      setTriggers((prev) =>
+        prev.map((t) =>
+          t.id === editingTriggerId
             ? {
-                ...c,
-                ampm: modalAmpm,
-                targetHour: modalHour,
-                targetMinute: modalMinute,
-                selectedDays: modalSelectedDays,
-                repeatType: calculatedRepeatType,
+                ...t,
+                title: `${daysSummary} 알림`,
+                subtitle: timeSubtitle,
+                timeParams: {
+                  ampm: modalAmpm,
+                  hour: modalHour,
+                  minute: modalMinute,
+                  selectedDays: modalSelectedDays,
+                  repeatType: calculatedRepeatType,
+                },
               }
-            : c,
+            : t,
         ),
       );
     }
-    setIsConditionModalOpen(false);
+    setIsTimeConditionModalOpen(false);
   };
 
-  const handleRemoveCondition = (condId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setTimeConditions((prev) => prev.filter((c) => c.id !== condId));
-  };
+  // 강의 시작 전 트리거 저장
+  const handleSaveBeforeClassTrigger = () => {
+    const newTrigger: RoutineTriggerCondition = {
+      id: `trigger-before-class-${Date.now()}`,
+      type: "BEFORE_CLASS",
+      title: "강의 시작 전 알림",
+      subtitle: `수업 시작 ${tempBeforeClassMinutes}분 전`,
+      beforeClassParams: { minutes: tempBeforeClassMinutes },
+    };
+    setTriggers((prev) => [...prev, newTrigger]);
+    setIsBeforeClassTriggerModalOpen(false);
 
-  const removeTool = (toolId: string) => {
-    setSelectedTools((prev) => prev.filter((t) => t !== toolId));
-  };
-
-  const addTool = (toolId: string) => {
-    if (!selectedTools.includes(toolId)) {
-      setSelectedTools((prev) => [...prev, toolId]);
+    // 종속 동작 자동 연동: 시간표 동작 추가
+    if (!actions.some((a) => a.type === "TIMETABLE")) {
+      const autoAction: RoutineActionBlock = {
+        id: `act-timetable-${Date.now()}`,
+        type: "TIMETABLE",
+        title: "수업 시작 및 강의실 알림",
+        subtitle: "다음 수업 시작 시간 및 이동할 강의실 위치 안내",
+        iconBg: "#8b5cf6",
+      };
+      setActions((prev) => [...prev, autoAction]);
     }
-    setIsToolDrawerOpen(false);
   };
 
-  // Save routine (Custom or System)
+  // 트리거 삭제
+  const handleRemoveTrigger = (triggerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTriggers((prev) => prev.filter((t) => t.id !== triggerId));
+  };
+
+  // =========================================================================
+  // 2. 동작 블록 (Action) 핸들러
+  // =========================================================================
+
+  // 동작 추가 드로어에서 액션 선택
+  const handleSelectActionType = (type: RoutineActionType) => {
+    setIsActionSelectDrawerOpen(false);
+    setEditingActionId(null);
+
+    if (type === "DEPT_NOTICE") {
+      setTempDeptCode(userInfo.departmentCode || "");
+      setTempDeptName(userInfo.department || "학과 선택");
+      setTempDeptIncludeKeywords([]);
+      setTempDeptExcludeKeywords([]);
+      setDeptSearchQuery("");
+      setIsDeptActionModalOpen(true);
+    } else if (type === "SCHOOL_NOTICE") {
+      setTempSchoolCategories([]);
+      setTempSchoolIncludeKeywords([]);
+      setTempSchoolExcludeKeywords([]);
+      setIsSchoolNoticeActionModalOpen(true);
+    } else if (type === "BUS") {
+      setTempBusStop("인천대입구역 1번출구");
+      setIsBusActionModalOpen(true);
+    } else if (type === "CAFETERIA") {
+      setTempCafeteria("전체");
+      setTempMealType("AUTO");
+      setIsCafeteriaActionModalOpen(true);
+    } else if (type === "SCHEDULE") {
+      setTempScheduleScope("ALL");
+      setTempScheduleAdvanceDays(1);
+      setIsScheduleActionModalOpen(true);
+    } else if (type === "TIMETABLE") {
+      const newAction: RoutineActionBlock = {
+        id: `act-time-${Date.now()}`,
+        type: "TIMETABLE",
+        title: "시간표 / 강의실",
+        subtitle: "오늘 첫 수업 시간과 강의실 위치 안내",
+        iconBg: "#a855f7",
+      };
+      setActions((prev) => [...prev, newAction]);
+    } else if (type === "WEATHER") {
+      const newAction: RoutineActionBlock = {
+        id: `act-weather-${Date.now()}`,
+        type: "WEATHER",
+        title: "캠퍼스 날씨",
+        subtitle: "송도 캠퍼스 당일 기온 및 강수 정보 안내",
+        iconBg: "#5c9cf8",
+      };
+      setActions((prev) => [...prev, newAction]);
+    }
+  };
+
+  // 학과 공지 동작 저장 (학과 선택 + 독립 키워드 설정)
+  const handleSaveDeptActionModal = () => {
+    if (!tempDeptName || tempDeptName === "학과 선택") {
+      alert("공지사항을 수신할 학과를 선택해 주세요.");
+      return;
+    }
+
+    const kwDesc =
+      tempDeptIncludeKeywords.length > 0
+        ? `키워드: ${tempDeptIncludeKeywords.join(", ")}`
+        : "학과 새 공지 실시간 알림";
+
+    if (editingActionId) {
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingActionId
+            ? {
+                ...a,
+                title: `${tempDeptName} 공지 알림`,
+                subtitle: kwDesc,
+                deptNoticeParams: {
+                  deptCode: tempDeptCode,
+                  deptName: tempDeptName,
+                  includeKeywords: tempDeptIncludeKeywords,
+                  excludeKeywords: tempDeptExcludeKeywords,
+                },
+              }
+            : a,
+        ),
+      );
+    } else {
+      const newAction: RoutineActionBlock = {
+        id: `act-dept-${Date.now()}`,
+        type: "DEPT_NOTICE",
+        title: `${tempDeptName} 공지 알림`,
+        subtitle: kwDesc,
+        iconBg: "#ff7a00",
+        deptNoticeParams: {
+          deptCode: tempDeptCode,
+          deptName: tempDeptName,
+          includeKeywords: tempDeptIncludeKeywords,
+          excludeKeywords: tempDeptExcludeKeywords,
+        },
+      };
+      setActions((prev) => [...prev, newAction]);
+
+      // 만약 트리거에 학과 공지 조건이 없다면 자동으로 '새 학과 공지 등록 시' 트리거도 연계 추가
+      if (!triggers.some((t) => t.type === "DEPT_NOTICE")) {
+        const autoTrigger: RoutineTriggerCondition = {
+          id: `trigger-dept-${Date.now()}`,
+          type: "DEPT_NOTICE",
+          title: `새 학과 공지 등록 시 (${tempDeptName})`,
+          subtitle: `${tempDeptName} 홈페이지에 새 글이 등록되면 실시간 즉시 알림`,
+          deptParams: { deptCode: tempDeptCode, deptName: tempDeptName },
+        };
+        setTriggers((prev) => [...prev, autoTrigger]);
+      }
+    }
+    setIsDeptActionModalOpen(false);
+  };
+
+  // 학교 공지 동작 저장
+  const handleSaveSchoolNoticeActionModal = () => {
+    const catDesc =
+      tempSchoolCategories.length > 0
+        ? `${tempSchoolCategories.slice(0, 2).join(", ")}${tempSchoolCategories.length > 2 ? ` 외 ${tempSchoolCategories.length - 2}개` : ""}`
+        : "전체 카테고리";
+    const kwDesc =
+      tempSchoolIncludeKeywords.length > 0
+        ? ` • 키워드 ${tempSchoolIncludeKeywords.length}개`
+        : "";
+
+    if (editingActionId) {
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingActionId
+            ? {
+                ...a,
+                title: "학교 공지 알림",
+                subtitle: `${catDesc}${kwDesc}`,
+                schoolNoticeParams: {
+                  categories: tempSchoolCategories,
+                  includeKeywords: tempSchoolIncludeKeywords,
+                  excludeKeywords: tempSchoolExcludeKeywords,
+                },
+              }
+            : a,
+        ),
+      );
+    } else {
+      const newAction: RoutineActionBlock = {
+        id: `act-school-${Date.now()}`,
+        type: "SCHOOL_NOTICE",
+        title: "학교 공지 알림",
+        subtitle: `${catDesc}${kwDesc}`,
+        iconBg: "#5c9cf8",
+        schoolNoticeParams: {
+          categories: tempSchoolCategories,
+          includeKeywords: tempSchoolIncludeKeywords,
+          excludeKeywords: tempSchoolExcludeKeywords,
+        },
+      };
+      setActions((prev) => [...prev, newAction]);
+    }
+    setIsSchoolNoticeActionModalOpen(false);
+  };
+
+  // 버스 동작 저장
+  const handleSaveBusActionModal = () => {
+    if (editingActionId) {
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingActionId
+            ? {
+                ...a,
+                title: "실시간 버스",
+                subtitle: tempBusStop,
+                busParams: { stopName: tempBusStop },
+              }
+            : a,
+        ),
+      );
+    } else {
+      const newAction: RoutineActionBlock = {
+        id: `act-bus-${Date.now()}`,
+        type: "BUS",
+        title: "실시간 버스",
+        subtitle: tempBusStop,
+        iconBg: "#ff7a00",
+        busParams: { stopName: tempBusStop },
+      };
+      setActions((prev) => [...prev, newAction]);
+    }
+    setIsBusActionModalOpen(false);
+  };
+
+  // 학식 동작 저장
+  const handleSaveCafeteriaActionModal = () => {
+    const mealLabel = tempMealType === "DINNER" ? "석식" : tempMealType === "LUNCH" ? "중식" : "시간대별 자동";
+    const sub = `${tempCafeteria} • ${mealLabel}`;
+
+    if (editingActionId) {
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingActionId
+            ? {
+                ...a,
+                title: "학식 식단",
+                subtitle: sub,
+                cafeteriaParams: { restaurant: tempCafeteria, mealType: tempMealType },
+              }
+            : a,
+        ),
+      );
+    } else {
+      const newAction: RoutineActionBlock = {
+        id: `act-cafe-${Date.now()}`,
+        type: "CAFETERIA",
+        title: "학식 식단",
+        subtitle: sub,
+        iconBg: "#22c55e",
+        cafeteriaParams: { restaurant: tempCafeteria, mealType: tempMealType },
+      };
+      setActions((prev) => [...prev, newAction]);
+    }
+    setIsCafeteriaActionModalOpen(false);
+  };
+
+  // 학사일정 동작 저장
+  const handleSaveScheduleActionModal = () => {
+    const scopeLabel =
+      tempScheduleScope === "SCHOOL_ONLY"
+        ? "학교 공식만"
+        : tempScheduleScope === "DEPT_ONLY"
+        ? "내 학과만"
+        : "학교 및 학과 전체";
+    const advanceLabel = tempScheduleAdvanceDays === 0 ? "당일" : `${tempScheduleAdvanceDays}일 전`;
+    const sub = `${scopeLabel} • ${advanceLabel} 사전 알림`;
+
+    if (editingActionId) {
+      setActions((prev) =>
+        prev.map((a) =>
+          a.id === editingActionId
+            ? {
+                ...a,
+                title: "학사일정 알림",
+                subtitle: sub,
+                scheduleParams: { scope: tempScheduleScope, advanceDays: tempScheduleAdvanceDays },
+              }
+            : a,
+        ),
+      );
+    } else {
+      const newAction: RoutineActionBlock = {
+        id: `act-schedule-${Date.now()}`,
+        type: "SCHEDULE",
+        title: "학사일정 알림",
+        subtitle: sub,
+        iconBg: "#3b82f6",
+        scheduleParams: { scope: tempScheduleScope, advanceDays: tempScheduleAdvanceDays },
+      };
+      setActions((prev) => [...prev, newAction]);
+    }
+    setIsScheduleActionModalOpen(false);
+  };
+
+  // 동작 카드 클릭 시 세부 모달 오픈
+  const handleOpenActionDetail = (action: RoutineActionBlock) => {
+    if (!isEditing && !isSystemRoutine) return;
+    setEditingActionId(action.id);
+
+    if (action.type === "DEPT_NOTICE") {
+      setTempDeptCode(action.deptNoticeParams?.deptCode || userInfo.departmentCode || "");
+      setTempDeptName(action.deptNoticeParams?.deptName || userInfo.department || "컴퓨터공학부");
+      setTempDeptIncludeKeywords(action.deptNoticeParams?.includeKeywords || []);
+      setTempDeptExcludeKeywords(action.deptNoticeParams?.excludeKeywords || []);
+      setDeptSearchQuery("");
+      setIsDeptActionModalOpen(true);
+    } else if (action.type === "SCHOOL_NOTICE") {
+      setTempSchoolCategories(action.schoolNoticeParams?.categories || []);
+      setTempSchoolIncludeKeywords(action.schoolNoticeParams?.includeKeywords || []);
+      setTempSchoolExcludeKeywords(action.schoolNoticeParams?.excludeKeywords || []);
+      setIsSchoolNoticeActionModalOpen(true);
+    } else if (action.type === "BUS") {
+      setTempBusStop(action.busParams?.stopName || "인천대입구역 1번출구");
+      setIsBusActionModalOpen(true);
+    } else if (action.type === "CAFETERIA") {
+      setTempCafeteria(action.cafeteriaParams?.restaurant || "전체");
+      setTempMealType(action.cafeteriaParams?.mealType || "AUTO");
+      setIsCafeteriaActionModalOpen(true);
+    } else if (action.type === "SCHEDULE") {
+      setTempScheduleScope(action.scheduleParams?.scope || "ALL");
+      setTempScheduleAdvanceDays(action.scheduleParams?.advanceDays ?? 1);
+      setIsScheduleActionModalOpen(true);
+    }
+  };
+
+  // 동작 삭제
+  const handleRemoveAction = (actionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActions((prev) => prev.filter((a) => a.id !== actionId));
+  };
+
+  // =========================================================================
+  // 3. 루틴 저장 & 삭제 & 테스트 핸들러
+  // =========================================================================
+
   const handleSaveEdit = async () => {
     if (isSystemRoutine) {
       setIsEditing(false);
@@ -1194,45 +1258,45 @@ export default function MobileRoutineDetailPage() {
       alert("루틴 이름을 입력해 주세요.");
       return;
     }
-    if (timeConditions.length === 0) {
-      alert("알림 시간을 최소 1개 이상 추가해 주세요.");
+    if (triggers.length === 0) {
+      alert("언제 알림을 받을지 조건을 최소 1개 이상 추가해 주세요.");
       return;
     }
-    if (selectedTools.length === 0) {
-      alert("알림 내용을 최소 1개 이상 추가해 주세요.");
+    if (actions.length === 0) {
+      alert("어떤 알림을 받을지 동작을 최소 1개 이상 추가해 주세요.");
       return;
     }
 
     const toolParams: Record<string, any> = {
       iconType: selectedIcon,
       iconBg: selectedColor,
+      triggers,
+      actions,
     };
-    if (selectedTools.includes("BUS")) {
-      toolParams.stopName = selectedBusStop;
-    }
-    if (selectedTools.includes("CAFETERIA")) {
-      toolParams.cafeteria = selectedCafeteria;
-      toolParams.mealType = selectedMealType;
-    }
 
-    const toolParamsJson = Object.keys(toolParams).length > 0 ? JSON.stringify(toolParams) : "";
-    const targetTool = selectedTools.join(",");
+    // 타겟 도구 목록
+    const targetToolsList = actions.map((a) => a.type);
+    const targetTool = targetToolsList.join(",");
 
-    const schedules: RoutineScheduleItem[] = timeConditions.map((cond) => {
-      let rawHour = parseInt(cond.targetHour, 10);
-      if (cond.ampm === "PM" && rawHour < 12) rawHour += 12;
-      if (cond.ampm === "AM" && rawHour === 12) rawHour = 0;
-      const finalTime = `${String(rawHour).padStart(2, "0")}:${cond.targetMinute.padStart(2, "0")}`;
+    // 시간 트리거들 추출
+    const timeTriggers = triggers.filter((t) => t.type === "TIME" && t.timeParams);
+    const schedules: RoutineScheduleItem[] = timeTriggers.map((t) => {
+      const p = t.timeParams!;
+      let rawHour = parseInt(p.hour, 10);
+      if (p.ampm === "PM" && rawHour < 12) rawHour += 12;
+      if (p.ampm === "AM" && rawHour === 12) rawHour = 0;
+      const finalTime = `${String(rawHour).padStart(2, "0")}:${p.minute.padStart(2, "0")}`;
       return {
-        days: cond.selectedDays,
+        days: p.selectedDays,
         time: finalTime,
-        repeatType: cond.repeatType,
+        repeatType: p.repeatType,
       };
     });
 
-    const schedulesJson = JSON.stringify(schedules);
+    const schedulesJson = schedules.length > 0 ? JSON.stringify(schedules) : "";
     const primaryTime = schedules[0]?.time || "08:30";
     const primaryRepeatType = schedules[0]?.repeatType || "WEEKDAYS";
+    const toolParamsJson = JSON.stringify(toolParams);
 
     setIsSaving(true);
     try {
@@ -1241,7 +1305,7 @@ export default function MobileRoutineDetailPage() {
           title: title.trim(),
           targetTime: primaryTime,
           repeatType: primaryRepeatType,
-          targetTool,
+          targetTool: targetTool || "TIMETABLE",
           toolParamsJson,
           schedulesJson,
           titleTemplate: `🔔 ${title.trim()}`,
@@ -1249,28 +1313,20 @@ export default function MobileRoutineDetailPage() {
           route: "/home",
         });
         alert(`'${title.trim()}' 루틴을 저장했어요!`);
-        trackEvent("[Daily Brief] 맞춤 루틴 생성", {
-          title: title.trim(),
-          conditionsCount: timeConditions.length,
-        });
+        trackEvent("[Daily Brief] 맞춤 루틴 생성", { title: title.trim() });
         navigate(-1);
       } else if (reminder) {
         await updateAgentReminder(reminder.id, {
           title: title.trim(),
           targetTime: primaryTime,
           repeatType: primaryRepeatType,
-          targetTool,
+          targetTool: targetTool || "TIMETABLE",
           toolParamsJson,
           schedulesJson,
           enabled: reminder.enabled,
         });
-
         alert(`'${title.trim()}' 루틴을 수정했어요!`);
-        trackEvent("[Daily Brief] 맞춤 루틴 수정", {
-          id: reminder.id,
-          title: title.trim(),
-          conditionsCount: timeConditions.length,
-        });
+        trackEvent("[Daily Brief] 맞춤 루틴 수정", { id: reminder.id, title: title.trim() });
         setIsEditing(false);
         loadData();
       }
@@ -1291,18 +1347,115 @@ export default function MobileRoutineDetailPage() {
     setIsEditing(false);
   };
 
-  const getToolsDescription = (toolsStr?: string) => {
-    if (!toolsStr) return "캠퍼스 맞춤 알림";
-    const parts = toolsStr.split(",").map((s) => s.trim().toUpperCase());
-    const names = parts.map((p) => {
-      if (p.includes("WEATHER")) return "캠퍼스 날씨";
-      if (p.includes("BUS")) return "실시간 버스";
-      if (p.includes("CAFETERIA")) return "학식 식단";
-      if (p.includes("TIMETABLE")) return "시간표/강의실";
-      if (p.includes("NOTICE")) return "학교 공지";
-      return p;
-    });
-    return names.join(" • ");
+  const handleSavePresetDirect = async () => {
+    if (!preset) return;
+    try {
+      await createAgentReminder({
+        title: preset.title,
+        targetTime: preset.targetTime,
+        repeatType: preset.repeatType,
+        targetTool: preset.targetTools.join(","),
+        toolParamsJson: JSON.stringify(preset.toolParams || {}),
+        schedulesJson: JSON.stringify([
+          {
+            days: preset.repeatType === "WEEKDAYS" ? ["MON", "TUE", "WED", "THU", "FRI"] : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+            time: preset.targetTime,
+            repeatType: preset.repeatType,
+          },
+        ]),
+        titleTemplate: `🔔 ${preset.title}`,
+        bodyTemplate: "",
+        route: "/home",
+      });
+      alert(`'${preset.title}' 루틴을 내 루틴에 등록했어요!`);
+      trackEvent("[Daily Brief] 프리셋 루틴 등록", { title: preset.title });
+      navigate(-1);
+    } catch (error) {
+      console.error("루틴 등록 실패:", error);
+      alert("루틴을 등록하지 못했어요.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!reminder) return;
+    setIsDeleteModalOpen(false);
+    try {
+      await deleteAgentReminder(reminder.id);
+      trackEvent("[Daily Brief] 맞춤 루틴 삭제", { id: reminder.id, title: reminder.title });
+      navigate(-1);
+    } catch (error) {
+      console.error("루틴 삭제 실패:", error);
+      alert("루틴을 삭제하지 못했어요.");
+    }
+  };
+
+  const handleTestDispatch = async () => {
+    if (!reminder) {
+      alert("내 루틴으로 저장한 후 테스트 발송을 할 수 있어요!");
+      return;
+    }
+    setIsTesting(true);
+    try {
+      await testAgentReminder(reminder.id);
+      alert(`'${reminder.title}' 테스트 알림을 보냈어요!\n(잠시 후 알림이 도착해요)`);
+      trackEvent("[Daily Brief] 맞춤 루틴 테스트 발송", { id: reminder.id, title: reminder.title });
+    } catch (error) {
+      console.error("테스트 발송 실패:", error);
+      alert("테스트 알림 발송 중 오류가 발생했어요.");
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  // Icon Modal Handlers
+  const handleOpenIconModal = () => {
+    if (!isEditing || isSystemRoutine) return;
+    setTempIcon(selectedIcon);
+    setTempColor(selectedColor);
+    setIsIconModalOpen(true);
+  };
+
+  const handleConfirmIconModal = () => {
+    setSelectedIcon(tempIcon);
+    setSelectedColor(tempColor);
+    setIsIconModalOpen(false);
+  };
+
+  // Helper for rendering action icons
+  const renderActionIcon = (type: RoutineActionType, _iconBg?: string) => {
+    switch (type) {
+      case "DEPT_NOTICE":
+        return <Building2 size={24} color="#ff7a00" />;
+      case "SCHOOL_NOTICE":
+        return <Bell size={24} color="#5c9cf8" />;
+      case "TIMETABLE":
+        return <Calendar size={24} color="#a855f7" />;
+      case "SCHEDULE":
+        return <GraduationCap size={24} color="#3b82f6" />;
+      case "WEATHER":
+        return <Sun size={24} color="#5c9cf8" />;
+      case "BUS":
+        return <Bus size={24} color="#ff7a00" />;
+      case "CAFETERIA":
+        return <Utensils size={24} color="#22c55e" />;
+      default:
+        return <Sparkles size={24} color="#5c9cf8" />;
+    }
+  };
+
+  const renderTriggerIcon = (type: RoutineTriggerType) => {
+    switch (type) {
+      case "TIME":
+        return <Clock size={24} color="#3b82f6" />;
+      case "SCHOOL_NOTICE":
+        return <Bell size={24} color="#5c9cf8" />;
+      case "DEPT_NOTICE":
+        return <Building2 size={24} color="#ff7a00" />;
+      case "BEFORE_CLASS":
+        return <Clock size={24} color="#8b5cf6" />;
+      default:
+        return <Clock size={24} color="#111827" />;
+    }
   };
 
   if (isLoading) {
@@ -1317,67 +1470,11 @@ export default function MobileRoutineDetailPage() {
     );
   }
 
-  const primaryCondition = timeConditions[0];
-
-  // Display Titles and Descriptions
-  const displayTitle = isSystemRoutine
-    ? systemType === "timetable-brief"
-      ? "당일 강의 & 시간표 브리핑"
-      : systemType === "timetable-pre"
-      ? "강의 시작 전 알림"
-      : systemType === "schedule"
-      ? "학사일정 알림"
-      : systemType === "school-notice"
-      ? "학교 공지 알림"
-      : "학과 공지 알림"
-    : title || (reminder ? reminder.title : preset?.title || "나만의 루틴");
-
-  const displayDesc = isSystemRoutine
-    ? systemType === "timetable-brief"
-      ? dailyBriefSettings.timetableDailyBriefEnabled
-        ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"}에 오늘 수강 강의 및 강의실 위치를 브리핑해요.`
-        : "당일 시간표 브리핑 알림이 꺼져 있어요."
-      : systemType === "timetable-pre"
-      ? dailyBriefSettings.timetablePreAlertEnabled
-        ? `각 수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전에 다음 강의실 위치를 안내해요.`
-        : "강의 시작 전 알림이 꺼져 있어요."
-      : systemType === "schedule"
-      ? dailyBriefSettings.scheduleAlertEnabled
-        ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 주요 학사일정을 안내해요.`
-        : "학사일정 알림이 꺼져 있어요."
-      : systemType === "school-notice"
-      ? isSchoolNoticeEnabled
-        ? `새 학교 공지사항 및 등록된 관심 키워드 알림을 실시간으로 받아요.`
-        : "학교 공지 알림이 꺼져 있어요."
-      : isDeptNoticeEnabled
-      ? `${subscribedDeptCodes.length > 0 ? `${subscribedDeptCodes.length}개 구독 학과의 새 공지사항 및 키워드 알림을 받아요.` : userInfo.department ? `${userInfo.department} 새 공지사항 및 키워드 알림을 받아요.` : "내 학과 새 공지사항 및 키워드 알림을 받아요."}`
-      : "학과 공지 알림이 꺼져 있어요."
-    : reminder
-    ? `${reminder.repeatTypeDesc} ${reminder.targetTime}에 ${getToolsDescription(reminder.targetTool)} 정보를 안내해요.`
-    : preset?.description ||
-      (primaryCondition
-        ? `${formatDaysSummary(primaryCondition.selectedDays)} ${primaryCondition.ampm === "AM" ? "오전" : "오후"} ${primaryCondition.targetHour}:${primaryCondition.targetMinute}에 안내해요.`
-        : "언제 어떤 캠퍼스 알림을 받을지 설정해 보세요.");
-
-  const availableToAdd = AVAILABLE_ACTIONS.filter((a) => !selectedTools.includes(a.id));
-
-  // Notice Keywords Filtered
-  const filteredSchoolKeywords = schoolKeywords.filter((k) =>
-    keywordFilterTab === "exclude" ? k.isExcluded : !k.isExcluded,
-  );
-  const filteredDeptKeywords = deptKeywords.filter((k) =>
-    keywordFilterTab === "exclude" ? k.isExcluded : !k.isExcluded,
-  );
-
-  // Subscribed Dept Names
-  const subscribedDeptNames = allDepartments
-    .filter((d) => subscribedDeptCodes.includes(d.code))
-    .map((d) => d.name);
-
-  // Filtered Departments for modal
-  const filteredDepartments = allDepartments.filter((d) =>
-    d.name.toLowerCase().includes(deptSearchQuery.trim().toLowerCase()),
-  );
+  const displayTitle = title || (reminder ? reminder.title : preset?.title || "나만의 루틴");
+  const displayDesc =
+    triggers.length > 0 && actions.length > 0
+      ? `${triggers[0]?.title}에 ${actions.map((a) => a.title).join(" • ")} 알림을 수신해요.`
+      : preset?.description || "언제 어떤 캠퍼스 알림을 받을지 자유롭게 조합해 보세요.";
 
   return (
     <PageWrapper>
@@ -1386,12 +1483,12 @@ export default function MobileRoutineDetailPage() {
         <DetailHeroWrapper>
           <DetailFloatingIcon
             $bgColor={selectedColor}
-            $isInteractive={isEditing && !isSystemRoutine}
+            $isInteractive={isEditing}
             onClick={handleOpenIconModal}
-            title={isEditing && !isSystemRoutine ? "아이콘 및 색상 변경" : undefined}
+            title={isEditing ? "아이콘 및 색상 변경" : undefined}
           >
             {renderRoutineIcon(selectedIcon, 28, "#ffffff")}
-            {isEditing && !isSystemRoutine && (
+            {isEditing && (
               <IconEditBadge title="아이콘 변경">
                 <Palette size={12} color="#ffffff" strokeWidth={2.5} />
               </IconEditBadge>
@@ -1399,13 +1496,13 @@ export default function MobileRoutineDetailPage() {
           </DetailFloatingIcon>
 
           <DetailHeroCard>
-            {isEditing && !isSystemRoutine ? (
+            {isEditing ? (
               <UnderlineInputWrapper>
                 <UnderlineInput
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="루틴 이름을 입력해 주세요"
+                  placeholder="루틴 이름을 입력해 주세요 (예: 등교길 알리미)"
                   maxLength={30}
                   autoFocus={isNew}
                 />
@@ -1415,82 +1512,14 @@ export default function MobileRoutineDetailPage() {
                 <DetailHeroTitle>{displayTitle}</DetailHeroTitle>
                 <DetailHeroDescription>{displayDesc}</DetailHeroDescription>
                 <HeroActionRow>
-                  {isSystemRoutine ? (
-                    systemType === "timetable-brief" ? (
-                      <CapsuleButton
-                        variant={dailyBriefSettings.timetableDailyBriefEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleTimetableBrief}
-                        style={{
-                          padding: "8px 24px",
-                          fontSize: "14.5px",
-                          fontWeight: 700,
-                          height: "40px",
-                          borderRadius: "9999px",
-                        }}
-                      >
-                        {dailyBriefSettings.timetableDailyBriefEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    ) : systemType === "timetable-pre" ? (
-                      <CapsuleButton
-                        variant={dailyBriefSettings.timetablePreAlertEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleTimetablePre}
-                        style={{
-                          padding: "8px 24px",
-                          fontSize: "14.5px",
-                          fontWeight: 700,
-                          height: "40px",
-                          borderRadius: "9999px",
-                        }}
-                      >
-                        {dailyBriefSettings.timetablePreAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    ) : systemType === "schedule" ? (
-                      <CapsuleButton
-                        variant={dailyBriefSettings.scheduleAlertEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleSchedule}
-                        style={{
-                          padding: "8px 24px",
-                          fontSize: "14.5px",
-                          fontWeight: 700,
-                          height: "40px",
-                          borderRadius: "9999px",
-                        }}
-                      >
-                        {dailyBriefSettings.scheduleAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    ) : systemType === "school-notice" ? (
-                      <CapsuleButton
-                        variant={isSchoolNoticeEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleSchoolNotice}
-                        style={{
-                          padding: "8px 24px",
-                          fontSize: "14.5px",
-                          fontWeight: 700,
-                          height: "40px",
-                          borderRadius: "9999px",
-                        }}
-                      >
-                        {isSchoolNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    ) : (
-                      <CapsuleButton
-                        variant={isDeptNoticeEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleDeptNotice}
-                        style={{
-                          padding: "8px 24px",
-                          fontSize: "14.5px",
-                          fontWeight: 700,
-                          height: "40px",
-                          borderRadius: "9999px",
-                        }}
-                      >
-                        {isDeptNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    )
-                  ) : reminder ? (
+                  {reminder ? (
                     <CapsuleButton
                       variant={reminder.enabled ? "primary" : "secondary"}
-                      onClick={handleToggle}
+                      onClick={async () => {
+                        const next = !reminder.enabled;
+                        setReminder({ ...reminder, enabled: next });
+                        await toggleAgentReminder(reminder.id, next);
+                      }}
                       style={{
                         padding: "8px 24px",
                         fontSize: "14.5px",
@@ -1523,551 +1552,119 @@ export default function MobileRoutineDetailPage() {
         </DetailHeroWrapper>
 
         {/* =========================================================================
-         * 1. 시스템 루틴 5종 상세 뷰 & 동작 설정 (One UI Action Card -> Modal)
+         * 1. 언제 알림을 받을까요? (IF Trigger Conditions)
          * ========================================================================= */}
-        {isSystemRoutine ? (
-          <>
-            {/* 1. 당일 강의 & 시간표 브리핑 (system-timetable-brief) */}
-            {systemType === "timetable-brief" && (
-              <>
-                <DetailSection>
-                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+        <DetailSection>
+          <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
 
-                  <OneUiCard onClick={() => setIsBriefTimeModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Clock size={24} color="#a855f7" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>당일 브리핑 시간</CardMainText>
-                      <CardBlueText>
-                        매일 아침 {dailyBriefSettings.timetableDailyBriefTime || "08:00"}
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
+          {triggers.length === 0 ? (
+            <EmptyGuideCard>
+              <EmptyGuideIconCircle>
+                <Clock size={20} color="#94a3b8" />
+              </EmptyGuideIconCircle>
+              <EmptyGuideText>
+                <EmptyGuideTitle>설정된 알림 조건이 없어요</EmptyGuideTitle>
+                <EmptyGuideSub>특정 시간, 새 공지 등록 시 등 조건을 추가해 주세요.</EmptyGuideSub>
+              </EmptyGuideText>
+            </EmptyGuideCard>
+          ) : (
+            triggers.map((trig) => (
+              <OneUiCard
+                key={trig.id}
+                onClick={() => {
+                  if (!isEditing) return;
+                  if (trig.type === "TIME" && trig.timeParams) {
+                    setEditingTriggerId(trig.id);
+                    setModalAmpm(trig.timeParams.ampm);
+                    setModalHour(trig.timeParams.hour);
+                    setModalMinute(trig.timeParams.minute);
+                    setModalSelectedDays(trig.timeParams.selectedDays);
+                    setIsTimeConditionModalOpen(true);
+                  }
+                }}
+              >
+                <Ripple color="rgba(0, 0, 0, 0.06)" />
+                <CardIconWrapper>{renderTriggerIcon(trig.type)}</CardIconWrapper>
 
-                <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+                <CardContent>
+                  <CardMainText>{trig.title}</CardMainText>
+                  <CardBlueText>{trig.subtitle}</CardBlueText>
+                </CardContent>
 
-                  <OneUiCard>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Calendar size={24} color="#a855f7" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>시간표 / 강의실</CardMainText>
-                      <CardBlueText>당일 첫 수업 시작 시간 및 강의실 위치 요약 브리핑</CardBlueText>
-                    </CardContent>
-                  </OneUiCard>
-                </DetailSection>
+                {isEditing && (
+                  <MinusButton
+                    data-no-ripple="true"
+                    type="button"
+                    onClick={(e) => handleRemoveTrigger(trig.id, e)}
+                    title="조건 삭제"
+                  >
+                    <Minus size={18} color="#ef4444" strokeWidth={3} />
+                  </MinusButton>
+                )}
+              </OneUiCard>
+            ))
+          )}
 
-                <DetailSection>
-                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
-                  <PreviewCardsWrapper>
-                    <PushNotificationPreviewCard
-                      title={`오늘의 강의 브리핑 (${dailyBriefSettings.timetableDailyBriefTime || "08:00"})`}
-                      body="📅 오늘 2개의 강의가 있어요.\n첫 수업: 09:00 컴퓨터구조 (28호관 204호)"
-                      time={`오전 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"}`}
-                    />
-                  </PreviewCardsWrapper>
-                </DetailSection>
-              </>
-            )}
+          {isEditing && (
+            <AddConditionCard onClick={() => setIsTriggerSelectModalOpen(true)}>
+              <Ripple color="rgba(16, 185, 129, 0.12)" />
+              <Plus size={18} color="#10b981" strokeWidth={2.5} />
+              <span>조건 추가</span>
+            </AddConditionCard>
+          )}
+        </DetailSection>
 
-            {/* 2. 강의 시작 전 알림 (system-timetable-pre) */}
-            {systemType === "timetable-pre" && (
-              <>
-                <DetailSection>
-                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+        {/* =========================================================================
+         * 2. 어떤 알림을 받을까요? (THEN Action Blocks)
+         * ========================================================================= */}
+        <DetailSection>
+          <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
 
-                  <OneUiCard onClick={() => setIsPreAlertMinutesModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Clock size={24} color="#8b5cf6" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>수업 시작 사전 알림 기준</CardMainText>
-                      <CardBlueText>
-                        수업 시작 {dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
+          {actions.length === 0 ? (
+            <EmptyGuideCard>
+              <EmptyGuideIconCircle>
+                <Bell size={20} color="#94a3b8" />
+              </EmptyGuideIconCircle>
+              <EmptyGuideText>
+                <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
+                <EmptyGuideSub>학과 공지, 학교 공지, 버스, 시간표 등 동작을 추가해 주세요.</EmptyGuideSub>
+              </EmptyGuideText>
+            </EmptyGuideCard>
+          ) : (
+            actions.map((act) => (
+              <OneUiCard key={act.id} onClick={() => handleOpenActionDetail(act)}>
+                <Ripple color="rgba(0, 0, 0, 0.04)" />
+                <CardIconWrapper>{renderActionIcon(act.type, act.iconBg)}</CardIconWrapper>
 
-                <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+                <CardContent>
+                  <CardMainText>{act.title}</CardMainText>
+                  <CardBlueText>{act.subtitle}</CardBlueText>
+                </CardContent>
 
-                  <OneUiCard>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Calendar size={24} color="#8b5cf6" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>수업 시작 및 강의실 알림</CardMainText>
-                      <CardBlueText>다음 수업 시작 시간 및 이동할 강의실 위치 안내</CardBlueText>
-                    </CardContent>
-                  </OneUiCard>
-                </DetailSection>
+                {isEditing ? (
+                  <MinusButton
+                    data-no-ripple="true"
+                    type="button"
+                    onClick={(e) => handleRemoveAction(act.id, e)}
+                    title="동작 삭제"
+                  >
+                    <Minus size={18} color="#ef4444" strokeWidth={3} />
+                  </MinusButton>
+                ) : (
+                  <ChevronRight size={18} color="#94a3b8" />
+                )}
+              </OneUiCard>
+            ))
+          )}
 
-                <DetailSection>
-                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
-                  <PreviewCardsWrapper>
-                    <PushNotificationPreviewCard
-                      title={`강의 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 안내`}
-                      body="🏃‍♂️ 곧 '컴퓨터구조' 수업이 시작돼요! 강의실: 28호관 204호"
-                      time={`수업 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전`}
-                    />
-                  </PreviewCardsWrapper>
-                </DetailSection>
-              </>
-            )}
-
-            {/* 3. 학사일정 알림 (system-schedule) */}
-            {systemType === "schedule" && (
-              <>
-                <DetailSection>
-                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
-
-                  <OneUiCard onClick={() => setIsScheduleTimeModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Clock size={24} color="#3b82f6" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>학사일정 브리핑 & 사전 알림</CardMainText>
-                      <CardBlueText>
-                        매일 아침 {dailyBriefSettings.scheduleDailyBriefTime || "08:30"} • {(dailyBriefSettings.advanceDays ?? 1) === 0 ? "당일 알림" : `${dailyBriefSettings.advanceDays ?? 1}일 전 사전 알림`}
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
-
-                <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
-
-                  <OneUiCard onClick={() => setIsScheduleScopeModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <GraduationCap size={24} color="#3b82f6" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>학사일정 알림 대상</CardMainText>
-                      <CardBlueText>
-                        {(() => {
-                          const scope = dailyBriefSettings.scheduleScope || "ALL";
-                          if (scope === "SCHOOL_ONLY") return "학교 공식 학사일정만";
-                          if (scope === "DEPT_ONLY") return "내 학과 학사일정만";
-                          return "학교 및 학과 전체 학사일정";
-                        })()}
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
-
-                <DetailSection>
-                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
-                  <PreviewCardsWrapper>
-                    <PushNotificationPreviewCard
-                      title={`학사일정 알림 (${dailyBriefSettings.scheduleDailyBriefTime || "08:30"} 브리핑)`}
-                      body="🎓 다가오는 주요 학사일정:\n- 2026학년도 2학기 수강신청 변경 기간 (D-1)\n- 성적 정정 마감일 (D-3)"
-                      time={`오전 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}`}
-                    />
-                  </PreviewCardsWrapper>
-                </DetailSection>
-              </>
-            )}
-
-            {/* 4. 학교 공지 알림 (system-school-notice) */}
-            {systemType === "school-notice" && (
-              <>
-                <DetailSection>
-                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
-
-                  <OneUiCard>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Clock size={24} color="#111827" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>새 공지 등록 시</CardMainText>
-                      <CardBlueText>학교 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardBlueText>
-                    </CardContent>
-                  </OneUiCard>
-                </DetailSection>
-
-                <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
-
-                  {/* 카테고리 설정 카드 */}
-                  <OneUiCard onClick={() => setIsCategoryModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Bell size={24} color="#5c9cf8" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>구독 카테고리 설정</CardMainText>
-                      <CardBlueText>
-                        {subscribedSchoolCategories.length === 0
-                          ? "모든 카테고리 알림 수신 중"
-                          : `${subscribedSchoolCategories.slice(0, 3).join(", ")}${subscribedSchoolCategories.length > 3 ? ` 외 ${subscribedSchoolCategories.length - 3}개` : ""} (${subscribedSchoolCategories.length}개 선택)`}
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
-
-                {/* 관심/제외 키워드 알림 섹션 */}
-                <DetailSection>
-                  <DetailSectionHeader>키워드 알림 설정</DetailSectionHeader>
-                  <KeywordSectionCard>
-                    <KeywordHeaderRow>
-                      <KeywordTabGroup>
-                        <KeywordTabBtn
-                          $active={keywordFilterTab === "include"}
-                          onClick={() => setKeywordFilterTab("include")}
-                        >
-                          <Ripple color="rgba(0, 0, 0, 0.06)" />
-                          관심 키워드 ({schoolKeywords.filter((k) => !k.isExcluded).length})
-                        </KeywordTabBtn>
-                        <KeywordTabBtn
-                          $active={keywordFilterTab === "exclude"}
-                          onClick={() => setKeywordFilterTab("exclude")}
-                        >
-                          <Ripple color="rgba(0, 0, 0, 0.06)" />
-                          제외 키워드 ({schoolKeywords.filter((k) => k.isExcluded).length})
-                        </KeywordTabBtn>
-                      </KeywordTabGroup>
-
-                      <AddKeywordChipButton onClick={handleOpenAddKeyword}>
-                        <Ripple color="rgba(37, 99, 235, 0.15)" />
-                        <Plus size={14} strokeWidth={2.5} />
-                        <span>키워드 추가</span>
-                      </AddKeywordChipButton>
-                    </KeywordHeaderRow>
-
-                    {filteredSchoolKeywords.length === 0 ? (
-                      <EmptyKeywordGuide>
-                        {keywordFilterTab === "include"
-                          ? "등록된 관심 키워드가 없어요. 키워드를 등록하면 관련 공지를 놓치지 않고 알려드려요!"
-                          : "등록된 제외 키워드가 없어요. 제외할 키워드를 등록하면 해당 단어가 들어간 공지는 알림에서 제외돼요."}
-                      </EmptyKeywordGuide>
-                    ) : (
-                      <KeywordChipsContainer>
-                        {filteredSchoolKeywords.map((kw) => (
-                          <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
-                            <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
-                            <ChipDeleteBtn data-no-ripple="true" onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
-                              <X size={13} color="#64748b" />
-                            </ChipDeleteBtn>
-                          </KeywordChip>
-                        ))}
-                      </KeywordChipsContainer>
-                    )}
-                  </KeywordSectionCard>
-                </DetailSection>
-
-                {/* 알림 미리보기 섹션 */}
-                <DetailSection>
-                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
-                  <PreviewCardsWrapper>
-                    <PushNotificationPreviewCard
-                      title="[학교 공지] 2026학년도 2학기 장학금 신청 안내"
-                      body="📢 장학 • 등록금 카테고리에 새로운 공지사항이 등록되었습니다."
-                      time="지금"
-                    />
-                  </PreviewCardsWrapper>
-                </DetailSection>
-              </>
-            )}
-
-            {/* 5. 학과 공지 알림 (system-dept-notice) */}
-            {systemType === "dept-notice" && (
-              <>
-                <DetailSection>
-                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
-
-                  <OneUiCard>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Clock size={24} color="#111827" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>새 공지 등록 시</CardMainText>
-                      <CardBlueText>선택한 학과 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardBlueText>
-                    </CardContent>
-                  </OneUiCard>
-                </DetailSection>
-
-                <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
-
-                  {/* 학과 다중 선택 설정 카드 */}
-                  <OneUiCard onClick={() => setIsDeptModalOpen(true)}>
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <CardIconWrapper>
-                      <Building2 size={24} color="#ff7a00" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>구독 학과 설정 (다중 선택)</CardMainText>
-                      <CardBlueText>
-                        {subscribedDeptNames.length > 0
-                          ? `${subscribedDeptNames.slice(0, 2).join(", ")}${subscribedDeptNames.length > 2 ? ` 외 ${subscribedDeptNames.length - 2}개` : ""} (${subscribedDeptNames.length}개 구독 중)`
-                          : userInfo.department
-                          ? `${userInfo.department} (소속 학과)`
-                          : "구독할 학과를 선택해 주세요"}
-                      </CardBlueText>
-                    </CardContent>
-                    <ChevronRight size={18} color="#94a3b8" />
-                  </OneUiCard>
-                </DetailSection>
-
-                {/* 학과 관심/제외 키워드 알림 섹션 */}
-                <DetailSection>
-                  <DetailSectionHeader>학과 키워드 알림 설정</DetailSectionHeader>
-                  <KeywordSectionCard>
-                    <KeywordHeaderRow>
-                      <KeywordTabGroup>
-                        <KeywordTabBtn
-                          $active={keywordFilterTab === "include"}
-                          onClick={() => setKeywordFilterTab("include")}
-                        >
-                          <Ripple color="rgba(0, 0, 0, 0.06)" />
-                          관심 키워드 ({deptKeywords.filter((k) => !k.isExcluded).length})
-                        </KeywordTabBtn>
-                        <KeywordTabBtn
-                          $active={keywordFilterTab === "exclude"}
-                          onClick={() => setKeywordFilterTab("exclude")}
-                        >
-                          <Ripple color="rgba(0, 0, 0, 0.06)" />
-                          제외 키워드 ({deptKeywords.filter((k) => k.isExcluded).length})
-                        </KeywordTabBtn>
-                      </KeywordTabGroup>
-
-                      <AddKeywordChipButton onClick={handleOpenAddKeyword}>
-                        <Ripple color="rgba(37, 99, 235, 0.15)" />
-                        <Plus size={14} strokeWidth={2.5} />
-                        <span>키워드 추가</span>
-                      </AddKeywordChipButton>
-                    </KeywordHeaderRow>
-
-                    {filteredDeptKeywords.length === 0 ? (
-                      <EmptyKeywordGuide>
-                        {keywordFilterTab === "include"
-                          ? "등록된 학과 관심 키워드가 없어요. 키워드를 등록하면 관련 학과 공지를 놓치지 않고 알려드려요!"
-                          : "등록된 학과 제외 키워드가 없어요."}
-                      </EmptyKeywordGuide>
-                    ) : (
-                      <KeywordChipsContainer>
-                        {filteredDeptKeywords.map((kw) => (
-                          <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
-                            <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
-                            <ChipDeleteBtn data-no-ripple="true" onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
-                              <X size={13} color="#64748b" />
-                            </ChipDeleteBtn>
-                          </KeywordChip>
-                        ))}
-                      </KeywordChipsContainer>
-                    )}
-                  </KeywordSectionCard>
-                </DetailSection>
-
-                {/* 알림 미리보기 섹션 */}
-                <DetailSection>
-                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
-                  <PreviewCardsWrapper>
-                    <PushNotificationPreviewCard
-                      title={`[${subscribedDeptNames[0] || userInfo.department || "컴퓨터공학부"}] 캡스톤디자인 발표회 안내`}
-                      body="🏢 학과 공지사항 게시판에 새로운 소식이 등록되었습니다."
-                      time="지금"
-                    />
-                  </PreviewCardsWrapper>
-                </DetailSection>
-              </>
-            )}
-          </>
-        ) : (
-          /* =========================================================================
-           * 2. 사용자 맞춤 루틴 & 프리셋 뷰 / 편집 모드
-           * ========================================================================= */
-          <>
-            {/* 언제 알림을 받을까요? 섹션 */}
-            <DetailSection>
-              <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
-
-              {timeConditions.length === 0 ? (
-                <EmptyGuideCard>
-                  <EmptyGuideIconCircle>
-                    <Clock size={20} color="#94a3b8" />
-                  </EmptyGuideIconCircle>
-                  <EmptyGuideText>
-                    <EmptyGuideTitle>설정된 알림 시간이 없어요</EmptyGuideTitle>
-                    <EmptyGuideSub>알림을 받을 시간과 요일을 추가해 주세요.</EmptyGuideSub>
-                  </EmptyGuideText>
-                </EmptyGuideCard>
-              ) : (
-                timeConditions.map((cond) => {
-                  const timeSubtitle = `${cond.ampm === "AM" ? "오전" : "오후"} ${cond.targetHour}:${cond.targetMinute}\n${formatDaysSummary(cond.selectedDays)}`;
-
-                  return (
-                    <OneUiCard
-                      key={cond.id}
-                      onClick={() => isEditing && handleOpenEditCondition(cond)}
-                    >
-                      <Ripple color="rgba(0, 0, 0, 0.06)" />
-                      <CardIconWrapper>
-                        <Clock size={24} color="#111827" />
-                      </CardIconWrapper>
-
-                      <CardContent>
-                        <CardMainText>{formatDaysSummary(cond.selectedDays)} 알림</CardMainText>
-                        <CardBlueText>{timeSubtitle}</CardBlueText>
-                      </CardContent>
-
-                      {isEditing && (
-                        <MinusButton
-                          data-no-ripple="true"
-                          type="button"
-                          onClick={(e) => handleRemoveCondition(cond.id, e)}
-                          title="시간 조건 삭제"
-                        >
-                          <Minus size={18} color="#ef4444" strokeWidth={3} />
-                        </MinusButton>
-                      )}
-                    </OneUiCard>
-                  );
-                })
-              )}
-
-              {isEditing && (
-                <AddConditionCard onClick={handleOpenAddCondition}>
-                  <Ripple color="rgba(16, 185, 129, 0.12)" />
-                  <Plus size={18} color="#10b981" strokeWidth={2.5} />
-                  <span>알림 시간 추가</span>
-                </AddConditionCard>
-              )}
-            </DetailSection>
-
-            {/* 어떤 알림을 받을까요? 섹션 */}
-            <DetailSection>
-              <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
-
-              {selectedTools.length === 0 ? (
-                <EmptyGuideCard>
-                  <EmptyGuideIconCircle>
-                    <Bell size={20} color="#94a3b8" />
-                  </EmptyGuideIconCircle>
-                  <EmptyGuideText>
-                    <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
-                    <EmptyGuideSub>받고 싶은 캠퍼스 정보 알림을 추가해 주세요.</EmptyGuideSub>
-                  </EmptyGuideText>
-                </EmptyGuideCard>
-              ) : (
-                selectedTools.map((toolId) => {
-                  const actionInfo = AVAILABLE_ACTIONS.find((a) => a.id === toolId);
-                  if (!actionInfo) return null;
-
-                  return (
-                    <OneUiCard key={toolId}>
-                      <Ripple color="rgba(0, 0, 0, 0.04)" />
-                      <CardIconWrapper>{actionInfo.icon}</CardIconWrapper>
-
-                      <CardContent>
-                        <CardMainText>{actionInfo.title}</CardMainText>
-
-                        {toolId === "BUS" && (
-                          <>
-                            <CardBlueText>{selectedBusStop}</CardBlueText>
-                            {isEditing && (
-                              <InlineSelectWrapper data-no-ripple="true">
-                                <InlineSelect
-                                  value={selectedBusStop}
-                                  onChange={(e) => setSelectedBusStop(e.target.value)}
-                                >
-                                  {BUS_STOP_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                      {opt.label}
-                                    </option>
-                                  ))}
-                                </InlineSelect>
-                              </InlineSelectWrapper>
-                            )}
-                          </>
-                        )}
-
-                        {toolId === "CAFETERIA" && (
-                          <>
-                            <CardBlueText>
-                              {selectedCafeteria} • {selectedMealType === "DINNER" ? "석식" : "중식"}
-                            </CardBlueText>
-                            {isEditing && (
-                              <InlineSelectRow data-no-ripple="true">
-                                <InlineSelect
-                                  value={selectedCafeteria}
-                                  onChange={(e) => setSelectedCafeteria(e.target.value)}
-                                >
-                                  {CAFETERIA_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>
-                                      {opt.label}
-                                    </option>
-                                  ))}
-                                </InlineSelect>
-                                <InlineSelect
-                                  value={selectedMealType}
-                                  onChange={(e) => setSelectedMealType(e.target.value)}
-                                >
-                                  <option value="AUTO">자동 (시간대별)</option>
-                                  <option value="LUNCH">중식</option>
-                                  <option value="DINNER">석식</option>
-                                </InlineSelect>
-                              </InlineSelectRow>
-                            )}
-                          </>
-                        )}
-
-                        {toolId === "WEATHER" && (
-                          <CardBlueText>송도 캠퍼스 기온 및 강수 정보</CardBlueText>
-                        )}
-
-                        {toolId === "TIMETABLE" && (
-                          <CardBlueText>오늘 첫 수업 시간 및 강의실 위치</CardBlueText>
-                        )}
-
-                        {toolId === "NOTICE" && (
-                          <CardBlueText>학교 및 학과 최신 주요 공지</CardBlueText>
-                        )}
-                      </CardContent>
-
-                      {isEditing && (
-                        <MinusButton
-                          data-no-ripple="true"
-                          type="button"
-                          onClick={() => removeTool(toolId)}
-                          title="알림 내용 삭제"
-                        >
-                          <Minus size={18} color="#ef4444" strokeWidth={3} />
-                        </MinusButton>
-                      )}
-                    </OneUiCard>
-                  );
-                })
-              )}
-
-              {/* 알림 내용 추가 버튼 */}
-              {isEditing && availableToAdd.length > 0 && (
-                <AddConditionCard onClick={() => setIsToolDrawerOpen(true)}>
-                  <Ripple color="rgba(16, 185, 129, 0.12)" />
-                  <Plus size={18} color="#10b981" strokeWidth={2.5} />
-                  <span>알림 내용 추가</span>
-                </AddConditionCard>
-              )}
-            </DetailSection>
-          </>
-        )}
+          {isEditing && (
+            <AddConditionCard onClick={() => setIsActionSelectDrawerOpen(true)}>
+              <Ripple color="rgba(59, 130, 246, 0.12)" />
+              <Plus size={18} color="#3b82f6" strokeWidth={2.5} />
+              <span>동작 추가</span>
+            </AddConditionCard>
+          )}
+        </DetailSection>
       </ScrollContainer>
 
       {/* =========================================================================
@@ -2104,8 +1701,7 @@ export default function MobileRoutineDetailPage() {
             <span>{isTesting ? "발송 중" : "테스트"}</span>
           </PillActionButton>
 
-          {/* 시스템 루틴은 삭제 불가 */}
-          {isSystemRoutine ? null : reminder ? (
+          {reminder ? (
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
               <Ripple color="rgba(239, 68, 68, 0.12)" />
               <Trash2 size={20} color="#ef4444" />
@@ -2122,213 +1718,248 @@ export default function MobileRoutineDetailPage() {
       )}
 
       {/* =========================================================================
-       * 시스템 루틴 전용 세부 설정 모달 6종
+       * 트리거 선택 모달
+       * ========================================================================= */}
+      <Modal
+        isOpen={isTriggerSelectModalOpen}
+        onClose={() => setIsTriggerSelectModalOpen(false)}
+        title="조건 추가 (언제 알림을 받을까요?)"
+        description="알림을 발생시킬 트리거 조건을 선택해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsTriggerSelectModalOpen(false),
+        }}
+      >
+        <ModalOptionsList>
+          <ModalOptionItem onClick={() => handleSelectTriggerType("TIME")}>
+            <Ripple color="rgba(37, 99, 235, 0.1)" />
+            <OptionIconTextRow>
+              <Clock size={20} color="#3b82f6" />
+              <div>
+                <ModalOptionText>특정 시간 (시간 & 요일)</ModalOptionText>
+                <CardSubDesc>매일 아침 08:30, 평일 등 지정한 시간에 알림</CardSubDesc>
+              </div>
+            </OptionIconTextRow>
+            <Plus size={18} color="#3b82f6" />
+          </ModalOptionItem>
+
+          <ModalOptionItem onClick={() => handleSelectTriggerType("DEPT_NOTICE")}>
+            <Ripple color="rgba(255, 122, 0, 0.1)" />
+            <OptionIconTextRow>
+              <Building2 size={20} color="#ff7a00" />
+              <div>
+                <ModalOptionText>새 학과 공지 등록 시</ModalOptionText>
+                <CardSubDesc>선택한 학과 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardSubDesc>
+              </div>
+            </OptionIconTextRow>
+            <Plus size={18} color="#ff7a00" />
+          </ModalOptionItem>
+
+          <ModalOptionItem onClick={() => handleSelectTriggerType("SCHOOL_NOTICE")}>
+            <Ripple color="rgba(92, 156, 248, 0.1)" />
+            <OptionIconTextRow>
+              <Bell size={20} color="#5c9cf8" />
+              <div>
+                <ModalOptionText>새 학교 공지 등록 시</ModalOptionText>
+                <CardSubDesc>학교 대표 홈페이지에 새 공지가 등록되면 실시간 즉시 알림</CardSubDesc>
+              </div>
+            </OptionIconTextRow>
+            <Plus size={18} color="#5c9cf8" />
+          </ModalOptionItem>
+
+          <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_CLASS")}>
+            <Ripple color="rgba(139, 92, 246, 0.1)" />
+            <OptionIconTextRow>
+              <Calendar size={20} color="#8b5cf6" />
+              <div>
+                <ModalOptionText>강의 시작 전 알림</ModalOptionText>
+                <CardSubDesc>수강 과목의 수업 시작 n분 전에 다음 강의실 위치 알림</CardSubDesc>
+              </div>
+            </OptionIconTextRow>
+            <Plus size={18} color="#8b5cf6" />
+          </ModalOptionItem>
+        </ModalOptionsList>
+      </Modal>
+
+      {/* 1. 시간 트리거 설정 모달 */}
+      <Modal
+        isOpen={isTimeConditionModalOpen}
+        onClose={() => setIsTimeConditionModalOpen(false)}
+        title={editingTriggerId === "new" ? "알림 시간 설정" : "알림 시간 수정"}
+        description="Daily Brief 알림을 받을 시간과 반복할 요일을 설정해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsTimeConditionModalOpen(false),
+        }}
+        primaryButton={{
+          text: "완료",
+          variant: "primary",
+          onClick: handleSaveTimeConditionModal,
+        }}
+      >
+        <TimePickerModalContent>
+          <PickerRow>
+            <AmPmToggle>
+              <AmPmButton
+                $active={modalAmpm === "AM"}
+                onClick={() => setModalAmpm("AM")}
+                type="button"
+              >
+                <Ripple color={modalAmpm === "AM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
+                오전
+              </AmPmButton>
+              <AmPmButton
+                $active={modalAmpm === "PM"}
+                onClick={() => setModalAmpm("PM")}
+                type="button"
+              >
+                <Ripple color={modalAmpm === "PM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
+                오후
+              </AmPmButton>
+            </AmPmToggle>
+
+            <TimeInputGroup>
+              <TimeSelect
+                value={modalHour}
+                onChange={(e) => setModalHour(e.target.value)}
+              >
+                {Array.from({ length: 12 }, (_, i) => {
+                  const h = String(i + 1).padStart(2, "0");
+                  return (
+                    <option key={h} value={h}>
+                      {h}시
+                    </option>
+                  );
+                })}
+              </TimeSelect>
+              <TimeColon>:</TimeColon>
+              <TimeSelect
+                value={modalMinute}
+                onChange={(e) => setModalMinute(e.target.value)}
+              >
+                {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(
+                  (m) => (
+                    <option key={m} value={m}>
+                      {m}분
+                    </option>
+                  ),
+                )}
+              </TimeSelect>
+            </TimeInputGroup>
+          </PickerRow>
+
+          <DayCircleRow>
+            {DAYS.map((day) => {
+              const isSelected = modalSelectedDays.includes(day.key);
+              return (
+                <DayCircleButton
+                  key={day.key}
+                  type="button"
+                  $active={isSelected}
+                  onClick={() => {
+                    setModalSelectedDays((prev) =>
+                      prev.includes(day.key)
+                        ? prev.length === 1 ? prev : prev.filter((d) => d !== day.key)
+                        : [...prev, day.key],
+                    );
+                  }}
+                >
+                  <Ripple color={isSelected ? "rgba(255, 255, 255, 0.25)" : "rgba(37, 99, 235, 0.1)"} />
+                  {day.label}
+                </DayCircleButton>
+              );
+            })}
+          </DayCircleRow>
+        </TimePickerModalContent>
+      </Modal>
+
+      {/* 2. 강의 시작 전 트리거 모달 */}
+      <Modal
+        isOpen={isBeforeClassTriggerModalOpen}
+        onClose={() => setIsBeforeClassTriggerModalOpen(false)}
+        title="강의 시작 전 알림 시간"
+        description="수업 시작 몇 분 전에 알림을 받을지 선택해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsBeforeClassTriggerModalOpen(false),
+        }}
+        primaryButton={{
+          text: "완료",
+          variant: "primary",
+          onClick: handleSaveBeforeClassTrigger,
+        }}
+      >
+        <ModalOptionsList>
+          {PRE_ALERT_OPTIONS.map((opt) => (
+            <ModalOptionItem
+              key={opt.value}
+              $selected={tempBeforeClassMinutes === opt.value}
+              onClick={() => setTempBeforeClassMinutes(opt.value)}
+            >
+              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <ModalOptionText $selected={tempBeforeClassMinutes === opt.value}>
+                {opt.label}
+              </ModalOptionText>
+              {tempBeforeClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+            </ModalOptionItem>
+          ))}
+        </ModalOptionsList>
+      </Modal>
+
+      {/* =========================================================================
+       * 동작 선택 드로어 (ActionSelectDrawer)
+       * ========================================================================= */}
+      {isActionSelectDrawerOpen && (
+        <DrawerBackdrop onClick={() => setIsActionSelectDrawerOpen(false)}>
+          <DrawerContainer onClick={(e) => e.stopPropagation()}>
+            <DrawerHeader>
+              <DrawerTitle>동작 추가 (어떤 알림을 받을까요?)</DrawerTitle>
+              <DrawerCloseButton onClick={() => setIsActionSelectDrawerOpen(false)}>
+                <X size={20} color="#6b7280" />
+              </DrawerCloseButton>
+            </DrawerHeader>
+
+            <DrawerList>
+              {AVAILABLE_ACTIONS.map((action) => (
+                <DrawerItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
+                  <Ripple color="rgba(0, 0, 0, 0.06)" />
+                  <DrawerIconCircle $bgColor={action.iconBg}>
+                    {React.cloneElement(action.icon, { size: 20, color: "#ffffff" })}
+                  </DrawerIconCircle>
+                  <DrawerItemText>
+                    <DrawerItemTitle>{action.title}</DrawerItemTitle>
+                    <DrawerItemDesc>{action.description}</DrawerItemDesc>
+                  </DrawerItemText>
+                  <Plus size={18} color="#3b82f6" />
+                </DrawerItem>
+              ))}
+            </DrawerList>
+          </DrawerContainer>
+        </DrawerBackdrop>
+      )}
+
+      {/* =========================================================================
+       * 세부 동작 설정 모달들 (Action Config Modals)
        * ========================================================================= */}
 
-      {/* 1. 당일 브리핑 시간 설정 모달 */}
+      {/* 1. 학과 공지 동작 모달 (특정 학과 선택 + 해당 학과 전용 키워드 설정) */}
       <Modal
-        isOpen={isBriefTimeModalOpen}
-        onClose={() => setIsBriefTimeModalOpen(false)}
-        title="당일 브리핑 시간 설정"
-        description="매일 아침 시간표를 요약하여 안내받을 시간을 선택해 주세요."
+        isOpen={isDeptActionModalOpen}
+        onClose={() => setIsDeptActionModalOpen(false)}
+        title="학과 공지 알림 설정"
+        description="공지 알림을 받을 학과를 선택하고, 관심/제외 키워드를 설정해 주세요."
         secondaryButton={{
           text: "취소",
-          onClick: () => setIsBriefTimeModalOpen(false),
+          onClick: () => setIsDeptActionModalOpen(false),
         }}
         primaryButton={{
           text: "완료",
           variant: "primary",
-          onClick: handleConfirmBriefTime,
-        }}
-      >
-        <ModalOptionsList>
-          {BRIEF_TIME_OPTIONS.slice(0, 8).map((t) => {
-            const isSelected = tempBriefTime === t;
-            return (
-              <ModalOptionItem
-                key={t}
-                $selected={isSelected}
-                onClick={() => setTempBriefTime(t)}
-              >
-                <Ripple color="rgba(37, 99, 235, 0.1)" />
-                <ModalOptionText $selected={isSelected}>아침 {t}</ModalOptionText>
-                {isSelected && <Check size={18} color="#2563eb" strokeWidth={3} />}
-              </ModalOptionItem>
-            );
-          })}
-        </ModalOptionsList>
-      </Modal>
-
-      {/* 2. 강의 시작 전 n분 전 알림 모달 */}
-      <Modal
-        isOpen={isPreAlertMinutesModalOpen}
-        onClose={() => setIsPreAlertMinutesModalOpen(false)}
-        title="강의 시작 전 알림 시간"
-        description="수업 시작 몇 분 전에 다음 강의실 알림을 받을지 선택해 주세요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsPreAlertMinutesModalOpen(false),
-        }}
-        primaryButton={{
-          text: "완료",
-          variant: "primary",
-          onClick: handleConfirmPreAlertMinutes,
-        }}
-      >
-        <ModalOptionsList>
-          {PRE_ALERT_OPTIONS.map((opt) => {
-            const isSelected = tempPreAlertMinutes === opt.value;
-            return (
-              <ModalOptionItem
-                key={opt.value}
-                $selected={isSelected}
-                onClick={() => setTempPreAlertMinutes(opt.value)}
-              >
-                <Ripple color="rgba(37, 99, 235, 0.1)" />
-                <ModalOptionText $selected={isSelected}>{opt.label}</ModalOptionText>
-                {isSelected && <Check size={18} color="#2563eb" strokeWidth={3} />}
-              </ModalOptionItem>
-            );
-          })}
-        </ModalOptionsList>
-      </Modal>
-
-      {/* 3. 학사일정 시간 & 사전 알림 모달 */}
-      <Modal
-        isOpen={isScheduleTimeModalOpen}
-        onClose={() => setIsScheduleTimeModalOpen(false)}
-        title="학사일정 브리핑 & 사전 알림"
-        description="학사일정 브리핑 시간과 며칠 전부터 미리 안내받을지 설정해 주세요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsScheduleTimeModalOpen(false),
-        }}
-        primaryButton={{
-          text: "완료",
-          variant: "primary",
-          onClick: handleConfirmScheduleTime,
-        }}
-      >
-        <ModalFormSection>
-          <ModalSectionLabel>브리핑 시간</ModalSectionLabel>
-          <InlineSelect
-            value={tempScheduleTime}
-            onChange={(e) => setTempScheduleTime(e.target.value)}
-          >
-            {BRIEF_TIME_OPTIONS.map((t) => (
-              <option key={t} value={t}>
-                아침 {t}
-              </option>
-            ))}
-          </InlineSelect>
-
-          <ModalSectionLabel style={{ marginTop: "16px" }}>사전 알림 기준</ModalSectionLabel>
-          <ModalOptionsList>
-            {ADVANCE_DAYS_OPTIONS.map((opt) => {
-              const isSelected = tempScheduleAdvanceDays === opt.value;
-              return (
-                <ModalOptionItem
-                  key={opt.value}
-                  $selected={isSelected}
-                  onClick={() => setTempScheduleAdvanceDays(opt.value)}
-                >
-                  <Ripple color="rgba(37, 99, 235, 0.1)" />
-                  <ModalOptionText $selected={isSelected}>{opt.label}</ModalOptionText>
-                  {isSelected && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                </ModalOptionItem>
-              );
-            })}
-          </ModalOptionsList>
-        </ModalFormSection>
-      </Modal>
-
-      {/* 4. 학사일정 범위 모달 */}
-      <Modal
-        isOpen={isScheduleScopeModalOpen}
-        onClose={() => setIsScheduleScopeModalOpen(false)}
-        title="학사일정 알림 대상"
-        description="알림을 받을 학사일정 범위를 선택해 주세요."
-        secondaryButton={{
-          text: "닫기",
-          onClick: () => setIsScheduleScopeModalOpen(false),
-        }}
-      >
-        <ModalOptionsList>
-          {SCHEDULE_SCOPE_OPTIONS.map((opt) => {
-            const isSelected = (dailyBriefSettings.scheduleScope || "ALL") === opt.value;
-            return (
-              <ModalOptionItem
-                key={opt.value}
-                $selected={isSelected}
-                onClick={() => handleConfirmScheduleScope(opt.value)}
-              >
-                <Ripple color="rgba(37, 99, 235, 0.1)" />
-                <ModalOptionText $selected={isSelected}>{opt.label}</ModalOptionText>
-                {isSelected && <Check size={18} color="#2563eb" strokeWidth={3} />}
-              </ModalOptionItem>
-            );
-          })}
-        </ModalOptionsList>
-      </Modal>
-
-      {/* 5. 학교 공지 카테고리 다중 선택 모달 */}
-      <Modal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        title="학교 공지 카테고리 설정"
-        description="새 공지사항 알림을 수신할 카테고리를 체크해 주세요."
-        primaryButton={{
-          text: "완료",
-          variant: "primary",
-          onClick: () => setIsCategoryModalOpen(false),
-        }}
-      >
-        <CategoryModalWrapper>
-          <ModalBatchActionRow>
-            <BatchActionBtn onClick={() => handleToggleAllSchoolCategories(true)}>
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
-              <span>전체 선택</span>
-            </BatchActionBtn>
-            <BatchActionBtn onClick={() => handleToggleAllSchoolCategories(false)}>
-              <Ripple color="rgba(0, 0, 0, 0.06)" />
-              <span>전체 해제</span>
-            </BatchActionBtn>
-          </ModalBatchActionRow>
-
-          <ModalCheckboxGrid>
-            {schoolCategories.map((cat) => {
-              const isSub = subscribedSchoolCategories.includes(cat);
-              return (
-                <CheckboxCard
-                  key={cat}
-                  $checked={isSub}
-                  onClick={() => handleToggleSchoolCategory(cat)}
-                >
-                  <Ripple color={isSub ? "rgba(37, 99, 235, 0.15)" : "rgba(0, 0, 0, 0.05)"} />
-                  <CustomCheckCircle $checked={isSub}>
-                    {isSub && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
-                  </CustomCheckCircle>
-                  <CheckboxLabel $checked={isSub}>{cat}</CheckboxLabel>
-                </CheckboxCard>
-              );
-            })}
-          </ModalCheckboxGrid>
-        </CategoryModalWrapper>
-      </Modal>
-
-      {/* 6. 학과 다중 선택 모달 */}
-      <Modal
-        isOpen={isDeptModalOpen}
-        onClose={() => setIsDeptModalOpen(false)}
-        title="학과 공지 알림 구독"
-        description="공지사항 알림을 받고 싶은 학과를 자유롭게 다중 선택할 수 있어요."
-        primaryButton={{
-          text: `선택 완료 (${subscribedDeptCodes.length}개)`,
-          variant: "primary",
-          onClick: () => setIsDeptModalOpen(false),
+          onClick: handleSaveDeptActionModal,
         }}
       >
         <DeptModalWrapper>
+          <ModalSectionLabel>대상 학과 선택</ModalSectionLabel>
           <SearchInputWrapper>
             <Search size={16} color="#94a3b8" />
             <SearchInput
@@ -2337,88 +1968,355 @@ export default function MobileRoutineDetailPage() {
               value={deptSearchQuery}
               onChange={(e) => setDeptSearchQuery(e.target.value)}
             />
-            {deptSearchQuery && (
-              <ClearSearchBtn onClick={() => setDeptSearchQuery("")}>
-                <X size={14} color="#94a3b8" />
-              </ClearSearchBtn>
-            )}
           </SearchInputWrapper>
 
-          <DeptListScrollContainer>
-            {filteredDepartments.length === 0 ? (
-              <EmptyGuideSub style={{ textAlign: "center", padding: "24px 0" }}>
-                검색된 학과가 없어요.
-              </EmptyGuideSub>
-            ) : (
-              filteredDepartments.map((dept) => {
-                const isChecked = subscribedDeptCodes.includes(dept.code);
+          <DeptListScrollContainer style={{ maxHeight: "150px" }}>
+            {allDepartments
+              .filter((d) => d.name.toLowerCase().includes(deptSearchQuery.trim().toLowerCase()))
+              .map((dept) => {
+                const isSelected = tempDeptCode === dept.code || tempDeptName === dept.name;
                 const isMyMajor = userInfo.departmentCode === dept.code || userInfo.department === dept.name;
-
                 return (
                   <DeptListItem
                     key={dept.code}
-                    $checked={isChecked}
-                    onClick={() => handleToggleDepartmentCode(dept.code)}
+                    $checked={isSelected}
+                    onClick={() => {
+                      setTempDeptCode(dept.code);
+                      setTempDeptName(dept.name);
+                    }}
                   >
                     <Ripple color="rgba(37, 99, 235, 0.1)" />
-                    <CustomCheckCircle $checked={isChecked}>
-                      {isChecked && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
+                    <CustomCheckCircle $checked={isSelected}>
+                      {isSelected && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
                     </CustomCheckCircle>
-                    <DeptNameText $checked={isChecked}>
+                    <DeptNameText $checked={isSelected}>
                       {dept.name}
                       {isMyMajor && <MyMajorBadge>내 학과</MyMajorBadge>}
                     </DeptNameText>
                   </DeptListItem>
                 );
-              })
-            )}
+              })}
           </DeptListScrollContainer>
+
+          <ModalSectionLabel style={{ marginTop: "12px" }}>
+            {tempDeptName ? `[${tempDeptName}] 키워드 알림 설정` : "키워드 알림 설정"}
+          </ModalSectionLabel>
+
+          <KeywordSectionCard style={{ padding: "14px" }}>
+            <KeywordHeaderRow>
+              <KeywordTabGroup>
+                <KeywordTabBtn
+                  $active={deptKeywordTab === "include"}
+                  onClick={() => setDeptKeywordTab("include")}
+                >
+                  관심 키워드 ({tempDeptIncludeKeywords.length})
+                </KeywordTabBtn>
+                <KeywordTabBtn
+                  $active={deptKeywordTab === "exclude"}
+                  onClick={() => setDeptKeywordTab("exclude")}
+                >
+                  제외 키워드 ({tempDeptExcludeKeywords.length})
+                </KeywordTabBtn>
+              </KeywordTabGroup>
+            </KeywordHeaderRow>
+
+            <KeywordInputRow>
+              <KeywordModalInput
+                type="text"
+                placeholder={deptKeywordTab === "include" ? "관심 키워드 입력 (예: 캡스톤, 졸업)" : "제외할 키워드 입력"}
+                value={deptKeywordInput}
+                onChange={(e) => setDeptKeywordInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && deptKeywordInput.trim()) {
+                    e.preventDefault();
+                    if (deptKeywordTab === "include") {
+                      if (!tempDeptIncludeKeywords.includes(deptKeywordInput.trim())) {
+                        setTempDeptIncludeKeywords([...tempDeptIncludeKeywords, deptKeywordInput.trim()]);
+                      }
+                    } else {
+                      if (!tempDeptExcludeKeywords.includes(deptKeywordInput.trim())) {
+                        setTempDeptExcludeKeywords([...tempDeptExcludeKeywords, deptKeywordInput.trim()]);
+                      }
+                    }
+                    setDeptKeywordInput("");
+                  }
+                }}
+              />
+              <CapsuleButton
+                variant="primary"
+                style={{ height: "42px", padding: "0 16px", borderRadius: "12px", whiteSpace: "nowrap" }}
+                onClick={() => {
+                  if (!deptKeywordInput.trim()) return;
+                  if (deptKeywordTab === "include") {
+                    if (!tempDeptIncludeKeywords.includes(deptKeywordInput.trim())) {
+                      setTempDeptIncludeKeywords([...tempDeptIncludeKeywords, deptKeywordInput.trim()]);
+                    }
+                  } else {
+                    if (!tempDeptExcludeKeywords.includes(deptKeywordInput.trim())) {
+                      setTempDeptExcludeKeywords([...tempDeptExcludeKeywords, deptKeywordInput.trim()]);
+                    }
+                  }
+                  setDeptKeywordInput("");
+                }}
+              >
+                추가
+              </CapsuleButton>
+            </KeywordInputRow>
+
+            <KeywordChipsContainer>
+              {(deptKeywordTab === "include" ? tempDeptIncludeKeywords : tempDeptExcludeKeywords).map((kw) => (
+                <KeywordChip key={kw} $isExclude={deptKeywordTab === "exclude"}>
+                  <span>{deptKeywordTab === "exclude" ? `-${kw}` : `#${kw}`}</span>
+                  <ChipDeleteBtn
+                    onClick={() => {
+                      if (deptKeywordTab === "include") {
+                        setTempDeptIncludeKeywords(tempDeptIncludeKeywords.filter((k) => k !== kw));
+                      } else {
+                        setTempDeptExcludeKeywords(tempDeptExcludeKeywords.filter((k) => k !== kw));
+                      }
+                    }}
+                  >
+                    <X size={13} color="#64748b" />
+                  </ChipDeleteBtn>
+                </KeywordChip>
+              ))}
+            </KeywordChipsContainer>
+          </KeywordSectionCard>
         </DeptModalWrapper>
       </Modal>
 
-      {/* 키워드 추가 모달 */}
+      {/* 2. 학교 공지 동작 모달 (카테고리 + 키워드) */}
       <Modal
-        isOpen={isAddKeywordModalOpen}
-        onClose={() => setIsAddKeywordModalOpen(false)}
-        title={isKeywordExcluded ? "제외 키워드 등록" : "관심 키워드 등록"}
-        description={
-          isKeywordExcluded
-            ? "등록한 키워드가 포함된 공지사항은 알림에서 제외돼요."
-            : "등록한 키워드가 포함된 새 공지사항이 올라오면 실시간 알림을 받아요."
-        }
+        isOpen={isSchoolNoticeActionModalOpen}
+        onClose={() => setIsSchoolNoticeActionModalOpen(false)}
+        title="학교 공지 알림 설정"
+        description="구독할 공지 카테고리와 키워드를 설정해 주세요."
         secondaryButton={{
           text: "취소",
-          onClick: () => setIsAddKeywordModalOpen(false),
+          onClick: () => setIsSchoolNoticeActionModalOpen(false),
         }}
         primaryButton={{
-          text: "등록",
+          text: "완료",
           variant: "primary",
-          onClick: handleConfirmAddKeyword,
+          onClick: handleSaveSchoolNoticeActionModal,
         }}
       >
-        <KeywordModalContent>
-          <KeywordModalInput
-            type="text"
-            value={newKeywordInput}
-            onChange={(e) => setNewKeywordInput(e.target.value)}
-            placeholder={isKeywordExcluded ? "제외할 키워드 입력 (예: 채용, 봉사)" : "키워드 입력 (예: 장학금, 수강신청, 인턴)"}
-            maxLength={20}
-            autoFocus={true}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleConfirmAddKeyword();
-              }
-            }}
-          />
+        <CategoryModalWrapper>
+          <ModalSectionLabel>구독 카테고리 (미선택 시 전체)</ModalSectionLabel>
+          <ModalCheckboxGrid style={{ maxHeight: "160px" }}>
+            {schoolCategories.map((cat) => {
+              const isSub = tempSchoolCategories.includes(cat);
+              return (
+                <CheckboxCard
+                  key={cat}
+                  $checked={isSub}
+                  onClick={() => {
+                    setTempSchoolCategories((prev) =>
+                      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
+                    );
+                  }}
+                >
+                  <Ripple color="rgba(37, 99, 235, 0.1)" />
+                  <CustomCheckCircle $checked={isSub}>
+                    {isSub && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
+                  </CustomCheckCircle>
+                  <CheckboxLabel $checked={isSub}>{cat}</CheckboxLabel>
+                </CheckboxCard>
+              );
+            })}
+          </ModalCheckboxGrid>
 
-          <ExcludeToggleRow onClick={() => setIsKeywordExcluded(!isKeywordExcluded)}>
-            <ExcludeCheckCircle $checked={isKeywordExcluded}>
-              {isKeywordExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
-            </ExcludeCheckCircle>
-            <ExcludeLabel>이 키워드가 들어간 공지는 알림에서 제외하기</ExcludeLabel>
-          </ExcludeToggleRow>
-        </KeywordModalContent>
+          <ModalSectionLabel style={{ marginTop: "10px" }}>학교 공지 키워드 설정</ModalSectionLabel>
+          <KeywordSectionCard style={{ padding: "14px" }}>
+            <KeywordHeaderRow>
+              <KeywordTabGroup>
+                <KeywordTabBtn
+                  $active={schoolKeywordTab === "include"}
+                  onClick={() => setSchoolKeywordTab("include")}
+                >
+                  관심 키워드 ({tempSchoolIncludeKeywords.length})
+                </KeywordTabBtn>
+                <KeywordTabBtn
+                  $active={schoolKeywordTab === "exclude"}
+                  onClick={() => setSchoolKeywordTab("exclude")}
+                >
+                  제외 키워드 ({tempSchoolExcludeKeywords.length})
+                </KeywordTabBtn>
+              </KeywordTabGroup>
+            </KeywordHeaderRow>
+
+            <KeywordInputRow>
+              <KeywordModalInput
+                type="text"
+                placeholder={schoolKeywordTab === "include" ? "관심 키워드 입력 (예: 장학금, 수강신청)" : "제외할 키워드 입력"}
+                value={schoolKeywordInput}
+                onChange={(e) => setSchoolKeywordInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && schoolKeywordInput.trim()) {
+                    e.preventDefault();
+                    if (schoolKeywordTab === "include") {
+                      if (!tempSchoolIncludeKeywords.includes(schoolKeywordInput.trim())) {
+                        setTempSchoolIncludeKeywords([...tempSchoolIncludeKeywords, schoolKeywordInput.trim()]);
+                      }
+                    } else {
+                      if (!tempSchoolExcludeKeywords.includes(schoolKeywordInput.trim())) {
+                        setTempSchoolExcludeKeywords([...tempSchoolExcludeKeywords, schoolKeywordInput.trim()]);
+                      }
+                    }
+                    setSchoolKeywordInput("");
+                  }
+                }}
+              />
+              <CapsuleButton
+                variant="primary"
+                style={{ height: "42px", padding: "0 16px", borderRadius: "12px", whiteSpace: "nowrap" }}
+                onClick={() => {
+                  if (!schoolKeywordInput.trim()) return;
+                  if (schoolKeywordTab === "include") {
+                    if (!tempSchoolIncludeKeywords.includes(schoolKeywordInput.trim())) {
+                      setTempSchoolIncludeKeywords([...tempSchoolIncludeKeywords, schoolKeywordInput.trim()]);
+                    }
+                  } else {
+                    if (!tempSchoolExcludeKeywords.includes(schoolKeywordInput.trim())) {
+                      setTempSchoolExcludeKeywords([...tempSchoolExcludeKeywords, schoolKeywordInput.trim()]);
+                    }
+                  }
+                  setSchoolKeywordInput("");
+                }}
+              >
+                추가
+              </CapsuleButton>
+            </KeywordInputRow>
+
+            <KeywordChipsContainer>
+              {(schoolKeywordTab === "include" ? tempSchoolIncludeKeywords : tempSchoolExcludeKeywords).map((kw) => (
+                <KeywordChip key={kw} $isExclude={schoolKeywordTab === "exclude"}>
+                  <span>{schoolKeywordTab === "exclude" ? `-${kw}` : `#${kw}`}</span>
+                  <ChipDeleteBtn
+                    onClick={() => {
+                      if (schoolKeywordTab === "include") {
+                        setTempSchoolIncludeKeywords(tempSchoolIncludeKeywords.filter((k) => k !== kw));
+                      } else {
+                        setTempSchoolExcludeKeywords(tempSchoolExcludeKeywords.filter((k) => k !== kw));
+                      }
+                    }}
+                  >
+                    <X size={13} color="#64748b" />
+                  </ChipDeleteBtn>
+                </KeywordChip>
+              ))}
+            </KeywordChipsContainer>
+          </KeywordSectionCard>
+        </CategoryModalWrapper>
+      </Modal>
+
+      {/* 3. 버스 정류소 선택 모달 */}
+      <Modal
+        isOpen={isBusActionModalOpen}
+        onClose={() => setIsBusActionModalOpen(false)}
+        title="실시간 버스 정류소 선택"
+        description="실시간 버스 도착 정보를 안내받을 정류소를 선택해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsBusActionModalOpen(false),
+        }}
+        primaryButton={{
+          text: "완료",
+          variant: "primary",
+          onClick: handleSaveBusActionModal,
+        }}
+      >
+        <ModalOptionsList>
+          {BUS_STOP_OPTIONS.map((opt) => (
+            <ModalOptionItem
+              key={opt.value}
+              $selected={tempBusStop === opt.value}
+              onClick={() => setTempBusStop(opt.value)}
+            >
+              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <ModalOptionText $selected={tempBusStop === opt.value}>{opt.label}</ModalOptionText>
+              {tempBusStop === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+            </ModalOptionItem>
+          ))}
+        </ModalOptionsList>
+      </Modal>
+
+      {/* 4. 학식 식당 & 메뉴 선택 모달 */}
+      <Modal
+        isOpen={isCafeteriaActionModalOpen}
+        onClose={() => setIsCafeteriaActionModalOpen(false)}
+        title="학식 메뉴 알림 설정"
+        description="메뉴를 확인할 식당과 식사 유형을 선택해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsCafeteriaActionModalOpen(false),
+        }}
+        primaryButton={{
+          text: "완료",
+          variant: "primary",
+          onClick: handleSaveCafeteriaActionModal,
+        }}
+      >
+        <ModalFormSection>
+          <ModalSectionLabel>식당 선택</ModalSectionLabel>
+          <InlineSelect value={tempCafeteria} onChange={(e) => setTempCafeteria(e.target.value)}>
+            {CAFETERIA_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </InlineSelect>
+
+          <ModalSectionLabel style={{ marginTop: "14px" }}>식사 유형</ModalSectionLabel>
+          <InlineSelect value={tempMealType} onChange={(e) => setTempMealType(e.target.value as any)}>
+            <option value="AUTO">시간대별 자동 (아침/점심/저녁)</option>
+            <option value="LUNCH">중식 (점심 메뉴)</option>
+            <option value="DINNER">석식 (저녁 메뉴)</option>
+          </InlineSelect>
+        </ModalFormSection>
+      </Modal>
+
+      {/* 5. 학사일정 설정 모달 */}
+      <Modal
+        isOpen={isScheduleActionModalOpen}
+        onClose={() => setIsScheduleActionModalOpen(false)}
+        title="학사일정 알림 설정"
+        description="학사일정 알림 범위 및 D-day 사전 알림을 설정해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsScheduleActionModalOpen(false),
+        }}
+        primaryButton={{
+          text: "완료",
+          variant: "primary",
+          onClick: handleSaveScheduleActionModal,
+        }}
+      >
+        <ModalFormSection>
+          <ModalSectionLabel>알림 대상 범위</ModalSectionLabel>
+          <InlineSelect value={tempScheduleScope} onChange={(e) => setTempScheduleScope(e.target.value as any)}>
+            {SCHEDULE_SCOPE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </InlineSelect>
+
+          <ModalSectionLabel style={{ marginTop: "14px" }}>사전 알림 기준</ModalSectionLabel>
+          <ModalOptionsList>
+            {ADVANCE_DAYS_OPTIONS.map((opt) => (
+              <ModalOptionItem
+                key={opt.value}
+                $selected={tempScheduleAdvanceDays === opt.value}
+                onClick={() => setTempScheduleAdvanceDays(opt.value)}
+              >
+                <Ripple color="rgba(37, 99, 235, 0.1)" />
+                <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>{opt.label}</ModalOptionText>
+                {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+              </ModalOptionItem>
+            ))}
+          </ModalOptionsList>
+        </ModalFormSection>
       </Modal>
 
       {/* 아이콘 및 색상 선택 모달 */}
@@ -2482,92 +2380,6 @@ export default function MobileRoutineDetailPage() {
         </IconPickerModalContent>
       </Modal>
 
-      {/* 맞춤 루틴 조건 설정 모달 */}
-      <Modal
-        isOpen={isConditionModalOpen}
-        onClose={() => setIsConditionModalOpen(false)}
-        title={editingConditionId === "new" ? "알림 시간 추가" : "알림 시간 및 요일 설정"}
-        description="Daily Brief 알림을 받을 시간과 반복할 요일을 설정해 주세요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsConditionModalOpen(false),
-        }}
-        primaryButton={{
-          text: "완료",
-          variant: "primary",
-          onClick: handleSaveConditionModal,
-        }}
-      >
-        <TimePickerModalContent>
-          <PickerRow>
-            <AmPmToggle>
-              <AmPmButton
-                $active={modalAmpm === "AM"}
-                onClick={() => setModalAmpm("AM")}
-                type="button"
-              >
-                <Ripple color={modalAmpm === "AM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
-                오전
-              </AmPmButton>
-              <AmPmButton
-                $active={modalAmpm === "PM"}
-                onClick={() => setModalAmpm("PM")}
-                type="button"
-              >
-                <Ripple color={modalAmpm === "PM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
-                오후
-              </AmPmButton>
-            </AmPmToggle>
-
-            <TimeInputGroup>
-              <TimeSelect
-                value={modalHour}
-                onChange={(e) => setModalHour(e.target.value)}
-              >
-                {Array.from({ length: 12 }, (_, i) => {
-                  const h = String(i + 1).padStart(2, "0");
-                  return (
-                    <option key={h} value={h}>
-                      {h}시
-                    </option>
-                  );
-                })}
-              </TimeSelect>
-              <TimeColon>:</TimeColon>
-              <TimeSelect
-                value={modalMinute}
-                onChange={(e) => setModalMinute(e.target.value)}
-              >
-                {["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"].map(
-                  (m) => (
-                    <option key={m} value={m}>
-                      {m}분
-                    </option>
-                  ),
-                )}
-              </TimeSelect>
-            </TimeInputGroup>
-          </PickerRow>
-
-          <DayCircleRow>
-            {DAYS.map((day) => {
-              const isSelected = modalSelectedDays.includes(day.key);
-              return (
-                <DayCircleButton
-                  key={day.key}
-                  type="button"
-                  $active={isSelected}
-                  onClick={() => toggleModalDay(day.key)}
-                >
-                  <Ripple color={isSelected ? "rgba(255, 255, 255, 0.25)" : "rgba(37, 99, 235, 0.1)"} />
-                  {day.label}
-                </DayCircleButton>
-              );
-            })}
-          </DayCircleRow>
-        </TimePickerModalContent>
-      </Modal>
-
       {/* 루틴 삭제 확인 모달 */}
       <Modal
         isOpen={isDeleteModalOpen}
@@ -2584,64 +2396,7 @@ export default function MobileRoutineDetailPage() {
           onClick: handleDelete,
         }}
       />
-
-      {/* 알림 내용 추가 드로어 */}
-      {isToolDrawerOpen && (
-        <DrawerBackdrop onClick={() => setIsToolDrawerOpen(false)}>
-          <DrawerContainer onClick={(e) => e.stopPropagation()}>
-            <DrawerHeader>
-              <DrawerTitle>알림 내용 추가</DrawerTitle>
-              <DrawerCloseButton onClick={() => setIsToolDrawerOpen(false)}>
-                <X size={20} color="#6b7280" />
-              </DrawerCloseButton>
-            </DrawerHeader>
-
-            <DrawerList>
-              {availableToAdd.map((action) => (
-                <DrawerItem key={action.id} onClick={() => addTool(action.id)}>
-                  <Ripple color="rgba(0, 0, 0, 0.06)" />
-                  <DrawerIconCircle $bgColor={action.iconBg}>
-                    {React.cloneElement(action.icon, { size: 20, color: "#ffffff" })}
-                  </DrawerIconCircle>
-                  <DrawerItemText>
-                    <DrawerItemTitle>{action.title}</DrawerItemTitle>
-                    <DrawerItemDesc>{action.description}</DrawerItemDesc>
-                  </DrawerItemText>
-                  <Plus size={18} color="#3b82f6" />
-                </DrawerItem>
-              ))}
-            </DrawerList>
-          </DrawerContainer>
-        </DrawerBackdrop>
-      )}
     </PageWrapper>
-  );
-}
-
-/**
- * 모바일 OS 푸시 알림 프리뷰 컴포넌트
- */
-function PushNotificationPreviewCard({
-  title,
-  body,
-  time = "지금",
-}: {
-  title: string;
-  body: string;
-  time?: string;
-}) {
-  return (
-    <OsNotificationBanner>
-      <OsHeader>
-        <OsAppIconWrapper>
-          <Bell size={10} color="#ffffff" />
-        </OsAppIconWrapper>
-        <OsAppName>INTIP Daily Brief</OsAppName>
-        <OsTimeText>{time}</OsTimeText>
-      </OsHeader>
-      <OsTitle>{title}</OsTitle>
-      <OsBody>{body}</OsBody>
-    </OsNotificationBanner>
   );
 }
 
@@ -2846,6 +2601,13 @@ const CardBlueText = styled.div`
   white-space: pre-line;
 `;
 
+const CardSubDesc = styled.div`
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.35;
+  margin-top: 2px;
+`;
+
 const MinusButton = styled.button`
   position: relative;
   z-index: 2;
@@ -2922,16 +2684,6 @@ const EmptyGuideSub = styled.div`
   color: #94a3b8;
 `;
 
-const InlineSelectWrapper = styled.div`
-  margin-top: 6px;
-`;
-
-const InlineSelectRow = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-`;
-
 const InlineSelect = styled.select`
   padding: 8px 12px;
   border-radius: 12px;
@@ -2951,76 +2703,15 @@ const InlineSelect = styled.select`
   }
 `;
 
-// Preview Card
-const PreviewCardsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const OsNotificationBanner = styled.div`
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  padding: 14px 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const OsHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const OsAppIconWrapper = styled.div`
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: #2563eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const OsAppName = styled.span`
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #64748b;
-  letter-spacing: -0.2px;
-`;
-
-const OsTimeText = styled.span`
-  font-size: 11px;
-  color: #94a3b8;
-  margin-left: auto;
-`;
-
-const OsTitle = styled.div`
-  font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
-`;
-
-const OsBody = styled.div`
-  font-size: 12.5px;
-  color: #475569;
-  line-height: 1.4;
-  white-space: pre-line;
-`;
-
 // Keywords & Categories Card
 const KeywordSectionCard = styled.div`
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid #e9ecef;
-  padding: 18px 20px;
+  background: #f8fafc;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  gap: 12px;
 `;
 
 const KeywordHeaderRow = styled.div`
@@ -3032,7 +2723,7 @@ const KeywordHeaderRow = styled.div`
 
 const KeywordTabGroup = styled.div`
   display: flex;
-  background: #f1f5f9;
+  background: #e2e8f0;
   border-radius: 12px;
   padding: 3px;
   gap: 3px;
@@ -3043,8 +2734,8 @@ const KeywordTabBtn = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
   color: ${({ $active }) => ($active ? "#1e293b" : "#64748b")};
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
-  font-size: 12.5px;
-  padding: 6px 12px;
+  font-size: 12px;
+  padding: 5px 10px;
   border-radius: 9px;
   cursor: pointer;
   position: relative;
@@ -3053,27 +2744,10 @@ const KeywordTabBtn = styled.button<{ $active: boolean }>`
   transition: all 0.15s ease;
 `;
 
-const AddKeywordChipButton = styled.button`
-  border: none;
-  background: #eff6ff;
-  color: #2563eb;
-  font-size: 12.5px;
-  font-weight: 700;
-  padding: 7px 12px;
-  border-radius: 12px;
+const KeywordInputRow = styled.div`
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-`;
-
-const EmptyKeywordGuide = styled.div`
-  font-size: 13px;
-  color: #94a3b8;
-  line-height: 1.4;
-  padding: 8px 4px;
 `;
 
 const KeywordChipsContainer = styled.div`
@@ -3088,7 +2762,7 @@ const KeywordChip = styled.div<{ $isExclude?: boolean }>`
   gap: 6px;
   padding: 6px 12px;
   border-radius: 10px;
-  background: ${({ $isExclude }) => ($isExclude ? "#fef2f2" : "#f1f5f9")};
+  background: ${({ $isExclude }) => ($isExclude ? "#fef2f2" : "#ffffff")};
   border: 1px solid ${({ $isExclude }) => ($isExclude ? "#fecaca" : "#e2e8f0")};
   font-size: 13px;
   font-weight: 600;
@@ -3205,6 +2879,12 @@ const ModalOptionItem = styled.div<{ $selected?: boolean }>`
   transition: all 0.15s ease;
 `;
 
+const OptionIconTextRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
 const ModalOptionText = styled.span<{ $selected?: boolean }>`
   font-size: 15px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 600)};
@@ -3229,29 +2909,10 @@ const CategoryModalWrapper = styled.div`
   gap: 14px;
 `;
 
-const ModalBatchActionRow = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const BatchActionBtn = styled.button`
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-`;
-
 const ModalCheckboxGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  max-height: 280px;
   overflow-y: auto;
 `;
 
@@ -3289,7 +2950,7 @@ const CheckboxLabel = styled.span<{ $checked?: boolean }>`
 const DeptModalWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 `;
 
 const SearchInputWrapper = styled.div`
@@ -3314,17 +2975,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const ClearSearchBtn = styled.button`
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-`;
-
 const DeptListScrollContainer = styled.div`
-  max-height: 280px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -3364,18 +3015,12 @@ const MyMajorBadge = styled.span`
   border-radius: 6px;
 `;
 
-const KeywordModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-`;
-
 const KeywordModalInput = styled.input`
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
   border: 1.5px solid #d1d5db;
-  font-size: 15px;
+  font-size: 14px;
   color: #111827;
   outline: none;
   box-sizing: border-box;
@@ -3383,31 +3028,6 @@ const KeywordModalInput = styled.input`
   &:focus {
     border-color: #2563eb;
   }
-`;
-
-const ExcludeToggleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 4px 0;
-`;
-
-const ExcludeCheckCircle = styled.div<{ $checked: boolean }>`
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 2px solid ${({ $checked }) => ($checked ? "#ef4444" : "#94a3b8")};
-  background: ${({ $checked }) => ($checked ? "#ef4444" : "transparent")};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const ExcludeLabel = styled.span`
-  font-size: 13.5px;
-  color: #475569;
-  font-weight: 500;
 `;
 
 const IconPickerModalContent = styled.div`

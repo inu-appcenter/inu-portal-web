@@ -275,21 +275,43 @@ export default function MobileAgentReminderSetting() {
     return getDefaultIconAndBgForTools(reminder.targetTool);
   };
 
-  const getToolsDescription = (toolsStr?: string) => {
+  const getToolsDescription = (reminder: AgentReminder) => {
+    if (reminder.toolParamsJson) {
+      try {
+        const parsed = JSON.parse(reminder.toolParamsJson);
+        if (parsed.actions && Array.isArray(parsed.actions) && parsed.actions.length > 0) {
+          return parsed.actions.map((a: any) => a.title).join(" • ");
+        }
+      } catch (ignored) {}
+    }
+    const toolsStr = reminder.targetTool;
     if (!toolsStr) return "캠퍼스 맞춤 알림";
     const parts = toolsStr.split(",").map((s) => s.trim().toUpperCase());
     const names = parts.map((p) => {
+      if (p.includes("DEPT_NOTICE")) return "학과 공지";
+      if (p.includes("NOTICE") || p.includes("SCHOOL_NOTICE")) return "학교 공지";
+      if (p.includes("TIMETABLE")) return "시간표/강의실";
+      if (p.includes("SCHEDULE")) return "학사일정";
       if (p.includes("WEATHER")) return "캠퍼스 날씨";
       if (p.includes("BUS")) return "실시간 버스";
       if (p.includes("CAFETERIA")) return "학식 식단";
-      if (p.includes("TIMETABLE")) return "시간표/강의실";
-      if (p.includes("NOTICE")) return "학교 공지";
       return p;
     });
     return names.join(" • ");
   };
 
   const getSchedulesSummary = (reminder: AgentReminder) => {
+    if (reminder.toolParamsJson) {
+      try {
+        const parsed = JSON.parse(reminder.toolParamsJson);
+        if (parsed.triggers && Array.isArray(parsed.triggers) && parsed.triggers.length > 0) {
+          if (parsed.triggers.length > 1) {
+            return `${parsed.triggers.length}개 조건 설정됨`;
+          }
+          return `${parsed.triggers[0].title} (${parsed.triggers[0].subtitle})`;
+        }
+      } catch (ignored) {}
+    }
     if (reminder.schedulesJson) {
       try {
         const parsed = JSON.parse(reminder.schedulesJson);
@@ -596,7 +618,7 @@ export default function MobileAgentReminderSetting() {
                       </RowMainTitle>
                       <RowSubTitle>
                         {getSchedulesSummary(reminder)} •{" "}
-                        {getToolsDescription(reminder.targetTool)}
+                        {getToolsDescription(reminder)}
                       </RowSubTitle>
                     </TextContentWrapper>
 

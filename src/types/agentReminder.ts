@@ -10,6 +10,72 @@ export interface RoutineScheduleItem {
   repeatType?: AgentReminderRepeatType;
 }
 
+export type RoutineTriggerType =
+  | "TIME"
+  | "SCHOOL_NOTICE"
+  | "DEPT_NOTICE"
+  | "BEFORE_CLASS";
+
+export interface RoutineTriggerCondition {
+  id: string;
+  type: RoutineTriggerType;
+  title: string;
+  subtitle: string;
+  timeParams?: {
+    ampm: "AM" | "PM";
+    hour: string;
+    minute: string;
+    selectedDays: string[];
+    repeatType: AgentReminderRepeatType;
+  };
+  deptParams?: {
+    deptCode: string;
+    deptName: string;
+  };
+  beforeClassParams?: {
+    minutes: number;
+  };
+}
+
+export type RoutineActionType =
+  | "DEPT_NOTICE"
+  | "SCHOOL_NOTICE"
+  | "TIMETABLE"
+  | "SCHEDULE"
+  | "WEATHER"
+  | "BUS"
+  | "CAFETERIA";
+
+export interface RoutineActionBlock {
+  id: string;
+  type: RoutineActionType;
+  title: string;
+  subtitle: string;
+  iconBg: string;
+  deptNoticeParams?: {
+    deptCode: string;
+    deptName: string;
+    includeKeywords: string[];
+    excludeKeywords: string[];
+  };
+  schoolNoticeParams?: {
+    categories: string[];
+    includeKeywords: string[];
+    excludeKeywords: string[];
+  };
+  busParams?: {
+    stopName: string;
+  };
+  cafeteriaParams?: {
+    restaurant: string;
+    mealType: "AUTO" | "LUNCH" | "DINNER";
+  };
+  scheduleParams?: {
+    scope: "ALL" | "SCHOOL_ONLY" | "DEPT_ONLY";
+    advanceDays: number;
+  };
+}
+
 export interface AgentReminder {
   id: number;
   title: string;
@@ -50,4 +116,3 @@ export interface AgentReminderUpdateRequest {
   route?: string;
   enabled?: boolean;
 }
-
