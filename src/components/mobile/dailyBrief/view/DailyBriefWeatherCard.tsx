@@ -51,7 +51,7 @@ export default function DailyBriefWeatherCard() {
         <CardHeader>
           <HeaderLeft>
             <CardTitle>캠퍼스 날씨</CardTitle>
-            <LocationBadge>📍 연수구 송도동</LocationBadge>
+            <LocationBadge>연수구 송도동</LocationBadge>
           </HeaderLeft>
           <LinkIconBadge aria-label="네이버 날씨 새창 열기">
             <Icon name="link-external" size={15} color="#FFFFFF" />
@@ -85,7 +85,7 @@ export default function DailyBriefWeatherCard() {
         </AirQualityGrid>
 
         <FooterRow>
-          <FooterTip>상세 예보 및 주간 날씨는 네이버 날씨에서 확인 가능해요</FooterTip>
+          <FooterTip>상세 예보 및 주간 날씨는 여기를 눌러 확인하세요.</FooterTip>
         </FooterRow>
       </WeatherCardWrapper>
     </SectionWrapper>
