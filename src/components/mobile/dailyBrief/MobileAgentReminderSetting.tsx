@@ -48,7 +48,190 @@ export interface RoutinePreset {
 }
 
 export const ROUTINE_PRESETS: RoutinePreset[] = [
-  // 이동할 때 유용한
+  // 1. 기본 제공 추천 루틴 (학업 & 캠퍼스)
+  {
+    id: "preset-timetable-brief",
+    category: "study",
+    title: "당일 강의 & 시간표 브리핑",
+    description: "매일 아침 오늘 수강하는 수업 목록과 첫 강의실 위치를 브리핑받아요.",
+    targetTime: "08:00",
+    repeatType: "WEEKDAYS",
+    targetTools: ["TIMETABLE"],
+    toolParams: {
+      iconType: "timetable",
+      iconBg: "#a855f7",
+      triggers: [
+        {
+          id: "trig-time-1",
+          type: "TIME",
+          title: "평일 (월~금) 알림",
+          subtitle: "오전 08:00",
+          timeParams: { ampm: "AM", hour: "08", minute: "00", selectedDays: ["MON", "TUE", "WED", "THU", "FRI"], repeatType: "WEEKDAYS" },
+        },
+      ],
+      actions: [
+        {
+          id: "act-time-1",
+          type: "TIMETABLE",
+          title: "시간표 / 강의실",
+          subtitle: "오늘 수업 시간표 및 강의실 위치",
+          iconBg: "#a855f7",
+        },
+      ],
+    },
+    iconType: "timetable",
+    iconBg: "#a855f7",
+    whenTitle: "매일 아침",
+    whenSubtitle: "오전 08:00\n평일 (월~금)",
+    whatTitle: "오늘 수업 시간표 및 강의실 위치",
+  },
+  {
+    id: "preset-timetable-pre",
+    category: "study",
+    title: "강의 시작 전 알림",
+    description: "각 수업 시작 10분 전에 다음 수업과 이동할 강의실 위치를 안내받아요.",
+    targetTime: "08:50",
+    repeatType: "WEEKDAYS",
+    targetTools: ["TIMETABLE"],
+    toolParams: {
+      iconType: "timetable",
+      iconBg: "#8b5cf6",
+      triggers: [
+        {
+          id: "trig-pre-1",
+          type: "BEFORE_CLASS",
+          title: "각 수업 시작 전 알림",
+          subtitle: "수업 시작 10분 전",
+          beforeClassParams: { minutes: 10 },
+        },
+      ],
+      actions: [
+        {
+          id: "act-time-1",
+          type: "TIMETABLE",
+          title: "시간표 / 강의실",
+          subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
+          iconBg: "#8b5cf6",
+        },
+      ],
+    },
+    iconType: "timetable",
+    iconBg: "#8b5cf6",
+    whenTitle: "수업 시작 전",
+    whenSubtitle: "수업 시작 10분 전",
+    whatTitle: "다음 수업 시간표 및 강의실 위치",
+  },
+  {
+    id: "preset-schedule",
+    category: "study",
+    title: "학사일정 알림",
+    description: "수강신청, 시험 기간 등 주요 학교 및 학과 학사일정을 사전에 안내받아요.",
+    targetTime: "08:30",
+    repeatType: "WEEKDAYS",
+    targetTools: ["SCHEDULE"],
+    toolParams: {
+      iconType: "graduation",
+      iconBg: "#3b82f6",
+      triggers: [
+        {
+          id: "trig-time-1",
+          type: "TIME",
+          title: "평일 (월~금) 알림",
+          subtitle: "오전 08:30",
+          timeParams: { ampm: "AM", hour: "08", minute: "30", selectedDays: ["MON", "TUE", "WED", "THU", "FRI"], repeatType: "WEEKDAYS" },
+        },
+      ],
+      actions: [
+        {
+          id: "act-sched-1",
+          type: "SCHEDULE",
+          title: "학사일정 알림",
+          subtitle: "학교 및 학과 전체 • 1일 전 사전 알림",
+          iconBg: "#3b82f6",
+          scheduleParams: { scope: "ALL", advanceDays: 1 },
+        },
+      ],
+    },
+    iconType: "graduation",
+    iconBg: "#3b82f6",
+    whenTitle: "매일 아침",
+    whenSubtitle: "오전 08:30\n평일 (월~금)",
+    whatTitle: "주요 학사일정 사전 안내",
+  },
+  {
+    id: "preset-school-notice",
+    category: "study",
+    title: "학교 공지사항 알림",
+    description: "인천대학교 대표 홈페이지에 새 공지사항이 등록되면 알림을 받아요.",
+    targetTime: "09:00",
+    repeatType: "WEEKDAYS",
+    targetTools: ["NOTICE"],
+    toolParams: {
+      iconType: "notice",
+      iconBg: "#5c9cf8",
+      triggers: [
+        {
+          id: "trig-school-1",
+          type: "SCHOOL_NOTICE",
+          title: "새 학교 공지 등록 시",
+          subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
+        },
+      ],
+      actions: [
+        {
+          id: "act-school-1",
+          type: "SCHOOL_NOTICE",
+          title: "학교 공지 알림",
+          subtitle: "전체 카테고리 공지 알림",
+          iconBg: "#5c9cf8",
+          schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
+        },
+      ],
+    },
+    iconType: "notice",
+    iconBg: "#5c9cf8",
+    whenTitle: "새 공지 등록 시",
+    whenSubtitle: "학교 새 공지 등록 시 실시간",
+    whatTitle: "새 학교 공지사항 알림",
+  },
+  {
+    id: "preset-dept-notice",
+    category: "study",
+    title: "학과 공지사항 알림",
+    description: "내 학과 홈페이지에 새 공지사항 또는 관심 키워드 글이 올라오면 알림을 받아요.",
+    targetTime: "09:00",
+    repeatType: "WEEKDAYS",
+    targetTools: ["DEPT_NOTICE"],
+    toolParams: {
+      iconType: "dept",
+      iconBg: "#ff7a00",
+      triggers: [
+        {
+          id: "trig-dept-1",
+          type: "DEPT_NOTICE",
+          title: "새 학과 공지 등록 시",
+          subtitle: "내 학과 홈페이지에 새 공지가 올라올 때",
+        },
+      ],
+      actions: [
+        {
+          id: "act-dept-1",
+          type: "DEPT_NOTICE",
+          title: "학과 공지 알림",
+          subtitle: "새 공지 및 관심 키워드 알림",
+          iconBg: "#ff7a00",
+          deptNoticeParams: { deptCode: "", deptName: "내 학과", includeKeywords: [], excludeKeywords: [] },
+        },
+      ],
+    },
+    iconType: "dept",
+    iconBg: "#ff7a00",
+    whenTitle: "새 공지 등록 시",
+    whenSubtitle: "학과 새 공지 등록 시 실시간",
+    whatTitle: "새 학과 공지사항 알림",
+  },
+
+  // 2. 이동 및 교통
   {
     id: "preset-bus-inip",
     category: "transit",
@@ -79,12 +262,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenSubtitle: "오후 05:30\n평일 (월~금)",
     whatTitle: "인천대 정문 정류소 버스 도착 정보",
   },
-  // 특정 시간이나 장소에서 유용한
+
+  // 3. 일상 & 생활
   {
     id: "preset-now-brief",
     category: "time_place",
     title: "Daily Brief 아침 요약",
-    description: "일어나는 시간에 오늘 캠퍼스 날씨와 강의 시간표를 받아요.",
+    description: "일어나는 시간에 오늘 캠퍼스 날씨와 첫 수업 시간표를 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["WEATHER", "TIMETABLE"],
@@ -109,37 +293,6 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenTitle: "점심시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
     whatTitle: "학생식당 & 기숙사 식당 오늘 점심 메뉴",
-  },
-  // 수업 및 학업
-  {
-    id: "preset-timetable",
-    category: "study",
-    title: "오늘의 수업 & 시간표",
-    description: "수업 시작 전 강의실 위치와 오늘 시간표를 받아요.",
-    targetTime: "08:30",
-    repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE"],
-    toolParams: { iconType: "timetable", iconBg: "#a855f7" },
-    iconType: "timetable",
-    iconBg: "#a855f7",
-    whenTitle: "강의 시작 전",
-    whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "오늘 수업 시간표 및 강의실 위치",
-  },
-  {
-    id: "preset-notice",
-    category: "study",
-    title: "새 공지사항 알림",
-    description: "새로 등록된 학교 및 학과 주요 공지사항을 받아요.",
-    targetTime: "09:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["NOTICE"],
-    toolParams: { iconType: "notice", iconBg: "#3b82f6" },
-    iconType: "notice",
-    iconBg: "#3b82f6",
-    whenTitle: "매일 아침",
-    whenSubtitle: "오전 09:00\n평일 (월~금)",
-    whatTitle: "주요 학교 및 학과 새 공지사항",
   },
 ];
 
