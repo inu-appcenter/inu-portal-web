@@ -582,159 +582,11 @@ export default function MobileAgentReminderSetting() {
         </HeaderBannerIllustration>
       </HeaderBannerCard>
 
-      {/* 1. 기본 루틴 (시스템 제공) */}
+      {/* 1. 내 루틴 (기본 루틴 + 맞춤 루틴 통합 목록) */}
       <SectionWrapper>
         <SectionTitleRow>
-          <SectionTitle>기본 루틴 (시스템 제공)</SectionTitle>
-          <SystemBadge>기본 제공</SystemBadge>
-        </SectionTitleRow>
-
-        <GroupCard>
-          {/* 1. 당일 강의 & 시간표 브리핑 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
-            <Ripple color="rgba(0, 0, 0, 0.05)" />
-            <IconCircle $bgColor="#a855f7">
-              <Calendar size={20} color="#ffffff" />
-            </IconCircle>
-
-            <TextContentWrapper>
-              <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
-                당일 강의 & 시간표 브리핑
-              </RowMainTitle>
-              <RowSubTitle>
-                {dailyBriefSettings.timetableDailyBriefEnabled
-                  ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑`
-                  : "알림 꺼짐"}
-              </RowSubTitle>
-            </TextContentWrapper>
-
-            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={dailyBriefSettings.timetableDailyBriefEnabled}
-                onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
-              />
-            </RowRightAction>
-          </GroupRow>
-
-          <CardDivider />
-
-          {/* 2. 강의 시작 전 알림 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-pre"))}>
-            <Ripple color="rgba(0, 0, 0, 0.05)" />
-            <IconCircle $bgColor="#8b5cf6">
-              <Clock size={20} color="#ffffff" />
-            </IconCircle>
-
-            <TextContentWrapper>
-              <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
-                강의 시작 전 알림
-              </RowMainTitle>
-              <RowSubTitle>
-                {dailyBriefSettings.timetablePreAlertEnabled
-                  ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
-                  : "알림 꺼짐"}
-              </RowSubTitle>
-            </TextContentWrapper>
-
-            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={dailyBriefSettings.timetablePreAlertEnabled}
-                onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
-              />
-            </RowRightAction>
-          </GroupRow>
-
-          <CardDivider />
-
-          {/* 3. 학사일정 알림 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
-            <Ripple color="rgba(0, 0, 0, 0.05)" />
-            <IconCircle $bgColor="#3b82f6">
-              <GraduationCap size={20} color="#ffffff" />
-            </IconCircle>
-
-            <TextContentWrapper>
-              <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
-                학사일정 알림
-              </RowMainTitle>
-              <RowSubTitle>
-                {dailyBriefSettings.scheduleAlertEnabled
-                  ? `아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"} 브리핑 • ${(dailyBriefSettings.advanceDays ?? 1) === 0 ? "당일 알림" : `${dailyBriefSettings.advanceDays ?? 1}일 전 알림`}`
-                  : "알림 꺼짐"}
-              </RowSubTitle>
-            </TextContentWrapper>
-
-            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={dailyBriefSettings.scheduleAlertEnabled}
-                onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
-              />
-            </RowRightAction>
-          </GroupRow>
-
-          <CardDivider />
-
-          {/* 4. 학교 공지 알림 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
-            <Ripple color="rgba(0, 0, 0, 0.05)" />
-            <IconCircle $bgColor="#5c9cf8">
-              <Bell size={20} color="#ffffff" />
-            </IconCircle>
-
-            <TextContentWrapper>
-              <RowMainTitle $disabled={!isSchoolNoticeEnabled}>
-                학교 공지 알림
-              </RowMainTitle>
-              <RowSubTitle>
-                {isSchoolNoticeEnabled
-                  ? `학교 새 공지${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
-                  : "알림 꺼짐"}
-              </RowSubTitle>
-            </TextContentWrapper>
-
-            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={isSchoolNoticeEnabled}
-                onCheckedChange={() => handleToggleSchoolNotice({ stopPropagation: () => {} } as any)}
-              />
-            </RowRightAction>
-          </GroupRow>
-
-          <CardDivider />
-
-          {/* 5. 학과 공지 알림 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
-            <Ripple color="rgba(0, 0, 0, 0.05)" />
-            <IconCircle $bgColor="#ff7a00">
-              <Building2 size={20} color="#ffffff" />
-            </IconCircle>
-
-            <TextContentWrapper>
-              <RowMainTitle $disabled={!isDeptNoticeEnabled}>
-                학과 공지 알림
-              </RowMainTitle>
-              <RowSubTitle>
-                {isDeptNoticeEnabled
-                  ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` • 키워드 ${deptKeywordsCount}개` : ""}`
-                  : "알림 꺼짐"}
-              </RowSubTitle>
-            </TextContentWrapper>
-
-            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-              <Switch
-                checked={isDeptNoticeEnabled}
-                onCheckedChange={() => handleToggleDeptNotice({ stopPropagation: () => {} } as any)}
-              />
-            </RowRightAction>
-          </GroupRow>
-        </GroupCard>
-      </SectionWrapper>
-
-      {/* 2. 내가 등록한 루틴 섹션 */}
-      <SectionWrapper>
-        <SectionTitleRow>
-          <SectionTitle>내가 등록한 루틴</SectionTitle>
-          {reminders.length > 0 && <CountBadge>{reminders.length}</CountBadge>}
+          <SectionTitle>내 루틴</SectionTitle>
+          <CountBadge>{5 + reminders.length}</CountBadge>
         </SectionTitleRow>
 
         {isLoading ? (
@@ -743,28 +595,152 @@ export default function MobileAgentReminderSetting() {
               <Skeleton variant="text" width="60%" height={22} />
             </GroupRow>
           </GroupCard>
-        ) : reminders.length === 0 ? (
-          <EmptyGroupCard>
-            <EmptyIconCircle>
-              <Clock size={24} color="#94a3b8" />
-            </EmptyIconCircle>
-            <EmptyTitle>아직 등록된 루틴이 없어요</EmptyTitle>
-            <EmptySubText>
-              아래 추천 루틴을 누르거나 새 루틴을 추가해 보세요.
-            </EmptySubText>
-            <EmptyAddButton onClick={handleOpenNew}>
-              <Ripple color="rgba(255, 255, 255, 0.25)" />
-              <Plus size={15} strokeWidth={2.5} />
-              <span>새 루틴 만들기</span>
-            </EmptyAddButton>
-          </EmptyGroupCard>
         ) : (
           <GroupCard>
-            {reminders.map((reminder, idx) => {
+            {/* 1. 당일 강의 & 시간표 브리핑 */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#a855f7">
+                <Calendar size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
+                  당일 강의 & 시간표 브리핑
+                </RowMainTitle>
+                <RowSubTitle>
+                  {dailyBriefSettings.timetableDailyBriefEnabled
+                    ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑`
+                    : "알림 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={dailyBriefSettings.timetableDailyBriefEnabled}
+                  onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            <CardDivider />
+
+            {/* 2. 강의 시작 전 알림 */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-pre"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#8b5cf6">
+                <Clock size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
+                  강의 시작 전 알림
+                </RowMainTitle>
+                <RowSubTitle>
+                  {dailyBriefSettings.timetablePreAlertEnabled
+                    ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
+                    : "알림 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={dailyBriefSettings.timetablePreAlertEnabled}
+                  onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            <CardDivider />
+
+            {/* 3. 학사일정 알림 */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#3b82f6">
+                <GraduationCap size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
+                  학사일정 알림
+                </RowMainTitle>
+                <RowSubTitle>
+                  {dailyBriefSettings.scheduleAlertEnabled
+                    ? `아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"} 브리핑 • ${(dailyBriefSettings.advanceDays ?? 1) === 0 ? "당일 알림" : `${dailyBriefSettings.advanceDays ?? 1}일 전 알림`}`
+                    : "알림 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={dailyBriefSettings.scheduleAlertEnabled}
+                  onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            <CardDivider />
+
+            {/* 4. 학교 공지 알림 */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#5c9cf8">
+                <Bell size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!isSchoolNoticeEnabled}>
+                  학교 공지 알림
+                </RowMainTitle>
+                <RowSubTitle>
+                  {isSchoolNoticeEnabled
+                    ? `학교 새 공지${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
+                    : "알림 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={isSchoolNoticeEnabled}
+                  onCheckedChange={() => handleToggleSchoolNotice({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            <CardDivider />
+
+            {/* 5. 학과 공지 알림 */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#ff7a00">
+                <Building2 size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!isDeptNoticeEnabled}>
+                  학과 공지 알림
+                </RowMainTitle>
+                <RowSubTitle>
+                  {isDeptNoticeEnabled
+                    ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` • 키워드 ${deptKeywordsCount}개` : ""}`
+                    : "알림 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={isDeptNoticeEnabled}
+                  onCheckedChange={() => handleToggleDeptNotice({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            {/* 맞춤 루틴 목록 */}
+            {reminders.map((reminder) => {
               const { iconId, bg } = getReminderIconAndBg(reminder);
               return (
                 <React.Fragment key={reminder.id}>
-                  {idx > 0 && <CardDivider />}
+                  <CardDivider />
                   <GroupRow
                     onClick={() =>
                       navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
@@ -1010,15 +986,6 @@ const CountBadge = styled.span`
   border-radius: 9999px;
 `;
 
-const SystemBadge = styled.span`
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #64748b;
-  background-color: #f1f5f9;
-  padding: 2px 8px;
-  border-radius: 9999px;
-`;
-
 const GroupCard = styled.div`
   background: #ffffff;
   border-radius: 22px;
@@ -1092,62 +1059,4 @@ const RowRightAction = styled.div`
   display: flex;
   align-items: center;
   flex-shrink: 0;
-`;
-
-const EmptyGroupCard = styled.div`
-  background: #ffffff;
-  border-radius: 22px;
-  border: 1px solid #e9ecef;
-  padding: 32px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 8px;
-`;
-
-const EmptyIconCircle = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 4px;
-`;
-
-const EmptyTitle = styled.div`
-  font-size: 16px;
-  font-weight: 700;
-  color: #111827;
-`;
-
-const EmptySubText = styled.div`
-  font-size: 13px;
-  color: #6b7280;
-  max-width: 240px;
-  line-height: 1.45;
-`;
-
-const EmptyAddButton = styled.button`
-  position: relative;
-  overflow: hidden;
-  margin-top: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 9999px;
-  padding: 9px 18px;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-
-  span, svg {
-    position: relative;
-    z-index: 1;
-  }
 `;
