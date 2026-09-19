@@ -52,12 +52,12 @@ import MobileAgentReminderSetting from "@/components/mobile/dailyBrief/MobileAge
 import MobileDailyBriefCardOrderSetting from "@/components/mobile/dailyBrief/MobileDailyBriefCardOrderSetting";
 
 export const DAILY_BRIEF_TABS = [
+  { label: "카드 구성", value: "cards" },
   { label: "시간표", value: "timetable" },
   { label: "학사일정", value: "schedule" },
   { label: "학교 공지", value: "school" },
   { label: "학과 공지", value: "dept" },
   { label: "AI 맞춤 알림", value: "agent" },
-  { label: "카드 구성", value: "cards" },
 ];
 
 const PRE_ALERT_PRESETS = [
@@ -140,7 +140,7 @@ export default function MobileDailyBriefSettingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const currentTab = params.get("tab") || "timetable";
+  const currentTab = params.get("tab") || "cards";
 
   const { userInfo } = useUserStore();
 
@@ -360,7 +360,16 @@ export default function MobileDailyBriefSettingPage() {
           observeParents={true}
           style={{ width: "100%", overflow: "hidden" }}
         >
-          {/* 슬라이드 1: 시간표 알림 */}
+          {/* 슬라이드 1: 카드 구성 */}
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
+            <SlideInnerWrapper>
+              <MobileDailyBriefCardOrderSetting />
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 2: 시간표 알림 */}
           <SwiperSlide
             style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
           >
@@ -647,7 +656,7 @@ export default function MobileDailyBriefSettingPage() {
             </SlideInnerWrapper>
           </SwiperSlide>
 
-          {/* 슬라이드 2: 학사일정 알림 */}
+          {/* 슬라이드 3: 학사일정 알림 */}
           <SwiperSlide
             style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
           >
@@ -856,7 +865,7 @@ export default function MobileDailyBriefSettingPage() {
             </SlideInnerWrapper>
           </SwiperSlide>
 
-          {/* 슬라이드 3: 학교 공지 알리미 */}
+          {/* 슬라이드 4: 학교 공지 알리미 */}
           <SwiperSlide
             style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
           >
@@ -865,7 +874,7 @@ export default function MobileDailyBriefSettingPage() {
             </SlideInnerWrapper>
           </SwiperSlide>
 
-          {/* 슬라이드 4: 학과 공지 알리미 */}
+          {/* 슬라이드 5: 학과 공지 알리미 */}
           <SwiperSlide
             style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
           >
@@ -874,21 +883,12 @@ export default function MobileDailyBriefSettingPage() {
             </SlideInnerWrapper>
           </SwiperSlide>
 
-          {/* 슬라이드 5: AI 맞춤 알림 */}
+          {/* 슬라이드 6: AI 맞춤 알림 */}
           <SwiperSlide
             style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
           >
             <SlideInnerWrapper>
               <MobileAgentReminderSetting />
-            </SlideInnerWrapper>
-          </SwiperSlide>
-
-          {/* 슬라이드 6: 카드 구성 */}
-          <SwiperSlide
-            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
-          >
-            <SlideInnerWrapper>
-              <MobileDailyBriefCardOrderSetting />
             </SlideInnerWrapper>
           </SwiperSlide>
         </Swiper>
