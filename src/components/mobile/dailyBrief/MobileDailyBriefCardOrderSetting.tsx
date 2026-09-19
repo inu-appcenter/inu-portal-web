@@ -126,7 +126,7 @@ export default function MobileDailyBriefCardOrderSetting() {
             >
               <RadioCircle $selected={mode === "custom"} />
               <ModeTextCol>
-                <ModeName>📌 내 취향대로 고정 순서</ModeName>
+                <ModeName>직접 설정</ModeName>
                 <ModeDesc>
                   내가 직접 지정한 카드 순서 그대로 고정하여 보여줘요.
                 </ModeDesc>
