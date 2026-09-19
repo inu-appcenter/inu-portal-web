@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { getNotices } from "@/apis/notices";
 import { Notice } from "@/types/notices";
 import { ROUTES } from "@/constants/routes";
-import { Volume2, Square } from "lucide-react";
+import Icon from "@/components/common/Icon";
 
 export default function DailyBriefNoticeCard() {
   const navigate = useNavigate();
   const [notices, setNotices] = useState<Notice[]>([]);
-  const [isReading, setIsReading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,70 +24,49 @@ export default function DailyBriefNoticeCard() {
 
     return () => {
       isMounted = false;
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
     };
   }, []);
 
-  const topNotice = notices[0] || {
-    id: 1,
-    title: "2026학년도 2학기 수강신청 및 장학금 신청 안내",
-    category: "학사",
-    date: "2026-09-18",
-  };
-
-  const handleReadAloud = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!window.speechSynthesis) {
-      navigate(ROUTES.BOARD.NOTICE_DETAIL(topNotice.id));
-      return;
-    }
-
-    if (isReading) {
-      window.speechSynthesis.cancel();
-      setIsReading(false);
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const textToRead = `오늘의 주요 공지사항입니다. ${topNotice.category || "학사"} 공지, ${topNotice.title} 입니다. 자세한 사항은 공지사항 탭에서 확인하실 수 있습니다.`;
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    utterance.lang = "ko-KR";
-    utterance.rate = 1.0;
-    utterance.onend = () => setIsReading(false);
-    utterance.onerror = () => setIsReading(false);
-
-    window.speechSynthesis.speak(utterance);
-    setIsReading(true);
-  };
+  const displayNotices = notices.slice(0, 4);
 
   return (
     <SectionWrapper>
-      <ContextIntro>
-        최신 소식이 궁금한가요? 주요 공지사항을 확인해 보세요.
-      </ContextIntro>
-      <CardContainer
-        onClick={() => navigate(ROUTES.BOARD.NOTICE_DETAIL(topNotice.id))}
-      >
-        <NoticeHeaderRow>
-          <IconBox>
-            <NewsIconText>NOTICE</NewsIconText>
-          </IconBox>
-          <NoticeMetaCol>
-            <DomainLabel>inu.ac.kr · {topNotice.category || "학사"}</DomainLabel>
-            <NoticeTitle>{topNotice.title}</NoticeTitle>
-          </NoticeMetaCol>
-        </NoticeHeaderRow>
+      <ContextIntro>최신 공지사항을 확인해 보세요.</ContextIntro>
+      <CardContainer>
+        <CardHeader onClick={() => navigate(ROUTES.BOARD.NOTICE)}>
+          <CardTitle>주요 공지사항</CardTitle>
+          <HeaderMoreButton aria-label="공지사항 더보기">
+            <Icon name="chevron-right" size={14} color="#6b7280" />
+          </HeaderMoreButton>
+        </CardHeader>
 
-        <ReadAloudButton onClick={handleReadAloud} $active={isReading}>
-          {isReading ? (
-            <Square size={15} color="#3730a3" />
+        <NoticeList>
+          {displayNotices.length === 0 ? (
+            <EmptyNoticeText>등록된 공지사항이 없습니다.</EmptyNoticeText>
           ) : (
-            <Volume2 size={16} color="#1f2937" />
+            displayNotices.map((notice, idx) => (
+              <ReactNoticeItem
+                key={notice.id || idx}
+                onClick={() => navigate(ROUTES.BOARD.NOTICE_DETAIL(notice.id))}
+              >
+                {idx > 0 && <ItemDivider />}
+                <ItemContent>
+                  <TopMetaRow>
+                    <CategoryBadge>{notice.category || "일반"}</CategoryBadge>
+                    <NoticeDate>{notice.createDate || ""}</NoticeDate>
+                  </TopMetaRow>
+                  <NoticeTitleText>{notice.title}</NoticeTitleText>
+                </ItemContent>
+              </ReactNoticeItem>
+            ))
           )}
-          <span>{isReading ? "낭독 중단하기" : "주요 내용 읽어주기"}</span>
-        </ReadAloudButton>
+        </NoticeList>
+
+        <FooterRow>
+          <ViewAllButton onClick={() => navigate(ROUTES.BOARD.NOTICE)}>
+            공지사항 전체보기
+          </ViewAllButton>
+        </FooterRow>
       </CardContainer>
     </SectionWrapper>
   );
@@ -115,72 +93,99 @@ const ContextIntro = styled.p`
 const CardContainer = styled.div`
   background: #ffffff;
   border-radius: 28px;
-  padding: 22px 20px;
+  padding: 22px 20px 18px 20px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.985);
-  }
-`;
-
-const NoticeHeaderRow = styled.div`
-  display: flex;
-  align-items: flex-start;
   gap: 14px;
 `;
 
-const IconBox = styled.div`
-  width: 52px;
-  height: 52px;
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+`;
+
+const CardTitle = styled.h2`
+  font-size: 19px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.4px;
+  margin: 0;
+`;
+
+const HeaderMoreButton = styled.div`
+  width: 28px;
+  height: 28px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background-color: #f3f4f6;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 `;
 
-const NewsIconText = styled.span`
-  font-size: 9px;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 0.5px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 3px 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-`;
-
-const NoticeMetaCol = styled.div`
+const NoticeList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
 `;
 
-const DomainLabel = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  color: #6b7280;
+const ReactNoticeItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.7;
+  }
 `;
 
-const NoticeTitle = styled.h3`
-  font-size: 15.5px;
+const ItemDivider = styled.div`
+  height: 1px;
+  background-color: #f3f4f6;
+  margin-bottom: 10px;
+`;
+
+const ItemContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const TopMetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const CategoryBadge = styled.span`
+  font-size: 11.5px;
   font-weight: 700;
-  color: #111827;
+  color: #2563eb;
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1.2;
+`;
+
+const NoticeDate = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+`;
+
+const NoticeTitleText = styled.h3`
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
   letter-spacing: -0.3px;
-  line-height: 1.35;
+  line-height: 1.4;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -188,24 +193,37 @@ const NoticeTitle = styled.h3`
   overflow: hidden;
 `;
 
-const ReadAloudButton = styled.button<{ $active?: boolean }>`
+const EmptyNoticeText = styled.p`
+  font-size: 14px;
+  color: #9ca3af;
+  text-align: center;
+  margin: 16px 0;
+`;
+
+const FooterRow = styled.div`
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  margin-top: 4px;
+`;
+
+const ViewAllButton = styled.button`
   width: 100%;
-  height: 48px;
-  border-radius: 24px;
-  background: ${({ $active }) => ($active ? "#e0e7ff" : "#edf2f7")};
-  border: none;
+  height: 44px;
+  border-radius: 22px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: -0.2px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 700;
-  color: ${({ $active }) => ($active ? "#3730a3" : "#1f2937")};
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:active {
-    background: #e2e8f0;
+    background: #edf2f7;
     transform: scale(0.99);
   }
 `;

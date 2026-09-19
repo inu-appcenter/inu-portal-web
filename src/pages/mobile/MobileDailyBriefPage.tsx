@@ -53,7 +53,7 @@ export default function MobileDailyBriefPage() {
     if (hour >= 12 && hour < 18) timeGreeting = "활기찬 오후입니다.";
     else if (hour >= 18) timeGreeting = "편안한 저녁입니다.";
 
-    const briefingText = `${timeGreeting} 오늘의 인천대학교 데일리 브리프를 시작하겠습니다. 오늘의 날씨는 화창하며 송도 캠퍼스 기온은 약 21도입니다. 오늘 예정된 강의와 학식 메뉴, 실시간 셔틀버스 정보를 확인하시고 활기찬 하루 보내세요.`;
+    const briefingText = `${timeGreeting} 오늘의 인천대학교 데일리 브리프를 시작하겠습니다. 오늘의 송도 캠퍼스 날씨와 강의 일정, 학식 메뉴, 실시간 버스 정보를 확인하시고 좋은 하루 보내세요.`;
 
     const utterance = new SpeechSynthesisUtterance(briefingText);
     utterance.lang = "ko-KR";

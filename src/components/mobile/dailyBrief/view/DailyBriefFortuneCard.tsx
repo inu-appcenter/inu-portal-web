@@ -5,51 +5,51 @@ import Icon from "@/components/common/Icon";
 export default function DailyBriefFortuneCard() {
   const [isOpen, setIsOpen] = useState(true);
 
-  const fortunes = [
+  const tips = [
     {
-      keyword: "도서관의 행운 📚",
+      keyword: "도서관 집중 모드 📚",
       message:
-        "오늘은 학술정보관 3층 열람실에서 집중력이 최고조에 달하는 날이에요! 미뤄둔 과제를 완벽하게 끝낼 수 있어요.",
+        "오늘은 학술정보관 열람실에서 집중력이 높아지는 날이에요. 미뤄둔 과제나 독서를 여유롭게 진행해 보세요.",
       luckyItem: "텀블러 & 파란색 볼펜",
     },
     {
-      keyword: "뜻밖의 소식 🍀",
+      keyword: "뜻밖의 꿀팁 🍀",
       message:
-        "강의실에서 친구나 교수님과의 우연한 대화 중에 유익한 공모전이나 꿀팁을 얻게 될 예감이에요.",
-      luckyItem: "시원한 아이스 아메리카노",
+        "강의실에서 친구나 선배와의 대화 중에 유익한 공모전이나 취업 팁을 얻을 수 있는 하루예요.",
+      luckyItem: "시원한 아이스 음료",
     },
     {
-      keyword: "열정과 몰입 🔥",
+      keyword: "열정과 도전 🔥",
       message:
-        "새로운 프로젝트나 스터디를 시작하기에 최적의 타이밍입니다. 망설이지 말고 도전해 보세요!",
-      luckyItem: "에어팟 & 신나는 플레이리스트",
+        "새로운 프로젝트나 스터디를 시작하기에 좋은 타이밍이에요. 망설이지 말고 가볍게 첫 발을 내딛어 보세요!",
+      luckyItem: "신나는 플레이리스트",
     },
     {
       keyword: "달콤한 휴식 ☕",
       message:
-        "오늘은 바쁜 일상 속에서도 캠퍼스 잔디밭을 바라보며 잠시 여유를 즐길 때 최고의 힐링이 찾아와요.",
-      luckyItem: "달콤한 디저트",
+        "바쁜 강의 일정 사이, 캠퍼스 잔디밭이나 벤치에서 잠시 바람을 쐬며 여유를 즐겨보세요.",
+      luckyItem: "달콤한 간식",
     },
   ];
 
-  // 날짜 기반 결정론적 운세 선택 (매일 같은 날엔 일관된 운세, 다음날 변경)
-  const todayFortune = useMemo(() => {
+  // 날짜 기반 결정론적 팁 선택 (매일 같은 날엔 일관된 팁, 다음날 변경)
+  const todayTip = useMemo(() => {
     const today = new Date();
     const daySeed =
       today.getFullYear() * 10000 +
       (today.getMonth() + 1) * 100 +
       today.getDate();
-    return fortunes[daySeed % fortunes.length];
-  }, [fortunes]);
+    return tips[daySeed % tips.length];
+  }, [tips]);
 
   return (
     <SectionWrapper>
-      <ContextIntro>오늘의 운세를 확인해 볼까요?</ContextIntro>
+      <ContextIntro>오늘의 한마디를 확인해 볼까요?</ContextIntro>
       <CardContainer onClick={() => setIsOpen(!isOpen)}>
         <CardHeader>
           <HeaderLeft>
-            <SparkleIconCircle>✨</SparkleIconCircle>
-            <CardTitle>캠퍼스 포춘</CardTitle>
+            <SparkleIconCircle>💬</SparkleIconCircle>
+            <CardTitle>캠퍼스 한마디</CardTitle>
           </HeaderLeft>
           <InfoIconBadge>
             <Icon name="info" size={16} color="#6b7280" />
@@ -58,16 +58,16 @@ export default function DailyBriefFortuneCard() {
 
         {isOpen && (
           <FortuneBody>
-            <KeywordTag>{todayFortune.keyword}</KeywordTag>
-            <FortuneMessage>{todayFortune.message}</FortuneMessage>
+            <KeywordTag>{todayTip.keyword}</KeywordTag>
+            <FortuneMessage>{todayTip.message}</FortuneMessage>
             <LuckyItemRow>
-              <LuckyItemLabel>오늘의 행운 아이템:</LuckyItemLabel>
-              <LuckyItemValue>{todayFortune.luckyItem}</LuckyItemValue>
+              <LuckyItemLabel>오늘의 추천 아이템:</LuckyItemLabel>
+              <LuckyItemValue>{todayTip.luckyItem}</LuckyItemValue>
             </LuckyItemRow>
           </FortuneBody>
         )}
 
-        <FooterText>포춘은 매일 아침 새롭게 계산됩니다.</FooterText>
+        <FooterText>매일 아침 새로운 응원과 팁을 전해드려요.</FooterText>
       </CardContainer>
     </SectionWrapper>
   );
@@ -128,7 +128,7 @@ const SparkleIconCircle = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,7 +163,7 @@ const FortuneBody = styled.div`
 const KeywordTag = styled.span`
   font-size: 14px;
   font-weight: 800;
-  color: #b45309;
+  color: #2563eb;
 `;
 
 const FortuneMessage = styled.p`

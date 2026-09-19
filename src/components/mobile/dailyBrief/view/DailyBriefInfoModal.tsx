@@ -22,17 +22,17 @@ export default function DailyBriefInfoModal({
 
         <ModalTitle>Daily Brief 안내</ModalTitle>
         <ModalSubtitle>
-          나의 하루를 지능적으로 요약해 주는 맞춤형 브리핑 허브
+          오늘 하루의 주요 캠퍼스 정보를 한눈에 확인하는 일일 브리핑
         </ModalSubtitle>
 
         <FeatureList>
           <FeatureItem>
             <FeatureIcon>☀️</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>상황 맞춤형 인텔리전스</FeatureName>
+              <FeatureName>오늘의 맞춤 정보 요약</FeatureName>
               <FeatureDesc>
-                시간대와 학사 일정, 날씨 정보를 종합하여 지금 필요한 정보를
-                한눈에 요약해 드립니다.
+                당일 시간표, 송도 캠퍼스 날씨, 학식 메뉴, 실시간 버스 및 최신
+                공지사항을 모아서 보여드립니다.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
@@ -42,7 +42,7 @@ export default function DailyBriefInfoModal({
             <FeatureTextCol>
               <FeatureName>음성 브리핑 (Voice TTS)</FeatureName>
               <FeatureDesc>
-                우측 상단의 오디오 버튼을 누르면 바쁜 등교 준비 중에도 음성으로
+                우측 상단의 오디오 버튼을 누르면 등교 준비 중에도 음성으로 오늘의
                 브리핑을 들으실 수 있습니다.
               </FeatureDesc>
             </FeatureTextCol>
@@ -51,7 +51,7 @@ export default function DailyBriefInfoModal({
           <FeatureItem>
             <FeatureIcon>⚙️</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>나만의 맞춤 설정</FeatureName>
+              <FeatureName>브리핑 알림 설정</FeatureName>
               <FeatureDesc>
                 우측 하단 설정 버튼을 통해 시간표 알림 시간, 학사일정 수신 범위
                 등을 자유롭게 설정할 수 있습니다.

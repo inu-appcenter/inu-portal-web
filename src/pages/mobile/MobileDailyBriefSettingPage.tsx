@@ -336,11 +336,11 @@ export default function MobileDailyBriefSettingPage() {
       <ContentContainer>
         <BriefViewLinkBanner onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}>
           <BriefBannerLeft>
-            <BriefBannerIcon>✨</BriefBannerIcon>
+            <BriefBannerIcon>☀️</BriefBannerIcon>
             <BriefBannerTextCol>
               <BriefBannerTitle>오늘의 데일리 브리프 보기</BriefBannerTitle>
               <BriefBannerSubtitle>
-                갤럭시 Now Brief 스타일의 맞춤형 일일 브리핑을 확인해 보세요
+                시간표, 날씨, 학식, 버스, 공지사항을 한눈에 확인해 보세요
               </BriefBannerSubtitle>
             </BriefBannerTextCol>
           </BriefBannerLeft>

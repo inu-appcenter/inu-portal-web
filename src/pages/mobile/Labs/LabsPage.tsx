@@ -107,7 +107,7 @@ const LabsPage = () => {
                   iconElement={<Sunrise size={22} color="#ea580c" />}
                   title={"데일리 브리프 (Daily Brief)"}
                   description={
-                    "갤럭시 Now Brief 스타일! 오늘의 시간표·날씨·학식·버스·공지를 한눈에 요약 브리핑"
+                    "오늘의 시간표·날씨·학식·버스·공지사항을 한눈에 요약 브리핑"
                   }
                   onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}
                 />

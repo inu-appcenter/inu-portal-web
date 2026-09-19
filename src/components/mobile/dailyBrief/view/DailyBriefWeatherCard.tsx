@@ -4,6 +4,8 @@ import { getWeathers } from "@/apis/weathers";
 import { WeatherInfo } from "@/types/weathers";
 import Icon from "@/components/common/Icon";
 
+const NAVER_WEATHER_URL = "https://weather.naver.com/today/11185106";
+
 export default function DailyBriefWeatherCard() {
   const [weatherData, setWeatherData] = useState<WeatherInfo | null>(null);
 
@@ -23,6 +25,10 @@ export default function DailyBriefWeatherCard() {
       isMounted = false;
     };
   }, []);
+
+  const handleCardClick = () => {
+    window.open(NAVER_WEATHER_URL, "_blank", "noopener,noreferrer");
+  };
 
   const currentHour = new Date().getHours();
 
@@ -70,12 +76,12 @@ export default function DailyBriefWeatherCard() {
   return (
     <SectionWrapper>
       <ContextIntro>날씨 예보를 확인해 보세요.</ContextIntro>
-      <WeatherCardWrapper>
+      <WeatherCardWrapper onClick={handleCardClick} role="button" tabIndex={0}>
         <CardHeader>
           <CardTitle>현재 날씨</CardTitle>
-          <EditButton aria-label="날씨 새로고침">
-            <Icon name="edit-pencil-01" size={15} color="#FFFFFF" />
-          </EditButton>
+          <LinkIconBadge aria-label="네이버 날씨 새창 열기">
+            <Icon name="link-external" size={15} color="#FFFFFF" />
+          </LinkIconBadge>
         </CardHeader>
 
         <MainWeatherRow>
@@ -105,7 +111,7 @@ export default function DailyBriefWeatherCard() {
             <InfoValue>어제와 기온이 거의 비슷합니다</InfoValue>
           </InfoItem>
           <InfoItem>
-            <InfoLabel>일몰을 놓치지 마세요</InfoLabel>
+            <InfoLabel>일몰 시각</InfoLabel>
             <InfoValue>일몰 시각은 오후 6:37 입니다</InfoValue>
           </InfoItem>
         </InfoTextBlock>
@@ -165,6 +171,14 @@ const WeatherCardWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:active {
+    transform: scale(0.985);
+  }
 `;
 
 const CardHeader = styled.div`
@@ -181,22 +195,15 @@ const CardTitle = styled.h2`
   margin: 0;
 `;
 
-const EditButton = styled.button`
+const LinkIconBadge = styled.div`
   background: rgba(255, 255, 255, 0.22);
-  border: none;
   width: 32px;
   height: 32px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   backdrop-filter: blur(4px);
-  transition: background-color 0.15s ease;
-
-  &:active {
-    background: rgba(255, 255, 255, 0.35);
-  }
 `;
 
 const MainWeatherRow = styled.div`
