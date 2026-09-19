@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -20,11 +20,37 @@ import DailyBriefLmsCard from "@/components/mobile/dailyBrief/view/DailyBriefLms
 import DailyBriefInfoModal from "@/components/mobile/dailyBrief/view/DailyBriefInfoModal";
 import Icon from "@/components/common/Icon";
 
+export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
+
+export function getDailyBriefTimeTheme(hour: number = new Date().getHours()): DailyBriefTimeTheme {
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 18) return "afternoon";
+  if (hour >= 18 && hour < 22) return "sunset";
+  return "night";
+}
+
+const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
+  // 🌅 아침 (05:00 ~ 11:59): 상쾌한 하늘빛과 따스한 살구 크림 톤
+  morning:
+    "linear-gradient(180deg, #BCE3FB 0%, #D8EBF9 18%, #F2F1E6 48%, #FAEDE3 80%, #FDE6D8 100%)",
+  // ☀️ 오후 (12:00 ~ 17:59): 맑고 청명한 푸른 하늘빛과 은은한 화이트/민트 톤
+  afternoon:
+    "linear-gradient(180deg, #BAE6FD 0%, #D7EFFE 20%, #F0FDF4 50%, #FEFCE8 80%, #FEF3C7 100%)",
+  // 🌇 저녁 (18:00 ~ 21:59): 몽환적이고 따스한 코랄 핑크와 노을빛 라벤더 톤
+  sunset:
+    "linear-gradient(180deg, #FBCFE8 0%, #FED7AA 22%, #FDE68A 50%, #EDE9FE 78%, #FCE7F3 100%)",
+  // 🌙 밤 (22:00 ~ 04:59): 차분하고 고요한 미드나잇 트와일라잇 인디고/라벤더 톤
+  night:
+    "linear-gradient(180deg, #C7D2FE 0%, #DDD6FE 20%, #E2E8F0 52%, #EDE9FE 80%, #E0E7FF 100%)",
+};
+
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const rankedCards = useDailyBriefRanking();
+
+  const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
 
   useHeader({
     visible: false,
@@ -85,7 +111,7 @@ export default function MobileDailyBriefPage() {
   };
 
   return (
-    <PageBackground>
+    <PageBackground $theme={timeTheme}>
       <ContentContainer>
         <DailyBriefHeader
           isLoading={isLoading}
@@ -120,21 +146,15 @@ export default function MobileDailyBriefPage() {
   );
 }
 
-const PageBackground = styled.div`
+const PageBackground = styled.div<{ $theme: DailyBriefTimeTheme }>`
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #bce3fb 0%,
-    #d8ebf9 18%,
-    #f2f1e6 48%,
-    #faede3 80%,
-    #fde6d8 100%
-  );
+  background: ${({ $theme }) => THEME_GRADIENTS[$theme]};
   background-attachment: fixed;
   display: flex;
   justify-content: center;
   box-sizing: border-box;
+  transition: background 0.5s ease;
 `;
 
 const ContentContainer = styled.div`
