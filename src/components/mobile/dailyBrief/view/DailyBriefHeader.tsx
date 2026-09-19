@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import LoadingAnimation from "@/resources/assets/illustrations/횃불이ai로딩애니메이션.gif";
@@ -8,11 +8,13 @@ import ChatbotLogo from "@/resources/assets/illustrations/chatbot-logo.svg";
 interface DailyBriefHeaderProps {
   onBack?: () => void;
   isLoading?: boolean;
+  isFirstLoad?: boolean;
 }
 
 export default function DailyBriefHeader({
   onBack,
   isLoading = false,
+  isFirstLoad = true,
 }: DailyBriefHeaderProps) {
   const currentHour = new Date().getHours();
 
@@ -57,11 +59,13 @@ export default function DailyBriefHeader({
             src={LoadingAnimation}
             alt="횃불이 AI 로딩"
             $visible={isLoading}
+            $isFirstLoad={isFirstLoad}
           />
           <MascotStaticLogo
             src={ChatbotLogo}
             alt="횃불이 AI 로고"
             $visible={!isLoading}
+            $isFirstLoad={isFirstLoad}
           />
         </MascotLayer>
       </MascotRow>
@@ -83,7 +87,7 @@ export default function DailyBriefHeader({
             />
           </SkeletonLayer>
         ) : (
-          <GreetingLayer>
+          <GreetingLayer $isFirstLoad={isFirstLoad}>
             <MainGreeting>{title}</MainGreeting>
             <SubGreeting>{subtitle}</SubGreeting>
           </GreetingLayer>
@@ -135,7 +139,7 @@ const MascotLayer = styled.div`
   height: 38px;
 `;
 
-const MascotGif = styled.img<{ $visible: boolean }>`
+const MascotGif = styled.img<{ $visible: boolean; $isFirstLoad: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -144,13 +148,12 @@ const MascotGif = styled.img<{ $visible: boolean }>`
   object-fit: contain;
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0.92)")};
-  transition:
-    opacity 0.4s ease-in-out,
-    transform 0.4s ease-in-out;
+  transition: ${({ $isFirstLoad }) =>
+    $isFirstLoad ? "opacity 0.4s ease-in-out, transform 0.4s ease-in-out" : "none"};
   pointer-events: none;
 `;
 
-const MascotStaticLogo = styled.img<{ $visible: boolean }>`
+const MascotStaticLogo = styled.img<{ $visible: boolean; $isFirstLoad: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
@@ -159,9 +162,10 @@ const MascotStaticLogo = styled.img<{ $visible: boolean }>`
   object-fit: contain;
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0.92)")};
-  transition:
-    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: ${({ $isFirstLoad }) =>
+    $isFirstLoad
+      ? "opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)"
+      : "none"};
   pointer-events: none;
 `;
 
@@ -188,22 +192,31 @@ const SkeletonLayer = styled.div`
   }
 `;
 
-const GreetingLayer = styled.div`
+const greetingFadeIn = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const GreetingLayer = styled.div<{ $isFirstLoad?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: greetingFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
-  @keyframes greetingFadeIn {
-    0% {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  ${({ $isFirstLoad = true }) =>
+    $isFirstLoad
+      ? css`
+          animation: ${greetingFadeIn} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        `
+      : css`
+          opacity: 1;
+          transform: translateY(0);
+        `}
 `;
 
 const MainGreeting = styled.h1`

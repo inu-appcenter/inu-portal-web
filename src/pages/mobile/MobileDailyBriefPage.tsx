@@ -50,6 +50,7 @@ let hasCompletedInitialBriefLoad = false;
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const isFirstLoad = !hasCompletedInitialBriefLoad;
   const [isLoading, setIsLoading] = useState(!hasCompletedInitialBriefLoad);
   const rankedCards = useDailyBriefRanking();
 
@@ -112,6 +113,7 @@ export default function MobileDailyBriefPage() {
         key={cardType}
         $index={index}
         $loaded={!isLoading}
+        $isFirstLoad={isFirstLoad}
       >
         {cardComponent}
       </AnimatedCardItem>
@@ -123,6 +125,7 @@ export default function MobileDailyBriefPage() {
       <ContentContainer>
         <DailyBriefHeader
           isLoading={isLoading}
+          isFirstLoad={isFirstLoad}
           onBack={() => navigate(-1)}
         />
 
@@ -192,17 +195,29 @@ const cardFadeInUp = keyframes`
   }
 `;
 
-const AnimatedCardItem = styled.div<{ $index: number; $loaded: boolean }>`
+const AnimatedCardItem = styled.div<{
+  $index: number;
+  $loaded: boolean;
+  $isFirstLoad?: boolean;
+}>`
   width: 100%;
-  opacity: 0;
-  transform: translateY(18px);
 
-  ${({ $loaded, $index }) =>
-    $loaded &&
-    css`
-      animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-delay: ${$index * 0.08}s;
-    `}
+  ${({ $isFirstLoad = true, $loaded, $index }) =>
+    $isFirstLoad
+      ? css`
+          opacity: 0;
+          transform: translateY(18px);
+
+          ${$loaded &&
+          css`
+            animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: ${$index * 0.08}s;
+          `}
+        `
+      : css`
+          opacity: 1;
+          transform: translateY(0);
+        `}
 `;
 
 const FloatingBottomActions = styled.div`
