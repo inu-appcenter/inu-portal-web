@@ -38,9 +38,11 @@ import {
   toggleAgentReminder,
   deleteAgentReminder,
   testAgentReminder,
+  testCustomAgentReminder,
   createAgentReminder,
   updateAgentReminder,
 } from "@/apis/agentReminder";
+import { notifyRoutineUpdated } from "@/utils/routineSync";
 import {
   getDailyBriefSettings,
   updateDailyBriefSettings,
@@ -1720,6 +1722,7 @@ export default function MobileRoutineDetailPage() {
           }
           alert("학과 공지 알림 설정을 저장했어요!");
         }
+        notifyRoutineUpdated();
         setIsEditing(false);
       } catch (error) {
         console.error("시스템 루틴 저장 실패:", error);
@@ -1800,6 +1803,7 @@ export default function MobileRoutineDetailPage() {
         });
         alert(`'${title.trim()}' 루틴을 저장했어요!`);
         trackEvent("[Daily Brief] 맞춤 루틴 생성", { title: title.trim() });
+        notifyRoutineUpdated();
         navigate(-1);
       } else if (reminder) {
         await updateAgentReminder(reminder.id, {
@@ -1813,6 +1817,7 @@ export default function MobileRoutineDetailPage() {
         });
         alert(`'${title.trim()}' 루틴을 수정했어요!`);
         trackEvent("[Daily Brief] 맞춤 루틴 수정", { id: reminder.id, title: title.trim() });
+        notifyRoutineUpdated();
         setIsEditing(false);
         loadData();
       }
@@ -1860,6 +1865,7 @@ export default function MobileRoutineDetailPage() {
       });
       alert(`'${preset.title}' 루틴을 내 루틴에 등록했어요!`);
       trackEvent("[Daily Brief] 프리셋 루틴 등록", { title: preset.title });
+      notifyRoutineUpdated();
       navigate(-1);
     } catch (error) {
       console.error("루틴 등록 실패:", error);
@@ -1873,6 +1879,7 @@ export default function MobileRoutineDetailPage() {
     try {
       await deleteAgentReminder(reminder.id);
       trackEvent("[Daily Brief] 맞춤 루틴 삭제", { id: reminder.id, title: reminder.title });
+      notifyRoutineUpdated();
       navigate(-1);
     } catch (error) {
       console.error("루틴 삭제 실패:", error);
@@ -1881,37 +1888,92 @@ export default function MobileRoutineDetailPage() {
   };
 
   const handleTestDispatch = async () => {
-    if (isSystemRoutine) {
-      setIsTesting(true);
-      setTimeout(() => {
-        setIsTesting(false);
-        if (systemType === "timetable-brief") {
-          alert("당일 강의 & 시간표 브리핑 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "timetable-pre") {
-          alert("강의 시작 전 알림 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "schedule") {
-          alert("학사일정 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else if (systemType === "school-notice") {
-          alert("학교 공지사항 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        } else {
-          alert("학과 공지사항 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
-        }
-      }, 400);
-      return;
-    }
-
-    if (!reminder) {
-      alert("내 루틴으로 저장한 후 테스트 발송을 할 수 있어요!");
-      return;
-    }
     setIsTesting(true);
     try {
-      await testAgentReminder(reminder.id);
-      alert(`'${reminder.title}' 테스트 알림을 보냈어요!\n(잠시 후 알림이 도착해요)`);
-      trackEvent("[Daily Brief] 맞춤 루틴 테스트 발송", { id: reminder.id, title: reminder.title });
+      if (isSystemRoutine) {
+        if (systemType === "timetable-brief") {
+          await testCustomAgentReminder({
+            title: "당일 강의 & 시간표 브리핑",
+            targetTool: "TIMETABLE",
+            titleTemplate: "📅 오늘의 시간표 브리핑",
+            bodyTemplate: "",
+            route: "/timetable",
+          });
+        } else if (systemType === "timetable-pre") {
+          await testCustomAgentReminder({
+            title: "강의 시작 전 알림",
+            targetTool: "TIMETABLE",
+            titleTemplate: "🔔 강의 시작 전 알림",
+            bodyTemplate: "",
+            route: "/timetable",
+          });
+        } else if (systemType === "schedule") {
+          await testCustomAgentReminder({
+            title: "학사일정 알림",
+            targetTool: "SCHEDULE",
+            titleTemplate: "🎓 주요 학사일정 안내",
+            bodyTemplate: "",
+            route: "/schedule",
+          });
+        } else if (systemType === "school-notice") {
+          await testCustomAgentReminder({
+            title: "학교 공지사항 알림",
+            targetTool: "NOTICE",
+            titleTemplate: "📢 학교 새 공지사항",
+            bodyTemplate: "",
+            route: "/notices",
+          });
+        } else {
+          await testCustomAgentReminder({
+            title: "학과 공지사항 알림",
+            targetTool: "DEPT_NOTICE",
+            toolParamsJson: JSON.stringify({ deptCode: userInfo.departmentCode }),
+            titleTemplate: "🏢 학과 새 공지사항",
+            bodyTemplate: "",
+            route: "/notices",
+          });
+        }
+        alert("테스트 알림을 발송했어요!\n(기기 상단 알림창을 확인해 보세요)");
+        return;
+      }
+
+      if (reminder) {
+        await testAgentReminder(reminder.id);
+        alert(`'${reminder.title}' 테스트 알림을 보냈어요!\n(기기 상단 알림창을 확인해 보세요)`);
+        trackEvent("[Daily Brief] 맞춤 루틴 테스트 발송", { id: reminder.id, title: reminder.title });
+        return;
+      }
+
+      // 프리셋 또는 저장 전 루틴인 경우 현재 구성된 데이터로 즉시 발송
+      const targetToolsList = actions.map((a) => a.type);
+      const targetTool = targetToolsList.join(",") || preset?.targetTools?.join(",") || "TIMETABLE";
+      const toolParams: Record<string, any> = {
+        triggers,
+        actions,
+      };
+      const cafeAction = actions.find((a) => a.type === "CAFETERIA");
+      if (cafeAction && cafeAction.cafeteriaParams) {
+        toolParams.cafeteria = cafeAction.cafeteriaParams.restaurant || (cafeAction.cafeteriaParams as any).cafeteria;
+        toolParams.mealType = cafeAction.cafeteriaParams.mealType;
+      }
+      const busAction = actions.find((a) => a.type === "BUS");
+      if (busAction && busAction.busParams) {
+        toolParams.stopName = busAction.busParams.stopName;
+      }
+
+      await testCustomAgentReminder({
+        title: title.trim() || preset?.title || "AI 맞춤 루틴",
+        targetTool,
+        toolParamsJson: JSON.stringify(toolParams),
+        titleTemplate: `🔔 ${title.trim() || preset?.title || "AI 맞춤 알림"}`,
+        bodyTemplate: "",
+        route: "/home",
+      });
+
+      alert(`'${title.trim() || preset?.title || "AI 맞춤 알림"}' 테스트 알림을 보냈어요!\n(기기 상단 알림창을 확인해 보세요)`);
     } catch (error) {
       console.error("테스트 발송 실패:", error);
-      alert("테스트 알림 발송 중 오류가 발생했어요.");
+      alert("테스트 알림 발송 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsTesting(false);
     }

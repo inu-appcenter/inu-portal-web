@@ -70,6 +70,24 @@ export const testAgentReminder = async (
 };
 
 /**
+ * 기본 루틴 및 임의 루틴 즉시 테스트 발송
+ */
+export const testCustomAgentReminder = async (req: {
+  title?: string;
+  targetTool?: string;
+  toolParamsJson?: string;
+  titleTemplate?: string;
+  bodyTemplate?: string;
+  route?: string;
+}): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    "/api/agent/reminders/test-custom",
+    req,
+  );
+  return response.data;
+};
+
+/**
  * AI 맞춤 알림 삭제
  */
 export const deleteAgentReminder = async (
@@ -80,4 +98,5 @@ export const deleteAgentReminder = async (
   );
   return response.data;
 };
+
 

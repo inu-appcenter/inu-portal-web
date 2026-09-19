@@ -28,6 +28,7 @@ import { ROUTES } from "@/constants/routes";
 import { trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
 import { renderRoutineIcon, getDefaultIconAndBgForTools } from "@/pages/mobile/MobileRoutineDetailPage";
+import { useRoutineSync, notifyRoutineUpdated } from "@/utils/routineSync";
 import Ripple from "@/components/common/Ripple";
 
 export interface RoutinePreset {
@@ -186,6 +187,9 @@ export default function MobileAgentReminderSetting() {
     fetchData();
   }, [fetchData]);
 
+  // 다중 웹뷰 환경에서 루틴 상세 페이지(편집/삭제/등록) 후 복귀 시 자동 리스트 갱신
+  useRoutineSync(fetchData);
+
   // System Routine Toggles
   const handleToggleTimetableBrief = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -194,6 +198,7 @@ export default function MobileAgentReminderSetting() {
     try {
       await updateDailyBriefSettings({ timetableDailyBriefEnabled: next });
       trackEvent("[Daily Brief] 시스템 당일 강의 브리핑 토글", { enabled: next });
+      notifyRoutineUpdated();
     } catch {
       setDailyBriefSettings((prev) => ({ ...prev, timetableDailyBriefEnabled: !next }));
       alert("설정을 변경하지 못했어요.");
@@ -207,6 +212,7 @@ export default function MobileAgentReminderSetting() {
     try {
       await updateDailyBriefSettings({ timetablePreAlertEnabled: next });
       trackEvent("[Daily Brief] 시스템 강의 시작 전 알림 토글", { enabled: next });
+      notifyRoutineUpdated();
     } catch {
       setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
       alert("설정을 변경하지 못했어요.");
@@ -220,6 +226,7 @@ export default function MobileAgentReminderSetting() {
     try {
       await updateDailyBriefSettings({ scheduleAlertEnabled: next });
       trackEvent("[Daily Brief] 시스템 학사일정 알림 토글", { enabled: next });
+      notifyRoutineUpdated();
     } catch {
       setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: !next }));
       alert("설정을 변경하지 못했어요.");
@@ -231,6 +238,7 @@ export default function MobileAgentReminderSetting() {
     const next = !isSchoolNoticeEnabled;
     setIsSchoolNoticeEnabled(next);
     trackEvent("[Daily Brief] 시스템 학교 공지 알림 토글", { enabled: next });
+    notifyRoutineUpdated();
   };
 
   const handleToggleDeptNotice = (e: React.MouseEvent) => {
@@ -238,6 +246,7 @@ export default function MobileAgentReminderSetting() {
     const next = !isDeptNoticeEnabled;
     setIsDeptNoticeEnabled(next);
     trackEvent("[Daily Brief] 시스템 학과 공지 알림 토글", { enabled: next });
+    notifyRoutineUpdated();
   };
 
   // Custom routine toggle
@@ -250,6 +259,7 @@ export default function MobileAgentReminderSetting() {
     try {
       await toggleAgentReminder(id, nextEnabled);
       trackEvent("[Daily Brief] 맞춤 루틴 토글", { id, enabled: nextEnabled });
+      notifyRoutineUpdated();
     } catch (error) {
       console.error("맞춤 루틴 토글 실패:", error);
       setReminders((prev) =>
