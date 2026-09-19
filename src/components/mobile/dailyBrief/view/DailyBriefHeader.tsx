@@ -4,9 +4,13 @@ import Icon from "@/components/common/Icon";
 
 interface DailyBriefHeaderProps {
   onBack?: () => void;
+  onShare?: () => void;
 }
 
-export default function DailyBriefHeader({ onBack }: DailyBriefHeaderProps) {
+export default function DailyBriefHeader({
+  onBack,
+  onShare,
+}: DailyBriefHeaderProps) {
   const currentHour = new Date().getHours();
 
   const { title, subtitle } = useMemo(() => {
@@ -35,13 +39,22 @@ export default function DailyBriefHeader({ onBack }: DailyBriefHeaderProps) {
 
   return (
     <HeaderContainer>
-      {onBack && (
-        <TopNavRow>
-          <BackButton onClick={onBack} aria-label="뒤로 가기">
+      <TopNavRow>
+        {onBack ? (
+          <NavButton onClick={onBack} aria-label="뒤로 가기">
             <Icon name="chevron-left" size={24} color="#1E232A" />
-          </BackButton>
-        </TopNavRow>
-      )}
+          </NavButton>
+        ) : (
+          <div />
+        )}
+
+        {onShare && (
+          <ShareButton onClick={onShare} aria-label="브리핑 카드 공유하기">
+            <Icon name="share" size={16} color="#2563EB" />
+            <ShareButtonText>공유</ShareButtonText>
+          </ShareButton>
+        )}
+      </TopNavRow>
 
       <TitleSection>
         <MainGreeting>{title}</MainGreeting>
@@ -60,10 +73,12 @@ const HeaderContainer = styled.header`
 const TopNavRow = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 16px;
+  min-height: 32px;
 `;
 
-const BackButton = styled.button`
+const NavButton = styled.button`
   background: none;
   border: none;
   padding: 4px;
@@ -78,6 +93,36 @@ const BackButton = styled.button`
   &:active {
     background-color: rgba(0, 0, 0, 0.05);
   }
+`;
+
+const ShareButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border-radius: 18px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+`;
+
+const ShareButtonText = styled.span`
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
 `;
 
 const TitleSection = styled.div`

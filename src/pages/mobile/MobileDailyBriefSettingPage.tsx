@@ -49,6 +49,7 @@ import { Loader2 } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
 import MobileAgentReminderSetting from "@/components/mobile/dailyBrief/MobileAgentReminderSetting";
+import MobileDailyBriefCardOrderSetting from "@/components/mobile/dailyBrief/MobileDailyBriefCardOrderSetting";
 
 export const DAILY_BRIEF_TABS = [
   { label: "시간표", value: "timetable" },
@@ -56,6 +57,7 @@ export const DAILY_BRIEF_TABS = [
   { label: "학교 공지", value: "school" },
   { label: "학과 공지", value: "dept" },
   { label: "AI 맞춤 알림", value: "agent" },
+  { label: "카드 구성", value: "cards" },
 ];
 
 const PRE_ALERT_PRESETS = [
@@ -878,6 +880,15 @@ export default function MobileDailyBriefSettingPage() {
           >
             <SlideInnerWrapper>
               <MobileAgentReminderSetting />
+            </SlideInnerWrapper>
+          </SwiperSlide>
+
+          {/* 슬라이드 6: 카드 구성 */}
+          <SwiperSlide
+            style={{ height: "auto", width: "100%", boxSizing: "border-box" }}
+          >
+            <SlideInnerWrapper>
+              <MobileDailyBriefCardOrderSetting />
             </SlideInnerWrapper>
           </SwiperSlide>
         </Swiper>

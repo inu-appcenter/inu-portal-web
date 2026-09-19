@@ -10,6 +10,15 @@ import { ROUTES } from "@/constants/routes";
 import { formatHoursToTime } from "@/utils/timetable";
 import Icon from "@/components/common/Icon";
 
+interface SmartBreakInfo {
+  startHour: number;
+  endHour: number;
+  durationMinutes: number;
+  isCurrentlyInBreak: boolean;
+  prevClassName: string;
+  nextClassName: string;
+}
+
 export default function DailyBriefTimetableCard() {
   const navigate = useNavigate();
   const { tokenInfo } = useUserStore();
@@ -98,6 +107,46 @@ export default function DailyBriefTimetableCard() {
     });
   }, [todayClasses, currentMinutes]);
 
+  // 스마트 공강 계산 (1.5시간 / 90분 이상 간격)
+  const smartBreakInfo = useMemo<SmartBreakInfo | null>(() => {
+    if (todayClasses.length < 2) return null;
+
+    let activeBreak: SmartBreakInfo | null = null;
+    let upcomingBreak: SmartBreakInfo | null = null;
+
+    for (let i = 0; i < todayClasses.length - 1; i++) {
+      const prev = todayClasses[i];
+      const next = todayClasses[i + 1];
+      const prevEndMins = Math.round(prev.endTime * 60);
+      const nextStartMins = Math.round(next.startTime * 60);
+      const gapMinutes = nextStartMins - prevEndMins;
+
+      // 90분 이상 공강
+      if (gapMinutes >= 90) {
+        const isCurrentlyIn =
+          currentMinutes >= prevEndMins && currentMinutes < nextStartMins;
+
+        const info: SmartBreakInfo = {
+          startHour: prev.endTime,
+          endHour: next.startTime,
+          durationMinutes: gapMinutes,
+          isCurrentlyInBreak: isCurrentlyIn,
+          prevClassName: prev.name,
+          nextClassName: next.name,
+        };
+
+        if (isCurrentlyIn) {
+          activeBreak = info;
+          break;
+        } else if (!upcomingBreak && currentMinutes < nextStartMins) {
+          upcomingBreak = info;
+        }
+      }
+    }
+
+    return activeBreak || upcomingBreak;
+  }, [todayClasses, currentMinutes]);
+
   const introText = useMemo(() => {
     if (!isLoggedIn) return "로그인하고 오늘의 시간표를 확인해 보세요.";
     if (todayClasses.length === 0)
@@ -106,6 +155,13 @@ export default function DailyBriefTimetableCard() {
       return "오늘 예정된 모든 수업이 끝났습니다. 수고하셨어요! ✨";
     return `오늘 일정이 ${remainingClasses.length}개 남았습니다.`;
   }, [isLoggedIn, todayClasses.length, remainingClasses.length]);
+
+  const formatDuration = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (m === 0) return `${h}시간`;
+    return `${h}시간 ${m}분`;
+  };
 
   return (
     <SectionWrapper>
@@ -140,6 +196,41 @@ export default function DailyBriefTimetableCard() {
             </ScheduleLeft>
             <Icon name="chevron-right" size={14} color="#6b7280" />
           </AcademicScheduleBanner>
+        )}
+
+        {/* 1.5시간 이상 공강 발생 시 표출되는 스마트 공강 배너 */}
+        {smartBreakInfo && (
+          <SmartBreakBanner
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <BreakHeaderRow>
+              <BreakBadge $active={smartBreakInfo.isCurrentlyInBreak}>
+                {smartBreakInfo.isCurrentlyInBreak ? "☕ 지금 공강 중" : "✨ 꿀공강 알림"}
+              </BreakBadge>
+              <BreakTimeRange>
+                {formatHoursToTime(smartBreakInfo.startHour)} ~{" "}
+                {formatHoursToTime(smartBreakInfo.endHour)} (
+                {formatDuration(smartBreakInfo.durationMinutes)})
+              </BreakTimeRange>
+            </BreakHeaderRow>
+            <BreakDescription>
+              {smartBreakInfo.isCurrentlyInBreak
+                ? `다음 ${smartBreakInfo.nextClassName} 수업까지 여유가 있어요. 학술정보관이나 카페에서 알차게 보내보세요!`
+                : `오늘 ${smartBreakInfo.prevClassName} 수업 후 ${formatDuration(smartBreakInfo.durationMinutes)} 공강이 예정되어 있어요.`}
+            </BreakDescription>
+            <BreakActionChips>
+              <BreakChip onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
+                <Icon name="book" size={12} color="#0284C7" />
+                <span>열람실 좌석 현황</span>
+              </BreakChip>
+              <BreakChip onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
+                <Icon name="users" size={12} color="#0284C7" />
+                <span>이룸관 스터디룸</span>
+              </BreakChip>
+            </BreakActionChips>
+          </SmartBreakBanner>
         )}
 
         <Divider />
@@ -278,6 +369,80 @@ const ScheduleTitleText = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+`;
+
+const SmartBreakBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-top: 14px;
+`;
+
+const BreakHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const BreakBadge = styled.span<{ $active?: boolean }>`
+  font-size: 11.5px;
+  font-weight: 800;
+  color: ${({ $active }) => ($active ? "#0369a1" : "#0284c7")};
+  background-color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+`;
+
+const BreakTimeRange = styled.span`
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0369a1;
+`;
+
+const BreakDescription = styled.p`
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  margin: 0;
+  line-height: 1.45;
+  letter-spacing: -0.2px;
+`;
+
+const BreakActionChips = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+`;
+
+const BreakChip = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 5px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 const EditButton = styled.button`
