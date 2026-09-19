@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
+import Switch from "@/components/common/Switch";
 import {
   Sun,
   Bus,
@@ -30,7 +31,7 @@ import {
   Shield,
   Palette,
   Check,
-  Tag,
+  Building2,
 } from "lucide-react";
 import {
   getAgentReminders,
@@ -49,13 +50,18 @@ import {
   getKeywords,
   createKeyword,
   deleteKeyword,
+  getKeywordsNotice,
+  subscribeKeywordsNotice,
+  subscribeDepartment,
 } from "@/apis/notices";
+import { getSchoolNoticeCategories } from "@/apis/categories";
 import type { AgentReminder, AgentReminderRepeatType, RoutineScheduleItem } from "@/types/agentReminder";
 import type { DailyBriefSettings, ScheduleScope } from "@/types/dailyBrief";
 import type { Keyword } from "@/types/notices";
 import Skeleton from "@/components/common/Skeleton";
 import { trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
+import { ROUTES } from "@/constants/routes";
 
 export interface RoutineTimeCondition {
   id: string;
@@ -417,9 +423,14 @@ export default function MobileRoutineDetailPage() {
   const [reminder, setReminder] = useState<AgentReminder | null>(null);
   const [preset, setPreset] = useState<RoutinePreset | null>(null);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
+  
+  // Notice & Categories states
+  const [schoolCategories, setSchoolCategories] = useState<string[]>([]);
+  const [subscribedSchoolCategories, setSubscribedSchoolCategories] = useState<string[]>([]);
   const [schoolKeywords, setSchoolKeywords] = useState<Keyword[]>([]);
   const [deptKeywords, setDeptKeywords] = useState<Keyword[]>([]);
-  const [isNoticeEnabled, setIsNoticeEnabled] = useState(true);
+  const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState(true);
+  const [isDeptAllNoticeEnabled, setIsDeptAllNoticeEnabled] = useState(true);
 
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isEditing, setIsEditing] = useState(isNew);
@@ -447,6 +458,8 @@ export default function MobileRoutineDetailPage() {
   // Keyword Add Modal
   const [isAddKeywordModalOpen, setIsAddKeywordModalOpen] = useState(false);
   const [newKeywordInput, setNewKeywordInput] = useState("");
+  const [isKeywordExcluded, setIsKeywordExcluded] = useState(false);
+  const [keywordFilterTab, setKeywordFilterTab] = useState<"include" | "exclude">("include");
 
   // Form states (for custom routines)
   const [title, setTitle] = useState("");
@@ -457,8 +470,11 @@ export default function MobileRoutineDetailPage() {
   const [selectedBusStop, setSelectedBusStop] = useState("인천대입구역 1번출구");
 
   // System Routine Form States (in edit mode)
+  const [sysTimetableDailyBrief, setSysTimetableDailyBrief] = useState(true);
   const [sysTimetableTime, setSysTimetableTime] = useState("08:00");
+  const [sysTimetablePreAlertEnabled, setSysTimetablePreAlertEnabled] = useState(true);
   const [sysTimetablePreAlert, setSysTimetablePreAlert] = useState(10);
+
   const [sysScheduleTime, setSysScheduleTime] = useState("08:30");
   const [sysScheduleAdvanceDays, setSysScheduleAdvanceDays] = useState(1);
   const [sysScheduleScope, setSysScheduleScope] = useState<ScheduleScope>("ALL");
@@ -630,24 +646,37 @@ export default function MobileRoutineDetailPage() {
     setIsLoading(true);
     try {
       if (isSystemRoutine) {
-        const [briefRes, keywordsRes] = await Promise.all([
+        const [briefRes, keywordsRes, noticeCatRes, subCatRes] = await Promise.all([
           getDailyBriefSettings().catch(() => ({ data: null })),
           getKeywords().catch(() => ({ data: [] })),
+          getSchoolNoticeCategories().catch(() => ({ data: [] })),
+          getKeywordsNotice().catch(() => ({ data: [] })),
         ]);
 
         const curSettings = briefRes?.data || getLocalDailyBriefSettings();
         setDailyBriefSettings(curSettings);
+        setSysTimetableDailyBrief(curSettings.timetableDailyBriefEnabled ?? true);
         setSysTimetableTime(curSettings.timetableDailyBriefTime || "08:00");
+        setSysTimetablePreAlertEnabled(curSettings.timetablePreAlertEnabled ?? true);
         setSysTimetablePreAlert(curSettings.timetablePreAlertMinutes || 10);
         setSysScheduleTime(curSettings.scheduleDailyBriefTime || "08:30");
         setSysScheduleAdvanceDays(curSettings.advanceDays ?? 1);
         setSysScheduleScope(curSettings.scheduleScope || "ALL");
+
+        if (noticeCatRes?.data) {
+          setSchoolCategories(noticeCatRes.data);
+        }
+        if (subCatRes?.data) {
+          setSubscribedSchoolCategories(subCatRes.data.map((k) => k.category || ""));
+        }
 
         if (keywordsRes?.data) {
           const schoolKeys = keywordsRes.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null);
           const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
           setSchoolKeywords(schoolKeys);
           setDeptKeywords(deptKeys);
+          const hasDeptAll = keywordsRes.data.some((k) => k.type === "DEPARTMENT" && k.keyword === null);
+          setIsDeptAllNoticeEnabled(hasDeptAll || true);
         }
 
         if (systemType === "timetable") {
@@ -732,10 +761,45 @@ export default function MobileRoutineDetailPage() {
     }
   };
 
-  const handleToggleNotice = () => {
-    const next = !isNoticeEnabled;
-    setIsNoticeEnabled(next);
-    trackEvent("[Daily Brief] 공지 알림 토글", { systemType, enabled: next });
+  const handleToggleSchoolNotice = () => {
+    const next = !isSchoolNoticeEnabled;
+    setIsSchoolNoticeEnabled(next);
+    trackEvent("[Daily Brief] 학교 공지 알림 토글", { enabled: next });
+  };
+
+  const handleToggleDeptAllNotice = async () => {
+    const next = !isDeptAllNoticeEnabled;
+    setIsDeptAllNoticeEnabled(next);
+    try {
+      if (userInfo.department) {
+        if (next) {
+          await subscribeDepartment([userInfo.department]);
+        } else {
+          await subscribeDepartment([]);
+        }
+      }
+      trackEvent("[Daily Brief] 학과 전체 공지 알림 토글", { enabled: next });
+    } catch {
+      setIsDeptAllNoticeEnabled(!next);
+      alert("학과 공지 설정을 변경하지 못했어요.");
+    }
+  };
+
+  // School Notice Category Toggle
+  const handleToggleSchoolCategory = async (catName: string) => {
+    const isSubscribed = subscribedSchoolCategories.includes(catName);
+    const updated = isSubscribed
+      ? subscribedSchoolCategories.filter((c) => c !== catName)
+      : [...subscribedSchoolCategories, catName];
+
+    setSubscribedSchoolCategories(updated);
+    try {
+      await subscribeKeywordsNotice(updated);
+      trackEvent("[Daily Brief] 학교 공지 카테고리 구독 변경", { categories: updated });
+    } catch {
+      setSubscribedSchoolCategories(subscribedSchoolCategories);
+      alert("카테고리 설정을 변경하지 못했어요.");
+    }
   };
 
   // Custom routine On/Off Toggle
@@ -763,13 +827,13 @@ export default function MobileRoutineDetailPage() {
       setTimeout(() => {
         setIsTesting(false);
         if (systemType === "timetable") {
-          alert("오늘의 강의 & 시간표 테스트 알림을 보냈어요!");
+          alert("오늘의 강의 & 시간표 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
         } else if (systemType === "schedule") {
-          alert("학사일정 테스트 알림을 보냈어요!");
+          alert("학사일정 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
         } else {
-          alert("공지사항 테스트 알림을 보냈어요!");
+          alert("새 공지사항 테스트 알림을 발송했어요!\n(상단 알림 창에서 확인해 보세요)");
         }
-      }, 500);
+      }, 400);
       return;
     }
 
@@ -850,6 +914,7 @@ export default function MobileRoutineDetailPage() {
   // Keyword Management (for Notice Routines)
   const handleOpenAddKeyword = () => {
     setNewKeywordInput("");
+    setIsKeywordExcluded(keywordFilterTab === "exclude");
     setIsAddKeywordModalOpen(true);
   };
 
@@ -861,11 +926,11 @@ export default function MobileRoutineDetailPage() {
     try {
       const targetType = systemType === "dept-notice" ? "DEPARTMENT" : "SCHOOL_NOTICE";
       const deptCode = systemType === "dept-notice" ? (userInfo.departmentCode || userInfo.department) : undefined;
-      await createKeyword(newKeywordInput.trim(), deptCode);
-      alert(`'${newKeywordInput.trim()}' 키워드를 등록했어요!`);
+      await createKeyword(newKeywordInput.trim(), deptCode, undefined, isKeywordExcluded);
+      alert(`'${newKeywordInput.trim()}' ${isKeywordExcluded ? "제외" : "관심"} 키워드를 등록했어요!`);
       setIsAddKeywordModalOpen(false);
       setNewKeywordInput("");
-      // Reload keywords
+      
       const res = await getKeywords();
       if (res?.data) {
         if (targetType === "SCHOOL_NOTICE") {
@@ -881,7 +946,7 @@ export default function MobileRoutineDetailPage() {
   };
 
   const handleDeleteKeyword = async (keywordId: number, kwText: string) => {
-    if (!window.confirm(`'${kwText}' 키워드 알림을 삭제할까요?`)) return;
+    if (!window.confirm(`'${kwText}' 키워드를 삭제할까요?`)) return;
     try {
       await deleteKeyword(keywordId);
       if (systemType === "dept-notice") {
@@ -1012,7 +1077,9 @@ export default function MobileRoutineDetailPage() {
       try {
         if (systemType === "timetable") {
           const updated = await updateDailyBriefSettings({
+            timetableDailyBriefEnabled: sysTimetableDailyBrief,
             timetableDailyBriefTime: sysTimetableTime,
+            timetablePreAlertEnabled: sysTimetablePreAlertEnabled,
             timetablePreAlertMinutes: sysTimetablePreAlert,
           });
           if (updated?.data) setDailyBriefSettings(updated.data);
@@ -1136,7 +1203,9 @@ export default function MobileRoutineDetailPage() {
       return;
     }
     if (isSystemRoutine) {
+      setSysTimetableDailyBrief(dailyBriefSettings.timetableDailyBriefEnabled ?? true);
       setSysTimetableTime(dailyBriefSettings.timetableDailyBriefTime || "08:00");
+      setSysTimetablePreAlertEnabled(dailyBriefSettings.timetablePreAlertEnabled ?? true);
       setSysTimetablePreAlert(dailyBriefSettings.timetablePreAlertMinutes || 10);
       setSysScheduleTime(dailyBriefSettings.scheduleDailyBriefTime || "08:30");
       setSysScheduleAdvanceDays(dailyBriefSettings.advanceDays ?? 1);
@@ -1195,10 +1264,10 @@ export default function MobileRoutineDetailPage() {
         ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 학사일정 알림을 받아요.`
         : "학사일정 알림이 꺼져 있어요."
       : systemType === "school-notice"
-      ? isNoticeEnabled
+      ? isSchoolNoticeEnabled
         ? `새 학교 공지사항 및 등록된 관심 키워드 알림을 실시간으로 받아요.`
         : "학교 공지 알림이 꺼져 있어요."
-      : isNoticeEnabled
+      : isDeptAllNoticeEnabled
       ? `${userInfo.department ? `${userInfo.department} 새 공지사항 및 관심 키워드 알림을 받아요.` : "내 학과 새 공지사항 및 관심 키워드 알림을 받아요."}`
       : "학과 공지 알림이 꺼져 있어요."
     : reminder
@@ -1209,6 +1278,14 @@ export default function MobileRoutineDetailPage() {
         : "언제 어떤 캠퍼스 알림을 받을지 설정해 보세요.");
 
   const availableToAdd = AVAILABLE_ACTIONS.filter((a) => !selectedTools.includes(a.id));
+
+  // Notice Keywords Filtered
+  const filteredSchoolKeywords = schoolKeywords.filter((k) =>
+    keywordFilterTab === "exclude" ? k.isExcluded : !k.isExcluded,
+  );
+  const filteredDeptKeywords = deptKeywords.filter((k) =>
+    keywordFilterTab === "exclude" ? k.isExcluded : !k.isExcluded,
+  );
 
   return (
     <PageWrapper>
@@ -1275,10 +1352,10 @@ export default function MobileRoutineDetailPage() {
                       >
                         {dailyBriefSettings.scheduleAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
                       </CapsuleButton>
-                    ) : (
+                    ) : systemType === "school-notice" ? (
                       <CapsuleButton
-                        variant={isNoticeEnabled ? "primary" : "secondary"}
-                        onClick={handleToggleNotice}
+                        variant={isSchoolNoticeEnabled ? "primary" : "secondary"}
+                        onClick={handleToggleSchoolNotice}
                         style={{
                           padding: "8px 24px",
                           fontSize: "14.5px",
@@ -1287,7 +1364,21 @@ export default function MobileRoutineDetailPage() {
                           borderRadius: "9999px",
                         }}
                       >
-                        {isNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
+                        {isSchoolNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
+                      </CapsuleButton>
+                    ) : (
+                      <CapsuleButton
+                        variant={isDeptAllNoticeEnabled ? "primary" : "secondary"}
+                        onClick={handleToggleDeptAllNotice}
+                        style={{
+                          padding: "8px 24px",
+                          fontSize: "14.5px",
+                          fontWeight: 700,
+                          height: "40px",
+                          borderRadius: "9999px",
+                        }}
+                      >
+                        {isDeptAllNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
                       </CapsuleButton>
                     )
                   ) : reminder ? (
@@ -1347,7 +1438,7 @@ export default function MobileRoutineDetailPage() {
                         매일 아침 {isEditing ? sysTimetableTime : (dailyBriefSettings.timetableDailyBriefTime || "08:00")}
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectWrapper>
+                        <InlineSelectRow>
                           <InlineSelect
                             value={sysTimetableTime}
                             onChange={(e) => setSysTimetableTime(e.target.value)}
@@ -1358,9 +1449,15 @@ export default function MobileRoutineDetailPage() {
                               </option>
                             ))}
                           </InlineSelect>
-                        </InlineSelectWrapper>
+                        </InlineSelectRow>
                       )}
                     </CardContent>
+                    {isEditing && (
+                      <Switch
+                        checked={sysTimetableDailyBrief}
+                        onCheckedChange={setSysTimetableDailyBrief}
+                      />
+                    )}
                   </OneUiCard>
 
                   {/* 2. 수업 시작 전 알림 */}
@@ -1388,6 +1485,12 @@ export default function MobileRoutineDetailPage() {
                         </InlineSelectWrapper>
                       )}
                     </CardContent>
+                    {isEditing && (
+                      <Switch
+                        checked={sysTimetablePreAlertEnabled}
+                        onCheckedChange={setSysTimetablePreAlertEnabled}
+                      />
+                    )}
                   </OneUiCard>
                 </DetailSection>
 
@@ -1400,7 +1503,7 @@ export default function MobileRoutineDetailPage() {
                     </CardIconWrapper>
                     <CardContent>
                       <CardMainText>시간표 / 강의실</CardMainText>
-                      <CardBlueText>수강 중인 과목의 강의실 위치와 수업 시작 시간</CardBlueText>
+                      <CardBlueText>수강 중인 과목의 강의실 위치와 수업 시작 시간 안내</CardBlueText>
                     </CardContent>
                   </OneUiCard>
 
@@ -1410,9 +1513,26 @@ export default function MobileRoutineDetailPage() {
                     </CardIconWrapper>
                     <CardContent>
                       <CardMainText>캠퍼스 날씨</CardMainText>
-                      <CardBlueText>송도 캠퍼스 당일 기온 및 강수 정보</CardBlueText>
+                      <CardBlueText>송도 캠퍼스 당일 기온 및 강수 정보 함께 안내</CardBlueText>
                     </CardContent>
                   </OneUiCard>
+                </DetailSection>
+
+                {/* 알림 미리보기 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
+                  <PreviewCardsWrapper>
+                    <PushNotificationPreviewCard
+                      title="오늘의 강의 안내 (08:00 브리핑)"
+                      body="📅 오늘 2개의 강의가 있어요. 첫 수업: 09:00 자연과학대학 101호\n송도 캠퍼스 기온: 18°C (맑음)"
+                      time="오전 08:00"
+                    />
+                    <PushNotificationPreviewCard
+                      title="강의 시작 10분 전 안내"
+                      body="🏃‍♂️ 곧 '컴퓨터구조' 수업이 시작돼요! 강의실: 28호관 204호"
+                      time="수업 10분 전"
+                    />
+                  </PreviewCardsWrapper>
                 </DetailSection>
               </>
             )}
@@ -1493,8 +1613,8 @@ export default function MobileRoutineDetailPage() {
                       <CardBlueText>
                         {(() => {
                           const scope = isEditing ? sysScheduleScope : (dailyBriefSettings.scheduleScope || "ALL");
-                          if (scope === "SCHOOL_ONLY") return "학교 학사일정만";
-                          if (scope === "DEPT_ONLY") return "내 학과 학사일정만";
+                          if (scope === "SCHOOL_ONLY") return "학교 공식 학사일정만";
+                          if (scope === "DEPT_ONLY") return "내 학과 게시판 학사일정만";
                           return "학교 및 학과 전체 학사일정";
                         })()}
                       </CardBlueText>
@@ -1515,6 +1635,18 @@ export default function MobileRoutineDetailPage() {
                     </CardContent>
                   </OneUiCard>
                 </DetailSection>
+
+                {/* 알림 미리보기 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
+                  <PreviewCardsWrapper>
+                    <PushNotificationPreviewCard
+                      title="학사일정 알림 (08:30 브리핑)"
+                      body="🎓 다가오는 주요 학사일정:\n- 2026학년도 2학기 수강신청 변경 기간 (D-1)\n- 성적 정정 마감일 (D-3)"
+                      time="오전 08:30"
+                    />
+                  </PreviewCardsWrapper>
+                </DetailSection>
               </>
             )}
 
@@ -1530,46 +1662,79 @@ export default function MobileRoutineDetailPage() {
                     </CardIconWrapper>
                     <CardContent>
                       <CardMainText>새 공지 등록 시</CardMainText>
-                      <CardBlueText>실시간 즉시 알림</CardBlueText>
+                      <CardBlueText>학교 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardBlueText>
                     </CardContent>
                   </OneUiCard>
                 </DetailSection>
 
+                {/* 카테고리 구독 섹션 */}
                 <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+                  <DetailSectionHeader>구독할 공지 카테고리</DetailSectionHeader>
+                  <CategoryChipsCard>
+                    <CardSubDesc>선택한 카테고리의 새로운 공지사항 알림을 받아요.</CardSubDesc>
+                    <CategoryChipsRow>
+                      {schoolCategories.length === 0 ? (
+                        <CategorySkeletonRow>
+                          <Skeleton variant="text" width={60} height={32} />
+                          <Skeleton variant="text" width={70} height={32} />
+                          <Skeleton variant="text" width={65} height={32} />
+                        </CategorySkeletonRow>
+                      ) : (
+                        schoolCategories.map((cat) => {
+                          const isSub = subscribedSchoolCategories.includes(cat);
+                          return (
+                            <CategoryChip
+                              key={cat}
+                              $active={isSub}
+                              onClick={() => handleToggleSchoolCategory(cat)}
+                            >
+                              {isSub && <Check size={13} strokeWidth={3} />}
+                              <span>{cat}</span>
+                            </CategoryChip>
+                          );
+                        })
+                      )}
+                    </CategoryChipsRow>
+                  </CategoryChipsCard>
+                </DetailSection>
 
-                  <OneUiCard>
-                    <CardIconWrapper>
-                      <Bell size={24} color="#5c9cf8" />
-                    </CardIconWrapper>
-                    <CardContent>
-                      <CardMainText>학교 공지사항</CardMainText>
-                      <CardBlueText>전체 공지, 학사, 장학 등 주요 신규 공지사항</CardBlueText>
-                    </CardContent>
-                  </OneUiCard>
-
-                  {/* 관심 키워드 알림 섹션 */}
+                {/* 관심/제외 키워드 알림 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>키워드 알림 설정</DetailSectionHeader>
                   <KeywordSectionCard>
                     <KeywordHeaderRow>
-                      <KeywordHeaderTitle>
-                        <Tag size={16} color="#3b82f6" />
-                        <span>관심 키워드 알림 ({schoolKeywords.length}개)</span>
-                      </KeywordHeaderTitle>
+                      <KeywordTabGroup>
+                        <KeywordTabBtn
+                          $active={keywordFilterTab === "include"}
+                          onClick={() => setKeywordFilterTab("include")}
+                        >
+                          관심 키워드 ({schoolKeywords.filter((k) => !k.isExcluded).length})
+                        </KeywordTabBtn>
+                        <KeywordTabBtn
+                          $active={keywordFilterTab === "exclude"}
+                          onClick={() => setKeywordFilterTab("exclude")}
+                        >
+                          제외 키워드 ({schoolKeywords.filter((k) => k.isExcluded).length})
+                        </KeywordTabBtn>
+                      </KeywordTabGroup>
+
                       <AddKeywordChipButton onClick={handleOpenAddKeyword}>
                         <Plus size={14} strokeWidth={2.5} />
                         <span>키워드 추가</span>
                       </AddKeywordChipButton>
                     </KeywordHeaderRow>
 
-                    {schoolKeywords.length === 0 ? (
+                    {filteredSchoolKeywords.length === 0 ? (
                       <EmptyKeywordGuide>
-                        등록된 관심 키워드가 없어요. 키워드를 추가하면 관련 공지를 놓치지 않고 알려드려요!
+                        {keywordFilterTab === "include"
+                          ? "등록된 관심 키워드가 없어요. 키워드를 등록하면 관련 공지를 놓치지 않고 알려드려요!"
+                          : "등록된 제외 키워드가 없어요. 제외할 키워드를 등록하면 해당 단어가 들어간 공지는 알림에서 제외돼요."}
                       </EmptyKeywordGuide>
                     ) : (
                       <KeywordChipsContainer>
-                        {schoolKeywords.map((kw) => (
-                          <KeywordChip key={kw.keywordId}>
-                            <span>#{kw.keyword}</span>
+                        {filteredSchoolKeywords.map((kw) => (
+                          <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
+                            <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
                             <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
                               <X size={13} color="#64748b" />
                             </ChipDeleteBtn>
@@ -1578,6 +1743,18 @@ export default function MobileRoutineDetailPage() {
                       </KeywordChipsContainer>
                     )}
                   </KeywordSectionCard>
+                </DetailSection>
+
+                {/* 알림 미리보기 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
+                  <PreviewCardsWrapper>
+                    <PushNotificationPreviewCard
+                      title="[학교 공지] 2026학년도 2학기 장학금 신청 안내"
+                      body="📢 장학 • 등록금 카테고리에 새로운 공지사항이 등록되었습니다."
+                      time="지금"
+                    />
+                  </PreviewCardsWrapper>
                 </DetailSection>
               </>
             )}
@@ -1594,48 +1771,68 @@ export default function MobileRoutineDetailPage() {
                     </CardIconWrapper>
                     <CardContent>
                       <CardMainText>새 공지 등록 시</CardMainText>
-                      <CardBlueText>실시간 즉시 알림</CardBlueText>
+                      <CardBlueText>내 학과 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardBlueText>
                     </CardContent>
                   </OneUiCard>
                 </DetailSection>
 
                 <DetailSection>
-                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+                  <DetailSectionHeader>내 소속 학과</DetailSectionHeader>
 
-                  <OneUiCard>
+                  <OneUiCard onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
                     <CardIconWrapper>
-                      <Bell size={24} color="#ff7a00" />
+                      <Building2 size={24} color="#ff7a00" />
                     </CardIconWrapper>
                     <CardContent>
                       <CardMainText>
-                        {userInfo.department ? `${userInfo.department} 공지` : "내 소속 학과 공지"}
+                        {userInfo.department ? `${userInfo.department}` : "소속 학과를 설정해 주세요"}
                       </CardMainText>
-                      <CardBlueText>학과 전공, 졸업, 연구, 행사 등 새 공지사항</CardBlueText>
+                      <CardBlueText>
+                        {userInfo.department
+                          ? "학과 공지사항 및 졸업/행사 알림을 받아요"
+                          : "마이페이지에서 학과를 등록하면 맞춤 공지 알림을 받을 수 있어요"}
+                      </CardBlueText>
                     </CardContent>
                   </OneUiCard>
+                </DetailSection>
 
-                  {/* 학과 관심 키워드 알림 섹션 */}
+                {/* 학과 관심/제외 키워드 알림 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>학과 키워드 알림 설정</DetailSectionHeader>
                   <KeywordSectionCard>
                     <KeywordHeaderRow>
-                      <KeywordHeaderTitle>
-                        <Tag size={16} color="#ff7a00" />
-                        <span>학과 키워드 알림 ({deptKeywords.length}개)</span>
-                      </KeywordHeaderTitle>
+                      <KeywordTabGroup>
+                        <KeywordTabBtn
+                          $active={keywordFilterTab === "include"}
+                          onClick={() => setKeywordFilterTab("include")}
+                        >
+                          관심 키워드 ({deptKeywords.filter((k) => !k.isExcluded).length})
+                        </KeywordTabBtn>
+                        <KeywordTabBtn
+                          $active={keywordFilterTab === "exclude"}
+                          onClick={() => setKeywordFilterTab("exclude")}
+                        >
+                          제외 키워드 ({deptKeywords.filter((k) => k.isExcluded).length})
+                        </KeywordTabBtn>
+                      </KeywordTabGroup>
+
                       <AddKeywordChipButton onClick={handleOpenAddKeyword}>
                         <Plus size={14} strokeWidth={2.5} />
                         <span>키워드 추가</span>
                       </AddKeywordChipButton>
                     </KeywordHeaderRow>
 
-                    {deptKeywords.length === 0 ? (
+                    {filteredDeptKeywords.length === 0 ? (
                       <EmptyKeywordGuide>
-                        등록된 학과 키워드가 없어요. 키워드를 추가하면 관련 학과 공지를 놓치지 않고 알려드려요!
+                        {keywordFilterTab === "include"
+                          ? "등록된 학과 관심 키워드가 없어요. 키워드를 등록하면 관련 학과 공지를 놓치지 않고 알려드려요!"
+                          : "등록된 학과 제외 키워드가 없어요."}
                       </EmptyKeywordGuide>
                     ) : (
                       <KeywordChipsContainer>
-                        {deptKeywords.map((kw) => (
-                          <KeywordChip key={kw.keywordId}>
-                            <span>#{kw.keyword}</span>
+                        {filteredDeptKeywords.map((kw) => (
+                          <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
+                            <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
                             <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
                               <X size={13} color="#64748b" />
                             </ChipDeleteBtn>
@@ -1644,6 +1841,18 @@ export default function MobileRoutineDetailPage() {
                       </KeywordChipsContainer>
                     )}
                   </KeywordSectionCard>
+                </DetailSection>
+
+                {/* 알림 미리보기 섹션 */}
+                <DetailSection>
+                  <DetailSectionHeader>알림 미리보기</DetailSectionHeader>
+                  <PreviewCardsWrapper>
+                    <PushNotificationPreviewCard
+                      title={`[${userInfo.department || "컴퓨터공학부"}] 캡스톤디자인 발표회 안내`}
+                      body="🏢 학과 공지사항 게시판에 새로운 소식이 등록되었습니다."
+                      time="지금"
+                    />
+                  </PreviewCardsWrapper>
                 </DetailSection>
               </>
             )}
@@ -1875,8 +2084,12 @@ export default function MobileRoutineDetailPage() {
       <Modal
         isOpen={isAddKeywordModalOpen}
         onClose={() => setIsAddKeywordModalOpen(false)}
-        title="관심 키워드 등록"
-        description="등록한 키워드가 포함된 새 공지사항이 올라오면 실시간 알림을 받아요."
+        title={isKeywordExcluded ? "제외 키워드 등록" : "관심 키워드 등록"}
+        description={
+          isKeywordExcluded
+            ? "등록한 키워드가 포함된 공지사항은 알림에서 제외돼요."
+            : "등록한 키워드가 포함된 새 공지사항이 올라오면 실시간 알림을 받아요."
+        }
         secondaryButton={{
           text: "취소",
           onClick: () => setIsAddKeywordModalOpen(false),
@@ -1887,12 +2100,12 @@ export default function MobileRoutineDetailPage() {
           onClick: handleConfirmAddKeyword,
         }}
       >
-        <KeywordModalInputWrapper>
+        <KeywordModalContent>
           <KeywordModalInput
             type="text"
             value={newKeywordInput}
             onChange={(e) => setNewKeywordInput(e.target.value)}
-            placeholder="키워드 입력 (예: 장학금, 수강신청, 인턴)"
+            placeholder={isKeywordExcluded ? "제외할 키워드 입력 (예: 채용, 봉사)" : "키워드 입력 (예: 장학금, 수강신청, 인턴)"}
             maxLength={20}
             autoFocus={true}
             onKeyDown={(e) => {
@@ -1902,7 +2115,14 @@ export default function MobileRoutineDetailPage() {
               }
             }}
           />
-        </KeywordModalInputWrapper>
+
+          <ExcludeToggleRow onClick={() => setIsKeywordExcluded(!isKeywordExcluded)}>
+            <ExcludeCheckCircle $checked={isKeywordExcluded}>
+              {isKeywordExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
+            </ExcludeCheckCircle>
+            <ExcludeLabel>이 키워드가 들어간 공지는 알림에서 제외하기</ExcludeLabel>
+          </ExcludeToggleRow>
+        </KeywordModalContent>
       </Modal>
 
       {/* 아이콘 및 색상 선택 모달 */}
@@ -2093,6 +2313,33 @@ export default function MobileRoutineDetailPage() {
         </DrawerBackdrop>
       )}
     </PageWrapper>
+  );
+}
+
+/**
+ * 모바일 OS 푸시 알림 프리뷰 컴포넌트
+ */
+function PushNotificationPreviewCard({
+  title,
+  body,
+  time = "지금",
+}: {
+  title: string;
+  body: string;
+  time?: string;
+}) {
+  return (
+    <OsNotificationBanner>
+      <OsHeader>
+        <OsAppIconWrapper>
+          <Bell size={10} color="#ffffff" />
+        </OsAppIconWrapper>
+        <OsAppName>INTIP Daily Brief</OsAppName>
+        <OsTimeText>{time}</OsTimeText>
+      </OsHeader>
+      <OsTitle>{title}</OsTitle>
+      <OsBody>{body}</OsBody>
+    </OsNotificationBanner>
   );
 }
 
@@ -2292,6 +2539,12 @@ const CardBlueText = styled.div`
   white-space: pre-line;
 `;
 
+const CardSubDesc = styled.div`
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.35;
+`;
+
 const MinusButton = styled.button`
   background: none;
   border: none;
@@ -2479,6 +2732,48 @@ const InlineSelect = styled.select`
   cursor: pointer;
 `;
 
+/* 카테고리 칩 카드 */
+const CategoryChipsCard = styled.div`
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e9ecef;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+`;
+
+const CategoryChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const CategorySkeletonRow = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const CategoryChip = styled.button<{ $active: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
+  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
+  border: none;
+  border-radius: 9999px;
+  padding: 7px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
 /* 키워드 관리 One UI 카드 & 칩 */
 const KeywordSectionCard = styled.div`
   background: #ffffff;
@@ -2498,13 +2793,25 @@ const KeywordHeaderRow = styled.div`
   gap: 8px;
 `;
 
-const KeywordHeaderTitle = styled.div`
+const KeywordTabGroup = styled.div`
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 15.5px;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
+`;
+
+const KeywordTabBtn = styled.button<{ $active: boolean }>`
+  border: none;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  color: #111827;
+  cursor: pointer;
+  background-color: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
+  color: ${({ $active }) => ($active ? "#111827" : "#64748b")};
+  box-shadow: ${({ $active }) => ($active ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none")};
+  transition: all 0.15s ease;
 `;
 
 const AddKeywordChipButton = styled.button`
@@ -2515,7 +2822,7 @@ const AddKeywordChipButton = styled.button`
   color: #2563eb;
   border: none;
   border-radius: 9999px;
-  padding: 5px 12px;
+  padding: 6px 12px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -2539,17 +2846,17 @@ const KeywordChipsContainer = styled.div`
   gap: 8px;
 `;
 
-const KeywordChip = styled.div`
+const KeywordChip = styled.div<{ $isExclude?: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: ${({ $isExclude }) => ($isExclude ? "#fee2e2" : "#f8fafc")};
+  border: 1px solid ${({ $isExclude }) => ($isExclude ? "#fca5a5" : "#e2e8f0")};
   border-radius: 9999px;
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #1e293b;
+  color: ${({ $isExclude }) => ($isExclude ? "#b91c1c" : "#1e293b")};
 `;
 
 const ChipDeleteBtn = styled.button`
@@ -2568,7 +2875,10 @@ const ChipDeleteBtn = styled.button`
   }
 `;
 
-const KeywordModalInputWrapper = styled.div`
+const KeywordModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 10px 0;
 `;
 
@@ -2591,6 +2901,100 @@ const KeywordModalInput = styled.input`
     color: #9ca3af;
     font-weight: 400;
   }
+`;
+
+const ExcludeToggleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+`;
+
+const ExcludeCheckCircle = styled.div<{ $checked: boolean }>`
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid ${({ $checked }) => ($checked ? "#ef4444" : "#cbd5e1")};
+  background-color: ${({ $checked }) => ($checked ? "#ef4444" : "#ffffff")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+`;
+
+const ExcludeLabel = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #475569;
+`;
+
+/* 알림 미리보기 컴포넌트 스타일 */
+const PreviewCardsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const OsNotificationBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e9ecef;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+`;
+
+const OsHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 2px;
+`;
+
+const OsAppIconWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background-color: #2563eb;
+  flex-shrink: 0;
+`;
+
+const OsAppName = styled.span`
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4b5563;
+  flex: 1;
+  letter-spacing: -0.2px;
+`;
+
+const OsTimeText = styled.span`
+  font-size: 11px;
+  color: #9ca3af;
+`;
+
+const OsTitle = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+`;
+
+const OsBody = styled.div`
+  font-size: 12.5px;
+  color: #374151;
+  line-height: 1.45;
+  white-space: pre-line;
+  letter-spacing: -0.1px;
 `;
 
 /* 아이콘 & 컬러 피커 모달 스타일 */
@@ -2729,7 +3133,7 @@ const PillActionButton = styled.button`
   }
 `;
 
-/* 하단 플로팅 편집 액션 바 (이미지: [ 취소 | 저장 ]) */
+/* 하단 플로팅 편집 액션 바 */
 const EditFloatingPill = styled.div`
   position: fixed;
   bottom: 24px;
