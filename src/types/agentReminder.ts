@@ -12,9 +12,13 @@ export interface RoutineScheduleItem {
 
 export type RoutineTriggerType =
   | "TIME"
+  | "BEFORE_FIRST_CLASS"
+  | "BEFORE_CLASS"
+  | "AFTER_LAST_CLASS"
+  | "LONG_BREAK"
+  | "NO_CLASS_DAY"
   | "SCHOOL_NOTICE"
-  | "DEPT_NOTICE"
-  | "BEFORE_CLASS";
+  | "DEPT_NOTICE";
 
 export interface RoutineTriggerCondition {
   id: string;
@@ -28,12 +32,27 @@ export interface RoutineTriggerCondition {
     selectedDays: string[];
     repeatType: AgentReminderRepeatType;
   };
-  deptParams?: {
-    deptCode: string;
-    deptName: string;
+  beforeFirstClassParams?: {
+    minutes: number;
   };
   beforeClassParams?: {
     minutes: number;
+  };
+  afterLastClassParams?: {
+    offsetMinutes: number;
+  };
+  longBreakParams?: {
+    minGapMinutes: number;
+  };
+  noClassDayParams?: {
+    time: string;
+    ampm?: "AM" | "PM";
+    hour?: string;
+    minute?: string;
+  };
+  deptParams?: {
+    deptCode: string;
+    deptName: string;
   };
 }
 
