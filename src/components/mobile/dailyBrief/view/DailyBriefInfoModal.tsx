@@ -26,31 +26,31 @@ export default function DailyBriefInfoModal({
       <ModalBody>
         <FeatureList>
           <FeatureItem>
-            <FeatureIcon>🎓</FeatureIcon>
+            <FeatureIcon>⚡</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>캠퍼스 하루 맞춤 브리핑</FeatureName>
+              <FeatureName>상황 맞춤 다이내믹 우선순위</FeatureName>
               <FeatureDesc>
-                오늘의 강의 시간표부터 캠퍼스 날씨, 학식 메뉴, 실시간 버스, 열람실 좌석, LMS 과제 및 공지사항을 한눈에 확인하세요.
+                수업 전에는 <b>강의실과 시간표</b>, 식사 시간에는 <b>학식 메뉴</b>, 하교 시에는 <b>도착 버스</b>, 마감 임박 시에는 <b>과제 알림</b>이 가장 먼저 최상단에 자동 추천됩니다.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
 
           <FeatureItem>
-            <FeatureIcon>🌤️</FeatureIcon>
+            <FeatureIcon>🎛️</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>시간대 & 날씨 맞춤 인터페이스</FeatureName>
+              <FeatureName>카드 순서 & 노출 커스텀 설정</FeatureName>
               <FeatureDesc>
-                아침, 오후, 저녁, 밤 시간대와 실시간 날씨에 맞춰 변화하는 배경 테마와 횃불이의 응원 멘트가 함께합니다.
+                우측 하단 설정 버튼을 통해 내가 자주 확인하는 카드의 순서를 직접 변경하거나, 필요하지 않은 카드를 숨길 수 있습니다.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
 
           <FeatureItem>
-            <FeatureIcon>⚙️</FeatureIcon>
+            <FeatureIcon>📍</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>브리핑 순서 및 알림 설정</FeatureName>
+              <FeatureName>캠퍼스 실시간 정보 원스톱 확인</FeatureName>
               <FeatureDesc>
-                우측 하단 설정 버튼을 통해 내가 자주 보는 카드의 순서를 조정하고 맞춤 브리핑 루틴을 설정할 수 있습니다.
+                열람실 잔여 좌석, 실시간 빠른 버스 도착 정보, 전체 및 학과 최신 공지, 송도 캠퍼스 날씨까지 앱 곳곳을 찾을 필요 없이 한 화면에서 모아보세요.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
