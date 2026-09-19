@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -22,6 +22,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Icon from "@/components/common/Icon";
 import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
+import { useDailyBriefPresentation } from "@/hooks/useDailyBriefRanking";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
@@ -73,30 +74,7 @@ export default function MobileHomePageV2() {
     "school",
   );
 
-  const currentHour = new Date().getHours();
-  const { greetingTitle, greetingSubtitle } = useMemo(() => {
-    if (currentHour >= 5 && currentHour < 12) {
-      return {
-        greetingTitle: "상쾌한 아침이에요",
-        greetingSubtitle: "좋은 느낌으로 오늘을 가득 채워 보세요.",
-      };
-    } else if (currentHour >= 12 && currentHour < 18) {
-      return {
-        greetingTitle: "활기찬 오후예요",
-        greetingSubtitle: "남은 하루도 기분 좋은 일들로 가득하길 바라요.",
-      };
-    } else if (currentHour >= 18 && currentHour < 22) {
-      return {
-        greetingTitle: "편안한 저녁이에요",
-        greetingSubtitle: "오늘 하루도 정말 수고 많으셨어요.",
-      };
-    } else {
-      return {
-        greetingTitle: "고요한 밤이에요",
-        greetingSubtitle: "편안한 휴식과 함께 내일을 준비해 보세요.",
-      };
-    }
-  }, [currentHour]);
+  const dailyBrief = useDailyBriefPresentation();
 
   useHeader({
     showAlarm: true,
@@ -122,8 +100,8 @@ export default function MobileHomePageV2() {
             aria-label="Daily Brief 바로가기"
           >
             <GreetingTextGroup>
-              <GreetingMainTitle>{greetingTitle}</GreetingMainTitle>
-              <GreetingSubTitle>{greetingSubtitle}</GreetingSubTitle>
+              <GreetingMainTitle>{dailyBrief.title}</GreetingMainTitle>
+              <GreetingSubTitle>{dailyBrief.subtitle}</GreetingSubTitle>
             </GreetingTextGroup>
             <GreetingChevron>
               <Icon name="chevron-right" size={20} color="#9CA3AF" />
