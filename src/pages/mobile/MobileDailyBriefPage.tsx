@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -47,6 +47,8 @@ const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
 };
 
 const DAILY_BRIEF_INTRO_SHOWN_KEY = "daily_brief_intro_shown";
+const DAILY_BRIEF_CARD_RETURN_KEY = "daily_brief_card_return";
+const CARD_NAVIGATION_WINDOW_MS = 1500;
 
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
@@ -63,10 +65,21 @@ export default function MobileDailyBriefPage() {
 
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(isFirstEverVisit);
 
-  // 카드 상세 등으로 갔다가 '뒤로가기(POP)'로 돌아온 경우만 애니메이션 없이 즉시 유지
-  const isRestored = navigationType === "POP" && !isFirstEverVisit;
+  // 카드 클릭으로 다른 페이지에 갔다가 POP으로 돌아온 경우만 화면을 그대로 복원한다.
+  // 홈 등 외부 진입점에서 들어올 때는 캐시 여부와 무관하게 항상 애니메이션을 보여준다.
+  const isReturningFromCard = useMemo(() => {
+    try {
+      return sessionStorage.getItem(DAILY_BRIEF_CARD_RETURN_KEY) === "true";
+    } catch {
+      return false;
+    }
+  }, []);
+  const isRestored =
+    navigationType === "POP" && isReturningFromCard && !isFirstEverVisit;
   const [isLoading, setIsLoading] = useState(!isRestored);
   const shouldAnimate = !isRestored;
+  const pendingCardNavigationRef = useRef(false);
+  const cardNavigationTimerRef = useRef<number | null>(null);
 
   const brief = useDailyBriefPresentation();
   const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
@@ -83,6 +96,28 @@ export default function MobileDailyBriefPage() {
       setIsLoading(false);
     }, 850);
   };
+
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(DAILY_BRIEF_CARD_RETURN_KEY);
+    } catch {
+      // 세션 저장소를 사용할 수 없어도 진입 애니메이션은 정상 동작한다.
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (cardNavigationTimerRef.current !== null) {
+        window.clearTimeout(cardNavigationTimerRef.current);
+      }
+      if (!pendingCardNavigationRef.current) return;
+      try {
+        sessionStorage.setItem(DAILY_BRIEF_CARD_RETURN_KEY, "true");
+      } catch {
+        // 세션 저장소를 사용할 수 없으면 일반 진입처럼 애니메이션을 보여준다.
+      }
+    };
+  }, []);
 
   useEffect(() => {
     trackPageView("Daily Brief 메인");
@@ -115,6 +150,18 @@ export default function MobileDailyBriefPage() {
 
     // 최초 모달 확인 시점에 브리핑 로딩 시작 -> 완료 시 순차 fade-in
     startBriefLoading();
+  };
+
+  const handleCardInteraction = () => {
+    pendingCardNavigationRef.current = true;
+    if (cardNavigationTimerRef.current !== null) {
+      window.clearTimeout(cardNavigationTimerRef.current);
+    }
+    // 카드 내부 조작만 하고 이동하지 않은 경우에는 복귀 표식을 남기지 않는다.
+    cardNavigationTimerRef.current = window.setTimeout(() => {
+      pendingCardNavigationRef.current = false;
+      cardNavigationTimerRef.current = null;
+    }, CARD_NAVIGATION_WINDOW_MS);
   };
 
   const renderCard = (cardType: DailyBriefCardType, index: number) => {
@@ -171,7 +218,7 @@ export default function MobileDailyBriefPage() {
           subtitle={brief.subtitle}
         />
 
-        <CardsStack>
+        <CardsStack onClickCapture={handleCardInteraction}>
           {brief.cards.map((card, idx) => renderCard(card, idx))}
         </CardsStack>
 
