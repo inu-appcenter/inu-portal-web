@@ -3159,29 +3159,33 @@ const FloatingActionPill = styled.div`
   transform: translateX(-50%);
   background: #ffffff;
   border: 1px solid #e9ecef;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
   border-radius: 9999px;
-  padding: 6px 14px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   z-index: 100;
 `;
 
 const PillActionButton = styled.button`
   background: none;
   border: none;
-  padding: 8px 12px;
+  padding: 6px 14px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #111827;
+  white-space: nowrap;
   cursor: pointer;
-  border-radius: 9999px;
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
+  min-width: 52px;
 
   &:disabled {
     opacity: 0.5;
