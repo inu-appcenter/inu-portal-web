@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Box from "@/components/common/Box";
 import Switch from "@/components/common/Switch";
@@ -7,23 +7,92 @@ import Divider from "@/components/common/Divider";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Icon from "@/components/common/Icon";
-import { Pencil, Trash2, MessageSquarePlus } from "lucide-react";
+import {
+  Sparkles,
+  Plus,
+  Pencil,
+  Trash2,
+  Send,
+  Clock,
+  MessageSquarePlus,
+} from "lucide-react";
 import useAIChatStore from "@/stores/useAIChatStore";
 import {
   getAgentReminders,
   toggleAgentReminder,
-  updateAgentReminder,
   deleteAgentReminder,
+  testAgentReminder,
 } from "@/apis/agentReminder";
-import type { AgentReminder } from "@/types/agentReminder";
+import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentReminder";
+import RoutineBuilderModal from "@/components/mobile/routine/RoutineBuilderModal";
 import { trackEvent } from "@/utils/mixpanel";
+
+interface PresetItem {
+  id: string;
+  badge: string;
+  title: string;
+  targetTime: string;
+  repeatType: AgentReminderRepeatType;
+  targetTools: string[];
+  toolParams?: Record<string, any>;
+  description: string;
+  tag: string;
+}
+
+const STARTER_PRESETS: PresetItem[] = [
+  {
+    id: "preset-morning",
+    badge: "☀️ 🚌",
+    title: "등교 전 올인원 브리핑",
+    targetTime: "08:00",
+    repeatType: "WEEKDAYS",
+    targetTools: ["WEATHER", "BUS"],
+    toolParams: { stopName: "인천대입구역 1번출구" },
+    description: "송도 캠퍼스 날씨 + 인입런 버스 실시간 도착",
+    tag: "인기 1위",
+  },
+  {
+    id: "preset-lunch",
+    badge: "🍱",
+    title: "점심 학식 알리미",
+    targetTime: "11:30",
+    repeatType: "WEEKDAYS",
+    targetTools: ["CAFETERIA"],
+    toolParams: { cafeteria: "전체", mealType: "LUNCH" },
+    description: "오늘 학생식당 & 기숙사 중식 메뉴 요약",
+    tag: "점심 필수",
+  },
+  {
+    id: "preset-leaving",
+    badge: "🚌",
+    title: "하교길 버스 알리미",
+    targetTime: "17:30",
+    repeatType: "WEEKDAYS",
+    targetTools: ["BUS"],
+    toolParams: { stopName: "인천대 정문" },
+    description: "인천대 정문 정류소 실시간 버스 도착 정보",
+    tag: "하교 추천",
+  },
+  {
+    id: "preset-timetable",
+    badge: "📅 ☀️",
+    title: "오늘의 강의 & 날씨 브리핑",
+    targetTime: "08:30",
+    repeatType: "WEEKDAYS",
+    targetTools: ["TIMETABLE", "WEATHER"],
+    description: "당일 첫 수업 강의실 위치와 날씨 안내",
+    tag: "새내기 추천",
+  },
+];
 
 export default function MobileAgentReminderSetting() {
   const { openAgent } = useAIChatStore();
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingTime, setEditingTime] = useState<string>("08:30");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingReminder, setEditingReminder] = useState<AgentReminder | null>(null);
+  const [presetToOpen, setPresetToOpen] = useState<PresetItem | null>(null);
+  const [isTestingId, setIsTestingId] = useState<number | null>(null);
 
   const fetchReminders = useCallback(async () => {
     setIsLoading(true);
@@ -33,7 +102,7 @@ export default function MobileAgentReminderSetting() {
         setReminders(res.data);
       }
     } catch (error) {
-      console.error("AI 맞춤 알림 목록 조회 실패:", error);
+      console.error("AI 맞춤 알림/루틴 목록 조회 실패:", error);
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +114,6 @@ export default function MobileAgentReminderSetting() {
 
   const handleToggle = async (id: number, currentEnabled: boolean) => {
     const nextEnabled = !currentEnabled;
-    // 낙관적 업데이트
     setReminders((prev) =>
       prev.map((r) => (r.id === id ? { ...r, enabled: nextEnabled } : r)),
     );
@@ -54,41 +122,15 @@ export default function MobileAgentReminderSetting() {
       trackEvent("[Daily Brief] AI 맞춤 알림 토글", { id, enabled: nextEnabled });
     } catch (error) {
       console.error("AI 맞춤 알림 토글 실패:", error);
-      // 롤백
       setReminders((prev) =>
         prev.map((r) => (r.id === id ? { ...r, enabled: currentEnabled } : r)),
       );
-      alert("알림 상태를 변경하지 못했어요. 네트워크를 확인해 주세요.");
-    }
-  };
-
-  const handleStartEdit = (reminder: AgentReminder) => {
-    if (editingId === reminder.id) {
-      setEditingId(null);
-    } else {
-      setEditingId(reminder.id);
-      setEditingTime(reminder.targetTime || "08:30");
-    }
-  };
-
-  const handleSaveTime = async (id: number) => {
-    try {
-      const res = await updateAgentReminder(id, { targetTime: editingTime });
-      if (res.data) {
-        setReminders((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, targetTime: editingTime } : r)),
-        );
-      }
-      setEditingId(null);
-      trackEvent("[Daily Brief] AI 맞춤 알림 시간 수정", { id, time: editingTime });
-    } catch (error) {
-      console.error("알림 시간 수정 실패:", error);
-      alert("시간을 수정하지 못했어요.");
+      alert("알림 상태를 변경하지 못했어요.");
     }
   };
 
   const handleDelete = async (id: number, title: string) => {
-    if (!window.confirm(`'${title}' 알림을 삭제할까요?`)) return;
+    if (!window.confirm(`'${title}' 맞춤 알림을 삭제할까요?`)) return;
     try {
       await deleteAgentReminder(id);
       setReminders((prev) => prev.filter((r) => r.id !== id));
@@ -99,158 +141,191 @@ export default function MobileAgentReminderSetting() {
     }
   };
 
-  const getToolEmoji = (toolName: string) => {
-    const upper = (toolName || "").toUpperCase();
-    if (upper.includes("CAFETERIA")) return "🍱";
-    if (upper.includes("WEATHER")) return "☀️";
-    if (upper.includes("BUS")) return "🚌";
-    if (upper.includes("NOTICE")) return "📢";
-    if (upper.includes("SCHEDULE")) return "📅";
-    return "⏰";
+  const handleTestDispatch = async (id: number, title: string) => {
+    setIsTestingId(id);
+    try {
+      await testAgentReminder(id);
+      alert(`'${title}' 테스트 알림이 발송되었습니다! (잠시 후 푸시가 도착해요)`);
+      trackEvent("[Daily Brief] AI 맞춤 알림 테스트 발송", { id, title });
+    } catch (error) {
+      console.error("테스트 발송 실패:", error);
+      alert("테스트 알림 발송 중 오류가 발생했습니다.");
+    } finally {
+      setIsTestingId(null);
+    }
+  };
+
+  const handleOpenNew = () => {
+    setEditingReminder(null);
+    setPresetToOpen(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (reminder: AgentReminder) => {
+    setEditingReminder(reminder);
+    setPresetToOpen(null);
+    setIsModalOpen(true);
+  };
+
+  const handleApplyPreset = (preset: PresetItem) => {
+    setEditingReminder(null);
+    setPresetToOpen(preset);
+    setIsModalOpen(true);
+  };
+
+  const getToolEmojis = (toolNames: string) => {
+    if (!toolNames) return "⏰";
+    const tools = toolNames.split(",").map((s) => s.trim().toUpperCase());
+    const emojis = tools.map((t) => {
+      if (t.includes("WEATHER")) return "☀️";
+      if (t.includes("BUS")) return "🚌";
+      if (t.includes("CAFETERIA")) return "🍱";
+      if (t.includes("TIMETABLE")) return "📅";
+      if (t.includes("NOTICE")) return "📢";
+      return "⏰";
+    });
+    return emojis.join(" ");
   };
 
   return (
     <ReminderSettingWrapper>
+      {/* 상단 루틴 생성 배너 */}
+      <HeroCard>
+        <HeroHeader>
+          <HeroTag>
+            <Sparkles size={13} color="#2563eb" />
+            AI 비서 맞춤 루틴
+          </HeroTag>
+          <HeroTitle>캠퍼스 맞춤 알림 루틴</HeroTitle>
+        </HeroHeader>
+        <HeroDescription>
+          원하는 시간과 요일에 날씨, 학식, 버스, 시간표를 조합하여 딱 맞는 Daily Brief 알림을 받아보세요.
+        </HeroDescription>
+        <HeroButtonRow>
+          <HeroCTAButton onClick={handleOpenNew}>
+            <Plus size={16} strokeWidth={2.5} />
+            나만의 루틴 만들기
+          </HeroCTAButton>
+          <HeroSecondaryButton onClick={openAgent}>
+            <MessageSquarePlus size={15} />
+            AI 비서와 대화로 추가
+          </HeroSecondaryButton>
+        </HeroButtonRow>
+      </HeroCard>
+
+      {/* 추천 프리셋 섹션 */}
       <TitleContentArea
-        title="AI 맞춤 알림"
-        description="AI 캠퍼스 비서에게 대화로 요청한 나만의 맞춤 예약 알림들을 확인하고 관리할 수 있어요."
+        title="추천 스타터 프리셋"
+        description="인천대 학생들이 가장 많이 찾는 대표 알림들을 터치 한 번으로 등록해 보세요."
+      >
+        <PresetScrollRow>
+          {STARTER_PRESETS.map((preset) => (
+            <PresetCard key={preset.id} onClick={() => handleApplyPreset(preset)}>
+              <PresetHeader>
+                <PresetBadge>{preset.badge}</PresetBadge>
+                <PresetTag>{preset.tag}</PresetTag>
+              </PresetHeader>
+              <PresetTitle>{preset.title}</PresetTitle>
+              <PresetDesc>{preset.description}</PresetDesc>
+              <PresetTimeRow>
+                <Clock size={13} color="#64748b" />
+                <span>
+                  {preset.repeatType === "WEEKDAYS" ? "평일" : "매일"}{" "}
+                  {preset.targetTime}
+                </span>
+              </PresetTimeRow>
+            </PresetCard>
+          ))}
+        </PresetScrollRow>
+      </TitleContentArea>
+
+      {/* 내 맞춤 알림 / 루틴 목록 */}
+      <TitleContentArea
+        title="내가 등록한 맞춤 알림"
+        description="설정된 시간에 맞춰 조건별 데이터를 스마트하게 합성해 푸시 알림으로 발송합니다."
       >
         {isLoading ? (
           <Box style={{ width: "100%", padding: 0 }}>
-            <SettingRow>
-              <RowContent>
-                <Skeleton variant="text" width="60%" height={20} />
-                <Skeleton variant="text" width="40%" height={14} />
-              </RowContent>
-            </SettingRow>
+            <RoutineItemRow>
+              <Skeleton variant="text" width="60%" height={22} />
+            </RoutineItemRow>
             <Divider margin="0" />
-            <SettingRow>
-              <RowContent>
-                <Skeleton variant="text" width="50%" height={20} />
-                <Skeleton variant="text" width="35%" height={14} />
-              </RowContent>
-            </SettingRow>
+            <RoutineItemRow>
+              <Skeleton variant="text" width="50%" height={22} />
+            </RoutineItemRow>
           </Box>
         ) : reminders.length === 0 ? (
           <Box style={{ width: "100%", padding: 0 }}>
             <EmptyBox>
-              <EmptyIconBadge>🤖</EmptyIconBadge>
-              <EmptyTitle>등록된 맞춤 알림이 아직 없어요</EmptyTitle>
-              <EmptyDescription>
-                AI 캠퍼스 비서에게 평소 필요한 알림을 자유롭게 요청해 보세요!
-                <br />
-                예: <i>"오전 11시에 학식 알려줘"</i>, <i>"8시 30분에 날씨 알려줘"</i>
-              </EmptyDescription>
-              <CapsuleButtonWrapper>
-                <CapsuleButton
-                  variant="primary"
-                  onClick={openAgent}
-                  leftIcon={<MessageSquarePlus size={17} />}
-                  style={{
-                    fontSize: "15px",
-                    padding: "10px 22px",
-                    lineHeight: "22px",
-                  }}
-                >
-                  AI 비서에게 알림 부탁하기
-                </CapsuleButton>
-              </CapsuleButtonWrapper>
+              <EmptyEmoji>🤖</EmptyEmoji>
+              <EmptyTitle>아직 등록된 맞춤 알림이 없어요</EmptyTitle>
+              <EmptyDesc>
+                위 추천 프리셋을 누르거나 아래 버튼으로 첫 번째 맞춤 알림을 만들어 보세요!
+              </EmptyDesc>
+              <CapsuleButton
+                variant="primary"
+                onClick={handleOpenNew}
+                leftIcon={<Plus size={16} />}
+                style={{ marginTop: 8 }}
+              >
+                첫 맞춤 알림 추가하기
+              </CapsuleButton>
             </EmptyBox>
           </Box>
         ) : (
           <Box style={{ width: "100%", padding: 0 }}>
             {reminders.map((reminder, idx) => (
-              <div key={reminder.id}>
-                <SettingRow>
-                  <RowContent>
+              <React.Fragment key={reminder.id}>
+                {idx > 0 && <Divider margin="0" />}
+                <RoutineItemRow>
+                  <RoutineLeftContent>
                     <TitleRow>
                       <ToolEmojiBadge>
-                        {getToolEmoji(reminder.targetTool)}
+                        {getToolEmojis(reminder.targetTool)}
                       </ToolEmojiBadge>
-                      <RowTitle $disabled={!reminder.enabled}>
+                      <RoutineTitle $disabled={!reminder.enabled}>
                         {reminder.title}
-                      </RowTitle>
+                      </RoutineTitle>
                     </TitleRow>
-                    <RowDescription>
-                      {reminder.repeatTypeDesc} • {reminder.targetTime} 발송
-                    </RowDescription>
-                  </RowContent>
+                    <RoutineMetaRow>
+                      <MetaBadge>{reminder.repeatTypeDesc}</MetaBadge>
+                      <MetaTime>{reminder.targetTime} 발송</MetaTime>
+                    </RoutineMetaRow>
+                  </RoutineLeftContent>
 
-                  <RightControls>
+                  <RoutineRightControls>
                     <IconButton
-                      title="시간 수정"
-                      onClick={() => handleStartEdit(reminder)}
+                      title="즉시 테스트 발송"
+                      disabled={isTestingId === reminder.id}
+                      onClick={() =>
+                        handleTestDispatch(reminder.id, reminder.title)
+                      }
                     >
-                      <Pencil size={15} color="#6B7280" />
+                      <Send size={15} color="#2563eb" />
+                    </IconButton>
+                    <IconButton
+                      title="알림 수정"
+                      onClick={() => handleOpenEdit(reminder)}
+                    >
+                      <Pencil size={15} color="#64748b" />
                     </IconButton>
                     <IconButton
                       title="알림 삭제"
                       $danger
                       onClick={() => handleDelete(reminder.id, reminder.title)}
                     >
-                      <Trash2 size={15} color="#EF4444" />
+                      <Trash2 size={15} color="#ef4444" />
                     </IconButton>
-                    <SwitchContainer>
-                      <Switch
-                        checked={reminder.enabled}
-                        onCheckedChange={() =>
-                          handleToggle(reminder.id, reminder.enabled)
-                        }
-                      />
-                    </SwitchContainer>
-                  </RightControls>
-                </SettingRow>
-
-                {/* 인라인 시간 수정 서브 패널 */}
-                {editingId === reminder.id && (
-                  <SubOptionBox>
-                    <SubOptionHeader>
-                      <SubOptionTextWrapper>
-                        <SubOptionTitle>발송 시간 변경</SubOptionTitle>
-                        <SubOptionDesc>
-                          알림을 수신할 시간을 설정해 주세요.
-                        </SubOptionDesc>
-                      </SubOptionTextWrapper>
-                    </SubOptionHeader>
-
-                    <CustomTimeRow>
-                      <StyledTimeInput
-                        type="time"
-                        value={editingTime}
-                        onChange={(e) => setEditingTime(e.target.value)}
-                      />
-                      <ApplyButton onClick={() => handleSaveTime(reminder.id)}>
-                        적용
-                      </ApplyButton>
-                      <CancelButton onClick={() => setEditingId(null)}>
-                        취소
-                      </CancelButton>
-                    </CustomTimeRow>
-                  </SubOptionBox>
-                )}
-
-                {idx < reminders.length - 1 && <Divider margin="0" />}
-              </div>
+                    <Switch
+                      checked={reminder.enabled}
+                      onCheckedChange={() =>
+                        handleToggle(reminder.id, reminder.enabled)
+                      }
+                    />
+                  </RoutineRightControls>
+                </RoutineItemRow>
+              </React.Fragment>
             ))}
-
-            {/* 하단 새 알림 추가 버튼 (CapsuleButton) */}
-            <Divider margin="0" />
-            <AddActionRow>
-              <CapsuleButton
-                variant="brand"
-                fullWidth
-                onClick={openAgent}
-                leftIcon={<MessageSquarePlus size={16} />}
-                style={{
-                  fontSize: "14.5px",
-                  padding: "10px 18px",
-                  lineHeight: "22px",
-                  boxShadow: "none",
-                }}
-              >
-                + AI 비서에게 새 맞춤 알림 부탁하기
-              </CapsuleButton>
-            </AddActionRow>
           </Box>
         )}
       </TitleContentArea>
@@ -264,12 +339,12 @@ export default function MobileAgentReminderSetting() {
               <OsAppIconWrapper>
                 <Icon name="bell" size={10} color="#ffffff" />
               </OsAppIconWrapper>
-              <OsAppName>INTIP AI 비서</OsAppName>
-              <OsTimeText>11:00</OsTimeText>
+              <OsAppName>INTIP 데일리 브리프</OsAppName>
+              <OsTimeText>11:30</OsTimeText>
             </OsHeader>
-            <OsTitle>🍱 [11:00] 오늘의 점심 학식 안내</OsTitle>
+            <OsTitle>🍱 [점심 학식] 오늘의 학생식당 메뉴</OsTitle>
             <OsBody>
-              제1기숙사 식당: 치즈돈까스(5,500원) / 학생식당: 김치제육볶음
+              학생식당: 김치제육볶음(5,000원) / 1기숙사: 치즈돈까스(5,500원)
             </OsBody>
           </OsNotificationBanner>
 
@@ -278,21 +353,30 @@ export default function MobileAgentReminderSetting() {
               <OsAppIconWrapper>
                 <Icon name="bell" size={10} color="#ffffff" />
               </OsAppIconWrapper>
-              <OsAppName>INTIP AI 비서</OsAppName>
-              <OsTimeText>08:30</OsTimeText>
+              <OsAppName>INTIP 데일리 브리프</OsAppName>
+              <OsTimeText>08:00</OsTimeText>
             </OsHeader>
-            <OsTitle>☀️ [08:30] 송도캠퍼스 날씨 브리핑</OsTitle>
+            <OsTitle>☀️ 🚌 [등교 브리핑] 송도 날씨 & 실시간 버스</OsTitle>
             <OsBody>
-              현재 기온 18.7℃, 미세먼지 '좋음'. 오후 3시경 소나기가 예상되니 우산을 챙기세요! ☂️
+              현재 18.7℃ 맑음 • [인천대입구역 1번출구] 8번(3분 뒤 도착 예정)
             </OsBody>
           </OsNotificationBanner>
         </NotificationPreviewList>
       </PreviewSectionWrapper>
+
+      {/* 루틴 빌더 모달 */}
+      <RoutineBuilderModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchReminders}
+        initialData={editingReminder}
+        presetData={presetToOpen}
+      />
     </ReminderSettingWrapper>
   );
 }
 
-/* --- INTIP 디자인 시스템 스타일드 컴포넌트 --- */
+/* --- 스타일드 컴포넌트 --- */
 
 const ReminderSettingWrapper = styled.div`
   width: 100%;
@@ -303,22 +387,193 @@ const ReminderSettingWrapper = styled.div`
   gap: 24px;
 `;
 
-const SettingRow = styled.div`
+const HeroCard = styled.div`
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1.5px solid #dbeafe;
+  border-radius: 20px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+`;
+
+const HeroHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const HeroTag = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  background-color: #dbeafe;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+`;
+
+const HeroTitle = styled.h2`
+  font-size: 19px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+`;
+
+const HeroDescription = styled.p`
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+  margin: 0;
+`;
+
+const HeroButtonRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+`;
+
+const HeroCTAButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+`;
+
+const HeroSecondaryButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #ffffff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #eff6ff;
+  }
+`;
+
+const PresetScrollRow = styled.div`
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const PresetCard = styled.div`
+  min-width: 200px;
+  max-width: 220px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const PresetHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #ffffff;
 `;
 
-const RowContent = styled.div`
+const PresetBadge = styled.span`
+  font-size: 18px;
+`;
+
+const PresetTag = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #ea580c;
+  background-color: #ffedd5;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const PresetTitle = styled.div`
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+const PresetDesc = styled.div`
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  height: 34px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+`;
+
+const PresetTimeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-top: 4px;
+`;
+
+const RoutineItemRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  gap: 12px;
+`;
+
+const RoutineLeftContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
-  padding-right: 12px;
 `;
 
 const TitleRow = styled.div`
@@ -329,184 +584,90 @@ const TitleRow = styled.div`
 
 const ToolEmojiBadge = styled.span`
   font-size: 16px;
-  line-height: 1;
 `;
 
-const RowTitle = styled.div<{ $disabled?: boolean }>`
-  font-size: 15.5px;
-  font-weight: 600;
-  color: ${({ $disabled }) => ($disabled ? "#8E8E93" : "#1C1C1E")};
+const RoutineTitle = styled.div<{ $disabled: boolean }>`
+  font-size: 15px;
+  font-weight: 700;
+  color: ${({ $disabled }) => ($disabled ? "#94a3b8" : "#0f172a")};
 `;
 
-const RowDescription = styled.div`
-  font-size: 13px;
-  color: #8e8e93;
-  line-height: 1.4;
-  padding-left: 24px;
-`;
-
-const RightControls = styled.div`
+const RoutineMetaRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 6px;
+`;
+
+const MetaBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #2563eb;
+  background-color: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const MetaTime = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+`;
+
+const RoutineRightControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 const IconButton = styled.button<{ $danger?: boolean }>`
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background-color: ${({ $danger }) => ($danger ? "#FFF1F2" : "#F4F6F8")};
-  cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: ${({ $danger }) => ($danger ? "#FFE4E6" : "#E5E7EB")};
+    background-color: ${({ $danger }) => ($danger ? "#fee2e2" : "#f1f5f9")};
   }
 
-  &:active {
-    transform: scale(0.95);
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
-`;
-
-const SwitchContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-`;
-
-const SubOptionBox = styled.div`
-  width: 100%;
-  padding: 14px 20px;
-  background-color: #fafbfc;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-top: 1px solid #f0f2f5;
-`;
-
-const SubOptionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const SubOptionTextWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const SubOptionTitle = styled.div`
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #2c3e50;
-`;
-
-const SubOptionDesc = styled.div`
-  font-size: 12px;
-  color: #8e8e93;
-`;
-
-const CustomTimeRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-`;
-
-const StyledTimeInput = styled.input`
-  width: 130px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  padding: 6px 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  background-color: #fff;
-  outline: none;
-  box-sizing: border-box;
-
-  &:focus {
-    border-color: #5e92f0;
-  }
-`;
-
-const ApplyButton = styled.button`
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: none;
-  background-color: #5e92f0;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
-const CancelButton = styled.button`
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background-color: #ffffff;
-  color: #666666;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
 `;
 
 const EmptyBox = styled.div`
+  padding: 32px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: 40px 20px;
-  width: 100%;
-  box-sizing: border-box;
   gap: 8px;
 `;
 
-const EmptyIconBadge = styled.div`
-  font-size: 40px;
+const EmptyEmoji = styled.div`
+  font-size: 36px;
   margin-bottom: 4px;
 `;
 
 const EmptyTitle = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: #0f172a;
 `;
 
-const EmptyDescription = styled.div`
-  font-size: 13.5px;
-  color: #8e8e93;
+const EmptyDesc = styled.div`
+  font-size: 13px;
+  color: #64748b;
+  max-width: 260px;
   line-height: 1.5;
-  margin-top: 2px;
 `;
 
-const CapsuleButtonWrapper = styled.div`
-  margin-top: 14px;
-`;
-
-const AddActionRow = styled.div`
-  padding: 14px 20px;
-  background-color: #ffffff;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-/* --- INTIP OS Notification Banner Components --- */
+/* --- 알림 배너 컴포넌트 --- */
 
 const PreviewSectionWrapper = styled.div`
   display: flex;

@@ -57,7 +57,7 @@ export const DAILY_BRIEF_TABS = [
   { label: "학사일정", value: "schedule" },
   { label: "학교 공지", value: "school" },
   { label: "학과 공지", value: "dept" },
-  { label: "AI 맞춤 알림", value: "agent" },
+  { label: "맞춤 루틴", value: "agent" },
 ];
 
 const PRE_ALERT_PRESETS = [
