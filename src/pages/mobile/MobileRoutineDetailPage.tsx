@@ -947,11 +947,6 @@ export default function MobileRoutineDetailPage() {
   );
 
   const loadData = useCallback(async () => {
-    if (isNew) {
-      syncFormFromData(null, null);
-      setIsLoading(false);
-      return;
-    }
     setIsLoading(true);
     try {
       const [noticeCatRes, deptsRes] = await Promise.all([
@@ -964,6 +959,12 @@ export default function MobileRoutineDetailPage() {
       if (deptsRes?.data) {
         setAllDepartments(deptsRes.data);
         loadedDepts = deptsRes.data;
+      }
+
+      if (isNew) {
+        syncFormFromData(null, null);
+        setIsLoading(false);
+        return;
       }
 
       if (isSystemRoutine) {
@@ -1219,6 +1220,61 @@ export default function MobileRoutineDetailPage() {
     hasback: true,
     rightArea: null,
   });
+
+  // 조건 추가 모달에서 보여줄 수 있는 트리거 목록 필터링 (공지 이벤트 vs 시간 브리핑 분리)
+  const visibleTriggerOptions = useMemo(() => {
+    const hasSchoolNoticeAction = actions.some((a) => a.type === "SCHOOL_NOTICE");
+    const hasDeptNoticeAction = actions.some((a) => a.type === "DEPT_NOTICE");
+    const hasTimeAction = actions.some((a) =>
+      ["TIMETABLE", "SCHEDULE", "WEATHER", "BUS", "CAFETERIA"].includes(a.type)
+    );
+    const hasSchoolNoticeTrigger = triggers.some((t) => t.type === "SCHOOL_NOTICE");
+    const hasDeptNoticeTrigger = triggers.some((t) => t.type === "DEPT_NOTICE");
+    const hasTimeTrigger = triggers.some((t) =>
+      ["TIME", "BEFORE_FIRST_CLASS", "BEFORE_CLASS", "AFTER_LAST_CLASS", "LONG_BREAK", "NO_CLASS_DAY"].includes(t.type)
+    );
+
+    // 1. 이미 학교 공지 관련 동작이나 트리거가 있는 경우 -> 학교 공지 트리거만 가능
+    if (hasSchoolNoticeAction || hasSchoolNoticeTrigger) {
+      return { time: false, schoolNotice: true, deptNotice: false };
+    }
+    // 2. 이미 학과 공지 관련 동작이나 트리거가 있는 경우 -> 학과 공지 트리거만 가능
+    if (hasDeptNoticeAction || hasDeptNoticeTrigger) {
+      return { time: false, schoolNotice: false, deptNotice: true };
+    }
+    // 3. 이미 시간/시간표 기반 동작이나 트리거가 있는 경우 -> 시간/시간표 트리거만 가능 (공지 이벤트 불가)
+    if (hasTimeAction || hasTimeTrigger) {
+      return { time: true, schoolNotice: false, deptNotice: false };
+    }
+    // 4. 초기 상태 -> 모든 조건 선택 가능
+    return { time: true, schoolNotice: true, deptNotice: true };
+  }, [triggers, actions]);
+
+  // 동작 추가 모달에서 선택 가능한 동작 목록 필터링 (신규 이벤트 트리거와 시간 브리핑 상호 배타적 분리)
+  const filteredAvailableActions = useMemo(() => {
+    const hasSchoolNoticeTrigger = triggers.some((t) => t.type === "SCHOOL_NOTICE");
+    const hasDeptNoticeTrigger = triggers.some((t) => t.type === "DEPT_NOTICE");
+    const hasTimeTrigger = triggers.some((t) =>
+      ["TIME", "BEFORE_FIRST_CLASS", "BEFORE_CLASS", "AFTER_LAST_CLASS", "LONG_BREAK", "NO_CLASS_DAY"].includes(t.type)
+    );
+
+    return AVAILABLE_ACTIONS.filter((action) => {
+      // 1. 학교 공지 동작: 반드시 '새 학교 공지 등록 시' 트리거가 있을 때만 선택 가능
+      if (action.id === "SCHOOL_NOTICE") {
+        return hasSchoolNoticeTrigger && !hasDeptNoticeTrigger && !hasTimeTrigger;
+      }
+      // 2. 학과 공지 동작: 반드시 '새 학과 공지 등록 시' 트리거가 있을 때만 선택 가능
+      if (action.id === "DEPT_NOTICE") {
+        return hasDeptNoticeTrigger && !hasSchoolNoticeTrigger && !hasTimeTrigger;
+      }
+      // 3. 일반 시간/시간표 기반 동작 (TIMETABLE, SCHEDULE, WEATHER, BUS, CAFETERIA):
+      // 학교나 학과 공지 트리거가 있는 루틴에는 선택 불가 (시간 트리거가 있거나 초기 상태일 때만)
+      if (hasSchoolNoticeTrigger || hasDeptNoticeTrigger) {
+        return false;
+      }
+      return true;
+    });
+  }, [triggers]);
 
   // =========================================================================
   // 1. 트리거 조건 (Trigger) 핸들러
@@ -1607,6 +1663,19 @@ export default function MobileRoutineDetailPage() {
                 },
               }
             : a,
+        ),
+      );
+      // 트리거 조건 중 학과 공지 트리거도 동일한 학과로 동기화
+      setTriggers((prev) =>
+        prev.map((t) =>
+          t.type === "DEPT_NOTICE"
+            ? {
+                ...t,
+                title: `새 학과 공지 등록 시 (${tempDeptName})`,
+                subtitle: `${tempDeptName} 홈페이지에 새 공지가 올라올 때`,
+                deptParams: { deptCode: tempDeptCode, deptName: tempDeptName },
+              }
+            : t,
         ),
       );
     } else {
@@ -2594,108 +2663,124 @@ export default function MobileRoutineDetailPage() {
       >
         <ModalOptionsList style={{ maxHeight: "420px", overflowY: "auto", paddingRight: "2px" }}>
           {/* 1. 고정 시간 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("TIME")}>
-            <Ripple color="rgba(37, 99, 235, 0.1)" />
-            <OptionIconTextRow>
-              <Clock size={20} color="#3b82f6" />
-              <div>
-                <ModalOptionText>특정 시간</ModalOptionText>
-                <CardSubDesc>원하는 시간과 요일에 맞춰 알림</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#3b82f6" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("TIME")}>
+              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <OptionIconTextRow>
+                <Clock size={20} color="#3b82f6" />
+                <div>
+                  <ModalOptionText>특정 시간</ModalOptionText>
+                  <CardSubDesc>원하는 시간과 요일에 맞춰 알림</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#3b82f6" />
+            </ModalOptionItem>
+          )}
 
           {/* 2. 당일 첫 수업 시작 전 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_FIRST_CLASS")}>
-            <Ripple color="rgba(245, 158, 11, 0.1)" />
-            <OptionIconTextRow>
-              <Sun size={20} color="#f59e0b" />
-              <div>
-                <ModalOptionText>당일 첫 수업 시작 전</ModalOptionText>
-                <CardSubDesc>오늘 첫 수업 시간과 강의실 사전 안내</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#f59e0b" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_FIRST_CLASS")}>
+              <Ripple color="rgba(245, 158, 11, 0.1)" />
+              <OptionIconTextRow>
+                <Sun size={20} color="#f59e0b" />
+                <div>
+                  <ModalOptionText>당일 첫 수업 시작 전</ModalOptionText>
+                  <CardSubDesc>오늘 첫 수업 시간과 강의실 사전 안내</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#f59e0b" />
+            </ModalOptionItem>
+          )}
 
           {/* 3. 각 수업 시작 전 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_CLASS")}>
-            <Ripple color="rgba(139, 92, 246, 0.1)" />
-            <OptionIconTextRow>
-              <Clock size={20} color="#8b5cf6" />
-              <div>
-                <ModalOptionText>각 수업 시작 전 알림</ModalOptionText>
-                <CardSubDesc>매 수업 시작 전 다음 강의실 위치 안내</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#8b5cf6" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_CLASS")}>
+              <Ripple color="rgba(139, 92, 246, 0.1)" />
+              <OptionIconTextRow>
+                <Clock size={20} color="#8b5cf6" />
+                <div>
+                  <ModalOptionText>각 수업 시작 전 알림</ModalOptionText>
+                  <CardSubDesc>매 수업 시작 전 다음 강의실 위치 안내</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#8b5cf6" />
+            </ModalOptionItem>
+          )}
 
           {/* 4. 마지막 수업 종료 전/후 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("AFTER_LAST_CLASS")}>
-            <Ripple color="rgba(99, 102, 241, 0.1)" />
-            <OptionIconTextRow>
-              <Moon size={20} color="#6366f1" />
-              <div>
-                <ModalOptionText>마지막 수업 종료 전/후</ModalOptionText>
-                <CardSubDesc>하교 시점 버스 도착 및 주변 정보</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#6366f1" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("AFTER_LAST_CLASS")}>
+              <Ripple color="rgba(99, 102, 241, 0.1)" />
+              <OptionIconTextRow>
+                <Moon size={20} color="#6366f1" />
+                <div>
+                  <ModalOptionText>마지막 수업 종료 전/후</ModalOptionText>
+                  <CardSubDesc>하교 시점 버스 도착 및 주변 정보</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#6366f1" />
+            </ModalOptionItem>
+          )}
 
           {/* 5. 긴 공강 시작 시 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("LONG_BREAK")}>
-            <Ripple color="rgba(16, 185, 129, 0.1)" />
-            <OptionIconTextRow>
-              <Coffee size={20} color="#10b981" />
-              <div>
-                <ModalOptionText>공강 시작 시 알림</ModalOptionText>
-                <CardSubDesc>2시간 이상 비는 긴 공강 시작 시 학식/카페 정보</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#10b981" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("LONG_BREAK")}>
+              <Ripple color="rgba(16, 185, 129, 0.1)" />
+              <OptionIconTextRow>
+                <Coffee size={20} color="#10b981" />
+                <div>
+                  <ModalOptionText>공강 시작 시 알림</ModalOptionText>
+                  <CardSubDesc>2시간 이상 비는 긴 공강 시작 시 학식/카페 정보</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#10b981" />
+            </ModalOptionItem>
+          )}
 
           {/* 6. 수업 없는 공강일 브리핑 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("NO_CLASS_DAY")}>
-            <Ripple color="rgba(236, 72, 153, 0.1)" />
-            <OptionIconTextRow>
-              <Smile size={20} color="#ec4899" />
-              <div>
-                <ModalOptionText>수업 없는 공강일 브리핑</ModalOptionText>
-                <CardSubDesc>수업이 없는 날 여유로운 오전 브리핑</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#ec4899" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.time && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("NO_CLASS_DAY")}>
+              <Ripple color="rgba(236, 72, 153, 0.1)" />
+              <OptionIconTextRow>
+                <Smile size={20} color="#ec4899" />
+                <div>
+                  <ModalOptionText>수업 없는 공강일 브리핑</ModalOptionText>
+                  <CardSubDesc>수업이 없는 날 여유로운 오전 브리핑</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#ec4899" />
+            </ModalOptionItem>
+          )}
 
           {/* 7. 학과 공지 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("DEPT_NOTICE")}>
-            <Ripple color="rgba(255, 122, 0, 0.1)" />
-            <OptionIconTextRow>
-              <Building2 size={20} color="#ff7a00" />
-              <div>
-                <ModalOptionText>새 학과 공지 등록 시</ModalOptionText>
-                <CardSubDesc>선택한 학과 홈페이지에 새 공지가 올라올 때</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#ff7a00" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.deptNotice && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("DEPT_NOTICE")}>
+              <Ripple color="rgba(255, 122, 0, 0.1)" />
+              <OptionIconTextRow>
+                <Building2 size={20} color="#ff7a00" />
+                <div>
+                  <ModalOptionText>새 학과 공지 등록 시</ModalOptionText>
+                  <CardSubDesc>선택한 학과 홈페이지에 새 공지가 올라올 때</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#ff7a00" />
+            </ModalOptionItem>
+          )}
 
           {/* 8. 학교 공지 */}
-          <ModalOptionItem onClick={() => handleSelectTriggerType("SCHOOL_NOTICE")}>
-            <Ripple color="rgba(92, 156, 248, 0.1)" />
-            <OptionIconTextRow>
-              <Bell size={20} color="#5c9cf8" />
-              <div>
-                <ModalOptionText>새 학교 공지 등록 시</ModalOptionText>
-                <CardSubDesc>학교 대표 홈페이지에 새 공지가 올라올 때</CardSubDesc>
-              </div>
-            </OptionIconTextRow>
-            <Plus size={18} color="#5c9cf8" />
-          </ModalOptionItem>
+          {visibleTriggerOptions.schoolNotice && (
+            <ModalOptionItem onClick={() => handleSelectTriggerType("SCHOOL_NOTICE")}>
+              <Ripple color="rgba(92, 156, 248, 0.1)" />
+              <OptionIconTextRow>
+                <Bell size={20} color="#5c9cf8" />
+                <div>
+                  <ModalOptionText>새 학교 공지 등록 시</ModalOptionText>
+                  <CardSubDesc>학교 대표 홈페이지에 새 공지가 올라올 때</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#5c9cf8" />
+            </ModalOptionItem>
+          )}
         </ModalOptionsList>
       </Modal>
 
@@ -3006,32 +3091,38 @@ export default function MobileRoutineDetailPage() {
         }}
       >
         <ModalOptionsList style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "2px" }}>
-          {AVAILABLE_ACTIONS.map((action) => (
-            <ModalOptionItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
-              <OptionIconTextRow>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    backgroundColor: action.iconBg,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {React.cloneElement(action.icon, { size: 18, color: "#ffffff" })}
-                </div>
-                <div>
-                  <ModalOptionText>{action.title}</ModalOptionText>
-                  <CardSubDesc>{action.description}</CardSubDesc>
-                </div>
-              </OptionIconTextRow>
-              <Plus size={18} color="#3b82f6" />
-            </ModalOptionItem>
-          ))}
+          {filteredAvailableActions.length === 0 ? (
+            <div style={{ padding: "24px 16px", textAlign: "center", color: "#64748b", fontSize: "14px", lineHeight: "1.5" }}>
+              현재 설정된 조건과 호환되는 추가 동작이 없습니다.
+            </div>
+          ) : (
+            filteredAvailableActions.map((action) => (
+              <ModalOptionItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
+                <Ripple color="rgba(37, 99, 235, 0.1)" />
+                <OptionIconTextRow>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: "50%",
+                      backgroundColor: action.iconBg,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {React.cloneElement(action.icon, { size: 18, color: "#ffffff" })}
+                  </div>
+                  <div>
+                    <ModalOptionText>{action.title}</ModalOptionText>
+                    <CardSubDesc>{action.description}</CardSubDesc>
+                  </div>
+                </OptionIconTextRow>
+                <Plus size={18} color="#3b82f6" />
+              </ModalOptionItem>
+            ))
+          )}
         </ModalOptionsList>
       </Modal>
 
@@ -3056,7 +3147,7 @@ export default function MobileRoutineDetailPage() {
         }}
       >
         <DeptModalWrapper>
-          <ModalSectionLabel>대상 학과 선택</ModalSectionLabel>
+          <ModalSectionLabel>대상 학과 선택 (단일 선택)</ModalSectionLabel>
           <SearchInputWrapper>
             <Search size={16} color="#94a3b8" />
             <SearchInput
@@ -3067,9 +3158,23 @@ export default function MobileRoutineDetailPage() {
             />
           </SearchInputWrapper>
 
-          <DeptListScrollContainer style={{ maxHeight: "150px" }}>
+          <DeptListScrollContainer style={{ maxHeight: "160px" }}>
             {allDepartments
               .filter((d) => d.name.toLowerCase().includes(deptSearchQuery.trim().toLowerCase()))
+              .slice()
+              .sort((a, b) => {
+                const aSelected = tempDeptCode === a.code || tempDeptName === a.name;
+                const bSelected = tempDeptCode === b.code || tempDeptName === b.name;
+                if (aSelected && !bSelected) return -1;
+                if (!aSelected && bSelected) return 1;
+
+                const aMy = userInfo.departmentCode === a.code || userInfo.department === a.name;
+                const bMy = userInfo.departmentCode === b.code || userInfo.department === b.name;
+                if (aMy && !bMy) return -1;
+                if (!aMy && bMy) return 1;
+
+                return a.name.localeCompare(b.name, "ko");
+              })
               .map((dept) => {
                 const isSelected = tempDeptCode === dept.code || tempDeptName === dept.name;
                 const isMyMajor = userInfo.departmentCode === dept.code || userInfo.department === dept.name;
@@ -3088,7 +3193,11 @@ export default function MobileRoutineDetailPage() {
                     </CustomCheckCircle>
                     <DeptNameText $checked={isSelected}>
                       {dept.name}
-                      {isMyMajor && <MyMajorBadge>내 학과</MyMajorBadge>}
+                      {isSelected ? (
+                        <SelectedBadge style={{ marginLeft: 6 }}>선택됨</SelectedBadge>
+                      ) : isMyMajor ? (
+                        <MyMajorBadge style={{ marginLeft: 6 }}>내 학과</MyMajorBadge>
+                      ) : null}
                     </DeptNameText>
                   </DeptListItem>
                 );
@@ -4116,6 +4225,16 @@ const MyMajorBadge = styled.span`
   color: #ff7a00;
   background: #fff7ed;
   border: 1px solid #ffedd5;
+  padding: 2px 6px;
+  border-radius: 6px;
+`;
+
+const SelectedBadge = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
   padding: 2px 6px;
   border-radius: 6px;
 `;
