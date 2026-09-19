@@ -492,16 +492,16 @@ export default function MobileDailyBriefSettingPage() {
 
                       <Divider margin="0" />
 
-                      {/* 당일 강의 목록 브리핑 */}
+                      {/* 당일 데일리 브리프 알림 */}
                       <SubOptionBox>
                         <SubOptionHeader>
                           <SubOptionTextWrapper>
                             <SubOptionTitle>
-                              당일 강의 목록 브리핑
+                              통합 Daily Brief 알림
                             </SubOptionTitle>
                             <SubOptionDesc>
-                              지정한 시간에 오늘 수강할 강의 목록을 한 번에
-                              정리해서 받아볼 수 있어요.
+                              매일 지정한 시간에 오늘의 시간표, 날씨, 학식, 버스
+                              도착 정보가 요약된 Daily Brief 알림을 받아볼 수 있어요. (알림 클릭 시 데일리 브리프로 바로 이동)
                             </SubOptionDesc>
                           </SubOptionTextWrapper>
                           <Switch

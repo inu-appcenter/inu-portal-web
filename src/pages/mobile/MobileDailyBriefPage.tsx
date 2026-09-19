@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
+import {
+  useDailyBriefRanking,
+  DailyBriefCardType,
+} from "@/hooks/useDailyBriefRanking";
 import DailyBriefHeader from "@/components/mobile/dailyBrief/view/DailyBriefHeader";
 import DailyBriefTimetableCard from "@/components/mobile/dailyBrief/view/DailyBriefTimetableCard";
 import DailyBriefWeatherCard from "@/components/mobile/dailyBrief/view/DailyBriefWeatherCard";
@@ -17,6 +21,7 @@ import Icon from "@/components/common/Icon";
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const rankedCards = useDailyBriefRanking();
 
   useHeader({
     visible: false,
@@ -27,19 +32,31 @@ export default function MobileDailyBriefPage() {
     trackPageView("Daily Brief 메인");
   }, []);
 
+  const renderCard = (cardType: DailyBriefCardType) => {
+    switch (cardType) {
+      case "timetable":
+        return <DailyBriefTimetableCard key="timetable" />;
+      case "weather":
+        return <DailyBriefWeatherCard key="weather" />;
+      case "notice":
+        return <DailyBriefNoticeCard key="notice" />;
+      case "cafeteria":
+        return <DailyBriefCafeteriaCard key="cafeteria" />;
+      case "bus":
+        return <DailyBriefBusCard key="bus" />;
+      case "fortune":
+        return <DailyBriefFortuneCard key="fortune" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <PageBackground>
       <ContentContainer>
         <DailyBriefHeader onBack={() => navigate(-1)} />
 
-        <CardsStack>
-          <DailyBriefTimetableCard />
-          <DailyBriefWeatherCard />
-          <DailyBriefNoticeCard />
-          <DailyBriefCafeteriaCard />
-          <DailyBriefBusCard />
-          <DailyBriefFortuneCard />
-        </CardsStack>
+        <CardsStack>{rankedCards.map(renderCard)}</CardsStack>
 
         <FloatingBottomActions>
           <CircleActionButton

@@ -1,9 +1,12 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import useBusArrival from "@/hooks/useBusArrival";
+import useUserStore from "@/stores/useUserStore";
+import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
 import type { BusData } from "@/types/bus";
 
 // 홈페이지 버스 위젯과 동일한 노선별 컬러 매핑
@@ -55,11 +58,85 @@ const BusIcon = ({ color }: { color: string }) => (
 export default function DailyBriefBusCard() {
   const navigate = useNavigate();
   const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const todayDayOfWeek = (now.getDay() + 6) % 7;
 
-  // 등교/하교 기준 시간대 판별 (홈페이지 SwipeBusWidget과 동일)
-  const currentType = now.getHours() < 14 ? "go-school" : "go-home";
-  const { tabs: dynamicTabs, stops: dynamicStops, isLoading: isRoutesLoading } =
-    useDynamicBusRoutes(currentType);
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo?.accessToken);
+  const { timetables, selectedSemester } = useTimetableStore();
+
+  useTimeTables(undefined, undefined, {
+    enabled: isLoggedIn,
+  });
+
+  // 대표 시간표 조회
+  const representativeTimetableId = useMemo(() => {
+    if (!isLoggedIn) return null;
+    const targetSemester =
+      selectedSemester ||
+      (timetables.find((t) => t.isRepresentative)?.semester ??
+        timetables[0]?.semester);
+    const inSemester = targetSemester
+      ? timetables.filter((t) => t.semester === targetSemester)
+      : timetables;
+    return (
+      inSemester.find((t) => t.isRepresentative)?.id ??
+      inSemester[0]?.id ??
+      timetables.find((t) => t.isRepresentative)?.id ??
+      timetables[0]?.id ??
+      null
+    );
+  }, [isLoggedIn, selectedSemester, timetables]);
+
+  useTimeTableDetail(representativeTimetableId, {
+    enabled: isLoggedIn && representativeTimetableId != null,
+  });
+
+  const activeTimetable = useMemo(
+    () =>
+      timetables.find((timetable) => timetable.id === representativeTimetableId),
+    [representativeTimetableId, timetables],
+  );
+
+  // 오늘 마지막 수업 종료 시간 계산
+  const defaultRecommendedType = useMemo<"go-school" | "go-home">(() => {
+    if (activeTimetable && activeTimetable.events) {
+      const todayClasses = activeTimetable.events.filter(
+        (cls) => cls.day === todayDayOfWeek,
+      );
+
+      if (todayClasses.length > 0) {
+        // 마지막 수업 찾기
+        const lastClass = todayClasses.reduce((prev, curr) =>
+          curr.endTime > prev.endTime ? curr : prev,
+        );
+        const lastClassStartMins = Math.round(lastClass.startTime * 60);
+
+        // 마지막 수업 시작 15분 전부터는 하교 버스를 우선 추천
+        if (currentMinutes >= lastClassStartMins - 15) {
+          return "go-home";
+        }
+        return "go-school";
+      }
+    }
+
+    // 시간표가 없거나 비로그인 시 시계 기준 (14시 이전 등교, 14시 이후 하교)
+    return now.getHours() < 14 ? "go-school" : "go-home";
+  }, [activeTimetable, todayDayOfWeek, currentMinutes, now]);
+
+  const [busDirection, setBusDirection] = useState<"go-school" | "go-home">(
+    defaultRecommendedType,
+  );
+
+  useEffect(() => {
+    setBusDirection(defaultRecommendedType);
+  }, [defaultRecommendedType]);
+
+  const {
+    tabs: dynamicTabs,
+    stops: dynamicStops,
+    isLoading: isRoutesLoading,
+  } = useDynamicBusRoutes(busDirection);
 
   // 대표 정류장 정보 구성
   const primaryStop = useMemo(() => {
@@ -142,17 +219,33 @@ export default function DailyBriefBusCard() {
   return (
     <SectionWrapper>
       <ContextIntro>
-        {currentType === "go-school"
+        {busDirection === "go-school"
           ? "등교 버스 도착 정보를 확인해 보세요."
           : "하교 버스 도착 정보를 확인해 보세요."}
       </ContextIntro>
       <CardContainer onClick={() => navigate(ROUTES.BUS.ROOT)}>
         <CardHeader>
-          <CardTitle>
-            {primaryStop?.stopName
-              ? `${primaryStop.stopName} 버스`
-              : "실시간 버스 도착 정보"}
-          </CardTitle>
+          <HeaderLeft>
+            <CardTitle>
+              {primaryStop?.stopName
+                ? `${primaryStop.stopName} 버스`
+                : "실시간 버스"}
+            </CardTitle>
+            <DirectionToggleGroup onClick={(e) => e.stopPropagation()}>
+              <DirectionButton
+                $active={busDirection === "go-school"}
+                onClick={() => setBusDirection("go-school")}
+              >
+                등교
+              </DirectionButton>
+              <DirectionButton
+                $active={busDirection === "go-home"}
+                onClick={() => setBusDirection("go-home")}
+              >
+                하교
+              </DirectionButton>
+            </DirectionToggleGroup>
+          </HeaderLeft>
           <BadgeText>실시간</BadgeText>
         </CardHeader>
 
@@ -239,12 +332,41 @@ const CardHeader = styled.div`
   justify-content: space-between;
 `;
 
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
 const CardTitle = styled.h2`
   font-size: 19px;
   font-weight: 800;
   color: #111827;
   letter-spacing: -0.4px;
   margin: 0;
+`;
+
+const DirectionToggleGroup = styled.div`
+  display: flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 12px;
+  gap: 2px;
+`;
+
+const DirectionButton = styled.button<{ $active: boolean }>`
+  border: none;
+  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
+  color: ${({ $active }) => ($active ? "#1e293b" : "#64748b")};
+  font-size: 12px;
+  font-weight: ${({ $active }) => ($active ? "700" : "500")};
+  padding: 3px 9px;
+  border-radius: 9px;
+  cursor: pointer;
+  box-shadow: ${({ $active }) =>
+    $active ? "0 1px 3px rgba(0, 0, 0, 0.08)" : "none"};
+  transition: all 0.15s ease;
 `;
 
 const BadgeText = styled.span`
