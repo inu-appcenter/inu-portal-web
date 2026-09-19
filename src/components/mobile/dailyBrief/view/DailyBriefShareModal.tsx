@@ -185,7 +185,7 @@ export default function DailyBriefShareModal({
       );
       ctx.font = "500 28px Pretendard, sans-serif";
       ctx.fillText(
-        "학술정보관에서 독서를 하거나 여유로운 하루를 즐겨보세요!",
+        "학산도서관에서 독서를 하거나 여유로운 하루를 즐겨보세요!",
         130,
         870,
       );

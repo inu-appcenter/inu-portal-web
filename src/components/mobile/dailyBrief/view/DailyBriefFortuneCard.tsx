@@ -144,7 +144,7 @@ export default function DailyBriefFortuneCard() {
       return {
         keyword: "여유로운 꿀공강 ☕",
         message:
-          "오늘은 수업이 없는 자유로운 날이에요! 학술정보관에서 독서를 하거나 밀린 과제를 여유롭게 끝내보세요.",
+          "오늘은 수업이 없는 자유로운 날이에요! 학산도서관에서 독서를 하거나 밀린 과제를 여유롭게 끝내보세요.",
         luckyItem: "노트북 & 좋아하는 카페 음악",
       };
     }
@@ -154,7 +154,7 @@ export default function DailyBriefFortuneCard() {
       {
         keyword: "도서관 집중 모드 📚",
         message:
-          "오늘은 학술정보관 열람실에서 집중력이 높아지는 날이에요. 미뤄둔 과제나 독서를 차분히 진행해 보세요.",
+          "오늘은 학산도서관 열람실에서 집중력이 높아지는 날이에요. 미뤄둔 과제나 독서를 차분히 진행해 보세요.",
         luckyItem: "텀블러 & 파란색 볼펜",
       },
       {

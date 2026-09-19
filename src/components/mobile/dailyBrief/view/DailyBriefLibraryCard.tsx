@@ -79,16 +79,16 @@ export default function DailyBriefLibraryCard() {
     <SectionWrapper>
       <ContextIntro>
         {isLoading
-          ? "학술정보관 좌석 현황을 불러오고 있어요."
+          ? "학산도서관 좌석 현황을 불러오고 있어요."
           : totalAvailable > 0
-            ? `학술정보관에 지금 ${totalAvailable}석의 여유 좌석이 있어요.`
-            : "학술정보관 열람실 실시간 좌석을 확인해 보세요."}
+            ? `학산도서관에 지금 ${totalAvailable}석의 여유 좌석이 있어요.`
+            : "학산도서관 열람실 실시간 좌석을 확인해 보세요."}
       </ContextIntro>
       <CardContainer onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
         <CardHeader>
           <HeaderLeft>
             <BookIconCircle>📖</BookIconCircle>
-            <CardTitle>학술정보관 열람실</CardTitle>
+            <CardTitle>학산도서관 열람실</CardTitle>
           </HeaderLeft>
           <HeaderRightBadge>
             <span>좌석 예약</span>

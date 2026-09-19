@@ -46,17 +46,17 @@ export default function DailyBriefLmsCard() {
     <SectionWrapper>
       <ContextIntro>
         {urgentList.length > 0
-          ? `마감 임박한 e-Class 과제가 ${urgentList.length}개 있어요.`
-          : "e-Class 과제 및 동영상 출석을 확인해 보세요."}
+          ? `마감 임박한 이러닝 과제가 ${urgentList.length}개 있어요.`
+          : "이러닝 과제 및 동영상 출석을 확인해 보세요."}
       </ContextIntro>
       <CardContainer onClick={() => handleOpenLms()}>
         <CardHeader>
           <HeaderLeft>
             <LmsIconCircle>📝</LmsIconCircle>
-            <CardTitle>e-Class 과제 알림</CardTitle>
+            <CardTitle>이러닝 과제 알림</CardTitle>
           </HeaderLeft>
           <HeaderRightBadge>
-            <span>e-Class 열기</span>
+            <span>이러닝 열기</span>
             <Icon name="link-external" size={13} color="#2563EB" />
           </HeaderRightBadge>
         </CardHeader>
@@ -65,7 +65,7 @@ export default function DailyBriefLmsCard() {
           {isLoading ? (
             <LoadingContainer>
               <LoadingPulse />
-              <LoadingText>e-Class 과제 확인 중...</LoadingText>
+              <LoadingText>이러닝 과제 확인 중...</LoadingText>
             </LoadingContainer>
           ) : urgentList.length === 0 ? (
             <EmptyBox>

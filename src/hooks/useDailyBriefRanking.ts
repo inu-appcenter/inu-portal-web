@@ -41,7 +41,7 @@ export const DAILY_BRIEF_CARD_METAS: Record<DailyBriefCardType, DailyBriefCardMe
   },
   library: {
     type: "library",
-    name: "학술정보관 좌석 현황",
+    name: "학산도서관 좌석 현황",
     description: "실시간 일반열람실 잔여석 및 혼잡도 안내",
     icon: "book",
   },
@@ -71,7 +71,7 @@ export const DAILY_BRIEF_CARD_METAS: Record<DailyBriefCardType, DailyBriefCardMe
   },
   lms: {
     type: "lms",
-    name: "e-Class 과제 마감",
+    name: "이러닝 과제 마감",
     description: "마감 임박 과제 및 학습 동영상 리마인드",
     icon: "check-circle",
   },

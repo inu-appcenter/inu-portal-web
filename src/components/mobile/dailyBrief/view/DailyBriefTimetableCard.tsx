@@ -217,7 +217,7 @@ export default function DailyBriefTimetableCard() {
             </BreakHeaderRow>
             <BreakDescription>
               {smartBreakInfo.isCurrentlyInBreak
-                ? `다음 ${smartBreakInfo.nextClassName} 수업까지 여유가 있어요. 학술정보관이나 카페에서 알차게 보내보세요!`
+                ? `다음 ${smartBreakInfo.nextClassName} 수업까지 여유가 있어요. 학산도서관이나 카페에서 알차게 보내보세요!`
                 : `오늘 ${smartBreakInfo.prevClassName} 수업 후 ${formatDuration(smartBreakInfo.durationMinutes)} 공강이 예정되어 있어요.`}
             </BreakDescription>
             <BreakActionChips>
