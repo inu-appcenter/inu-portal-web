@@ -97,10 +97,12 @@ const MobileAlertPage = () => {
       }
     } else if (alert.type === "FRIEND") {
       navigate(ROUTES.FRIEND.LIST);
-    } else if (alert.type === "DAILY_BRIEF_TIMETABLE") {
-      navigate(ROUTES.TIMETABLE.ROOT);
-    } else if (alert.type === "DAILY_BRIEF_SCHEDULE") {
-      navigate(ROUTES.BOARD.CALENDAR);
+    } else if (
+      alert.type === "DAILY_BRIEF_TIMETABLE" ||
+      alert.type === "DAILY_BRIEF_SCHEDULE" ||
+      alert.type === "DAILY_BRIEF"
+    ) {
+      navigate(ROUTES.DAILY_BRIEF.ROOT);
     }
   };
 

@@ -126,6 +126,12 @@ export const ROUTES = {
     SHUTTLE_ROUTE: "/bus/shuttle",
   },
 
+  // 데일리 브리프
+  DAILY_BRIEF: {
+    ROOT: "/daily-brief",
+    SETTING: "/mypage/notification/daily-brief",
+  },
+
   // 채팅
   CHAT: {
     ROOT: "/chat",

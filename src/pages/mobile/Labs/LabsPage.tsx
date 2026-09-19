@@ -15,7 +15,7 @@ import useUserStore from "@/stores/useUserStore";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
-import { BookOpen, GraduationCap, Radar, Sparkles } from "lucide-react";
+import { BookOpen, GraduationCap, Radar, Sparkles, Sunrise } from "lucide-react";
 import React from "react";
 
 interface AppItemProps {
@@ -103,6 +103,15 @@ const LabsPage = () => {
           <TitleContentArea title={"캠퍼스 스마트 서비스"}>
             <Box>
               <div style={{ width: "100%" }}>
+                <AppItem
+                  iconElement={<Sunrise size={22} color="#ea580c" />}
+                  title={"데일리 브리프 (Daily Brief)"}
+                  description={
+                    "갤럭시 Now Brief 스타일! 오늘의 시간표·날씨·학식·버스·공지를 한눈에 요약 브리핑"
+                  }
+                  onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}
+                />
+                <Divider margin="0" />
                 <AppItem
                   iconElement={<Sparkles size={22} color="#2563eb" />}
                   title={"캠퍼스 맞춤 루틴+"}
