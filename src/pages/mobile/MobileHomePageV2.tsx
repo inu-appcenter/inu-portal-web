@@ -101,7 +101,7 @@ export default function MobileHomePageV2() {
           >
             <GreetingTextGroup>
               <GreetingMainTitle>{dailyBrief.title}</GreetingMainTitle>
-              <GreetingSubTitle>{dailyBrief.subtitle}</GreetingSubTitle>
+              <GreetingSubTitle>{dailyBrief.entrySubtitle}</GreetingSubTitle>
             </GreetingTextGroup>
             <GreetingChevron>
               <Icon name="chevron-right" size={20} color="#9CA3AF" />
@@ -269,7 +269,9 @@ export default function MobileHomePageV2() {
           </OrgContainer>
 
           <FooterNote>
-            <span>© {new Date().getFullYear()} INTIP. All rights reserved.</span>
+            <span>
+              © {new Date().getFullYear()} INTIP. All rights reserved.
+            </span>
             <span>본 서비스는 인천대학교 공식 서비스가 아닙니다.</span>
           </FooterNote>
 

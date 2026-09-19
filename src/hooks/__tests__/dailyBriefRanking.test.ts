@@ -50,6 +50,7 @@ describe("buildAutoDailyBrief", () => {
 
     expect(result.cards).toEqual(["weather", "lms", "timetable", "bus"]);
     expect(result.title).toBe("오늘은 우산을 챙겨주세요");
+    expect(result.entrySubtitle).toMatch(/^여기를 눌러/);
   });
 
   it("점심시간의 긴 현재 공강에는 학식과 도서관만 관련 카드로 올린다", () => {
@@ -61,6 +62,7 @@ describe("buildAutoDailyBrief", () => {
     expect(result.cards).toEqual(["cafeteria", "library", "timetable"]);
     expect(result.title).toBe("지금은 점심 먹기 좋은 시간이에요");
     expect(result.subtitle).toContain("90분");
+    expect(result.entrySubtitle).toMatch(/^여기를 눌러/);
   });
 
   it("마지막 수업 직후에는 하교와 임박 과제를 우선한다", () => {
@@ -72,12 +74,14 @@ describe("buildAutoDailyBrief", () => {
 
     expect(result.cards).toEqual(["bus", "lms", "library"]);
     expect(result.title).toBe("오늘 수업이 모두 끝났어요");
+    expect(result.entrySubtitle).toMatch(/^여기를 눌러/);
   });
 
   it("특별한 상황이 없으면 모든 카드를 채우지 않고 공통 카드 하나만 보여준다", () => {
     const result = build(new Date("2026-09-20T15:00:00"), []);
 
     expect(result.cards).toEqual(["notice"]);
+    expect(result.entrySubtitle).toMatch(/^여기를 눌러/);
   });
 
   it("포커스로 진입한 카드는 숨김 설정과 관계없이 첫 번째에 둔다", () => {
