@@ -38,17 +38,6 @@ export default function DailyBriefInfoModal({
           </FeatureItem>
 
           <FeatureItem>
-            <FeatureIcon>🔊</FeatureIcon>
-            <FeatureTextCol>
-              <FeatureName>음성 브리핑 (Voice TTS)</FeatureName>
-              <FeatureDesc>
-                우측 상단의 오디오 버튼을 누르면 등교 준비 중에도 음성으로 오늘의
-                브리핑을 들으실 수 있습니다.
-              </FeatureDesc>
-            </FeatureTextCol>
-          </FeatureItem>
-
-          <FeatureItem>
             <FeatureIcon>⚙️</FeatureIcon>
             <FeatureTextCol>
               <FeatureName>브리핑 알림 설정</FeatureName>

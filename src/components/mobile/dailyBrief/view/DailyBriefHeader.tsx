@@ -1,18 +1,12 @@
 import { useMemo } from "react";
-import styled, { keyframes, css } from "styled-components";
+import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 
 interface DailyBriefHeaderProps {
-  isSpeaking: boolean;
-  onToggleSpeech: () => void;
   onBack?: () => void;
 }
 
-export default function DailyBriefHeader({
-  isSpeaking,
-  onToggleSpeech,
-  onBack,
-}: DailyBriefHeaderProps) {
+export default function DailyBriefHeader({ onBack }: DailyBriefHeaderProps) {
   const currentHour = new Date().getHours();
 
   const { title, subtitle } = useMemo(() => {
@@ -49,23 +43,6 @@ export default function DailyBriefHeader({
         </TopNavRow>
       )}
 
-      <TopActionRow>
-        <div style={{ flex: 1 }} />
-        <AudioButton
-          $active={isSpeaking}
-          onClick={onToggleSpeech}
-          aria-label={isSpeaking ? "브리핑 음성 멈추기" : "브리핑 음성 듣기"}
-        >
-          <WaveformContainer $active={isSpeaking}>
-            <WaveBar $delay="0ms" $active={isSpeaking} />
-            <WaveBar $delay="150ms" $active={isSpeaking} />
-            <WaveBar $delay="300ms" $active={isSpeaking} />
-            <WaveBar $delay="100ms" $active={isSpeaking} />
-            <WaveBar $delay="250ms" $active={isSpeaking} />
-          </WaveformContainer>
-        </AudioButton>
-      </TopActionRow>
-
       <TitleSection>
         <MainGreeting>{title}</MainGreeting>
         <SubGreeting>{subtitle}</SubGreeting>
@@ -83,7 +60,7 @@ const HeaderContainer = styled.header`
 const TopNavRow = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 `;
 
 const BackButton = styled.button`
@@ -101,76 +78,6 @@ const BackButton = styled.button`
   &:active {
     background-color: rgba(0, 0, 0, 0.05);
   }
-`;
-
-const TopActionRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 24px;
-`;
-
-const AudioButton = styled.button<{ $active: boolean }>`
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
-  background: ${({ $active }) =>
-    $active ? "rgba(94, 146, 240, 0.95)" : "rgba(255, 255, 255, 0.85)"};
-  border: 1px solid
-    ${({ $active }) =>
-      $active ? "rgba(94, 146, 240, 0.3)" : "rgba(255, 255, 255, 0.6)"};
-  box-shadow: 0 4px 16px
-    ${({ $active }) =>
-      $active ? "rgba(94, 146, 240, 0.35)" : "rgba(0, 0, 0, 0.06)"};
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    transform: scale(1.05);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
-const WaveformContainer = styled.div<{ $active: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 20px;
-`;
-
-const waveAnimation = keyframes`
-  0%, 100% {
-    height: 6px;
-  }
-  50% {
-    height: 18px;
-  }
-`;
-
-const WaveBar = styled.div<{ $delay: string; $active: boolean }>`
-  width: 3px;
-  height: ${({ $active }) => ($active ? "14px" : "12px")};
-  background-color: ${({ $active }) => ($active ? "#FFFFFF" : "#1E232A")};
-  border-radius: 2px;
-  transition:
-    background-color 0.2s ease,
-    height 0.2s ease;
-
-  ${({ $active, $delay }) =>
-    $active &&
-    css`
-      animation: ${waveAnimation} 1s ease-in-out infinite;
-      animation-delay: ${$delay};
-    `}
 `;
 
 const TitleSection = styled.div`

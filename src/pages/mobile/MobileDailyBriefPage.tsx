@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
-import { trackPageView, trackEvent } from "@/utils/mixpanel";
+import { trackPageView } from "@/utils/mixpanel";
 import DailyBriefHeader from "@/components/mobile/dailyBrief/view/DailyBriefHeader";
 import DailyBriefTimetableCard from "@/components/mobile/dailyBrief/view/DailyBriefTimetableCard";
 import DailyBriefWeatherCard from "@/components/mobile/dailyBrief/view/DailyBriefWeatherCard";
@@ -16,7 +16,6 @@ import Icon from "@/components/common/Icon";
 
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
 
   useHeader({
@@ -26,62 +25,12 @@ export default function MobileDailyBriefPage() {
 
   useEffect(() => {
     trackPageView("Daily Brief 메인");
-    return () => {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    };
   }, []);
-
-  const handleToggleSpeech = useCallback(() => {
-    if (!window.speechSynthesis) {
-      alert("현재 브라우저에서는 음성 읽기(TTS) 기능을 지원하지 않습니다.");
-      return;
-    }
-
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      trackEvent("[Daily Brief] 음성 브리핑 정지");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const hour = new Date().getHours();
-    let timeGreeting = "좋은 아침입니다.";
-    if (hour >= 12 && hour < 18) timeGreeting = "활기찬 오후입니다.";
-    else if (hour >= 18) timeGreeting = "편안한 저녁입니다.";
-
-    const briefingText = `${timeGreeting} 오늘의 인천대학교 데일리 브리프를 시작하겠습니다. 오늘의 송도 캠퍼스 날씨와 강의 일정, 학식 메뉴, 실시간 버스 정보를 확인하시고 좋은 하루 보내세요.`;
-
-    const utterance = new SpeechSynthesisUtterance(briefingText);
-    utterance.lang = "ko-KR";
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      trackEvent("[Daily Brief] 전체 음성 브리핑 시작");
-    };
-    utterance.onend = () => {
-      setIsSpeaking(false);
-    };
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
-  }, [isSpeaking]);
 
   return (
     <PageBackground>
       <ContentContainer>
-        <DailyBriefHeader
-          isSpeaking={isSpeaking}
-          onToggleSpeech={handleToggleSpeech}
-          onBack={() => navigate(-1)}
-        />
+        <DailyBriefHeader onBack={() => navigate(-1)} />
 
         <CardsStack>
           <DailyBriefTimetableCard />
