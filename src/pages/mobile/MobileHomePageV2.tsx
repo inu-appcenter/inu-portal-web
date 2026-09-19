@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
@@ -65,11 +66,37 @@ const SOCIAL_LINKS = [
 }[];
 
 export default function MobileHomePageV2() {
+  const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
     "school",
   );
+
+  const currentHour = new Date().getHours();
+  const { greetingTitle, greetingSubtitle } = useMemo(() => {
+    if (currentHour >= 5 && currentHour < 12) {
+      return {
+        greetingTitle: "상쾌한 아침이에요",
+        greetingSubtitle: "좋은 느낌으로 오늘을 가득 채워 보세요.",
+      };
+    } else if (currentHour >= 12 && currentHour < 18) {
+      return {
+        greetingTitle: "활기찬 오후예요",
+        greetingSubtitle: "남은 하루도 기분 좋은 일들로 가득하길 바라요.",
+      };
+    } else if (currentHour >= 18 && currentHour < 22) {
+      return {
+        greetingTitle: "편안한 저녁이에요",
+        greetingSubtitle: "오늘 하루도 정말 수고 많으셨어요.",
+      };
+    } else {
+      return {
+        greetingTitle: "고요한 밤이에요",
+        greetingSubtitle: "편안한 휴식과 함께 내일을 준비해 보세요.",
+      };
+    }
+  }, [currentHour]);
 
   useHeader({
     showAlarm: true,
@@ -88,6 +115,21 @@ export default function MobileHomePageV2() {
     <V2Wrapper>
       <UpperSection>
         <SectionInner>
+          <DailyBriefGreetingEntry
+            onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}
+            role="button"
+            tabIndex={0}
+            aria-label="Daily Brief 바로가기"
+          >
+            <GreetingTextGroup>
+              <GreetingMainTitle>{greetingTitle}</GreetingMainTitle>
+              <GreetingSubTitle>{greetingSubtitle}</GreetingSubTitle>
+            </GreetingTextGroup>
+            <GreetingChevron>
+              <Icon name="chevron-right" size={20} color="#9CA3AF" />
+            </GreetingChevron>
+          </DailyBriefGreetingEntry>
+
           <TodayTimetableWidget />
 
           <GridWidgets>
@@ -473,4 +515,50 @@ const FooterNote = styled.div`
 const BottomScrollSpacer = styled.div`
   width: 100%;
   height: calc(var(--nav-height, 0px) + 48px);
+`;
+
+const DailyBriefGreetingEntry = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 16px 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.75;
+  }
+`;
+
+const GreetingTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const GreetingMainTitle = styled.h2`
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #111827;
+  margin: 0;
+  line-height: 1.25;
+`;
+
+const GreetingSubTitle = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.4;
+`;
+
+const GreetingChevron = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 12px;
 `;
