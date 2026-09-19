@@ -10,6 +10,7 @@ import {
   Calendar,
   GraduationCap,
   Bell,
+  Building2,
 } from "lucide-react";
 import {
   getAgentReminders,
@@ -186,15 +187,28 @@ export default function MobileAgentReminderSetting() {
   }, [fetchData]);
 
   // System Routine Toggles
-  const handleToggleTimetable = async (e: React.MouseEvent) => {
+  const handleToggleTimetableBrief = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const next = !dailyBriefSettings.timetableAlertEnabled;
-    setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: next }));
+    const next = !dailyBriefSettings.timetableDailyBriefEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, timetableDailyBriefEnabled: next }));
     try {
-      await updateDailyBriefSettings({ timetableAlertEnabled: next });
-      trackEvent("[Daily Brief] 시스템 시간표 알림 토글", { enabled: next });
+      await updateDailyBriefSettings({ timetableDailyBriefEnabled: next });
+      trackEvent("[Daily Brief] 시스템 당일 강의 브리핑 토글", { enabled: next });
     } catch {
-      setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: !next }));
+      setDailyBriefSettings((prev) => ({ ...prev, timetableDailyBriefEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleTimetablePre = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !dailyBriefSettings.timetablePreAlertEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ timetablePreAlertEnabled: next });
+      trackEvent("[Daily Brief] 시스템 강의 시작 전 알림 토글", { enabled: next });
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
       alert("설정을 변경하지 못했어요.");
     }
   };
@@ -391,35 +405,63 @@ export default function MobileAgentReminderSetting() {
         </SectionTitleRow>
 
         <GroupCard>
-          {/* 오늘의 강의 & 시간표 알림 */}
-          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable"))}>
+          {/* 1. 당일 강의 & 시간표 브리핑 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
             <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#a855f7">
               <Calendar size={20} color="#ffffff" />
             </IconCircle>
 
             <TextContentWrapper>
-              <RowMainTitle $disabled={!dailyBriefSettings.timetableAlertEnabled}>
-                오늘의 강의 & 시간표 알림
+              <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
+                당일 강의 & 시간표 브리핑
               </RowMainTitle>
               <RowSubTitle>
-                {dailyBriefSettings.timetableAlertEnabled
-                  ? `아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑 • 강의 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
+                {dailyBriefSettings.timetableDailyBriefEnabled
+                  ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑`
                   : "알림 꺼짐"}
               </RowSubTitle>
             </TextContentWrapper>
 
             <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
               <Switch
-                checked={dailyBriefSettings.timetableAlertEnabled}
-                onCheckedChange={() => handleToggleTimetable({ stopPropagation: () => {} } as any)}
+                checked={dailyBriefSettings.timetableDailyBriefEnabled}
+                onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
               />
             </RowRightAction>
           </GroupRow>
 
           <CardDivider />
 
-          {/* 학사일정 알림 */}
+          {/* 2. 강의 시작 전 알림 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-pre"))}>
+            <Ripple color="rgba(0, 0, 0, 0.05)" />
+            <IconCircle $bgColor="#8b5cf6">
+              <Clock size={20} color="#ffffff" />
+            </IconCircle>
+
+            <TextContentWrapper>
+              <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
+                강의 시작 전 알림
+              </RowMainTitle>
+              <RowSubTitle>
+                {dailyBriefSettings.timetablePreAlertEnabled
+                  ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
+                  : "알림 꺼짐"}
+              </RowSubTitle>
+            </TextContentWrapper>
+
+            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={dailyBriefSettings.timetablePreAlertEnabled}
+                onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
+              />
+            </RowRightAction>
+          </GroupRow>
+
+          <CardDivider />
+
+          {/* 3. 학사일정 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
             <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#3b82f6">
@@ -447,7 +489,7 @@ export default function MobileAgentReminderSetting() {
 
           <CardDivider />
 
-          {/* 학교 공지 알림 */}
+          {/* 4. 학교 공지 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
             <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#5c9cf8">
@@ -460,7 +502,7 @@ export default function MobileAgentReminderSetting() {
               </RowMainTitle>
               <RowSubTitle>
                 {isSchoolNoticeEnabled
-                  ? `새 공지 및 관심 키워드 알림${schoolKeywordsCount > 0 ? ` (${schoolKeywordsCount}개 등록)` : ""}`
+                  ? `새 공지 실시간 알림${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
                   : "알림 꺼짐"}
               </RowSubTitle>
             </TextContentWrapper>
@@ -475,11 +517,11 @@ export default function MobileAgentReminderSetting() {
 
           <CardDivider />
 
-          {/* 학과 공지 알림 */}
+          {/* 5. 학과 공지 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
             <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#ff7a00">
-              <Bell size={20} color="#ffffff" />
+              <Building2 size={20} color="#ffffff" />
             </IconCircle>
 
             <TextContentWrapper>
@@ -488,7 +530,7 @@ export default function MobileAgentReminderSetting() {
               </RowMainTitle>
               <RowSubTitle>
                 {isDeptNoticeEnabled
-                  ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` (${deptKeywordsCount}개 키워드)` : ""}`
+                  ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` • 키워드 ${deptKeywordsCount}개` : ""}`
                   : "알림 꺼짐"}
               </RowSubTitle>
             </TextContentWrapper>
