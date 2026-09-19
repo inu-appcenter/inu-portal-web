@@ -130,6 +130,8 @@ export const ROUTES = {
   DAILY_BRIEF: {
     ROOT: "/daily-brief",
     SETTING: "/mypage/notification/daily-brief",
+    ROUTINE_DETAIL: (id: string | number) => `/daily-brief/routine/${id}`,
+    ROUTINE_DETAIL_PATTERN: "/daily-brief/routine/:id",
   },
 
   // 채팅

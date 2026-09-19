@@ -93,6 +93,7 @@ import MobileDailyBriefPage from "@/pages/mobile/MobileDailyBriefPage";
 import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
 import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
+import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -301,6 +302,10 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
           { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
           { path: ROUTES.DAILY_BRIEF.ROOT, element: <MobileDailyBriefPage /> },
+          {
+            path: ROUTES.DAILY_BRIEF.ROUTINE_DETAIL_PATTERN,
+            element: <MobileRoutineDetailPage />,
+          },
           { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
 
           // 버스 상세

@@ -152,7 +152,6 @@ export default function MobileDailyBriefSettingPage() {
   const [hasSwiped, setHasSwiped] = useState(() => {
     return localStorage.getItem("has_swiped_daily_brief") === "true";
   });
-
   const currentIndex = useMemo(() => {
     const idx = DAILY_BRIEF_TABS.findIndex((t) => t.value === currentTab);
     return idx === -1 ? 0 : idx;
@@ -162,7 +161,40 @@ export default function MobileDailyBriefSettingPage() {
     if (swiperRef && swiperRef.activeIndex !== currentIndex) {
       swiperRef.slideTo(currentIndex);
     }
+    swiperRef?.update();
+    swiperRef?.updateAutoHeight();
   }, [currentIndex, swiperRef]);
+
+  // 스위퍼 높이 자동 동기화 및 탭 전환/데이터 변경 대응
+  useEffect(() => {
+    if (!swiperRef) return;
+
+    const timers = [50, 150, 300, 600, 1000].map((delay) =>
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, delay),
+    );
+
+    let ro: ResizeObserver | null = null;
+    if (swiperRef.el && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        window.requestAnimationFrame(() => {
+          swiperRef.update();
+          swiperRef.updateAutoHeight();
+        });
+      });
+      ro.observe(swiperRef.el);
+      swiperRef.slides?.forEach((slide) => {
+        ro?.observe(slide);
+      });
+    }
+
+    return () => {
+      timers.forEach((t) => clearTimeout(t));
+      if (ro) ro.disconnect();
+    };
+  }, [currentTab, swiperRef]);
 
   const handleSlideChange = (s: SwiperClass) => {
     const nextTab = DAILY_BRIEF_TABS[s.activeIndex]?.value;
@@ -1664,7 +1696,7 @@ const ContentContainer = styled.div`
 const SlideInnerWrapper = styled.div`
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   gap: 24px;

@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
+import { getAgentReminders } from "@/apis/agentReminder";
+import type { AgentReminder } from "@/types/agentReminder";
 
 export type DailyBriefCardType =
   | "timetable"
@@ -164,6 +166,7 @@ export function useDailyBriefRanking(): DailyBriefCardType[] {
   const [mode, setMode] = useState<"auto" | "custom">(getStoredBriefMode);
   const [customOrder, setCustomOrder] = useState<DailyBriefCardType[]>(getStoredBriefOrder);
   const [visibility, setVisibility] = useState<Record<DailyBriefCardType, boolean>>(getStoredBriefVisibility);
+  const [reminders, setReminders] = useState<AgentReminder[]>([]);
 
   // 로컬 스토리지 변경 이벤트 동기화
   useEffect(() => {
@@ -181,6 +184,22 @@ export function useDailyBriefRanking(): DailyBriefCardType[] {
     };
   }, []);
 
+  // 맞춤 루틴 조회
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let isMounted = true;
+    getAgentReminders()
+      .then((res) => {
+        if (isMounted && res.data) {
+          setReminders(res.data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoggedIn]);
+
   useTimeTables(undefined, undefined, {
     enabled: isLoggedIn,
   });
@@ -189,6 +208,66 @@ export function useDailyBriefRanking(): DailyBriefCardType[] {
   const currentHour = now.getHours();
   const todayDayOfWeek = (now.getDay() + 6) % 7; // 0: 월 ~ 6: 일
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // 현재 시간대 및 오늘 요일에 활성화된 맞춤 루틴 카드 추출
+  const activeRoutineCards = useMemo<DailyBriefCardType[]>(() => {
+    const todayIsWeekend = todayDayOfWeek === 5 || todayDayOfWeek === 6;
+    const cardsToBoost: DailyBriefCardType[] = [];
+    const todayKey = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"][todayDayOfWeek];
+
+    for (const r of reminders) {
+      if (!r.enabled) continue;
+
+      let isMatched = false;
+
+      // 1. Check multi-schedules if present
+      if (r.schedulesJson) {
+        try {
+          const parsedSchedules = JSON.parse(r.schedulesJson);
+          if (Array.isArray(parsedSchedules) && parsedSchedules.length > 0) {
+            for (const s of parsedSchedules) {
+              if (s.days && Array.isArray(s.days) && !s.days.includes(todayKey)) {
+                continue;
+              }
+              const [sHour, sMin] = (s.time || "08:00").split(":").map(Number);
+              const reminderMins = sHour * 60 + sMin;
+              const diff = Math.abs(currentMinutes - reminderMins);
+              if (diff <= 60) {
+                isMatched = true;
+                break;
+              }
+            }
+          }
+        } catch (ignored) {}
+      }
+
+      // 2. Legacy fallback
+      if (!isMatched) {
+        if (r.repeatType === "WEEKDAYS" && todayIsWeekend) continue;
+        if (r.repeatType === "WEEKENDS" && !todayIsWeekend) continue;
+
+        const [rHour, rMin] = (r.targetTime || "08:00").split(":").map(Number);
+        const reminderMins = rHour * 60 + rMin;
+        const diff = Math.abs(currentMinutes - reminderMins);
+        if (diff <= 60) {
+          isMatched = true;
+        }
+      }
+
+      // 루틴 설정 시간 전후 60분 이내일 때 최우선 부스팅
+      if (isMatched) {
+        const tools = (r.targetTool || "").split(",").map((s) => s.trim().toUpperCase());
+        for (const tool of tools) {
+          if (tool.includes("CAFETERIA") && !cardsToBoost.includes("cafeteria")) cardsToBoost.push("cafeteria");
+          if (tool.includes("BUS") && !cardsToBoost.includes("bus")) cardsToBoost.push("bus");
+          if (tool.includes("WEATHER") && !cardsToBoost.includes("weather")) cardsToBoost.push("weather");
+          if (tool.includes("TIMETABLE") && !cardsToBoost.includes("timetable")) cardsToBoost.push("timetable");
+          if (tool.includes("NOTICE") && !cardsToBoost.includes("notice")) cardsToBoost.push("notice");
+        }
+      }
+    }
+    return cardsToBoost;
+  }, [reminders, todayDayOfWeek, currentMinutes]);
 
   // 대표 시간표 찾기
   const representativeTimetableId = useMemo(() => {
@@ -349,6 +428,13 @@ export function useDailyBriefRanking(): DailyBriefCardType[] {
       ];
     }
 
+    // 맞춤 루틴 활성화 시간대 카드 최상단 부스팅 (자동 모드)
+    if (activeRoutineCards.length > 0) {
+      const routineSet = new Set(activeRoutineCards);
+      const remaining = baseOrder.filter((c) => !routineSet.has(c));
+      baseOrder = [...activeRoutineCards, ...remaining];
+    }
+
     // 사용자 가시성 필터링 (자동 모드에서도 숨긴 카드는 제외)
     let visibleOrder = baseOrder.filter((card) => visibility[card] !== false);
 
@@ -369,6 +455,7 @@ export function useDailyBriefRanking(): DailyBriefCardType[] {
     remainingClasses.length,
     hasLongBreak,
     focusParam,
+    activeRoutineCards,
   ]);
 
   return rankedCards;

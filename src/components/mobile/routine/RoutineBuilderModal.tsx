@@ -1,9 +1,20 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import CapsuleButton from "@/components/common/CapsuleButton";
-import { X, Sparkles, Check, Bell, Clock, Layers } from "lucide-react";
+import {
+  Sun,
+  Bus,
+  Utensils,
+  Calendar,
+  Bell,
+  Check,
+  Trash2,
+} from "lucide-react";
 import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentReminder";
-import { createAgentReminder, updateAgentReminder } from "@/apis/agentReminder";
+import {
+  createAgentReminder,
+  updateAgentReminder,
+  deleteAgentReminder,
+} from "@/apis/agentReminder";
 import { trackEvent } from "@/utils/mixpanel";
 
 interface RoutineBuilderModalProps {
@@ -24,37 +35,37 @@ const AVAILABLE_ACTIONS = [
   {
     id: "WEATHER",
     title: "캠퍼스 날씨",
-    emoji: "☀️",
-    description: "송도 캠퍼스 기온, 미세먼지 및 우산 챙김 알림",
-    defaultPreview: "☀️ 현재 송도 18℃ 맑음 (우산 안 챙겨도 돼요)",
+    description: "송도 캠퍼스 기온, 미세먼지 및 우산 챙김을 안내해요",
+    icon: <Sun size={20} color="#ffffff" />,
+    iconBg: "#5c9cf8",
   },
   {
     id: "BUS",
     title: "실시간 버스",
-    emoji: "🚌",
-    description: "지정한 정류소의 실시간 버스 도착 예정 시간",
-    defaultPreview: "🚌 [인천대입구역 1번출구] 8번(3분 뒤), 순환41번(6분 뒤)",
+    description: "지정한 정류소의 실시간 버스 도착 시간을 안내해요",
+    icon: <Bus size={20} color="#ffffff" />,
+    iconBg: "#ff7a00",
   },
   {
     id: "CAFETERIA",
     title: "학식 식단",
-    emoji: "🍱",
-    description: "선택한 교내 식당의 당일 식사 메뉴",
-    defaultPreview: "🍱 [학생식당 중식] 제육볶음, 된장찌개, 계란말이",
+    description: "선택한 교내 식당의 당일 식사 메뉴를 안내해요",
+    icon: <Utensils size={20} color="#ffffff" />,
+    iconBg: "#22c55e",
   },
   {
     id: "TIMETABLE",
     title: "시간표 / 강의실",
-    emoji: "📅",
-    description: "오늘 첫 수업 시간 및 강의실 위치 안내",
-    defaultPreview: "📅 [오늘 첫 수업] 10:00 자료구조 (공7호관 301호)",
+    description: "오늘 첫 수업 시간과 강의실 위치를 안내해요",
+    icon: <Calendar size={20} color="#ffffff" />,
+    iconBg: "#a855f7",
   },
   {
     id: "NOTICE",
     title: "새 공지사항",
-    emoji: "📢",
-    description: "최신 학교 및 학과 주요 공지사항",
-    defaultPreview: "📢 [공지] 2026학년도 2학기 국가장학금 신청 안내",
+    description: "최신 학교 및 학과 주요 공지사항을 알려드려요",
+    icon: <Bell size={20} color="#ffffff" />,
+    iconBg: "#3b82f6",
   },
 ];
 
@@ -77,6 +88,16 @@ const BUS_STOP_OPTIONS = [
   { label: "기숙사 (식당 앞)", value: "기숙사" },
 ];
 
+const DAYS = [
+  { key: "SUN", label: "일" },
+  { key: "MON", label: "월" },
+  { key: "TUE", label: "화" },
+  { key: "WED", label: "수" },
+  { key: "THU", label: "목" },
+  { key: "FRI", label: "금" },
+  { key: "SAT", label: "토" },
+];
+
 export default function RoutineBuilderModal({
   isOpen,
   onClose,
@@ -85,11 +106,13 @@ export default function RoutineBuilderModal({
   presetData,
 }: RoutineBuilderModalProps) {
   const [title, setTitle] = useState("");
+  const [ampm, setAmpm] = useState<"AM" | "PM">("AM");
   const [targetHour, setTargetHour] = useState("08");
   const [targetMinute, setTargetMinute] = useState("30");
   const [repeatType, setRepeatType] = useState<AgentReminderRepeatType>("WEEKDAYS");
+  const [selectedDays, setSelectedDays] = useState<string[]>(["MON", "TUE", "WED", "THU", "FRI"]);
   const [selectedTools, setSelectedTools] = useState<string[]>(["WEATHER"]);
-  
+
   // 세부 옵션
   const [selectedCafeteria, setSelectedCafeteria] = useState("전체");
   const [selectedMealType, setSelectedMealType] = useState("AUTO");
@@ -104,10 +127,27 @@ export default function RoutineBuilderModal({
     if (initialData) {
       setTitle(initialData.title);
       const parts = (initialData.targetTime || "08:30").split(":");
-      setTargetHour(parts[0] || "08");
-      setTargetMinute(parts[1] || "30");
+      const rawHour = parseInt(parts[0] || "8", 10);
+      const rawMin = parts[1] || "30";
+
+      if (rawHour >= 12) {
+        setAmpm("PM");
+        setTargetHour(String(rawHour === 12 ? 12 : rawHour - 12).padStart(2, "0"));
+      } else {
+        setAmpm("AM");
+        setTargetHour(String(rawHour === 0 ? 12 : rawHour).padStart(2, "0"));
+      }
+      setTargetMinute(rawMin);
       setRepeatType(initialData.repeatType || "WEEKDAYS");
-      
+
+      if (initialData.repeatType === "WEEKDAYS") {
+        setSelectedDays(["MON", "TUE", "WED", "THU", "FRI"]);
+      } else if (initialData.repeatType === "EVERYDAY") {
+        setSelectedDays(["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]);
+      } else if (initialData.repeatType === "WEEKENDS") {
+        setSelectedDays(["SUN", "SAT"]);
+      }
+
       const tools = (initialData.targetTool || "")
         .split(",")
         .map((s) => s.trim())
@@ -125,10 +165,25 @@ export default function RoutineBuilderModal({
     } else if (presetData) {
       setTitle(presetData.title);
       const parts = (presetData.targetTime || "08:30").split(":");
-      setTargetHour(parts[0] || "08");
-      setTargetMinute(parts[1] || "30");
+      const rawHour = parseInt(parts[0] || "8", 10);
+      const rawMin = parts[1] || "30";
+
+      if (rawHour >= 12) {
+        setAmpm("PM");
+        setTargetHour(String(rawHour === 12 ? 12 : rawHour - 12).padStart(2, "0"));
+      } else {
+        setAmpm("AM");
+        setTargetHour(String(rawHour === 0 ? 12 : rawHour).padStart(2, "0"));
+      }
+      setTargetMinute(rawMin);
       setRepeatType(presetData.repeatType || "WEEKDAYS");
       setSelectedTools(presetData.targetTools || ["WEATHER"]);
+
+      if (presetData.repeatType === "WEEKDAYS") {
+        setSelectedDays(["MON", "TUE", "WED", "THU", "FRI"]);
+      } else if (presetData.repeatType === "EVERYDAY") {
+        setSelectedDays(["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]);
+      }
 
       if (presetData.toolParams) {
         if (presetData.toolParams.cafeteria) setSelectedCafeteria(presetData.toolParams.cafeteria);
@@ -137,15 +192,47 @@ export default function RoutineBuilderModal({
       }
     } else {
       setTitle("등교 전 맞춤 브리핑");
+      setAmpm("AM");
       setTargetHour("08");
       setTargetMinute("30");
       setRepeatType("WEEKDAYS");
+      setSelectedDays(["MON", "TUE", "WED", "THU", "FRI"]);
       setSelectedTools(["WEATHER", "BUS"]);
       setSelectedCafeteria("전체");
       setSelectedMealType("AUTO");
       setSelectedBusStop("인천대입구역 1번출구");
     }
   }, [isOpen, initialData, presetData]);
+
+  const toggleDay = (dayKey: string) => {
+    setSelectedDays((prev) => {
+      let next: string[];
+      if (prev.includes(dayKey)) {
+        if (prev.length === 1) return prev;
+        next = prev.filter((d) => d !== dayKey);
+      } else {
+        next = [...prev, dayKey];
+      }
+
+      // 동기화 repeatType
+      if (next.length === 7) {
+        setRepeatType("EVERYDAY");
+      } else if (
+        next.length === 5 &&
+        ["MON", "TUE", "WED", "THU", "FRI"].every((d) => next.includes(d))
+      ) {
+        setRepeatType("WEEKDAYS");
+      } else if (
+        next.length === 2 &&
+        ["SUN", "SAT"].every((d) => next.includes(d))
+      ) {
+        setRepeatType("WEEKENDS");
+      } else {
+        setRepeatType("WEEKDAYS");
+      }
+      return next;
+    });
+  };
 
   const toggleTool = (toolId: string) => {
     setSelectedTools((prev) => {
@@ -161,24 +248,31 @@ export default function RoutineBuilderModal({
     });
   };
 
-  // 실시간 알림 미리보기 생성
-  const previewBody = useMemo(() => {
+  // 실시간 알림 메시지 예시
+  const previewNotification = useMemo(() => {
     const lines: string[] = [];
-    selectedTools.forEach((toolId) => {
-      const act = AVAILABLE_ACTIONS.find((a) => a.id === toolId);
-      if (!act) return;
+    if (selectedTools.includes("WEATHER")) {
+      lines.push("• 송도 캠퍼스 날씨: 현재 18.7℃ 맑음 (우산 안 챙겨도 돼요)");
+    }
+    if (selectedTools.includes("BUS")) {
+      lines.push(`• [${selectedBusStop.replace("인천대입구역", "인입")}] 8번(3분 뒤), 순환41번(6분 뒤) 도착 예정`);
+    }
+    if (selectedTools.includes("CAFETERIA")) {
+      const meal = selectedMealType === "DINNER" ? "석식" : "중식";
+      lines.push(`• [${selectedCafeteria} ${meal}] 김치제육볶음, 된장찌개, 계란말이`);
+    }
+    if (selectedTools.includes("TIMETABLE")) {
+      lines.push("• 오늘 첫 수업: 10:00 운영체제 (공7호관 301호)");
+    }
+    if (selectedTools.includes("NOTICE")) {
+      lines.push("• [주요 공지] 2026학년도 2학기 국가장학금 2차 신청 안내");
+    }
 
-      if (toolId === "BUS") {
-        lines.push(`🚌 [${selectedBusStop.replace("인천대입구역", "인입")}] 8번(3분 뒤), 순환41번(6분 뒤)`);
-      } else if (toolId === "CAFETERIA") {
-        const mealName = selectedMealType === "LUNCH" ? "중식" : selectedMealType === "DINNER" ? "석식" : "중식";
-        lines.push(`🍱 [${selectedCafeteria} ${mealName}] 제육볶음, 된장찌개 외 3찬`);
-      } else {
-        lines.push(act.defaultPreview);
-      }
-    });
-    return lines.join("\n");
-  }, [selectedTools, selectedBusStop, selectedCafeteria, selectedMealType]);
+    return {
+      title: `🔔 ${title || "캠퍼스 맞춤 알림"}`,
+      body: lines.length > 0 ? lines.join("\n") : "선택한 정보가 알림으로 요약되어 발송돼요.",
+    };
+  }, [selectedTools, selectedBusStop, selectedCafeteria, selectedMealType, title]);
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -190,7 +284,10 @@ export default function RoutineBuilderModal({
       return;
     }
 
-    const targetTime = `${targetHour.padStart(2, "0")}:${targetMinute.padStart(2, "0")}`;
+    let h = parseInt(targetHour, 10);
+    if (ampm === "PM" && h < 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    const finalTime = `${String(h).padStart(2, "0")}:${targetMinute.padStart(2, "0")}`;
     const targetTool = selectedTools.join(",");
 
     const toolParams: Record<string, any> = {};
@@ -204,30 +301,36 @@ export default function RoutineBuilderModal({
 
     const toolParamsJson = JSON.stringify(toolParams);
     const titleTemplate = `🔔 ${title}`;
-    const bodyTemplate = ""; // Zero-LLM 도구 포맷터 위임
-    const route = selectedTools.length === 1 && selectedTools[0] === "CAFETERIA"
-      ? "/home/menu"
-      : selectedTools.length === 1 && selectedTools[0] === "BUS"
-      ? "/home/bus"
-      : "/home";
+    const bodyTemplate = "";
+    const route =
+      selectedTools.length === 1 && selectedTools[0] === "CAFETERIA"
+        ? "/home/menu"
+        : selectedTools.length === 1 && selectedTools[0] === "BUS"
+        ? "/home/bus"
+        : "/home";
 
     setIsSubmitting(true);
     try {
       if (initialData?.id) {
         await updateAgentReminder(initialData.id, {
           title,
-          targetTime,
+          targetTime: finalTime,
           repeatType,
           toolParamsJson,
           titleTemplate,
           bodyTemplate,
           route,
         });
-        trackEvent("[Routine+] 루틴 수정 완료", { id: initialData.id, title, targetTime, targetTool });
+        trackEvent("[Routine+] 루틴 수정 완료", {
+          id: initialData.id,
+          title,
+          targetTime: finalTime,
+          targetTool,
+        });
       } else {
         await createAgentReminder({
           title,
-          targetTime,
+          targetTime: finalTime,
           repeatType,
           targetTool,
           toolParamsJson,
@@ -235,7 +338,11 @@ export default function RoutineBuilderModal({
           bodyTemplate,
           route,
         });
-        trackEvent("[Routine+] 새 루틴 생성 완료", { title, targetTime, targetTool });
+        trackEvent("[Routine+] 새 루틴 생성 완료", {
+          title,
+          targetTime: finalTime,
+          targetTool,
+        });
       }
       onSuccess();
       onClose();
@@ -247,57 +354,83 @@ export default function RoutineBuilderModal({
     }
   };
 
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+    if (!window.confirm(`'${title}' 루틴을 삭제할까요?`)) return;
+    try {
+      await deleteAgentReminder(initialData.id);
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("루틴 삭제 실패:", error);
+      alert("루틴을 삭제하지 못했어요.");
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <Overlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
-        {/* 모달 헤더 */}
-        <ModalHeader>
-          <HeaderTitleRow>
-            <Sparkles size={20} color="#2563eb" />
-            <HeaderTitle>{initialData ? "캠퍼스 루틴 수정" : "새 캠퍼스 루틴 만들기"}</HeaderTitle>
-          </HeaderTitleRow>
-          <CloseButton onClick={onClose}>
-            <X size={20} color="#64748b" />
-          </CloseButton>
-        </ModalHeader>
+        {/* 원UI 스타일 상단 바 */}
+        <ModalTopNav>
+          <NavButton onClick={onClose}>취소</NavButton>
+          <NavTitle>{initialData ? "루틴 수정" : "새 루틴 만들기"}</NavTitle>
+          <NavSaveButton onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "저장 중" : "저장"}
+          </NavSaveButton>
+        </ModalTopNav>
 
         <ModalBody>
-          {/* 루틴 이름 */}
-          <SectionArea>
-            <SectionLabel>루틴 이름</SectionLabel>
-            <Input
+          {/* 1. 루틴 이름 카드 */}
+          <OneUiCard>
+            <CardHeaderLabel>루틴 이름</CardHeaderLabel>
+            <TitleInput
               type="text"
-              placeholder="예: 등교 전 올인원 브리핑"
+              placeholder="예: Daily Brief 아침 요약 알림"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={30}
             />
-          </SectionArea>
+          </OneUiCard>
 
-          {/* 1단계: 언제 알릴까요? */}
-          <SectionArea>
-            <SectionLabel>
-              <Clock size={16} color="#2563eb" />
-              1. 발송 시간 및 반복 요일
-            </SectionLabel>
-            
-            {/* 시간 선택 */}
-            <TimeSelectorRow>
-              <TimeSelectGroup>
-                <Select
+          {/* 2. 언제 알림을 받을까요? 섹션 */}
+          <SectionHeader>언제 알림을 받을까요?</SectionHeader>
+          <OneUiCard>
+            <CardHeaderLabel>시간 설정</CardHeaderLabel>
+            <TimeSelectorContainer>
+              {/* 오전 / 오후 토글 */}
+              <AmPmToggleGroup>
+                <AmPmBtn
+                  $active={ampm === "AM"}
+                  onClick={() => setAmpm("AM")}
+                  type="button"
+                >
+                  오전
+                </AmPmBtn>
+                <AmPmBtn
+                  $active={ampm === "PM"}
+                  onClick={() => setAmpm("PM")}
+                  type="button"
+                >
+                  오후
+                </AmPmBtn>
+              </AmPmToggleGroup>
+
+              {/* 시 / 분 셀렉터 */}
+              <TimeSelectsRow>
+                <StyledSelect
                   value={targetHour}
                   onChange={(e) => setTargetHour(e.target.value)}
                 >
-                  {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0")).map((h) => (
+                  {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((h) => (
                     <option key={h} value={h}>
-                      {parseInt(h, 10) < 12 ? `오전 ${h}시` : `오후 ${h}시`}
+                      {h}시
                     </option>
                   ))}
-                </Select>
-                <TimeSeparator>:</TimeSeparator>
-                <Select
+                </StyledSelect>
+                <TimeColon>:</TimeColon>
+                <StyledSelect
                   value={targetMinute}
                   onChange={(e) => setTargetMinute(e.target.value)}
                 >
@@ -306,156 +439,142 @@ export default function RoutineBuilderModal({
                       {m}분
                     </option>
                   ))}
-                </Select>
-              </TimeSelectGroup>
-            </TimeSelectorRow>
+                </StyledSelect>
+              </TimeSelectsRow>
+            </TimeSelectorContainer>
 
-            {/* 반복 요일 칩 */}
-            <RepeatChipRow>
-              {[
-                { type: "WEEKDAYS", label: "평일 (월~금)" },
-                { type: "EVERYDAY", label: "매일 (월~일)" },
-                { type: "WEEKENDS", label: "주말 (토~일)" },
-                { type: "ONCE", label: "1회성" },
-              ].map((chip) => (
-                <RepeatChip
-                  key={chip.type}
-                  $active={repeatType === chip.type}
-                  onClick={() => setRepeatType(chip.type as AgentReminderRepeatType)}
-                >
-                  {chip.label}
-                </RepeatChip>
-              ))}
-            </RepeatChipRow>
-          </SectionArea>
+            {/* 반복 요일 (갤럭시 원형 요일 선택기) */}
+            <RepeatDaysWrapper>
+              <CardSubLabel>반복 요일</CardSubLabel>
+              <DaysCircleRow>
+                {DAYS.map((d) => {
+                  const isSelected = selectedDays.includes(d.key);
+                  return (
+                    <DayCircleButton
+                      key={d.key}
+                      $selected={isSelected}
+                      $isSunday={d.key === "SUN"}
+                      $isSaturday={d.key === "SAT"}
+                      onClick={() => toggleDay(d.key)}
+                      type="button"
+                    >
+                      {d.label}
+                    </DayCircleButton>
+                  );
+                })}
+              </DaysCircleRow>
+            </RepeatDaysWrapper>
+          </OneUiCard>
 
-          {/* 2단계: 무엇을 알릴까요? (액션 선택) */}
-          <SectionArea>
-            <SectionLabel>
-              <Layers size={16} color="#2563eb" />
-              2. 포함할 정보 선택 (다중 선택 가능)
-            </SectionLabel>
+          {/* 3. 어떤 알림을 받을까요? 섹션 */}
+          <SectionHeader>어떤 알림을 받을까요?</SectionHeader>
+          <OneUiCard style={{ padding: "8px 0" }}>
+            {AVAILABLE_ACTIONS.map((action, idx) => {
+              const isSelected = selectedTools.includes(action.id);
+              return (
+                <React.Fragment key={action.id}>
+                  {idx > 0 && <ActionDivider />}
+                  <ActionItemRow onClick={() => toggleTool(action.id)}>
+                    <ActionIconBadge $bgColor={action.iconBg}>
+                      {action.icon}
+                    </ActionIconBadge>
 
-            <ActionGrid>
-              {AVAILABLE_ACTIONS.map((action) => {
-                const isSelected = selectedTools.includes(action.id);
-                return (
-                  <ActionCard
-                    key={action.id}
-                    $selected={isSelected}
-                    onClick={() => toggleTool(action.id)}
-                  >
-                    <ActionCardHeader>
-                      <ActionEmoji>{action.emoji}</ActionEmoji>
+                    <ActionTextCol>
                       <ActionTitle>{action.title}</ActionTitle>
-                      <CheckBadge $selected={isSelected}>
-                        {isSelected && <Check size={14} color="#fff" strokeWidth={3} />}
-                      </CheckBadge>
-                    </ActionCardHeader>
-                    <ActionDesc>{action.description}</ActionDesc>
+                      <ActionDesc>{action.description}</ActionDesc>
 
-                    {/* 세부 옵션 UI (선택되었을 때만 노출) */}
-                    {isSelected && action.id === "CAFETERIA" && (
-                      <DetailOptionBox onClick={(e) => e.stopPropagation()}>
-                        <DetailOptionRow>
-                          <OptionLabel>식당:</OptionLabel>
-                          <SubSelect
-                            value={selectedCafeteria}
-                            onChange={(e) => setSelectedCafeteria(e.target.value)}
-                          >
-                            {CAFETERIA_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>
-                                {o.label}
-                              </option>
-                            ))}
-                          </SubSelect>
-                        </DetailOptionRow>
-                        <DetailOptionRow>
-                          <OptionLabel>끼니:</OptionLabel>
-                          <SubSelect
-                            value={selectedMealType}
-                            onChange={(e) => setSelectedMealType(e.target.value)}
-                          >
-                            <option value="AUTO">자동 (시간대 맞춤)</option>
-                            <option value="LUNCH">점심 (중식)</option>
-                            <option value="DINNER">저녁 (석식)</option>
-                            <option value="BREAKFAST">아침 (조식)</option>
-                          </SubSelect>
-                        </DetailOptionRow>
-                      </DetailOptionBox>
-                    )}
+                      {/* 세부 옵션 */}
+                      {isSelected && action.id === "CAFETERIA" && (
+                        <SubOptionContainer onClick={(e) => e.stopPropagation()}>
+                          <SubOptionRow>
+                            <span>식당:</span>
+                            <SubOptionSelect
+                              value={selectedCafeteria}
+                              onChange={(e) => setSelectedCafeteria(e.target.value)}
+                            >
+                              {CAFETERIA_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
+                            </SubOptionSelect>
+                          </SubOptionRow>
+                          <SubOptionRow>
+                            <span>끼니:</span>
+                            <SubOptionSelect
+                              value={selectedMealType}
+                              onChange={(e) => setSelectedMealType(e.target.value)}
+                            >
+                              <option value="AUTO">자동 (시간대 맞춤)</option>
+                              <option value="LUNCH">점심 (중식)</option>
+                              <option value="DINNER">저녁 (석식)</option>
+                              <option value="BREAKFAST">아침 (조식)</option>
+                            </SubOptionSelect>
+                          </SubOptionRow>
+                        </SubOptionContainer>
+                      )}
 
-                    {isSelected && action.id === "BUS" && (
-                      <DetailOptionBox onClick={(e) => e.stopPropagation()}>
-                        <DetailOptionRow>
-                          <OptionLabel>정류소:</OptionLabel>
-                          <SubSelect
-                            value={selectedBusStop}
-                            onChange={(e) => setSelectedBusStop(e.target.value)}
-                          >
-                            {BUS_STOP_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>
-                                {o.label}
-                              </option>
-                            ))}
-                          </SubSelect>
-                        </DetailOptionRow>
-                      </DetailOptionBox>
-                    )}
-                  </ActionCard>
-                );
-              })}
-            </ActionGrid>
-          </SectionArea>
+                      {isSelected && action.id === "BUS" && (
+                        <SubOptionContainer onClick={(e) => e.stopPropagation()}>
+                          <SubOptionRow>
+                            <span>정류소:</span>
+                            <SubOptionSelect
+                              value={selectedBusStop}
+                              onChange={(e) => setSelectedBusStop(e.target.value)}
+                            >
+                              {BUS_STOP_OPTIONS.map((o) => (
+                                <option key={o.value} value={o.value}>
+                                  {o.label}
+                                </option>
+                              ))}
+                            </SubOptionSelect>
+                          </SubOptionRow>
+                        </SubOptionContainer>
+                      )}
+                    </ActionTextCol>
 
-          {/* 3단계: 알림 미리보기 */}
-          <SectionArea>
-            <SectionLabel>
-              <Bell size={16} color="#2563eb" />
-              3. 실제 푸시 알림 미리보기
-            </SectionLabel>
+                    <OneUiCheckbox $checked={isSelected}>
+                      {isSelected && <Check size={14} color="#ffffff" strokeWidth={3} />}
+                    </OneUiCheckbox>
+                  </ActionItemRow>
+                </React.Fragment>
+              );
+            })}
+          </OneUiCard>
 
-            <PreviewPushCard>
-              <PreviewHeader>
-                <AppBadgeRow>
-                  <AppIcon>INTIP</AppIcon>
-                  <AppName>캠퍼스 맞춤 루틴</AppName>
-                </AppBadgeRow>
-                <PreviewTime>{targetHour}:{targetMinute}</PreviewTime>
-              </PreviewHeader>
-              <PreviewTitle>🔔 {title || "AI 맞춤 알림"}</PreviewTitle>
-              <PreviewContent>{previewBody || "선택된 정보가 없습니다."}</PreviewContent>
-            </PreviewPushCard>
-          </SectionArea>
+          {/* 4. 실제 수신 알림 예시 */}
+          <SectionHeader>실제 수신 알림 예시</SectionHeader>
+          <NotificationPreviewCard>
+            <NotificationHeader>
+              <AppBadge>INTIP</AppBadge>
+              <AppName>데일리 브리프</AppName>
+              <NotifTime>{ampm === "AM" ? `오전 ${targetHour}:${targetMinute}` : `오후 ${targetHour}:${targetMinute}`}</NotifTime>
+            </NotificationHeader>
+            <NotificationTitle>{previewNotification.title}</NotificationTitle>
+            <NotificationBody>{previewNotification.body}</NotificationBody>
+          </NotificationPreviewCard>
+
+          {/* 삭제 버튼 (수정 모드일 때만 표시) */}
+          {initialData && (
+            <DeleteRoutineButton onClick={handleDelete} type="button">
+              <Trash2 size={16} color="#ef4444" />
+              <span>이 루틴 삭제</span>
+            </DeleteRoutineButton>
+          )}
         </ModalBody>
-
-        {/* 모달 하단 액션 버튼 */}
-        <ModalFooter>
-          <CapsuleButton
-            variant="secondary"
-            onClick={onClose}
-            style={{ flex: 1, padding: "12px 0" }}
-          >
-            취소
-          </CapsuleButton>
-          <CapsuleButton
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            style={{ flex: 2, padding: "12px 0", fontWeight: 700 }}
-          >
-            {isSubmitting ? "저장 중..." : initialData ? "루틴 수정하기" : "루틴 등록하기"}
-          </CapsuleButton>
-        </ModalFooter>
       </ModalContainer>
     </Overlay>
   );
 }
 
+/* =========================================================================
+ * Samsung One UI 모달 스타일
+ * ========================================================================= */
+
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
@@ -469,11 +588,11 @@ const Overlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: #ffffff;
+  background: #f7f8fa;
   width: 100%;
   max-width: 520px;
-  max-height: 90vh;
-  border-radius: 24px 24px 0 0;
+  max-height: 92vh;
+  border-radius: 28px 28px 0 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -481,7 +600,7 @@ const ModalContainer = styled.div`
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (min-width: 640px) {
-    border-radius: 24px;
+    border-radius: 28px;
   }
 
   @keyframes slideUp {
@@ -494,284 +613,368 @@ const ModalContainer = styled.div`
   }
 `;
 
-const ModalHeader = styled.div`
+const ModalTopNav = styled.div`
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f3f5;
 `;
 
-const HeaderTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const HeaderTitle = styled.h3`
-  font-size: 18px;
+const NavTitle = styled.h3`
+  font-size: 17px;
   font-weight: 700;
-  color: #0f172a;
+  color: #111827;
   margin: 0;
 `;
 
-const CloseButton = styled.button`
+const NavButton = styled.button`
   background: none;
   border: none;
-  padding: 6px;
-  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  &:hover {
-    background-color: #f1f5f9;
+  padding: 4px 6px;
+`;
+
+const NavSaveButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 4px 6px;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
 const ModalBody = styled.div`
-  padding: 20px;
+  padding: 20px 16px 36px 16px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 `;
 
-const SectionArea = styled.div`
+const SectionHeader = styled.h4`
+  font-size: 17px;
+  font-weight: 800;
+  color: #000000;
+  margin: 8px 0 0 4px;
+  letter-spacing: -0.3px;
+`;
+
+const OneUiCard = styled.div`
+  background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid #e9ecef;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 `;
 
-const SectionLabel = styled.label`
-  font-size: 14px;
-  font-weight: 700;
-  color: #334155;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  font-size: 15px;
-  color: #0f172a;
-  outline: none;
-  box-sizing: border-box;
-  &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-`;
-
-const TimeSelectorRow = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const TimeSelectGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-`;
-
-const Select = styled.select`
-  flex: 1;
-  padding: 12px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #0f172a;
-  background-color: #f8fafc;
-  outline: none;
-  &:focus {
-    border-color: #2563eb;
-  }
-`;
-
-const TimeSeparator = styled.span`
-  font-size: 18px;
+const CardHeaderLabel = styled.span`
+  font-size: 13px;
   font-weight: 700;
   color: #64748b;
 `;
 
-const RepeatChipRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-`;
-
-const RepeatChip = styled.button<{ $active: boolean }>`
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 13px;
+const CardSubLabel = styled.span`
+  font-size: 12.5px;
   font-weight: 600;
-  cursor: pointer;
-  border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e2e8f0")};
-  background-color: ${({ $active }) => ($active ? "#eff6ff" : "#ffffff")};
-  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
-  transition: all 0.15s ease;
+  color: #64748b;
 `;
 
-const ActionGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const ActionCard = styled.div<{ $selected: boolean }>`
-  padding: 14px 16px;
+const TitleInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
   border-radius: 14px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#2563eb" : "#e2e8f0")};
-  background-color: ${({ $selected }) => ($selected ? "#f8faff" : "#ffffff")};
-  cursor: pointer;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #111827;
+  outline: none;
+  background-color: #f8fafc;
   transition: all 0.15s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
 
-  &:hover {
-    border-color: ${({ $selected }) => ($selected ? "#2563eb" : "#cbd5e1")};
+  &:focus {
+    border-color: #2563eb;
+    background-color: #ffffff;
   }
 `;
 
-const ActionCardHeader = styled.div`
+const TimeSelectorContainer = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
 `;
 
-const ActionEmoji = styled.span`
-  font-size: 18px;
-  margin-right: 8px;
+const AmPmToggleGroup = styled.div`
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  padding: 3px;
+  gap: 2px;
 `;
 
-const ActionTitle = styled.span`
-  font-size: 15px;
+const AmPmBtn = styled.button<{ $active: boolean }>`
+  border: none;
+  background-color: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
+  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
+  font-size: 13.5px;
   font-weight: 700;
-  color: #0f172a;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: ${({ $active }) => ($active ? "0 2px 6px rgba(0,0,0,0.06)" : "none")};
+  transition: all 0.15s ease;
+`;
+
+const TimeSelectsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex: 1;
 `;
 
-const CheckBadge = styled.div<{ $selected: boolean }>`
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#2563eb" : "#cbd5e1")};
-  background-color: ${({ $selected }) => ($selected ? "#2563eb" : "transparent")};
+const StyledSelect = styled.select`
+  flex: 1;
+  padding: 9px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  background-color: #f8fafc;
+  outline: none;
+`;
+
+const TimeColon = styled.span`
+  font-size: 18px;
+  font-weight: 800;
+  color: #94a3b8;
+`;
+
+const RepeatDaysWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+`;
+
+const DaysCircleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+`;
+
+const DayCircleButton = styled.button<{
+  $selected: boolean;
+  $isSunday?: boolean;
+  $isSaturday?: boolean;
+}>`
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  background-color: ${({ $selected }) => ($selected ? "#2563eb" : "#f1f5f9")};
+  color: ${({ $selected, $isSunday, $isSaturday }) =>
+    $selected
+      ? "#ffffff"
+      : $isSunday
+      ? "#ef4444"
+      : $isSaturday
+      ? "#3b82f6"
+      : "#475569"};
 `;
 
-const ActionDesc = styled.p`
-  font-size: 13px;
+const ActionItemRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #f8fafc;
+  }
+`;
+
+const ActionDivider = styled.div`
+  height: 1px;
+  background-color: #f1f5f9;
+  margin-left: 68px;
+`;
+
+const ActionIconBadge = styled.div<{ $bgColor: string }>`
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: ${({ $bgColor }) => $bgColor};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+`;
+
+const ActionTextCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+`;
+
+const ActionTitle = styled.div`
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const ActionDesc = styled.div`
+  font-size: 12.5px;
   color: #64748b;
-  margin: 0;
-  padding-left: 26px;
+  line-height: 1.4;
 `;
 
-const DetailOptionBox = styled.div`
+const OneUiCheckbox = styled.div<{ $checked: boolean }>`
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid ${({ $checked }) => ($checked ? "#2563eb" : "#cbd5e1")};
+  background-color: ${({ $checked }) => ($checked ? "#2563eb" : "transparent")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 6px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+`;
+
+const SubOptionContainer = styled.div`
   margin-top: 8px;
-  padding: 10px 12px;
-  background-color: #ffffff;
-  border-radius: 10px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 12px;
   border: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-left: 26px;
+  gap: 6px;
 `;
 
-const DetailOptionRow = styled.div`
+const SubOptionRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    width: 40px;
+  }
 `;
 
-const OptionLabel = styled.span`
-  font-size: 12px;
-  font-weight: 600;
-  color: #475569;
-  width: 45px;
-`;
-
-const SubSelect = styled.select`
+const SubOptionSelect = styled.select`
   flex: 1;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #0f172a;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #111827;
+  background-color: #ffffff;
   outline: none;
 `;
 
-const PreviewPushCard = styled.div`
-  background: #1e293b;
-  color: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
+const NotificationPreviewCard = styled.div`
+  background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
 `;
 
-const PreviewHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2px;
-`;
-
-const AppBadgeRow = styled.div`
+const NotificationHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
 `;
 
-const AppIcon = styled.span`
-  background: #2563eb;
-  color: #fff;
+const AppBadge = styled.span`
+  background-color: #2563eb;
+  color: #ffffff;
   font-size: 10px;
   font-weight: 800;
   padding: 2px 5px;
   border-radius: 4px;
+  letter-spacing: 0.2px;
 `;
 
 const AppName = styled.span`
   font-size: 12px;
-  color: #94a3b8;
-  font-weight: 500;
+  font-weight: 600;
+  color: #64748b;
+  flex: 1;
 `;
 
-const PreviewTime = styled.span`
-  font-size: 12px;
+const NotifTime = styled.span`
+  font-size: 11.5px;
   color: #94a3b8;
 `;
 
-const PreviewTitle = styled.div`
+const NotificationTitle = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #f8fafc;
+  color: #0f172a;
+  line-height: 1.35;
 `;
 
-const PreviewContent = styled.div`
-  font-size: 13px;
+const NotificationBody = styled.div`
+  font-size: 12.5px;
+  color: #475569;
   line-height: 1.5;
-  color: #cbd5e1;
   white-space: pre-line;
 `;
 
-const ModalFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid #f1f5f9;
+const DeleteRoutineButton = styled.button`
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 16px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #fecaca;
+  }
 `;

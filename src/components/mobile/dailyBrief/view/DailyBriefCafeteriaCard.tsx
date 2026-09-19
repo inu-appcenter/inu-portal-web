@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { getCafeterias } from "@/apis/cafeterias";
+import { getAgentReminders } from "@/apis/agentReminder";
 import { ROUTES } from "@/constants/routes";
 
 export default function DailyBriefCafeteriaCard() {
@@ -17,19 +18,39 @@ export default function DailyBriefCafeteriaCard() {
     let isMounted = true;
 
     const fetchMenu = async () => {
-      // 우선 학생식당 조회
+      // 1. 유저의 맞춤 루틴에 설정된 식당 확인
+      let targetCafeteria = "학생식당";
       try {
-        const res = await getCafeterias("학생식당", apiDay);
+        const remRes = await getAgentReminders();
+        if (remRes.data) {
+          const cafReminder = remRes.data.find(
+            (r) =>
+              r.enabled &&
+              (r.targetTool || "").toUpperCase().includes("CAFETERIA") &&
+              r.toolParamsJson,
+          );
+          if (cafReminder?.toolParamsJson) {
+            const parsed = JSON.parse(cafReminder.toolParamsJson);
+            if (parsed.cafeteria && parsed.cafeteria !== "전체") {
+              targetCafeteria = parsed.cafeteria;
+            }
+          }
+        }
+      } catch (ignored) {}
+
+      // 2. 루틴 식당 (또는 학생식당) 우선 조회
+      try {
+        const res = await getCafeterias(targetCafeteria, apiDay);
         if (isMounted && res.data) {
           const parsed = res.data.filter(Boolean) as string[];
           if (parsed.length > 0) {
-            setCafeteriaName("학생식당");
+            setCafeteriaName(targetCafeteria);
             setMenus(parsed);
             return;
           }
         }
       } catch (err) {
-        console.warn("학생식당 메뉴 조회 실패:", err);
+        console.warn(`${targetCafeteria} 메뉴 조회 실패:`, err);
       }
 
       // 다른 식당들 순차 조회
