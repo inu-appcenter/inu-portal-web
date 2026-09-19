@@ -30,6 +30,7 @@ import {
   Shield,
   Palette,
   Check,
+  Tag,
 } from "lucide-react";
 import {
   getAgentReminders,
@@ -39,9 +40,22 @@ import {
   createAgentReminder,
   updateAgentReminder,
 } from "@/apis/agentReminder";
+import {
+  getDailyBriefSettings,
+  updateDailyBriefSettings,
+  getLocalDailyBriefSettings,
+} from "@/apis/dailyBrief";
+import {
+  getKeywords,
+  createKeyword,
+  deleteKeyword,
+} from "@/apis/notices";
 import type { AgentReminder, AgentReminderRepeatType, RoutineScheduleItem } from "@/types/agentReminder";
+import type { DailyBriefSettings, ScheduleScope } from "@/types/dailyBrief";
+import type { Keyword } from "@/types/notices";
 import Skeleton from "@/components/common/Skeleton";
 import { trackEvent } from "@/utils/mixpanel";
+import useUserStore from "@/stores/useUserStore";
 
 export interface RoutineTimeCondition {
   id: string;
@@ -303,6 +317,46 @@ const BUS_STOP_OPTIONS = [
   { label: "기숙사 (식당 앞)", value: "기숙사" },
 ];
 
+const PRE_ALERT_OPTIONS = [
+  { label: "5분 전", value: 5 },
+  { label: "10분 전", value: 10 },
+  { label: "15분 전", value: 15 },
+  { label: "20분 전", value: 20 },
+  { label: "30분 전", value: 30 },
+  { label: "45분 전", value: 45 },
+  { label: "60분 전 (1시간 전)", value: 60 },
+];
+
+const ADVANCE_DAYS_OPTIONS = [
+  { label: "당일 알림", value: 0 },
+  { label: "1일 전 사전 알림", value: 1 },
+  { label: "3일 전 사전 알림", value: 3 },
+  { label: "7일 전 (1주일 전) 사전 알림", value: 7 },
+];
+
+const SCHEDULE_SCOPE_OPTIONS = [
+  { label: "학교 및 학과 전체 학사일정", value: "ALL" as ScheduleScope },
+  { label: "학교 학사일정만", value: "SCHOOL_ONLY" as ScheduleScope },
+  { label: "내 학과 학사일정만", value: "DEPT_ONLY" as ScheduleScope },
+];
+
+const BRIEF_TIME_OPTIONS = [
+  "07:00",
+  "07:30",
+  "08:00",
+  "08:30",
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "12:00",
+  "13:00",
+  "18:00",
+  "20:00",
+  "22:00",
+];
+
 const DAYS = [
   { key: "SUN", label: "일" },
   { key: "MON", label: "월" },
@@ -340,14 +394,33 @@ export const formatDaysSummary = (days: string[]) => {
 export default function MobileRoutineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userInfo } = useUserStore();
 
   const isNew = id === "new";
+  const isSystemRoutine = Boolean(id?.startsWith("system-"));
   const isPreset = useMemo(() => {
-    return Boolean(id?.startsWith("preset-") || (id && isNaN(Number(id)) && id !== "new"));
+    return Boolean(
+      !isSystemRoutine &&
+        (id?.startsWith("preset-") || (id && isNaN(Number(id)) && id !== "new")),
+    );
+  }, [id, isSystemRoutine]);
+
+  // System routine sub-type
+  const systemType = useMemo<"timetable" | "schedule" | "school-notice" | "dept-notice" | null>(() => {
+    if (id === "system-timetable") return "timetable";
+    if (id === "system-schedule") return "schedule";
+    if (id === "system-school-notice") return "school-notice";
+    if (id === "system-dept-notice") return "dept-notice";
+    return null;
   }, [id]);
 
   const [reminder, setReminder] = useState<AgentReminder | null>(null);
   const [preset, setPreset] = useState<RoutinePreset | null>(null);
+  const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
+  const [schoolKeywords, setSchoolKeywords] = useState<Keyword[]>([]);
+  const [deptKeywords, setDeptKeywords] = useState<Keyword[]>([]);
+  const [isNoticeEnabled, setIsNoticeEnabled] = useState(true);
+
   const [isLoading, setIsLoading] = useState(!isNew);
   const [isEditing, setIsEditing] = useState(isNew);
   const [isTesting, setIsTesting] = useState(false);
@@ -371,7 +444,11 @@ export default function MobileRoutineDetailPage() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // Form states
+  // Keyword Add Modal
+  const [isAddKeywordModalOpen, setIsAddKeywordModalOpen] = useState(false);
+  const [newKeywordInput, setNewKeywordInput] = useState("");
+
+  // Form states (for custom routines)
   const [title, setTitle] = useState("");
   const [timeConditions, setTimeConditions] = useState<RoutineTimeCondition[]>([]);
   const [selectedTools, setSelectedTools] = useState<string[]>([]);
@@ -379,12 +456,18 @@ export default function MobileRoutineDetailPage() {
   const [selectedMealType, setSelectedMealType] = useState("AUTO");
   const [selectedBusStop, setSelectedBusStop] = useState("인천대입구역 1번출구");
 
+  // System Routine Form States (in edit mode)
+  const [sysTimetableTime, setSysTimetableTime] = useState("08:00");
+  const [sysTimetablePreAlert, setSysTimetablePreAlert] = useState(10);
+  const [sysScheduleTime, setSysScheduleTime] = useState("08:30");
+  const [sysScheduleAdvanceDays, setSysScheduleAdvanceDays] = useState(1);
+  const [sysScheduleScope, setSysScheduleScope] = useState<ScheduleScope>("ALL");
+
   const syncFormFromData = useCallback(
     (rem: AgentReminder | null, pre: RoutinePreset | null) => {
       if (rem) {
         setTitle(rem.title);
 
-        // Parse tool params for custom icon and specific tool options
         let customIconVal = "";
         let customColorVal = "";
         if (rem.toolParamsJson) {
@@ -402,7 +485,6 @@ export default function MobileRoutineDetailPage() {
         setSelectedIcon(customIconVal || fallback.iconId);
         setSelectedColor(customColorVal || fallback.bg);
 
-        // Schedules / Time conditions parsing
         if (rem.schedulesJson) {
           try {
             const parsedSchedules: RoutineScheduleItem[] = JSON.parse(rem.schedulesJson);
@@ -440,7 +522,6 @@ export default function MobileRoutineDetailPage() {
             }
           } catch (ignored) {}
         } else {
-          // Legacy single targetTime fallback
           const parts = (rem.targetTime || "08:30").split(":");
           const rawHour = parseInt(parts[0] || "8", 10);
           const rawMin = parts[1] || "30";
@@ -526,7 +607,7 @@ export default function MobileRoutineDetailPage() {
           if (pre.toolParams.stopName) setSelectedBusStop(pre.toolParams.stopName);
         }
       } else {
-        // [나만의 루틴 만들기] 기본값 모두 초기화 (사용자가 직접 조건 및 내용 추가)
+        // [나만의 루틴 만들기]
         setTitle("");
         setTimeConditions([]);
         setSelectedTools([]);
@@ -548,7 +629,45 @@ export default function MobileRoutineDetailPage() {
     }
     setIsLoading(true);
     try {
-      if (isPreset) {
+      if (isSystemRoutine) {
+        const [briefRes, keywordsRes] = await Promise.all([
+          getDailyBriefSettings().catch(() => ({ data: null })),
+          getKeywords().catch(() => ({ data: [] })),
+        ]);
+
+        const curSettings = briefRes?.data || getLocalDailyBriefSettings();
+        setDailyBriefSettings(curSettings);
+        setSysTimetableTime(curSettings.timetableDailyBriefTime || "08:00");
+        setSysTimetablePreAlert(curSettings.timetablePreAlertMinutes || 10);
+        setSysScheduleTime(curSettings.scheduleDailyBriefTime || "08:30");
+        setSysScheduleAdvanceDays(curSettings.advanceDays ?? 1);
+        setSysScheduleScope(curSettings.scheduleScope || "ALL");
+
+        if (keywordsRes?.data) {
+          const schoolKeys = keywordsRes.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null);
+          const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
+          setSchoolKeywords(schoolKeys);
+          setDeptKeywords(deptKeys);
+        }
+
+        if (systemType === "timetable") {
+          setSelectedIcon("timetable");
+          setSelectedColor("#a855f7");
+          setTitle("오늘의 강의 & 시간표 알림");
+        } else if (systemType === "schedule") {
+          setSelectedIcon("graduation");
+          setSelectedColor("#3b82f6");
+          setTitle("학사일정 알림");
+        } else if (systemType === "school-notice") {
+          setSelectedIcon("notice");
+          setSelectedColor("#5c9cf8");
+          setTitle("학교 공지 알림");
+        } else if (systemType === "dept-notice") {
+          setSelectedIcon("notice");
+          setSelectedColor("#ff7a00");
+          setTitle("학과 공지 알림");
+        }
+      } else if (isPreset) {
         const found = ROUTINE_PRESETS.find((p) => p.id === id);
         if (found) {
           setPreset(found);
@@ -570,33 +689,17 @@ export default function MobileRoutineDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, isNew, isPreset, syncFormFromData]);
+  }, [id, isNew, isPreset, isSystemRoutine, systemType, syncFormFromData]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const handleDelete = async () => {
-    if (!reminder) return;
-    setIsDeleteModalOpen(false);
-    try {
-      await deleteAgentReminder(reminder.id);
-      trackEvent("[Daily Brief] 맞춤 루틴 삭제", {
-        id: reminder.id,
-        title: reminder.title,
-      });
-      navigate(-1);
-    } catch (error) {
-      console.error("루틴 삭제 실패:", error);
-      alert("루틴을 삭제하지 못했어요.");
-    }
-  };
-
   const headerTitle = useMemo(() => {
     if (isNew) return "새 루틴 만들기";
-    if (isEditing) return "루틴 편집";
-    return "루틴 설정";
-  }, [isNew, isEditing]);
+    if (isEditing) return isSystemRoutine ? "시스템 루틴 설정" : "루틴 편집";
+    return isSystemRoutine ? "기본 루틴" : "루틴 설정";
+  }, [isNew, isEditing, isSystemRoutine]);
 
   useHeader({
     title: headerTitle,
@@ -604,6 +707,38 @@ export default function MobileRoutineDetailPage() {
     rightArea: null,
   });
 
+  // System routine On/Off Toggles
+  const handleToggleTimetable = async () => {
+    const next = !dailyBriefSettings.timetableAlertEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ timetableAlertEnabled: next });
+      trackEvent("[Daily Brief] 시스템 시간표 알림 토글", { enabled: next });
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleSchedule = async () => {
+    const next = !dailyBriefSettings.scheduleAlertEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ scheduleAlertEnabled: next });
+      trackEvent("[Daily Brief] 시스템 학사일정 알림 토글", { enabled: next });
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleNotice = () => {
+    const next = !isNoticeEnabled;
+    setIsNoticeEnabled(next);
+    trackEvent("[Daily Brief] 공지 알림 토글", { systemType, enabled: next });
+  };
+
+  // Custom routine On/Off Toggle
   const handleToggle = async () => {
     if (!reminder) return;
     const nextEnabled = !reminder.enabled;
@@ -623,6 +758,21 @@ export default function MobileRoutineDetailPage() {
   };
 
   const handleTestDispatch = async () => {
+    if (isSystemRoutine) {
+      setIsTesting(true);
+      setTimeout(() => {
+        setIsTesting(false);
+        if (systemType === "timetable") {
+          alert("오늘의 강의 & 시간표 테스트 알림을 보냈어요!");
+        } else if (systemType === "schedule") {
+          alert("학사일정 테스트 알림을 보냈어요!");
+        } else {
+          alert("공지사항 테스트 알림을 보냈어요!");
+        }
+      }, 500);
+      return;
+    }
+
     if (!reminder) {
       alert("내 루틴으로 저장한 후 테스트 발송을 할 수 있어요!");
       return;
@@ -640,6 +790,22 @@ export default function MobileRoutineDetailPage() {
       alert("테스트 알림 발송 중 오류가 발생했어요.");
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!reminder) return;
+    setIsDeleteModalOpen(false);
+    try {
+      await deleteAgentReminder(reminder.id);
+      trackEvent("[Daily Brief] 맞춤 루틴 삭제", {
+        id: reminder.id,
+        title: reminder.title,
+      });
+      navigate(-1);
+    } catch (error) {
+      console.error("루틴 삭제 실패:", error);
+      alert("루틴을 삭제하지 못했어요.");
     }
   };
 
@@ -681,9 +847,57 @@ export default function MobileRoutineDetailPage() {
     }
   };
 
+  // Keyword Management (for Notice Routines)
+  const handleOpenAddKeyword = () => {
+    setNewKeywordInput("");
+    setIsAddKeywordModalOpen(true);
+  };
+
+  const handleConfirmAddKeyword = async () => {
+    if (!newKeywordInput.trim()) {
+      alert("키워드를 입력해 주세요.");
+      return;
+    }
+    try {
+      const targetType = systemType === "dept-notice" ? "DEPARTMENT" : "SCHOOL_NOTICE";
+      const deptCode = systemType === "dept-notice" ? (userInfo.departmentCode || userInfo.department) : undefined;
+      await createKeyword(newKeywordInput.trim(), deptCode);
+      alert(`'${newKeywordInput.trim()}' 키워드를 등록했어요!`);
+      setIsAddKeywordModalOpen(false);
+      setNewKeywordInput("");
+      // Reload keywords
+      const res = await getKeywords();
+      if (res?.data) {
+        if (targetType === "SCHOOL_NOTICE") {
+          setSchoolKeywords(res.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null));
+        } else {
+          setDeptKeywords(res.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null));
+        }
+      }
+    } catch (error) {
+      console.error("키워드 등록 실패:", error);
+      alert("키워드를 등록하지 못했어요.");
+    }
+  };
+
+  const handleDeleteKeyword = async (keywordId: number, kwText: string) => {
+    if (!window.confirm(`'${kwText}' 키워드 알림을 삭제할까요?`)) return;
+    try {
+      await deleteKeyword(keywordId);
+      if (systemType === "dept-notice") {
+        setDeptKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
+      } else {
+        setSchoolKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
+      }
+    } catch (error) {
+      console.error("키워드 삭제 실패:", error);
+      alert("키워드를 삭제하지 못했어요.");
+    }
+  };
+
   // Icon Modal Handlers
   const handleOpenIconModal = () => {
-    if (!isEditing) return;
+    if (!isEditing || isSystemRoutine) return;
     setTempIcon(selectedIcon);
     setTempColor(selectedColor);
     setIsIconModalOpen(true);
@@ -780,7 +994,6 @@ export default function MobileRoutineDetailPage() {
     setTimeConditions((prev) => prev.filter((c) => c.id !== condId));
   };
 
-  // Tool remove/add
   const removeTool = (toolId: string) => {
     setSelectedTools((prev) => prev.filter((t) => t !== toolId));
   };
@@ -792,8 +1005,39 @@ export default function MobileRoutineDetailPage() {
     setIsToolDrawerOpen(false);
   };
 
-  // Save routine in edit mode
+  // Save routine (Custom or System)
   const handleSaveEdit = async () => {
+    if (isSystemRoutine) {
+      setIsSaving(true);
+      try {
+        if (systemType === "timetable") {
+          const updated = await updateDailyBriefSettings({
+            timetableDailyBriefTime: sysTimetableTime,
+            timetablePreAlertMinutes: sysTimetablePreAlert,
+          });
+          if (updated?.data) setDailyBriefSettings(updated.data);
+          alert("시간표 알림 설정을 저장했어요!");
+        } else if (systemType === "schedule") {
+          const updated = await updateDailyBriefSettings({
+            scheduleDailyBriefTime: sysScheduleTime,
+            advanceDays: sysScheduleAdvanceDays,
+            scheduleScope: sysScheduleScope,
+          });
+          if (updated?.data) setDailyBriefSettings(updated.data);
+          alert("학사일정 알림 설정을 저장했어요!");
+        } else {
+          alert("공지 알림 설정을 저장했어요!");
+        }
+        setIsEditing(false);
+      } catch (error) {
+        console.error("시스템 루틴 저장 실패:", error);
+        alert("설정을 저장하지 못했어요.");
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
     if (!title.trim()) {
       alert("루틴 이름을 입력해 주세요.");
       return;
@@ -891,6 +1135,15 @@ export default function MobileRoutineDetailPage() {
       navigate(-1);
       return;
     }
+    if (isSystemRoutine) {
+      setSysTimetableTime(dailyBriefSettings.timetableDailyBriefTime || "08:00");
+      setSysTimetablePreAlert(dailyBriefSettings.timetablePreAlertMinutes || 10);
+      setSysScheduleTime(dailyBriefSettings.scheduleDailyBriefTime || "08:30");
+      setSysScheduleAdvanceDays(dailyBriefSettings.advanceDays ?? 1);
+      setSysScheduleScope(dailyBriefSettings.scheduleScope || "ALL");
+      setIsEditing(false);
+      return;
+    }
     syncFormFromData(reminder, preset);
     setIsEditing(false);
   };
@@ -922,8 +1175,33 @@ export default function MobileRoutineDetailPage() {
   }
 
   const primaryCondition = timeConditions[0];
-  const displayTitle = title || (reminder ? reminder.title : preset?.title || "나만의 루틴");
-  const displayDesc = reminder
+  const displayTitle = isSystemRoutine
+    ? systemType === "timetable"
+      ? "오늘의 강의 & 시간표 알림"
+      : systemType === "schedule"
+      ? "학사일정 알림"
+      : systemType === "school-notice"
+      ? "학교 공지 알림"
+      : "학과 공지 알림"
+    : title || (reminder ? reminder.title : preset?.title || "나만의 루틴");
+
+  const displayDesc = isSystemRoutine
+    ? systemType === "timetable"
+      ? dailyBriefSettings.timetableAlertEnabled
+        ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"}에 오늘 시간표를 안내하고 수업 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전에 알림을 받아요.`
+        : "시간표 알림이 꺼져 있어요."
+      : systemType === "schedule"
+      ? dailyBriefSettings.scheduleAlertEnabled
+        ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 학사일정 알림을 받아요.`
+        : "학사일정 알림이 꺼져 있어요."
+      : systemType === "school-notice"
+      ? isNoticeEnabled
+        ? `새 학교 공지사항 및 등록된 관심 키워드 알림을 실시간으로 받아요.`
+        : "학교 공지 알림이 꺼져 있어요."
+      : isNoticeEnabled
+      ? `${userInfo.department ? `${userInfo.department} 새 공지사항 및 관심 키워드 알림을 받아요.` : "내 학과 새 공지사항 및 관심 키워드 알림을 받아요."}`
+      : "학과 공지 알림이 꺼져 있어요."
+    : reminder
     ? `${reminder.repeatTypeDesc} ${reminder.targetTime}에 ${getToolsDescription(reminder.targetTool)} 정보를 안내해요.`
     : preset?.description ||
       (primaryCondition
@@ -935,16 +1213,16 @@ export default function MobileRoutineDetailPage() {
   return (
     <PageWrapper>
       <ScrollContainer>
-        {/* 상단 대표 카드 */}
+        {/* 상단 대표 히어로 카드 */}
         <DetailHeroWrapper>
           <DetailFloatingIcon
             $bgColor={selectedColor}
-            $isInteractive={isEditing}
+            $isInteractive={isEditing && !isSystemRoutine}
             onClick={handleOpenIconModal}
-            title={isEditing ? "아이콘 및 색상 변경" : undefined}
+            title={isEditing && !isSystemRoutine ? "아이콘 및 색상 변경" : undefined}
           >
             {renderRoutineIcon(selectedIcon, 28, "#ffffff")}
-            {isEditing && (
+            {isEditing && !isSystemRoutine && (
               <IconEditBadge title="아이콘 변경">
                 <Palette size={12} color="#ffffff" strokeWidth={2.5} />
               </IconEditBadge>
@@ -952,7 +1230,7 @@ export default function MobileRoutineDetailPage() {
           </DetailFloatingIcon>
 
           <DetailHeroCard>
-            {isEditing ? (
+            {isEditing && !isSystemRoutine ? (
               <UnderlineInputWrapper>
                 <UnderlineInput
                   type="text"
@@ -968,7 +1246,51 @@ export default function MobileRoutineDetailPage() {
                 <DetailHeroTitle>{displayTitle}</DetailHeroTitle>
                 <DetailHeroDescription>{displayDesc}</DetailHeroDescription>
                 <HeroActionRow>
-                  {reminder ? (
+                  {isSystemRoutine ? (
+                    systemType === "timetable" ? (
+                      <CapsuleButton
+                        variant={dailyBriefSettings.timetableAlertEnabled ? "primary" : "secondary"}
+                        onClick={handleToggleTimetable}
+                        style={{
+                          padding: "8px 24px",
+                          fontSize: "14.5px",
+                          fontWeight: 700,
+                          height: "40px",
+                          borderRadius: "9999px",
+                        }}
+                      >
+                        {dailyBriefSettings.timetableAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
+                      </CapsuleButton>
+                    ) : systemType === "schedule" ? (
+                      <CapsuleButton
+                        variant={dailyBriefSettings.scheduleAlertEnabled ? "primary" : "secondary"}
+                        onClick={handleToggleSchedule}
+                        style={{
+                          padding: "8px 24px",
+                          fontSize: "14.5px",
+                          fontWeight: 700,
+                          height: "40px",
+                          borderRadius: "9999px",
+                        }}
+                      >
+                        {dailyBriefSettings.scheduleAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
+                      </CapsuleButton>
+                    ) : (
+                      <CapsuleButton
+                        variant={isNoticeEnabled ? "primary" : "secondary"}
+                        onClick={handleToggleNotice}
+                        style={{
+                          padding: "8px 24px",
+                          fontSize: "14.5px",
+                          fontWeight: 700,
+                          height: "40px",
+                          borderRadius: "9999px",
+                        }}
+                      >
+                        {isNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
+                      </CapsuleButton>
+                    )
+                  ) : reminder ? (
                     <CapsuleButton
                       variant={reminder.enabled ? "primary" : "secondary"}
                       onClick={handleToggle}
@@ -1003,177 +1325,506 @@ export default function MobileRoutineDetailPage() {
           </DetailHeroCard>
         </DetailHeroWrapper>
 
-        {/* 언제 알림을 받을까요? 섹션 */}
-        <DetailSection>
-          <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+        {/* =========================================================================
+         * 1. 시스템 루틴 상세 뷰 & 편집 모드
+         * ========================================================================= */}
+        {isSystemRoutine ? (
+          <>
+            {/* 시간표 알림 (system-timetable) */}
+            {systemType === "timetable" && (
+              <>
+                <DetailSection>
+                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
 
-          {/* 여러 개의 시간 조건 카드 목록 */}
-          {timeConditions.length === 0 ? (
-            <EmptyGuideCard>
-              <EmptyGuideIconCircle>
-                <Clock size={20} color="#94a3b8" />
-              </EmptyGuideIconCircle>
-              <EmptyGuideText>
-                <EmptyGuideTitle>설정된 알림 시간이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>알림을 받을 시간과 요일을 추가해 주세요.</EmptyGuideSub>
-              </EmptyGuideText>
-            </EmptyGuideCard>
-          ) : (
-            timeConditions.map((cond) => {
-              const timeSubtitle = `${cond.ampm === "AM" ? "오전" : "오후"} ${cond.targetHour}:${cond.targetMinute}\n${formatDaysSummary(cond.selectedDays)}`;
+                  {/* 1. 아침 당일 브리핑 시간 */}
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Clock size={24} color="#111827" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>당일 시간표 요약 브리핑</CardMainText>
+                      <CardBlueText>
+                        매일 아침 {isEditing ? sysTimetableTime : (dailyBriefSettings.timetableDailyBriefTime || "08:00")}
+                      </CardBlueText>
+                      {isEditing && (
+                        <InlineSelectWrapper>
+                          <InlineSelect
+                            value={sysTimetableTime}
+                            onChange={(e) => setSysTimetableTime(e.target.value)}
+                          >
+                            {BRIEF_TIME_OPTIONS.map((t) => (
+                              <option key={t} value={t}>
+                                아침 {t}
+                              </option>
+                            ))}
+                          </InlineSelect>
+                        </InlineSelectWrapper>
+                      )}
+                    </CardContent>
+                  </OneUiCard>
 
-              return (
-                <OneUiCard
-                  key={cond.id}
-                  onClick={() => isEditing && handleOpenEditCondition(cond)}
-                >
-                  <CardIconWrapper>
-                    <Clock size={24} color="#111827" />
-                  </CardIconWrapper>
+                  {/* 2. 수업 시작 전 알림 */}
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Calendar size={24} color="#a855f7" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>강의 시작 전 알림</CardMainText>
+                      <CardBlueText>
+                        수업 시작 {isEditing ? sysTimetablePreAlert : (dailyBriefSettings.timetablePreAlertMinutes || 10)}분 전 알림
+                      </CardBlueText>
+                      {isEditing && (
+                        <InlineSelectWrapper>
+                          <InlineSelect
+                            value={sysTimetablePreAlert}
+                            onChange={(e) => setSysTimetablePreAlert(Number(e.target.value))}
+                          >
+                            {PRE_ALERT_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </InlineSelect>
+                        </InlineSelectWrapper>
+                      )}
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
 
-                  <CardContent>
-                    <CardMainText>{formatDaysSummary(cond.selectedDays)} 알림</CardMainText>
-                    <CardBlueText>{timeSubtitle}</CardBlueText>
-                  </CardContent>
+                <DetailSection>
+                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
 
-                  {isEditing && (
-                    <MinusButton
-                      type="button"
-                      onClick={(e) => handleRemoveCondition(cond.id, e)}
-                      title="시간 조건 삭제"
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Calendar size={24} color="#a855f7" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>시간표 / 강의실</CardMainText>
+                      <CardBlueText>수강 중인 과목의 강의실 위치와 수업 시작 시간</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Sun size={24} color="#5c9cf8" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>캠퍼스 날씨</CardMainText>
+                      <CardBlueText>송도 캠퍼스 당일 기온 및 강수 정보</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
+              </>
+            )}
+
+            {/* 학사일정 알림 (system-schedule) */}
+            {systemType === "schedule" && (
+              <>
+                <DetailSection>
+                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+
+                  {/* 1. 아침 학사일정 브리핑 시간 */}
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Clock size={24} color="#111827" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>학사일정 브리핑 시간</CardMainText>
+                      <CardBlueText>
+                        매일 아침 {isEditing ? sysScheduleTime : (dailyBriefSettings.scheduleDailyBriefTime || "08:30")}
+                      </CardBlueText>
+                      {isEditing && (
+                        <InlineSelectWrapper>
+                          <InlineSelect
+                            value={sysScheduleTime}
+                            onChange={(e) => setSysScheduleTime(e.target.value)}
+                          >
+                            {BRIEF_TIME_OPTIONS.map((t) => (
+                              <option key={t} value={t}>
+                                아침 {t}
+                              </option>
+                            ))}
+                          </InlineSelect>
+                        </InlineSelectWrapper>
+                      )}
+                    </CardContent>
+                  </OneUiCard>
+
+                  {/* 2. 사전 알림 기준 */}
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <GraduationCap size={24} color="#3b82f6" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>사전 알림 기준</CardMainText>
+                      <CardBlueText>
+                        {(() => {
+                          const days = isEditing ? sysScheduleAdvanceDays : (dailyBriefSettings.advanceDays ?? 1);
+                          return days === 0 ? "당일 알림" : `${days}일 전 사전 알림`;
+                        })()}
+                      </CardBlueText>
+                      {isEditing && (
+                        <InlineSelectWrapper>
+                          <InlineSelect
+                            value={sysScheduleAdvanceDays}
+                            onChange={(e) => setSysScheduleAdvanceDays(Number(e.target.value))}
+                          >
+                            {ADVANCE_DAYS_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </InlineSelect>
+                        </InlineSelectWrapper>
+                      )}
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
+
+                <DetailSection>
+                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <GraduationCap size={24} color="#3b82f6" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>학사일정 알림 대상</CardMainText>
+                      <CardBlueText>
+                        {(() => {
+                          const scope = isEditing ? sysScheduleScope : (dailyBriefSettings.scheduleScope || "ALL");
+                          if (scope === "SCHOOL_ONLY") return "학교 학사일정만";
+                          if (scope === "DEPT_ONLY") return "내 학과 학사일정만";
+                          return "학교 및 학과 전체 학사일정";
+                        })()}
+                      </CardBlueText>
+                      {isEditing && (
+                        <InlineSelectWrapper>
+                          <InlineSelect
+                            value={sysScheduleScope}
+                            onChange={(e) => setSysScheduleScope(e.target.value as ScheduleScope)}
+                          >
+                            {SCHEDULE_SCOPE_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </InlineSelect>
+                        </InlineSelectWrapper>
+                      )}
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
+              </>
+            )}
+
+            {/* 학교 공지 알림 (system-school-notice) */}
+            {systemType === "school-notice" && (
+              <>
+                <DetailSection>
+                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Clock size={24} color="#111827" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>새 공지 등록 시</CardMainText>
+                      <CardBlueText>실시간 즉시 알림</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
+
+                <DetailSection>
+                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Bell size={24} color="#5c9cf8" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>학교 공지사항</CardMainText>
+                      <CardBlueText>전체 공지, 학사, 장학 등 주요 신규 공지사항</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+
+                  {/* 관심 키워드 알림 섹션 */}
+                  <KeywordSectionCard>
+                    <KeywordHeaderRow>
+                      <KeywordHeaderTitle>
+                        <Tag size={16} color="#3b82f6" />
+                        <span>관심 키워드 알림 ({schoolKeywords.length}개)</span>
+                      </KeywordHeaderTitle>
+                      <AddKeywordChipButton onClick={handleOpenAddKeyword}>
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span>키워드 추가</span>
+                      </AddKeywordChipButton>
+                    </KeywordHeaderRow>
+
+                    {schoolKeywords.length === 0 ? (
+                      <EmptyKeywordGuide>
+                        등록된 관심 키워드가 없어요. 키워드를 추가하면 관련 공지를 놓치지 않고 알려드려요!
+                      </EmptyKeywordGuide>
+                    ) : (
+                      <KeywordChipsContainer>
+                        {schoolKeywords.map((kw) => (
+                          <KeywordChip key={kw.keywordId}>
+                            <span>#{kw.keyword}</span>
+                            <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
+                              <X size={13} color="#64748b" />
+                            </ChipDeleteBtn>
+                          </KeywordChip>
+                        ))}
+                      </KeywordChipsContainer>
+                    )}
+                  </KeywordSectionCard>
+                </DetailSection>
+              </>
+            )}
+
+            {/* 학과 공지 알림 (system-dept-notice) */}
+            {systemType === "dept-notice" && (
+              <>
+                <DetailSection>
+                  <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Clock size={24} color="#111827" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>새 공지 등록 시</CardMainText>
+                      <CardBlueText>실시간 즉시 알림</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+                </DetailSection>
+
+                <DetailSection>
+                  <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+
+                  <OneUiCard>
+                    <CardIconWrapper>
+                      <Bell size={24} color="#ff7a00" />
+                    </CardIconWrapper>
+                    <CardContent>
+                      <CardMainText>
+                        {userInfo.department ? `${userInfo.department} 공지` : "내 소속 학과 공지"}
+                      </CardMainText>
+                      <CardBlueText>학과 전공, 졸업, 연구, 행사 등 새 공지사항</CardBlueText>
+                    </CardContent>
+                  </OneUiCard>
+
+                  {/* 학과 관심 키워드 알림 섹션 */}
+                  <KeywordSectionCard>
+                    <KeywordHeaderRow>
+                      <KeywordHeaderTitle>
+                        <Tag size={16} color="#ff7a00" />
+                        <span>학과 키워드 알림 ({deptKeywords.length}개)</span>
+                      </KeywordHeaderTitle>
+                      <AddKeywordChipButton onClick={handleOpenAddKeyword}>
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span>키워드 추가</span>
+                      </AddKeywordChipButton>
+                    </KeywordHeaderRow>
+
+                    {deptKeywords.length === 0 ? (
+                      <EmptyKeywordGuide>
+                        등록된 학과 키워드가 없어요. 키워드를 추가하면 관련 학과 공지를 놓치지 않고 알려드려요!
+                      </EmptyKeywordGuide>
+                    ) : (
+                      <KeywordChipsContainer>
+                        {deptKeywords.map((kw) => (
+                          <KeywordChip key={kw.keywordId}>
+                            <span>#{kw.keyword}</span>
+                            <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
+                              <X size={13} color="#64748b" />
+                            </ChipDeleteBtn>
+                          </KeywordChip>
+                        ))}
+                      </KeywordChipsContainer>
+                    )}
+                  </KeywordSectionCard>
+                </DetailSection>
+              </>
+            )}
+          </>
+        ) : (
+          /* =========================================================================
+           * 2. 사용자 맞춤 루틴 & 프리셋 뷰 / 편집 모드
+           * ========================================================================= */
+          <>
+            {/* 언제 알림을 받을까요? 섹션 */}
+            <DetailSection>
+              <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+
+              {timeConditions.length === 0 ? (
+                <EmptyGuideCard>
+                  <EmptyGuideIconCircle>
+                    <Clock size={20} color="#94a3b8" />
+                  </EmptyGuideIconCircle>
+                  <EmptyGuideText>
+                    <EmptyGuideTitle>설정된 알림 시간이 없어요</EmptyGuideTitle>
+                    <EmptyGuideSub>알림을 받을 시간과 요일을 추가해 주세요.</EmptyGuideSub>
+                  </EmptyGuideText>
+                </EmptyGuideCard>
+              ) : (
+                timeConditions.map((cond) => {
+                  const timeSubtitle = `${cond.ampm === "AM" ? "오전" : "오후"} ${cond.targetHour}:${cond.targetMinute}\n${formatDaysSummary(cond.selectedDays)}`;
+
+                  return (
+                    <OneUiCard
+                      key={cond.id}
+                      onClick={() => isEditing && handleOpenEditCondition(cond)}
                     >
-                      <Minus size={18} color="#ef4444" strokeWidth={3} />
-                    </MinusButton>
-                  )}
-                </OneUiCard>
-              );
-            })
-          )}
+                      <CardIconWrapper>
+                        <Clock size={24} color="#111827" />
+                      </CardIconWrapper>
 
-          {isEditing && (
-            <AddConditionCard onClick={handleOpenAddCondition}>
-              <Plus size={18} color="#10b981" strokeWidth={2.5} />
-              <span>알림 시간 추가</span>
-            </AddConditionCard>
-          )}
-        </DetailSection>
+                      <CardContent>
+                        <CardMainText>{formatDaysSummary(cond.selectedDays)} 알림</CardMainText>
+                        <CardBlueText>{timeSubtitle}</CardBlueText>
+                      </CardContent>
 
-        {/* 어떤 알림을 받을까요? 섹션 */}
-        <DetailSection>
-          <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+                      {isEditing && (
+                        <MinusButton
+                          type="button"
+                          onClick={(e) => handleRemoveCondition(cond.id, e)}
+                          title="시간 조건 삭제"
+                        >
+                          <Minus size={18} color="#ef4444" strokeWidth={3} />
+                        </MinusButton>
+                      )}
+                    </OneUiCard>
+                  );
+                })
+              )}
 
-          {/* 선택된 동작(도구) 카드들 */}
-          {selectedTools.length === 0 ? (
-            <EmptyGuideCard>
-              <EmptyGuideIconCircle>
-                <Bell size={20} color="#94a3b8" />
-              </EmptyGuideIconCircle>
-              <EmptyGuideText>
-                <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>받고 싶은 캠퍼스 정보 알림을 추가해 주세요.</EmptyGuideSub>
-              </EmptyGuideText>
-            </EmptyGuideCard>
-          ) : (
-            selectedTools.map((toolId) => {
-              const actionInfo = AVAILABLE_ACTIONS.find((a) => a.id === toolId);
-              if (!actionInfo) return null;
+              {isEditing && (
+                <AddConditionCard onClick={handleOpenAddCondition}>
+                  <Plus size={18} color="#10b981" strokeWidth={2.5} />
+                  <span>알림 시간 추가</span>
+                </AddConditionCard>
+              )}
+            </DetailSection>
 
-              return (
-                <OneUiCard key={toolId}>
-                  <CardIconWrapper>{actionInfo.icon}</CardIconWrapper>
+            {/* 어떤 알림을 받을까요? 섹션 */}
+            <DetailSection>
+              <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
 
-                  <CardContent>
-                    <CardMainText>{actionInfo.title}</CardMainText>
+              {selectedTools.length === 0 ? (
+                <EmptyGuideCard>
+                  <EmptyGuideIconCircle>
+                    <Bell size={20} color="#94a3b8" />
+                  </EmptyGuideIconCircle>
+                  <EmptyGuideText>
+                    <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
+                    <EmptyGuideSub>받고 싶은 캠퍼스 정보 알림을 추가해 주세요.</EmptyGuideSub>
+                  </EmptyGuideText>
+                </EmptyGuideCard>
+              ) : (
+                selectedTools.map((toolId) => {
+                  const actionInfo = AVAILABLE_ACTIONS.find((a) => a.id === toolId);
+                  if (!actionInfo) return null;
 
-                    {/* 도구별 세부 정보 */}
-                    {toolId === "BUS" && (
-                      <>
-                        <CardBlueText>{selectedBusStop}</CardBlueText>
-                        {isEditing && (
-                          <InlineSelectWrapper>
-                            <InlineSelect
-                              value={selectedBusStop}
-                              onChange={(e) => setSelectedBusStop(e.target.value)}
-                            >
-                              {BUS_STOP_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </InlineSelect>
-                          </InlineSelectWrapper>
+                  return (
+                    <OneUiCard key={toolId}>
+                      <CardIconWrapper>{actionInfo.icon}</CardIconWrapper>
+
+                      <CardContent>
+                        <CardMainText>{actionInfo.title}</CardMainText>
+
+                        {toolId === "BUS" && (
+                          <>
+                            <CardBlueText>{selectedBusStop}</CardBlueText>
+                            {isEditing && (
+                              <InlineSelectWrapper>
+                                <InlineSelect
+                                  value={selectedBusStop}
+                                  onChange={(e) => setSelectedBusStop(e.target.value)}
+                                >
+                                  {BUS_STOP_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </InlineSelect>
+                              </InlineSelectWrapper>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
 
-                    {toolId === "CAFETERIA" && (
-                      <>
-                        <CardBlueText>
-                          {selectedCafeteria} • {selectedMealType === "DINNER" ? "석식" : "중식"}
-                        </CardBlueText>
-                        {isEditing && (
-                          <InlineSelectRow>
-                            <InlineSelect
-                              value={selectedCafeteria}
-                              onChange={(e) => setSelectedCafeteria(e.target.value)}
-                            >
-                              {CAFETERIA_OPTIONS.map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </InlineSelect>
-                            <InlineSelect
-                              value={selectedMealType}
-                              onChange={(e) => setSelectedMealType(e.target.value)}
-                            >
-                              <option value="AUTO">자동 (시간대별)</option>
-                              <option value="LUNCH">중식</option>
-                              <option value="DINNER">석식</option>
-                            </InlineSelect>
-                          </InlineSelectRow>
+                        {toolId === "CAFETERIA" && (
+                          <>
+                            <CardBlueText>
+                              {selectedCafeteria} • {selectedMealType === "DINNER" ? "석식" : "중식"}
+                            </CardBlueText>
+                            {isEditing && (
+                              <InlineSelectRow>
+                                <InlineSelect
+                                  value={selectedCafeteria}
+                                  onChange={(e) => setSelectedCafeteria(e.target.value)}
+                                >
+                                  {CAFETERIA_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </InlineSelect>
+                                <InlineSelect
+                                  value={selectedMealType}
+                                  onChange={(e) => setSelectedMealType(e.target.value)}
+                                >
+                                  <option value="AUTO">자동 (시간대별)</option>
+                                  <option value="LUNCH">중식</option>
+                                  <option value="DINNER">석식</option>
+                                </InlineSelect>
+                              </InlineSelectRow>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
 
-                    {toolId === "WEATHER" && (
-                      <CardBlueText>송도 캠퍼스 기온 및 강수 정보</CardBlueText>
-                    )}
+                        {toolId === "WEATHER" && (
+                          <CardBlueText>송도 캠퍼스 기온 및 강수 정보</CardBlueText>
+                        )}
 
-                    {toolId === "TIMETABLE" && (
-                      <CardBlueText>오늘 첫 수업 시간 및 강의실 위치</CardBlueText>
-                    )}
+                        {toolId === "TIMETABLE" && (
+                          <CardBlueText>오늘 첫 수업 시간 및 강의실 위치</CardBlueText>
+                        )}
 
-                    {toolId === "NOTICE" && (
-                      <CardBlueText>학교 및 학과 최신 주요 공지</CardBlueText>
-                    )}
-                  </CardContent>
+                        {toolId === "NOTICE" && (
+                          <CardBlueText>학교 및 학과 최신 주요 공지</CardBlueText>
+                        )}
+                      </CardContent>
 
-                  {isEditing && (
-                    <MinusButton
-                      type="button"
-                      onClick={() => removeTool(toolId)}
-                      title="알림 내용 삭제"
-                    >
-                      <Minus size={18} color="#ef4444" strokeWidth={3} />
-                    </MinusButton>
-                  )}
-                </OneUiCard>
-              );
-            })
-          )}
+                      {isEditing && (
+                        <MinusButton
+                          type="button"
+                          onClick={() => removeTool(toolId)}
+                          title="알림 내용 삭제"
+                        >
+                          <Minus size={18} color="#ef4444" strokeWidth={3} />
+                        </MinusButton>
+                      )}
+                    </OneUiCard>
+                  );
+                })
+              )}
 
-          {/* 알림 내용 추가 버튼 */}
-          {isEditing && availableToAdd.length > 0 && (
-            <AddConditionCard onClick={() => setIsToolDrawerOpen(true)}>
-              <Plus size={18} color="#10b981" strokeWidth={2.5} />
-              <span>알림 내용 추가</span>
-            </AddConditionCard>
-          )}
-        </DetailSection>
+              {/* 알림 내용 추가 버튼 */}
+              {isEditing && availableToAdd.length > 0 && (
+                <AddConditionCard onClick={() => setIsToolDrawerOpen(true)}>
+                  <Plus size={18} color="#10b981" strokeWidth={2.5} />
+                  <span>알림 내용 추가</span>
+                </AddConditionCard>
+              )}
+            </DetailSection>
+          </>
+        )}
       </ScrollContainer>
 
-      {/* 하단 플로팅 메뉴 바 */}
+      {/* =========================================================================
+       * 하단 플로팅 메뉴 바
+       * ========================================================================= */}
       {isEditing ? (
         <EditFloatingPill>
           <EditPillButton onClick={handleCancelEdit} type="button">
@@ -1201,7 +1852,8 @@ export default function MobileRoutineDetailPage() {
             <span>{isTesting ? "발송 중" : "테스트"}</span>
           </PillActionButton>
 
-          {reminder ? (
+          {/* 시스템 루틴은 삭제 불가 */}
+          {isSystemRoutine ? null : reminder ? (
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
               <Trash2 size={20} color="#ef4444" />
               <span style={{ color: "#ef4444" }}>삭제</span>
@@ -1215,7 +1867,45 @@ export default function MobileRoutineDetailPage() {
         </FloatingActionPill>
       )}
 
-      {/* 아이콘 및 색상 선택 모달 (@Modal.tsx) */}
+      {/* =========================================================================
+       * 모달 컴포넌트들
+       * ========================================================================= */}
+
+      {/* 키워드 추가 모달 */}
+      <Modal
+        isOpen={isAddKeywordModalOpen}
+        onClose={() => setIsAddKeywordModalOpen(false)}
+        title="관심 키워드 등록"
+        description="등록한 키워드가 포함된 새 공지사항이 올라오면 실시간 알림을 받아요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsAddKeywordModalOpen(false),
+        }}
+        primaryButton={{
+          text: "등록",
+          variant: "primary",
+          onClick: handleConfirmAddKeyword,
+        }}
+      >
+        <KeywordModalInputWrapper>
+          <KeywordModalInput
+            type="text"
+            value={newKeywordInput}
+            onChange={(e) => setNewKeywordInput(e.target.value)}
+            placeholder="키워드 입력 (예: 장학금, 수강신청, 인턴)"
+            maxLength={20}
+            autoFocus={true}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleConfirmAddKeyword();
+              }
+            }}
+          />
+        </KeywordModalInputWrapper>
+      </Modal>
+
+      {/* 아이콘 및 색상 선택 모달 */}
       <Modal
         isOpen={isIconModalOpen}
         onClose={() => setIsIconModalOpen(false)}
@@ -1274,7 +1964,7 @@ export default function MobileRoutineDetailPage() {
         </IconPickerModalContent>
       </Modal>
 
-      {/* 조건 설정 모달 (@Modal.tsx) */}
+      {/* 조건 설정 모달 */}
       <Modal
         isOpen={isConditionModalOpen}
         onClose={() => setIsConditionModalOpen(false)}
@@ -1357,7 +2047,7 @@ export default function MobileRoutineDetailPage() {
         </TimePickerModalContent>
       </Modal>
 
-      {/* 루틴 삭제 확인 모달 (@Modal.tsx) */}
+      {/* 루틴 삭제 확인 모달 */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -1374,7 +2064,7 @@ export default function MobileRoutineDetailPage() {
         }}
       />
 
-      {/* 알림 내용 추가 바텀 모달/드로어 */}
+      {/* 알림 내용 추가 드로어 */}
       {isToolDrawerOpen && (
         <DrawerBackdrop onClick={() => setIsToolDrawerOpen(false)}>
           <DrawerContainer onClick={(e) => e.stopPropagation()}>
@@ -1787,6 +2477,120 @@ const InlineSelect = styled.select`
   color: #1e293b;
   outline: none;
   cursor: pointer;
+`;
+
+/* 키워드 관리 One UI 카드 & 칩 */
+const KeywordSectionCard = styled.div`
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e9ecef;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+`;
+
+const KeywordHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const KeywordHeaderTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #111827;
+`;
+
+const AddKeywordChipButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f1f5f9;
+  color: #2563eb;
+  border: none;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #e2e8f0;
+  }
+`;
+
+const EmptyKeywordGuide = styled.div`
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.4;
+  padding: 4px 0;
+`;
+
+const KeywordChipsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const KeywordChip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const ChipDeleteBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+const KeywordModalInputWrapper = styled.div`
+  padding: 10px 0;
+`;
+
+const KeywordModalInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111827;
+  outline: none;
+
+  &:focus {
+    border-color: #2563eb;
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+  }
 `;
 
 /* 아이콘 & 컬러 피커 모달 스타일 */

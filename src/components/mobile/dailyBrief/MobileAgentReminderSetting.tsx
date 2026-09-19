@@ -7,15 +7,25 @@ import {
   ChevronRight,
   Plus,
   Clock,
+  Calendar,
+  GraduationCap,
+  Bell,
 } from "lucide-react";
 import {
   getAgentReminders,
   toggleAgentReminder,
 } from "@/apis/agentReminder";
+import {
+  getDailyBriefSettings,
+  updateDailyBriefSettings,
+  getLocalDailyBriefSettings,
+} from "@/apis/dailyBrief";
+import { getKeywords } from "@/apis/notices";
 import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentReminder";
+import type { DailyBriefSettings } from "@/types/dailyBrief";
 import { ROUTES } from "@/constants/routes";
 import { trackEvent } from "@/utils/mixpanel";
-
+import useUserStore from "@/stores/useUserStore";
 import { renderRoutineIcon, getDefaultIconAndBgForTools } from "@/pages/mobile/MobileRoutineDetailPage";
 
 export interface RoutinePreset {
@@ -132,27 +142,90 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
 
 export default function MobileAgentReminderSetting() {
   const navigate = useNavigate();
+  const { userInfo } = useUserStore();
+
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
+  const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
+  const [schoolKeywordsCount, setSchoolKeywordsCount] = useState<number>(0);
+  const [deptKeywordsCount, setDeptKeywordsCount] = useState<number>(0);
+  const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState<boolean>(true);
+  const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchReminders = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await getAgentReminders();
-      if (res.data) {
-        setReminders(res.data);
+      const [remindersRes, briefRes, keywordsRes] = await Promise.all([
+        getAgentReminders().catch(() => ({ data: [] })),
+        getDailyBriefSettings().catch(() => ({ data: null })),
+        getKeywords().catch(() => ({ data: [] })),
+      ]);
+
+      if (remindersRes?.data) {
+        setReminders(remindersRes.data);
+      }
+      if (briefRes?.data) {
+        setDailyBriefSettings(briefRes.data);
+      }
+      if (keywordsRes?.data) {
+        const schoolKeys = keywordsRes.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null);
+        const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
+        setSchoolKeywordsCount(schoolKeys.length);
+        setDeptKeywordsCount(deptKeys.length);
       }
     } catch (error) {
-      console.error("맞춤 루틴 목록 조회 실패:", error);
+      console.error("루틴 데이터 로드 실패:", error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchReminders();
-  }, [fetchReminders]);
+    fetchData();
+  }, [fetchData]);
 
+  // System Routine Toggles
+  const handleToggleTimetable = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !dailyBriefSettings.timetableAlertEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ timetableAlertEnabled: next });
+      trackEvent("[Daily Brief] 시스템 시간표 알림 토글", { enabled: next });
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, timetableAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleSchedule = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !dailyBriefSettings.scheduleAlertEnabled;
+    setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ scheduleAlertEnabled: next });
+      trackEvent("[Daily Brief] 시스템 학사일정 알림 토글", { enabled: next });
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleSchoolNotice = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !isSchoolNoticeEnabled;
+    setIsSchoolNoticeEnabled(next);
+    trackEvent("[Daily Brief] 시스템 학교 공지 알림 토글", { enabled: next });
+  };
+
+  const handleToggleDeptNotice = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !isDeptNoticeEnabled;
+    setIsDeptNoticeEnabled(next);
+    trackEvent("[Daily Brief] 시스템 학과 공지 알림 토글", { enabled: next });
+  };
+
+  // Custom routine toggle
   const handleToggle = async (id: number, currentEnabled: boolean, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const nextEnabled = !currentEnabled;
@@ -240,10 +313,8 @@ export default function MobileAgentReminderSetting() {
           </CreateNewRoutineButton>
         </HeaderBannerLeft>
         <HeaderBannerIllustration>
-          {/* 삼성 갤럭시 루틴 스타일 따뜻한 플랫 일러스트레이션 */}
           <svg viewBox="0 0 160 130" fill="none" xmlns="http://www.w3.org/2000/svg">
             <ellipse cx="80" cy="115" rx="60" ry="8" fill="#e2e8f0" />
-            {/* 소파 */}
             <path
               d="M30 75C30 70 35 65 42 65H118C125 65 130 70 130 75V105H30V75Z"
               fill="#eab308"
@@ -258,7 +329,6 @@ export default function MobileAgentReminderSetting() {
             />
             <rect x="35" y="105" width="8" height="12" rx="2" fill="#78350f" />
             <rect x="117" y="105" width="8" height="12" rx="2" fill="#78350f" />
-            {/* 사람 */}
             <circle cx="100" cy="35" r="10" fill="#fbcfe8" />
             <path
               d="M96 28C96 26 100 24 105 27C110 30 108 36 106 38C104 40 98 38 96 35Z"
@@ -272,7 +342,6 @@ export default function MobileAgentReminderSetting() {
               d="M86 75L72 90C70 92 68 98 72 100L95 100C98 100 100 95 98 90L92 75H86Z"
               fill="#ffffff"
             />
-            {/* 태블릿 */}
             <rect
               x="72"
               y="52"
@@ -291,14 +360,12 @@ export default function MobileAgentReminderSetting() {
               transform="rotate(-15 74 54)"
               fill="#93c5fd"
             />
-            {/* 음표 */}
             <path
               d="M62 30C62 28 66 28 66 32V38M66 32L74 29V35M74 35C74 37 71 39 69 38M66 38C66 40 63 42 61 41"
               stroke="#ea580c"
               strokeWidth="1.5"
               strokeLinecap="round"
             />
-            {/* 강아지 */}
             <ellipse cx="48" cy="98" rx="14" ry="9" fill="#d97706" />
             <circle cx="36" cy="92" r="6" fill="#d97706" />
             <path d="M34 88C32 86 31 89 33 91Z" fill="#b45309" />
@@ -314,7 +381,123 @@ export default function MobileAgentReminderSetting() {
         </HeaderBannerIllustration>
       </HeaderBannerCard>
 
-      {/* 1. 내가 등록한 루틴 섹션 */}
+      {/* 1. 기본 루틴 (시스템 제공) */}
+      <SectionWrapper>
+        <SectionTitleRow>
+          <SectionTitle>기본 루틴 (시스템 제공)</SectionTitle>
+          <SystemBadge>기본 제공</SystemBadge>
+        </SectionTitleRow>
+
+        <GroupCard>
+          {/* 오늘의 강의 & 시간표 알림 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable"))}>
+            <IconCircle $bgColor="#a855f7">
+              <Calendar size={20} color="#ffffff" />
+            </IconCircle>
+
+            <TextContentWrapper>
+              <RowMainTitle $disabled={!dailyBriefSettings.timetableAlertEnabled}>
+                오늘의 강의 & 시간표 알림
+              </RowMainTitle>
+              <RowSubTitle>
+                {dailyBriefSettings.timetableAlertEnabled
+                  ? `아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑 • 강의 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
+                  : "알림 꺼짐"}
+              </RowSubTitle>
+            </TextContentWrapper>
+
+            <RowRightAction onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={dailyBriefSettings.timetableAlertEnabled}
+                onCheckedChange={() => handleToggleTimetable({ stopPropagation: () => {} } as any)}
+              />
+            </RowRightAction>
+          </GroupRow>
+
+          <CardDivider />
+
+          {/* 학사일정 알림 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
+            <IconCircle $bgColor="#3b82f6">
+              <GraduationCap size={20} color="#ffffff" />
+            </IconCircle>
+
+            <TextContentWrapper>
+              <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
+                학사일정 알림
+              </RowMainTitle>
+              <RowSubTitle>
+                {dailyBriefSettings.scheduleAlertEnabled
+                  ? `아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"} 브리핑 • ${(dailyBriefSettings.advanceDays ?? 1) === 0 ? "당일 알림" : `${dailyBriefSettings.advanceDays ?? 1}일 전 알림`}`
+                  : "알림 꺼짐"}
+              </RowSubTitle>
+            </TextContentWrapper>
+
+            <RowRightAction onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={dailyBriefSettings.scheduleAlertEnabled}
+                onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
+              />
+            </RowRightAction>
+          </GroupRow>
+
+          <CardDivider />
+
+          {/* 학교 공지 알림 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
+            <IconCircle $bgColor="#5c9cf8">
+              <Bell size={20} color="#ffffff" />
+            </IconCircle>
+
+            <TextContentWrapper>
+              <RowMainTitle $disabled={!isSchoolNoticeEnabled}>
+                학교 공지 알림
+              </RowMainTitle>
+              <RowSubTitle>
+                {isSchoolNoticeEnabled
+                  ? `새 공지 및 관심 키워드 알림${schoolKeywordsCount > 0 ? ` (${schoolKeywordsCount}개 등록)` : ""}`
+                  : "알림 꺼짐"}
+              </RowSubTitle>
+            </TextContentWrapper>
+
+            <RowRightAction onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={isSchoolNoticeEnabled}
+                onCheckedChange={() => handleToggleSchoolNotice({ stopPropagation: () => {} } as any)}
+              />
+            </RowRightAction>
+          </GroupRow>
+
+          <CardDivider />
+
+          {/* 학과 공지 알림 */}
+          <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
+            <IconCircle $bgColor="#ff7a00">
+              <Bell size={20} color="#ffffff" />
+            </IconCircle>
+
+            <TextContentWrapper>
+              <RowMainTitle $disabled={!isDeptNoticeEnabled}>
+                학과 공지 알림
+              </RowMainTitle>
+              <RowSubTitle>
+                {isDeptNoticeEnabled
+                  ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` (${deptKeywordsCount}개 키워드)` : ""}`
+                  : "알림 꺼짐"}
+              </RowSubTitle>
+            </TextContentWrapper>
+
+            <RowRightAction onClick={(e) => e.stopPropagation()}>
+              <Switch
+                checked={isDeptNoticeEnabled}
+                onCheckedChange={() => handleToggleDeptNotice({ stopPropagation: () => {} } as any)}
+              />
+            </RowRightAction>
+          </GroupRow>
+        </GroupCard>
+      </SectionWrapper>
+
+      {/* 2. 내가 등록한 루틴 섹션 */}
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>내가 등록한 루틴</SectionTitle>
@@ -383,7 +566,7 @@ export default function MobileAgentReminderSetting() {
         )}
       </SectionWrapper>
 
-      {/* 2. 이동할 때 유용한 섹션 */}
+      {/* 3. 이동할 때 유용한 섹션 */}
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>이동할 때 유용한</SectionTitle>
@@ -415,7 +598,7 @@ export default function MobileAgentReminderSetting() {
         </GroupCard>
       </SectionWrapper>
 
-      {/* 3. 특정 시간이나 장소에서 유용한 섹션 */}
+      {/* 4. 특정 시간이나 장소에서 유용한 섹션 */}
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
@@ -447,7 +630,7 @@ export default function MobileAgentReminderSetting() {
         </GroupCard>
       </SectionWrapper>
 
-      {/* 4. 수업 및 학업 섹션 */}
+      {/* 5. 수업 및 캠퍼스 생활 섹션 */}
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
@@ -584,6 +767,15 @@ const CountBadge = styled.span`
   color: #2563eb;
   background-color: #dbeafe;
   padding: 2px 7px;
+  border-radius: 9999px;
+`;
+
+const SystemBadge = styled.span`
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  background-color: #f1f5f9;
+  padding: 2px 8px;
   border-radius: 9999px;
 `;
 

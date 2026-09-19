@@ -59,14 +59,16 @@ export const getDailyBriefSettings = async (): Promise<
  * Daily Brief 알림 설정 업데이트
  */
 export const updateDailyBriefSettings = async (
-  settings: DailyBriefSettings,
+  settings: Partial<DailyBriefSettings>,
 ): Promise<ApiResponse<DailyBriefSettings>> => {
-  setLocalDailyBriefSettings(settings);
+  const current = getLocalDailyBriefSettings();
+  const merged: DailyBriefSettings = { ...current, ...settings };
+  setLocalDailyBriefSettings(merged);
 
   try {
     const response = await tokenInstance.put<ApiResponse<DailyBriefSettings>>(
       "/api/daily-brief/settings",
-      settings,
+      merged,
     );
     if (response.data && response.data.data) {
       setLocalDailyBriefSettings(response.data.data);
@@ -79,6 +81,6 @@ export const updateDailyBriefSettings = async (
   return {
     result: [],
     msg: "성공",
-    data: settings,
+    data: merged,
   };
 };

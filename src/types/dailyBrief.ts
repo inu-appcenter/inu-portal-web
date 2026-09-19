@@ -14,6 +14,7 @@ export interface DailyBriefSettings {
   scheduleAlertEnabled: boolean; // 전체 학사일정 알림 활성화 여부
   scheduleDailyBriefTime: string; // "HH:mm" 포맷 (예: "08:30")
   scheduleScope: ScheduleScope; // "ALL" | "SCHOOL_ONLY" | "DEPT_ONLY"
+  advanceDays?: number; // 0, 1, 3, 7 등
 }
 
 export const DEFAULT_DAILY_BRIEF_SETTINGS: DailyBriefSettings = {
@@ -25,4 +26,6 @@ export const DEFAULT_DAILY_BRIEF_SETTINGS: DailyBriefSettings = {
   scheduleAlertEnabled: true,
   scheduleDailyBriefTime: "08:30",
   scheduleScope: "ALL",
+  advanceDays: 1,
 };
+
