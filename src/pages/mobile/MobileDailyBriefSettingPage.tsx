@@ -336,19 +336,6 @@ export default function MobileDailyBriefSettingPage() {
   return (
     <PageWrapper>
       <ContentContainer>
-        <BriefViewLinkBanner onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}>
-          <BriefBannerLeft>
-            <BriefBannerIcon>☀️</BriefBannerIcon>
-            <BriefBannerTextCol>
-              <BriefBannerTitle>오늘의 데일리 브리프 보기</BriefBannerTitle>
-              <BriefBannerSubtitle>
-                시간표, 날씨, 학식, 버스, 공지사항을 한눈에 확인해 보세요
-              </BriefBannerSubtitle>
-            </BriefBannerTextCol>
-          </BriefBannerLeft>
-          <Icon name="chevron-right" size={16} color="#2563EB" />
-        </BriefViewLinkBanner>
-
         <Swiper
           onSwiper={setSwiperRef}
           initialSlide={currentIndex}
@@ -2321,61 +2308,4 @@ const OsBody = styled.div`
   line-height: 1.45;
   white-space: pre-line;
   letter-spacing: -0.1px;
-`;
-
-const BriefViewLinkBanner = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  border: 1px solid #bfdbfe;
-  border-radius: 18px;
-  margin-bottom: 20px;
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
-  }
-
-  &:active {
-    transform: scale(0.985);
-  }
-`;
-
-const BriefBannerLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const BriefBannerIcon = styled.div`
-  font-size: 22px;
-  line-height: 1;
-`;
-
-const BriefBannerTextCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const BriefBannerTitle = styled.span`
-  font-size: 15px;
-  font-weight: 700;
-  color: #1e40af;
-  letter-spacing: -0.3px;
-`;
-
-const BriefBannerSubtitle = styled.span`
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #3b82f6;
-  letter-spacing: -0.2px;
 `;
