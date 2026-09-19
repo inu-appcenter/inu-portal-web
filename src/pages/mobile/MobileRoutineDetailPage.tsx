@@ -3220,8 +3220,8 @@ const EditFloatingPill = styled.div`
 `;
 
 const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
-  background: ${({ $isPrimary }) => ($isPrimary ? "#2563eb" : "none")};
-  color: ${({ $isPrimary }) => ($isPrimary ? "#ffffff" : "#4b5563")};
+  background: none;
+  color: ${({ $isPrimary }) => ($isPrimary ? "#2563eb" : "#4b5563")};
   border: none;
   padding: 9px 24px;
   font-size: 14.5px;
