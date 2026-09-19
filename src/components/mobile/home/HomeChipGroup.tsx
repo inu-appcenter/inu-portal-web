@@ -12,7 +12,7 @@ import {
 } from "@/resources/assets/icons/mobile-home/chip";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
-import { LuFlaskConical, LuPartyPopper, LuSparkles } from "react-icons/lu";
+import { LuFlaskConical, LuPartyPopper, LuRepeat } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { usePromotion } from "@/hooks/usePromotion";
@@ -78,12 +78,12 @@ const HomeChipGroup = () => {
     },
     {
       id: "routine",
-      iconComponent: LuSparkles,
-      iconColor: "#2563eb",
+      iconComponent: LuRepeat,
+      iconColor: "#4071B9",
       iconSize: 22,
-      title: "맞춤 루틴",
+      title: "루틴",
       onClick: () => {
-        mixpanelTrack.featureClicked("맞춤 루틴", "Home Chip");
+        mixpanelTrack.featureClicked("루틴", "Home Chip");
         navigate(ROUTES.LABS.ROUTINE);
       },
     },
