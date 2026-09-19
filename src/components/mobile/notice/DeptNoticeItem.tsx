@@ -3,6 +3,7 @@ import Skeleton from "@/components/common/Skeleton";
 import Icon from "@/components/common/Icon";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
 import Ripple from "@/components/common/Ripple";
+import { formatTimeAgo } from "@/utils/date";
 
 interface DeptNoticeItemProps {
   title?: string;
@@ -41,7 +42,7 @@ export const DeptNoticeItem = ({
         <Title>{title || ""}</Title>
         <BottomRow>
           <InfoRow>
-            <MetaText>{date || ""}</MetaText>
+            <MetaText>{formatTimeAgo(date)}</MetaText>
             {views !== undefined && (
               <>
                 <DividerPipe>|</DividerPipe>

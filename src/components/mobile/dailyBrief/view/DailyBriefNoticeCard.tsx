@@ -7,6 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import findTitleOrCode from "@/utils/findTitleOrCode";
 import Icon from "@/components/common/Icon";
+import { formatTimeAgo } from "@/utils/date";
 
 export default function DailyBriefNoticeCard() {
   const navigate = useNavigate();
@@ -148,7 +149,7 @@ export default function DailyBriefNoticeCard() {
                   <ItemContent>
                     <TopMetaRow>
                       <CategoryBadge>{notice.category || "일반"}</CategoryBadge>
-                      <NoticeDate>{notice.createDate || ""}</NoticeDate>
+                      <NoticeDate>{formatTimeAgo(notice.createDate)}</NoticeDate>
                     </TopMetaRow>
                     <NoticeTitleText>{notice.title}</NoticeTitleText>
                   </ItemContent>
@@ -191,7 +192,7 @@ export default function DailyBriefNoticeCard() {
                       <DeptBadge>
                         {userInfo.department || "학과"}
                       </DeptBadge>
-                      <NoticeDate>{deptNotice.createDate || ""}</NoticeDate>
+                      <NoticeDate>{formatTimeAgo(deptNotice.createDate)}</NoticeDate>
                     </TopMetaRow>
                     <NoticeTitleText>{deptNotice.title}</NoticeTitleText>
                   </ItemContent>
