@@ -157,14 +157,14 @@ export default function MobileDailyBriefCardOrderSetting() {
       </SectionHeaderRow>
 
       {/* 개별 박스 제거, 하나의 Box 안에 Divider로 구분된 깔끔한 리스트 */}
-      <Box style={{ width: "100%", padding: 0 }}>
+      <Box style={{ width: "100%", padding: 0, overflow: "hidden" }}>
         {order.map((cardKey, index) => {
           const meta = DAILY_BRIEF_CARD_METAS[cardKey];
           if (!meta) return null;
           const isVisible = visibility[cardKey] !== false;
 
           return (
-            <div key={cardKey}>
+            <CardItemWrapper key={cardKey}>
               <CardRow $disabled={!isVisible}>
                 {mode === "custom" && (
                   <OrderControlCol>
@@ -215,7 +215,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                 </SwitchWrapper>
               </CardRow>
               {index < order.length - 1 && <Divider margin="0" />}
-            </div>
+            </CardItemWrapper>
           );
         })}
       </Box>
@@ -243,9 +243,11 @@ export default function MobileDailyBriefCardOrderSetting() {
 
 const SettingContainer = styled.div`
   width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding-bottom: 32px;
 `;
 
 const ModeSelectTitle = styled.h3`
@@ -376,9 +378,20 @@ const ResetIconButton = styled.button`
   }
 `;
 
+const CardItemWrapper = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+`;
+
 const CardRow = styled.div<{ $disabled: boolean }>`
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
   gap: 14px;
   padding: 16px 20px;
   background-color: #ffffff;
@@ -456,5 +469,8 @@ const CardDesc = styled.span`
 
 const SwitchWrapper = styled.div`
   flex-shrink: 0;
-  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 8px;
 `;
