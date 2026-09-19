@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import styled, { keyframes, css } from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigationType } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
@@ -22,9 +22,7 @@ import Icon from "@/components/common/Icon";
 
 export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
 
-export function getDailyBriefTimeTheme(
-  hour: number = new Date().getHours(),
-): DailyBriefTimeTheme {
+export function getDailyBriefTimeTheme(hour: number = new Date().getHours()): DailyBriefTimeTheme {
   if (hour >= 5 && hour < 12) return "morning";
   if (hour >= 12 && hour < 18) return "afternoon";
   if (hour >= 18 && hour < 22) return "sunset";
@@ -48,13 +46,11 @@ const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
 
 const DAILY_BRIEF_INTRO_SHOWN_KEY = "daily_brief_intro_shown";
 
-// 세션/앱 라이프사이클 동안 초기 로딩을 1회만 수행하고, 카드 이동 후 뒤로가기 복귀 시 즉시 유지
-let hasCompletedInitialBriefLoad = false;
-
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
 
-  // 최초 방문 여부 확인 (미확인 시 모달 우선 표출)
+  // 최초 방문 여부 (온보딩 모달 미확인 시)
   const isFirstEverVisit = useMemo(() => {
     try {
       return !localStorage.getItem(DAILY_BRIEF_INTRO_SHOWN_KEY);
@@ -64,10 +60,13 @@ export default function MobileDailyBriefPage() {
   }, []);
 
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(isFirstEverVisit);
-  const isFirstLoad = !hasCompletedInitialBriefLoad;
-  const [isLoading, setIsLoading] = useState(!hasCompletedInitialBriefLoad);
-  const rankedCards = useDailyBriefRanking();
 
+  // 카드 상세 등으로 갔다가 '뒤로가기(POP)'로 돌아온 경우만 애니메이션 없이 즉시 유지
+  const isRestored = navigationType === "POP" && !isFirstEverVisit;
+  const [isLoading, setIsLoading] = useState(!isRestored);
+  const shouldAnimate = !isRestored;
+
+  const rankedCards = useDailyBriefRanking();
   const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
 
   useHeader({
@@ -76,34 +75,33 @@ export default function MobileDailyBriefPage() {
   });
 
   const startBriefLoading = () => {
-    if (!hasCompletedInitialBriefLoad) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        hasCompletedInitialBriefLoad = true;
-      }, 850);
-    }
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 850);
   };
 
   useEffect(() => {
     trackPageView("Daily Brief 메인");
 
-    // 최초 진입 시 모달이 띄워지는 경우, 모달 확인 버튼을 누를 때 로딩을 시작하도록 대기
+    // 최초 진입 시 모달이 띄워지는 경우 확인 버튼을 누를 때 로딩 시작
     if (isFirstEverVisit) {
       return;
     }
 
-    if (!hasCompletedInitialBriefLoad) {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-        hasCompletedInitialBriefLoad = true;
-      }, 850);
-
-      return () => clearTimeout(timer);
-    } else {
+    // 뒤로가기로 복귀한 경우 즉시 로딩 해제 (깜빡임 방지)
+    if (isRestored) {
       setIsLoading(false);
+      return;
     }
-  }, [isFirstEverVisit]);
+
+    // 외부에서 새로 진입한 경우: 850ms 로딩 애니메이션 실행 후 fade-in
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 850);
+
+    return () => clearTimeout(timer);
+  }, [isFirstEverVisit, isRestored]);
 
   const handleCloseInfoModal = () => {
     try {
@@ -111,10 +109,8 @@ export default function MobileDailyBriefPage() {
     } catch {}
     setIsInfoModalOpen(false);
 
-    // 최초 모달을 닫는 시점에 브리핑 로딩 시작
-    if (!hasCompletedInitialBriefLoad) {
-      startBriefLoading();
-    }
+    // 최초 모달 확인 시점에 브리핑 로딩 시작 -> 완료 시 순차 fade-in
+    startBriefLoading();
   };
 
   const renderCard = (cardType: DailyBriefCardType, index: number) => {
@@ -153,7 +149,7 @@ export default function MobileDailyBriefPage() {
         key={cardType}
         $index={index}
         $loaded={!isLoading}
-        $isFirstLoad={isFirstLoad}
+        $shouldAnimate={shouldAnimate}
       >
         {cardComponent}
       </AnimatedCardItem>
@@ -165,7 +161,7 @@ export default function MobileDailyBriefPage() {
       <ContentContainer>
         <DailyBriefHeader
           isLoading={isLoading}
-          isFirstLoad={isFirstLoad}
+          shouldAnimate={shouldAnimate}
           onBack={() => navigate(-1)}
         />
 
@@ -238,27 +234,32 @@ const cardFadeInUp = keyframes`
 const AnimatedCardItem = styled.div<{
   $index: number;
   $loaded: boolean;
-  $isFirstLoad?: boolean;
+  $shouldAnimate: boolean;
 }>`
   width: 100%;
 
-  ${({ $isFirstLoad = true, $loaded, $index }) =>
-    $isFirstLoad
-      ? css`
-          opacity: 0;
-          transform: translateY(18px);
+  ${({ $shouldAnimate, $loaded, $index }) => {
+    if (!$shouldAnimate) {
+      return css`
+        opacity: 1;
+        transform: translateY(0);
+      `;
+    }
 
-          ${$loaded &&
-          css`
-            animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1)
-              forwards;
-            animation-delay: ${$index * 0.08}s;
-          `}
-        `
-      : css`
-          opacity: 1;
-          transform: translateY(0);
-        `}
+    if (!$loaded) {
+      return css`
+        opacity: 0;
+        transform: translateY(18px);
+      `;
+    }
+
+    return css`
+      opacity: 0;
+      transform: translateY(18px);
+      animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: ${$index * 0.08}s;
+    `;
+  }}
 `;
 
 const FloatingBottomActions = styled.div`
