@@ -27,6 +27,7 @@ import { ROUTES } from "@/constants/routes";
 import { trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
 import { renderRoutineIcon, getDefaultIconAndBgForTools } from "@/pages/mobile/MobileRoutineDetailPage";
+import Ripple from "@/components/common/Ripple";
 
 export interface RoutinePreset {
   id: string;
@@ -308,6 +309,7 @@ export default function MobileAgentReminderSetting() {
             다양한 상황에 최적화된 일상의 루틴을 만들어 보세요.
           </BannerTitle>
           <CreateNewRoutineButton onClick={handleOpenNew}>
+            <Ripple color="rgba(255, 255, 255, 0.25)" />
             <Plus size={16} strokeWidth={2.5} />
             <span>나만의 루틴 만들기</span>
           </CreateNewRoutineButton>
@@ -391,6 +393,7 @@ export default function MobileAgentReminderSetting() {
         <GroupCard>
           {/* 오늘의 강의 & 시간표 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable"))}>
+            <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#a855f7">
               <Calendar size={20} color="#ffffff" />
             </IconCircle>
@@ -406,7 +409,7 @@ export default function MobileAgentReminderSetting() {
               </RowSubTitle>
             </TextContentWrapper>
 
-            <RowRightAction onClick={(e) => e.stopPropagation()}>
+            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
               <Switch
                 checked={dailyBriefSettings.timetableAlertEnabled}
                 onCheckedChange={() => handleToggleTimetable({ stopPropagation: () => {} } as any)}
@@ -418,6 +421,7 @@ export default function MobileAgentReminderSetting() {
 
           {/* 학사일정 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
+            <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#3b82f6">
               <GraduationCap size={20} color="#ffffff" />
             </IconCircle>
@@ -433,7 +437,7 @@ export default function MobileAgentReminderSetting() {
               </RowSubTitle>
             </TextContentWrapper>
 
-            <RowRightAction onClick={(e) => e.stopPropagation()}>
+            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
               <Switch
                 checked={dailyBriefSettings.scheduleAlertEnabled}
                 onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
@@ -445,6 +449,7 @@ export default function MobileAgentReminderSetting() {
 
           {/* 학교 공지 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
+            <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#5c9cf8">
               <Bell size={20} color="#ffffff" />
             </IconCircle>
@@ -460,7 +465,7 @@ export default function MobileAgentReminderSetting() {
               </RowSubTitle>
             </TextContentWrapper>
 
-            <RowRightAction onClick={(e) => e.stopPropagation()}>
+            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
               <Switch
                 checked={isSchoolNoticeEnabled}
                 onCheckedChange={() => handleToggleSchoolNotice({ stopPropagation: () => {} } as any)}
@@ -472,6 +477,7 @@ export default function MobileAgentReminderSetting() {
 
           {/* 학과 공지 알림 */}
           <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
+            <Ripple color="rgba(0, 0, 0, 0.05)" />
             <IconCircle $bgColor="#ff7a00">
               <Bell size={20} color="#ffffff" />
             </IconCircle>
@@ -487,7 +493,7 @@ export default function MobileAgentReminderSetting() {
               </RowSubTitle>
             </TextContentWrapper>
 
-            <RowRightAction onClick={(e) => e.stopPropagation()}>
+            <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
               <Switch
                 checked={isDeptNoticeEnabled}
                 onCheckedChange={() => handleToggleDeptNotice({ stopPropagation: () => {} } as any)}
@@ -520,6 +526,7 @@ export default function MobileAgentReminderSetting() {
               아래 추천 루틴을 누르거나 새 루틴을 추가해 보세요.
             </EmptySubText>
             <EmptyAddButton onClick={handleOpenNew}>
+              <Ripple color="rgba(255, 255, 255, 0.25)" />
               <Plus size={15} strokeWidth={2.5} />
               <span>새 루틴 만들기</span>
             </EmptyAddButton>
@@ -536,6 +543,7 @@ export default function MobileAgentReminderSetting() {
                       navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
                     }
                   >
+                    <Ripple color="rgba(0, 0, 0, 0.05)" />
                     <IconCircle $bgColor={bg}>
                       {renderRoutineIcon(iconId, 20, "#ffffff")}
                     </IconCircle>
@@ -550,7 +558,7 @@ export default function MobileAgentReminderSetting() {
                       </RowSubTitle>
                     </TextContentWrapper>
 
-                    <RowRightAction onClick={(e) => e.stopPropagation()}>
+                    <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
                       <Switch
                         checked={reminder.enabled}
                         onCheckedChange={() =>
@@ -582,6 +590,7 @@ export default function MobileAgentReminderSetting() {
                   navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
                 }
               >
+                <Ripple color="rgba(0, 0, 0, 0.05)" />
                 <IconCircle $bgColor={preset.iconBg}>
                   {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
                 </IconCircle>
@@ -591,7 +600,7 @@ export default function MobileAgentReminderSetting() {
                   <RowSubTitle>{preset.description}</RowSubTitle>
                 </TextContentWrapper>
 
-                <ChevronRight size={18} color="#d1d5db" />
+                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
               </GroupRow>
             </React.Fragment>
           ))}
@@ -614,6 +623,7 @@ export default function MobileAgentReminderSetting() {
                   navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
                 }
               >
+                <Ripple color="rgba(0, 0, 0, 0.05)" />
                 <IconCircle $bgColor={preset.iconBg}>
                   {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
                 </IconCircle>
@@ -623,7 +633,7 @@ export default function MobileAgentReminderSetting() {
                   <RowSubTitle>{preset.description}</RowSubTitle>
                 </TextContentWrapper>
 
-                <ChevronRight size={18} color="#d1d5db" />
+                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
               </GroupRow>
             </React.Fragment>
           ))}
@@ -646,6 +656,7 @@ export default function MobileAgentReminderSetting() {
                   navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
                 }
               >
+                <Ripple color="rgba(0, 0, 0, 0.05)" />
                 <IconCircle $bgColor={preset.iconBg}>
                   {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
                 </IconCircle>
@@ -655,7 +666,7 @@ export default function MobileAgentReminderSetting() {
                   <RowSubTitle>{preset.description}</RowSubTitle>
                 </TextContentWrapper>
 
-                <ChevronRight size={18} color="#d1d5db" />
+                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
               </GroupRow>
             </React.Fragment>
           ))}
@@ -707,6 +718,8 @@ const BannerTitle = styled.h1`
 `;
 
 const CreateNewRoutineButton = styled.button`
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -719,10 +732,10 @@ const CreateNewRoutineButton = styled.button`
   font-weight: 700;
   cursor: pointer;
   width: fit-content;
-  transition: background-color 0.15s ease;
 
-  &:hover {
-    background-color: #27272a;
+  span, svg {
+    position: relative;
+    z-index: 1;
   }
 `;
 
@@ -788,16 +801,13 @@ const GroupCard = styled.div`
 `;
 
 const GroupRow = styled.div`
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: #f8fafc;
-  }
 `;
 
 const CardDivider = styled.div`
@@ -807,6 +817,8 @@ const CardDivider = styled.div`
 `;
 
 const IconCircle = styled.div<{ $bgColor: string }>`
+  position: relative;
+  z-index: 1;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -818,6 +830,8 @@ const IconCircle = styled.div<{ $bgColor: string }>`
 `;
 
 const TextContentWrapper = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -846,6 +860,8 @@ const RowSubTitle = styled.div`
 `;
 
 const RowRightAction = styled.div`
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -888,6 +904,8 @@ const EmptySubText = styled.div`
 `;
 
 const EmptyAddButton = styled.button`
+  position: relative;
+  overflow: hidden;
   margin-top: 10px;
   display: inline-flex;
   align-items: center;
@@ -900,4 +918,9 @@ const EmptyAddButton = styled.button`
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
+
+  span, svg {
+    position: relative;
+    z-index: 1;
+  }
 `;

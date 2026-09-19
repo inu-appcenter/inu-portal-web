@@ -6,6 +6,7 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Divider from "@/components/common/Divider";
 import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
+import Ripple from "@/components/common/Ripple";
 import { RotateCcw } from "lucide-react";
 import {
   DailyBriefCardType,
@@ -110,6 +111,7 @@ export default function MobileDailyBriefCardOrderSetting() {
               $selected={mode === "auto"}
               onClick={() => handleModeChange("auto")}
             >
+              <Ripple color="rgba(59, 130, 246, 0.12)" />
               <RadioCircle $selected={mode === "auto"} />
               <ModeTextCol>
                 <ModeName>✨ 상황 맞춤 자동 추천</ModeName>
@@ -124,6 +126,7 @@ export default function MobileDailyBriefCardOrderSetting() {
               $selected={mode === "custom"}
               onClick={() => handleModeChange("custom")}
             >
+              <Ripple color="rgba(59, 130, 246, 0.12)" />
               <RadioCircle $selected={mode === "custom"} />
               <ModeTextCol>
                 <ModeName>직접 설정</ModeName>
@@ -151,6 +154,7 @@ export default function MobileDailyBriefCardOrderSetting() {
           title="기본 설정으로 초기화"
           aria-label="기본 설정으로 초기화"
         >
+          <Ripple color="rgba(0, 0, 0, 0.08)" />
           <RotateCcw size={15} color="#64748B" />
           <span>초기화</span>
         </ResetIconButton>
@@ -173,6 +177,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                       onClick={() => handleMoveUp(index)}
                       aria-label="위로 이동"
                     >
+                      <Ripple color="rgba(0, 0, 0, 0.1)" />
                       <Icon
                         name="chevron-up"
                         size={13}
@@ -184,6 +189,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                       onClick={() => handleMoveDown(index)}
                       aria-label="아래로 이동"
                     >
+                      <Ripple color="rgba(0, 0, 0, 0.1)" />
                       <Icon
                         name="chevron-down"
                         size={13}
@@ -205,7 +211,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                   <CardDesc>{meta.description}</CardDesc>
                 </CardInfoCol>
 
-                <SwitchWrapper>
+                <SwitchWrapper data-no-ripple="true">
                   <Switch
                     checked={isVisible}
                     onCheckedChange={(checked) =>
@@ -264,6 +270,8 @@ const ModeCardGrid = styled.div`
 `;
 
 const ModeOptionCard = styled.div<{ $selected: boolean }>`
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -281,6 +289,8 @@ const ModeOptionCard = styled.div<{ $selected: boolean }>`
 `;
 
 const RadioCircle = styled.div<{ $selected: boolean }>`
+  position: relative;
+  z-index: 1;
   width: 18px;
   height: 18px;
   border-radius: 9px;
@@ -303,6 +313,8 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
 `;
 
 const ModeTextCol = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -353,6 +365,8 @@ const SectionSubTitle = styled.p`
 `;
 
 const ResetIconButton = styled.button`
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -367,6 +381,11 @@ const ResetIconButton = styled.button`
   flex-shrink: 0;
   margin-top: 2px;
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     background: #e2e8f0;
@@ -407,6 +426,8 @@ const OrderControlCol = styled.div`
 `;
 
 const OrderButton = styled.button`
+  position: relative;
+  overflow: hidden;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   width: 24px;
@@ -417,6 +438,11 @@ const OrderButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover:not(:disabled) {
     background: #e2e8f0;

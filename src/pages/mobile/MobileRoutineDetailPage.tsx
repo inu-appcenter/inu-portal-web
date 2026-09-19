@@ -62,6 +62,7 @@ import Skeleton from "@/components/common/Skeleton";
 import { trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
+import Ripple from "@/components/common/Ripple";
 
 export interface RoutineTimeCondition {
   id: string;
@@ -1429,6 +1430,7 @@ export default function MobileRoutineDetailPage() {
 
                   {/* 1. 아침 당일 브리핑 시간 */}
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Clock size={24} color="#111827" />
                     </CardIconWrapper>
@@ -1438,7 +1440,7 @@ export default function MobileRoutineDetailPage() {
                         매일 아침 {isEditing ? sysTimetableTime : (dailyBriefSettings.timetableDailyBriefTime || "08:00")}
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectRow>
+                        <InlineSelectRow data-no-ripple="true">
                           <InlineSelect
                             value={sysTimetableTime}
                             onChange={(e) => setSysTimetableTime(e.target.value)}
@@ -1453,15 +1455,18 @@ export default function MobileRoutineDetailPage() {
                       )}
                     </CardContent>
                     {isEditing && (
-                      <Switch
-                        checked={sysTimetableDailyBrief}
-                        onCheckedChange={setSysTimetableDailyBrief}
-                      />
+                      <div style={{ position: "relative", zIndex: 2 }} data-no-ripple="true">
+                        <Switch
+                          checked={sysTimetableDailyBrief}
+                          onCheckedChange={setSysTimetableDailyBrief}
+                        />
+                      </div>
                     )}
                   </OneUiCard>
 
                   {/* 2. 수업 시작 전 알림 */}
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Calendar size={24} color="#a855f7" />
                     </CardIconWrapper>
@@ -1471,7 +1476,7 @@ export default function MobileRoutineDetailPage() {
                         수업 시작 {isEditing ? sysTimetablePreAlert : (dailyBriefSettings.timetablePreAlertMinutes || 10)}분 전 알림
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectWrapper>
+                        <InlineSelectWrapper data-no-ripple="true">
                           <InlineSelect
                             value={sysTimetablePreAlert}
                             onChange={(e) => setSysTimetablePreAlert(Number(e.target.value))}
@@ -1486,10 +1491,12 @@ export default function MobileRoutineDetailPage() {
                       )}
                     </CardContent>
                     {isEditing && (
-                      <Switch
-                        checked={sysTimetablePreAlertEnabled}
-                        onCheckedChange={setSysTimetablePreAlertEnabled}
-                      />
+                      <div style={{ position: "relative", zIndex: 2 }} data-no-ripple="true">
+                        <Switch
+                          checked={sysTimetablePreAlertEnabled}
+                          onCheckedChange={setSysTimetablePreAlertEnabled}
+                        />
+                      </div>
                     )}
                   </OneUiCard>
                 </DetailSection>
@@ -1498,6 +1505,7 @@ export default function MobileRoutineDetailPage() {
                   <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
 
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Calendar size={24} color="#a855f7" />
                     </CardIconWrapper>
@@ -1508,6 +1516,7 @@ export default function MobileRoutineDetailPage() {
                   </OneUiCard>
 
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Sun size={24} color="#5c9cf8" />
                     </CardIconWrapper>
@@ -1545,6 +1554,7 @@ export default function MobileRoutineDetailPage() {
 
                   {/* 1. 아침 학사일정 브리핑 시간 */}
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Clock size={24} color="#111827" />
                     </CardIconWrapper>
@@ -1554,7 +1564,7 @@ export default function MobileRoutineDetailPage() {
                         매일 아침 {isEditing ? sysScheduleTime : (dailyBriefSettings.scheduleDailyBriefTime || "08:30")}
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectWrapper>
+                        <InlineSelectWrapper data-no-ripple="true">
                           <InlineSelect
                             value={sysScheduleTime}
                             onChange={(e) => setSysScheduleTime(e.target.value)}
@@ -1572,6 +1582,7 @@ export default function MobileRoutineDetailPage() {
 
                   {/* 2. 사전 알림 기준 */}
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <GraduationCap size={24} color="#3b82f6" />
                     </CardIconWrapper>
@@ -1584,7 +1595,7 @@ export default function MobileRoutineDetailPage() {
                         })()}
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectWrapper>
+                        <InlineSelectWrapper data-no-ripple="true">
                           <InlineSelect
                             value={sysScheduleAdvanceDays}
                             onChange={(e) => setSysScheduleAdvanceDays(Number(e.target.value))}
@@ -1605,6 +1616,7 @@ export default function MobileRoutineDetailPage() {
                   <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
 
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <GraduationCap size={24} color="#3b82f6" />
                     </CardIconWrapper>
@@ -1619,7 +1631,7 @@ export default function MobileRoutineDetailPage() {
                         })()}
                       </CardBlueText>
                       {isEditing && (
-                        <InlineSelectWrapper>
+                        <InlineSelectWrapper data-no-ripple="true">
                           <InlineSelect
                             value={sysScheduleScope}
                             onChange={(e) => setSysScheduleScope(e.target.value as ScheduleScope)}
@@ -1657,6 +1669,7 @@ export default function MobileRoutineDetailPage() {
                   <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
 
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Clock size={24} color="#111827" />
                     </CardIconWrapper>
@@ -1688,6 +1701,7 @@ export default function MobileRoutineDetailPage() {
                               $active={isSub}
                               onClick={() => handleToggleSchoolCategory(cat)}
                             >
+                              <Ripple color={isSub ? "rgba(255, 255, 255, 0.25)" : "rgba(37, 99, 235, 0.12)"} />
                               {isSub && <Check size={13} strokeWidth={3} />}
                               <span>{cat}</span>
                             </CategoryChip>
@@ -1708,17 +1722,20 @@ export default function MobileRoutineDetailPage() {
                           $active={keywordFilterTab === "include"}
                           onClick={() => setKeywordFilterTab("include")}
                         >
+                          <Ripple color="rgba(0, 0, 0, 0.06)" />
                           관심 키워드 ({schoolKeywords.filter((k) => !k.isExcluded).length})
                         </KeywordTabBtn>
                         <KeywordTabBtn
                           $active={keywordFilterTab === "exclude"}
                           onClick={() => setKeywordFilterTab("exclude")}
                         >
+                          <Ripple color="rgba(0, 0, 0, 0.06)" />
                           제외 키워드 ({schoolKeywords.filter((k) => k.isExcluded).length})
                         </KeywordTabBtn>
                       </KeywordTabGroup>
 
                       <AddKeywordChipButton onClick={handleOpenAddKeyword}>
+                        <Ripple color="rgba(37, 99, 235, 0.15)" />
                         <Plus size={14} strokeWidth={2.5} />
                         <span>키워드 추가</span>
                       </AddKeywordChipButton>
@@ -1735,7 +1752,7 @@ export default function MobileRoutineDetailPage() {
                         {filteredSchoolKeywords.map((kw) => (
                           <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
                             <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
-                            <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
+                            <ChipDeleteBtn data-no-ripple="true" onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
                               <X size={13} color="#64748b" />
                             </ChipDeleteBtn>
                           </KeywordChip>
@@ -1766,6 +1783,7 @@ export default function MobileRoutineDetailPage() {
                   <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
 
                   <OneUiCard>
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <CardIconWrapper>
                       <Clock size={24} color="#111827" />
                     </CardIconWrapper>
@@ -1780,6 +1798,7 @@ export default function MobileRoutineDetailPage() {
                   <DetailSectionHeader>내 소속 학과</DetailSectionHeader>
 
                   <OneUiCard onClick={() => navigate(ROUTES.MYPAGE.PROFILE)}>
+                    <Ripple color="rgba(0, 0, 0, 0.06)" />
                     <CardIconWrapper>
                       <Building2 size={24} color="#ff7a00" />
                     </CardIconWrapper>
@@ -1806,17 +1825,20 @@ export default function MobileRoutineDetailPage() {
                           $active={keywordFilterTab === "include"}
                           onClick={() => setKeywordFilterTab("include")}
                         >
+                          <Ripple color="rgba(0, 0, 0, 0.06)" />
                           관심 키워드 ({deptKeywords.filter((k) => !k.isExcluded).length})
                         </KeywordTabBtn>
                         <KeywordTabBtn
                           $active={keywordFilterTab === "exclude"}
                           onClick={() => setKeywordFilterTab("exclude")}
                         >
+                          <Ripple color="rgba(0, 0, 0, 0.06)" />
                           제외 키워드 ({deptKeywords.filter((k) => k.isExcluded).length})
                         </KeywordTabBtn>
                       </KeywordTabGroup>
 
                       <AddKeywordChipButton onClick={handleOpenAddKeyword}>
+                        <Ripple color="rgba(37, 99, 235, 0.15)" />
                         <Plus size={14} strokeWidth={2.5} />
                         <span>키워드 추가</span>
                       </AddKeywordChipButton>
@@ -1833,7 +1855,7 @@ export default function MobileRoutineDetailPage() {
                         {filteredDeptKeywords.map((kw) => (
                           <KeywordChip key={kw.keywordId} $isExclude={kw.isExcluded}>
                             <span>{kw.isExcluded ? `-${kw.keyword}` : `#${kw.keyword}`}</span>
-                            <ChipDeleteBtn onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
+                            <ChipDeleteBtn data-no-ripple="true" onClick={() => handleDeleteKeyword(kw.keywordId, kw.keyword || "")}>
                               <X size={13} color="#64748b" />
                             </ChipDeleteBtn>
                           </KeywordChip>
@@ -1885,6 +1907,7 @@ export default function MobileRoutineDetailPage() {
                       key={cond.id}
                       onClick={() => isEditing && handleOpenEditCondition(cond)}
                     >
+                      <Ripple color="rgba(0, 0, 0, 0.06)" />
                       <CardIconWrapper>
                         <Clock size={24} color="#111827" />
                       </CardIconWrapper>
@@ -1896,6 +1919,7 @@ export default function MobileRoutineDetailPage() {
 
                       {isEditing && (
                         <MinusButton
+                          data-no-ripple="true"
                           type="button"
                           onClick={(e) => handleRemoveCondition(cond.id, e)}
                           title="시간 조건 삭제"
@@ -1910,6 +1934,7 @@ export default function MobileRoutineDetailPage() {
 
               {isEditing && (
                 <AddConditionCard onClick={handleOpenAddCondition}>
+                  <Ripple color="rgba(16, 185, 129, 0.12)" />
                   <Plus size={18} color="#10b981" strokeWidth={2.5} />
                   <span>알림 시간 추가</span>
                 </AddConditionCard>
@@ -1937,6 +1962,7 @@ export default function MobileRoutineDetailPage() {
 
                   return (
                     <OneUiCard key={toolId}>
+                      <Ripple color="rgba(0, 0, 0, 0.04)" />
                       <CardIconWrapper>{actionInfo.icon}</CardIconWrapper>
 
                       <CardContent>
@@ -1946,7 +1972,7 @@ export default function MobileRoutineDetailPage() {
                           <>
                             <CardBlueText>{selectedBusStop}</CardBlueText>
                             {isEditing && (
-                              <InlineSelectWrapper>
+                              <InlineSelectWrapper data-no-ripple="true">
                                 <InlineSelect
                                   value={selectedBusStop}
                                   onChange={(e) => setSelectedBusStop(e.target.value)}
@@ -1968,7 +1994,7 @@ export default function MobileRoutineDetailPage() {
                               {selectedCafeteria} • {selectedMealType === "DINNER" ? "석식" : "중식"}
                             </CardBlueText>
                             {isEditing && (
-                              <InlineSelectRow>
+                              <InlineSelectRow data-no-ripple="true">
                                 <InlineSelect
                                   value={selectedCafeteria}
                                   onChange={(e) => setSelectedCafeteria(e.target.value)}
@@ -2007,6 +2033,7 @@ export default function MobileRoutineDetailPage() {
 
                       {isEditing && (
                         <MinusButton
+                          data-no-ripple="true"
                           type="button"
                           onClick={() => removeTool(toolId)}
                           title="알림 내용 삭제"
@@ -2022,6 +2049,7 @@ export default function MobileRoutineDetailPage() {
               {/* 알림 내용 추가 버튼 */}
               {isEditing && availableToAdd.length > 0 && (
                 <AddConditionCard onClick={() => setIsToolDrawerOpen(true)}>
+                  <Ripple color="rgba(16, 185, 129, 0.12)" />
                   <Plus size={18} color="#10b981" strokeWidth={2.5} />
                   <span>알림 내용 추가</span>
                 </AddConditionCard>
@@ -2037,6 +2065,7 @@ export default function MobileRoutineDetailPage() {
       {isEditing ? (
         <EditFloatingPill>
           <EditPillButton onClick={handleCancelEdit} type="button">
+            <Ripple color="rgba(0, 0, 0, 0.08)" />
             취소
           </EditPillButton>
           <EditPillDivider />
@@ -2046,17 +2075,20 @@ export default function MobileRoutineDetailPage() {
             disabled={isSaving}
             type="button"
           >
+            <Ripple color="rgba(37, 99, 235, 0.15)" />
             {isSaving ? "저장 중..." : "저장"}
           </EditPillButton>
         </EditFloatingPill>
       ) : (
         <FloatingActionPill>
           <PillActionButton onClick={() => setIsEditing(true)}>
+            <Ripple color="rgba(0, 0, 0, 0.08)" />
             <Pencil size={20} color="#111827" />
             <span>편집</span>
           </PillActionButton>
 
           <PillActionButton onClick={handleTestDispatch} disabled={isTesting}>
+            <Ripple color="rgba(0, 0, 0, 0.08)" />
             <Send size={20} color={isTesting ? "#9ca3af" : "#111827"} />
             <span>{isTesting ? "발송 중" : "테스트"}</span>
           </PillActionButton>
@@ -2064,11 +2096,13 @@ export default function MobileRoutineDetailPage() {
           {/* 시스템 루틴은 삭제 불가 */}
           {isSystemRoutine ? null : reminder ? (
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
+              <Ripple color="rgba(239, 68, 68, 0.12)" />
               <Trash2 size={20} color="#ef4444" />
               <span style={{ color: "#ef4444" }}>삭제</span>
             </PillActionButton>
           ) : preset ? (
             <PillActionButton onClick={handleSavePresetDirect}>
+              <Ripple color="rgba(0, 0, 0, 0.08)" />
               <Download size={20} color="#111827" />
               <span>저장</span>
             </PillActionButton>
@@ -2155,6 +2189,7 @@ export default function MobileRoutineDetailPage() {
                   type="button"
                   title={c.label}
                 >
+                  <Ripple color="rgba(255, 255, 255, 0.3)" />
                   {isSelected && <Check size={16} color="#ffffff" strokeWidth={3} />}
                 </ColorSelectButton>
               );
@@ -2173,6 +2208,7 @@ export default function MobileRoutineDetailPage() {
                   onClick={() => setTempIcon(item.id)}
                   type="button"
                 >
+                  <Ripple color="rgba(37, 99, 235, 0.1)" />
                   <IconCirclePreview $selected={isSelected} $bgColor={tempColor}>
                     {renderRoutineIcon(item.id, 22, isSelected ? "#ffffff" : "#475569")}
                   </IconCirclePreview>
@@ -2208,6 +2244,7 @@ export default function MobileRoutineDetailPage() {
                 onClick={() => setModalAmpm("AM")}
                 type="button"
               >
+                <Ripple color={modalAmpm === "AM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
                 오전
               </AmPmButton>
               <AmPmButton
@@ -2215,6 +2252,7 @@ export default function MobileRoutineDetailPage() {
                 onClick={() => setModalAmpm("PM")}
                 type="button"
               >
+                <Ripple color={modalAmpm === "PM" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.08)"} />
                 오후
               </AmPmButton>
             </AmPmToggle>
@@ -2259,6 +2297,7 @@ export default function MobileRoutineDetailPage() {
                   $active={isSelected}
                   onClick={() => toggleModalDay(day.key)}
                 >
+                  <Ripple color={isSelected ? "rgba(255, 255, 255, 0.25)" : "rgba(37, 99, 235, 0.1)"} />
                   {day.label}
                 </DayCircleButton>
               );
@@ -2298,6 +2337,7 @@ export default function MobileRoutineDetailPage() {
             <DrawerList>
               {availableToAdd.map((action) => (
                 <DrawerItem key={action.id} onClick={() => addTool(action.id)}>
+                  <Ripple color="rgba(0, 0, 0, 0.06)" />
                   <DrawerIconCircle $bgColor={action.iconBg}>
                     {React.cloneElement(action.icon, { size: 20, color: "#ffffff" })}
                   </DrawerIconCircle>
@@ -2505,10 +2545,13 @@ const OneUiCard = styled.div`
   gap: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   position: relative;
+  overflow: hidden;
   cursor: pointer;
 `;
 
 const CardIconWrapper = styled.div`
+  position: relative;
+  z-index: 1;
   width: 32px;
   display: flex;
   align-items: center;
@@ -2517,6 +2560,8 @@ const CardIconWrapper = styled.div`
 `;
 
 const CardContent = styled.div`
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -2546,6 +2591,8 @@ const CardSubDesc = styled.div`
 `;
 
 const MinusButton = styled.button`
+  position: relative;
+  z-index: 2;
   background: none;
   border: none;
   width: 32px;
@@ -2565,6 +2612,8 @@ const MinusButton = styled.button`
 `;
 
 const AddConditionCard = styled.button`
+  position: relative;
+  overflow: hidden;
   background: #ffffff;
   border-radius: 24px;
   border: 1px solid #e9ecef;
@@ -2576,6 +2625,11 @@ const AddConditionCard = styled.button`
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   transition: background-color 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   span {
     font-size: 15px;
@@ -2649,6 +2703,8 @@ const AmPmToggle = styled.div`
 `;
 
 const AmPmButton = styled.button<{ $active: boolean }>`
+  position: relative;
+  overflow: hidden;
   border: none;
   border-radius: 9999px;
   padding: 6px 14px;
@@ -2658,6 +2714,11 @@ const AmPmButton = styled.button<{ $active: boolean }>`
   background-color: ${({ $active }) => ($active ? "#2563eb" : "transparent")};
   color: ${({ $active }) => ($active ? "#ffffff" : "#64748b")};
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
 const TimeInputGroup = styled.div`
@@ -2694,6 +2755,8 @@ const DayCircleRow = styled.div`
 `;
 
 const DayCircleButton = styled.button<{ $active: boolean }>`
+  position: relative;
+  overflow: hidden;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -2707,13 +2770,22 @@ const DayCircleButton = styled.button<{ $active: boolean }>`
   background-color: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
   color: ${({ $active }) => ($active ? "#ffffff" : "#64748b")};
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
 const InlineSelectWrapper = styled.div`
+  position: relative;
+  z-index: 2;
   margin-top: 6px;
 `;
 
 const InlineSelectRow = styled.div`
+  position: relative;
+  z-index: 2;
   display: flex;
   gap: 8px;
   margin-top: 6px;
@@ -2756,6 +2828,8 @@ const CategorySkeletonRow = styled.div`
 `;
 
 const CategoryChip = styled.button<{ $active: boolean }>`
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -2768,6 +2842,11 @@ const CategoryChip = styled.button<{ $active: boolean }>`
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     opacity: 0.9;
@@ -2802,6 +2881,8 @@ const KeywordTabGroup = styled.div`
 `;
 
 const KeywordTabBtn = styled.button<{ $active: boolean }>`
+  position: relative;
+  overflow: hidden;
   border: none;
   border-radius: 9999px;
   padding: 5px 12px;
@@ -2812,9 +2893,16 @@ const KeywordTabBtn = styled.button<{ $active: boolean }>`
   color: ${({ $active }) => ($active ? "#111827" : "#64748b")};
   box-shadow: ${({ $active }) => ($active ? "0 1px 3px rgba(0, 0, 0, 0.1)" : "none")};
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
 const AddKeywordChipButton = styled.button`
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -2827,6 +2915,11 @@ const AddKeywordChipButton = styled.button`
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     background-color: #e2e8f0;
@@ -2860,6 +2953,8 @@ const KeywordChip = styled.div<{ $isExclude?: boolean }>`
 `;
 
 const ChipDeleteBtn = styled.button`
+  position: relative;
+  z-index: 2;
   background: none;
   border: none;
   padding: 0;
@@ -3021,6 +3116,8 @@ const ColorPickerRow = styled.div`
 `;
 
 const ColorSelectButton = styled.button<{ $color: string; $selected: boolean }>`
+  position: relative;
+  overflow: hidden;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -3032,6 +3129,11 @@ const ColorSelectButton = styled.button<{ $color: string; $selected: boolean }>`
   justify-content: center;
   transition: transform 0.15s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     transform: scale(1.1);
@@ -3045,6 +3147,8 @@ const IconGrid = styled.div`
 `;
 
 const IconGridItem = styled.button<{ $selected: boolean; $bgColor: string }>`
+  position: relative;
+  overflow: hidden;
   background-color: ${({ $selected }) => ($selected ? "#f1f5f9" : "#ffffff")};
   border: ${({ $selected }) => ($selected ? "2px solid #2563eb" : "1px solid #e2e8f0")};
   border-radius: 16px;
@@ -3055,6 +3159,11 @@ const IconGridItem = styled.button<{ $selected: boolean; $bgColor: string }>`
   gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     background-color: #f8fafc;
@@ -3102,6 +3211,8 @@ const FloatingActionPill = styled.div`
 `;
 
 const PillActionButton = styled.button`
+  position: relative;
+  overflow: hidden;
   background: none;
   border: none;
   display: flex;
@@ -3112,6 +3223,11 @@ const PillActionButton = styled.button`
   padding: 4px 6px;
   border-radius: 12px;
   transition: transform 0.1s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   span {
     font-size: 11.5px;
@@ -3152,6 +3268,8 @@ const EditFloatingPill = styled.div`
 `;
 
 const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
+  position: relative;
+  overflow: hidden;
   background: none;
   border: none;
   font-size: 15px;
@@ -3159,7 +3277,13 @@ const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
   color: ${({ $isPrimary }) => ($isPrimary ? "#2563eb" : "#111827")};
   cursor: pointer;
   padding: 4px 8px;
+  border-radius: 9999px;
   transition: transform 0.1s ease, opacity 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     transform: scale(1.06);
@@ -3246,6 +3370,8 @@ const DrawerList = styled.div`
 `;
 
 const DrawerItem = styled.div`
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -3255,6 +3381,11 @@ const DrawerItem = styled.div`
   border: 1px solid #edf2f7;
   cursor: pointer;
   transition: all 0.15s ease;
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   &:hover {
     background-color: #f1f5f9;
