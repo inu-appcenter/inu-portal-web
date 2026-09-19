@@ -8,6 +8,7 @@ import ConvienienceStoreIcon from "@/resources/assets/illustrations/map/markers/
 import ManRestIcon from "@/resources/assets/illustrations/map/markers/man-restroom.svg";
 import WomanRestIcon from "@/resources/assets/illustrations/map/markers/woman-restroom.svg";
 import PublicRestIcon from "@/resources/assets/illustrations/map/markers/public-restroom.svg";
+import TumblerWasherIcon from "@/resources/assets/illustrations/map/markers/tumbler-washer.svg";
 
 import { useState, ReactNode, useRef, useEffect } from "react";
 import { Place } from "@/components/map/DB";
@@ -153,6 +154,7 @@ const PlaceList = ({
   }, [openedMarkerId, places, config]);
 
   const getIcon = (place: Place) => {
+    if (selectedTab === "텀블러") return TumblerWasherIcon;
     if (selectedTab === "카페") return CafeIcon;
     if (selectedTab === "식당") {
       return place.category === "식당"

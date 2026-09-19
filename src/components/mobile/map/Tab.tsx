@@ -46,6 +46,11 @@ const Tab = ({
         isSelected={selectedTab === "식당"}
         onClick={() => handleTabClick("식당")}
       />
+      <TabButton
+        text={"텀블러 세척기"}
+        isSelected={selectedTab === "텀블러"}
+        onClick={() => handleTabClick("텀블러")}
+      />
     </TabWrapper>
   );
 };
@@ -54,15 +59,23 @@ const TabWrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  justify-content: space-between;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
   width: fit-content;
   min-width: fit-content;
+  flex-shrink: 0;
   height: fit-content;
   padding: 4px 15px;
   box-sizing: border-box;
+  white-space: nowrap;
   border-bottom: 2px solid
     ${({ isSelected }) => (isSelected ? "#0E4D9D" : "#B5B5B5")};
   font-style: normal;
