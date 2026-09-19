@@ -7,7 +7,7 @@ import { ROUTES } from "@/constants/routes";
 export default function DailyBriefCafeteriaCard() {
   const navigate = useNavigate();
   const [menus, setMenus] = useState<string[]>([]);
-  const [cafeteriaName, setCafeteriaName] = useState("제1학생식당");
+  const [cafeteriaName, setCafeteriaName] = useState("학생식당");
 
   const todayDay = new Date().getDay(); // 0(일) ~ 6(토)
   // 주말이면 월요일(1) 기준
@@ -15,26 +15,43 @@ export default function DailyBriefCafeteriaCard() {
 
   useEffect(() => {
     let isMounted = true;
-    void getCafeterias("제1학생식당", apiDay)
-      .then((res) => {
+
+    const fetchMenu = async () => {
+      // 우선 학생식당 조회
+      try {
+        const res = await getCafeterias("학생식당", apiDay);
         if (isMounted && res.data) {
           const parsed = res.data.filter(Boolean) as string[];
           if (parsed.length > 0) {
+            setCafeteriaName("학생식당");
             setMenus(parsed);
-          } else {
-            // 다른 식당 시도
-            void getCafeterias("제2학생식당", apiDay).then((res2) => {
-              if (isMounted && res2.data) {
-                setCafeteriaName("제2학생식당");
-                setMenus(res2.data.filter(Boolean) as string[]);
-              }
-            });
+            return;
           }
         }
-      })
-      .catch((err) => {
-        console.warn("학식 메뉴 조회 실패:", err);
-      });
+      } catch (err) {
+        console.warn("학생식당 메뉴 조회 실패:", err);
+      }
+
+      // 다른 식당들 순차 조회
+      const targets = ["제1기숙사식당", "2기숙사 식당", "사범대식당", "2호관(교직원)식당", "27호관식당"];
+      for (const target of targets) {
+        try {
+          const res = await getCafeterias(target, apiDay);
+          if (isMounted && res.data) {
+            const parsed = res.data.filter(Boolean) as string[];
+            if (parsed.length > 0) {
+              setCafeteriaName(target);
+              setMenus(parsed);
+              return;
+            }
+          }
+        } catch (e) {
+          // continue
+        }
+      }
+    };
+
+    fetchMenu();
 
     return () => {
       isMounted = false;
@@ -44,12 +61,16 @@ export default function DailyBriefCafeteriaCard() {
   const representativeMenu =
     menus[0] || "등심돈까스 & 미니우동 · 제육볶음정식";
 
+  const handleNavigateToMenu = () => {
+    navigate(`${ROUTES.BOARD.MENU}?category=${encodeURIComponent(cafeteriaName)}`);
+  };
+
   return (
     <SectionWrapper>
       <ContextIntro>
         맛있는 식사와 함께 활기찬 캠퍼스 라이프를 즐겨보세요.
       </ContextIntro>
-      <CardContainer onClick={() => navigate(ROUTES.BOARD.MENU)}>
+      <CardContainer onClick={handleNavigateToMenu}>
         <CardHeader>
           <CardBrandTitle>학식 메뉴</CardBrandTitle>
           <CafeteriaIconBadge>🍴</CafeteriaIconBadge>
@@ -69,10 +90,10 @@ export default function DailyBriefCafeteriaCard() {
         <BlackActionButton
           onClick={(e) => {
             e.stopPropagation();
-            navigate(ROUTES.BOARD.MENU);
+            handleNavigateToMenu();
           }}
         >
-          식단표 전체보기
+          {cafeteriaName} 식단표 보러가기
         </BlackActionButton>
       </CardContainer>
     </SectionWrapper>
@@ -161,7 +182,7 @@ const ThumbnailArt = styled.span`
 `;
 
 const ThumbnailTag = styled.span`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #c7d2fe;
   letter-spacing: -0.2px;

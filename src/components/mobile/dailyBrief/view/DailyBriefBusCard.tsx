@@ -7,6 +7,7 @@ import useBusArrival from "@/hooks/useBusArrival";
 import useUserStore from "@/stores/useUserStore";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
+import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import type { BusData } from "@/types/bus";
 
 // 홈페이지 버스 위젯과 동일한 노선별 컬러 매핑
@@ -216,6 +217,19 @@ export default function DailyBriefBusCard() {
     });
   }, [busArrivalList]);
 
+  const handleCardClick = () => {
+    if (primaryStop?.stopName) {
+      navigate(getPreferredBusUiRoute(busDirection, primaryStop.stopName));
+    } else {
+      navigate(ROUTES.BUS.ROOT);
+    }
+  };
+
+  const handleBusItemClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleCardClick();
+  };
+
   return (
     <SectionWrapper>
       <ContextIntro>
@@ -223,7 +237,7 @@ export default function DailyBriefBusCard() {
           ? "등교 버스 도착 정보를 확인해 보세요."
           : "하교 버스 도착 정보를 확인해 보세요."}
       </ContextIntro>
-      <CardContainer onClick={() => navigate(ROUTES.BUS.ROOT)}>
+      <CardContainer onClick={handleCardClick}>
         <CardHeader>
           <HeaderLeft>
             <CardTitle>
@@ -246,7 +260,6 @@ export default function DailyBriefBusCard() {
               </DirectionButton>
             </DirectionToggleGroup>
           </HeaderLeft>
-          <BadgeText>실시간</BadgeText>
         </CardHeader>
 
         <BusList>
@@ -258,7 +271,7 @@ export default function DailyBriefBusCard() {
             displayBuses.map((bus, idx) => (
               <React.Fragment key={bus.id || idx}>
                 {idx > 0 && <ListDivider />}
-                <BusItemRow>
+                <BusItemRow onClick={handleBusItemClick}>
                   <BusLeftSection>
                     <BusIcon color={bus.color} />
                     <BusNumber>{bus.number}</BusNumber>
@@ -276,10 +289,10 @@ export default function DailyBriefBusCard() {
           <MoreButton
             onClick={(e) => {
               e.stopPropagation();
-              navigate(ROUTES.BUS.ROOT);
+              handleCardClick();
             }}
           >
-            버스 전체보기
+            노선 전체보기
           </MoreButton>
         </FooterRow>
       </CardContainer>
@@ -369,15 +382,6 @@ const DirectionButton = styled.button<{ $active: boolean }>`
   transition: all 0.15s ease;
 `;
 
-const BadgeText = styled.span`
-  font-size: 12px;
-  font-weight: 800;
-  color: #2563eb;
-  background-color: #eff6ff;
-  padding: 3px 8px;
-  border-radius: 6px;
-`;
-
 const BusList = styled.div`
   display: flex;
   flex-direction: column;
@@ -393,6 +397,14 @@ const BusItemRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.7;
+  }
 `;
 
 const BusLeftSection = styled.div`

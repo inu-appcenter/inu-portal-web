@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import useUserStore from "@/stores/useUserStore";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
+import { getSchedules } from "@/apis/schedules";
+import { Schedule } from "@/types/schedules";
 import { ROUTES } from "@/constants/routes";
 import { formatHoursToTime } from "@/utils/timetable";
 import Icon from "@/components/common/Icon";
@@ -14,6 +16,8 @@ export default function DailyBriefTimetableCard() {
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
   const { timetables, selectedSemester } = useTimetableStore();
 
+  const [todaySchedules, setTodaySchedules] = useState<Schedule[]>([]);
+
   useTimeTables(undefined, undefined, {
     enabled: isLoggedIn,
   });
@@ -21,6 +25,33 @@ export default function DailyBriefTimetableCard() {
   const now = useMemo(() => new Date(), []);
   const todayDayOfWeek = (now.getDay() + 6) % 7; // 0: 월 ~ 6: 일
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  // 당일 학사일정 조회
+  useEffect(() => {
+    let isMounted = true;
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const todayStr = `${year}-${String(month).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+    void getSchedules(year, month)
+      .then((res) => {
+        if (isMounted && res.data) {
+          const matched = res.data.filter((sched) => {
+            const start = sched.start ? sched.start.split("T")[0] : "";
+            const end = sched.end ? sched.end.split("T")[0] : start;
+            return todayStr >= start && todayStr <= end;
+          });
+          setTodaySchedules(matched);
+        }
+      })
+      .catch((err) => {
+        console.warn("학사일정 조회 실패:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [now]);
 
   // 대표 시간표 찾기
   const representativeTimetableId = useMemo(() => {
@@ -81,7 +112,7 @@ export default function DailyBriefTimetableCard() {
       <ContextIntro>{introText}</ContextIntro>
       <CardContainer onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
         <CardHeader>
-          <CardTitle>오늘의 일정</CardTitle>
+          <CardTitle>오늘의 강의</CardTitle>
           <EditButton
             onClick={(e) => {
               e.stopPropagation();
@@ -92,6 +123,24 @@ export default function DailyBriefTimetableCard() {
             <Icon name="edit-pencil-01" size={16} color="#8A92A0" />
           </EditButton>
         </CardHeader>
+
+        {/* 당일 학사일정이 있을 경우 표출하는 학사일정 알림 배너 */}
+        {todaySchedules.length > 0 && (
+          <AcademicScheduleBanner
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(ROUTES.BOARD.CALENDAR);
+            }}
+          >
+            <ScheduleLeft>
+              <ScheduleBadge>학사일정</ScheduleBadge>
+              <ScheduleTitleText>
+                {todaySchedules.map((s) => s.title).join(", ")}
+              </ScheduleTitleText>
+            </ScheduleLeft>
+            <Icon name="chevron-right" size={14} color="#6b7280" />
+          </AcademicScheduleBanner>
+        )}
 
         <Divider />
 
@@ -185,6 +234,50 @@ const CardTitle = styled.h2`
   color: #111827;
   letter-spacing: -0.4px;
   margin: 0;
+`;
+
+const AcademicScheduleBanner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:active {
+    background-color: #f1f5f9;
+  }
+`;
+
+const ScheduleLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+`;
+
+const ScheduleBadge = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #0284c7;
+  background-color: #e0f2fe;
+  padding: 2px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+`;
+
+const ScheduleTitleText = styled.span`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const EditButton = styled.button`

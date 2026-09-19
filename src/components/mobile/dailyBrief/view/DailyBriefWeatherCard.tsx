@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getWeathers } from "@/apis/weathers";
 import { WeatherInfo } from "@/types/weathers";
@@ -30,114 +30,63 @@ export default function DailyBriefWeatherCard() {
     window.open(NAVER_WEATHER_URL, "_blank", "noopener,noreferrer");
   };
 
-  const currentHour = new Date().getHours();
-
-  // 시간대별 예보 목업/계산
-  const hourlyForecast = useMemo(() => {
-    const hours = [];
-    for (let i = 0; i < 6; i++) {
-      const h = (currentHour + i) % 24;
-      const period = h < 12 ? "오전" : "오후";
-      const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
-      let rainProb = 0;
-      let icon = "☀️";
-
-      if (weatherData?.sky?.includes("비")) {
-        rainProb = 60 + i * 5;
-        icon = "🌧️";
-      } else if (
-        weatherData?.sky?.includes("구름") ||
-        weatherData?.sky?.includes("흐림")
-      ) {
-        rainProb = i % 2 === 0 ? 20 : 10;
-        icon = "⛅";
-      } else {
-        rainProb = i === 2 || i === 4 ? 20 : 0;
-        icon = h >= 6 && h <= 18 ? "☀️" : "🌙";
-      }
-
-      hours.push({
-        time: `${period} ${displayHour}시`,
-        icon,
-        rainProb: `${rainProb}%`,
-      });
-    }
-    return hours;
-  }, [currentHour, weatherData?.sky]);
-
   const rawTemp = weatherData?.temperature?.replace(/[^0-9.-]/g, "") || "21";
-  const tempNumber = parseInt(rawTemp, 10) || 21;
-  const maxTemp = tempNumber + 4;
-  const minTemp = tempNumber - 5;
-  const skyText = weatherData?.sky || "화창";
+  const skyText = weatherData?.sky || "맑음";
   const pm10Grade = weatherData?.pm10Grade || "보통";
+  const pm10Value = weatherData?.pm10Value ? `${weatherData.pm10Value}㎍/㎥` : "";
   const pm25Grade = weatherData?.pm25Grade || "좋음";
+  const pm25Value = weatherData?.pm25Value ? `${weatherData.pm25Value}㎍/㎥` : "";
+
+  const getWeatherEmoji = (sky: string) => {
+    if (sky.includes("비")) return "🌧️";
+    if (sky.includes("눈")) return "❄️";
+    if (sky.includes("구름") || sky.includes("흐림")) return "⛅";
+    return "☀️";
+  };
 
   return (
     <SectionWrapper>
-      <ContextIntro>날씨 예보를 확인해 보세요.</ContextIntro>
+      <ContextIntro>송도 캠퍼스 날씨를 확인해 보세요.</ContextIntro>
       <WeatherCardWrapper onClick={handleCardClick} role="button" tabIndex={0}>
         <CardHeader>
-          <CardTitle>현재 날씨</CardTitle>
+          <HeaderLeft>
+            <CardTitle>캠퍼스 날씨</CardTitle>
+            <LocationBadge>📍 연수구 송도동</LocationBadge>
+          </HeaderLeft>
           <LinkIconBadge aria-label="네이버 날씨 새창 열기">
             <Icon name="link-external" size={15} color="#FFFFFF" />
           </LinkIconBadge>
         </CardHeader>
 
         <MainWeatherRow>
-          <SunIconCircle>
-            <InnerSun />
-          </SunIconCircle>
+          <WeatherEmojiBadge>{getWeatherEmoji(skyText)}</WeatherEmojiBadge>
           <TempInfoWrapper>
-            <TempDegreeRow>
-              <CurrentTemp>{rawTemp}°</CurrentTemp>
-              <RightMeta>
-                <SkyStatus>{skyText}</SkyStatus>
-                <TempRange>
-                  ↑{maxTemp}° / ↓{minTemp}°
-                </TempRange>
-              </RightMeta>
-            </TempDegreeRow>
-            <LocationRow>
-              <LocationPin>📍</LocationPin>
-              <span>인천 송도 캠퍼스</span>
-            </LocationRow>
+            <CurrentTemp>{rawTemp}°</CurrentTemp>
+            <SkyStatus>{skyText}</SkyStatus>
           </TempInfoWrapper>
         </MainWeatherRow>
 
-        <InfoTextBlock>
-          <InfoItem>
-            <InfoLabel>오늘의 기온</InfoLabel>
-            <InfoValue>어제와 기온이 거의 비슷합니다</InfoValue>
-          </InfoItem>
-          <InfoItem>
-            <InfoLabel>일몰 시각</InfoLabel>
-            <InfoValue>일몰 시각은 오후 6:37 입니다</InfoValue>
-          </InfoItem>
-        </InfoTextBlock>
+        <AirQualityGrid>
+          <AirQualityBox>
+            <AirQualityTitle>미세먼지</AirQualityTitle>
+            <AirQualityStatusRow>
+              <GradeBadge $grade={pm10Grade}>{pm10Grade}</GradeBadge>
+              {pm10Value && <ValueText>{pm10Value}</ValueText>}
+            </AirQualityStatusRow>
+          </AirQualityBox>
 
-        <PrecipitationSection>
-          <PrecipitationTitle>강수 확률</PrecipitationTitle>
-          <HourlyForecastScroll>
-            {hourlyForecast.map((item, idx) => (
-              <HourlyItem key={idx}>
-                <HourTime>{item.time}</HourTime>
-                <HourIcon>{item.icon}</HourIcon>
-                <RainProbRow>
-                  <UmbrellaIcon>☂</UmbrellaIcon>
-                  <span>{item.rainProb}</span>
-                </RainProbRow>
-              </HourlyItem>
-            ))}
-          </HourlyForecastScroll>
-        </PrecipitationSection>
+          <AirQualityBox>
+            <AirQualityTitle>초미세먼지</AirQualityTitle>
+            <AirQualityStatusRow>
+              <GradeBadge $grade={pm25Grade}>{pm25Grade}</GradeBadge>
+              {pm25Value && <ValueText>{pm25Value}</ValueText>}
+            </AirQualityStatusRow>
+          </AirQualityBox>
+        </AirQualityGrid>
 
-        <AirQualityFooter>
-          <AirQualityLabel>미세먼지</AirQualityLabel>
-          <AirQualityValue>
-            {pm10Grade} · 초미세먼지 {pm25Grade}
-          </AirQualityValue>
-        </AirQualityFooter>
+        <FooterRow>
+          <FooterTip>상세 예보 및 주간 날씨는 네이버 날씨에서 확인 가능해요</FooterTip>
+        </FooterRow>
       </WeatherCardWrapper>
     </SectionWrapper>
   );
@@ -163,14 +112,14 @@ const ContextIntro = styled.p`
 const WeatherCardWrapper = styled.div`
   background: linear-gradient(155deg, #3a7fe4 0%, #4a8ff0 50%, #5ba0f7 100%);
   border-radius: 28px;
-  padding: 24px 20px 20px 20px;
+  padding: 24px 20px 18px 20px;
   box-shadow:
     0 8px 24px rgba(58, 127, 228, 0.28),
     0 2px 6px rgba(0, 0, 0, 0.04);
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   cursor: pointer;
   transition:
     transform 0.15s ease,
@@ -187,12 +136,28 @@ const CardHeader = styled.div`
   justify-content: space-between;
 `;
 
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const CardTitle = styled.h2`
   font-size: 19px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.4px;
   margin: 0;
+`;
+
+const LocationBadge = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
 `;
 
 const LinkIconBadge = styled.div`
@@ -209,39 +174,27 @@ const LinkIconBadge = styled.div`
 const MainWeatherRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
+  padding: 4px 0;
 `;
 
-const SunIconCircle = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
-  background: radial-gradient(circle, #ffea79 0%, #ffc837 80%, #ffb300 100%);
-  box-shadow: 0 0 20px rgba(255, 200, 55, 0.65);
+const WeatherEmojiBadge = styled.div`
+  font-size: 44px;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(8px);
   flex-shrink: 0;
-`;
-
-const InnerSun = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
-  background: #ffc837;
 `;
 
 const TempInfoWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
-`;
-
-const TempDegreeRow = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  gap: 2px;
 `;
 
 const CurrentTemp = styled.span`
@@ -252,140 +205,71 @@ const CurrentTemp = styled.span`
   color: #ffffff;
 `;
 
-const RightMeta = styled.div`
+const SkyStatus = styled.span`
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+`;
+
+const AirQualityGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+`;
+
+const AirQualityBox = styled.div`
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
+  gap: 6px;
+  backdrop-filter: blur(6px);
 `;
 
-const SkyStatus = styled.span`
-  font-size: 15px;
-  font-weight: 700;
-  color: #ffffff;
-`;
-
-const TempRange = styled.span`
-  font-size: 13.5px;
+const AirQualityTitle = styled.span`
+  font-size: 12.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
 `;
 
-const LocationRow = styled.div`
+const AirQualityStatusRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  gap: 6px;
 `;
 
-const LocationPin = styled.span`
-  font-size: 12px;
-`;
-
-const InfoTextBlock = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 4px;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-`;
-
-const InfoLabel = styled.span`
-  font-size: 13.5px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
-`;
-
-const InfoValue = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.3px;
-`;
-
-const PrecipitationSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 6px;
-`;
-
-const PrecipitationTitle = styled.h3`
-  font-size: 16px;
+const GradeBadge = styled.span<{ $grade: string }>`
+  font-size: 13px;
   font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: ${({ $grade }) => {
+    if ($grade === "좋음") return "#22c55e";
+    if ($grade === "보통") return "#3b82f6";
+    if ($grade === "나쁨") return "#f97316";
+    if ($grade === "매우나쁨") return "#ef4444";
+    return "#3b82f6";
+  }};
   color: #ffffff;
-  margin: 0;
-  letter-spacing: -0.3px;
 `;
 
-const HourlyForecastScroll = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const HourlyItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 48px;
-`;
-
-const HourTime = styled.span`
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-`;
-
-const HourIcon = styled.span`
-  font-size: 18px;
-`;
-
-const RainProbRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-`;
-
-const UmbrellaIcon = styled.span`
-  font-size: 10px;
-  opacity: 0.85;
-`;
-
-const AirQualityFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  padding-top: 14px;
-  font-size: 13.5px;
-`;
-
-const AirQualityLabel = styled.span`
-  font-weight: 600;
+const ValueText = styled.span`
+  font-size: 12px;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
 `;
 
-const AirQualityValue = styled.span`
-  font-weight: 700;
-  color: #ffffff;
+const FooterRow = styled.div`
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const FooterTip = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
 `;

@@ -1,10 +1,7 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
-import Icon from "@/components/common/Icon";
 
 export default function DailyBriefFortuneCard() {
-  const [isOpen, setIsOpen] = useState(true);
-
   const tips = [
     {
       keyword: "도서관 집중 모드 📚",
@@ -45,27 +42,22 @@ export default function DailyBriefFortuneCard() {
   return (
     <SectionWrapper>
       <ContextIntro>오늘의 한마디를 확인해 볼까요?</ContextIntro>
-      <CardContainer onClick={() => setIsOpen(!isOpen)}>
+      <CardContainer>
         <CardHeader>
           <HeaderLeft>
             <SparkleIconCircle>💬</SparkleIconCircle>
             <CardTitle>캠퍼스 한마디</CardTitle>
           </HeaderLeft>
-          <InfoIconBadge>
-            <Icon name="info" size={16} color="#6b7280" />
-          </InfoIconBadge>
         </CardHeader>
 
-        {isOpen && (
-          <FortuneBody>
-            <KeywordTag>{todayTip.keyword}</KeywordTag>
-            <FortuneMessage>{todayTip.message}</FortuneMessage>
-            <LuckyItemRow>
-              <LuckyItemLabel>오늘의 추천 아이템:</LuckyItemLabel>
-              <LuckyItemValue>{todayTip.luckyItem}</LuckyItemValue>
-            </LuckyItemRow>
-          </FortuneBody>
-        )}
+        <FortuneBody>
+          <KeywordTag>{todayTip.keyword}</KeywordTag>
+          <FortuneMessage>{todayTip.message}</FortuneMessage>
+          <LuckyItemRow>
+            <LuckyItemLabel>오늘의 추천 아이템:</LuckyItemLabel>
+            <LuckyItemValue>{todayTip.luckyItem}</LuckyItemValue>
+          </LuckyItemRow>
+        </FortuneBody>
 
         <FooterText>매일 아침 새로운 응원과 팁을 전해드려요.</FooterText>
       </CardContainer>
@@ -99,17 +91,9 @@ const CardContainer = styled.div`
     0 4px 20px rgba(0, 0, 0, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.985);
-  }
 `;
 
 const CardHeader = styled.div`
@@ -143,18 +127,11 @@ const CardTitle = styled.h2`
   margin: 0;
 `;
 
-const InfoIconBadge = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-`;
-
 const FortuneBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background-color: #fafaf9;
   border-radius: 18px;
   border: 1px solid #f5f5f4;
@@ -180,7 +157,7 @@ const LuckyItemRow = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  padding-top: 4px;
+  padding-top: 6px;
   border-top: 1px dashed #e7e5e4;
 `;
 
