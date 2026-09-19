@@ -2066,7 +2066,7 @@ export default function MobileRoutineDetailPage() {
         <EditFloatingPill>
           <EditPillButton onClick={handleCancelEdit} type="button">
             <Ripple color="rgba(0, 0, 0, 0.08)" />
-            취소
+            <span>취소</span>
           </EditPillButton>
           <EditPillDivider />
           <EditPillButton
@@ -2076,7 +2076,7 @@ export default function MobileRoutineDetailPage() {
             type="button"
           >
             <Ripple color="rgba(37, 99, 235, 0.15)" />
-            {isSaving ? "저장 중..." : "저장"}
+            <span>{isSaving ? "저장 중..." : "저장"}</span>
           </EditPillButton>
         </EditFloatingPill>
       ) : (
@@ -3208,6 +3208,7 @@ const FloatingActionPill = styled.div`
   gap: 40px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   z-index: 100;
+  white-space: nowrap;
 `;
 
 const PillActionButton = styled.button`
@@ -3222,11 +3223,13 @@ const PillActionButton = styled.button`
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 12px;
+  white-space: nowrap;
   transition: transform 0.1s ease;
 
   > * {
     position: relative;
     z-index: 1;
+    white-space: nowrap;
   }
 
   span {
@@ -3259,12 +3262,14 @@ const EditFloatingPill = styled.div`
   backdrop-filter: blur(16px);
   border: 1px solid rgba(229, 231, 235, 0.8);
   border-radius: 9999px;
-  padding: 10px 40px;
+  padding: 8px 36px;
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: 28px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   z-index: 100;
+  white-space: nowrap;
 `;
 
 const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
@@ -3272,17 +3277,22 @@ const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
   overflow: hidden;
   background: none;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 800;
   color: ${({ $isPrimary }) => ($isPrimary ? "#2563eb" : "#111827")};
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 14px;
   border-radius: 9999px;
   transition: transform 0.1s ease, opacity 0.15s ease;
 
-  > * {
+  span {
     position: relative;
     z-index: 1;
+    white-space: nowrap;
   }
 
   &:hover {
