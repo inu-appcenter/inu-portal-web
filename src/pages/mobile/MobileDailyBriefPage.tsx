@@ -215,13 +215,13 @@ const CircleActionButton = styled.button`
   width: 46px;
   height: 46px;
   border-radius: 23px;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -230,7 +230,7 @@ const CircleActionButton = styled.button`
 
   &:hover {
     transform: scale(1.08);
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.85);
   }
 
   &:active {

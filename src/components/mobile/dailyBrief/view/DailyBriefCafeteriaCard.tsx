@@ -256,12 +256,14 @@ const ContextIntro = styled.p`
 `;
 
 const CardContainer = styled.div`
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.65);
   border-radius: 28px;
   padding: 22px 20px;
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
   display: flex;
