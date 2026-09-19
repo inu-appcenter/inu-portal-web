@@ -315,7 +315,7 @@ const CardHeader = styled.div`
 `;
 
 const CardTitle = styled.h2`
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: #111827;
   letter-spacing: -0.4px;

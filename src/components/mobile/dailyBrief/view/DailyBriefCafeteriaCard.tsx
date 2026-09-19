@@ -278,7 +278,7 @@ const CardHeader = styled.div`
 `;
 
 const CardBrandTitle = styled.h2`
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
   color: #111827;
   letter-spacing: -0.5px;
