@@ -72,6 +72,7 @@ export default function MobileDailyBriefPage() {
   useHeader({
     visible: false,
     immersive: true,
+    pageBgColor: THEME_GRADIENTS[timeTheme],
   });
 
   const startBriefLoading = () => {
@@ -157,7 +158,7 @@ export default function MobileDailyBriefPage() {
   };
 
   return (
-    <PageBackground $theme={timeTheme}>
+    <PageBackground>
       <ContentContainer>
         <DailyBriefHeader
           isLoading={isLoading}
@@ -193,15 +194,13 @@ export default function MobileDailyBriefPage() {
   );
 }
 
-const PageBackground = styled.div<{ $theme: DailyBriefTimeTheme }>`
+const PageBackground = styled.div`
   width: 100%;
   min-height: 100vh;
-  background: ${({ $theme }) => THEME_GRADIENTS[$theme]};
-  background-attachment: fixed;
+  background: transparent;
   display: flex;
   justify-content: center;
   box-sizing: border-box;
-  transition: background 0.5s ease;
 `;
 
 const ContentContainer = styled.div`

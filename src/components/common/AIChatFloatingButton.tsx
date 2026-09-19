@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import Icon from "@/components/common/Icon";
+import { motion } from "framer-motion";
 import { chatBubbleButton as ChatBulButtonImg } from "@/resources/assets/illustrations/ai";
 import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import useAIChatStore from "@/stores/useAIChatStore";
-import AIChatMenuCard from "./AIChatMenuCard";
+// [임시 조치 보관용 import]
+// import { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import AIChatMenuCard from "./AIChatMenuCard";
 import AgentChatModal from "@/components/mobile/chat/AgentChatModal";
+import ChatBulModal from "@/components/mobile/chat/ChatBulModal";
 
 interface AIChatFloatingButtonProps {
   isFloatingButtonVisible?: boolean;
@@ -17,10 +19,11 @@ interface AIChatFloatingButtonProps {
 const AIChatFloatingButton = ({
   isFloatingButtonVisible = true,
 }: AIChatFloatingButtonProps) => {
-  const navigate = useNavigate();
-  const { isOpen, isAgentOpen, closeChat, openChat, closeAgent, openAgent } =
+  // [임시 조치 보관용]
+  // const navigate = useNavigate();
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isOpen, isAgentOpen, closeChat, openChat, closeAgent } =
     useAIChatStore();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useSheetBackHandler(isOpen || isAgentOpen, () => {
     if (isOpen) closeChat();
@@ -47,91 +50,23 @@ const AIChatFloatingButton = ({
       closeAgent();
       return;
     }
-    setIsMenuOpen((prev) => !prev);
+    // [임시 조치] 옵션 메뉴 선택 대신 무조건 학사 챗봇 챗불이 바로 열기
+    // setIsMenuOpen((prev) => !prev);
+    openChat();
   };
-
-  const modalVariants: Variants = {
-    hidden: { scale: 0, opacity: 0 },
-    visible: {
-      scale: 1,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 450,
-        damping: 35,
-        mass: 1,
-        staggerChildren: 0.1,
-        delayChildren: 0.05,
-      },
-    },
-    exit: {
-      scale: 0,
-      opacity: 0,
-      transition: {
-        type: "spring",
-        stiffness: 500,
-        damping: 45,
-        opacity: { duration: 0.15 },
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-  };
-
-  const iframeSrc = `${import.meta.env.VITE_INUCHAT_URL}/?service=intip`;
 
   return (
     <>
       {/* 1. New INTIP Agent Chat Modal */}
       <AgentChatModal isOpen={isAgentOpen} onClose={closeAgent} />
 
-      {/* 2. Legacy ChatBul Modal */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <Backdrop
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeChat}
-            />
-            <ModalContainer
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <FloatingCloseButton
-                onClick={closeChat}
-                variants={itemVariants}
-              >
-                <Icon name="close-md" size={20} />
-              </FloatingCloseButton>
-
-              <IframeContainer variants={itemVariants}>
-                <iframe
-                  src={iframeSrc}
-                  title="AI Chat"
-                  width="100%"
-                  height="100%"
-                  allow="clipboard-write"
-                />
-              </IframeContainer>
-            </ModalContainer>
-          </>
-        )}
-      </AnimatePresence>
+      {/* 2. ChatBul Academic Chat Modal (인팁 캠퍼스 비서와 동일한 레이아웃 & 노출 방식 적용) */}
+      <ChatBulModal isOpen={isOpen} onClose={closeChat} />
 
       {/* 3. Floating Button & Menu Card */}
       {isFloatingButtonVisible && (
         <FloatingButtonWrapper>
+          {/* [임시 조치] 옵션 메뉴 UI 보관
           <AIChatMenuCard
             open={isMenuOpen}
             onScrimClick={() => setIsMenuOpen(false)}
@@ -148,6 +83,7 @@ const AIChatFloatingButton = ({
               openChat();
             }}
           />
+          */}
 
           <FloatingButton
             animate={{ y: [0, -8, 0] }}
@@ -157,25 +93,15 @@ const AIChatFloatingButton = ({
               ease: "easeInOut",
             }}
             onClick={handleButtonClick}
-            aria-label="AI 비서 메뉴 열기"
+            aria-label="학사 챗봇 챗불이 열기"
           >
-            <img src={ChatBulButtonImg} alt="AI 챗봇" />
+            <img src={ChatBulButtonImg} alt="학사 챗봇 챗불이" />
           </FloatingButton>
         </FloatingButtonWrapper>
       )}
     </>
   );
 };
-
-const Backdrop = styled(motion.div)`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.25);
-  z-index: 1001;
-`;
 
 const FloatingButtonWrapper = styled.div`
   position: fixed;
@@ -206,96 +132,6 @@ const FloatingButton = styled(motion.button)`
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-`;
-
-const ModalContainer = styled(motion.div)`
-  position: fixed;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  z-index: 1003;
-  border-radius: 32px;
-  overflow: hidden;
-
-  /* 강력하고 명확한 다층 그림자 */
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.35),
-    0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-  /* 더욱 선명한 테두리 */
-  border: 1px solid rgba(0, 0, 0, 0.08);
-
-  /* 하드웨어 가속 및 레이어 최적화 */
-  transform: translateZ(0);
-  will-change: transform, opacity;
-  isolation: isolate;
-
-  /* Mobile (Default): Origin centered on the floating button */
-  top: 20px;
-  bottom: 20px;
-  left: 12px;
-  right: 12px;
-  transform-origin: calc(100% - 42px) calc(100% - 104px);
-
-  /* Tablet & Desktop: Origin centered on the floating button */
-  @media (min-width: 451px) {
-    top: auto;
-    left: auto;
-    width: 380px;
-    height: 600px;
-    bottom: 90px;
-    right: 20px;
-    max-height: calc(100dvh - 170px);
-    transform-origin: calc(100% - 30px) calc(100% - 30px);
-  }
-
-  /* PC (Large Screens): Origin at button (button is to the right of modal) */
-  @media (min-width: 1024px) {
-    right: calc(50% - 600px + 20px + 75px);
-    bottom: 90px;
-    height: 600px;
-    transform-origin: calc(100% + 45px) calc(100% - 30px);
-  }
-`;
-
-const FloatingCloseButton = styled(motion.button)`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.05);
-  border: none;
-  color: #333;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
-  transition: background 0.2s;
-  z-index: 10;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.12);
-  }
-`;
-
-const IframeContainer = styled(motion.div)`
-  flex: 1;
-  width: 100%;
-  background: #f8f9fa;
-  position: relative;
-
-  /* 내부 애니메이션 성능 확보를 위한 독립 레이어 분리 */
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-
-  iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
   }
 `;
 

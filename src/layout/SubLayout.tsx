@@ -116,7 +116,7 @@ const LayoutContainer = styled.div<{
   width: 100%;
   min-height: 100dvh;
   position: relative;
-  background-color: ${(props) => props.$backgroundColor ?? "#f1f1f3"};
+  background: ${(props) => props.$backgroundColor ?? "#f1f1f3"};
   margin: 0 auto;
 
   @media ${DESKTOP_MEDIA} {
