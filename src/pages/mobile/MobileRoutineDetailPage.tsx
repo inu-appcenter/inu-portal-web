@@ -91,7 +91,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     id: "preset-bus-inip",
     category: "transit",
     title: "등교 버스 알림",
-    description: "출근 및 등교 시간에 인입역 실시간 버스 도착 알림을 받아요.",
+    description: "출근 및 등교 시간에 맞춰 인천대입구역 버스 도착 정보를 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
@@ -100,13 +100,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#ff7a00",
     whenTitle: "등교 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
-    whatTitle: "인천대입구역 1번출구 실시간 버스 도착",
+    whatTitle: "인천대입구역 1번출구 버스 도착 정보",
   },
   {
     id: "preset-bus-leaving",
     category: "transit",
     title: "하교길 버스 알림",
-    description: "수업 후 귀가할 때 정문 정류소 실시간 버스 도착 알림을 받아요.",
+    description: "수업 후 귀가할 때 정문 정류소 버스 도착 정보를 받아요.",
     targetTime: "17:30",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
@@ -115,13 +115,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#ff7a00",
     whenTitle: "하교 시간",
     whenSubtitle: "오후 05:30\n평일 (월~금)",
-    whatTitle: "인천대 정문 정류소 실시간 버스 도착",
+    whatTitle: "인천대 정문 정류소 버스 도착 정보",
   },
   {
     id: "preset-now-brief",
     category: "time_place",
-    title: "Daily Brief 아침 요약 알림",
-    description: "평소 일어나는 시간에 당일 캠퍼스 날씨와 첫 강의 시간표 알림을 받아요.",
+    title: "Daily Brief 아침 요약",
+    description: "일어나는 시간에 오늘 캠퍼스 날씨와 첫 수업 시간표를 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["WEATHER", "TIMETABLE"],
@@ -136,7 +136,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     id: "preset-lunch",
     category: "time_place",
     title: "점심 학식 알림",
-    description: "오늘 학생식당 & 기숙사 식당 중식 메뉴 알림을 받아요.",
+    description: "점심시간 전에 학생식당과 기숙사 식당 메뉴를 받아요.",
     targetTime: "11:30",
     repeatType: "WEEKDAYS",
     targetTools: ["CAFETERIA"],
@@ -145,13 +145,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#22c55e",
     whenTitle: "점심시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
-    whatTitle: "학생식당 & 기숙사 식당 중식 메뉴",
+    whatTitle: "학생식당 & 기숙사 식당 오늘 점심 메뉴",
   },
   {
     id: "preset-timetable",
     category: "study",
-    title: "오늘의 강의 & 시간표 알림",
-    description: "당일 첫 수업 강의실 위치와 시작 시간 알림을 받아요.",
+    title: "오늘의 수업 & 시간표",
+    description: "첫 수업 시작 전 강의실 위치와 오늘 시간표를 받아요.",
     targetTime: "08:30",
     repeatType: "WEEKDAYS",
     targetTools: ["TIMETABLE"],
@@ -160,13 +160,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#a855f7",
     whenTitle: "강의 시작 전",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "오늘의 강의실 위치 및 시간표",
+    whatTitle: "오늘 수업 시간표 및 강의실 위치",
   },
   {
     id: "preset-notice",
     category: "study",
     title: "새 공지사항 알림",
-    description: "새로 등록된 주요 학교 및 학과 공지사항 알림을 받아요.",
+    description: "새로 등록된 학교 및 학과 주요 공지사항을 받아요.",
     targetTime: "09:00",
     repeatType: "WEEKDAYS",
     targetTools: ["NOTICE"],
@@ -175,7 +175,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#3b82f6",
     whenTitle: "매일 아침",
     whenSubtitle: "오전 09:00\n평일 (월~금)",
-    whatTitle: "최신 학교 및 학과 주요 공지사항",
+    whatTitle: "주요 학교 및 학과 새 공지사항",
   },
 ];
 
@@ -183,49 +183,49 @@ export const AVAILABLE_ACTIONS = [
   {
     id: "DEPT_NOTICE" as RoutineActionType,
     title: "학과 공지 알림",
-    description: "선택한 학과의 새 공지 및 학과별 키워드 알림을 받아요",
+    description: "선택한 학과의 새 공지와 관심 키워드 소식을 받아요",
     icon: <Building2 size={24} color="#ff7a00" />,
     iconBg: "#ff7a00",
   },
   {
     id: "SCHOOL_NOTICE" as RoutineActionType,
     title: "학교 공지 알림",
-    description: "학교 홈페이지 새 공지 및 카테고리/키워드 알림을 받아요",
+    description: "학교 대표 공지 및 관심 카테고리/키워드 소식을 받아요",
     icon: <Bell size={24} color="#5c9cf8" />,
     iconBg: "#5c9cf8",
   },
   {
     id: "TIMETABLE" as RoutineActionType,
     title: "시간표 / 강의실",
-    description: "오늘 첫 수업 시간과 강의실 위치 알림을 받아요",
+    description: "오늘 수업 시간표와 이동할 강의실 위치를 안내받아요",
     icon: <Calendar size={24} color="#a855f7" />,
     iconBg: "#a855f7",
   },
   {
     id: "SCHEDULE" as RoutineActionType,
     title: "학사일정 알림",
-    description: "다가오는 주요 학사일정 및 D-day 사전 알림을 받아요",
+    description: "다가오는 주요 학사일정과 시험/수강신청 일정을 받아요",
     icon: <GraduationCap size={24} color="#3b82f6" />,
     iconBg: "#3b82f6",
   },
   {
     id: "WEATHER" as RoutineActionType,
     title: "캠퍼스 날씨",
-    description: "송도 캠퍼스 기온 및 강수 정보 알림을 받아요",
+    description: "송도 캠퍼스 오늘 날씨와 기온 예보를 받아요",
     icon: <Sun size={24} color="#5c9cf8" />,
     iconBg: "#5c9cf8",
   },
   {
     id: "BUS" as RoutineActionType,
-    title: "실시간 버스",
-    description: "지정한 정류소 실시간 버스 도착 알림을 받아요",
+    title: "버스 도착 알림",
+    description: "인천대입구역 및 교내 정류소 버스 도착 정보를 받아요",
     icon: <Bus size={24} color="#ff7a00" />,
     iconBg: "#ff7a00",
   },
   {
     id: "CAFETERIA" as RoutineActionType,
     title: "학식 식단",
-    description: "선택한 식당의 당일 식사 메뉴 알림을 받아요",
+    description: "학생식당 및 기숙사 식당의 오늘 식단표를 받아요",
     icon: <Utensils size={24} color="#22c55e" />,
     iconBg: "#22c55e",
   },
@@ -583,7 +583,7 @@ export default function MobileRoutineDetailPage() {
               return {
                 id: `act-${idx + 1}`,
                 type: "BUS",
-                title: "실시간 버스",
+                title: "버스 도착 알림",
                 subtitle: "인천대입구역 1번출구",
                 iconBg: "#ff7a00",
                 busParams: { stopName: "인천대입구역 1번출구" },
@@ -594,7 +594,7 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "CAFETERIA",
                 title: "학식 식단",
-                subtitle: "전체 식당 • 당일 메뉴",
+                subtitle: "전체 식당 • 당일 식단",
                 iconBg: "#22c55e",
                 cafeteriaParams: { restaurant: "전체", mealType: "AUTO" },
               };
@@ -604,7 +604,7 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "TIMETABLE",
                 title: "시간표 / 강의실",
-                subtitle: "당일 첫 수업 시간 및 강의실 위치",
+                subtitle: "오늘 수업 시간표 및 강의실 위치",
                 iconBg: "#a855f7",
               };
             }
@@ -613,7 +613,7 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "SCHEDULE",
                 title: "학사일정 알림",
-                subtitle: "학교 및 학과 전체 학사일정",
+                subtitle: "학교 및 학과 학사일정",
                 iconBg: "#3b82f6",
                 scheduleParams: { scope: "ALL", advanceDays: 1 },
               };
@@ -623,7 +623,7 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "DEPT_NOTICE",
                 title: "학과 공지 알림",
-                subtitle: "내 학과 새 공지사항",
+                subtitle: "내 학과 새 공지 및 키워드",
                 iconBg: "#ff7a00",
                 deptNoticeParams: {
                   deptCode: "",
@@ -638,7 +638,7 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "SCHOOL_NOTICE",
                 title: "학교 공지 알림",
-                subtitle: "학교 홈페이지 전체 새 공지사항",
+                subtitle: "학교 대표 새 공지사항",
                 iconBg: "#5c9cf8",
                 schoolNoticeParams: {
                   categories: [],
@@ -651,7 +651,7 @@ export default function MobileRoutineDetailPage() {
               id: `act-${idx + 1}`,
               type: "WEATHER",
               title: "캠퍼스 날씨",
-              subtitle: "송도 캠퍼스 당일 기온 및 강수 정보",
+              subtitle: "송도 캠퍼스 오늘 날씨 예보",
               iconBg: "#5c9cf8",
             };
           });
@@ -690,7 +690,7 @@ export default function MobileRoutineDetailPage() {
             return {
               id: `act-${idx + 1}`,
               type: "BUS",
-              title: "실시간 버스",
+              title: "버스 도착 알림",
               subtitle: pre.toolParams?.stopName || "인천대입구역 1번출구",
               iconBg: "#ff7a00",
               busParams: { stopName: pre.toolParams?.stopName || "인천대입구역 1번출구" },
@@ -714,7 +714,7 @@ export default function MobileRoutineDetailPage() {
               id: `act-${idx + 1}`,
               type: "TIMETABLE",
               title: "시간표 / 강의실",
-              subtitle: "당일 첫 수업 시간 및 강의실 위치",
+              subtitle: "오늘 수업 시간표 및 강의실 위치",
               iconBg: "#a855f7",
             };
           }
@@ -723,7 +723,7 @@ export default function MobileRoutineDetailPage() {
               id: `act-${idx + 1}`,
               type: "SCHOOL_NOTICE",
               title: "학교 공지 알림",
-              subtitle: "학교 홈페이지 전체 새 공지사항",
+              subtitle: "학교 대표 새 공지사항",
               iconBg: "#3b82f6",
               schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
             };
@@ -732,7 +732,7 @@ export default function MobileRoutineDetailPage() {
             id: `act-${idx + 1}`,
             type: "WEATHER",
             title: "캠퍼스 날씨",
-            subtitle: "송도 캠퍼스 당일 기온 및 강수 정보",
+            subtitle: "송도 캠퍼스 오늘 날씨 예보",
             iconBg: "#5c9cf8",
           };
         });
@@ -814,8 +814,8 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-timetable",
               type: "TIMETABLE",
-              title: "오늘의 강의 & 시간표",
-              subtitle: "당일 첫 수업 시간 및 강의실 위치 안내",
+              title: "오늘의 수업 & 시간표",
+              subtitle: "오늘 수업 시간표 및 강의실 위치",
               iconBg: "#a855f7",
             },
           ]);
@@ -837,8 +837,8 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-pre",
               type: "TIMETABLE",
-              title: "수업 시작 및 강의실 알림",
-              subtitle: "다음 수업 시작 시간 및 이동할 강의실 위치 안내",
+              title: "시간표 / 강의실",
+              subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
               iconBg: "#8b5cf6",
             },
           ]);
@@ -878,7 +878,7 @@ export default function MobileRoutineDetailPage() {
               id: "sys-act-schedule",
               type: "SCHEDULE",
               title: "학사일정 알림",
-              subtitle: `${scopeText} • ${advText} 사전 알림`,
+              subtitle: `${scopeText} • ${advText} 알림`,
               iconBg: "#3b82f6",
               scheduleParams: { scope, advanceDays: adv },
             },
@@ -901,7 +901,7 @@ export default function MobileRoutineDetailPage() {
               id: "sys-trigger-school-notice",
               type: "SCHOOL_NOTICE",
               title: "새 학교 공지 등록 시",
-              subtitle: "학교 홈페이지에 새 글이 등록되면 실시간 즉시 알림",
+              subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
             },
           ]);
           setActions([
@@ -930,7 +930,7 @@ export default function MobileRoutineDetailPage() {
               id: "sys-trigger-dept-notice",
               type: "DEPT_NOTICE",
               title: "새 학과 공지 등록 시",
-              subtitle: "선택한 학과 홈페이지에 새 글이 등록되면 실시간 즉시 알림",
+              subtitle: "선택한 학과 홈페이지에 새 공지가 올라올 때",
             },
           ]);
 
@@ -950,7 +950,7 @@ export default function MobileRoutineDetailPage() {
                 id: `sys-act-dept-${code}`,
                 type: "DEPT_NOTICE",
                 title: `${dName} 공지 알림`,
-                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "학과 새 공지 실시간 알림",
+                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "새 공지 및 관심 키워드 알림",
                 iconBg: "#ff7a00",
                 deptNoticeParams: {
                   deptCode: code,
@@ -971,7 +971,7 @@ export default function MobileRoutineDetailPage() {
                 id: "sys-act-dept-default",
                 type: "DEPT_NOTICE",
                 title: `${myDept} 공지 알림`,
-                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "학과 새 공지 실시간 알림",
+                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "새 공지 및 관심 키워드 알림",
                 iconBg: "#ff7a00",
                 deptNoticeParams: {
                   deptCode: myCode,
@@ -1043,7 +1043,7 @@ export default function MobileRoutineDetailPage() {
         id: `trigger-school-${Date.now()}`,
         type: "SCHOOL_NOTICE",
         title: "새 학교 공지 등록 시",
-        subtitle: "학교 홈페이지에 새 글이 등록되면 실시간 즉시 알림",
+        subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
       };
       setTriggers((prev) => [...prev, newTrigger]);
 
@@ -1053,7 +1053,7 @@ export default function MobileRoutineDetailPage() {
           id: `act-school-${Date.now()}`,
           type: "SCHOOL_NOTICE",
           title: "학교 공지 알림",
-          subtitle: "모든 카테고리 실시간 알림",
+          subtitle: "전체 카테고리 공지 알림",
           iconBg: "#5c9cf8",
           schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
         };
@@ -1144,8 +1144,8 @@ export default function MobileRoutineDetailPage() {
       const autoAction: RoutineActionBlock = {
         id: `act-timetable-${Date.now()}`,
         type: "TIMETABLE",
-        title: "수업 시작 및 강의실 알림",
-        subtitle: "다음 수업 시작 시간 및 이동할 강의실 위치 안내",
+        title: "시간표 / 강의실",
+        subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
         iconBg: "#8b5cf6",
       };
       setActions((prev) => [...prev, autoAction]);
@@ -1195,7 +1195,7 @@ export default function MobileRoutineDetailPage() {
         id: `act-time-${Date.now()}`,
         type: "TIMETABLE",
         title: "시간표 / 강의실",
-        subtitle: "오늘 첫 수업 시간과 강의실 위치 안내",
+        subtitle: "오늘 수업 시간표 및 강의실 위치",
         iconBg: "#a855f7",
       };
       setActions((prev) => [...prev, newAction]);
@@ -1204,7 +1204,7 @@ export default function MobileRoutineDetailPage() {
         id: `act-weather-${Date.now()}`,
         type: "WEATHER",
         title: "캠퍼스 날씨",
-        subtitle: "송도 캠퍼스 당일 기온 및 강수 정보 안내",
+        subtitle: "송도 캠퍼스 오늘 날씨 예보",
         iconBg: "#5c9cf8",
       };
       setActions((prev) => [...prev, newAction]);
@@ -1221,7 +1221,7 @@ export default function MobileRoutineDetailPage() {
     const kwDesc =
       tempDeptIncludeKeywords.length > 0
         ? `키워드: ${tempDeptIncludeKeywords.join(", ")}`
-        : "학과 새 공지 실시간 알림";
+        : "새 공지 및 관심 키워드 알림";
 
     if (editingActionId) {
       setActions((prev) =>
@@ -1263,7 +1263,7 @@ export default function MobileRoutineDetailPage() {
           id: `trigger-dept-${Date.now()}`,
           type: "DEPT_NOTICE",
           title: `새 학과 공지 등록 시 (${tempDeptName})`,
-          subtitle: `${tempDeptName} 홈페이지에 새 글이 등록되면 실시간 즉시 알림`,
+          subtitle: `${tempDeptName} 홈페이지에 새 공지가 올라올 때`,
           deptParams: { deptCode: tempDeptCode, deptName: tempDeptName },
         };
         setTriggers((prev) => [...prev, autoTrigger]);
@@ -1764,25 +1764,25 @@ export default function MobileRoutineDetailPage() {
   const displayDesc = isSystemRoutine
     ? systemType === "timetable-brief"
       ? dailyBriefSettings.timetableDailyBriefEnabled
-        ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"}에 오늘 수강 강의 및 강의실 위치를 브리핑해요.`
+        ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"}에 오늘 수업 시간표와 강의실 위치를 알려드려요.`
         : "당일 시간표 브리핑 알림이 꺼져 있어요."
       : systemType === "timetable-pre"
       ? dailyBriefSettings.timetablePreAlertEnabled
-        ? `각 수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전에 다음 강의실 위치를 안내해요.`
+        ? `각 수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전에 다음 강의실 위치를 알려드려요.`
         : "강의 시작 전 알림이 꺼져 있어요."
       : systemType === "schedule"
       ? dailyBriefSettings.scheduleAlertEnabled
-        ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 주요 학사일정을 안내해요.`
+        ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 주요 학사일정을 알려드려요.`
         : "학사일정 알림이 꺼져 있어요."
       : systemType === "school-notice"
       ? isSchoolNoticeEnabled
-        ? "새 학교 공지사항 및 등록된 관심 키워드 알림을 실시간으로 받아요."
+        ? "학교 새 공지와 설정한 관심 키워드 알림을 받아요."
         : "학교 공지 알림이 꺼져 있어요."
       : isDeptNoticeEnabled
-      ? `${userInfo.department ? `${userInfo.department} 새 공지사항 및 키워드 알림을 받아요.` : "내 학과 새 공지사항 및 키워드 알림을 받아요."}`
+      ? `${userInfo.department ? `${userInfo.department} 새 공지와 관심 키워드 알림을 받아요.` : "내 학과 새 공지와 관심 키워드 알림을 받아요."}`
       : "학과 공지 알림이 꺼져 있어요."
     : triggers.length > 0 && actions.length > 0
-    ? `${triggers[0]?.title}에 ${actions.map((a) => a.title).join(" • ")} 알림을 수신해요.`
+    ? `${triggers[0]?.title}에 ${actions.map((a) => a.title).join(" • ")} 알림을 받아요.`
     : preset?.description || "언제 어떤 캠퍼스 알림을 받을지 자유롭게 조합해 보세요.";
 
   return (
@@ -1927,7 +1927,7 @@ export default function MobileRoutineDetailPage() {
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 <EmptyGuideTitle>설정된 알림 조건이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>특정 시간, 새 공지 등록 시 등 조건을 추가해 주세요.</EmptyGuideSub>
+                <EmptyGuideSub>특정 시간, 공지 등록 등 알림받을 조건을 추가해 주세요.</EmptyGuideSub>
               </EmptyGuideText>
             </EmptyGuideCard>
           ) : (
@@ -1994,7 +1994,7 @@ export default function MobileRoutineDetailPage() {
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>학과 공지, 학교 공지, 버스, 시간표 등 동작을 추가해 주세요.</EmptyGuideSub>
+                <EmptyGuideSub>공지사항, 시간표, 버스, 학식 등 받고 싶은 알림을 추가해 주세요.</EmptyGuideSub>
               </EmptyGuideText>
             </EmptyGuideCard>
           ) : (
@@ -2096,7 +2096,7 @@ export default function MobileRoutineDetailPage() {
         isOpen={isTriggerSelectModalOpen}
         onClose={() => setIsTriggerSelectModalOpen(false)}
         title="조건 추가 (언제 알림을 받을까요?)"
-        description="알림을 발생시킬 트리거 조건을 선택해 주세요."
+        description="알림을 받을 조건을 선택해 주세요."
         secondaryButton={{
           text: "취소",
           onClick: () => setIsTriggerSelectModalOpen(false),
@@ -2108,8 +2108,8 @@ export default function MobileRoutineDetailPage() {
             <OptionIconTextRow>
               <Clock size={20} color="#3b82f6" />
               <div>
-                <ModalOptionText>특정 시간 (시간 & 요일)</ModalOptionText>
-                <CardSubDesc>매일 아침 08:30, 평일 등 지정한 시간에 알림</CardSubDesc>
+                <ModalOptionText>특정 시간</ModalOptionText>
+                <CardSubDesc>원하는 시간과 요일에 맞춰 알림</CardSubDesc>
               </div>
             </OptionIconTextRow>
             <Plus size={18} color="#3b82f6" />
@@ -2121,7 +2121,7 @@ export default function MobileRoutineDetailPage() {
               <Building2 size={20} color="#ff7a00" />
               <div>
                 <ModalOptionText>새 학과 공지 등록 시</ModalOptionText>
-                <CardSubDesc>선택한 학과 홈페이지에 새 글이 등록되면 실시간 즉시 알림</CardSubDesc>
+                <CardSubDesc>선택한 학과 홈페이지에 새 공지가 올라올 때</CardSubDesc>
               </div>
             </OptionIconTextRow>
             <Plus size={18} color="#ff7a00" />
@@ -2133,7 +2133,7 @@ export default function MobileRoutineDetailPage() {
               <Bell size={20} color="#5c9cf8" />
               <div>
                 <ModalOptionText>새 학교 공지 등록 시</ModalOptionText>
-                <CardSubDesc>학교 대표 홈페이지에 새 공지가 등록되면 실시간 즉시 알림</CardSubDesc>
+                <CardSubDesc>학교 대표 홈페이지에 새 공지가 올라올 때</CardSubDesc>
               </div>
             </OptionIconTextRow>
             <Plus size={18} color="#5c9cf8" />
@@ -2145,7 +2145,7 @@ export default function MobileRoutineDetailPage() {
               <Calendar size={20} color="#8b5cf6" />
               <div>
                 <ModalOptionText>강의 시작 전 알림</ModalOptionText>
-                <CardSubDesc>수강 과목의 수업 시작 n분 전에 다음 강의실 위치 알림</CardSubDesc>
+                <CardSubDesc>수업 시작 전 강의실 위치 안내</CardSubDesc>
               </div>
             </OptionIconTextRow>
             <Plus size={18} color="#8b5cf6" />

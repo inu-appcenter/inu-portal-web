@@ -52,7 +52,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     id: "preset-bus-inip",
     category: "transit",
     title: "등교 버스 알림",
-    description: "출근 및 등교 시간에 인입역 실시간 버스 도착 알림을 받아요.",
+    description: "출근 및 등교 시간에 맞춰 인천대입구역 버스 도착 정보를 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
@@ -61,13 +61,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#ff7a00",
     whenTitle: "등교 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
-    whatTitle: "인천대입구역 1번출구 실시간 버스 도착",
+    whatTitle: "인천대입구역 1번출구 버스 도착 정보",
   },
   {
     id: "preset-bus-leaving",
     category: "transit",
     title: "하교길 버스 알림",
-    description: "수업 후 귀가할 때 정문 정류소 실시간 버스 도착 알림을 받아요.",
+    description: "수업 후 귀가할 때 정문 정류소 버스 도착 정보를 받아요.",
     targetTime: "17:30",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
@@ -76,14 +76,14 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#ff7a00",
     whenTitle: "하교 시간",
     whenSubtitle: "오후 05:30\n평일 (월~금)",
-    whatTitle: "인천대 정문 정류소 실시간 버스 도착",
+    whatTitle: "인천대 정문 정류소 버스 도착 정보",
   },
   // 특정 시간이나 장소에서 유용한
   {
     id: "preset-now-brief",
     category: "time_place",
-    title: "Daily Brief 아침 요약 알림",
-    description: "평소 일어나는 시간에 당일 캠퍼스 날씨와 첫 강의 시간표 알림을 받아요.",
+    title: "Daily Brief 아침 요약",
+    description: "일어나는 시간에 오늘 캠퍼스 날씨와 강의 시간표를 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["WEATHER", "TIMETABLE"],
@@ -98,7 +98,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     id: "preset-lunch",
     category: "time_place",
     title: "점심 학식 알림",
-    description: "오늘 학생식당 & 기숙사 식당 중식 메뉴 알림을 받아요.",
+    description: "점심시간 전에 학생식당과 기숙사 식당 메뉴를 받아요.",
     targetTime: "11:30",
     repeatType: "WEEKDAYS",
     targetTools: ["CAFETERIA"],
@@ -107,29 +107,29 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#22c55e",
     whenTitle: "점심시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
-    whatTitle: "학생식당 & 기숙사 식당 중식 메뉴",
+    whatTitle: "학생식당 & 기숙사 식당 오늘 점심 메뉴",
   },
   // 수업 및 학업
   {
     id: "preset-timetable",
     category: "study",
-    title: "오늘의 강의 & 날씨 알림",
-    description: "당일 첫 수업 강의실 위치와 캠퍼스 날씨 알림을 받아요.",
+    title: "오늘의 수업 & 시간표",
+    description: "수업 시작 전 강의실 위치와 오늘 시간표를 받아요.",
     targetTime: "08:30",
     repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE", "WEATHER"],
+    targetTools: ["TIMETABLE"],
     toolParams: { iconType: "timetable", iconBg: "#a855f7" },
     iconType: "timetable",
     iconBg: "#a855f7",
     whenTitle: "강의 시작 전",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "오늘의 강의실 위치 및 캠퍼스 날씨",
+    whatTitle: "오늘 수업 시간표 및 강의실 위치",
   },
   {
     id: "preset-notice",
     category: "study",
     title: "새 공지사항 알림",
-    description: "새로 등록된 주요 학교 및 학과 공지사항 알림을 받아요.",
+    description: "새로 등록된 학교 및 학과 주요 공지사항을 받아요.",
     targetTime: "09:00",
     repeatType: "WEEKDAYS",
     targetTools: ["NOTICE"],
@@ -138,7 +138,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#3b82f6",
     whenTitle: "매일 아침",
     whenSubtitle: "오전 09:00\n평일 (월~금)",
-    whatTitle: "최신 학교 및 학과 주요 공지사항",
+    whatTitle: "주요 학교 및 학과 새 공지사항",
   },
 ];
 
@@ -293,7 +293,7 @@ export default function MobileAgentReminderSetting() {
       if (p.includes("TIMETABLE")) return "시간표/강의실";
       if (p.includes("SCHEDULE")) return "학사일정";
       if (p.includes("WEATHER")) return "캠퍼스 날씨";
-      if (p.includes("BUS")) return "실시간 버스";
+      if (p.includes("BUS")) return "버스 도착 알림";
       if (p.includes("CAFETERIA")) return "학식 식단";
       return p;
     });
@@ -524,7 +524,7 @@ export default function MobileAgentReminderSetting() {
               </RowMainTitle>
               <RowSubTitle>
                 {isSchoolNoticeEnabled
-                  ? `새 공지 실시간 알림${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
+                  ? `학교 새 공지${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
                   : "알림 꺼짐"}
               </RowSubTitle>
             </TextContentWrapper>
