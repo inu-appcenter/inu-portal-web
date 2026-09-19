@@ -3,7 +3,10 @@ import styled from "styled-components";
 import Box from "@/components/common/Box";
 import Switch from "@/components/common/Switch";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
+import Divider from "@/components/common/Divider";
 import Icon from "@/components/common/Icon";
+import Modal from "@/components/common/Modal";
+import { RotateCcw } from "lucide-react";
 import {
   DailyBriefCardType,
   DAILY_BRIEF_CARD_METAS,
@@ -22,6 +25,7 @@ export default function MobileDailyBriefCardOrderSetting() {
   const [visibility, setVisibility] = useState<
     Record<DailyBriefCardType, boolean>
   >(getStoredBriefVisibility);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const handleModeChange = (newMode: "auto" | "custom") => {
     setMode(newMode);
@@ -67,84 +71,101 @@ export default function MobileDailyBriefCardOrderSetting() {
     });
   };
 
-  const handleResetOrder = () => {
-    if (window.confirm("카드 순서와 표시 설정을 기본값으로 초기화할까요?")) {
-      handleModeChange("auto");
-      const defaultOrder: DailyBriefCardType[] = [
-        "timetable",
-        "library",
-        "cafeteria",
-        "bus",
-        "weather",
-        "notice",
-        "lms",
-        "fortune",
-      ];
-      setOrder(defaultOrder);
-      setStoredBriefOrder(defaultOrder);
+  const handleConfirmReset = () => {
+    handleModeChange("auto");
+    const defaultOrder: DailyBriefCardType[] = [
+      "timetable",
+      "library",
+      "cafeteria",
+      "bus",
+      "weather",
+      "notice",
+      "lms",
+      "fortune",
+    ];
+    setOrder(defaultOrder);
+    setStoredBriefOrder(defaultOrder);
 
-      const defaultVis = defaultOrder.reduce(
-        (acc, c) => ({ ...acc, [c]: true }),
-        {} as Record<DailyBriefCardType, boolean>,
-      );
-      setVisibility(defaultVis);
-      setStoredBriefVisibility(defaultVis);
-    }
+    const defaultVis = defaultOrder.reduce(
+      (acc, c) => ({ ...acc, [c]: true }),
+      {} as Record<DailyBriefCardType, boolean>,
+    );
+    setVisibility(defaultVis);
+    setStoredBriefVisibility(defaultVis);
+    setIsResetModalOpen(false);
+    trackEvent("[Daily Brief] 카드 설정 초기화");
   };
 
   return (
-    <TitleContentArea
-      title="브리핑 카드 구성"
-      description="데일리 브리프 화면에 표시할 카드의 종류와 순서를 내 취향에 맞게 설정할 수 있어요."
-    >
-      <Box style={{ width: "100%", padding: "16px 20px" }}>
-        {/* 모드 선택 카드 */}
-        <ModeSelectTitle>카드 노출 순서 방식</ModeSelectTitle>
-        <ModeCardGrid>
-          <ModeOptionCard
-            $selected={mode === "auto"}
-            onClick={() => handleModeChange("auto")}
-          >
-            <RadioCircle $selected={mode === "auto"} />
-            <ModeTextCol>
-              <ModeName>✨ 상황 맞춤 자동 추천</ModeName>
-              <ModeDesc>
-                등하교 시간, 수업 일정, 공강 상황에 따라 가장 필요한 카드를
-                상단에 자동으로 배치해요.
-              </ModeDesc>
-            </ModeTextCol>
-          </ModeOptionCard>
+    <SettingContainer>
+      {/* 1. 정렬 방식 선택 섹션 */}
+      <TitleContentArea
+        title="브리핑 카드 구성"
+        description="데일리 브리프 화면에 표시할 카드의 종류와 순서를 내 취향에 맞게 설정할 수 있어요."
+      >
+        <Box style={{ width: "100%", padding: "16px 20px" }}>
+          <ModeSelectTitle>카드 노출 순서 방식</ModeSelectTitle>
+          <ModeCardGrid>
+            <ModeOptionCard
+              $selected={mode === "auto"}
+              onClick={() => handleModeChange("auto")}
+            >
+              <RadioCircle $selected={mode === "auto"} />
+              <ModeTextCol>
+                <ModeName>✨ 상황 맞춤 자동 추천</ModeName>
+                <ModeDesc>
+                  등하교 시간, 수업 일정, 공강 상황에 따라 가장 필요한 카드를
+                  상단에 자동으로 배치해요.
+                </ModeDesc>
+              </ModeTextCol>
+            </ModeOptionCard>
 
-          <ModeOptionCard
-            $selected={mode === "custom"}
-            onClick={() => handleModeChange("custom")}
-          >
-            <RadioCircle $selected={mode === "custom"} />
-            <ModeTextCol>
-              <ModeName>📌 내 취향대로 고정 순서</ModeName>
-              <ModeDesc>
-                아래에서 내가 직접 지정한 카드 순서 그대로 고정하여 보여줘요.
-              </ModeDesc>
-            </ModeTextCol>
-          </ModeOptionCard>
-        </ModeCardGrid>
-      </Box>
+            <ModeOptionCard
+              $selected={mode === "custom"}
+              onClick={() => handleModeChange("custom")}
+            >
+              <RadioCircle $selected={mode === "custom"} />
+              <ModeTextCol>
+                <ModeName>📌 내 취향대로 고정 순서</ModeName>
+                <ModeDesc>
+                  내가 직접 지정한 카드 순서 그대로 고정하여 보여줘요.
+                </ModeDesc>
+              </ModeTextCol>
+            </ModeOptionCard>
+          </ModeCardGrid>
+        </Box>
+      </TitleContentArea>
 
-      {/* 카드 목록 및 순서 조정 */}
-      <CardListHeaderRow>
-        <ListTitle>카드 목록 및 노출 설정 ({order.length}개)</ListTitle>
-        <ResetButton onClick={handleResetOrder}>기본값으로 초기화</ResetButton>
-      </CardListHeaderRow>
+      {/* 2. 카드 목록 및 노출 설정 섹션 */}
+      <SectionHeaderRow>
+        <SectionTitleTextCol>
+          <SectionMainTitle>카드 목록 및 노출 설정</SectionMainTitle>
+          <SectionSubTitle>
+            {mode === "custom"
+              ? "화살표를 눌러 카드의 노출 순서를 변경할 수 있어요."
+              : "스위치를 꺼서 원치 않는 카드를 숨길 수 있어요."}
+          </SectionSubTitle>
+        </SectionTitleTextCol>
+        <ResetIconButton
+          onClick={() => setIsResetModalOpen(true)}
+          title="기본 설정으로 초기화"
+          aria-label="기본 설정으로 초기화"
+        >
+          <RotateCcw size={15} color="#64748B" />
+          <span>초기화</span>
+        </ResetIconButton>
+      </SectionHeaderRow>
 
-      <Box style={{ width: "100%", padding: "8px 12px" }}>
-        <CardOrderList>
-          {order.map((cardKey, index) => {
-            const meta = DAILY_BRIEF_CARD_METAS[cardKey];
-            if (!meta) return null;
-            const isVisible = visibility[cardKey] !== false;
+      {/* 개별 박스 제거, 하나의 Box 안에 Divider로 구분된 깔끔한 리스트 */}
+      <Box style={{ width: "100%", padding: 0 }}>
+        {order.map((cardKey, index) => {
+          const meta = DAILY_BRIEF_CARD_METAS[cardKey];
+          if (!meta) return null;
+          const isVisible = visibility[cardKey] !== false;
 
-            return (
-              <CardOrderItem key={cardKey} $disabled={!isVisible}>
+          return (
+            <div key={cardKey}>
+              <CardRow $disabled={!isVisible}>
                 {mode === "custom" && (
                   <OrderControlCol>
                     <OrderButton
@@ -154,7 +175,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                     >
                       <Icon
                         name="chevron-up"
-                        size={15}
+                        size={13}
                         color={index === 0 ? "#cbd5e1" : "#475569"}
                       />
                     </OrderButton>
@@ -165,7 +186,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                     >
                       <Icon
                         name="chevron-down"
-                        size={15}
+                        size={13}
                         color={
                           index === order.length - 1 ? "#cbd5e1" : "#475569"
                         }
@@ -176,7 +197,7 @@ export default function MobileDailyBriefCardOrderSetting() {
 
                 <CardInfoCol>
                   <CardNameRow>
-                    <CardName>{meta.name}</CardName>
+                    <CardName $disabled={!isVisible}>{meta.name}</CardName>
                     {mode === "custom" && (
                       <OrderBadge>{index + 1}번째</OrderBadge>
                     )}
@@ -192,14 +213,40 @@ export default function MobileDailyBriefCardOrderSetting() {
                     }
                   />
                 </SwitchWrapper>
-              </CardOrderItem>
-            );
-          })}
-        </CardOrderList>
+              </CardRow>
+              {index < order.length - 1 && <Divider margin="0" />}
+            </div>
+          );
+        })}
       </Box>
-    </TitleContentArea>
+
+      {/* 초기화 확인 모달 */}
+      <Modal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        title="카드 설정 초기화"
+        description="카드 노출 순서와 표시 설정을 모두 기본값으로 되돌릴까요?"
+        primaryButton={{
+          text: "초기화",
+          variant: "danger",
+          onClick: handleConfirmReset,
+        }}
+        secondaryButton={{
+          text: "취소",
+          variant: "secondary",
+          onClick: () => setIsResetModalOpen(false),
+        }}
+      />
+    </SettingContainer>
   );
 }
+
+const SettingContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
 
 const ModeSelectTitle = styled.h3`
   font-size: 15px;
@@ -271,65 +318,87 @@ const ModeDesc = styled.span`
   line-height: 1.45;
 `;
 
-const CardListHeaderRow = styled.div`
+const SectionHeaderRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 4px 2px 0 2px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const SectionTitleTextCol = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+`;
+
+const SectionMainTitle = styled.h2`
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.3px;
+`;
+
+const SectionSubTitle = styled.p`
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+`;
+
+const ResetIconButton = styled.button`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 20px 4px 8px 4px;
-`;
-
-const ListTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 700;
-  color: #334155;
-  margin: 0;
-`;
-
-const ResetButton = styled.button`
-  background: none;
-  border: none;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: #475569;
   cursor: pointer;
-  padding: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all 0.15s ease;
 
   &:hover {
+    background: #e2e8f0;
     color: #0f172a;
-    text-decoration: underline;
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 `;
 
-const CardOrderList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const CardOrderItem = styled.div<{ $disabled: boolean }>`
+const CardRow = styled.div<{ $disabled: boolean }>`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background-color: ${({ $disabled }) => ($disabled ? "#f8fafc" : "#ffffff")};
-  border-radius: 14px;
-  border: 1px solid ${({ $disabled }) => ($disabled ? "#f1f5f9" : "#e2e8f0")};
-  opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
-  transition: all 0.15s ease;
+  gap: 14px;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
+  transition: opacity 0.15s ease;
 `;
 
 const OrderControlCol = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex-shrink: 0;
 `;
 
 const OrderButton = styled.button`
-  background: #f1f5f9;
-  border: none;
-  width: 26px;
-  height: 22px;
-  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  width: 24px;
+  height: 20px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,14 +411,15 @@ const OrderButton = styled.button`
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.4;
+    opacity: 0.35;
+    border-color: #f1f5f9;
   }
 `;
 
 const CardInfoCol = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   min-width: 0;
 `;
@@ -360,10 +430,11 @@ const CardNameRow = styled.div`
   gap: 6px;
 `;
 
-const CardName = styled.span`
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #1e293b;
+const CardName = styled.span<{ $disabled?: boolean }>`
+  font-size: 15px;
+  font-weight: 600;
+  color: ${({ $disabled }) => ($disabled ? "#94a3b8" : "#1e293b")};
+  letter-spacing: -0.2px;
 `;
 
 const OrderBadge = styled.span`
@@ -376,7 +447,7 @@ const OrderBadge = styled.span`
 `;
 
 const CardDesc = styled.span`
-  font-size: 12px;
+  font-size: 12.5px;
   color: #64748b;
   white-space: nowrap;
   overflow: hidden;
@@ -385,4 +456,5 @@ const CardDesc = styled.span`
 
 const SwitchWrapper = styled.div`
   flex-shrink: 0;
+  margin-left: 4px;
 `;
