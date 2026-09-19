@@ -27,9 +27,15 @@ export default function DailyBriefFortuneCard() {
         "바쁜 강의 일정 사이, 캠퍼스 잔디밭이나 벤치에서 잠시 바람을 쐬며 여유를 즐겨보세요.",
       luckyItem: "달콤한 간식",
     },
+    {
+      keyword: "알찬 하루 계획 📝",
+      message:
+        "강의 시작 전 오늘 해야 할 중요한 일들을 3가지 적어보세요. 훨씬 가볍고 알찬 하루가 될 거예요.",
+      luckyItem: "깔끔한 메모장",
+    },
   ];
 
-  // 날짜 기반 결정론적 팁 선택 (매일 같은 날엔 일관된 팁, 다음날 변경)
+  // 날짜 기반 결정론적 팁 선택 (당일엔 고정 팁 표출, 자정이 지나면 다음 팁으로 자동 순환)
   const todayTip = useMemo(() => {
     const today = new Date();
     const daySeed =
@@ -41,12 +47,12 @@ export default function DailyBriefFortuneCard() {
 
   return (
     <SectionWrapper>
-      <ContextIntro>오늘의 한마디를 확인해 볼까요?</ContextIntro>
+      <ContextIntro>횃불이의 오늘 한마디를 확인해 볼까요?</ContextIntro>
       <CardContainer>
         <CardHeader>
           <HeaderLeft>
             <SparkleIconCircle>💬</SparkleIconCircle>
-            <CardTitle>캠퍼스 한마디</CardTitle>
+            <CardTitle>횃불이 한마디</CardTitle>
           </HeaderLeft>
         </CardHeader>
 
@@ -58,8 +64,6 @@ export default function DailyBriefFortuneCard() {
             <LuckyItemValue>{todayTip.luckyItem}</LuckyItemValue>
           </LuckyItemRow>
         </FortuneBody>
-
-        <FooterText>매일 아침 새로운 응원과 팁을 전해드려요.</FooterText>
       </CardContainer>
     </SectionWrapper>
   );
@@ -169,11 +173,4 @@ const LuckyItemLabel = styled.span`
 const LuckyItemValue = styled.span`
   font-weight: 700;
   color: #1c1917;
-`;
-
-const FooterText = styled.span`
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #9ca3af;
-  letter-spacing: -0.2px;
 `;
