@@ -457,7 +457,7 @@ export default function MobileRoutineDetailPage() {
   const [modalSelectedDays, setModalSelectedDays] = useState<string[]>(["MON", "TUE", "WED", "THU", "FRI"]);
 
   // Action Selection & Configuration Modals
-  const [isActionSelectDrawerOpen, setIsActionSelectDrawerOpen] = useState(false);
+  const [isActionSelectModalOpen, setIsActionSelectModalOpen] = useState(false);
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
   // Department Action Modal (특정 학과 선택 + 전용 키워드 세부 설정)
@@ -1162,9 +1162,9 @@ export default function MobileRoutineDetailPage() {
   // 2. 동작 블록 (Action) 핸들러
   // =========================================================================
 
-  // 동작 추가 드로어에서 액션 선택
+  // 동작 추가 모달에서 액션 선택
   const handleSelectActionType = (type: RoutineActionType) => {
-    setIsActionSelectDrawerOpen(false);
+    setIsActionSelectModalOpen(false);
     setEditingActionId(null);
 
     if (type === "DEPT_NOTICE") {
@@ -2030,7 +2030,7 @@ export default function MobileRoutineDetailPage() {
           )}
 
           {isEditing && (
-            <AddConditionCard onClick={() => setIsActionSelectDrawerOpen(true)}>
+            <AddConditionCard onClick={() => setIsActionSelectModalOpen(true)}>
               <Ripple color="rgba(59, 130, 246, 0.12)" />
               <Plus size={18} color="#3b82f6" strokeWidth={2.5} />
               <span>동작 추가</span>
@@ -2279,36 +2279,47 @@ export default function MobileRoutineDetailPage() {
       </Modal>
 
       {/* =========================================================================
-       * 동작 선택 드로어 (ActionSelectDrawer)
+       * 동작 선택 모달 (Action Select Modal)
        * ========================================================================= */}
-      {isActionSelectDrawerOpen && (
-        <DrawerBackdrop onClick={() => setIsActionSelectDrawerOpen(false)}>
-          <DrawerContainer onClick={(e) => e.stopPropagation()}>
-            <DrawerHeader>
-              <DrawerTitle>동작 추가 (어떤 알림을 받을까요?)</DrawerTitle>
-              <DrawerCloseButton onClick={() => setIsActionSelectDrawerOpen(false)}>
-                <X size={20} color="#6b7280" />
-              </DrawerCloseButton>
-            </DrawerHeader>
-
-            <DrawerList>
-              {AVAILABLE_ACTIONS.map((action) => (
-                <DrawerItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
-                  <Ripple color="rgba(0, 0, 0, 0.06)" />
-                  <DrawerIconCircle $bgColor={action.iconBg}>
-                    {React.cloneElement(action.icon, { size: 20, color: "#ffffff" })}
-                  </DrawerIconCircle>
-                  <DrawerItemText>
-                    <DrawerItemTitle>{action.title}</DrawerItemTitle>
-                    <DrawerItemDesc>{action.description}</DrawerItemDesc>
-                  </DrawerItemText>
-                  <Plus size={18} color="#3b82f6" />
-                </DrawerItem>
-              ))}
-            </DrawerList>
-          </DrawerContainer>
-        </DrawerBackdrop>
-      )}
+      <Modal
+        isOpen={isActionSelectModalOpen}
+        onClose={() => setIsActionSelectModalOpen(false)}
+        title="동작 추가 (어떤 알림을 받을까요?)"
+        description="알림으로 수신할 동작을 선택해 주세요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsActionSelectModalOpen(false),
+        }}
+      >
+        <ModalOptionsList style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "2px" }}>
+          {AVAILABLE_ACTIONS.map((action) => (
+            <ModalOptionItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
+              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <OptionIconTextRow>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    backgroundColor: action.iconBg,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {React.cloneElement(action.icon, { size: 18, color: "#ffffff" })}
+                </div>
+                <div>
+                  <ModalOptionText>{action.title}</ModalOptionText>
+                  <CardSubDesc>{action.description}</CardSubDesc>
+                </div>
+              </OptionIconTextRow>
+              <Plus size={18} color="#3b82f6" />
+            </ModalOptionItem>
+          ))}
+        </ModalOptionsList>
+      </Modal>
 
       {/* =========================================================================
        * 세부 동작 설정 모달들 (Action Config Modals)
@@ -3559,92 +3570,4 @@ const DayCircleButton = styled.button<{ $active: boolean }>`
   justify-content: center;
   position: relative;
   overflow: hidden;
-`;
-
-// Drawer
-const DrawerBackdrop = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-`;
-
-const DrawerContainer = styled.div`
-  width: 100%;
-  background: #ffffff;
-  border-top-left-radius: 26px;
-  border-top-right-radius: 26px;
-  padding: 20px 20px 32px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-sizing: border-box;
-`;
-
-const DrawerHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const DrawerTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-`;
-
-const DrawerCloseButton = styled.button`
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 4px;
-`;
-
-const DrawerList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const DrawerItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: #f8fafc;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-`;
-
-const DrawerIconCircle = styled.div<{ $bgColor: string }>`
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: ${({ $bgColor }) => $bgColor};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const DrawerItemText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-`;
-
-const DrawerItemTitle = styled.div`
-  font-size: 14.5px;
-  font-weight: 700;
-  color: #0f172a;
-`;
-
-const DrawerItemDesc = styled.div`
-  font-size: 12px;
-  color: #64748b;
 `;
