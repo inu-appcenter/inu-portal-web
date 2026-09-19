@@ -1252,6 +1252,9 @@ export default function MobileRoutineDetailPage() {
 
   // 동작 추가 모달에서 선택 가능한 동작 목록 필터링 (신규 이벤트 트리거와 시간 브리핑 상호 배타적 분리)
   const filteredAvailableActions = useMemo(() => {
+    // 조건(Trigger)이 하나도 없으면 동작을 추가할 수 없음 (조건 선행 원칙)
+    if (triggers.length === 0) return [];
+
     const hasSchoolNoticeTrigger = triggers.some((t) => t.type === "SCHOOL_NOTICE");
     const hasDeptNoticeTrigger = triggers.some((t) => t.type === "DEPT_NOTICE");
     const hasTimeTrigger = triggers.some((t) =>
@@ -1268,11 +1271,11 @@ export default function MobileRoutineDetailPage() {
         return hasDeptNoticeTrigger && !hasSchoolNoticeTrigger && !hasTimeTrigger;
       }
       // 3. 일반 시간/시간표 기반 동작 (TIMETABLE, SCHEDULE, WEATHER, BUS, CAFETERIA):
-      // 학교나 학과 공지 트리거가 있는 루틴에는 선택 불가 (시간 트리거가 있거나 초기 상태일 때만)
-      if (hasSchoolNoticeTrigger || hasDeptNoticeTrigger) {
-        return false;
+      // 시간/시간표 트리거가 있을 때만 가능
+      if (hasTimeTrigger && !hasSchoolNoticeTrigger && !hasDeptNoticeTrigger) {
+        return true;
       }
-      return true;
+      return false;
     });
   }, [triggers]);
 
@@ -1576,10 +1579,31 @@ export default function MobileRoutineDetailPage() {
     }
   };
 
-  // 트리거 삭제
+  // 트리거 삭제 시 동작과의 정합성 유지 (조건이 사라지면 종속된 동작도 자동 정리)
   const handleRemoveTrigger = (triggerId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setTriggers((prev) => prev.filter((t) => t.id !== triggerId));
+    const newTriggers = triggers.filter((t) => t.id !== triggerId);
+    setTriggers(newTriggers);
+
+    if (newTriggers.length === 0) {
+      // 모든 조건이 삭제되면 동작도 모두 초기화 (조건 없는 동작 불가)
+      setActions([]);
+    } else {
+      // 남은 조건과 호환되지 않는 동작들 필터링
+      const hasSchoolNotice = newTriggers.some((t) => t.type === "SCHOOL_NOTICE");
+      const hasDeptNotice = newTriggers.some((t) => t.type === "DEPT_NOTICE");
+      const hasTime = newTriggers.some((t) =>
+        ["TIME", "BEFORE_FIRST_CLASS", "BEFORE_CLASS", "AFTER_LAST_CLASS", "LONG_BREAK", "NO_CLASS_DAY"].includes(t.type)
+      );
+
+      setActions((prevActions) =>
+        prevActions.filter((act) => {
+          if (act.type === "SCHOOL_NOTICE") return hasSchoolNotice;
+          if (act.type === "DEPT_NOTICE") return hasDeptNotice;
+          return hasTime;
+        })
+      );
+    }
   };
 
   // =========================================================================
@@ -2546,8 +2570,17 @@ export default function MobileRoutineDetailPage() {
                 <Bell size={20} color="#94a3b8" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
-                <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>공지사항, 시간표, 버스, 학식 등 받고 싶은 알림을 추가해 주세요.</EmptyGuideSub>
+                {triggers.length === 0 ? (
+                  <>
+                    <EmptyGuideTitle>조건을 먼저 추가해 주세요</EmptyGuideTitle>
+                    <EmptyGuideSub>설정된 알림 조건에 맞춰 가능한 알림 동작을 선택할 수 있어요.</EmptyGuideSub>
+                  </>
+                ) : (
+                  <>
+                    <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
+                    <EmptyGuideSub>공지사항, 시간표, 버스, 학식 등 받고 싶은 알림을 추가해 주세요.</EmptyGuideSub>
+                  </>
+                )}
               </EmptyGuideText>
             </EmptyGuideCard>
           ) : (
@@ -2583,7 +2616,16 @@ export default function MobileRoutineDetailPage() {
           )}
 
           {isEditing && (
-            <AddConditionCard onClick={() => setIsActionSelectModalOpen(true)}>
+            <AddConditionCard
+              onClick={() => {
+                if (triggers.length === 0) {
+                  alert("언제 알림을 받을지 조건을 먼저 추가해 주세요.");
+                  setIsTriggerSelectModalOpen(true);
+                  return;
+                }
+                setIsActionSelectModalOpen(true);
+              }}
+            >
               <Ripple color="rgba(59, 130, 246, 0.12)" />
               <Plus size={18} color="#3b82f6" strokeWidth={2.5} />
               <span>동작 추가</span>
