@@ -31,7 +31,6 @@ import {
   Palette,
   Check,
   Building2,
-  ChevronRight,
   Search,
 } from "lucide-react";
 import {
@@ -1935,7 +1934,9 @@ export default function MobileRoutineDetailPage() {
             triggers.map((trig) => (
               <OneUiCard
                 key={trig.id}
+                $isInteractive={isEditing}
                 onClick={() => {
+                  if (!isEditing) return;
                   if (trig.type === "TIME" && trig.timeParams) {
                     setEditingTriggerId(trig.id);
                     setModalAmpm(trig.timeParams.ampm);
@@ -1949,7 +1950,7 @@ export default function MobileRoutineDetailPage() {
                   }
                 }}
               >
-                <Ripple color="rgba(0, 0, 0, 0.06)" />
+                {isEditing && <Ripple color="rgba(0, 0, 0, 0.06)" />}
                 <CardIconWrapper>{renderTriggerIcon(trig.type)}</CardIconWrapper>
 
                 <CardContent>
@@ -1957,7 +1958,7 @@ export default function MobileRoutineDetailPage() {
                   <CardBlueText>{trig.subtitle}</CardBlueText>
                 </CardContent>
 
-                {isEditing ? (
+                {isEditing && (
                   <MinusButton
                     data-no-ripple="true"
                     type="button"
@@ -1966,8 +1967,6 @@ export default function MobileRoutineDetailPage() {
                   >
                     <Minus size={18} color="#ef4444" strokeWidth={3} />
                   </MinusButton>
-                ) : (
-                  <ChevronRight size={18} color="#94a3b8" />
                 )}
               </OneUiCard>
             ))
@@ -2000,8 +1999,15 @@ export default function MobileRoutineDetailPage() {
             </EmptyGuideCard>
           ) : (
             actions.map((act) => (
-              <OneUiCard key={act.id} onClick={() => handleOpenActionDetail(act)}>
-                <Ripple color="rgba(0, 0, 0, 0.04)" />
+              <OneUiCard
+                key={act.id}
+                $isInteractive={isEditing}
+                onClick={() => {
+                  if (!isEditing) return;
+                  handleOpenActionDetail(act);
+                }}
+              >
+                {isEditing && <Ripple color="rgba(0, 0, 0, 0.04)" />}
                 <CardIconWrapper>{renderActionIcon(act.type, act.iconBg)}</CardIconWrapper>
 
                 <CardContent>
@@ -2009,7 +2015,7 @@ export default function MobileRoutineDetailPage() {
                   <CardBlueText>{act.subtitle}</CardBlueText>
                 </CardContent>
 
-                {isEditing ? (
+                {isEditing && (
                   <MinusButton
                     data-no-ripple="true"
                     type="button"
@@ -2018,8 +2024,6 @@ export default function MobileRoutineDetailPage() {
                   >
                     <Minus size={18} color="#ef4444" strokeWidth={3} />
                   </MinusButton>
-                ) : (
-                  <ChevronRight size={18} color="#94a3b8" />
                 )}
               </OneUiCard>
             ))
@@ -2920,7 +2924,7 @@ const DetailSectionHeader = styled.h3`
   letter-spacing: -0.3px;
 `;
 
-const OneUiCard = styled.div`
+const OneUiCard = styled.div<{ $isInteractive?: boolean }>`
   background: #ffffff;
   border-radius: 24px;
   border: 1px solid #e9ecef;
@@ -2931,7 +2935,7 @@ const OneUiCard = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   position: relative;
   overflow: hidden;
-  cursor: pointer;
+  cursor: ${({ $isInteractive }) => ($isInteractive ? "pointer" : "default")};
 `;
 
 const CardIconWrapper = styled.div`
