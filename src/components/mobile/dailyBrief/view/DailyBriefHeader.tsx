@@ -1,8 +1,9 @@
-import styled, { css, keyframes } from "styled-components";
+import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import LoadingAnimation from "@/resources/assets/illustrations/횃불이ai로딩애니메이션.gif";
 import ChatbotLogo from "@/resources/assets/illustrations/chatbot-logo.svg";
+import StreamingFadeText from "./StreamingFadeText";
 
 interface DailyBriefHeaderProps {
   onBack?: () => void;
@@ -64,9 +65,17 @@ export default function DailyBriefHeader({
             />
           </SkeletonLayer>
         ) : (
-          <GreetingLayer $shouldAnimate={shouldAnimate}>
-            <MainGreeting>{title}</MainGreeting>
-            <SubGreeting>{subtitle}</SubGreeting>
+          <GreetingLayer>
+            <MainGreeting>
+              <StreamingFadeText text={title} animate={shouldAnimate} />
+            </MainGreeting>
+            <SubGreeting>
+              <StreamingFadeText
+                text={subtitle}
+                animate={shouldAnimate}
+                startDelayMs={title.trim().split(/\s+/).length * 70 + 100}
+              />
+            </SubGreeting>
           </GreetingLayer>
         )}
       </TitleSection>
@@ -174,32 +183,10 @@ const SkeletonLayer = styled.div`
   }
 `;
 
-const greetingFadeIn = keyframes`
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-const GreetingLayer = styled.div<{ $shouldAnimate?: boolean }>`
+const GreetingLayer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-
-  ${({ $shouldAnimate = true }) =>
-    $shouldAnimate
-      ? css`
-          animation: ${greetingFadeIn} 0.5s cubic-bezier(0.16, 1, 0.3, 1)
-            forwards;
-        `
-      : css`
-          opacity: 1;
-          transform: translateY(0);
-        `}
 `;
 
 const MainGreeting = styled.h1`

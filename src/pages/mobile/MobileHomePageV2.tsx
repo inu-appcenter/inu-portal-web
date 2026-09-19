@@ -23,6 +23,7 @@ import Icon from "@/components/common/Icon";
 import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
 import { useDailyBriefPresentation } from "@/hooks/useDailyBriefRanking";
+import StreamingFadeText from "@/components/mobile/dailyBrief/view/StreamingFadeText";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
@@ -100,8 +101,17 @@ export default function MobileHomePageV2() {
             aria-label="Daily Brief 바로가기"
           >
             <GreetingTextGroup>
-              <GreetingMainTitle>{dailyBrief.title}</GreetingMainTitle>
-              <GreetingSubTitle>{dailyBrief.entrySubtitle}</GreetingSubTitle>
+              <GreetingMainTitle>
+                <StreamingFadeText text={dailyBrief.title} />
+              </GreetingMainTitle>
+              <GreetingSubTitle>
+                <StreamingFadeText
+                  text={dailyBrief.entrySubtitle}
+                  startDelayMs={
+                    dailyBrief.title.trim().split(/\s+/).length * 70 + 100
+                  }
+                />
+              </GreetingSubTitle>
             </GreetingTextGroup>
             <GreetingChevron>
               <Icon name="chevron-right" size={20} color="#9CA3AF" />
