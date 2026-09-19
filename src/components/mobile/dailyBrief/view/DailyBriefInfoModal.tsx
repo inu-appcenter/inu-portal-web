@@ -16,7 +16,7 @@ export default function DailyBriefInfoModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Daily Brief 안내"
+      title="Daily Brief에 대해 알아보세요"
       primaryButton={{
         text: "확인",
         onClick: onClose,
@@ -26,21 +26,24 @@ export default function DailyBriefInfoModal({
       <ModalBody>
         <FeatureList>
           <FeatureItem>
-            <FeatureIcon>⚡</FeatureIcon>
+            <FeatureIcon>✨</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>상황 맞춤 다이내믹 우선순위</FeatureName>
+              <FeatureName>지금 필요한 카드를 먼저 보여줘요</FeatureName>
               <FeatureDesc>
-                수업 전에는 <b>강의실과 시간표</b>, 식사 시간에는 <b>학식 메뉴</b>, 하교 시에는 <b>도착 버스</b>, 마감 임박 시에는 <b>과제 알림</b>이 가장 먼저 최상단에 자동 추천됩니다.
+                수업 전에는 <b>강의실과 시간표</b>, 밥 먹을 땐 <b>학식 메뉴</b>,
+                집 갈 땐 <b>도착 버스</b>처럼 그때그때 가장 필요한 정보를 맨
+                위에 알아서 띄워드려요.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
 
           <FeatureItem>
-            <FeatureIcon>🎛️</FeatureIcon>
+            <FeatureIcon>⚙️</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>카드 순서 & 노출 커스텀 설정</FeatureName>
+              <FeatureName>카드 순서를 내 마음대로 바꿔요</FeatureName>
               <FeatureDesc>
-                우측 하단 설정 버튼을 통해 내가 자주 확인하는 카드의 순서를 직접 변경하거나, 필요하지 않은 카드를 숨길 수 있습니다.
+                자주 보는 카드를 위로 올리거나 필요 없는 카드는 숨길 수 있어요.
+                오른쪽 아래 설정 버튼에서 언제든지 바꿀 수 있어요.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
@@ -48,9 +51,10 @@ export default function DailyBriefInfoModal({
           <FeatureItem>
             <FeatureIcon>📍</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>캠퍼스 실시간 정보 원스톱 확인</FeatureName>
+              <FeatureName>캠퍼스 소식을 한눈에 챙겨드려요</FeatureName>
               <FeatureDesc>
-                열람실 잔여 좌석, 실시간 빠른 버스 도착 정보, 전체 및 학과 최신 공지, 송도 캠퍼스 날씨까지 앱 곳곳을 찾을 필요 없이 한 화면에서 모아보세요.
+                열람실 빈자리부터 빠른 버스, 학교와 학과 공지, 캠퍼스 날씨까지
+                여기저기 찾아다닐 필요 없이 한곳에서 편하게 확인해요.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>

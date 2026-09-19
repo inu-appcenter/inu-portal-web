@@ -22,7 +22,9 @@ import Icon from "@/components/common/Icon";
 
 export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
 
-export function getDailyBriefTimeTheme(hour: number = new Date().getHours()): DailyBriefTimeTheme {
+export function getDailyBriefTimeTheme(
+  hour: number = new Date().getHours(),
+): DailyBriefTimeTheme {
   if (hour >= 5 && hour < 12) return "morning";
   if (hour >= 12 && hour < 18) return "afternoon";
   if (hour >= 18 && hour < 22) return "sunset";
@@ -174,7 +176,7 @@ export default function MobileDailyBriefPage() {
         <FloatingBottomActions>
           <CircleActionButton
             onClick={() => setIsInfoModalOpen(true)}
-            aria-label="Daily Brief 안내"
+            aria-label="Daily Brief에 대해 알아보세요"
           >
             <Icon name="info" size={20} color="#374151" />
           </CircleActionButton>
@@ -248,7 +250,8 @@ const AnimatedCardItem = styled.div<{
 
           ${$loaded &&
           css`
-            animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1)
+              forwards;
             animation-delay: ${$index * 0.08}s;
           `}
         `
