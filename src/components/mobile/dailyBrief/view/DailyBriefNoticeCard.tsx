@@ -455,6 +455,5 @@ const ViewAllButton = styled.button`
 
   &:active {
     background: #edf2f7;
-    transform: scale(0.99);
   }
 `;

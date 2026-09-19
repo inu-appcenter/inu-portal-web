@@ -121,13 +121,6 @@ const WeatherCardWrapper = styled.div`
   flex-direction: column;
   gap: 18px;
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.985);
-  }
 `;
 
 const CardHeader = styled.div`

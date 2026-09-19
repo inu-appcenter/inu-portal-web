@@ -304,13 +304,6 @@ const CardContainer = styled.div`
     0 1px 3px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.985);
-  }
 `;
 
 const CardHeader = styled.div`
@@ -441,7 +434,7 @@ const BreakChip = styled.button`
   }
 
   &:active {
-    transform: scale(0.96);
+    background: #f1f5f9;
   }
 `;
 

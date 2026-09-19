@@ -267,13 +267,6 @@ const CardContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.985);
-  }
 `;
 
 const CardHeader = styled.div`
@@ -427,6 +420,5 @@ const BlackActionButton = styled.button`
 
   &:active {
     background: #27272a;
-    transform: scale(0.99);
   }
 `;
