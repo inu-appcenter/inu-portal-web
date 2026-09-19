@@ -193,29 +193,29 @@ interface AutoBriefInput {
 const getDefaultGreeting = (hour: number) => {
   if (hour >= 5 && hour < 12) {
     return {
-      title: "상쾌한 아침이에요",
-      subtitle: "지금 필요한 캠퍼스 소식만 모아봤어요.",
-      entrySubtitle: "여기를 눌러 지금 필요한 캠퍼스 소식을 확인해 보세요.",
+      title: "좋은 아침이에요",
+      subtitle: "오늘 일정과 캠퍼스 정보를 확인하세요.",
+      entrySubtitle: "여기를 눌러 오늘 일정과 캠퍼스 정보를 확인하세요.",
     };
   }
   if (hour >= 12 && hour < 18) {
     return {
-      title: "활기찬 오후예요",
-      subtitle: "남은 일정에 필요한 정보만 확인해 보세요.",
-      entrySubtitle: "여기를 눌러 남은 일정에 필요한 정보를 확인해 보세요.",
+      title: "오후 일정이에요",
+      subtitle: "남은 일정에 필요한 정보를 확인하세요.",
+      entrySubtitle: "여기를 눌러 남은 일정에 필요한 정보를 확인하세요.",
     };
   }
   if (hour >= 18 && hour < 22) {
     return {
-      title: "편안한 저녁이에요",
-      subtitle: "하루를 마무리하는 데 필요한 소식을 모았어요.",
-      entrySubtitle: "여기를 눌러 하루를 마무리할 정보를 확인해 보세요.",
+      title: "저녁 일정이에요",
+      subtitle: "남은 일정과 캠퍼스 정보를 확인하세요.",
+      entrySubtitle: "여기를 눌러 남은 일정과 캠퍼스 정보를 확인하세요.",
     };
   }
   return {
-    title: "고요한 밤이에요",
-    subtitle: "급한 일정이 있는지 가볍게 확인해 보세요.",
-    entrySubtitle: "여기를 눌러 놓친 일정이 없는지 확인해 보세요.",
+    title: "오늘 남은 일정이에요",
+    subtitle: "마감이 임박한 일정이 있는지 확인하세요.",
+    entrySubtitle: "여기를 눌러 마감이 임박한 일정을 확인하세요.",
   };
 };
 
@@ -342,65 +342,65 @@ export function buildAutoDailyBrief(
     greeting = {
       title: "오늘은 우산을 챙겨주세요",
       subtitle: nextClass
-        ? "수업 이동 전에 비 소식을 확인해 보세요."
+        ? "수업 이동 전 비 소식을 확인하세요."
         : "송도 캠퍼스에 비 소식이 있어요.",
-      entrySubtitle: "여기를 눌러 비 소식과 오늘의 브리핑을 확인해 보세요.",
+      entrySubtitle: "여기를 눌러 비 소식과 오늘 일정을 확인하세요.",
     };
   } else if (hasSnow) {
     greeting = {
       title: "눈길을 조심하세요",
-      subtitle: "따뜻하게 입고 이동 시간을 조금 여유 있게 잡아보세요.",
-      entrySubtitle: "여기를 눌러 눈 소식과 이동 정보를 확인해 보세요.",
+      subtitle: "방한용품을 챙기고 이동 시간을 넉넉히 잡으세요.",
+      entrySubtitle: "여기를 눌러 눈 소식과 이동 정보를 확인하세요.",
     };
   } else if (hasBadAir) {
     greeting = {
       title: "오늘은 공기가 좋지 않아요",
       subtitle: "야외 이동이 있다면 마스크를 챙겨주세요.",
-      entrySubtitle: "여기를 눌러 대기 상태와 오늘의 정보를 확인해 보세요.",
+      entrySubtitle: "여기를 눌러 대기 상태와 오늘 일정을 확인하세요.",
     };
   } else if (minutesUntilNext !== null && minutesUntilNext <= 20) {
     greeting = {
       title: `다음 수업까지 ${minutesUntilNext}분 남았어요`,
-      subtitle: `${nextClass?.name ?? "다음 수업"} 준비를 시작할 시간이에요.`,
-      entrySubtitle: "여기를 눌러 다음 수업 정보를 확인해 보세요.",
+      subtitle: `${nextClass?.name ?? "다음 수업"} 시간과 강의실을 확인하세요.`,
+      entrySubtitle: "여기를 눌러 다음 수업 정보를 확인하세요.",
     };
   } else if (hasTimeForLunch) {
     greeting = {
-      title: "지금은 점심 먹기 좋은 시간이에요",
+      title: "지금 식사할 시간이 있어요",
       subtitle: minutesUntilNext
         ? `다음 수업까지 ${minutesUntilNext}분 남았어요.`
-        : "오늘 운영 중인 학생식당 메뉴를 확인해 보세요.",
-      entrySubtitle: "여기를 눌러 지금 먹기 좋은 학식을 확인해 보세요.",
+        : "현재 운영 중인 학생식당 메뉴를 확인하세요.",
+      entrySubtitle: "여기를 눌러 현재 이용할 수 있는 학식을 확인하세요.",
     };
   } else if (isLongBreak && minutesUntilNext !== null) {
     greeting = {
-      title: "공강을 여유롭게 활용해 보세요",
+      title: "지금은 공강이에요",
       subtitle: `다음 수업까지 ${minutesUntilNext}분 남았어요.`,
-      entrySubtitle: "여기를 눌러 공강에 필요한 정보를 확인해 보세요.",
+      entrySubtitle: "여기를 눌러 공강 중 이용할 수 있는 정보를 확인하세요.",
     };
   } else if (recentlyFinished) {
     greeting = {
       title: "오늘 수업이 모두 끝났어요",
-      subtitle: "귀가편을 확인하거나 도서관에서 하루를 마무리해 보세요.",
-      entrySubtitle: "여기를 눌러 하교와 남은 일정을 확인해 보세요.",
+      subtitle: "귀가 교통편과 도서관 이용 정보를 확인하세요.",
+      entrySubtitle: "여기를 눌러 하교와 남은 일정을 확인하세요.",
     };
   } else if (urgentAssignmentCount > 0) {
     greeting = {
       title: "마감이 가까운 과제가 있어요",
-      subtitle: `이러닝에서 ${urgentAssignmentCount}개의 일정을 확인해 주세요.`,
-      entrySubtitle: "여기를 눌러 마감이 가까운 과제를 확인해 보세요.",
+      subtitle: `이러닝 마감 일정이 ${urgentAssignmentCount}개 있어요.`,
+      entrySubtitle: "여기를 눌러 마감이 가까운 과제를 확인하세요.",
     };
   } else if (currentClass) {
     greeting = {
       title: "오늘 일정이 진행 중이에요",
-      subtitle: `${currentClass.name} 이후 일정을 미리 확인해 보세요.`,
-      entrySubtitle: "여기를 눌러 오늘의 남은 일정을 확인해 보세요.",
+      subtitle: `${currentClass.name} 이후 일정을 확인하세요.`,
+      entrySubtitle: "여기를 눌러 오늘 남은 일정을 확인하세요.",
     };
   } else if (isLoggedIn && hasTimetableContext && todayClasses.length === 0) {
     greeting = {
       title: "오늘은 예정된 수업이 없어요",
-      subtitle: "필요한 캠퍼스 소식만 가볍게 확인해 보세요.",
-      entrySubtitle: "여기를 눌러 필요한 캠퍼스 소식을 확인해 보세요.",
+      subtitle: "오늘의 캠퍼스 정보를 확인하세요.",
+      entrySubtitle: "여기를 눌러 오늘의 캠퍼스 정보를 확인하세요.",
     };
   }
 

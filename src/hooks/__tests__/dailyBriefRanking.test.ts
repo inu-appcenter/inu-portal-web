@@ -60,7 +60,7 @@ describe("buildAutoDailyBrief", () => {
     ]);
 
     expect(result.cards).toEqual(["cafeteria", "library", "timetable"]);
-    expect(result.title).toBe("지금은 점심 먹기 좋은 시간이에요");
+    expect(result.title).toBe("지금 식사할 시간이 있어요");
     expect(result.subtitle).toContain("90분");
     expect(result.entrySubtitle).toMatch(/^여기를 눌러/);
   });
