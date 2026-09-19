@@ -1540,6 +1540,16 @@ export default function MobileRoutineDetailPage() {
       actions,
     };
 
+    const cafeAction = actions.find((a) => a.type === "CAFETERIA");
+    if (cafeAction && cafeAction.cafeteriaParams) {
+      toolParams.cafeteria = cafeAction.cafeteriaParams.restaurant || (cafeAction.cafeteriaParams as any).cafeteria;
+      toolParams.mealType = cafeAction.cafeteriaParams.mealType;
+    }
+    const busAction = actions.find((a) => a.type === "BUS");
+    if (busAction && busAction.busParams) {
+      toolParams.stopName = busAction.busParams.stopName;
+    }
+
     // 타겟 도구 목록
     const targetToolsList = actions.map((a) => a.type);
     const targetTool = targetToolsList.join(",");
