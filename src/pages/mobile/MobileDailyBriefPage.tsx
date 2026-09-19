@@ -18,13 +18,11 @@ import DailyBriefFortuneCard from "@/components/mobile/dailyBrief/view/DailyBrie
 import DailyBriefLibraryCard from "@/components/mobile/dailyBrief/view/DailyBriefLibraryCard";
 import DailyBriefLmsCard from "@/components/mobile/dailyBrief/view/DailyBriefLmsCard";
 import DailyBriefInfoModal from "@/components/mobile/dailyBrief/view/DailyBriefInfoModal";
-import DailyBriefShareModal from "@/components/mobile/dailyBrief/view/DailyBriefShareModal";
 import Icon from "@/components/common/Icon";
 
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const rankedCards = useDailyBriefRanking();
 
   useHeader({
@@ -62,10 +60,7 @@ export default function MobileDailyBriefPage() {
   return (
     <PageBackground>
       <ContentContainer>
-        <DailyBriefHeader
-          onBack={() => navigate(-1)}
-          onShare={() => setIsShareModalOpen(true)}
-        />
+        <DailyBriefHeader onBack={() => navigate(-1)} />
 
         <CardsStack>{rankedCards.map(renderCard)}</CardsStack>
 
@@ -75,12 +70,6 @@ export default function MobileDailyBriefPage() {
             aria-label="Daily Brief 안내"
           >
             <Icon name="info" size={20} color="#374151" />
-          </CircleActionButton>
-          <CircleActionButton
-            onClick={() => setIsShareModalOpen(true)}
-            aria-label="오늘의 브리핑 공유하기"
-          >
-            <Icon name="share" size={20} color="#2563EB" />
           </CircleActionButton>
           <CircleActionButton
             onClick={() => navigate(ROUTES.DAILY_BRIEF.SETTING)}
@@ -94,11 +83,6 @@ export default function MobileDailyBriefPage() {
       <DailyBriefInfoModal
         isOpen={isInfoModalOpen}
         onClose={() => setIsInfoModalOpen(false)}
-      />
-
-      <DailyBriefShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
       />
     </PageBackground>
   );
@@ -143,7 +127,7 @@ const FloatingBottomActions = styled.div`
   right: 20px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   z-index: 50;
 
   @media (min-width: 520px) {
