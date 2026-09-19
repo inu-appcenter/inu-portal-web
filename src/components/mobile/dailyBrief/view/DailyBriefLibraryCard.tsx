@@ -5,27 +5,31 @@ import { getReadingRooms, LibrarySeatRoom } from "@/apis/library";
 import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
 
+let cachedRooms: LibrarySeatRoom[] = [];
+
 export default function DailyBriefLibraryCard() {
   const navigate = useNavigate();
-  const [rooms, setRooms] = useState<LibrarySeatRoom[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [rooms, setRooms] = useState<LibrarySeatRoom[]>(cachedRooms);
+  const [isLoading, setIsLoading] = useState(cachedRooms.length === 0);
 
   useEffect(() => {
     let isMounted = true;
     void getReadingRooms()
       .then((data) => {
+        // 열람실 관련 룸만 정제 (또는 상위 3~4개)
+        const filtered = (data || []).filter((r) => {
+          const name = r.name || "";
+          return (
+            name.includes("열람실") ||
+            name.includes("자료실") ||
+            name.includes("이룸관") ||
+            name.includes("노트북")
+          );
+        });
+        const finalRooms = filtered.length > 0 ? filtered : data || [];
+        cachedRooms = finalRooms;
         if (isMounted) {
-          // 열람실 관련 룸만 정제 (또는 상위 3~4개)
-          const filtered = (data || []).filter((r) => {
-            const name = r.name || "";
-            return (
-              name.includes("열람실") ||
-              name.includes("자료실") ||
-              name.includes("이룸관") ||
-              name.includes("노트북")
-            );
-          });
-          setRooms(filtered.length > 0 ? filtered : data || []);
+          setRooms(finalRooms);
           setIsLoading(false);
         }
       })

@@ -11,18 +11,23 @@ interface FortuneTip {
   luckyItem: string;
 }
 
+let cachedFortuneWeather: WeatherInfo | null = null;
+
 export default function DailyBriefFortuneCard() {
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
   const { timetables, selectedSemester } = useTimetableStore();
-  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(cachedFortuneWeather);
 
   useEffect(() => {
     let isMounted = true;
     void getWeathers()
       .then((res) => {
-        if (isMounted && res.data) {
-          setWeatherData(res.data);
+        if (res.data) {
+          cachedFortuneWeather = res.data;
+          if (isMounted) {
+            setWeatherData(res.data);
+          }
         }
       })
       .catch(() => {});

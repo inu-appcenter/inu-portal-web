@@ -34,15 +34,20 @@ const getGradientForWeather = (sky: string, isNight: boolean): string => {
   return "linear-gradient(135deg, #4299e1 0%, #5dade2 50%, #68d391 100%)";
 };
 
+let cachedWeatherData: WeatherInfo | null = null;
+
 export default function DailyBriefWeatherCard() {
-  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(cachedWeatherData);
 
   useEffect(() => {
     let isMounted = true;
     void getWeathers()
       .then((res) => {
-        if (isMounted && res.data) {
-          setWeatherData(res.data);
+        if (res.data) {
+          cachedWeatherData = res.data;
+          if (isMounted) {
+            setWeatherData(res.data);
+          }
         }
       })
       .catch((err) => {

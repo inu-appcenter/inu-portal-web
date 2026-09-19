@@ -9,25 +9,33 @@ import findTitleOrCode from "@/utils/findTitleOrCode";
 import Icon from "@/components/common/Icon";
 import { formatTimeAgo } from "@/utils/date";
 
+let cachedSchoolNotices: Notice[] = [];
+let cachedDeptNotices: DepartmentNotice[] = [];
+
 export default function DailyBriefNoticeCard() {
   const navigate = useNavigate();
   const { userInfo, tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
 
   const [activeTab, setActiveTab] = useState<"school" | "dept">("school");
-  const [schoolNotices, setSchoolNotices] = useState<Notice[]>([]);
-  const [deptNotices, setDeptNotices] = useState<DepartmentNotice[]>([]);
-  const [isLoadingSchool, setIsLoadingSchool] = useState(false);
+  const [schoolNotices, setSchoolNotices] = useState<Notice[]>(cachedSchoolNotices);
+  const [deptNotices, setDeptNotices] = useState<DepartmentNotice[]>(cachedDeptNotices);
+  const [isLoadingSchool, setIsLoadingSchool] = useState(cachedSchoolNotices.length === 0);
   const [isLoadingDept, setIsLoadingDept] = useState(false);
 
   // 학교 공지 가져오기
   useEffect(() => {
     let isMounted = true;
-    setIsLoadingSchool(true);
+    if (cachedSchoolNotices.length === 0) {
+      setIsLoadingSchool(true);
+    }
     getNotices("전체", "date", 1)
       .then((res) => {
-        if (isMounted && res.data?.contents) {
-          setSchoolNotices(res.data.contents);
+        if (res.data?.contents) {
+          cachedSchoolNotices = res.data.contents;
+          if (isMounted) {
+            setSchoolNotices(res.data.contents);
+          }
         }
       })
       .catch((err) => {
@@ -50,14 +58,19 @@ export default function DailyBriefNoticeCard() {
     }
 
     let isMounted = true;
-    setIsLoadingDept(true);
+    if (cachedDeptNotices.length === 0) {
+      setIsLoadingDept(true);
+    }
     const deptCode = findTitleOrCode(userInfo.department);
 
     if (deptCode) {
       getDepartmentNotices(deptCode, "date", 1)
         .then((res) => {
-          if (isMounted && res.data?.contents) {
-            setDeptNotices(res.data.contents);
+          if (res.data?.contents) {
+            cachedDeptNotices = res.data.contents;
+            if (isMounted) {
+              setDeptNotices(res.data.contents);
+            }
           }
         })
         .catch((err) => {

@@ -44,10 +44,13 @@ const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
     "linear-gradient(180deg, #C7D2FE 0%, #DDD6FE 20%, #E2E8F0 52%, #EDE9FE 80%, #E0E7FF 100%)",
 };
 
+// 세션/앱 라이프사이클 동안 초기 로딩을 1회만 수행하고, 카드 이동 후 뒤로가기 복귀 시 즉시 유지
+let hasCompletedInitialBriefLoad = false;
+
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!hasCompletedInitialBriefLoad);
   const rankedCards = useDailyBriefRanking();
 
   const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
@@ -60,12 +63,17 @@ export default function MobileDailyBriefPage() {
   useEffect(() => {
     trackPageView("Daily Brief 메인");
 
-    // 자연스러운 AI 브리핑 준비 및 로딩 애니메이션 시간 (약 850ms)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 850);
+    if (!hasCompletedInitialBriefLoad) {
+      // 첫 진입 시에만 자연스러운 AI 브리핑 준비 및 로딩 애니메이션 시간 (약 850ms)
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        hasCompletedInitialBriefLoad = true;
+      }, 850);
 
-    return () => clearTimeout(timer);
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const renderCard = (cardType: DailyBriefCardType, index: number) => {

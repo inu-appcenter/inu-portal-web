@@ -14,11 +14,15 @@ interface CafeteriaMenuState {
   isOperating: boolean;
 }
 
+let cachedMenuMap: Record<string, CafeteriaMenuState> = {};
+let cachedSelectedCafeteria: string = "학생식당";
+
 export default function DailyBriefCafeteriaCard() {
   const navigate = useNavigate();
-  const [selectedCafeteria, setSelectedCafeteria] = useState<string>("학생식당");
-  const [menuMap, setMenuMap] = useState<Record<string, CafeteriaMenuState>>({});
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const hasCached = Object.keys(cachedMenuMap).length > 0;
+  const [selectedCafeteria, setSelectedCafeteria] = useState<string>(cachedSelectedCafeteria);
+  const [menuMap, setMenuMap] = useState<Record<string, CafeteriaMenuState>>(cachedMenuMap);
+  const [isLoading, setIsLoading] = useState<boolean>(!hasCached);
 
   const todayDay = new Date().getDay(); // 0(일) ~ 6(토)
   const currentHour = useMemo(() => {
@@ -51,7 +55,9 @@ export default function DailyBriefCafeteriaCard() {
     let isMounted = true;
 
     const fetchAllCafeterias = async () => {
-      setIsLoading(true);
+      if (Object.keys(cachedMenuMap).length === 0) {
+        setIsLoading(true);
+      }
 
       // 1. 유저의 맞춤 루틴에 설정된 식당 확인
       let userPreferredCafeteria: string | null = null;
@@ -129,21 +135,19 @@ export default function DailyBriefCafeteriaCard() {
         }),
       );
 
+      cachedMenuMap = results;
+      let targetCaf = "학생식당";
+      if (userPreferredCafeteria && results[userPreferredCafeteria]) {
+        targetCaf = userPreferredCafeteria;
+      } else if (firstOperatingName) {
+        targetCaf = firstOperatingName;
+      }
+      cachedSelectedCafeteria = targetCaf;
+
       if (isMounted) {
         setMenuMap(results);
         setIsLoading(false);
-
-        // 기본 선택 식당 결정:
-        // 1) 맞춤 루틴에 등록된 식당이 있으면 우선 선택
-        // 2) 현재 운영 중인 식당이 있으면 그 식당 선택 (주말/휴무 대응)
-        // 3) 둘 다 없으면 학생식당
-        if (userPreferredCafeteria && results[userPreferredCafeteria]) {
-          setSelectedCafeteria(userPreferredCafeteria);
-        } else if (firstOperatingName) {
-          setSelectedCafeteria(firstOperatingName);
-        } else {
-          setSelectedCafeteria("학생식당");
-        }
+        setSelectedCafeteria((prev) => (results[prev] ? prev : targetCaf));
       }
     };
 
