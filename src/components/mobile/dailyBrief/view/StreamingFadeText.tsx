@@ -36,13 +36,11 @@ export default function StreamingFadeText({
 
 const wordFadeIn = keyframes`
   from {
-    opacity: 0;
-    transform: translateY(5px);
+    opacity: 0.08;
     filter: blur(2px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
     filter: blur(0);
   }
 `;
@@ -69,7 +67,6 @@ const Word = styled.span<{ $animate: boolean; $delayMs: number }>`
   @media (prefers-reduced-motion: reduce) {
     opacity: 1;
     animation: none;
-    transform: none;
     filter: none;
   }
 `;
