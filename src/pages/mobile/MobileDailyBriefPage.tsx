@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
@@ -23,6 +23,7 @@ import Icon from "@/components/common/Icon";
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const rankedCards = useDailyBriefRanking();
 
   useHeader({
@@ -32,37 +33,68 @@ export default function MobileDailyBriefPage() {
 
   useEffect(() => {
     trackPageView("Daily Brief 메인");
+
+    // 자연스러운 AI 브리핑 준비 및 로딩 애니메이션 시간 (약 850ms)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 850);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  const renderCard = (cardType: DailyBriefCardType) => {
+  const renderCard = (cardType: DailyBriefCardType, index: number) => {
+    let cardComponent: React.ReactNode = null;
     switch (cardType) {
       case "timetable":
-        return <DailyBriefTimetableCard key="timetable" />;
+        cardComponent = <DailyBriefTimetableCard />;
+        break;
       case "library":
-        return <DailyBriefLibraryCard key="library" />;
+        cardComponent = <DailyBriefLibraryCard />;
+        break;
       case "weather":
-        return <DailyBriefWeatherCard key="weather" />;
+        cardComponent = <DailyBriefWeatherCard />;
+        break;
       case "notice":
-        return <DailyBriefNoticeCard key="notice" />;
+        cardComponent = <DailyBriefNoticeCard />;
+        break;
       case "cafeteria":
-        return <DailyBriefCafeteriaCard key="cafeteria" />;
+        cardComponent = <DailyBriefCafeteriaCard />;
+        break;
       case "bus":
-        return <DailyBriefBusCard key="bus" />;
+        cardComponent = <DailyBriefBusCard />;
+        break;
       case "lms":
-        return <DailyBriefLmsCard key="lms" />;
+        cardComponent = <DailyBriefLmsCard />;
+        break;
       case "fortune":
-        return <DailyBriefFortuneCard key="fortune" />;
+        cardComponent = <DailyBriefFortuneCard />;
+        break;
       default:
         return null;
     }
+
+    return (
+      <AnimatedCardItem
+        key={cardType}
+        $index={index}
+        $loaded={!isLoading}
+      >
+        {cardComponent}
+      </AnimatedCardItem>
+    );
   };
 
   return (
     <PageBackground>
       <ContentContainer>
-        <DailyBriefHeader onBack={() => navigate(-1)} />
+        <DailyBriefHeader
+          isLoading={isLoading}
+          onBack={() => navigate(-1)}
+        />
 
-        <CardsStack>{rankedCards.map(renderCard)}</CardsStack>
+        <CardsStack>
+          {rankedCards.map((card, idx) => renderCard(card, idx))}
+        </CardsStack>
 
         <FloatingBottomActions>
           <CircleActionButton
@@ -119,6 +151,30 @@ const CardsStack = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+`;
+
+const cardFadeInUp = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const AnimatedCardItem = styled.div<{ $index: number; $loaded: boolean }>`
+  width: 100%;
+  opacity: 0;
+  transform: translateY(18px);
+
+  ${({ $loaded, $index }) =>
+    $loaded &&
+    css`
+      animation: ${cardFadeInUp} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-delay: ${$index * 0.08}s;
+    `}
 `;
 
 const FloatingBottomActions = styled.div`

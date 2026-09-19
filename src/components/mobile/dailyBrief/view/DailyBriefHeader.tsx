@@ -1,12 +1,18 @@
 import { useMemo } from "react";
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
+import Skeleton from "@/components/common/Skeleton";
+import LoadingAnimation from "@/resources/assets/illustrations/횃불이ai로딩애니메이션.gif";
 
 interface DailyBriefHeaderProps {
   onBack?: () => void;
+  isLoading?: boolean;
 }
 
-export default function DailyBriefHeader({ onBack }: DailyBriefHeaderProps) {
+export default function DailyBriefHeader({
+  onBack,
+  isLoading = false,
+}: DailyBriefHeaderProps) {
   const currentHour = new Date().getHours();
 
   const { title, subtitle } = useMemo(() => {
@@ -43,9 +49,37 @@ export default function DailyBriefHeader({ onBack }: DailyBriefHeaderProps) {
         </TopNavRow>
       )}
 
+      {/* 상단 멘트 바로 윗줄 왼쪽: 로딩 애니메이션 영역 (공간 유지 및 GIF fade out) */}
+      <MascotRow>
+        <MascotGif
+          src={LoadingAnimation}
+          alt="횃불이 AI 로딩"
+          $isLoading={isLoading}
+        />
+      </MascotRow>
+
       <TitleSection>
-        <MainGreeting>{title}</MainGreeting>
-        <SubGreeting>{subtitle}</SubGreeting>
+        {isLoading ? (
+          <SkeletonLayer>
+            <Skeleton
+              variant="text"
+              width={180}
+              height={34}
+              style={{ borderRadius: "8px" }}
+            />
+            <Skeleton
+              variant="text"
+              width={260}
+              height={18}
+              style={{ borderRadius: "6px", marginTop: "2px" }}
+            />
+          </SkeletonLayer>
+        ) : (
+          <GreetingLayer>
+            <MainGreeting>{title}</MainGreeting>
+            <SubGreeting>{subtitle}</SubGreeting>
+          </GreetingLayer>
+        )}
       </TitleSection>
     </HeaderContainer>
   );
@@ -60,7 +94,7 @@ const HeaderContainer = styled.header`
 const TopNavRow = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const BackButton = styled.button`
@@ -80,10 +114,61 @@ const BackButton = styled.button`
   }
 `;
 
+const MascotRow = styled.div`
+  display: flex;
+  align-items: center;
+  height: 38px;
+  margin-bottom: 8px;
+`;
+
+const MascotGif = styled.img<{ $isLoading: boolean }>`
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  opacity: ${({ $isLoading }) => ($isLoading ? 1 : 0)};
+  transition: opacity 0.4s ease-in-out;
+  pointer-events: none;
+`;
+
 const TitleSection = styled.div`
   display: flex;
   flex-direction: column;
+  min-height: 64px;
+  justify-content: center;
+`;
+
+const SkeletonLayer = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  animation: fadeIn 0.2s ease-in-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+const GreetingLayer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: greetingFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes greetingFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 `;
 
 const MainGreeting = styled.h1`
