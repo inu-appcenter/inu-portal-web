@@ -1,8 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
-import { getWeathers } from "@/apis/weathers";
-import { WeatherInfo } from "@/types/weathers";
 import Icon from "@/components/common/Icon";
+import { useDailyBriefWeather } from "@/hooks/useDailyBriefSignals";
 import {
   FALLBACK_SKY_CONDITION_SLUG,
   PM_GRADE_ILLUSTRATIONS,
@@ -34,30 +33,8 @@ const getGradientForWeather = (sky: string, isNight: boolean): string => {
   return "linear-gradient(135deg, #4299e1 0%, #5dade2 50%, #68d391 100%)";
 };
 
-let cachedWeatherData: WeatherInfo | null = null;
-
 export default function DailyBriefWeatherCard() {
-  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(cachedWeatherData);
-
-  useEffect(() => {
-    let isMounted = true;
-    void getWeathers()
-      .then((res) => {
-        if (res.data) {
-          cachedWeatherData = res.data;
-          if (isMounted) {
-            setWeatherData(res.data);
-          }
-        }
-      })
-      .catch((err) => {
-        console.warn("Daily brief 날씨 조회 실패:", err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { weather: weatherData } = useDailyBriefWeather();
 
   const handleCardClick = () => {
     window.open(NAVER_WEATHER_URL, "_blank", "noopener,noreferrer");
@@ -66,15 +43,22 @@ export default function DailyBriefWeatherCard() {
   const rawTemp = weatherData?.temperature?.replace(/[^0-9.-]/g, "") || "21";
   const skyText = weatherData?.sky || "맑음";
   const pm10Grade = weatherData?.pm10Grade || "보통";
-  const pm10Value = weatherData?.pm10Value ? `${weatherData.pm10Value}㎍/㎥` : "";
+  const pm10Value = weatherData?.pm10Value
+    ? `${weatherData.pm10Value}㎍/㎥`
+    : "";
   const pm25Grade = weatherData?.pm25Grade || "좋음";
-  const pm25Value = weatherData?.pm25Value ? `${weatherData.pm25Value}㎍/㎥` : "";
+  const pm25Value = weatherData?.pm25Value
+    ? `${weatherData.pm25Value}㎍/㎥`
+    : "";
 
   const currentHour = useMemo(() => new Date().getHours(), []);
-  const isNight = weatherData?.day === "night" || currentHour >= 19 || currentHour < 6;
+  const isNight =
+    weatherData?.day === "night" || currentHour >= 19 || currentHour < 6;
 
   const { image, isShiftedIcon } = useMemo(() => {
-    const skyName = (skyText in SKY_CONDITION_SLUGS ? skyText : "맑음") as SkyConditionName;
+    const skyName = (
+      skyText in SKY_CONDITION_SLUGS ? skyText : "맑음"
+    ) as SkyConditionName;
     const slug = SKY_CONDITION_SLUGS[skyName] ?? FALLBACK_SKY_CONDITION_SLUG;
     const illustration = SKY_ILLUSTRATIONS[slug];
 
@@ -162,7 +146,9 @@ export default function DailyBriefWeatherCard() {
           </AirQualityGrid>
 
           <FooterRow>
-            <FooterTip>상세 예보 및 주간 날씨는 여기를 눌러 확인하세요.</FooterTip>
+            <FooterTip>
+              상세 예보 및 주간 날씨는 여기를 눌러 확인하세요.
+            </FooterTip>
           </FooterRow>
         </ContentLayer>
       </WeatherCardWrapper>

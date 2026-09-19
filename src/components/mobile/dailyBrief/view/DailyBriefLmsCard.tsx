@@ -1,34 +1,11 @@
-import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { getUpcomingLmsAssignments, LmsAssignmentEvent } from "@/apis/lms";
 import Icon from "@/components/common/Icon";
+import { useDailyBriefAssignments } from "@/hooks/useDailyBriefSignals";
 
 const INU_LMS_URL = "https://lms.inu.ac.kr";
 
 export default function DailyBriefLmsCard() {
-  const [assignments, setAssignments] = useState<LmsAssignmentEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    void getUpcomingLmsAssignments(7)
-      .then((data) => {
-        if (isMounted) {
-          setAssignments(data || []);
-          setIsLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.warn("LMS 과제 조회 실패:", err);
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { assignments, isLoading } = useDailyBriefAssignments();
 
   const handleOpenLms = (url?: string) => {
     window.open(url || INU_LMS_URL, "_blank", "noopener,noreferrer");
@@ -87,7 +64,9 @@ export default function DailyBriefLmsCard() {
                 >
                   <ItemLeft>
                     <CourseName>
-                      {item.course?.fullname || item.course?.shortname || "강좌"}
+                      {item.course?.fullname ||
+                        item.course?.shortname ||
+                        "강좌"}
                     </CourseName>
                     <AssignmentTitle>{item.name}</AssignmentTitle>
                   </ItemLeft>

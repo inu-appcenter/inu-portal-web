@@ -1,9 +1,8 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
-import { getWeathers } from "@/apis/weathers";
-import { WeatherInfo } from "@/types/weathers";
 import useUserStore from "@/stores/useUserStore";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import { useDailyBriefWeather } from "@/hooks/useDailyBriefSignals";
 
 interface FortuneTip {
   keyword: string;
@@ -11,31 +10,11 @@ interface FortuneTip {
   luckyItem: string;
 }
 
-let cachedFortuneWeather: WeatherInfo | null = null;
-
 export default function DailyBriefFortuneCard() {
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo?.accessToken);
   const { timetables, selectedSemester } = useTimetableStore();
-  const [weatherData, setWeatherData] = useState<WeatherInfo | null>(cachedFortuneWeather);
-
-  useEffect(() => {
-    let isMounted = true;
-    void getWeathers()
-      .then((res) => {
-        if (res.data) {
-          cachedFortuneWeather = res.data;
-          if (isMounted) {
-            setWeatherData(res.data);
-          }
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { weather: weatherData } = useDailyBriefWeather();
 
   const now = useMemo(() => new Date(), []);
   const todayDayOfWeek = (now.getDay() + 6) % 7; // 0: 월 ~ 6: 일 (0: 월, 4: 금, 5: 토, 6: 일)
@@ -62,7 +41,9 @@ export default function DailyBriefFortuneCard() {
 
   const activeTimetable = useMemo(
     () =>
-      timetables.find((timetable) => timetable.id === representativeTimetableId),
+      timetables.find(
+        (timetable) => timetable.id === representativeTimetableId,
+      ),
     [representativeTimetableId, timetables],
   );
 

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import styled, { css, keyframes } from "styled-components";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
@@ -9,39 +8,17 @@ interface DailyBriefHeaderProps {
   onBack?: () => void;
   isLoading?: boolean;
   shouldAnimate?: boolean;
+  title: string;
+  subtitle: string;
 }
 
 export default function DailyBriefHeader({
   onBack,
   isLoading = false,
   shouldAnimate = true,
+  title,
+  subtitle,
 }: DailyBriefHeaderProps) {
-  const currentHour = new Date().getHours();
-
-  const { title, subtitle } = useMemo(() => {
-    if (currentHour >= 5 && currentHour < 12) {
-      return {
-        title: "상쾌한 아침이에요",
-        subtitle: "좋은 느낌으로 오늘을 가득 채워 보세요.",
-      };
-    } else if (currentHour >= 12 && currentHour < 18) {
-      return {
-        title: "활기찬 오후예요",
-        subtitle: "남은 하루도 기분 좋은 일들로 가득하길 바라요.",
-      };
-    } else if (currentHour >= 18 && currentHour < 22) {
-      return {
-        title: "편안한 저녁이에요",
-        subtitle: "오늘 하루도 정말 수고 많으셨어요.",
-      };
-    } else {
-      return {
-        title: "고요한 밤이에요",
-        subtitle: "편안한 휴식과 함께 내일을 준비해 보세요.",
-      };
-    }
-  }, [currentHour]);
-
   return (
     <HeaderContainer>
       {onBack && (
@@ -149,11 +126,16 @@ const MascotGif = styled.img<{ $visible: boolean; $shouldAnimate: boolean }>`
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0.92)")};
   transition: ${({ $shouldAnimate }) =>
-    $shouldAnimate ? "opacity 0.4s ease-in-out, transform 0.4s ease-in-out" : "none"};
+    $shouldAnimate
+      ? "opacity 0.4s ease-in-out, transform 0.4s ease-in-out"
+      : "none"};
   pointer-events: none;
 `;
 
-const MascotStaticLogo = styled.img<{ $visible: boolean; $shouldAnimate: boolean }>`
+const MascotStaticLogo = styled.img<{
+  $visible: boolean;
+  $shouldAnimate: boolean;
+}>`
   position: absolute;
   top: 0;
   left: 0;
@@ -211,7 +193,8 @@ const GreetingLayer = styled.div<{ $shouldAnimate?: boolean }>`
   ${({ $shouldAnimate = true }) =>
     $shouldAnimate
       ? css`
-          animation: ${greetingFadeIn} 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: ${greetingFadeIn} 0.5s cubic-bezier(0.16, 1, 0.3, 1)
+            forwards;
         `
       : css`
           opacity: 1;
@@ -220,12 +203,14 @@ const GreetingLayer = styled.div<{ $shouldAnimate?: boolean }>`
 `;
 
 const MainGreeting = styled.h1`
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.8px;
   color: #111827;
   margin: 0;
   line-height: 1.2;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
 
 const SubGreeting = styled.p`

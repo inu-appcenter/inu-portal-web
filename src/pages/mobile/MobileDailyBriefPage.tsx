@@ -5,7 +5,7 @@ import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import { trackPageView } from "@/utils/mixpanel";
 import {
-  useDailyBriefRanking,
+  useDailyBriefPresentation,
   DailyBriefCardType,
 } from "@/hooks/useDailyBriefRanking";
 import DailyBriefHeader from "@/components/mobile/dailyBrief/view/DailyBriefHeader";
@@ -22,7 +22,9 @@ import Icon from "@/components/common/Icon";
 
 export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
 
-export function getDailyBriefTimeTheme(hour: number = new Date().getHours()): DailyBriefTimeTheme {
+export function getDailyBriefTimeTheme(
+  hour: number = new Date().getHours(),
+): DailyBriefTimeTheme {
   if (hour >= 5 && hour < 12) return "morning";
   if (hour >= 12 && hour < 18) return "afternoon";
   if (hour >= 18 && hour < 22) return "sunset";
@@ -66,7 +68,7 @@ export default function MobileDailyBriefPage() {
   const [isLoading, setIsLoading] = useState(!isRestored);
   const shouldAnimate = !isRestored;
 
-  const rankedCards = useDailyBriefRanking();
+  const brief = useDailyBriefPresentation();
   const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
 
   useHeader({
@@ -92,7 +94,6 @@ export default function MobileDailyBriefPage() {
 
     // 뒤로가기로 복귀한 경우 즉시 로딩 해제 (깜빡임 방지)
     if (isRestored) {
-      setIsLoading(false);
       return;
     }
 
@@ -107,7 +108,9 @@ export default function MobileDailyBriefPage() {
   const handleCloseInfoModal = () => {
     try {
       localStorage.setItem(DAILY_BRIEF_INTRO_SHOWN_KEY, "true");
-    } catch {}
+    } catch {
+      // 저장소를 사용할 수 없어도 현재 세션의 모달은 닫는다.
+    }
     setIsInfoModalOpen(false);
 
     // 최초 모달 확인 시점에 브리핑 로딩 시작 -> 완료 시 순차 fade-in
@@ -164,10 +167,12 @@ export default function MobileDailyBriefPage() {
           isLoading={isLoading}
           shouldAnimate={shouldAnimate}
           onBack={() => navigate(-1)}
+          title={brief.title}
+          subtitle={brief.subtitle}
         />
 
         <CardsStack>
-          {rankedCards.map((card, idx) => renderCard(card, idx))}
+          {brief.cards.map((card, idx) => renderCard(card, idx))}
         </CardsStack>
 
         <FloatingBottomActions>
