@@ -1,10 +1,38 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { getBusArrival, BusArrivalItem } from "@/apis/busArrival";
+
+const DEFAULT_BSTOP_ID = "164000393"; // 인천대학교 자연과학대학 정류장
 
 export default function DailyBriefBusCard() {
   const navigate = useNavigate();
+  const [arrivals, setArrivals] = useState<BusArrivalItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchArrivals = async () => {
+      try {
+        const data = await getBusArrival(DEFAULT_BSTOP_ID);
+        if (isMounted && data && data.length > 0) {
+          setArrivals(data);
+        }
+      } catch (err) {
+        console.warn("실시간 버스 도착 정보 조회 실패:", err);
+      }
+    };
+
+    void fetchArrivals();
+    const interval = setInterval(fetchArrivals, 30000); // 30초마다 갱신
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   const now = new Date();
   const updateTimeString = useMemo(() => {
     const year = now.getFullYear();
@@ -17,40 +45,67 @@ export default function DailyBriefBusCard() {
     return `${year}.${month}.${date} ${displayHour}:${mins} ${period}에 업데이트됨`;
   }, [now]);
 
-  const busRoutes = [
-    {
-      id: "shuttle-circ",
-      name: "송도 캠퍼스 순환 셔틀",
-      routeType: "SHUTTLE",
-      timeText: "3분 후 도착",
-      detail: "공학관 앞 진입 중",
-      highlight: true,
-    },
-    {
-      id: "shuttle-station",
-      name: "인천대입구역 ↔ 학교 셔틀",
-      routeType: "SHUTTLE",
-      timeText: "7분 후",
-      detail: "역 1번 출구 대기",
-      highlight: false,
-    },
-    {
-      id: "bus-8",
-      name: "8번 시내버스",
-      routeType: "CITY",
-      timeText: "5분 후",
-      detail: "2번째 전 정류장",
-      highlight: false,
-    },
-    {
-      id: "bus-6-1",
-      name: "6-1번 시내버스",
-      routeType: "CITY",
-      timeText: "12분 후",
-      detail: "5번째 전 정류장",
-      highlight: false,
-    },
-  ];
+  const displayBuses = useMemo(() => {
+    if (arrivals.length === 0) {
+      return [
+        {
+          id: "shuttle-circ",
+          name: "송도 캠퍼스 순환 셔틀",
+          timeText: "운행 중",
+          detail: "캠퍼스 순환",
+          highlight: true,
+        },
+        {
+          id: "bus-8",
+          name: "8번 버스",
+          timeText: "도착 정보 확인",
+          detail: "인천대입구역 방면",
+          highlight: false,
+        },
+        {
+          id: "bus-6-1",
+          name: "6-1번 버스",
+          timeText: "도착 정보 확인",
+          detail: "송도역 방면",
+          highlight: false,
+        },
+      ];
+    }
+
+    return arrivals.slice(0, 4).map((bus, idx) => {
+      const seconds = parseInt(bus.ARRIVALESTIMATETIME, 10);
+      let timeText = "도착 정보 없음";
+      let highlight = false;
+
+      if (!isNaN(seconds) && seconds > 0) {
+        const mins = Math.floor(seconds / 60);
+        if (mins < 1) {
+          timeText = "곧 도착";
+          highlight = true;
+        } else {
+          timeText = `${mins}분 후 도착`;
+          if (mins <= 3) highlight = true;
+        }
+      } else if (bus.ARRIVALESTIMATETIME) {
+        timeText = `${bus.ARRIVALESTIMATETIME}분 후`;
+      }
+
+      const restCount = bus.REST_STOP_COUNT;
+      const detail = restCount
+        ? `${restCount}번째 전 정류장`
+        : bus.LATEST_STOP_NAME
+          ? `${bus.LATEST_STOP_NAME} 통과`
+          : "인천 시내버스";
+
+      return {
+        id: bus.BUSID || bus.ROUTEID || String(idx),
+        name: bus.routeNo ? `${bus.routeNo}번 버스` : "캠퍼스 버스",
+        timeText,
+        detail,
+        highlight,
+      };
+    });
+  }, [arrivals]);
 
   return (
     <SectionWrapper>
@@ -64,8 +119,8 @@ export default function DailyBriefBusCard() {
         </CardHeader>
 
         <BusList>
-          {busRoutes.map((route, idx) => (
-            <React.Fragment key={route.id}>
+          {displayBuses.map((route, idx) => (
+            <React.Fragment key={route.id || idx}>
               {idx > 0 && <ListDivider />}
               <BusItemRow>
                 <LeftInfo>
