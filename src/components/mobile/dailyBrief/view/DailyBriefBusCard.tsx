@@ -56,6 +56,71 @@ const BusIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
+function getBusArrivalPriority(bus: BusData) {
+  if (bus.number === "셔틀") {
+    return {
+      bucket: -1,
+      seconds: 0,
+    };
+  }
+
+  const arrivalInfo = bus.arrivalInfo;
+
+  if (
+    arrivalInfo &&
+    typeof arrivalInfo.seconds === "number" &&
+    arrivalInfo.seconds > 0
+  ) {
+    return {
+      bucket: 0,
+      seconds: arrivalInfo.seconds,
+    };
+  }
+
+  if (
+    arrivalInfo &&
+    arrivalInfo.time &&
+    !arrivalInfo.time.includes("도착정보 없음") &&
+    !arrivalInfo.time.includes("도착 정보 없음") &&
+    arrivalInfo.time !== "정보 없음"
+  ) {
+    return {
+      bucket: 1,
+      seconds: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
+  return {
+    bucket: 2,
+    seconds: Number.MAX_SAFE_INTEGER,
+  };
+}
+
+function compareBusesByArrival(
+  left: BusData,
+  right: BusData,
+  orderLookup: Map<number | string, number>,
+) {
+  const leftPriority = getBusArrivalPriority(left);
+  const rightPriority = getBusArrivalPriority(right);
+
+  if (leftPriority.bucket !== rightPriority.bucket) {
+    return leftPriority.bucket - rightPriority.bucket;
+  }
+
+  if (leftPriority.seconds !== rightPriority.seconds) {
+    return leftPriority.seconds - rightPriority.seconds;
+  }
+
+  const leftKey = left.routeId ?? left.id;
+  const rightKey = right.routeId ?? right.id;
+
+  return (
+    (orderLookup.get(leftKey) ?? Number.MAX_SAFE_INTEGER) -
+    (orderLookup.get(rightKey) ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
 export default function DailyBriefBusCard() {
   const navigate = useNavigate();
   const now = new Date();
@@ -183,14 +248,23 @@ export default function DailyBriefBusCard() {
     return `${year}.${month}.${date} ${displayHour}:${mins} ${period}에 업데이트됨`;
   }, [now]);
 
-  // 상위 4개 실시간 버스 노선 가공
+  // 상위 4개 실시간 버스 노선 가공 (인입런/홈 위젯과 동일한 빠른 도착순 정렬)
   const displayBuses = useMemo(() => {
     if (!busArrivalList || busArrivalList.length === 0) {
       return [];
     }
 
-    // 셔틀 제외 및 도착 시간 순 정렬
-    const sorted = [...busArrivalList].filter((b) => b.number !== "셔틀");
+    const orderLookup = new Map(
+      (primaryStop?.busList || []).map((bus, index) => [
+        bus.routeId ?? bus.id,
+        index,
+      ]),
+    );
+
+    // 셔틀 제외 및 빠른 도착순 정렬
+    const sorted = [...busArrivalList]
+      .filter((b) => b.number !== "셔틀")
+      .sort((left, right) => compareBusesByArrival(left, right, orderLookup));
 
     return sorted.slice(0, 4).map((bus: BusData) => {
       const rawTime = bus.arrivalInfo?.time ?? "정보 없음";
@@ -215,7 +289,7 @@ export default function DailyBriefBusCard() {
         isHighlight,
       };
     });
-  }, [busArrivalList]);
+  }, [busArrivalList, primaryStop]);
 
   const handleCardClick = () => {
     if (primaryStop?.stopName) {
