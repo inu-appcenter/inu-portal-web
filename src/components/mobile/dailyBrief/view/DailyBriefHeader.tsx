@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import LoadingAnimation from "@/resources/assets/illustrations/횃불이ai로딩애니메이션.gif";
+import ChatbotLogo from "@/resources/assets/illustrations/chatbot-logo.svg";
 
 interface DailyBriefHeaderProps {
   onBack?: () => void;
@@ -49,13 +50,20 @@ export default function DailyBriefHeader({
         </TopNavRow>
       )}
 
-      {/* 상단 멘트 바로 윗줄 왼쪽: 로딩 애니메이션 영역 (공간 유지 및 GIF fade out) */}
+      {/* 상단 멘트 바로 윗줄 왼쪽: 로딩 GIF -> 챗봇 로고(chatbot-logo.svg) 자연스러운 크로스페이드 */}
       <MascotRow>
-        <MascotGif
-          src={LoadingAnimation}
-          alt="횃불이 AI 로딩"
-          $isLoading={isLoading}
-        />
+        <MascotLayer>
+          <MascotGif
+            src={LoadingAnimation}
+            alt="횃불이 AI 로딩"
+            $visible={isLoading}
+          />
+          <MascotStaticLogo
+            src={ChatbotLogo}
+            alt="횃불이 AI 로고"
+            $visible={!isLoading}
+          />
+        </MascotLayer>
       </MascotRow>
 
       <TitleSection>
@@ -121,12 +129,39 @@ const MascotRow = styled.div`
   margin-bottom: 8px;
 `;
 
-const MascotGif = styled.img<{ $isLoading: boolean }>`
+const MascotLayer = styled.div`
+  position: relative;
+  width: 38px;
+  height: 38px;
+`;
+
+const MascotGif = styled.img<{ $visible: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 38px;
   height: 38px;
   object-fit: contain;
-  opacity: ${({ $isLoading }) => ($isLoading ? 1 : 0)};
-  transition: opacity 0.4s ease-in-out;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0.92)")};
+  transition:
+    opacity 0.4s ease-in-out,
+    transform 0.4s ease-in-out;
+  pointer-events: none;
+`;
+
+const MascotStaticLogo = styled.img<{ $visible: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0.92)")};
+  transition:
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
 `;
 
