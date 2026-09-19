@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import Modal from "@/components/common/Modal";
-import Icon from "@/components/common/Icon";
 
 interface DailyBriefInfoModalProps {
   isOpen: boolean;
@@ -14,25 +13,34 @@ export default function DailyBriefInfoModal({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Daily Brief 안내">
-      <ModalContentWrapper>
-        <IconCircle>
-          <Icon name="info" size={24} color="#3B82F6" />
-        </IconCircle>
-
-        <ModalTitle>Daily Brief 안내</ModalTitle>
-        <ModalSubtitle>
-          오늘 하루의 주요 캠퍼스 정보를 한눈에 확인하는 일일 브리핑
-        </ModalSubtitle>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Daily Brief 안내"
+      primaryButton={{
+        text: "확인",
+        onClick: onClose,
+        variant: "brand",
+      }}
+    >
+      <ModalBody>
         <FeatureList>
           <FeatureItem>
-            <FeatureIcon>☀️</FeatureIcon>
+            <FeatureIcon>🎓</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>오늘의 맞춤 정보 요약</FeatureName>
+              <FeatureName>캠퍼스 하루 맞춤 브리핑</FeatureName>
               <FeatureDesc>
-                당일 시간표, 송도 캠퍼스 날씨, 학식 메뉴, 실시간 버스 및 최신
-                공지사항을 모아서 보여드립니다.
+                오늘의 강의 시간표부터 캠퍼스 날씨, 학식 메뉴, 실시간 버스, 열람실 좌석, LMS 과제 및 공지사항을 한눈에 확인하세요.
+              </FeatureDesc>
+            </FeatureTextCol>
+          </FeatureItem>
+
+          <FeatureItem>
+            <FeatureIcon>🌤️</FeatureIcon>
+            <FeatureTextCol>
+              <FeatureName>시간대 & 날씨 맞춤 인터페이스</FeatureName>
+              <FeatureDesc>
+                아침, 오후, 저녁, 밤 시간대와 실시간 날씨에 맞춰 변화하는 배경 테마와 횃불이의 응원 멘트가 함께합니다.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
@@ -40,63 +48,30 @@ export default function DailyBriefInfoModal({
           <FeatureItem>
             <FeatureIcon>⚙️</FeatureIcon>
             <FeatureTextCol>
-              <FeatureName>브리핑 알림 설정</FeatureName>
+              <FeatureName>브리핑 순서 및 알림 설정</FeatureName>
               <FeatureDesc>
-                우측 하단 설정 버튼을 통해 시간표 알림 시간, 학사일정 수신 범위
-                등을 자유롭게 설정할 수 있습니다.
+                우측 하단 설정 버튼을 통해 내가 자주 보는 카드의 순서를 조정하고 맞춤 브리핑 루틴을 설정할 수 있습니다.
               </FeatureDesc>
             </FeatureTextCol>
           </FeatureItem>
         </FeatureList>
-
-        <CloseButton onClick={onClose}>확인</CloseButton>
-      </ModalContentWrapper>
+      </ModalBody>
     </Modal>
   );
 }
 
-const ModalContentWrapper = styled.div`
+const ModalBody = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 10px 4px;
-`;
-
-const IconCircle = styled.div`
-  width: 52px;
-  height: 52px;
-  border-radius: 26px;
-  background-color: #eff6ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 800;
-  color: #111827;
-  letter-spacing: -0.5px;
-  margin: 0 0 6px 0;
-`;
-
-const ModalSubtitle = styled.p`
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
-  margin: 0 0 24px 0;
-  letter-spacing: -0.3px;
+  padding: 4px 0 8px 0;
 `;
 
 const FeatureList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
   text-align: left;
-  margin-bottom: 24px;
 `;
 
 const FeatureItem = styled.div`
@@ -104,14 +79,16 @@ const FeatureItem = styled.div`
   align-items: flex-start;
   gap: 12px;
   background-color: #f8fafc;
-  padding: 14px 16px;
-  border-radius: 18px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid #f1f5f9;
 `;
 
 const FeatureIcon = styled.span`
   font-size: 22px;
-  line-height: 1;
-  margin-top: 2px;
+  line-height: 1.2;
+  margin-top: 1px;
+  flex-shrink: 0;
 `;
 
 const FeatureTextCol = styled.div`
@@ -121,32 +98,16 @@ const FeatureTextCol = styled.div`
 `;
 
 const FeatureName = styled.span`
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #1e293b;
   letter-spacing: -0.2px;
 `;
 
 const FeatureDesc = styled.span`
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   color: #64748b;
-  line-height: 1.4;
-`;
-
-const CloseButton = styled.button`
-  width: 100%;
-  height: 48px;
-  border-radius: 24px;
-  background: #2563eb;
-  border: none;
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:active {
-    background: #1d4ed8;
-  }
+  line-height: 1.45;
+  letter-spacing: -0.2px;
 `;

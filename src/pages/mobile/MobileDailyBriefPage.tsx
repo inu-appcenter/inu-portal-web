@@ -44,12 +44,24 @@ const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
     "linear-gradient(180deg, #C7D2FE 0%, #DDD6FE 20%, #E2E8F0 52%, #EDE9FE 80%, #E0E7FF 100%)",
 };
 
+const DAILY_BRIEF_INTRO_SHOWN_KEY = "daily_brief_intro_shown";
+
 // 세션/앱 라이프사이클 동안 초기 로딩을 1회만 수행하고, 카드 이동 후 뒤로가기 복귀 시 즉시 유지
 let hasCompletedInitialBriefLoad = false;
 
 export default function MobileDailyBriefPage() {
   const navigate = useNavigate();
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+
+  // 최초 방문 여부 확인 (미확인 시 모달 우선 표출)
+  const isFirstEverVisit = useMemo(() => {
+    try {
+      return !localStorage.getItem(DAILY_BRIEF_INTRO_SHOWN_KEY);
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(isFirstEverVisit);
   const isFirstLoad = !hasCompletedInitialBriefLoad;
   const [isLoading, setIsLoading] = useState(!hasCompletedInitialBriefLoad);
   const rankedCards = useDailyBriefRanking();
@@ -61,11 +73,25 @@ export default function MobileDailyBriefPage() {
     immersive: true,
   });
 
+  const startBriefLoading = () => {
+    if (!hasCompletedInitialBriefLoad) {
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        hasCompletedInitialBriefLoad = true;
+      }, 850);
+    }
+  };
+
   useEffect(() => {
     trackPageView("Daily Brief 메인");
 
+    // 최초 진입 시 모달이 띄워지는 경우, 모달 확인 버튼을 누를 때 로딩을 시작하도록 대기
+    if (isFirstEverVisit) {
+      return;
+    }
+
     if (!hasCompletedInitialBriefLoad) {
-      // 첫 진입 시에만 자연스러운 AI 브리핑 준비 및 로딩 애니메이션 시간 (약 850ms)
       const timer = setTimeout(() => {
         setIsLoading(false);
         hasCompletedInitialBriefLoad = true;
@@ -75,7 +101,19 @@ export default function MobileDailyBriefPage() {
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [isFirstEverVisit]);
+
+  const handleCloseInfoModal = () => {
+    try {
+      localStorage.setItem(DAILY_BRIEF_INTRO_SHOWN_KEY, "true");
+    } catch {}
+    setIsInfoModalOpen(false);
+
+    // 최초 모달을 닫는 시점에 브리핑 로딩 시작
+    if (!hasCompletedInitialBriefLoad) {
+      startBriefLoading();
+    }
+  };
 
   const renderCard = (cardType: DailyBriefCardType, index: number) => {
     let cardComponent: React.ReactNode = null;
@@ -151,7 +189,7 @@ export default function MobileDailyBriefPage() {
 
       <DailyBriefInfoModal
         isOpen={isInfoModalOpen}
-        onClose={() => setIsInfoModalOpen(false)}
+        onClose={handleCloseInfoModal}
       />
     </PageBackground>
   );
