@@ -689,6 +689,7 @@ export default function MobileRoutineDetailPage() {
 
   // Action Selection & Configuration Modals
   const [isActionSelectModalOpen, setIsActionSelectModalOpen] = useState(false);
+  const [isNoTriggerAlertModalOpen, setIsNoTriggerAlertModalOpen] = useState(false);
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
   // Department Action Modal (특정 학과 선택 + 전용 키워드 세부 설정)
@@ -2795,8 +2796,7 @@ export default function MobileRoutineDetailPage() {
             <AddConditionCard
               onClick={() => {
                 if (triggers.length === 0) {
-                  alert("언제 실행할지 조건을 먼저 추가해 주세요.");
-                  setIsTriggerSelectModalOpen(true);
+                  setIsNoTriggerAlertModalOpen(true);
                   return;
                 }
                 setIsActionSelectModalOpen(true);
@@ -2865,6 +2865,21 @@ export default function MobileRoutineDetailPage() {
           ) : null}
         </FloatingActionPill>
       )}
+
+      {/* =========================================================================
+       * 조건 미등록 시 동작 추가 방지 안내 모달
+       * ========================================================================= */}
+      <Modal
+        isOpen={isNoTriggerAlertModalOpen}
+        onClose={() => setIsNoTriggerAlertModalOpen(false)}
+        title="실행 조건 필요"
+        description="동작을 추가하려면 먼저 루틴을 언제 실행할지 조건을 추가해 주세요."
+        primaryButton={{
+          text: "확인",
+          variant: "brand",
+          onClick: () => setIsNoTriggerAlertModalOpen(false),
+        }}
+      />
 
       {/* =========================================================================
        * 트리거 선택 모달
@@ -4251,7 +4266,7 @@ const ModalGroupRow = styled.div<{ $selected?: boolean }>`
 const ModalDivider = styled.div`
   height: 1px;
   background-color: #f1f5f9;
-  margin-left: 68px;
+  margin-left: 56px;
 `;
 
 const OptionIconTextRow = styled.div`
@@ -4263,10 +4278,8 @@ const OptionIconTextRow = styled.div`
 `;
 
 const ModalOptionIconCircle = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f1f5f9;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;

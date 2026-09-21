@@ -16,6 +16,7 @@ import {
 import {
   checkLmsAccountLinked,
   registerLocalWatchJobInApp,
+  startLmsDeadlineOngoingBridge,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
@@ -136,13 +137,29 @@ export default function MobileLmsHubPage() {
     }
 
     try {
-      const dueIso = new Date(item.timesort * 1000).toISOString();
+      const dueTimestamp = item.timesort * 1000;
+      const dueIso = new Date(dueTimestamp).toISOString();
       await registerLocalWatchJobInApp({
         watchType: "ASSIGNMENT_REMINDER",
         seatName: `[과제/학습 마감] ${item.course?.fullname || "LMS"}: ${item.name}`,
         endTime: dueIso,
       });
-      showToast(`🔔 '${item.name}' 마감 알림이 기기에 예약되었습니다!`);
+
+      // 마감까지 3시간 이내로 남은 경우 실시간 잠금화면 Now Bar Ongoing 알림 동시 활성화
+      const now = Date.now();
+      if (dueTimestamp > now && dueTimestamp - now <= 3 * 60 * 60 * 1000) {
+        startLmsDeadlineOngoingBridge({
+          id: item.id,
+          courseName: item.course?.fullname || "LMS",
+          itemName: item.name,
+          type: item.modulename === 'quiz' ? 'QUIZ' : item.modulename === 'vod' ? 'VOD' : 'ASSIGNMENT',
+          dueTime: dueIso,
+          courseId: item.course?.id,
+          cmid: item.id,
+        }).catch(() => {});
+      }
+
+      showToast(`🔔 '${item.name}' 실시간 마감 알림이 기기에 등록되었습니다!`);
     } catch (e) {
       console.error(e);
       alert("알림 예약에 실패했습니다.");

@@ -34,6 +34,8 @@ import {
   registerLocalWatchJobInApp,
   checkLibraryAccountLinked,
   isMobileAppEnvironment,
+  startLibrarySeatSessionBridge,
+  cancelLibrarySeatSessionBridge,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -372,6 +374,18 @@ export default function MobileLibraryHubPage() {
           getFavoriteSeats().catch(() => []),
         ]);
         setMySeat(seat);
+        if (seat && seat.endTime) {
+          startLibrarySeatSessionBridge({
+            seatId: seat.seatId,
+            seatNo: seat.seatName,
+            roomName: seat.roomName,
+            roomId: seat.roomId,
+            startTime: seat.beginTime,
+            endTime: seat.endTime,
+          }).catch(() => {});
+        } else if (!seat) {
+          cancelLibrarySeatSessionBridge().catch(() => {});
+        }
         // 스터디룸 예약 목록에 현재 배정된 열람실 좌석이 중복 포함되지 않도록 안전 필터링
         const filteredStudyRes = (studyRes || []).filter(
           (res) => !(res.roomName || "").includes("열람실") && (!seat || res.id !== seat.chargeId)
@@ -875,6 +889,7 @@ export default function MobileLibraryHubPage() {
         if (cancelRes.success) {
           showToast("🚪 좌석 배정이 정상 취소되었습니다.");
           setMySeat(null);
+          cancelLibrarySeatSessionBridge().catch(() => {});
           loadData();
           return;
         }
@@ -884,6 +899,7 @@ export default function MobileLibraryHubPage() {
       if (res.success) {
         showToast(res.message || "🚪 좌석이 정상 반납되었습니다.");
         setMySeat(null);
+        cancelLibrarySeatSessionBridge().catch(() => {});
         loadData();
       } else {
         alert(res.message || "좌석 반납/취소에 실패했습니다.");
