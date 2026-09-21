@@ -12,16 +12,35 @@ import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
 import Icon from "@/components/common/Icon";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
+import {
+  getTimetableNowBarSettings,
+  setTimetableNowBarSettings,
+  testTimetableNowBar,
+  cancelTimetableNowBar,
+  isMobileAppEnvironment,
+} from "@/apis/timetableNowBarBridge";
 
 export default function MobileNotificationSettingsPage() {
   const navigate = useNavigate();
   const { userInfo, setUserInfo } = useUserStore();
   const [isUpdating, setIsUpdating] = useState(false);
   const [chatPushEnabled, setChatPushEnabled] = useState(!!userInfo.chatPushEnabled);
+  const [nowBarEnabled, setNowBarEnabled] = useState(true);
+  const [isNowBarUpdating, setIsNowBarUpdating] = useState(false);
+  const [testNowBarActive, setTestNowBarActive] = useState(false);
+  const [isTestingNowBar, setIsTestingNowBar] = useState(false);
 
   useEffect(() => {
     setChatPushEnabled(!!userInfo.chatPushEnabled);
   }, [userInfo.chatPushEnabled]);
+
+  useEffect(() => {
+    getTimetableNowBarSettings().then((settings) => {
+      if (settings) {
+        setNowBarEnabled(settings.enabled);
+      }
+    });
+  }, []);
 
   useHeader({
     title: "알림 설정",
@@ -79,6 +98,58 @@ export default function MobileNotificationSettingsPage() {
   const handleTabClick = (tab: string, label: string) => {
     mixpanelTrack.mypageMenuClicked(`알림설정 - ${label}`);
     navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=${tab}`);
+  };
+
+  const handleNowBarToggle = async () => {
+    if (isNowBarUpdating) return;
+    const targetStatus = !nowBarEnabled;
+    setNowBarEnabled(targetStatus);
+    setIsNowBarUpdating(true);
+
+    try {
+      const ok = await setTimetableNowBarSettings({ enabled: targetStatus });
+      if (!ok && isMobileAppEnvironment()) {
+        setNowBarEnabled(!targetStatus);
+        alert("시간표 Now Bar 설정 변경에 실패했습니다.");
+      }
+    } catch {
+      setNowBarEnabled(!targetStatus);
+      alert("시간표 Now Bar 설정 변경에 실패했습니다.");
+    } finally {
+      setIsNowBarUpdating(false);
+    }
+  };
+
+  const handleTriggerTestNowBar = async () => {
+    if (isTestingNowBar) return;
+    setIsTestingNowBar(true);
+    try {
+      const ok = await testTimetableNowBar({
+        title: "컴퓨터네트워크 (모의 수업)",
+        location: "정보기술대학 7호관 314호",
+        minutes: 75,
+      });
+      if (ok) {
+        setTestNowBarActive(true);
+        alert(
+          "테스트 Now Bar가 생성되었습니다!\n휴대폰 잠금화면, AOD 또는 상단 상태표시줄에서 실시간 수업 카드 및 남은 시간 카운트다운을 확인해 보세요."
+        );
+      } else {
+        alert("모바일 앱(INTIP 앱) 환경에서만 실시간 Now Bar를 띄울 수 있습니다.");
+      }
+    } finally {
+      setIsTestingNowBar(false);
+    }
+  };
+
+  const handleDismissTestNowBar = async () => {
+    try {
+      await cancelTimetableNowBar();
+      setTestNowBarActive(false);
+      alert("테스트 Now Bar가 닫혔습니다.");
+    } catch {
+      alert("Now Bar 닫기에 실패했습니다.");
+    }
   };
 
   return (
@@ -150,6 +221,59 @@ export default function MobileNotificationSettingsPage() {
               </RowContent>
               <Icon name="chevron-right" size={20} color="#AEAEB2" />
             </SettingRow>
+          </Box>
+        </TitleContentArea>
+
+        {/* 섹션 2: 실시간 수업 Now Bar (Ongoing Activity) */}
+        <TitleContentArea
+          title="실시간 수업 Now Bar (잠금화면 & AOD)"
+          description="수업 시작 전 강의실 안내와 수업 중 남은 시간 및 진행률을 시스템 잠금화면, 나우 바, AOD에 실시간으로 표시해요."
+        >
+          <Box style={{ padding: 0 }}>
+            <SettingRow
+              onClick={handleNowBarToggle}
+              style={{
+                opacity: isNowBarUpdating ? 0.6 : 1,
+                pointerEvents: isNowBarUpdating ? "none" : "auto",
+              }}
+            >
+              <RowContent>
+                <RowTitle>실시간 시간표 Now Bar 활성화</RowTitle>
+                <RowDescription>
+                  수업 시작 15분 전부터 강의실 위치를 안내하고, 수업 중 잔여 시간 카운트다운을 잠금화면에 고정해요.
+                </RowDescription>
+              </RowContent>
+              <SwitchContainer onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={nowBarEnabled}
+                  onCheckedChange={handleNowBarToggle}
+                />
+              </SwitchContainer>
+            </SettingRow>
+
+            <Divider margin="0" />
+
+            <ActionBox>
+              <ActionInfo>
+                <ActionTitle>Now Bar 미리보기 테스트</ActionTitle>
+                <ActionDescription>
+                  현재 휴대폰의 잠금화면, 상태표시줄 칩, 나우 바에 모의 수업 알림이 어떻게 뜨는지 즉시 테스트해볼 수 있어요.
+                </ActionDescription>
+              </ActionInfo>
+              <ButtonWrapper>
+                <TestActionButton
+                  onClick={handleTriggerTestNowBar}
+                  disabled={isTestingNowBar}
+                >
+                  {isTestingNowBar ? "생성 중..." : "테스트 Now Bar 띄우기"}
+                </TestActionButton>
+                {testNowBarActive && (
+                  <DismissActionButton onClick={handleDismissTestNowBar}>
+                    Now Bar 닫기
+                  </DismissActionButton>
+                )}
+              </ButtonWrapper>
+            </ActionBox>
           </Box>
         </TitleContentArea>
 
@@ -258,4 +382,82 @@ const RowDescription = styled.div`
 const SwitchContainer = styled.div`
   display: flex;
   align-items: center;
+`;
+
+const ActionBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 24px 22px;
+  background-color: #ffffff;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+`;
+
+const ActionInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const ActionTitle = styled.div`
+  font-size: 15px;
+  font-weight: 600;
+  color: #1c1c1e;
+`;
+
+const ActionDescription = styled.div`
+  font-size: 13px;
+  color: #8e8e93;
+  line-height: 1.4;
+`;
+
+const ButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+`;
+
+const TestActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: #007aff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    background: #c7c7cc;
+    cursor: not-allowed;
+  }
+`;
+
+const DismissActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: #f2f2f7;
+  color: #ff3b30;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #e5e5ea;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:active {
+    background-color: #e5e5ea;
+  }
 `;
