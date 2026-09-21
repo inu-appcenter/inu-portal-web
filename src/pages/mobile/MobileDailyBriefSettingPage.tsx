@@ -136,6 +136,12 @@ export default function MobileDailyBriefSettingPage() {
           autoHeight={true}
           observer={true}
           observeParents={true}
+          threshold={12}
+          touchAngle={45}
+          touchStartPreventDefault={false}
+          preventClicks={false}
+          preventClicksPropagation={false}
+          nested={true}
           style={{ width: "100%", overflow: "hidden" }}
         >
           {/* 슬라이드 1: 카드 구성 */}

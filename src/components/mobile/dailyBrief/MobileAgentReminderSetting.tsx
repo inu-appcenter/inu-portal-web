@@ -349,10 +349,13 @@ export default function MobileAgentReminderSetting() {
   const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState<boolean>(true);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
   const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState<number>(15);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const isFirstMountRef = React.useRef(true);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (isBackground = false) => {
+    if (!isBackground && isFirstMountRef.current) {
+      setIsInitialLoading(true);
+    }
     try {
       const [remindersRes, briefRes, keywordsRes, nowBarRes] = await Promise.all([
         getAgentReminders().catch(() => ({ data: [] })),
@@ -380,16 +383,21 @@ export default function MobileAgentReminderSetting() {
     } catch (error) {
       console.error("루틴 데이터 로드 실패:", error);
     } finally {
-      setIsLoading(false);
+      setIsInitialLoading(false);
+      isFirstMountRef.current = false;
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
+  const handleBackgroundSync = useCallback(() => {
+    fetchData(true);
   }, [fetchData]);
 
-  // 다중 웹뷰 환경에서 루틴 상세 페이지(편집/삭제/등록) 후 복귀 시 자동 리스트 갱신
-  useRoutineSync(fetchData);
+  useEffect(() => {
+    fetchData(false);
+  }, [fetchData]);
+
+  // 다중 웹뷰 환경에서 루틴 상세 페이지(편집/삭제/등록) 후 복귀 시 백그라운드 리스트 갱신 (스켈레톤 리셋 방지)
+  useRoutineSync(handleBackgroundSync);
 
   // System Routine Toggles
   const handleToggleTimetableBrief = async (e: React.MouseEvent) => {
@@ -651,7 +659,7 @@ export default function MobileAgentReminderSetting() {
           <CountBadge>{6 + reminders.length}</CountBadge>
         </SectionTitleRow>
 
-        {isLoading ? (
+        {isInitialLoading ? (
           <GroupCard>
             <GroupRow>
               <Skeleton variant="text" width="60%" height={22} />
