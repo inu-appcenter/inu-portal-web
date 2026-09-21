@@ -51,9 +51,16 @@ export function useRoutineSync(onSync: () => void | Promise<void>) {
   useEffect(() => {
     let isMounted = true;
 
+    let syncTimer: any = null;
+
     const handleSync = () => {
       if (!isMounted) return;
-      onSyncRef.current();
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(() => {
+        if (isMounted) {
+          onSyncRef.current();
+        }
+      }, 80);
     };
 
     // 1. BroadcastChannel을 통한 수신

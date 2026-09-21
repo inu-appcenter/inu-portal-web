@@ -296,6 +296,50 @@ export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionR
 }
 
 /**
+ * 도서관 좌석 이용 중 실시간 잔여시간 & 원클릭 반납/연장 Ongoing Bar 등록
+ */
+export async function startLibrarySeatSessionBridge(params: {
+  seatId?: number;
+  seatNo: string;
+  roomName: string;
+  roomId?: number;
+  startTime?: number | string;
+  endTime: number | string;
+  totalMinutes?: number;
+}): Promise<AgentActionResult> {
+  return sendBridgeAction('startLibrarySeatSession', params);
+}
+
+/**
+ * 도서관 좌석 이용 세션 Ongoing Bar 취소/종료
+ */
+export async function cancelLibrarySeatSessionBridge(): Promise<AgentActionResult> {
+  return sendBridgeAction('cancelLibrarySeatSession');
+}
+
+/**
+ * LMS 마감 임박 Ongoing Bar 등록
+ */
+export async function startLmsDeadlineOngoingBridge(params: {
+  id?: string | number;
+  courseName: string;
+  itemName: string;
+  type?: 'ASSIGNMENT' | 'QUIZ' | 'VOD';
+  dueTime: number | string;
+  courseId?: number;
+  cmid?: number;
+}): Promise<AgentActionResult> {
+  return sendBridgeAction('startLmsDeadlineOngoing', params);
+}
+
+/**
+ * LMS 마감 임박 Ongoing Bar 취소
+ */
+export async function cancelLmsDeadlineOngoingBridge(): Promise<AgentActionResult> {
+  return sendBridgeAction('cancelLmsDeadlineOngoing');
+}
+
+/**
  * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {

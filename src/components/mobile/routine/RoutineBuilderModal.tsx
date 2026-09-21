@@ -41,14 +41,14 @@ const AVAILABLE_ACTIONS = [
   },
   {
     id: "BUS",
-    title: "실시간 버스 도착 정보",
+    title: "실시간 버스 도착 정보 안내",
     description: "지정한 정류소의 실시간 버스 도착 시간을 안내해요",
     icon: <Bus size={20} color="#ffffff" />,
     iconBg: "#ff7a00",
   },
   {
     id: "CAFETERIA",
-    title: "오늘의 학식 식단 안내",
+    title: "오늘의 학식 식단 브리핑",
     description: "선택한 교내 식당의 당일 식사 메뉴를 안내해요",
     icon: <Utensils size={20} color="#ffffff" />,
     iconBg: "#22c55e",
@@ -269,8 +269,8 @@ export default function RoutineBuilderModal({
     }
 
     return {
-      title: `🔔 ${title || "캠퍼스 맞춤 알림"}`,
-      body: lines.length > 0 ? lines.join("\n") : "선택한 정보가 알림으로 요약되어 발송돼요.",
+      title: `🔔 ${title || "캠퍼스 맞춤 루틴"}`,
+      body: lines.length > 0 ? lines.join("\n") : "선택한 동작들이 조건에 맞춰 순서대로 실행돼요.",
     };
   }, [selectedTools, selectedBusStop, selectedCafeteria, selectedMealType, title]);
 
@@ -387,7 +387,7 @@ export default function RoutineBuilderModal({
             <CardHeaderLabel>루틴 이름</CardHeaderLabel>
             <TitleInput
               type="text"
-              placeholder="예: Daily Brief 아침 요약 알림"
+              placeholder="예: 등교 전 캠퍼스 맞춤 브리핑"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={30}
@@ -397,7 +397,7 @@ export default function RoutineBuilderModal({
           {/* 2. 언제 실행할까요? 섹션 */}
           <SectionHeader>언제 실행할까요?</SectionHeader>
           <OneUiCard>
-            <CardHeaderLabel>시간 설정</CardHeaderLabel>
+            <CardHeaderLabel>실행 시간 및 반복 요일</CardHeaderLabel>
             <TimeSelectorContainer>
               {/* 오전 / 오후 토글 */}
               <AmPmToggleGroup>
@@ -542,12 +542,12 @@ export default function RoutineBuilderModal({
             })}
           </OneUiCard>
 
-          {/* 4. 실제 수신 알림 예시 */}
-          <SectionHeader>실제 수신 알림 예시</SectionHeader>
+          {/* 4. 동작 미리보기 */}
+          <SectionHeader>동작 미리보기</SectionHeader>
           <NotificationPreviewCard>
             <NotificationHeader>
               <AppBadge>INTIP</AppBadge>
-              <AppName>데일리 브리프</AppName>
+              <AppName>캠퍼스 루틴</AppName>
               <NotifTime>{ampm === "AM" ? `오전 ${targetHour}:${targetMinute}` : `오후 ${targetHour}:${targetMinute}`}</NotifTime>
             </NotificationHeader>
             <NotificationTitle>{previewNotification.title}</NotificationTitle>
