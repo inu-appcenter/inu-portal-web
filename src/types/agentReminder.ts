@@ -60,6 +60,7 @@ export type RoutineActionType =
   | "DEPT_NOTICE"
   | "SCHOOL_NOTICE"
   | "TIMETABLE"
+  | "TIMETABLE_NOWBAR"
   | "SCHEDULE"
   | "WEATHER"
   | "BUS"
@@ -71,6 +72,9 @@ export interface RoutineActionBlock {
   title: string;
   subtitle: string;
   iconBg: string;
+  timetableNowBarParams?: {
+    leadTimeMinutes: number;
+  };
   deptNoticeParams?: {
     deptCode: string;
     deptName: string;

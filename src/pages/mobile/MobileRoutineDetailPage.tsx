@@ -57,6 +57,11 @@ import {
 } from "@/apis/notices";
 import { getSchoolDepartments, type SchoolDepartment } from "@/apis/departments";
 import { getSchoolNoticeCategories } from "@/apis/categories";
+import {
+  getTimetableNowBarSettings,
+  setTimetableNowBarSettings,
+  testTimetableNowBar,
+} from "@/apis/timetableNowBarBridge";
 import type {
   AgentReminder,
   AgentReminderRepeatType,
@@ -161,6 +166,43 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenTitle: "수업 시작 전",
     whenSubtitle: "수업 시작 10분 전",
     whatTitle: "다음 수업 시간표 및 강의실 위치",
+  },
+  {
+    id: "preset-timetable-nowbar",
+    category: "study",
+    title: "실시간 시간표 & Now Bar (Dynamic Island)",
+    description: "수업 시작 전부터 끝날 때까지 잠금화면과 상태바에 실시간 강의실과 남은 시간 타이머를 띄워줘요.",
+    targetTime: "08:45",
+    repeatType: "WEEKDAYS",
+    targetTools: ["TIMETABLE_NOWBAR"],
+    toolParams: {
+      iconType: "graduation",
+      iconBg: "#0055D4",
+      triggers: [
+        {
+          id: "trig-nowbar-1",
+          type: "BEFORE_CLASS",
+          title: "수업 시작 15분 전",
+          subtitle: "수업 시작 15분 전부터 종료 시까지",
+          beforeClassParams: { minutes: 15 },
+        },
+      ],
+      actions: [
+        {
+          id: "act-nowbar-1",
+          type: "TIMETABLE_NOWBAR",
+          title: "실시간 Now Bar & Dynamic Island 띄우기",
+          subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
+          iconBg: "#0055D4",
+          timetableNowBarParams: { leadTimeMinutes: 15 },
+        },
+      ],
+    },
+    iconType: "graduation",
+    iconBg: "#0055D4",
+    whenTitle: "수업 시작 전부터",
+    whenSubtitle: "수업 시작 15분 전 ~ 수업 종료 시",
+    whatTitle: "실시간 Now Bar & Dynamic Island 카드 띄우기",
   },
   {
     id: "preset-schedule",
@@ -573,7 +615,7 @@ export const formatDaysSummary = (days: string[]) => {
     .join(", ");
 };
 
-type SystemRoutineType = "timetable-brief" | "timetable-pre" | "schedule" | "school-notice" | "dept-notice";
+type SystemRoutineType = "timetable-brief" | "timetable-pre" | "timetable-nowbar" | "schedule" | "school-notice" | "dept-notice";
 
 export default function MobileRoutineDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -593,6 +635,7 @@ export default function MobileRoutineDetailPage() {
   const systemType = useMemo<SystemRoutineType | null>(() => {
     if (id === "system-timetable-brief" || id === "system-timetable") return "timetable-brief";
     if (id === "system-timetable-pre") return "timetable-pre";
+    if (id === "system-timetable-nowbar" || id === "preset-timetable-nowbar") return "timetable-nowbar";
     if (id === "system-schedule") return "schedule";
     if (id === "system-school-notice") return "school-notice";
     if (id === "system-dept-notice") return "dept-notice";
@@ -1038,6 +1081,31 @@ export default function MobileRoutineDetailPage() {
               title: "시간표 / 강의실",
               subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
               iconBg: "#8b5cf6",
+            },
+          ]);
+        } else if (systemType === "timetable-nowbar") {
+          const nowBarRes = await getTimetableNowBarSettings().catch(() => null);
+          const lead = nowBarRes?.leadTimeMinutes || 15;
+          setTitle("실시간 시간표 & Now Bar (Dynamic Island)");
+          setSelectedIcon("graduation");
+          setSelectedColor("#0055D4");
+          setTriggers([
+            {
+              id: "sys-trigger-nowbar",
+              type: "BEFORE_CLASS",
+              title: "수업 시작 전부터",
+              subtitle: `수업 시작 ${lead}분 전부터 종료 시까지`,
+              beforeClassParams: { minutes: lead },
+            },
+          ]);
+          setActions([
+            {
+              id: "sys-act-nowbar",
+              type: "TIMETABLE_NOWBAR",
+              title: "실시간 Now Bar & Dynamic Island 띄우기",
+              subtitle: "잠금화면 및 상태바에 실시간 강의실 및 카운트다운 카드 렌더링",
+              iconBg: "#0055D4",
+              timetableNowBarParams: { leadTimeMinutes: lead },
             },
           ]);
         } else if (systemType === "schedule") {
@@ -1952,6 +2020,11 @@ export default function MobileRoutineDetailPage() {
             await updateDailyBriefSettings({ timetablePreAlertMinutes: preTrig.beforeClassParams.minutes });
           }
           alert("강의 시작 전 알림 설정을 저장했어요!");
+        } else if (systemType === "timetable-nowbar") {
+          const preTrig = triggers.find((t) => t.type === "BEFORE_CLASS");
+          const lead = preTrig?.beforeClassParams?.minutes || 15;
+          await setTimetableNowBarSettings({ leadTimeMinutes: lead, enabled: true });
+          alert("실시간 시간표 & Now Bar 설정을 저장했어요!");
         } else if (systemType === "schedule") {
           const timeTrig = triggers.find((t) => t.type === "TIME");
           const schedAct = actions.find((a) => a.type === "SCHEDULE");
@@ -2130,6 +2203,8 @@ export default function MobileRoutineDetailPage() {
           await updateDailyBriefSettings({ timetableDailyBriefEnabled: false });
         } else if (systemType === "timetable-pre") {
           await updateDailyBriefSettings({ timetablePreAlertEnabled: false });
+        } else if (systemType === "timetable-nowbar") {
+          await setTimetableNowBarSettings({ enabled: false });
         } else if (systemType === "schedule") {
           await updateDailyBriefSettings({ scheduleAlertEnabled: false });
         } else if (systemType === "school-notice") {
@@ -2180,6 +2255,19 @@ export default function MobileRoutineDetailPage() {
             bodyTemplate: "",
             route: "/timetable",
           });
+        } else if (systemType === "timetable-nowbar") {
+          const ok = await testTimetableNowBar({
+            title: "컴퓨터네트워크 (모의 수업)",
+            location: "정보기술대학 7호관 314호",
+            professor: "홍길동 교수님",
+            minutes: 75,
+          });
+          if (ok) {
+            alert("테스트 Now Bar & Dynamic Island가 실행되었습니다!\n(휴대폰 잠금화면, AOD 또는 상단 상태표시줄을 확인해 보세요)");
+          } else {
+            alert("모바일 앱(INTIP 앱) 환경에서만 실시간 Now Bar를 띄울 수 있습니다.");
+          }
+          return;
         } else if (systemType === "schedule") {
           await testCustomAgentReminder({
             title: "학사일정 알림",
@@ -2275,6 +2363,8 @@ export default function MobileRoutineDetailPage() {
         return <Bell size={24} color="#5c9cf8" />;
       case "TIMETABLE":
         return <Calendar size={24} color="#a855f7" />;
+      case "TIMETABLE_NOWBAR":
+        return <GraduationCap size={24} color="#0055D4" />;
       case "SCHEDULE":
         return <GraduationCap size={24} color="#3b82f6" />;
       case "WEATHER":
@@ -2478,10 +2568,10 @@ export default function MobileRoutineDetailPage() {
         </DetailHeroWrapper>
 
         {/* =========================================================================
-         * 1. 언제 알림을 받을까요? (IF Trigger Conditions)
+         * 1. 언제 실행할까요? (IF Trigger Conditions)
          * ========================================================================= */}
         <DetailSection>
-          <DetailSectionHeader>언제 알림을 받을까요?</DetailSectionHeader>
+          <DetailSectionHeader>언제 실행할까요?</DetailSectionHeader>
 
           {triggers.length === 0 ? (
             <EmptyGuideCard>
@@ -2489,8 +2579,8 @@ export default function MobileRoutineDetailPage() {
                 <Clock size={20} color="#94a3b8" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
-                <EmptyGuideTitle>설정된 알림 조건이 없어요</EmptyGuideTitle>
-                <EmptyGuideSub>특정 시간, 공지 등록 등 알림받을 조건을 추가해 주세요.</EmptyGuideSub>
+                <EmptyGuideTitle>설정된 실행 조건이 없어요</EmptyGuideTitle>
+                <EmptyGuideSub>특정 시간, 수업 전후, 공지 등록 등 실행할 조건을 추가해 주세요.</EmptyGuideSub>
               </EmptyGuideText>
             </EmptyGuideCard>
           ) : (
@@ -2559,10 +2649,10 @@ export default function MobileRoutineDetailPage() {
         </DetailSection>
 
         {/* =========================================================================
-         * 2. 어떤 알림을 받을까요? (THEN Action Blocks)
+         * 2. 무엇을 할까요? (THEN Action Blocks)
          * ========================================================================= */}
         <DetailSection>
-          <DetailSectionHeader>어떤 알림을 받을까요?</DetailSectionHeader>
+          <DetailSectionHeader>무엇을 할까요?</DetailSectionHeader>
 
           {actions.length === 0 ? (
             <EmptyGuideCard>
@@ -2573,12 +2663,12 @@ export default function MobileRoutineDetailPage() {
                 {triggers.length === 0 ? (
                   <>
                     <EmptyGuideTitle>조건을 먼저 추가해 주세요</EmptyGuideTitle>
-                    <EmptyGuideSub>설정된 알림 조건에 맞춰 가능한 알림 동작을 선택할 수 있어요.</EmptyGuideSub>
+                    <EmptyGuideSub>설정된 실행 조건에 맞춰 가능한 실행 동작을 선택할 수 있어요.</EmptyGuideSub>
                   </>
                 ) : (
                   <>
-                    <EmptyGuideTitle>선택된 알림 내용이 없어요</EmptyGuideTitle>
-                    <EmptyGuideSub>공지사항, 시간표, 버스, 학식 등 받고 싶은 알림을 추가해 주세요.</EmptyGuideSub>
+                    <EmptyGuideTitle>선택된 실행 동작이 없어요</EmptyGuideTitle>
+                    <EmptyGuideSub>시간표 브리핑, 실시간 Now Bar, 공지사항, 버스, 학식 등 실행할 동작을 추가해 주세요.</EmptyGuideSub>
                   </>
                 )}
               </EmptyGuideText>

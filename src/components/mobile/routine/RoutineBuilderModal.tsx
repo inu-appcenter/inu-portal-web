@@ -34,35 +34,35 @@ interface RoutineBuilderModalProps {
 const AVAILABLE_ACTIONS = [
   {
     id: "WEATHER",
-    title: "캠퍼스 날씨",
-    description: "송도 캠퍼스 기온, 미세먼지 및 우산 챙김을 안내해요",
+    title: "캠퍼스 날씨 & 우산 알리미",
+    description: "송도 캠퍼스 기온, 미세먼지 및 날씨 브리핑",
     icon: <Sun size={20} color="#ffffff" />,
     iconBg: "#5c9cf8",
   },
   {
     id: "BUS",
-    title: "실시간 버스",
+    title: "실시간 버스 도착 정보",
     description: "지정한 정류소의 실시간 버스 도착 시간을 안내해요",
     icon: <Bus size={20} color="#ffffff" />,
     iconBg: "#ff7a00",
   },
   {
     id: "CAFETERIA",
-    title: "학식 식단",
+    title: "오늘의 학식 식단 안내",
     description: "선택한 교내 식당의 당일 식사 메뉴를 안내해요",
     icon: <Utensils size={20} color="#ffffff" />,
     iconBg: "#22c55e",
   },
   {
     id: "TIMETABLE",
-    title: "시간표 / 강의실",
-    description: "오늘 첫 수업 시간과 강의실 위치를 안내해요",
+    title: "당일 시간표 & 강의실 브리핑",
+    description: "오늘 수업 목록과 첫 강의실 위치를 요약 안내해요",
     icon: <Calendar size={20} color="#ffffff" />,
     iconBg: "#a855f7",
   },
   {
     id: "NOTICE",
-    title: "새 공지사항",
+    title: "새 공지사항 감지 알림",
     description: "최신 학교 및 학과 주요 공지사항을 알려드려요",
     icon: <Bell size={20} color="#ffffff" />,
     iconBg: "#3b82f6",
@@ -394,8 +394,8 @@ export default function RoutineBuilderModal({
             />
           </OneUiCard>
 
-          {/* 2. 언제 알림을 받을까요? 섹션 */}
-          <SectionHeader>언제 알림을 받을까요?</SectionHeader>
+          {/* 2. 언제 실행할까요? 섹션 */}
+          <SectionHeader>언제 실행할까요?</SectionHeader>
           <OneUiCard>
             <CardHeaderLabel>시간 설정</CardHeaderLabel>
             <TimeSelectorContainer>
@@ -466,8 +466,8 @@ export default function RoutineBuilderModal({
             </RepeatDaysWrapper>
           </OneUiCard>
 
-          {/* 3. 어떤 알림을 받을까요? 섹션 */}
-          <SectionHeader>어떤 알림을 받을까요?</SectionHeader>
+          {/* 3. 무엇을 할까요? 섹션 */}
+          <SectionHeader>무엇을 할까요?</SectionHeader>
           <OneUiCard style={{ padding: "8px 0" }}>
             {AVAILABLE_ACTIONS.map((action, idx) => {
               const isSelected = selectedTools.includes(action.id);

@@ -22,6 +22,10 @@ import {
   getLocalDailyBriefSettings,
 } from "@/apis/dailyBrief";
 import { getKeywords } from "@/apis/notices";
+import {
+  getTimetableNowBarSettings,
+  setTimetableNowBarSettings,
+} from "@/apis/timetableNowBarBridge";
 import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentReminder";
 import type { DailyBriefSettings } from "@/types/dailyBrief";
 import { ROUTES } from "@/constants/routes";
@@ -120,6 +124,43 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenTitle: "수업 시작 전",
     whenSubtitle: "수업 시작 10분 전",
     whatTitle: "다음 수업 시간표 및 강의실 위치",
+  },
+  {
+    id: "preset-timetable-nowbar",
+    category: "study",
+    title: "실시간 시간표 & Now Bar (Dynamic Island)",
+    description: "수업 시작 전부터 끝날 때까지 잠금화면과 상태바에 실시간 강의실과 남은 시간 타이머를 띄워줘요.",
+    targetTime: "08:45",
+    repeatType: "WEEKDAYS",
+    targetTools: ["TIMETABLE_NOWBAR"],
+    toolParams: {
+      iconType: "graduation",
+      iconBg: "#0055D4",
+      triggers: [
+        {
+          id: "trig-nowbar-1",
+          type: "BEFORE_CLASS",
+          title: "수업 시작 15분 전",
+          subtitle: "수업 시작 15분 전부터 종료 시까지",
+          beforeClassParams: { minutes: 15 },
+        },
+      ],
+      actions: [
+        {
+          id: "act-nowbar-1",
+          type: "TIMETABLE_NOWBAR",
+          title: "실시간 Now Bar & Dynamic Island 띄우기",
+          subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
+          iconBg: "#0055D4",
+          timetableNowBarParams: { leadTimeMinutes: 15 },
+        },
+      ],
+    },
+    iconType: "graduation",
+    iconBg: "#0055D4",
+    whenTitle: "수업 시작 전부터",
+    whenSubtitle: "수업 시작 15분 전 ~ 수업 종료 시",
+    whatTitle: "실시간 Now Bar & Dynamic Island 카드 띄우기",
   },
   {
     id: "preset-schedule",
@@ -306,15 +347,18 @@ export default function MobileAgentReminderSetting() {
   const [deptKeywordsCount, setDeptKeywordsCount] = useState<number>(0);
   const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState<boolean>(true);
   const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState<boolean>(true);
+  const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
+  const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState<number>(15);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [remindersRes, briefRes, keywordsRes] = await Promise.all([
+      const [remindersRes, briefRes, keywordsRes, nowBarRes] = await Promise.all([
         getAgentReminders().catch(() => ({ data: [] })),
         getDailyBriefSettings().catch(() => ({ data: null })),
         getKeywords().catch(() => ({ data: [] })),
+        getTimetableNowBarSettings().catch(() => null),
       ]);
 
       if (remindersRes?.data) {
@@ -328,6 +372,10 @@ export default function MobileAgentReminderSetting() {
         const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
         setSchoolKeywordsCount(schoolKeys.length);
         setDeptKeywordsCount(deptKeys.length);
+      }
+      if (nowBarRes) {
+        setIsNowBarEnabled(nowBarRes.enabled);
+        setNowBarLeadMinutes(nowBarRes.leadTimeMinutes || 15);
       }
     } catch (error) {
       console.error("루틴 데이터 로드 실패:", error);
@@ -368,6 +416,20 @@ export default function MobileAgentReminderSetting() {
       notifyRoutineUpdated();
     } catch {
       setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
+    }
+  };
+
+  const handleToggleTimetableNowBar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !isNowBarEnabled;
+    setIsNowBarEnabled(next);
+    try {
+      await setTimetableNowBarSettings({ enabled: next });
+      trackEvent("[Daily Brief] 실시간 시간표 Now Bar 토글", { enabled: next });
+      notifyRoutineUpdated();
+    } catch {
+      setIsNowBarEnabled(!next);
       alert("설정을 변경하지 못했어요.");
     }
   };
@@ -586,7 +648,7 @@ export default function MobileAgentReminderSetting() {
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>내 루틴</SectionTitle>
-          <CountBadge>{5 + reminders.length}</CountBadge>
+          <CountBadge>{6 + reminders.length}</CountBadge>
         </SectionTitleRow>
 
         {isLoading ? (
@@ -611,7 +673,7 @@ export default function MobileAgentReminderSetting() {
                 <RowSubTitle>
                   {dailyBriefSettings.timetableDailyBriefEnabled
                     ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑`
-                    : "알림 꺼짐"}
+                    : "동작 꺼짐"}
                 </RowSubTitle>
               </TextContentWrapper>
 
@@ -639,7 +701,7 @@ export default function MobileAgentReminderSetting() {
                 <RowSubTitle>
                   {dailyBriefSettings.timetablePreAlertEnabled
                     ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
-                    : "알림 꺼짐"}
+                    : "동작 꺼짐"}
                 </RowSubTitle>
               </TextContentWrapper>
 
@@ -653,7 +715,35 @@ export default function MobileAgentReminderSetting() {
 
             <CardDivider />
 
-            {/* 3. 학사일정 알림 */}
+            {/* 3. 실시간 시간표 & Now Bar (Dynamic Island) */}
+            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-nowbar"))}>
+              <Ripple color="rgba(0, 0, 0, 0.05)" />
+              <IconCircle $bgColor="#0055D4">
+                <GraduationCap size={20} color="#ffffff" />
+              </IconCircle>
+
+              <TextContentWrapper>
+                <RowMainTitle $disabled={!isNowBarEnabled}>
+                  실시간 시간표 & Now Bar (Dynamic Island)
+                </RowMainTitle>
+                <RowSubTitle>
+                  {isNowBarEnabled
+                    ? `수업 시작 ${nowBarLeadMinutes}분 전 ~ 수업 종료 시 실시간 카드 표시`
+                    : "동작 꺼짐"}
+                </RowSubTitle>
+              </TextContentWrapper>
+
+              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={isNowBarEnabled}
+                  onCheckedChange={() => handleToggleTimetableNowBar({ stopPropagation: () => {} } as any)}
+                />
+              </RowRightAction>
+            </GroupRow>
+
+            <CardDivider />
+
+            {/* 4. 학사일정 알림 */}
             <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
               <Ripple color="rgba(0, 0, 0, 0.05)" />
               <IconCircle $bgColor="#3b82f6">

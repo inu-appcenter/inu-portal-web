@@ -112,6 +112,7 @@ export async function setTimetableNowBarSettings(
 export async function testTimetableNowBar(params?: {
   title?: string;
   location?: string;
+  professor?: string;
   minutes?: number;
 }): Promise<boolean> {
   const res = await sendTimetableBridgeAction("testTimetableNowBar", params);
