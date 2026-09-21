@@ -2808,124 +2808,140 @@ export default function MobileRoutineDetailPage() {
           onClick: () => setIsTriggerSelectModalOpen(false),
         }}
       >
-        <ModalOptionsList style={{ maxHeight: "420px", overflowY: "auto", paddingRight: "2px" }}>
-          {/* 1. 고정 시간 */}
+        <ModalOptionsList>
+          {/* 1. 특정 시간 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("TIME")}>
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Clock size={20} color="#3b82f6" />
-                <div>
-                  <ModalOptionText>특정 시간</ModalOptionText>
-                  <CardSubDesc>원하는 시간 또는 요일에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Clock size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>특정 시간</ModalOptionTitle>
+                  <ModalOptionDesc>원하는 시간 또는 요일에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#3b82f6" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
           {/* 2. 당일 첫 수업 시작 전 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_FIRST_CLASS")}>
-              <Ripple color="rgba(245, 158, 11, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Sun size={20} color="#f59e0b" />
-                <div>
-                  <ModalOptionText>당일 첫 수업 시작 전</ModalOptionText>
-                  <CardSubDesc>당일 첫 수업 시작 전 시점에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Sun size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>당일 첫 수업 시작 전</ModalOptionTitle>
+                  <ModalOptionDesc>당일 첫 수업 시작 전 시점에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#f59e0b" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
           {/* 3. 각 수업 시작 전 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("BEFORE_CLASS")}>
-              <Ripple color="rgba(139, 92, 246, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Clock size={20} color="#8b5cf6" />
-                <div>
-                  <ModalOptionText>각 수업 시작 전</ModalOptionText>
-                  <CardSubDesc>각 수업 시작 전 시점에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Clock size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>각 수업 시작 전</ModalOptionTitle>
+                  <ModalOptionDesc>각 수업 시작 전 시점에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#8b5cf6" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
           {/* 4. 마지막 수업 종료 전/후 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("AFTER_LAST_CLASS")}>
-              <Ripple color="rgba(99, 102, 241, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Moon size={20} color="#6366f1" />
-                <div>
-                  <ModalOptionText>마지막 수업 종료 전/후</ModalOptionText>
-                  <CardSubDesc>마지막 수업 종료 전/후 시점에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Moon size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>마지막 수업 종료 전/후</ModalOptionTitle>
+                  <ModalOptionDesc>마지막 수업 종료 전/후 시점에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#6366f1" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
           {/* 5. 긴 공강 시작 시 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("LONG_BREAK")}>
-              <Ripple color="rgba(16, 185, 129, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Coffee size={20} color="#10b981" />
-                <div>
-                  <ModalOptionText>공강 시작 시</ModalOptionText>
-                  <CardSubDesc>긴 공강이 시작되는 시점에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Coffee size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>공강 시작 시</ModalOptionTitle>
+                  <ModalOptionDesc>긴 공강이 시작되는 시점에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#10b981" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
-          {/* 6. 수업 없는 공강일 브리핑 */}
+          {/* 6. 수업 없는 공강일 */}
           {visibleTriggerOptions.time && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("NO_CLASS_DAY")}>
-              <Ripple color="rgba(236, 72, 153, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Smile size={20} color="#ec4899" />
-                <div>
-                  <ModalOptionText>수업 없는 공강일</ModalOptionText>
-                  <CardSubDesc>수업이 없는 공강일 지정 시간에 실행</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Smile size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>수업 없는 공강일</ModalOptionTitle>
+                  <ModalOptionDesc>수업이 없는 공강일 지정 시간에 실행</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#ec4899" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
-          {/* 7. 학과 공지 */}
+          {/* 7. 새 학과 공지 등록 시 */}
           {visibleTriggerOptions.deptNotice && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("DEPT_NOTICE")}>
-              <Ripple color="rgba(255, 122, 0, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Building2 size={20} color="#ff7a00" />
-                <div>
-                  <ModalOptionText>새 학과 공지 등록 시</ModalOptionText>
-                  <CardSubDesc>선택한 학과 홈페이지에 새 공지가 올라올 때</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Building2 size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>새 학과 공지 등록 시</ModalOptionTitle>
+                  <ModalOptionDesc>선택한 학과 홈페이지에 새 공지가 올라올 때</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#ff7a00" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
 
-          {/* 8. 학교 공지 */}
+          {/* 8. 새 학교 공지 등록 시 */}
           {visibleTriggerOptions.schoolNotice && (
             <ModalOptionItem onClick={() => handleSelectTriggerType("SCHOOL_NOTICE")}>
-              <Ripple color="rgba(92, 156, 248, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <OptionIconTextRow>
-                <Bell size={20} color="#5c9cf8" />
-                <div>
-                  <ModalOptionText>새 학교 공지 등록 시</ModalOptionText>
-                  <CardSubDesc>학교 대표 홈페이지에 새 공지가 올라올 때</CardSubDesc>
-                </div>
+                <ModalOptionIconCircle>
+                  <Bell size={20} color="#475569" />
+                </ModalOptionIconCircle>
+                <ModalOptionTextGroup>
+                  <ModalOptionTitle>새 학교 공지 등록 시</ModalOptionTitle>
+                  <ModalOptionDesc>학교 대표 홈페이지에 새 공지가 올라올 때</ModalOptionDesc>
+                </ModalOptionTextGroup>
               </OptionIconTextRow>
-              <Plus size={18} color="#5c9cf8" />
+              <Plus size={18} color="#94a3b8" strokeWidth={2} />
             </ModalOptionItem>
           )}
         </ModalOptionsList>
@@ -3046,7 +3062,7 @@ export default function MobileRoutineDetailPage() {
               $selected={tempBeforeFirstClassMinutes === opt.value}
               onClick={() => setTempBeforeFirstClassMinutes(opt.value)}
             >
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <ModalOptionText $selected={tempBeforeFirstClassMinutes === opt.value}>
                 {opt.label}
               </ModalOptionText>
@@ -3079,7 +3095,7 @@ export default function MobileRoutineDetailPage() {
               $selected={tempBeforeClassMinutes === opt.value}
               onClick={() => setTempBeforeClassMinutes(opt.value)}
             >
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <ModalOptionText $selected={tempBeforeClassMinutes === opt.value}>
                 {opt.label}
               </ModalOptionText>
@@ -3112,7 +3128,7 @@ export default function MobileRoutineDetailPage() {
               $selected={tempAfterLastClassOffset === opt.value}
               onClick={() => setTempAfterLastClassOffset(opt.value)}
             >
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <ModalOptionText $selected={tempAfterLastClassOffset === opt.value}>
                 {opt.label}
               </ModalOptionText>
@@ -3145,7 +3161,7 @@ export default function MobileRoutineDetailPage() {
               $selected={tempLongBreakMinGap === opt.value}
               onClick={() => setTempLongBreakMinGap(opt.value)}
             >
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <ModalOptionText $selected={tempLongBreakMinGap === opt.value}>
                 {opt.label}
               </ModalOptionText>
@@ -3237,7 +3253,7 @@ export default function MobileRoutineDetailPage() {
           onClick: () => setIsActionSelectModalOpen(false),
         }}
       >
-        <ModalOptionsList style={{ maxHeight: "380px", overflowY: "auto", paddingRight: "2px" }}>
+        <ModalOptionsList>
           {filteredAvailableActions.length === 0 ? (
             <div style={{ padding: "24px 16px", textAlign: "center", color: "#64748b", fontSize: "14px", lineHeight: "1.5" }}>
               현재 설정된 조건과 호환되는 추가 동작이 없습니다.
@@ -3245,28 +3261,17 @@ export default function MobileRoutineDetailPage() {
           ) : (
             filteredAvailableActions.map((action) => (
               <ModalOptionItem key={action.id} onClick={() => handleSelectActionType(action.id)}>
-                <Ripple color="rgba(37, 99, 235, 0.1)" />
+                <Ripple color="rgba(0, 0, 0, 0.04)" />
                 <OptionIconTextRow>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      backgroundColor: action.iconBg,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {React.cloneElement(action.icon, { size: 18, color: "#ffffff" })}
-                  </div>
-                  <div>
-                    <ModalOptionText>{action.title}</ModalOptionText>
-                    <CardSubDesc>{action.description}</CardSubDesc>
-                  </div>
+                  <ModalOptionIconCircle>
+                    {React.cloneElement(action.icon, { size: 20, color: "#475569" })}
+                  </ModalOptionIconCircle>
+                  <ModalOptionTextGroup>
+                    <ModalOptionTitle>{action.title}</ModalOptionTitle>
+                    <ModalOptionDesc>{action.description}</ModalOptionDesc>
+                  </ModalOptionTextGroup>
                 </OptionIconTextRow>
-                <Plus size={18} color="#3b82f6" />
+                <Plus size={18} color="#94a3b8" strokeWidth={2} />
               </ModalOptionItem>
             ))
           )}
@@ -3586,7 +3591,7 @@ export default function MobileRoutineDetailPage() {
               $selected={tempBusStop === opt.value}
               onClick={() => setTempBusStop(opt.value)}
             >
-              <Ripple color="rgba(37, 99, 235, 0.1)" />
+              <Ripple color="rgba(0, 0, 0, 0.04)" />
               <ModalOptionText $selected={tempBusStop === opt.value}>{opt.label}</ModalOptionText>
               {tempBusStop === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
             </ModalOptionItem>
@@ -3663,7 +3668,7 @@ export default function MobileRoutineDetailPage() {
                 $selected={tempScheduleAdvanceDays === opt.value}
                 onClick={() => setTempScheduleAdvanceDays(opt.value)}
               >
-                <Ripple color="rgba(37, 99, 235, 0.1)" />
+                <Ripple color="rgba(0, 0, 0, 0.04)" />
                 <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>{opt.label}</ModalOptionText>
                 {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
               </ModalOptionItem>
@@ -3958,12 +3963,6 @@ const CardBlueText = styled.div`
   white-space: pre-line;
 `;
 
-const CardSubDesc = styled.div`
-  font-size: 12.5px;
-  color: #64748b;
-  line-height: 1.35;
-  margin-top: 2px;
-`;
 
 const MinusButton = styled.button`
   position: relative;
@@ -4218,38 +4217,102 @@ const EditPillDivider = styled.div`
   margin: 0 4px;
 `;
 
-// Modal Contents
+// Modal Contents (Samsung One UI Style)
 const ModalOptionsList = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 52vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 10px;
+  padding: 4px 2px 8px 2px;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
 `;
 
 const ModalOptionItem = styled.div<{ $selected?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: ${({ $selected }) => ($selected ? "#eff6ff" : "#f8fafc")};
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#2563eb" : "#e2e8f0")};
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: ${({ $selected }) => ($selected ? "#eff6ff" : "#ffffff")};
+  border: 1px solid ${({ $selected }) => ($selected ? "#3b82f6" : "#e9ecef")};
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.15s ease;
+  box-sizing: border-box;
+  width: 100%;
+
+  &:active {
+    background: #f8fafc;
+    transform: scale(0.99);
+  }
 `;
 
 const OptionIconTextRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+`;
+
+const ModalOptionIconCircle = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #475569;
+`;
+
+const ModalOptionTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
 `;
 
 const ModalOptionText = styled.span<{ $selected?: boolean }>`
   font-size: 15px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 600)};
-  color: ${({ $selected }) => ($selected ? "#1e40af" : "#1e293b")};
+  color: ${({ $selected }) => ($selected ? "#1d4ed8" : "#111827")};
+  letter-spacing: -0.2px;
+  line-height: 1.35;
+`;
+
+const ModalOptionTitle = styled.div<{ $selected?: boolean }>`
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+  word-break: keep-all;
+`;
+
+const ModalOptionDesc = styled.div`
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.4;
+  word-break: keep-all;
 `;
 
 const ModalFormSection = styled.div`
