@@ -127,6 +127,7 @@ export default function MobileNotificationSettingsPage() {
       const ok = await testTimetableNowBar({
         title: "컴퓨터네트워크 (모의 수업)",
         location: "정보기술대학 7호관 314호",
+        professor: "홍길동 교수님",
         minutes: 75,
       });
       if (ok) {
