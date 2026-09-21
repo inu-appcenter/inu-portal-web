@@ -12,7 +12,6 @@ import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
 import Icon from "@/components/common/Icon";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
-
 export default function MobileNotificationSettingsPage() {
   const navigate = useNavigate();
   const { userInfo, setUserInfo } = useUserStore();
@@ -153,7 +152,7 @@ export default function MobileNotificationSettingsPage() {
           </Box>
         </TitleContentArea>
 
-        {/* 섹션 2: 기타 알림 */}
+        {/* 섹션 2: 일반 알림 */}
         <TitleContentArea
           title="일반 알림"
           description="채팅 등 서비스 기본 푸시 알림을 설정할 수 있어요."
@@ -259,3 +258,4 @@ const SwitchContainer = styled.div`
   display: flex;
   align-items: center;
 `;
+

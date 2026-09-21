@@ -5,6 +5,7 @@ import { CouncilNotice } from "@/types/councilNotices";
 import { getCouncilNoticesList } from "@/apis/councilNotices";
 import styled from "styled-components";
 import { eye as eyeImg } from "@/resources/assets/icons/posts";
+import { formatTimeAgo } from "@/utils/date";
 
 export default function NoticeList({ reloadKey }: { reloadKey: number }) {
   const [notices, setNotices] = useState<CouncilNotice[]>([]);
@@ -65,7 +66,7 @@ export default function NoticeList({ reloadKey }: { reloadKey: number }) {
               <div className="card-right">
                 <h3>{notice.title}</h3>
                 <div className="card-bottom">
-                  <p className="create-date">{notice.createDate}</p>
+                  <p className="create-date">{formatTimeAgo(notice.createDate)}</p>
                   <div className="view">
                     <img src={eyeImg} alt="조회수" />
                     <p>{notice.view}</p>

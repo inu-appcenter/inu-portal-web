@@ -25,15 +25,16 @@ const TOOL_NAME_KO: Record<string, string> = {
   DIRECTORY: "교내 교직원 연락처",
   ACADEMIC: "학적 및 취득학점",
   LIBRARY: "학산도서관 좌석/열람실",
-  LMS: "사이버캠퍼스(LMS) 과제",
+  LMS: "이러닝(LMS) 과제",
   ACTION_CHAT_PUSH: "채팅 푸시 알림",
   ACTION_DAILY_BRIEF: "아침 데일리 브리프",
   ACTION_NOTICE_KEYWORD: "공지 키워드 알림",
   ACTION_MY_SETTINGS: "내 설정 조회",
   ACADEMIC_SSO: "모바일 학사 SSO",
   LIBRARY_SEATS: "도서관 좌석 관제",
-  LMS_CALENDAR: "사이버캠퍼스 일정",
-  LMS_ASSIGNMENTS: "LMS 과제",
+  LMS_CALENDAR: "이러닝(LMS) 일정",
+  LMS_ASSIGNMENTS: "이러닝(LMS) 과제",
+  CAMPUS_WATCH: "실시간 빈자리 감시(스나이퍼)",
 };
 
 export const AgentReasoningAccordion: React.FC<AgentReasoningAccordionProps> = ({

@@ -6,19 +6,20 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import {
-  createTimeTable,
-  createTimeTableCourseItem,
-  createTimeTableCustomItem,
-  deleteTimeTable,
-  deleteTimeTableItem,
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
-  updateTimeTableCustomItem,
+  createTimeTable,
+  createTimeTableCourseItem,
+  createTimeTableCustomItem,
   updateTimeTableName,
   updateTimeTablePrimary,
   updateTimeTableVisibility,
+  updateTimeTableCustomItem,
+  deleteTimeTable,
+  deleteTimeTableItem,
 } from "@/apis/timetables";
+import { syncTimetableToNative } from "@/apis/timetableNowBarBridge";
 import {
   getCurrentMemberId,
   TIMETABLES_QUERY_KEY,
@@ -173,6 +174,8 @@ export const useTimeTableDetail = (
         query.data.id,
         mapDetailItemsToClassItems(query.data.items),
       );
+      // 모바일 앱 환경인 경우 네이티브 Now Bar / 잠금화면 Ongoing Activity로 자동 동기화
+      void syncTimetableToNative(query.data.items);
     }
   }, [query.data, updateTimetableEvents]);
 

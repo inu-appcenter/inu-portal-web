@@ -1,3 +1,5 @@
+import { parseAcademicBasicInfo } from "@/utils/ssvParser";
+
 export interface AcademicInfoData {
   studentId: string;
   koreanName: string;
@@ -18,19 +20,23 @@ export interface AcademicInfoData {
  * AI 요청에 포함해도 되는 비식별 학적 요약만 만든다.
  * 원본 학번·이름·지도교수 등 개인 식별 정보는 이 경계를 절대 넘지 않는다.
  */
-function toAnonymousAcademicContext(data: AcademicInfoData) {
-  const entryYear = /^\d{4}/.test(data.studentId) ? data.studentId.slice(0, 4) : undefined;
+function toAnonymousAcademicContext(data: any) {
+  const studentId = data.studentId || data.student_id || "";
+  const entryYear = /^\d{4}/.test(studentId) ? studentId.slice(0, 4) : undefined;
+  const dept = data.departmentName || data.majorName || data.department_name || "";
+  const status = data.enrollmentStatus || data.enrollmentStatusName || data.enrollment_status || "재학";
 
   return {
     ...(entryYear ? { entryYear } : {}),
-    departmentName: data.departmentName,
+    departmentName: dept,
     ...(data.collegeName ? { collegeName: data.collegeName } : {}),
-    enrollmentStatus: data.enrollmentStatus,
-    ...(data.completedSemesterCount ? { completedSemesterCount: data.completedSemesterCount } : {}),
-    acquiredCredits: data.acquiredCredits,
-    gradeAverage: data.gradeAverage,
-    ...(data.entranceDate ? { entranceDate: data.entranceDate.slice(0, 4) } : {}),
+    enrollmentStatus: status,
+    ...(data.completedSemesterCount ? { completedSemesterCount: String(data.completedSemesterCount) } : {}),
+    acquiredCredits: String(data.acquiredCredits || "0"),
+    gradeAverage: String(data.gradeAverage || "0.0"),
+    ...(data.entranceDate ? { entranceDate: String(data.entranceDate).slice(0, 4) } : {}),
     ...(data.latestEnrollmentChange ? { latestEnrollmentChange: data.latestEnrollmentChange } : {}),
+    ...(data.advisorProfessorName ? { advisorProfessorName: data.advisorProfessorName } : {}),
   };
 }
 
@@ -139,13 +145,59 @@ export async function deletePortalAccount(): Promise<AgentActionResult<{ linked:
   return sendBridgeAction<{ linked: boolean }>('deletePortalAccount');
 }
 
+let inflightAcademicPromise: Promise<AgentActionResult<AcademicInfoData>> | null = null;
+
 /**
- * 모바일 앱 백그라운드 SSO를 통해 최신 학적 정보 조회 실행
+ * 모바일 앱 백그라운드 SSO를 통해 최신 학적 정보 조회 실행 및 웹 중앙화 파서 적용
  */
-export async function fetchAcademicInfoFromApp(): Promise<AgentActionResult<AcademicInfoData>> {
-  // The native SSO flow can include portal login and an ERP redirect. Its own
-  // scraper budget is 35 seconds, so this must remain longer than that budget.
-  return sendBridgeAction<AcademicInfoData>('fetchAcademicInfo', null, 45000);
+export async function fetchAcademicInfoFromApp(forceRefresh = false): Promise<AgentActionResult<AcademicInfoData>> {
+  if (inflightAcademicPromise && !forceRefresh) {
+    return inflightAcademicPromise;
+  }
+
+  inflightAcademicPromise = (async () => {
+    try {
+      // The native SSO flow can include portal login and an ERP redirect. Its own
+      // scraper budget is 35 seconds, so this must remain longer than that budget.
+      const bridgeRes = await sendBridgeAction<any>('fetchAcademicInfo', null, 45000);
+      if (!bridgeRes.success) {
+        return {
+          success: false,
+          errorCode: bridgeRes.errorCode,
+          errorMessage: bridgeRes.errorMessage,
+        };
+      }
+
+      try {
+        const rawPayload = bridgeRes.data?.rawSsv || bridgeRes.data;
+        if (typeof rawPayload === 'string') {
+          const parsed = parseAcademicBasicInfo(rawPayload);
+          return {
+            success: true,
+            data: parsed as unknown as AcademicInfoData,
+          };
+        } else if (rawPayload && typeof rawPayload === 'object' && rawPayload.studentId) {
+          // 이미 파싱된 객체인 경우 (하위 호환)
+          return {
+            success: true,
+            data: rawPayload as AcademicInfoData,
+          };
+        } else {
+          throw new Error('ERP 원본 학적 응답 데이터가 비어있습니다.');
+        }
+      } catch (err: any) {
+        return {
+          success: false,
+          errorCode: 'ERP_ERROR',
+          errorMessage: err?.message || '학적 데이터 파싱 오류',
+        };
+      }
+    } finally {
+      inflightAcademicPromise = null;
+    }
+  })();
+
+  return inflightAcademicPromise;
 }
 
 /**
@@ -174,7 +226,7 @@ export async function executeAgentActionBridge(instruction: any): Promise<AgentA
 }
 
 /**
- * LMS(사이버캠퍼스) 계정 연동 상태 확인
+ * 이러닝(LMS) 계정 연동 상태 확인
  */
 export async function checkLmsAccountLinked(): Promise<{ linked: boolean; user?: any }> {
   const res = await sendBridgeAction<{ linked: boolean; user?: any }>('checkLmsAccount');
@@ -203,6 +255,9 @@ export interface LocalWatchJob {
   seatNo?: string;
   hopeDate?: string;
   targetHour?: number;
+  durationMinutes?: number;
+  seatName?: string;
+  endTime?: string;
   createdAt: number;
   expiresAt: number;
   status: 'ACTIVE' | 'NOTIFIED' | 'EXPIRED' | 'CANCELLED';
@@ -244,9 +299,11 @@ export async function cancelLocalWatchJobInApp(id: string): Promise<AgentActionR
  * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {
-  if (!isMobileAppEnvironment()) return {};
-
   const context: Record<string, any> = {};
+
+  if (!isMobileAppEnvironment()) {
+    return context;
+  }
 
   try {
     const [portalLinked, lmsLinked] = await Promise.all([
@@ -256,30 +313,38 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 학적 요약 정보를 끝까지 수집한다.
-    // A portal SSO + ERP redirect regularly exceeds 10 seconds; racing it
-    // against a shorter timer discarded valid linked-account results and made
-    // the server render the "account linking required" card.
+    // 포털 계정이 연동되어 있으면 실시간 최신 학적 정보를 모바일 앱 브릿지로 조회
     if (portalLinked) {
+      context.portal = { linked: true };
       tasks.push(
-        fetchAcademicInfoFromApp().then((res) => {
-          if (res?.success && res.data) {
-            // 사용자 본인에게 표시할 전체 학적 데이터. INUChat 전달용 academic과
-            // 분리되어 있으며, 외부 AI 도구는 이 객체를 읽지 않는다.
-            context.academicDisplay = res.data;
-            context.academic = toAnonymousAcademicContext(res.data);
-          }
-          // Preserve the distinction between an unlinked account and a
-          // temporary SSO/ERP failure for diagnostics and future UI handling.
-          context.portal = {
-            linked: true,
-            ...(res?.success ? {} : {
-              academicErrorCode: res?.errorCode,
-              academicErrorMessage: res?.errorMessage,
-            }),
-          };
-        }).catch(() => {})
+        fetchAcademicInfoFromApp()
+          .then((res) => {
+            if (res?.success && res.data) {
+              context.academicDisplay = res.data;
+              context.academic = toAnonymousAcademicContext(res.data);
+              try {
+                localStorage.setItem("portal_student_info", JSON.stringify(res.data));
+                localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+              } catch {}
+            }
+            context.portal = {
+              linked: true,
+              ...(res?.success ? {} : {
+                academicErrorCode: res?.errorCode,
+                academicErrorMessage: res?.errorMessage,
+              }),
+            };
+          })
+          .catch((err) => {
+            context.portal = {
+              linked: true,
+              academicErrorCode: 'FETCH_ERROR',
+              academicErrorMessage: err?.message || '학적 정보 조회 중 오류가 발생했습니다.',
+            };
+          })
       );
+    } else {
+      context.portal = { linked: false };
     }
 
     // LMS 계정이 연동되어 있으면 과제 일정 수집 (최대 2.5초 대기)

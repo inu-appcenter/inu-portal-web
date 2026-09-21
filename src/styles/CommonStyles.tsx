@@ -8,6 +8,9 @@ const CommonStyles = createGlobalStyle`
      back to env() (then 0) outside the app shell, e.g. browser/dev preview. */
   :root {
     --native-safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --native-safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --native-safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --native-safe-area-inset-right: env(safe-area-inset-right, 0px);
   }
 
   body {

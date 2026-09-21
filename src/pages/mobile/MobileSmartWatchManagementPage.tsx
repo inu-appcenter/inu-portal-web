@@ -155,7 +155,7 @@ export default function MobileSmartWatchManagementPage() {
             <GraduationCap size={18} />
           </HubBannerIconWrapper>
           <HubBannerInfo>
-            <HubBannerTitle>사이버캠퍼스 허브</HubBannerTitle>
+            <HubBannerTitle>이러닝(LMS) 허브</HubBannerTitle>
             <HubBannerDesc>과제·퀴즈 마감일정 & 정시 리마인더</HubBannerDesc>
           </HubBannerInfo>
         </HubBannerCard>

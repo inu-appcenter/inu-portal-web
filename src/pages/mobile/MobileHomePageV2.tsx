@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
@@ -21,6 +22,8 @@ import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Icon from "@/components/common/Icon";
 import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
+import { useDailyBriefPresentation } from "@/hooks/useDailyBriefRanking";
+import StreamingFadeText from "@/components/mobile/dailyBrief/view/StreamingFadeText";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
@@ -65,11 +68,14 @@ const SOCIAL_LINKS = [
 }[];
 
 export default function MobileHomePageV2() {
+  const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const [isDesktopLayout, setIsDesktopLayout] = useState(false);
   const [activeNoticeTab, setActiveNoticeTab] = useState<"school" | "dept">(
     "school",
   );
+
+  const dailyBrief = useDailyBriefPresentation();
 
   useHeader({
     showAlarm: true,
@@ -88,6 +94,30 @@ export default function MobileHomePageV2() {
     <V2Wrapper>
       <UpperSection>
         <SectionInner>
+          <DailyBriefGreetingEntry
+            onClick={() => navigate(ROUTES.DAILY_BRIEF.ROOT)}
+            role="button"
+            tabIndex={0}
+            aria-label="Daily Brief 바로가기"
+          >
+            <GreetingTextGroup>
+              <GreetingMainTitle>
+                <StreamingFadeText text={dailyBrief.title} />
+              </GreetingMainTitle>
+              <GreetingSubTitle>
+                <StreamingFadeText
+                  text={dailyBrief.entrySubtitle}
+                  startDelayMs={
+                    dailyBrief.title.trim().split(/\s+/).length * 70 + 100
+                  }
+                />
+              </GreetingSubTitle>
+            </GreetingTextGroup>
+            <GreetingChevron>
+              <Icon name="chevron-right" size={20} color="#9CA3AF" />
+            </GreetingChevron>
+          </DailyBriefGreetingEntry>
+
           <TodayTimetableWidget />
 
           <GridWidgets>
@@ -249,7 +279,9 @@ export default function MobileHomePageV2() {
           </OrgContainer>
 
           <FooterNote>
-            <span>© {new Date().getFullYear()} INTIP. All rights reserved.</span>
+            <span>
+              © {new Date().getFullYear()} INTIP. All rights reserved.
+            </span>
             <span>본 서비스는 인천대학교 공식 서비스가 아닙니다.</span>
           </FooterNote>
 
@@ -473,4 +505,50 @@ const FooterNote = styled.div`
 const BottomScrollSpacer = styled.div`
   width: 100%;
   height: calc(var(--nav-height, 0px) + 48px);
+`;
+
+const DailyBriefGreetingEntry = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 16px 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s ease;
+
+  &:active {
+    opacity: 0.75;
+  }
+`;
+
+const GreetingTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const GreetingMainTitle = styled.h2`
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #111827;
+  margin: 0;
+  line-height: 1.25;
+`;
+
+const GreetingSubTitle = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.4;
+`;
+
+const GreetingChevron = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 12px;
 `;

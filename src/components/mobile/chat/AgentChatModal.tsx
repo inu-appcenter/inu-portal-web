@@ -3,6 +3,8 @@ import styled, { keyframes } from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAgentBridge } from "@/hooks/useAgentBridge";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -18,6 +20,13 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
   const initialLocationRef = useRef(location.pathname + location.search);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
 
+  const {
+    iframeRef,
+    isPortalModalOpen,
+    setIsPortalModalOpen,
+    sendClientContextToIframe,
+  } = useAgentBridge({ onClose });
+
   useEffect(() => {
     if (isOpen) {
       initialLocationRef.current = location.pathname + location.search;
@@ -30,26 +39,6 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
       onClose();
     }
   }, [location.pathname, location.search, isOpen, onClose]);
-
-  // Listen for INTIP_NAVIGATE / Action messages from the AI Agent Webview/Iframe
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
-        if (data?.type === "INTIP_NAVIGATE" && data?.url) {
-          onClose();
-          if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
-            window.open(data.url, "_blank", "noopener,noreferrer");
-          } else {
-            navigate(data.url);
-          }
-        }
-      } catch {}
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [navigate, onClose]);
 
   const authToken =
     localStorage.getItem("accessToken") ||
@@ -94,9 +83,9 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
           >
             <HeaderControlBar>
               <ControlButtons>
-                <IconButton onClick={handleFullscreen} title="새 탭으로 열기">
+                <MaximizeButton onClick={handleFullscreen} title="새 탭으로 열기">
                   <Maximize2 size={16} />
-                </IconButton>
+                </MaximizeButton>
                 <IconButton onClick={onClose} title="닫기">
                   <X size={18} />
                 </IconButton>
@@ -111,14 +100,26 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             )}
 
             <IframeFrame
+              ref={iframeRef}
               src={iframeSrc}
               title="INU AI Campus Assistant"
               allow="clipboard-write; clipboard-read"
-              onLoad={() => setIsIframeLoaded(true)}
+              onLoad={() => {
+                setIsIframeLoaded(true);
+                sendClientContextToIframe();
+              }}
             />
           </ModalWrapper>
         </ModalContainer>
       )}
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe(true);
+        }}
+      />
     </AnimatePresence>
   );
 };
@@ -168,6 +169,11 @@ const ModalWrapper = styled(motion.div)`
     height: 100dvh;
     border-radius: 0;
     border: none;
+    padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+    padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+    padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+    padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
   }
 `;
 
@@ -177,12 +183,44 @@ const HeaderControlBar = styled.div`
   right: 14px;
   z-index: 20;
   pointer-events: auto;
+
+  @media (max-width: 768px) {
+    top: calc(var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px)) + 12px);
+    right: calc(var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px)) + 14px);
+  }
 `;
 
 const ControlButtons = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+`;
+
+const MaximizeButton = styled.button`
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 6px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: #ffffff;
+    color: #0f172a;
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const IconButton = styled.button`

@@ -15,7 +15,8 @@ import useUserStore from "@/stores/useUserStore";
 import { useEffect } from "react";
 import { postApiLogs } from "@/apis/members";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
-import { BookOpen, GraduationCap, Radar } from "lucide-react";
+import { BookOpen, GraduationCap, Radar, Sparkles } from "lucide-react";
+import useAIChatStore from "@/stores/useAIChatStore";
 import React from "react";
 
 interface AppItemProps {
@@ -53,6 +54,7 @@ const LabsPage = () => {
   useHeader({ title: "실험실" });
 
   const navigate = useNavigate();
+  const { openAgent } = useAIChatStore();
 
   useEffect(() => {
     if (isLabsFlagFetched && !isLabsEnabled) {
@@ -104,6 +106,21 @@ const LabsPage = () => {
             <Box>
               <div style={{ width: "100%" }}>
                 <AppItem
+                  iconElement={<Sparkles size={22} color="#0061ff" />}
+                  title={"인팁 캠퍼스 비서"}
+                  description={
+                    "학식 · 버스 · 시간표 · 공지 통합 AI 캠퍼스 비서"
+                  }
+                  onClick={() => {
+                    if (window.innerWidth <= 768) {
+                      navigate("/agent");
+                    } else {
+                      openAgent();
+                    }
+                  }}
+                />
+                <Divider margin="0" />
+                <AppItem
                   iconElement={<BookOpen size={22} color="#2563eb" />}
                   title={"학산도서관 스마트 허브"}
                   description={
@@ -114,7 +131,7 @@ const LabsPage = () => {
                 <Divider margin="0" />
                 <AppItem
                   iconElement={<GraduationCap size={22} color="#16a34a" />}
-                  title={"사이버캠퍼스 LMS 스마트 허브"}
+                  title={"이러닝(LMS) 스마트 허브"}
                   description={
                     "이번 학기 수강 강좌 확인 및 과제·퀴즈 마감 전 정시 리마인더 예약"
                   }

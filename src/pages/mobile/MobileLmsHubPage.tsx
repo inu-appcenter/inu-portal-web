@@ -60,7 +60,7 @@ export default function MobileLmsHubPage() {
   const [isLoadingCourseDetail, setIsLoadingCourseDetail] = useState<boolean>(false);
 
   useHeader({
-    title: "사이버캠퍼스(LMS) 스마트 허브",
+    title: "이러닝(LMS) 스마트 허브",
     subHeader: null,
     hasback: true,
   });
@@ -233,7 +233,7 @@ export default function MobileLmsHubPage() {
       ) : !isLinked ? (
         <EmptyBox>
           <GraduationCap size={36} color="#94a3b8" />
-          <EmptyTitle>사이버캠퍼스(LMS) 계정 연동이 필요해요</EmptyTitle>
+          <EmptyTitle>포털 계정 연동이 필요해요</EmptyTitle>
           <EmptyDesc>
             포털 SSO 계정(학번/비밀번호)을 연동하면 실시간 과제 마감 일정, 주차별 강의 영상 출석 현황,
             성적 정보를 확인하실 수 있습니다.
@@ -243,7 +243,7 @@ export default function MobileLmsHubPage() {
             onClick={() => setIsAuthModalOpen(true)}
           >
             <KeyRound size={15} />
-            <span>LMS 계정 연동하기</span>
+            <span>포털 계정 연동하기</span>
           </PrimaryActionBtn>
         </EmptyBox>
       ) : (

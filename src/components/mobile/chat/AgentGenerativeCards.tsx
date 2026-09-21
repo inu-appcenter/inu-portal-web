@@ -113,6 +113,12 @@ export const SingleCardItem: React.FC<{
   const handleLinkClick = (url: string) => {
     if (!url) return;
 
+    // 0. 전화걸기(tel:) 및 메일(mailto:) 스키마 처리
+    if (url.startsWith("tel:") || url.startsWith("mailto:")) {
+      window.location.href = url;
+      return;
+    }
+
     // 1. 도서관 스마트 허브 바로가기 처리
     if (url === "/library" || url === ROUTES.SERVICES.LIBRARY) {
       if (onNavigate) onNavigate();
@@ -138,21 +144,38 @@ export const SingleCardItem: React.FC<{
       window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       return;
     }
-    if (url === "openPortalAccountModal" || url === "/portal-account" || url === "/academic" || url.startsWith("/academic")) {
+    if (
+      url === "openPortalAccountModal" ||
+      url === "/portal-account" ||
+      url === "/academic" ||
+      url.startsWith("/academic")
+    ) {
       if (onNavigate) onNavigate();
       window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
       return;
     }
 
-    // 4. my-page 오타 보정 -> /mypage
     let resolvedUrl = url;
-    if (resolvedUrl === "/my-page" || resolvedUrl.startsWith("/my-page")) {
-      resolvedUrl = resolvedUrl.replace("/my-page", "/mypage");
-    }
 
-    // 5. /mobile/daily-brief 오타 보정 -> /mypage/notification/daily-brief
-    if (resolvedUrl.startsWith("/mobile/daily-brief")) {
+    // 4. 경로 보정 및 정규화
+    if (resolvedUrl === "/notice" || resolvedUrl.startsWith("/notice/")) {
+      resolvedUrl = resolvedUrl.replace("/notice", "/home/notice");
+    } else if (resolvedUrl === "/deptnotice" || resolvedUrl.startsWith("/deptnotice?")) {
+      resolvedUrl = resolvedUrl.replace("/deptnotice", "/home/deptnotice");
+    } else if (resolvedUrl === "/menu" || resolvedUrl.startsWith("/menu?")) {
+      resolvedUrl = resolvedUrl.replace("/menu", "/home/menu");
+    } else if (resolvedUrl === "/calendar" || resolvedUrl.startsWith("/calendar?")) {
+      resolvedUrl = resolvedUrl.replace("/calendar", "/home/calendar");
+    } else if (resolvedUrl === "/tips" || resolvedUrl.startsWith("/tips/")) {
+      resolvedUrl = resolvedUrl.replace("/tips", "/home/tips");
+    } else if (resolvedUrl === "/my-page" || resolvedUrl.startsWith("/my-page")) {
+      resolvedUrl = resolvedUrl.replace("/my-page", "/mypage");
+    } else if (resolvedUrl.startsWith("/mobile/daily-brief")) {
       resolvedUrl = resolvedUrl.replace("/mobile/daily-brief", "/mypage/notification/daily-brief");
+    } else if (resolvedUrl === "/mypage/notification/reminder" || resolvedUrl.startsWith("/mypage/notification/reminder")) {
+      resolvedUrl = "/mypage/notification/daily-brief?tab=agent";
+    } else if (resolvedUrl === "/mypage/notification/keyword" || resolvedUrl.startsWith("/mypage/notification/keyword")) {
+      resolvedUrl = "/mypage/notification";
     }
 
     if (onNavigate) onNavigate();
@@ -632,7 +655,7 @@ const ReminderSettingResultCard: React.FC<{
         type="button"
         onClick={() => {
           if (onNavigate) onNavigate();
-          navigate("/mobile/daily-brief?tab=agent");
+          navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=agent`);
         }}
       >
         <span>내 맞춤 알림 관리</span>
@@ -1618,17 +1641,41 @@ const AcademicInfoCard: React.FC<{
 }> = ({ data }) => {
   if (!data) return null;
 
-  const {
-    koreanName,
-    studentId,
-    departmentName,
-    collegeName,
-    enrollmentStatus,
-    completedSemesterCount,
-    acquiredCredits,
-    gradeAverage,
-    advisorProfessorName,
-  } = data;
+  const koreanName =
+    data.koreanName || data.name || data.studentName || data.korNm || "학우님";
+  const studentId =
+    data.studentId ||
+    data.id ||
+    data.stdNo ||
+    data.hakbeon ||
+    (data.entryYear ? `${data.entryYear}학번` : "");
+  const departmentName =
+    data.departmentName ||
+    data.department ||
+    data.dept ||
+    data.major ||
+    data.deptName ||
+    "";
+  const collegeName = data.collegeName || data.colgNm || "";
+  const enrollmentStatus =
+    data.enrollmentStatus || data.status || data.academicStatus || "재학";
+  const latestEnrollmentChange =
+    data.latestEnrollmentChange || data.flSchregModGbn || "";
+  const completedSemesterCount =
+    data.completedSemesterCount ||
+    data.completedSemesterName ||
+    (data.grade ? `${data.grade}학년` : "");
+  const acquiredCredits =
+    data.acquiredCredits || data.totalCredits || data.credits || "";
+  const gradeAverage =
+    data.gradeAverage || data.gpa || data.mrksAvg || "";
+  const advisorProfessorName =
+    data.advisorProfessorName || data.advisor || data.profNm || "";
+
+  const badgeText =
+    latestEnrollmentChange && latestEnrollmentChange !== enrollmentStatus
+      ? `${enrollmentStatus} · ${latestEnrollmentChange}`
+      : enrollmentStatus || "재학";
 
   return (
     <AcademicCardContainer>
@@ -1637,13 +1684,13 @@ const AcademicInfoCard: React.FC<{
           <GraduationCap size={20} color="#3182f6" />
         </AcademicIconWrap>
         <AcademicTitleWrap>
-          <AcademicTitle>{koreanName || "학우님"}의 학적 정보</AcademicTitle>
+          <AcademicTitle>{koreanName}의 학적 정보</AcademicTitle>
           <AcademicSubtitle>
-            {studentId} · {collegeName ? `${collegeName} ` : ""}{departmentName}
+            {[studentId, [collegeName, departmentName].filter(Boolean).join(" ")].filter(Boolean).join(" · ")}
           </AcademicSubtitle>
         </AcademicTitleWrap>
         <StatusBadge $status={enrollmentStatus}>
-          {enrollmentStatus || "재학"}
+          {badgeText}
         </StatusBadge>
       </AcademicHeader>
 
@@ -1698,7 +1745,7 @@ const PortalAuthRequiredCard: React.FC<{
         <KeyRound size={22} color="#f04452" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>포털 계정 1회 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
           학적 정보 조회를 위해 최초 1회 포털 로그인이 필요합니다. 입력하신 정보는 기기 보안 영역(KeyStore)에만 안전하게 보관됩니다.
         </PortalAuthDesc>
@@ -2872,18 +2919,18 @@ const LibraryAuthRequiredCard: React.FC<{
         <BookOpen size={22} color="#3182f6" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>도서관 계정 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
-          좌석 예약, 이용 연장 및 스터디룸 신청을 위해 도서관 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+          도서관 좌석 및 시설 이용을 위해 포털 계정 연동이 필요합니다. 포털, 이러닝(LMS), 도서관은 동일한 계정을 사용하므로 1회 연동으로 자동 연동됩니다. (기기 보안 영역 보관)
         </PortalAuthDesc>
       </PortalAuthTextWrap>
       <PortalAuthActionBtn
         type="button"
         onClick={() => {
-          window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+          window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
       >
-        도서관 계정 연동하기
+        포털 계정 연동하기
       </PortalAuthActionBtn>
     </PortalAuthContainer>
   );
@@ -3244,7 +3291,7 @@ const LmsAssignmentsCard: React.FC<{
     <LibraryCardBox>
       <CardHeader>
         <GraduationCap size={18} color="#00a651" />
-        <CardTitle>사이버캠퍼스(LMS) 과제 & 강좌</CardTitle>
+        <CardTitle>이러닝(LMS) 과제 & 강좌</CardTitle>
         <LmsCountBadge>
           {events.length > 0 ? `마감 예정 ${events.length}건` : `수강 중 ${courses.length}과목`}
         </LmsCountBadge>
@@ -3301,19 +3348,19 @@ const LmsAuthRequiredCard: React.FC<{
         <GraduationCap size={22} color="#00a651" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
-        <PortalAuthTitle>사이버캠퍼스(LMS) 연동이 필요해요</PortalAuthTitle>
+        <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
         <PortalAuthDesc>
-          강좌별 과제 마감 일정 및 미제출 과제를 확인하려면 LMS 로그인이 필요합니다. 기기 보안 영역(SecureStore)에만 안전하게 보관됩니다.
+          강좌별 과제 마감 일정 및 미제출 과제를 확인하려면 포털 계정 연동이 필요합니다. 포털, 이러닝(LMS), 도서관은 동일한 계정을 사용하므로 1회 연동으로 자동 연동됩니다. (기기 보안 영역 보관)
         </PortalAuthDesc>
       </PortalAuthTextWrap>
       <PortalAuthActionBtn
         type="button"
         style={{ background: '#00a651' }}
         onClick={() => {
-          window.dispatchEvent(new CustomEvent("openLmsAccountModal"));
+          window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
       >
-        LMS 계정 연동하기
+        포털 계정 연동하기
       </PortalAuthActionBtn>
     </PortalAuthContainer>
   );

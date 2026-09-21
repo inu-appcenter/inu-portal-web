@@ -1,6 +1,7 @@
 import styled, { css } from "styled-components";
 import Skeleton from "@/components/common/Skeleton";
 import Ripple from "@/components/common/Ripple";
+import { formatTimeAgo } from "@/utils/date";
 
 interface SchoolNoticeItemProps {
   category?: string;
@@ -42,7 +43,7 @@ export const SchoolNoticeItem = ({
         )}
         <Title>{title || ""}</Title>
         <MetaRow>
-          <MetaText>{date || ""}</MetaText>
+          <MetaText>{formatTimeAgo(date)}</MetaText>
           {writer && (
             <>
               <DividerPipe>|</DividerPipe>

@@ -79,6 +79,7 @@ import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotific
 import MobileAdminChatPage from "@/pages/mobile/Admin/MobileAdminChatPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
+import LabsRoutinePage from "@/pages/mobile/Labs/LabsRoutinePage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
@@ -88,9 +89,11 @@ import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
 import InviteChatMembersPage from "@/pages/mobile/InviteChatMembersPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
+import MobileDailyBriefPage from "@/pages/mobile/MobileDailyBriefPage";
 import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
 import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
+import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -193,6 +196,11 @@ export const router = createBrowserRouter([
                 element: <LabsPage />,
               },
               {
+                /* 실제 경로: /labs/routine */
+                path: "routine",
+                element: <LabsRoutinePage />,
+              },
+              {
                 /* 실제 경로: /labs/portal/basic-info */
                 path: "portal/basic-info",
                 element: <BasicInfoPage />,
@@ -293,6 +301,11 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
           { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
+          { path: ROUTES.DAILY_BRIEF.ROOT, element: <MobileDailyBriefPage /> },
+          {
+            path: ROUTES.DAILY_BRIEF.ROUTINE_DETAIL_PATTERN,
+            element: <MobileRoutineDetailPage />,
+          },
           { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
 
           // 버스 상세

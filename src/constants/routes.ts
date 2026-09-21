@@ -58,6 +58,7 @@ export const ROUTES = {
   //실험실
   LABS: {
     ROOT: "/labs",
+    ROUTINE: "/labs/routine",
     PORTAL: {
       BASIC_INFO: "/labs/portal/basic-info",
     },
@@ -123,6 +124,14 @@ export const ROUTES = {
     STOP_INFO: "/bus/stopinfo",
     SHUTTLE_HELLO: "/bus/shuttle/hellobus",
     SHUTTLE_ROUTE: "/bus/shuttle",
+  },
+
+  // 데일리 브리프
+  DAILY_BRIEF: {
+    ROOT: "/daily-brief",
+    SETTING: "/mypage/notification/daily-brief",
+    ROUTINE_DETAIL: (id: string | number) => `/daily-brief/routine/${id}`,
+    ROUTINE_DETAIL_PATTERN: "/daily-brief/routine/:id",
   },
 
   // 채팅
