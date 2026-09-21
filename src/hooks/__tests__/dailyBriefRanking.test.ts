@@ -92,4 +92,51 @@ describe("buildAutoDailyBrief", () => {
 
     expect(result.cards[0]).toBe("library");
   });
+
+  it("사용자 지정 시간대 룰(timeRules)에 일치하면 해당 카드가 최상단으로 부스팅된다", () => {
+    const result = build(
+      new Date("2026-09-20T15:00:00"),
+      [],
+      {
+        timeRules: [
+          {
+            id: "rule-1",
+            pinCard: "bus",
+            startHour: 14,
+            startMinute: 0,
+            endHour: 16,
+            endMinute: 0,
+          },
+        ],
+      },
+    );
+
+    expect(result.cards[0]).toBe("bus");
+  });
+
+  it("시간표 상태(timetableState)를 올바르게 판별하여 반환한다", () => {
+    // 1) 첫 수업 전
+    const beforeResult = build(
+      new Date("2026-09-21T08:30:00"),
+      [classItem("알고리즘", 9, 10.5)],
+    );
+    expect(beforeResult.timetableState?.beforeFirstClass).toBe(true);
+    expect(beforeResult.timetableState?.recommendedBusType).toBe("go-school");
+
+    // 2) 마지막 수업 종료 후
+    const afterResult = build(
+      new Date("2026-09-21T16:00:00"),
+      [classItem("알고리즘", 9, 15)],
+    );
+    expect(afterResult.timetableState?.recentlyFinished).toBe(true);
+    expect(afterResult.timetableState?.recommendedBusType).toBe("go-home");
+
+    // 3) 공강 없는 날
+    const noClassResult = build(
+      new Date("2026-09-21T10:00:00"),
+      [],
+    );
+    expect(noClassResult.timetableState?.noClassDay).toBe(true);
+  });
 });
+

@@ -10,6 +10,14 @@ import {
   useDailyBriefWeather,
 } from "@/hooks/useDailyBriefSignals";
 import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import type {
+  DailyBriefTimeRule,
+  DailyBriefCardDetailConfig,
+} from "@/types/dailyBrief";
+import {
+  getLocalDailyBriefCardSettings,
+  setLocalDailyBriefCardSettings,
+} from "@/apis/dailyBrief";
 
 export type DailyBriefCardType =
   | "timetable"
@@ -170,14 +178,44 @@ export function setStoredBriefVisibility(
   window.dispatchEvent(new Event("daily_brief_settings_changed"));
 }
 
+export function getStoredBriefDetails(): DailyBriefCardDetailConfig {
+  return getLocalDailyBriefCardSettings().details;
+}
+
+export function setStoredBriefDetails(details: DailyBriefCardDetailConfig): void {
+  const current = getLocalDailyBriefCardSettings();
+  setLocalDailyBriefCardSettings({ ...current, details });
+}
+
+export function getStoredBriefTimeRules(): DailyBriefTimeRule[] {
+  return getLocalDailyBriefCardSettings().timeRules || [];
+}
+
+export function setStoredBriefTimeRules(timeRules: DailyBriefTimeRule[]): void {
+  const current = getLocalDailyBriefCardSettings();
+  setLocalDailyBriefCardSettings({ ...current, timeRules });
+}
+
+export interface DailyBriefTimetableState {
+  beforeFirstClass: boolean;
+  inClass: boolean;
+  isLongBreak: boolean;
+  recentlyFinished: boolean;
+  noClassDay: boolean;
+  firstClassStartHour?: number;
+  lastClassEndHour?: number;
+  recommendedBusType: "go-school" | "go-home";
+}
+
 export interface DailyBriefPresentation {
   cards: DailyBriefCardType[];
   title: string;
   subtitle: string;
   entrySubtitle: string;
+  timetableState: DailyBriefTimetableState;
 }
 
-interface AutoBriefInput {
+export interface AutoBriefInput {
   now: Date;
   isLoggedIn: boolean;
   hasTimetableContext: boolean;
@@ -188,6 +226,7 @@ interface AutoBriefInput {
   activeRoutineCards: DailyBriefCardType[];
   visibility: Record<DailyBriefCardType, boolean>;
   focusCard: DailyBriefCardType | null;
+  timeRules?: DailyBriefTimeRule[];
 }
 
 const getDefaultGreeting = (hour: number) => {
@@ -233,6 +272,7 @@ export function buildAutoDailyBrief(
     activeRoutineCards,
     visibility,
     focusCard,
+    timeRules = [],
   } = input;
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const hour = now.getHours();
@@ -242,6 +282,17 @@ export function buildAutoDailyBrief(
   };
 
   activeRoutineCards.forEach((card) => addScore(card, 115));
+
+  // 0. 사용자 지정 시간대별 고정 규칙 (스마트 룰) 최우선 점수 가산
+  if (timeRules && timeRules.length > 0) {
+    for (const rule of timeRules) {
+      const startMins = rule.startHour * 60 + rule.startMinute;
+      const endMins = rule.endHour * 60 + rule.endMinute;
+      if (startMins <= currentMinutes && currentMinutes <= endMins) {
+        addScore(rule.pinCard, 500);
+      }
+    }
+  }
 
   const hasSnow = weatherSky.includes("눈") || weatherSky.includes("진눈깨비");
   const hasRain =
@@ -287,6 +338,17 @@ export function buildAutoDailyBrief(
     currentMinutes < Math.round(firstClass.startTime * 60);
   const isLastClassInProgress =
     Boolean(currentClass) && currentClass === lastClass;
+
+  const timetableState: DailyBriefTimetableState = {
+    beforeFirstClass,
+    inClass: Boolean(currentClass),
+    isLongBreak,
+    recentlyFinished,
+    noClassDay: todayClasses.length === 0,
+    firstClassStartHour: firstClass ? Math.floor(firstClass.startTime) : undefined,
+    lastClassEndHour: lastClass ? Math.floor(lastClass.endTime) : undefined,
+    recommendedBusType: (hasFinishedClasses || hour >= 16) ? "go-home" : "go-school",
+  };
 
   if (hasTimetableContext && todayClasses.length > 0) {
     if (currentClass) addScore("timetable", 105);
@@ -404,7 +466,7 @@ export function buildAutoDailyBrief(
     };
   }
 
-  return { cards, ...greeting };
+  return { cards, timetableState, ...greeting };
 }
 
 export function useDailyBriefPresentation(): DailyBriefPresentation {
@@ -592,13 +654,70 @@ export function useDailyBriefPresentation(): DailyBriefPresentation {
         (card) => visibility[card] !== false,
       );
       let cards = activeCustomCards;
+
+      // 사용자 지정 시간대별 고정 규칙 (스마트 룰) 반영
+      const timeRules = getStoredBriefTimeRules();
+      for (const rule of timeRules) {
+        const startMins = rule.startHour * 60 + rule.startMinute;
+        const endMins = rule.endHour * 60 + rule.endMinute;
+        if (
+          startMins <= currentMinutes &&
+          currentMinutes <= endMins &&
+          visibility[rule.pinCard] !== false
+        ) {
+          cards = [rule.pinCard, ...cards.filter((c) => c !== rule.pinCard)];
+          break;
+        }
+      }
+
       if (focusParam && ALL_DAILY_BRIEF_CARDS.includes(focusParam)) {
-        const filtered = activeCustomCards.filter(
-          (card) => card !== focusParam,
-        );
+        const filtered = cards.filter((card) => card !== focusParam);
         cards = [focusParam, ...filtered];
       }
-      return { cards, ...getDefaultGreeting(currentHour) };
+
+      const firstClass = todayClasses[0];
+      const lastClass = todayClasses[todayClasses.length - 1];
+      const currentClass = todayClasses.find((item) => {
+        const start = Math.round(item.startTime * 60);
+        const end = Math.round(item.endTime * 60);
+        return start <= currentMinutes && currentMinutes < end;
+      });
+      const nextClass = todayClasses.find(
+        (item) => Math.round(item.startTime * 60) > currentMinutes,
+      );
+      const beforeFirstClass = Boolean(
+        firstClass && currentMinutes < Math.round(firstClass.startTime * 60),
+      );
+      const lastClassEnd = lastClass ? Math.round(lastClass.endTime * 60) : null;
+      const hasFinishedClasses = Boolean(
+        lastClass && lastClassEnd !== null && currentMinutes >= lastClassEnd,
+      );
+      const isLongBreak = Boolean(
+        !currentClass &&
+          nextClass &&
+          Math.round(nextClass.startTime * 60) - currentMinutes >= 60,
+      );
+
+      const timetableState: DailyBriefTimetableState = {
+        beforeFirstClass,
+        inClass: Boolean(currentClass),
+        isLongBreak,
+        recentlyFinished:
+          hasFinishedClasses &&
+          lastClassEnd !== null &&
+          currentMinutes <= lastClassEnd + 180,
+        noClassDay: todayClasses.length === 0,
+        firstClassStartHour: firstClass
+          ? Math.floor(firstClass.startTime)
+          : undefined,
+        lastClassEndHour: lastClass
+          ? Math.floor(lastClass.endTime)
+          : undefined,
+        recommendedBusType:
+          hasFinishedClasses || currentHour >= 16 ? "go-home" : "go-school",
+      };
+
+      return { cards, timetableState, ...getDefaultGreeting(currentHour) };
     }
     const hasTimetableContext =
       !isLoggedIn ||
@@ -618,6 +737,7 @@ export function useDailyBriefPresentation(): DailyBriefPresentation {
       activeRoutineCards,
       visibility,
       focusCard: focusParam,
+      timeRules: getStoredBriefTimeRules(),
     });
   }, [
     mode,

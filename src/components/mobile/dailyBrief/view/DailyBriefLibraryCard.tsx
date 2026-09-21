@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { getReadingRooms, LibrarySeatRoom } from "@/apis/library";
+import { getLocalDailyBriefCardSettings } from "@/apis/dailyBrief";
 import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
 
@@ -11,6 +12,33 @@ export default function DailyBriefLibraryCard() {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<LibrarySeatRoom[]>(cachedRooms);
   const [isLoading, setIsLoading] = useState(cachedRooms.length === 0);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>(() => {
+    return (
+      getLocalDailyBriefCardSettings().details?.library?.selectedRooms || [
+        "제1열람실",
+        "제2열람실",
+        "제3열람실",
+        "힐링존",
+      ]
+    );
+  });
+
+  useEffect(() => {
+    const handleSettingsChange = () => {
+      setSelectedRooms(
+        getLocalDailyBriefCardSettings().details?.library?.selectedRooms || [
+          "제1열람실",
+          "제2열람실",
+          "제3열람실",
+          "힐링존",
+        ],
+      );
+    };
+    window.addEventListener("daily_brief_settings_changed", handleSettingsChange);
+    return () => {
+      window.removeEventListener("daily_brief_settings_changed", handleSettingsChange);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -71,7 +99,18 @@ export default function DailyBriefLibraryCard() {
     return { total, occupied, available, percent, status, statusColor, statusBg };
   };
 
-  const displayRooms = rooms.slice(0, 3);
+  const displayRooms = useMemo(() => {
+    if (!selectedRooms || selectedRooms.length === 0) {
+      return rooms.slice(0, 4);
+    }
+    const matched = rooms.filter((r) => {
+      const roomName = r.name || "";
+      return selectedRooms.some(
+        (sel) => roomName.includes(sel) || sel.includes(roomName),
+      );
+    });
+    return matched.length > 0 ? matched : rooms.slice(0, 4);
+  }, [rooms, selectedRooms]);
 
   // 전체 잔여 좌석 합산
   const totalAvailable = rooms.reduce((acc, r) => {

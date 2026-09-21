@@ -8,16 +8,18 @@ import {
   useDailyBriefPresentation,
   DailyBriefCardType,
 } from "@/hooks/useDailyBriefRanking";
+import { getLocalDailyBriefCardSettings } from "@/apis/dailyBrief";
+import type { DailyBriefCardSettings } from "@/types/dailyBrief";
 import DailyBriefHeader from "@/components/mobile/dailyBrief/view/DailyBriefHeader";
-import DailyBriefTimetableCard from "@/components/mobile/dailyBrief/view/DailyBriefTimetableCard";
 import DailyBriefWeatherCard from "@/components/mobile/dailyBrief/view/DailyBriefWeatherCard";
 import DailyBriefNoticeCard from "@/components/mobile/dailyBrief/view/DailyBriefNoticeCard";
-import DailyBriefCafeteriaCard from "@/components/mobile/dailyBrief/view/DailyBriefCafeteriaCard";
-import DailyBriefBusCard from "@/components/mobile/dailyBrief/view/DailyBriefBusCard";
 import DailyBriefFortuneCard from "@/components/mobile/dailyBrief/view/DailyBriefFortuneCard";
 import DailyBriefLibraryCard from "@/components/mobile/dailyBrief/view/DailyBriefLibraryCard";
 import DailyBriefLmsCard from "@/components/mobile/dailyBrief/view/DailyBriefLmsCard";
 import DailyBriefInfoModal from "@/components/mobile/dailyBrief/view/DailyBriefInfoModal";
+import TodayTimetableWidget from "@/components/mobile/home/TodayTimetableWidget";
+import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
+import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import Icon from "@/components/common/Icon";
 
 export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
@@ -83,6 +85,75 @@ export default function MobileDailyBriefPage() {
 
   const brief = useDailyBriefPresentation();
   const timeTheme = useMemo(() => getDailyBriefTimeTheme(), []);
+
+  const [cardSettings, setCardSettings] = useState<DailyBriefCardSettings>(() =>
+    getLocalDailyBriefCardSettings(),
+  );
+
+  useEffect(() => {
+    const handleSettingsChanged = () => {
+      setCardSettings(getLocalDailyBriefCardSettings());
+    };
+    window.addEventListener(
+      "daily_brief_settings_changed",
+      handleSettingsChanged,
+    );
+    return () => {
+      window.removeEventListener(
+        "daily_brief_settings_changed",
+        handleSettingsChanged,
+      );
+    };
+  }, []);
+
+  const busInitialType = useMemo(() => {
+    const configured = cardSettings.details?.bus?.defaultType;
+    if (configured && configured !== "auto") {
+      return configured;
+    }
+    return brief.timetableState?.recommendedBusType || "go-school";
+  }, [
+    cardSettings.details?.bus?.defaultType,
+    brief.timetableState?.recommendedBusType,
+  ]);
+
+  const preferredCafeteria = cardSettings.details?.cafeteria?.preferredCafeteria;
+
+  const timetableIntro = useMemo(() => {
+    if (brief.timetableState?.beforeFirstClass) {
+      return "오늘 첫 수업 전, 강의실과 일정을 미리 확인해 볼까요?";
+    }
+    if (brief.timetableState?.inClass) {
+      return "지금 진행 중인 수업 정보를 확인해 보세요.";
+    }
+    if (brief.timetableState?.isLongBreak) {
+      return "수업 사이 쉬는 시간이에요. 다음 강의실을 확인해 보세요.";
+    }
+    if (brief.timetableState?.recentlyFinished) {
+      return "오늘 강의를 모두 마쳤어요! 수고하셨습니다.";
+    }
+    if (brief.timetableState?.noClassDay) {
+      return "오늘은 예정된 수업이 없는 날이에요.";
+    }
+    return "오늘 하루 강의 일정을 확인해 보세요.";
+  }, [brief.timetableState]);
+
+  const busIntro = useMemo(() => {
+    if (busInitialType === "go-home") {
+      return "수업 후 안전한 귀가 버스를 확인해 보세요.";
+    }
+    if (busInitialType === "go-school") {
+      return "등교 버스 실시간 도착 정보를 확인해 보세요.";
+    }
+    return "실시간 버스 도착 정보를 확인해 보세요.";
+  }, [busInitialType]);
+
+  const cafeteriaIntro = useMemo(() => {
+    const currentHour = new Date().getHours();
+    if (currentHour < 10) return "오늘 아침/점심 학식 메뉴를 확인해 보세요.";
+    if (currentHour < 14) return "오늘 점심 학식 메뉴를 확인해 보세요.";
+    return "오늘 저녁 학식 메뉴를 확인해 보세요.";
+  }, []);
 
   useHeader({
     visible: false,
@@ -168,7 +239,12 @@ export default function MobileDailyBriefPage() {
     let cardComponent: React.ReactNode = null;
     switch (cardType) {
       case "timetable":
-        cardComponent = <DailyBriefTimetableCard />;
+        cardComponent = (
+          <TimetableSectionWrapper>
+            <ContextIntro>{timetableIntro}</ContextIntro>
+            <TodayTimetableWidget />
+          </TimetableSectionWrapper>
+        );
         break;
       case "library":
         cardComponent = <DailyBriefLibraryCard />;
@@ -180,10 +256,20 @@ export default function MobileDailyBriefPage() {
         cardComponent = <DailyBriefNoticeCard />;
         break;
       case "cafeteria":
-        cardComponent = <DailyBriefCafeteriaCard />;
+        cardComponent = (
+          <BriefWidgetSectionWrapper>
+            <ContextIntro>{cafeteriaIntro}</ContextIntro>
+            <SwipeMenuWidget initialCafeteria={preferredCafeteria} />
+          </BriefWidgetSectionWrapper>
+        );
         break;
       case "bus":
-        cardComponent = <DailyBriefBusCard />;
+        cardComponent = (
+          <BriefWidgetSectionWrapper>
+            <ContextIntro>{busIntro}</ContextIntro>
+            <SwipeBusWidget initialType={busInitialType} />
+          </BriefWidgetSectionWrapper>
+        );
         break;
       case "lms":
         cardComponent = <DailyBriefLmsCard />;
@@ -353,3 +439,28 @@ const CircleActionButton = styled.button`
     transform: scale(0.92);
   }
 `;
+
+const BriefWidgetSectionWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+`;
+
+const TimetableSectionWrapper = styled(BriefWidgetSectionWrapper)`
+  & > div {
+    margin-bottom: 0;
+  }
+`;
+
+const ContextIntro = styled.p`
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  padding: 0 4px;
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+`;
+
