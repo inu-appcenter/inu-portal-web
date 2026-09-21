@@ -4254,10 +4254,6 @@ const ModalDivider = styled.div`
   margin-left: 68px;
 `;
 
-// Compatibility aliases
-const ModalOptionsList = ModalGroupScrollContainer;
-const ModalOptionItem = ModalGroupRow;
-
 const OptionIconTextRow = styled.div`
   display: flex;
   align-items: center;
