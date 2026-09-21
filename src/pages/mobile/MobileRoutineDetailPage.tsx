@@ -4472,7 +4472,10 @@ const KeywordModalInput = styled.input`
 const IconPickerModalContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
 `;
 
 const PickerSectionTitle = styled.div`
@@ -4485,12 +4488,20 @@ const ColorPickerRow = styled.div`
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 4px 0;
+  padding: 4px 2px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const ColorSelectButton = styled.button<{ $color: string; $selected: boolean }>`
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: ${({ $color }) => $color};
   border: 2px solid ${({ $selected }) => ($selected ? "#111827" : "transparent")};
@@ -4507,16 +4518,19 @@ const IconGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  max-height: 220px;
+  max-height: 180px;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 4px 2px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const IconGridItem = styled.button<{ $selected: boolean; $bgColor: string }>`
   background: ${({ $selected }) => ($selected ? "#f1f5f9" : "transparent")};
   border: 1px solid ${({ $selected }) => ($selected ? "#cbd5e1" : "transparent")};
   border-radius: 14px;
-  padding: 10px 4px;
+  padding: 8px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4527,10 +4541,10 @@ const IconGridItem = styled.button<{ $selected: boolean; $bgColor: string }>`
 `;
 
 const IconCirclePreview = styled.div<{ $selected: boolean; $bgColor: string }>`
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: ${({ $selected, $bgColor }) => ($selected ? $bgColor : "#f1f5f9")};
+  background: ${({ $selected, $bgColor }) => ($selected ? $bgColor : "transparent")};
   display: flex;
   align-items: center;
   justify-content: center;

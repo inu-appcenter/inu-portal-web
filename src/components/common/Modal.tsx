@@ -140,6 +140,7 @@ const ModalContainer = styled(Dialog.Content)`
   border-radius: 32px;
   width: calc(100% - 32px);
   max-width: 328px;
+  max-height: calc(100dvh - 40px);
   padding: 20px 16px 16px 16px;
   box-sizing: border-box;
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
@@ -149,6 +150,7 @@ const ModalContainer = styled(Dialog.Content)`
   z-index: 20000;
   outline: none;
   animation: ${scaleUp} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  overflow: hidden;
 `;
 
 const HeaderContainer = styled.div`
@@ -157,6 +159,7 @@ const HeaderContainer = styled.div`
   gap: 12px;
   width: 100%;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const ModalTitle = styled.h2`
@@ -191,14 +194,12 @@ const ModalSlot = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-sizing: border-box;
   gap: 12px;
-
-  /* 모달 내부 InputField/SelectContainer 등의 배경색을 피그마 사양인 흰색(var(--bg-base))으로 덮어씀 */
-  & > div {
-    background-color: var(--bg-base, #ffffff) !important;
-  }
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const ButtonContainer = styled.div`
@@ -207,6 +208,7 @@ const ButtonContainer = styled.div`
   width: 100%;
   box-sizing: border-box;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const ModalButton = styled(CapsuleButton)`
