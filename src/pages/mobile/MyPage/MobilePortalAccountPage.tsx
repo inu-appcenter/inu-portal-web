@@ -24,7 +24,7 @@ import {
   User,
   GraduationCap,
   BookOpen,
-  Sparkles,
+  FileText,
   RotateCcw,
   Trash2,
   ChevronRight,
@@ -105,7 +105,7 @@ export default function MobilePortalAccountPage() {
     }
 
     if (!isMobileAppEnvironment()) {
-      setErrorMessage("포털 계정 연동은 INTIP 모바일 앱 환경에서만 지원됩니다.");
+      setErrorMessage("포털 계정 연동은 INTIP 모바일 앱 환경에서만 지원돼요.");
       return;
     }
 
@@ -128,12 +128,12 @@ export default function MobilePortalAccountPage() {
         setIsRelinkMode(false);
         setStudentIdInput("");
         setPasswordInput("");
-        showToast("포털 계정이 성공적으로 연동되었습니다.");
+        showToast("포털 계정이 성공적으로 연동되었어요.");
       } else {
-        setErrorMessage(saveRes.errorMessage || "계정 연동에 실패했습니다.");
+        setErrorMessage(saveRes.errorMessage || "계정 연동에 실패했어요.");
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || "오류가 발생했습니다.");
+      setErrorMessage(err?.message || "오류가 발생했어요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -150,9 +150,9 @@ export default function MobilePortalAccountPage() {
       setStudentInfo(null);
       setIsLinked(false);
       setIsRelinkMode(false);
-      showToast("포털 계정 연동이 해제되었습니다.");
+      showToast("포털 계정 연동이 해제되었어요.");
     } catch (e: any) {
-      alert(e?.message || "연동 해제 중 오류가 발생했습니다.");
+      alert(e?.message || "연동 해제 중 오류가 발생했어요.");
     }
   };
 
@@ -227,7 +227,7 @@ export default function MobilePortalAccountPage() {
             <ServiceItem onClick={() => navigate(ROUTES.LABS.PORTAL.BASIC_INFO)}>
               <ServiceLeft>
                 <ServiceIcon $color="#0061ff" $bg="#eff6ff">
-                  <Sparkles size={18} color="#0061ff" />
+                  <FileText size={18} color="#0061ff" />
                 </ServiceIcon>
                 <ServiceText>
                   <strong>기본 학적 정보 조회</strong>
@@ -268,33 +268,28 @@ export default function MobilePortalAccountPage() {
             </ServiceItem>
           </ServiceListCard>
 
-          <SecurityNoticeCard>
-            <ShieldCheck size={20} color="#00a651" />
-            <SecurityNoticeText>
-              <strong>단말기 직접 연동 (Zero-Knowledge)</strong>
-              <br />
-              포털 계정 정보는 외부 서버로 전송되지 않으며, 사용자 기기 보안 영역에만 암호화되어 안전하게 저장됩니다.
-            </SecurityNoticeText>
-          </SecurityNoticeCard>
+          <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
         </ContentContainer>
       ) : (
         /* ================= 2. 미연동 또는 재등록 폼 화면 ================= */
         <ContentContainer>
           <HeroCard>
             <HeroTitle>
-              {isRelinkMode ? "포털 계정 다시 등록" : "포털 계정을 등록해주세요"}
+              {isRelinkMode ? "포털 계정 다시 등록" : "포털 계정을 등록해 주세요"}
             </HeroTitle>
             <HeroSubtitle>
-              인천대학교 포털 계정(학번/비밀번호)을 1회 등록하면 학적·LMS·학산도서관이 한 번에 연동됩니다.
+              인천대학교 포털 계정(학번/비밀번호)을 등록하면 학적·LMS·도서관 기능을 바로 이용할 수 있어요.
             </HeroSubtitle>
-          </HeroCard>
 
-          <SecurityBanner>
-            <ShieldCheck size={20} color="#00a651" />
-            <SecurityBannerText>
-              <strong>안심하세요!</strong> 입력하신 계정은 기기 보안 영역(KeyStore)에만 암호화 보관되며, 서버로 절대 전송되지 않습니다.
-            </SecurityBannerText>
-          </SecurityBanner>
+            <UsageGuideBox>
+              <UsageGuideTitle>연동 시 이용 가능한 기능</UsageGuideTitle>
+              <UsageGuideList>
+                <li>기본 학적 정보 (취득 학점, 성적, 학적 상태를 조회해요)</li>
+                <li>이러닝 LMS (과제 마감 알림과 수강 강좌를 확인해요)</li>
+                <li>학산도서관 (열람실 좌석 배정 및 스터디룸을 예약해요)</li>
+              </UsageGuideList>
+            </UsageGuideBox>
+          </HeroCard>
 
           <FormCard onSubmit={handleRegister}>
             <InputGroup>
@@ -351,6 +346,8 @@ export default function MobilePortalAccountPage() {
               )}
             </ButtonGroupWrapper>
           </FormCard>
+
+          <FootnoteText>이 폰에서 직접 작업이 수행되며, 계정 정보는 서버로 전송되지 않아요.</FootnoteText>
         </ContentContainer>
       )}
 
@@ -358,8 +355,8 @@ export default function MobilePortalAccountPage() {
       <Modal
         isOpen={isUnlinkModalOpen}
         onClose={() => setIsUnlinkModalOpen(false)}
-        title="포털 계정 연동을 해제하시겠습니까?"
-        description="연동을 해제하면 기기 내 저장된 포털 로그인 정보와 학적 데이터가 삭제되며, 이러닝 및 도서관 자동 연동이 중단됩니다."
+        title="포털 계정 연동을 해제할까요?"
+        description="연동을 해제하면 이 폰에 저장된 로그인 정보와 학적 데이터가 삭제되고, 이러닝 및 도서관 자동 연동이 중단돼요."
         primaryButton={{
           text: "연동 해제",
           variant: "danger",
@@ -614,26 +611,12 @@ const ServiceDivider = styled.div`
   width: 100%;
 `;
 
-const SecurityNoticeCard = styled.div`
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  border-radius: 16px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 4px;
-`;
-
-const SecurityNoticeText = styled.p`
-  margin: 0;
-  font-size: 12px;
-  color: #166534;
-  line-height: 1.5;
-
-  strong {
-    font-weight: 700;
-  }
+const FootnoteText = styled.p`
+  margin: 14px 4px 0;
+  font-size: 12.5px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+  line-height: 1.4;
 `;
 
 const HeroCard = styled.div`
@@ -643,7 +626,7 @@ const HeroCard = styled.div`
   padding: 24px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 `;
 
 const HeroTitle = styled.h2`
@@ -661,23 +644,34 @@ const HeroSubtitle = styled.p`
   line-height: 1.5;
 `;
 
-const SecurityBanner = styled.div`
-  background: #e8f8f0;
+const UsageGuideBox = styled.div`
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
 `;
 
-const SecurityBannerText = styled.p`
-  margin: 0;
-  font-size: 12px;
-  color: #1b633d;
-  line-height: 1.45;
+const UsageGuideTitle = styled.div`
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary, #191f28);
+`;
 
-  strong {
-    font-weight: 700;
+const UsageGuideList = styled.ul`
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7684);
+    line-height: 1.4;
   }
 `;
 

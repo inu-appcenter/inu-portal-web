@@ -660,7 +660,7 @@ export default function MobileLmsHubPage() {
                       })}
                     </ModuleList>
                   ) : (
-                    <EmptySectionText>등록된 학습 요소가 없습니다.</EmptySectionText>
+                    <EmptySectionText>등록된 학습 요소가 없어요.</EmptySectionText>
                   )}
                 </SectionGroup>
               ))}
@@ -681,6 +681,8 @@ export default function MobileLmsHubPage() {
           onClick: () => setAlertModal((prev) => ({ ...prev, isOpen: false })),
         }}
       />
+
+      <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
     </Container>
   );
 }
@@ -697,6 +699,14 @@ const Container = styled.div`
     max-width: 1200px;
     padding: 24px 0 80px;
   }
+`;
+
+const FootnoteText = styled.p`
+  margin: 20px 0 0;
+  font-size: 12.5px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+  line-height: 1.4;
 `;
 
 const TabBar = styled.div`

@@ -228,14 +228,14 @@ const BasicInfoPage = () => {
       )}
 
       <ContentSection>
-        <TitleContentArea description="인천대학교 포털 시스템에서 내 기본 학적 정보를 가져옵니다. 가져온 데이터는 기기 안에만 보관되며 서버에는 저장되지 않습니다." />
+        <TitleContentArea description="인천대학교 포털 시스템에서 내 기본 학적 정보를 가져와요. 이 폰에서 직접 작업이 수행되며 서버에는 저장되지 않아요." />
 
         {!isPortalLinked && !isFetched ? (
           <EmptyCard>
             <KeyRound size={32} color="#0061ff" />
             <EmptyTitle>포털 계정 연동 후 학적 정보를 확인할 수 있어요</EmptyTitle>
             <EmptyDesc>
-              마이페이지에서 포털 계정을 등록하면 학적 상태, 취득 학점, 성적 정보를 안전하게 가져옵니다.
+              마이페이지에서 포털 계정을 등록하면 학적 상태, 취득 학점, 성적 정보를 안전하게 가져와요.
             </EmptyDesc>
             <CapsuleButton
               variant="brand"
@@ -244,6 +244,7 @@ const BasicInfoPage = () => {
             >
               포털 계정 연동하기
             </CapsuleButton>
+            <FootnoteText style={{ marginTop: "12px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
           </EmptyCard>
         ) : isFetched ? (
           <>
@@ -410,6 +411,7 @@ const BasicInfoPage = () => {
             >
               {isLoading ? (loadingMessage || "가져오는 중...") : "포털에서 학적 정보 가져오기"}
             </ActionButton>
+            <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
           </div>
         )}
       </ContentSection>
@@ -418,6 +420,14 @@ const BasicInfoPage = () => {
 };
 
 export default BasicInfoPage;
+
+const FootnoteText = styled.p`
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+  line-height: 1.4;
+`;
 
 const MoreAppsPageWrapper = styled.div`
   display: flex;
