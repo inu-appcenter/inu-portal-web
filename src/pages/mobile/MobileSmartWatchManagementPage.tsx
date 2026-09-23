@@ -15,6 +15,8 @@ import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import Modal from "@/components/common/Modal";
 import {
+  Search,
+  X,
   Bell,
   Clock,
   Trash2,
@@ -44,6 +46,10 @@ export default function MobileSmartWatchManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [targetJobToCancel, setTargetJobToCancel] = useState<UnifiedWatchJob | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // 검색 및 필터 상태
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filterType, setFilterType] = useState<"all" | "library" | "assignment" | "server" | "local">("all");
 
   // 오류 및 알림 안내 모달 상태
   const [alertModal, setAlertModal] = useState<{
@@ -167,6 +173,29 @@ export default function MobileSmartWatchManagementPage() {
   const activeJobs = unifiedList.filter((j) => j.status === "ACTIVE");
   const pastJobs = unifiedList.filter((j) => j.status !== "ACTIVE");
 
+  const filterPredicate = (job: UnifiedWatchJob) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const matchTarget = job.targetName.toLowerCase().includes(q);
+      const matchDomain = job.domainName.toLowerCase().includes(q);
+      if (!matchTarget && !matchDomain) return false;
+    }
+    if (filterType === "library") {
+      const isLib = job.domainName.includes("열람실") || job.domainName.includes("스터디룸") || job.domainName.includes("좌석");
+      if (!isLib) return false;
+    } else if (filterType === "assignment") {
+      if (!job.domainName.includes("과제")) return false;
+    } else if (filterType === "server") {
+      if (job.source !== "SERVER") return false;
+    } else if (filterType === "local") {
+      if (job.source !== "LOCAL") return false;
+    }
+    return true;
+  };
+
+  const filteredActiveJobs = activeJobs.filter(filterPredicate);
+  const filteredPastJobs = pastJobs.filter(filterPredicate);
+
   return (
     <Container>
       <HubSection>
@@ -198,12 +227,49 @@ export default function MobileSmartWatchManagementPage() {
       </HubSection>
 
       <SectionHeader>
-        <SectionTitle>진행 중인 알림 ({activeJobs.length})</SectionTitle>
+        <SectionTitle>진행 중인 알림 ({filteredActiveJobs.length})</SectionTitle>
         <RefreshButton onClick={fetchAllJobs} disabled={isLoading}>
           <RefreshCw size={13} className={isLoading ? "spin" : ""} />
           <span>새로고침</span>
         </RefreshButton>
       </SectionHeader>
+
+      {/* 검색 및 필터 바 */}
+      {activeJobs.length > 0 && (
+        <FilterArea>
+          <SearchBox>
+            <Search size={16} color="#8b95a1" />
+            <SearchInput
+              type="text"
+              placeholder="알림 대상 또는 열람실/과목명 검색"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <ClearBtn onClick={() => setSearchQuery("")} type="button">
+                <X size={14} />
+              </ClearBtn>
+            )}
+          </SearchBox>
+          <ChipRow>
+            <FilterChip $active={filterType === "all"} onClick={() => setFilterType("all")}>
+              전체
+            </FilterChip>
+            <FilterChip $active={filterType === "library"} onClick={() => setFilterType("library")}>
+              도서관 좌석/스터디룸
+            </FilterChip>
+            <FilterChip $active={filterType === "assignment"} onClick={() => setFilterType("assignment")}>
+              과제 마감
+            </FilterChip>
+            <FilterChip $active={filterType === "server"} onClick={() => setFilterType("server")}>
+              서버 푸시
+            </FilterChip>
+            <FilterChip $active={filterType === "local"} onClick={() => setFilterType("local")}>
+              기기 알림
+            </FilterChip>
+          </ChipRow>
+        </FilterArea>
+      )}
 
       {isLoading ? (
         <JobList>
@@ -239,9 +305,15 @@ export default function MobileSmartWatchManagementPage() {
             </EmptySubText>
           </EmptyBox>
         </>
+      ) : filteredActiveJobs.length === 0 ? (
+        <EmptyBox>
+          <Search size={28} color="#94a3b8" />
+          <EmptyText>일치하는 알림이 없습니다.</EmptyText>
+          <EmptySubText>검색어나 필터 조건을 변경해보세요.</EmptySubText>
+        </EmptyBox>
       ) : (
         <JobList>
-          {activeJobs.map((job) => (
+          {filteredActiveJobs.map((job) => (
             <Box key={`${job.source}_${job.id}`} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
               <CardTop>
                 <BadgeGroup>
@@ -272,13 +344,13 @@ export default function MobileSmartWatchManagementPage() {
         </JobList>
       )}
 
-      {pastJobs.length > 0 && (
+      {filteredPastJobs.length > 0 && (
         <>
           <SectionTitle style={{ marginTop: 28, marginBottom: 12 }}>
-            최근 완료된 알림 ({pastJobs.length})
+            최근 완료된 알림 ({filteredPastJobs.length})
           </SectionTitle>
           <JobList>
-            {pastJobs.slice(0, 5).map((job) => {
+            {filteredPastJobs.slice(0, 5).map((job) => {
               const dateObj = new Date(job.createdAt);
               return (
                 <PastJobCard key={`${job.source}_${job.id}`}>
@@ -461,6 +533,98 @@ const SectionHeader = styled.div`
   margin-bottom: 12px;
   width: 100%;
   box-sizing: border-box;
+`;
+
+const FilterArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const SearchBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 9px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--interactive-primary, #0061ff);
+  }
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--text-primary, #191f28);
+  outline: none;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--text-placeholder, #8b95a1);
+  }
+`;
+
+const ClearBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-disabled, #8b95a1);
+  cursor: pointer;
+  border-radius: 50%;
+
+  &:hover {
+    color: var(--text-primary, #191f28);
+  }
+`;
+
+const ChipRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const FilterChip = styled.button<{ $active: boolean }>`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+
+  &:active {
+    transform: scale(0.97);
+  }
 `;
 
 const SectionTitle = styled.h3`

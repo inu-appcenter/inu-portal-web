@@ -44,6 +44,7 @@ import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import {
+  Search,
   BookOpen,
   Users,
   Clock,
@@ -251,6 +252,12 @@ export default function MobileLibraryHubPage() {
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
   const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
   const [favoriteSeats, setFavoriteSeats] = useState<LibrarySeat[]>([]);
+
+  // 검색 및 필터 상태
+  const [seatSearchQuery, setSeatSearchQuery] = useState<string>("");
+  const [seatFilter, setSeatFilter] = useState<"all" | "available" | "laptop">("all");
+  const [studySearchQuery, setStudySearchQuery] = useState<string>("");
+  const [studyFilter, setStudyFilter] = useState<"all" | "available" | "small" | "large">("all");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMy, setIsLoadingMy] = useState<boolean>(false);
@@ -912,6 +919,41 @@ export default function MobileLibraryHubPage() {
     return { value: str, label: `${label} (${str.slice(5)})` };
   });
 
+  const filteredRooms = rooms.filter((room) => {
+    if (seatSearchQuery.trim()) {
+      const q = seatSearchQuery.trim().toLowerCase();
+      if (!room.name.toLowerCase().includes(q)) return false;
+    }
+    if (seatFilter === "available") {
+      const available = room.seats?.available ?? room.availableSeats ?? 0;
+      if (available <= 0) return false;
+    } else if (seatFilter === "laptop") {
+      const isLaptop = room.name.includes("노트북");
+      if (!isLaptop) return false;
+    }
+    return true;
+  });
+
+  const filteredStudyRooms = studyRooms.filter((s) => {
+    if (studySearchQuery.trim()) {
+      const q = studySearchQuery.trim().toLowerCase();
+      const matchName = s.name.toLowerCase().includes(q);
+      const matchLoc = s.location ? s.location.toLowerCase().includes(q) : false;
+      if (!matchName && !matchLoc) return false;
+    }
+    if (studyFilter === "available") {
+      const occInfo = computeStudyRoom2HourStatus(studyDetailsMap[s.id]);
+      if (occInfo.badgeType === "occupied" || occInfo.badgeType === "closed") return false;
+    } else if (studyFilter === "small") {
+      const maxQ = s.maxQuota || 4;
+      if (maxQ > 4) return false;
+    } else if (studyFilter === "large") {
+      const maxQ = s.maxQuota || 1;
+      if (maxQ < 5) return false;
+    }
+    return true;
+  });
+
   return (
     <Container>
       {/* 상단 탭 네비게이션 */}
@@ -1009,12 +1051,41 @@ export default function MobileLibraryHubPage() {
           )}
 
           <SectionHeader>
-            <SectionTitle>열람실 좌석 현황</SectionTitle>
+            <SectionTitle>열람실 좌석 현황 ({filteredRooms.length})</SectionTitle>
             <RefreshButton onClick={loadData}>
               <RefreshCw size={13} />
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
+
+          {/* 검색 및 필터 바 */}
+          <FilterArea>
+            <SearchBox>
+              <Search size={16} color="#8b95a1" />
+              <SearchInput
+                type="text"
+                placeholder="열람실 이름 검색"
+                value={seatSearchQuery}
+                onChange={(e) => setSeatSearchQuery(e.target.value)}
+              />
+              {seatSearchQuery && (
+                <ClearBtn onClick={() => setSeatSearchQuery("")} type="button">
+                  <X size={14} />
+                </ClearBtn>
+              )}
+            </SearchBox>
+            <ChipRow>
+              <FilterChip $active={seatFilter === "all"} onClick={() => setSeatFilter("all")}>
+                전체
+              </FilterChip>
+              <FilterChip $active={seatFilter === "available"} onClick={() => setSeatFilter("available")}>
+                잔여석 있음
+              </FilterChip>
+              <FilterChip $active={seatFilter === "laptop"} onClick={() => setSeatFilter("laptop")}>
+                노트북석
+              </FilterChip>
+            </ChipRow>
+          </FilterArea>
 
           {isLoading ? (
             <SkeletonList>
@@ -1034,9 +1105,15 @@ export default function MobileLibraryHubPage() {
             </SkeletonList>
           ) : rooms.length === 0 ? (
             <EmptyBox>현재 조회 가능한 열람실이 없습니다.</EmptyBox>
+          ) : filteredRooms.length === 0 ? (
+            <EmptyBox>
+              <Search size={28} color="#94a3b8" />
+              <EmptyTitle>일치하는 열람실이 없습니다</EmptyTitle>
+              <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
+            </EmptyBox>
           ) : (
             <RoomGrid>
-              {rooms.map((room) => {
+              {filteredRooms.map((room) => {
                 const total = room.seats?.total ?? room.totalSeats ?? 0;
                 const available = room.seats?.available ?? room.availableSeats ?? 0;
                 const occupied = room.seats?.occupied ?? room.occupiedSeats ?? 0;
@@ -1093,7 +1170,7 @@ export default function MobileLibraryHubPage() {
       {activeTab === "study" && (
         <Section>
           <SectionHeader>
-            <SectionTitle>스터디룸 현황 및 예약</SectionTitle>
+            <SectionTitle>스터디룸 현황 및 예약 ({filteredStudyRooms.length})</SectionTitle>
             <RefreshButton onClick={loadData}>
               <RefreshCw size={13} />
               <span>새로고침</span>
@@ -1103,6 +1180,38 @@ export default function MobileLibraryHubPage() {
           <NoticeBanner>
             날짜별 10분 단위 예약 현황을 확인하고 직접 예약할 수 있습니다.
           </NoticeBanner>
+
+          {/* 검색 및 필터 바 */}
+          <FilterArea>
+            <SearchBox>
+              <Search size={16} color="#8b95a1" />
+              <SearchInput
+                type="text"
+                placeholder="스터디룸 이름 또는 위치 검색"
+                value={studySearchQuery}
+                onChange={(e) => setStudySearchQuery(e.target.value)}
+              />
+              {studySearchQuery && (
+                <ClearBtn onClick={() => setStudySearchQuery("")} type="button">
+                  <X size={14} />
+                </ClearBtn>
+              )}
+            </SearchBox>
+            <ChipRow>
+              <FilterChip $active={studyFilter === "all"} onClick={() => setStudyFilter("all")}>
+                전체
+              </FilterChip>
+              <FilterChip $active={studyFilter === "available"} onClick={() => setStudyFilter("available")}>
+                예약 가능
+              </FilterChip>
+              <FilterChip $active={studyFilter === "small"} onClick={() => setStudyFilter("small")}>
+                2~4인실
+              </FilterChip>
+              <FilterChip $active={studyFilter === "large"} onClick={() => setStudyFilter("large")}>
+                5인 이상
+              </FilterChip>
+            </ChipRow>
+          </FilterArea>
 
           {isLoading ? (
             <SkeletonList>
@@ -1121,9 +1230,17 @@ export default function MobileLibraryHubPage() {
                 </Box>
               ))}
             </SkeletonList>
+          ) : studyRooms.length === 0 ? (
+            <EmptyBox>현재 조회 가능한 스터디룸이 없습니다.</EmptyBox>
+          ) : filteredStudyRooms.length === 0 ? (
+            <EmptyBox>
+              <Search size={28} color="#94a3b8" />
+              <EmptyTitle>일치하는 스터디룸이 없습니다</EmptyTitle>
+              <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
+            </EmptyBox>
           ) : (
             <StudyGrid>
-              {studyRooms.map((s) => {
+              {filteredStudyRooms.map((s) => {
                 const occInfo = computeStudyRoom2HourStatus(studyDetailsMap[s.id]);
                 return (
                   <StudyCardBox
@@ -2235,8 +2352,101 @@ const DangerActionBtn = styled.button`
   }
 `;
 
+const FilterArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const SearchBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 9px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--interactive-primary, #0061ff);
+  }
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--text-primary, #191f28);
+  outline: none;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--text-placeholder, #8b95a1);
+  }
+`;
+
+const ClearBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-disabled, #8b95a1);
+  cursor: pointer;
+  border-radius: 50%;
+
+  &:hover {
+    color: var(--text-primary, #191f28);
+  }
+`;
+
+const ChipRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const FilterChip = styled.button<{ $active: boolean }>`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
 const EmptyBox = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 36px 16px;
@@ -2246,6 +2456,22 @@ const EmptyBox = styled.div`
   font-size: 13px;
   color: var(--text-secondary, #8b95a1);
   text-align: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const EmptyTitle = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #333d4b);
+  margin-top: 4px;
+`;
+
+const EmptyDesc = styled.div`
+  font-size: 12px;
+  color: var(--text-secondary, #8b95a1);
+  line-height: 1.5;
 `;
 
 const FavSection = styled.div`

@@ -27,6 +27,8 @@ import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import {
+  Search,
+  X,
   GraduationCap,
   Calendar,
   Clock,
@@ -56,6 +58,12 @@ export default function MobileLmsHubPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  // 검색 및 필터 상태
+  const [assignSearchQuery, setAssignSearchQuery] = useState<string>("");
+  const [assignFilter, setAssignFilter] = useState<"all" | "urgent" | "assign" | "vod" | "quiz">("all");
+  const [courseSearchQuery, setCourseSearchQuery] = useState<string>("");
+  const [gradeSearchQuery, setGradeSearchQuery] = useState<string>("");
 
   // 안내/경고 공용 모달 상태
   const [alertModal, setAlertModal] = useState<{
@@ -203,6 +211,42 @@ export default function MobileLmsHubPage() {
     }
   };
 
+  const filteredAssignments = assignments.filter((item) => {
+    if (assignSearchQuery.trim()) {
+      const q = assignSearchQuery.trim().toLowerCase();
+      const matchName = item.name.toLowerCase().includes(q);
+      const matchCourse = item.course?.fullname ? item.course.fullname.toLowerCase().includes(q) : false;
+      if (!matchName && !matchCourse) return false;
+    }
+    if (assignFilter === "urgent") {
+      const days = item.daysRemaining;
+      if (days === undefined || days > 3) return false;
+    } else if (assignFilter === "assign") {
+      if (item.modulename !== "assign") return false;
+    } else if (assignFilter === "vod") {
+      if (item.modulename !== "vod") return false;
+    } else if (assignFilter === "quiz") {
+      if (item.modulename !== "quiz") return false;
+    }
+    return true;
+  });
+
+  const filteredCourses = courses.filter((c) => {
+    if (!courseSearchQuery.trim()) return true;
+    const q = courseSearchQuery.trim().toLowerCase();
+    const matchName = c.fullname.toLowerCase().includes(q);
+    const matchShort = c.shortname ? c.shortname.toLowerCase().includes(q) : false;
+    return matchName || matchShort;
+  });
+
+  const filteredGrades = grades.filter((g) => {
+    if (!gradeSearchQuery.trim()) return true;
+    const q = gradeSearchQuery.trim().toLowerCase();
+    const matchCourse = courses.find((c) => c.id === g.courseid);
+    const name = matchCourse?.fullname || `과목 ID ${g.courseid}`;
+    return name.toLowerCase().includes(q);
+  });
+
   return (
     <Container>
       {/* 상단 탭 네비게이션 */}
@@ -289,12 +333,48 @@ export default function MobileLmsHubPage() {
           {activeTab === "assignments" && (
             <SectionWrapper>
               <SectionTop>
-                <SectionTitle>마감 예정 과제 및 학습</SectionTitle>
+                <SectionTitle>마감 예정 과제 및 학습 ({isLinked ? filteredAssignments.length : 0})</SectionTitle>
                 <RefreshBtn onClick={loadData}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
               </SectionTop>
+
+              {isLinked && (
+                <FilterArea>
+                  <SearchBox>
+                    <Search size={16} color="#8b95a1" />
+                    <SearchInput
+                      type="text"
+                      placeholder="과제명 또는 강좌명 검색"
+                      value={assignSearchQuery}
+                      onChange={(e) => setAssignSearchQuery(e.target.value)}
+                    />
+                    {assignSearchQuery && (
+                      <ClearBtn onClick={() => setAssignSearchQuery("")} type="button">
+                        <X size={14} />
+                      </ClearBtn>
+                    )}
+                  </SearchBox>
+                  <ChipRow>
+                    <FilterChip $active={assignFilter === "all"} onClick={() => setAssignFilter("all")}>
+                      전체
+                    </FilterChip>
+                    <FilterChip $active={assignFilter === "urgent"} onClick={() => setAssignFilter("urgent")}>
+                      마감 임박 (D-3)
+                    </FilterChip>
+                    <FilterChip $active={assignFilter === "assign"} onClick={() => setAssignFilter("assign")}>
+                      과제
+                    </FilterChip>
+                    <FilterChip $active={assignFilter === "vod"} onClick={() => setAssignFilter("vod")}>
+                      온라인 강의
+                    </FilterChip>
+                    <FilterChip $active={assignFilter === "quiz"} onClick={() => setAssignFilter("quiz")}>
+                      퀴즈/시험
+                    </FilterChip>
+                  </ChipRow>
+                </FilterArea>
+              )}
 
               {!isLinked ? (
                 <EmptyBox>
@@ -308,9 +388,15 @@ export default function MobileLmsHubPage() {
                   <EmptyTitle>마감 예정인 일정이 없습니다</EmptyTitle>
                   <EmptyDesc>모든 과제를 제출했거나 2주 이내 마감 예정 항목이 없습니다.</EmptyDesc>
                 </EmptyBox>
+              ) : filteredAssignments.length === 0 ? (
+                <EmptyBox>
+                  <Search size={28} color="#94a3b8" />
+                  <EmptyTitle>일치하는 마감 일정이 없습니다</EmptyTitle>
+                  <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
+                </EmptyBox>
               ) : (
                 <ListContainer>
-                  {assignments.map((item) => (
+                  {filteredAssignments.map((item) => (
                     <Box key={item.id} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
                       <AssignTop>
                         <CourseNameBadge>{item.course?.fullname || "강좌"}</CourseNameBadge>
@@ -351,12 +437,31 @@ export default function MobileLmsHubPage() {
           {activeTab === "courses" && (
             <SectionWrapper>
               <SectionTop>
-                <SectionTitle>수강 중인 강좌 ({isLinked ? courses.length : 0})</SectionTitle>
+                <SectionTitle>수강 중인 강좌 ({isLinked ? filteredCourses.length : 0})</SectionTitle>
                 <RefreshBtn onClick={loadData}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
               </SectionTop>
+
+              {isLinked && (
+                <FilterArea>
+                  <SearchBox>
+                    <Search size={16} color="#8b95a1" />
+                    <SearchInput
+                      type="text"
+                      placeholder="강좌명 또는 학수번호 검색"
+                      value={courseSearchQuery}
+                      onChange={(e) => setCourseSearchQuery(e.target.value)}
+                    />
+                    {courseSearchQuery && (
+                      <ClearBtn onClick={() => setCourseSearchQuery("")} type="button">
+                        <X size={14} />
+                      </ClearBtn>
+                    )}
+                  </SearchBox>
+                </FilterArea>
+              )}
 
               {!isLinked ? (
                 <EmptyBox>
@@ -369,9 +474,15 @@ export default function MobileLmsHubPage() {
                   <GraduationCap size={32} color="#94a3b8" />
                   <EmptyTitle>수강 중인 강좌가 없습니다</EmptyTitle>
                 </EmptyBox>
+              ) : filteredCourses.length === 0 ? (
+                <EmptyBox>
+                  <Search size={28} color="#94a3b8" />
+                  <EmptyTitle>일치하는 강좌가 없습니다</EmptyTitle>
+                  <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
+                </EmptyBox>
               ) : (
                 <ListContainer>
-                  {courses.map((c) => (
+                  {filteredCourses.map((c) => (
                     <Box key={c.id} onClick={() => handleOpenCourseDetail(c)} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
                       <CourseHeader>
                         <div>
@@ -395,12 +506,31 @@ export default function MobileLmsHubPage() {
           {activeTab === "grades" && (
             <SectionWrapper>
               <SectionTop>
-                <SectionTitle>과목별 성적 현황</SectionTitle>
+                <SectionTitle>과목별 성적 현황 ({isLinked ? filteredGrades.length : 0})</SectionTitle>
                 <RefreshBtn onClick={loadData}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
               </SectionTop>
+
+              {isLinked && (
+                <FilterArea>
+                  <SearchBox>
+                    <Search size={16} color="#8b95a1" />
+                    <SearchInput
+                      type="text"
+                      placeholder="과목명 검색"
+                      value={gradeSearchQuery}
+                      onChange={(e) => setGradeSearchQuery(e.target.value)}
+                    />
+                    {gradeSearchQuery && (
+                      <ClearBtn onClick={() => setGradeSearchQuery("")} type="button">
+                        <X size={14} />
+                      </ClearBtn>
+                    )}
+                  </SearchBox>
+                </FilterArea>
+              )}
 
               {!isLinked ? (
                 <EmptyBox>
@@ -414,9 +544,15 @@ export default function MobileLmsHubPage() {
                   <EmptyTitle>조회된 성적 정보가 없습니다</EmptyTitle>
                   <EmptyDesc>학기 말 성적 입력 기간 또는 LMS에 공개된 성적이 표시됩니다.</EmptyDesc>
                 </EmptyBox>
+              ) : filteredGrades.length === 0 ? (
+                <EmptyBox>
+                  <Search size={28} color="#94a3b8" />
+                  <EmptyTitle>일치하는 과목 성적이 없습니다</EmptyTitle>
+                  <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
+                </EmptyBox>
               ) : (
                 <ListContainer>
-                  {grades.map((g, idx) => {
+                  {filteredGrades.map((g, idx) => {
                     const matchCourse = courses.find((c) => c.id === g.courseid);
                     return (
                       <Box key={idx} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
@@ -712,6 +848,98 @@ const SectionTop = styled.div`
   padding: 0 4px;
   width: 100%;
   box-sizing: border-box;
+`;
+
+const FilterArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 2px;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const SearchBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 9px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--interactive-primary, #0061ff);
+  }
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--text-primary, #191f28);
+  outline: none;
+  min-width: 0;
+
+  &::placeholder {
+    color: var(--text-placeholder, #8b95a1);
+  }
+`;
+
+const ClearBtn = styled.button`
+  background: none;
+  border: none;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-disabled, #8b95a1);
+  cursor: pointer;
+  border-radius: 50%;
+
+  &:hover {
+    color: var(--text-primary, #191f28);
+  }
+`;
+
+const ChipRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const FilterChip = styled.button<{ $active: boolean }>`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+
+  &:active {
+    transform: scale(0.97);
+  }
 `;
 
 const SectionTitle = styled.h3`
