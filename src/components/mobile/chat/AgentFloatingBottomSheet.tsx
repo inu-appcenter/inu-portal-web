@@ -127,8 +127,22 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
     }
   };
 
-  const handleScrimClick = () => {
-    onClose();
+  const scrimPointerStartRef = useRef<{ x: number; y: number; time: number }>({ x: 0, y: 0, time: 0 });
+
+  const handleScrimPointerDown = (e: React.PointerEvent) => {
+    scrimPointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  };
+
+  const handleScrimPointerUp = (e: React.PointerEvent) => {
+    if (isDragging) return;
+    const dx = Math.abs(e.clientX - scrimPointerStartRef.current.x);
+    const dy = Math.abs(e.clientY - scrimPointerStartRef.current.y);
+    const dt = Date.now() - scrimPointerStartRef.current.time;
+
+    // 드래그가 끝난 위치가 바깥이더라도 드래그 동작 중에는 닫히지 않고, 순수 클릭(12px 이내, 500ms 이내)일 때만 닫기
+    if (dx < 12 && dy < 12 && dt < 500) {
+      onClose();
+    }
   };
 
   if (!isOpen && aiState === "closed") {
@@ -137,11 +151,12 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
 
   return (
     <>
-      {/* 1. 배경 딤 (Scrim - 플로팅 입력창 상태에서도 외부 터치 시 즉시 닫기 지원) */}
+      {/* 1. 배경 딤 (Scrim - 드래그 간섭 방지 및 순수 바깥 탭 시 닫기) */}
       <Scrim
         $active={isSheetOpen}
         $state={aiState}
-        onClick={handleScrimClick}
+        onPointerDown={handleScrimPointerDown}
+        onPointerUp={handleScrimPointerUp}
         initial={{ opacity: 0 }}
         animate={{ opacity: isSheetOpen ? 1 : 0 }}
         transition={{ duration: 0.2 }}
