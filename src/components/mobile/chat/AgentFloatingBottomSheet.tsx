@@ -158,17 +158,13 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
           />
 
           {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
-          <AnimatePresence>
-            {isAmbientGlowActive && (
-              <AmbientEdgeGlow
-                $active={true}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-              />
-            )}
-          </AnimatePresence>
+          <AmbientEdgeGlow
+            $active={true}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isAmbientGlowActive ? 1 : 0, y: isAmbientGlowActive ? 0 : 20 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+          />
 
           {/* 3. 플로팅 시트 컨테이너 (부드러운 Fade-In / Fade-Out) */}
           <SheetContainer
