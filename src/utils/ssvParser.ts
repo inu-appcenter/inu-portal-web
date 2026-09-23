@@ -27,6 +27,31 @@ export interface AcademicBasicInfo {
   rawFields: Record<string, string>;
 }
 
+export interface TimetableTimeSlot {
+  day: string;
+  periods: string;
+  building?: string;
+  room?: string;
+  rawLocation?: string;
+}
+
+export interface TimetableCourseItem {
+  courseName: string;
+  courseCode: string;
+  credits: string;
+  professorName: string;
+  courseType: string;
+  departmentName: string;
+  targetGrade: string;
+  lessonType: string;
+  timeInfoRaw: string;
+  timeSlots: TimetableTimeSlot[];
+  year: string;
+  semester: string;
+  status: string;
+  rawFields?: Record<string, string>;
+}
+
 export const INU_DEPARTMENT_MAP: Record<string, { departmentName: string; collegeName: string }> = {
   // 인문대학
   AIA1: { departmentName: "국어국문학과", collegeName: "인문대학" },
@@ -389,3 +414,115 @@ function enrichAcademicRow(row: Record<string, string>, codes: string, departmen
   }
   return { ...fields, displayFields };
 }
+
+/**
+ * 시간표 요일 및 교시/강의실 문자열 파싱
+ * 예: "[04-104:월(7-8A)(8B-9)]" -> { day: "월", periods: "(7-8A)(8B-9)", building: "4호관", room: "104호", rawLocation: "04-104" }
+ * 예: "[07-304:금(1)(2)(3)]" -> { day: "금", periods: "(1)(2)(3)", building: "7호관", room: "304호", rawLocation: "07-304" }
+ */
+export function parseTimeInfo(raw?: string): TimetableTimeSlot[] {
+  if (!raw || !raw.trim()) return [];
+  const text = raw.trim();
+  const slots: TimetableTimeSlot[] = [];
+
+  // Match pattern like [room:day(periods)]
+  const bracketMatches = text.match(/\[([^\]]+)\]/g);
+  if (bracketMatches) {
+    for (const match of bracketMatches) {
+      const inner = match.slice(1, -1).trim(); // "04-104:월(7-8A)(8B-9)"
+      if (inner.includes(":")) {
+        const [locPart, timePart] = inner.split(":");
+        const dayMatch = timePart.match(/^([월화수목금토일])/);
+        const day = dayMatch ? dayMatch[1] : "";
+        const periods = dayMatch ? timePart.slice(dayMatch[0].length).trim() : timePart.trim();
+
+        let building: string | undefined;
+        let room: string | undefined;
+        if (locPart.includes("-")) {
+          const [b, r] = locPart.split("-");
+          building = `${parseInt(b, 10) || b}호관`;
+          room = `${r}호`;
+        }
+
+        slots.push({
+          day,
+          periods,
+          building,
+          room,
+          rawLocation: locPart,
+        });
+      } else {
+        slots.push({
+          day: "",
+          periods: inner,
+        });
+      }
+    }
+  } else {
+    // Fallback if not wrapped in brackets e.g. "월1,2,3"
+    const dayMatch = text.match(/^([월화수목금토일])/);
+    if (dayMatch) {
+      slots.push({
+        day: dayMatch[1],
+        periods: text.slice(dayMatch[0].length).trim(),
+      });
+    } else {
+      slots.push({
+        day: "",
+        periods: text,
+      });
+    }
+  }
+
+  return slots;
+}
+
+/**
+ * 학생별 수강 시간표 SSV 응답(DS_LIST) 파싱
+ */
+export function parseTimetableList(responseBody: string): TimetableCourseItem[] {
+  let ssv = responseBody;
+  if (responseBody.startsWith("{")) {
+    try {
+      const envelope = JSON.parse(responseBody);
+      if (envelope.rawSsv) ssv = envelope.rawSsv;
+      else if (envelope.ssv) ssv = envelope.ssv;
+    } catch {
+      // not json envelope
+    }
+  }
+
+  if (!ssv || !ssv.includes("ErrorCode:int=0")) {
+    const preview = ssv ? ssv.substring(0, 200).replace(/[\r\n\x1e\x1f]/g, " ") : "EMPTY_RESPONSE";
+    throw new Error(`인천대 학사 시스템(ERP) 시간표 응답 오류 또는 세션 만료 (${preview})`);
+  }
+
+  let rows: Record<string, string>[] = [];
+  try {
+    rows = parseRows(ssv, "DS_LIST");
+  } catch (err: any) {
+    // Empty timetable or dataset missing
+    return [];
+  }
+
+  return rows.map((row) => {
+    const timeInfoRaw = row["timeInfo"] || "";
+    return {
+      courseName: (row["scNm"] || "").trim(),
+      courseCode: (row["haksuNo"] || "").trim(),
+      credits: (row["hp"] || "0").trim(),
+      professorName: (row["profNm"] || "").trim(),
+      courseType: (row["cptnGbn"] || "").trim(),
+      departmentName: (row["openHgMjNm"] || "").trim(),
+      targetGrade: (row["openHySeqGbn"] || "").trim(),
+      lessonType: (row["lsnTypeGbn"] || "").trim(),
+      timeInfoRaw,
+      timeSlots: parseTimeInfo(timeInfoRaw),
+      year: (row["yy"] || "").trim(),
+      semester: (row["tmGbn"] || "").trim(),
+      status: (row["delGbn"] || "신청").trim(),
+      rawFields: row,
+    };
+  });
+}
+
