@@ -297,30 +297,11 @@ export default function MobileLmsHubPage() {
               </SectionTop>
 
               {!isLinked ? (
-                <ListContainer>
-                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-                    <AssignTop>
-                      <CourseNameBadge>컴퓨터네트워크 (예시)</CourseNameBadge>
-                      <DueBadge>D-3</DueBadge>
-                    </AssignTop>
-                    <AssignTitle>중간과제 보고서 제출</AssignTitle>
-                    <TimeRow>
-                      <Clock size={13} />
-                      <span>마감: 포털 계정 연동 후 실제 일정 표시</span>
-                    </TimeRow>
-                  </Box>
-                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-                    <AssignTop>
-                      <CourseNameBadge>인공지능개론 (예시)</CourseNameBadge>
-                      <DueBadge>D-5</DueBadge>
-                    </AssignTop>
-                    <AssignTitle>4주차 온라인 강의 출석</AssignTitle>
-                    <TimeRow>
-                      <Clock size={13} />
-                      <span>마감: 포털 계정 연동 후 실제 일정 표시</span>
-                    </TimeRow>
-                  </Box>
-                </ListContainer>
+                <EmptyBox>
+                  <KeyRound size={28} color="#94a3b8" />
+                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>포털 SSO 계정을 연동하면 마감 예정 과제 및 학습 일정이 동기화됩니다.</EmptyDesc>
+                </EmptyBox>
               ) : assignments.length === 0 ? (
                 <EmptyBox>
                   <CheckCircle2 size={32} color="#16a34a" />
@@ -330,7 +311,7 @@ export default function MobileLmsHubPage() {
               ) : (
                 <ListContainer>
                   {assignments.map((item) => (
-                    <Box key={item.id} style={{ padding: "16px" }}>
+                    <Box key={item.id} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
                       <AssignTop>
                         <CourseNameBadge>{item.course?.fullname || "강좌"}</CourseNameBadge>
                         <DueBadge $isUrgent={item.isUrgent}>
@@ -378,34 +359,11 @@ export default function MobileLmsHubPage() {
               </SectionTop>
 
               {!isLinked ? (
-                <ListContainer>
-                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-                    <CourseHeader>
-                      <div>
-                        <CourseTitle>컴퓨터네트워크 (예시)</CourseTitle>
-                        <CourseCode>CSE301-01</CourseCode>
-                      </div>
-                      <ChevronRight size={18} color="#94a3b8" />
-                    </CourseHeader>
-                    <CourseMetaRow>
-                      <span>수강생 45명</span>
-                      <OpenDetailText>주차별 진도 확인</OpenDetailText>
-                    </CourseMetaRow>
-                  </Box>
-                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-                    <CourseHeader>
-                      <div>
-                        <CourseTitle>인공지능개론 (예시)</CourseTitle>
-                        <CourseCode>AI201-02</CourseCode>
-                      </div>
-                      <ChevronRight size={18} color="#94a3b8" />
-                    </CourseHeader>
-                    <CourseMetaRow>
-                      <span>수강생 60명</span>
-                      <OpenDetailText>주차별 진도 확인</OpenDetailText>
-                    </CourseMetaRow>
-                  </Box>
-                </ListContainer>
+                <EmptyBox>
+                  <KeyRound size={28} color="#94a3b8" />
+                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>포털 SSO 계정을 연동하면 수강 중인 강좌 목록과 진도를 확인할 수 있습니다.</EmptyDesc>
+                </EmptyBox>
               ) : courses.length === 0 ? (
                 <EmptyBox>
                   <GraduationCap size={32} color="#94a3b8" />
@@ -414,7 +372,7 @@ export default function MobileLmsHubPage() {
               ) : (
                 <ListContainer>
                   {courses.map((c) => (
-                    <Box key={c.id} onClick={() => handleOpenCourseDetail(c)} style={{ padding: "16px" }}>
+                    <Box key={c.id} onClick={() => handleOpenCourseDetail(c)} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
                       <CourseHeader>
                         <div>
                           <CourseTitle>{c.fullname}</CourseTitle>
@@ -445,17 +403,11 @@ export default function MobileLmsHubPage() {
               </SectionTop>
 
               {!isLinked ? (
-                <ListContainer>
-                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-                    <GradeCardInner>
-                      <GradeLeft>
-                        <GradeCourseName>컴퓨터네트워크 (예시)</GradeCourseName>
-                        <GradeRaw>원점수: 95.0</GradeRaw>
-                      </GradeLeft>
-                      <GradeBadge>A+</GradeBadge>
-                    </GradeCardInner>
-                  </Box>
-                </ListContainer>
+                <EmptyBox>
+                  <KeyRound size={28} color="#94a3b8" />
+                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>포털 SSO 계정을 연동하면 과목별 성적 현황이 동기화됩니다.</EmptyDesc>
+                </EmptyBox>
               ) : grades.length === 0 ? (
                 <EmptyBox>
                   <Award size={32} color="#94a3b8" />
@@ -467,7 +419,7 @@ export default function MobileLmsHubPage() {
                   {grades.map((g, idx) => {
                     const matchCourse = courses.find((c) => c.id === g.courseid);
                     return (
-                      <Box key={idx} style={{ padding: "16px" }}>
+                      <Box key={idx} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
                         <GradeCardInner>
                           <GradeLeft>
                             <GradeCourseName>{matchCourse?.fullname || `과목 ID ${g.courseid}`}</GradeCourseName>
@@ -657,6 +609,8 @@ const BannerCard = styled.div`
   border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
   cursor: pointer;
   transition: transform 0.12s ease-in-out;
 
@@ -695,6 +649,8 @@ const DisabledNoticeCard = styled.div`
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     flex-direction: row;
@@ -737,12 +693,16 @@ const ToastBanner = styled.div`
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SectionWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SectionTop = styled.div`
@@ -750,6 +710,8 @@ const SectionTop = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 4px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SectionTitle = styled.h3`
@@ -781,6 +743,8 @@ const EmptyBox = styled.div`
   border-radius: 16px;
   text-align: center;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const EmptyTitle = styled.div`
@@ -801,6 +765,8 @@ const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     display: grid;
@@ -814,6 +780,8 @@ const AssignTop = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const CourseNameBadge = styled.span`
@@ -843,6 +811,8 @@ const AssignTitle = styled.div`
   font-weight: 600;
   color: var(--text-primary, #191f28);
   line-height: 1.4;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const TimeRow = styled.div`
@@ -852,6 +822,8 @@ const TimeRow = styled.div`
   font-size: 12px;
   color: var(--text-secondary, #8b95a1);
   margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const ActionBtnRow = styled.div`
@@ -861,6 +833,8 @@ const ActionBtnRow = styled.div`
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border-default, #f1f5f9);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SubActionBtn = styled.button`
@@ -909,6 +883,8 @@ const CourseHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const CourseTitle = styled.div`
@@ -932,6 +908,8 @@ const CourseMetaRow = styled.div`
   border-top: 1px solid var(--border-default, #f1f5f9);
   font-size: 12px;
   color: var(--text-secondary, #6b7684);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const OpenDetailText = styled.span`
@@ -943,6 +921,8 @@ const GradeCardInner = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const GradeLeft = styled.div`

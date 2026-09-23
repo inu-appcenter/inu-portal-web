@@ -52,7 +52,6 @@ import {
   CheckCircle,
   RotateCw,
   LogOut,
-  Calendar,
   ChevronRight,
   X,
   MapPin,
@@ -103,18 +102,6 @@ export interface Study2HourOccupancyInfo {
 }
 
 export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined): Study2HourOccupancyInfo {
-  if (!detail || !detail.timeLine || detail.timeLine.length === 0) {
-    return {
-      isCurrentOccupied: false,
-      currentOccupiedUntil: null,
-      availableMinutesFromNow: 120,
-      summaryText: "시간표 확인 가능",
-      badgeLabel: "",
-      badgeType: "avail",
-      previewSlots: [],
-    };
-  }
-
   const now = new Date();
   const kstHours = (now.getUTCHours() + 9) % 24;
   const kstMinutes = now.getUTCMinutes();
@@ -130,6 +117,30 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
       badgeLabel: "운영 종료",
       badgeType: "closed",
       previewSlots: [],
+    };
+  }
+
+  if (!detail || !detail.timeLine || detail.timeLine.length === 0) {
+    const defaultSlots: Array<{ timeStr: string; type: "avail" | "occ" | "past"; label: string }> = [];
+    for (let i = 0; i < 12; i++) {
+      const slotMin = currentTotalMin + i * 10;
+      const h = Math.floor(slotMin / 60);
+      const m = slotMin % 60;
+      const timeStr = `${h < 10 ? `0${h}` : h}:${m === 0 ? "00" : m}`;
+      if (h >= 22) {
+        defaultSlots.push({ timeStr, type: "past", label: `${timeStr} (마감)` });
+      } else {
+        defaultSlots.push({ timeStr, type: "avail", label: `${timeStr} (이용 가능)` });
+      }
+    }
+    return {
+      isCurrentOccupied: false,
+      currentOccupiedUntil: null,
+      availableMinutesFromNow: 120,
+      summaryText: "",
+      badgeLabel: "예약 가능",
+      badgeType: "avail",
+      previewSlots: defaultSlots,
     };
   }
 
@@ -202,24 +213,16 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
 
   if (isCurrentOccupied) {
     badgeType = "occupied";
-    badgeLabel = "현재 이용 중";
-    summaryText = currentOccupiedUntilStr
-      ? `현재 이용 중 (~${currentOccupiedUntilStr})`
-      : "현재 이용 중";
-  } else if (availableConsecutiveMin >= 120) {
-    badgeType = "avail";
-    badgeLabel = "2시간 예약 가능";
-    summaryText = "지금부터 2시간 연속 예약 가능";
+    badgeLabel = "이용 중";
+    summaryText = "";
   } else if (availableConsecutiveMin > 0) {
-    badgeType = "warning";
-    const hrs = Math.floor(availableConsecutiveMin / 60);
-    const remMins = availableConsecutiveMin % 60;
-    badgeLabel = `~${hrs > 0 ? `${hrs}시간 ` : ""}${remMins > 0 ? `${remMins}분 ` : ""}가능`;
-    summaryText = `지금부터 ${availableConsecutiveMin}분간 이용 가능`;
+    badgeType = "avail";
+    badgeLabel = "예약 가능";
+    summaryText = "";
   } else {
     badgeType = "occupied";
     badgeLabel = "점유됨";
-    summaryText = "현재 예약이 차있습니다.";
+    summaryText = "";
   }
 
   return {
@@ -347,7 +350,7 @@ export default function MobileLibraryHubPage() {
       if (sRooms.length > 0) {
         const today = getKstDateString(0);
         void Promise.all(
-          sRooms.slice(0, 8).map(async (sr) => {
+          sRooms.map(async (sr) => {
             const res = await getStudyRoomDetail(sr.id, today).catch(() => null);
             if (res && res.success && res.detail) {
               setStudyDetailsMap((prev) => ({ ...prev, [sr.id]: res.detail! }));
@@ -763,26 +766,6 @@ export default function MobileLibraryHubPage() {
     }
   };
 
-  // 스터디룸 취소표 알림 등록
-  const handleRegisterStudySniper = async (sRoom: LibraryStudyRoom) => {
-    const nextHour = Math.min(20, Math.max(9, new Date().getHours() + 1));
-    const today = getKstDateString(0);
-    try {
-      await registerLocalWatchJobInApp({
-        watchType: "STUDY_ROOM_SNIPER",
-        roomId: sRoom.id,
-        roomName: sRoom.name,
-        hopeDate: today,
-        targetHour: nextHour,
-        durationMinutes: 60,
-      });
-      showToast(`'${sRoom.name}' 취소표 알림이 등록되었습니다.`);
-    } catch (e) {
-      console.error(e);
-      showAlert("알림 등록 실패", "취소표 알림 등록에 실패했습니다.");
-    }
-  };
-
   // 스터디룸 특정 시간대 취소표 알림 등록
   const handleRegisterStudySlotSniper = async () => {
     if (!selectedStudyRoom) return;
@@ -1143,7 +1126,11 @@ export default function MobileLibraryHubPage() {
               {studyRooms.map((s) => {
                 const occInfo = computeStudyRoom2HourStatus(studyDetailsMap[s.id]);
                 return (
-                  <Box key={s.id} style={{ padding: "16px" }}>
+                  <StudyCardBox
+                    key={s.id}
+                    onClick={() => handleOpenStudyBooking(s)}
+                    style={{ padding: "16px" }}
+                  >
                     <StudyHeader>
                       <StudyHeaderLeft>
                         <StudyTitleRow>
@@ -1162,13 +1149,9 @@ export default function MobileLibraryHubPage() {
                       )}
                     </StudyHeader>
 
-                    {/* 향후 2시간 점유 현황 프리뷰 바 */}
+                    {/* 시간대별 점유 현황 프리뷰 바 */}
                     {occInfo.previewSlots.length > 0 && (
                       <StudyPreviewBarBox>
-                        <StudyPreviewHeader>
-                          <span>{occInfo.summaryText}</span>
-                          <span style={{ fontSize: "11px", color: "var(--text-disabled, #8b95a1)" }}>향후 2시간</span>
-                        </StudyPreviewHeader>
                         <StudyPreviewSlotRow>
                           {occInfo.previewSlots.map((slot, sIdx) => (
                             <StudyPreviewSlot
@@ -1187,24 +1170,13 @@ export default function MobileLibraryHubPage() {
                     )}
 
                     {s.tags && s.tags.length > 0 && (
-                      <TagRow>
+                      <TagRow style={{ marginBottom: 0 }}>
                         {s.tags.map((t, idx) => (
                           <TagChip key={idx}>{t}</TagChip>
                         ))}
                       </TagRow>
                     )}
-
-                    <ButtonRow>
-                      <PrimaryActionBtn onClick={() => handleOpenStudyBooking(s)}>
-                        <Calendar size={14} />
-                        <span>시간표 및 예약</span>
-                      </PrimaryActionBtn>
-                      <SecondaryActionBtn onClick={() => handleRegisterStudySniper(s)}>
-                        <Bell size={14} />
-                        <span>취소표 알림</span>
-                      </SecondaryActionBtn>
-                    </ButtonRow>
-                  </Box>
+                  </StudyCardBox>
                 );
               })}
             </StudyGrid>
@@ -1358,21 +1330,12 @@ export default function MobileLibraryHubPage() {
                 <span>종료 20분 전 알림 받기</span>
               </ReminderRow>
             </Box>
-          ) : isLinked === false ? (
-            <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-              <ActiveSeatHeader>
-                <ActiveBadge>이용 중 (예시)</ActiveBadge>
-                <SeatRoomTitle>
-                  자유열람실 <strong>12번 좌석</strong>
-                </SeatRoomTitle>
-              </ActiveSeatHeader>
-              <SeatTimeInfo>
-                <Clock size={15} color="#0061ff" />
-                <span>이용 시간: 09:00 ~ 13:00 (포털 계정 연동 후 실제 데이터 표시)</span>
-              </SeatTimeInfo>
-            </Box>
           ) : (
-            <EmptyBox>현재 배정된 열람실 좌석이 없습니다.</EmptyBox>
+            <EmptyBox>
+              {isLinked === false
+                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                : "현재 배정된 열람실 좌석이 없습니다."}
+            </EmptyBox>
           )}
 
           {/* 3-2. 스터디룸 예약 섹션 */}
@@ -1434,19 +1397,12 @@ export default function MobileLibraryHubPage() {
                 );
               })}
             </ReservationList>
-          ) : isLinked === false ? (
-            <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
-              <ReservationTop>
-                <strong>제1스터디룸 (4인실)</strong>
-                <ReservationStatus>예약됨 (예시)</ReservationStatus>
-              </ReservationTop>
-              <ReservationTime>
-                <Clock size={13} />
-                <span>14:00 ~ 16:00 (포털 계정 연동 후 실제 데이터 표시)</span>
-              </ReservationTime>
-            </Box>
           ) : (
-            <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
+            <EmptyBox>
+              {isLinked === false
+                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                : "진행 중인 스터디룸 예약이 없습니다."}
+            </EmptyBox>
           )}
 
           {/* 3-3. 내 선호좌석 목록 섹션 */}
@@ -1480,10 +1436,12 @@ export default function MobileLibraryHubPage() {
                 </FavCard>
               ))}
             </FavGrid>
-          ) : isLinked === false ? (
-            <EmptyBox style={{ opacity: 0.7 }}>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</EmptyBox>
           ) : (
-            <EmptyBox>등록된 선호좌석이 없습니다. 열람실 좌석에서 ★을 눌러 등록해보세요.</EmptyBox>
+            <EmptyBox>
+              {isLinked === false
+                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                : "등록된 선호좌석이 없습니다. 열람실 좌석에서 ★을 눌러 등록해보세요."}
+            </EmptyBox>
           )}
         </Section>
       )}
@@ -2399,7 +2357,19 @@ const StudyGrid = styled.div`
   }
 `;
 
+const StudyCardBox = styled(Box)`
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.12s ease-in-out;
+
+  &:active {
+    transform: scale(0.99);
+  }
+`;
+
 const StudyHeader = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -2433,6 +2403,8 @@ const StudyLocation = styled.div`
 `;
 
 const DisabledNoticeCard = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2492,6 +2464,8 @@ const QuotaBadge = styled.span`
 `;
 
 const StudyPreviewBarBox = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   background: var(--bg-muted, #f8fafc);
   border: 1px solid var(--border-default, #f1f5f9);
   border-radius: 10px;
@@ -2499,17 +2473,9 @@ const StudyPreviewBarBox = styled.div`
   margin-bottom: 10px;
 `;
 
-const StudyPreviewHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary, #333d4b);
-  margin-bottom: 8px;
-`;
-
 const StudyPreviewSlotRow = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   gap: 3px;
   height: 10px;
@@ -2523,6 +2489,8 @@ const StudyPreviewSlot = styled.div<{ $type: string }>`
 `;
 
 const StudyPreviewTimeLabels = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   font-size: 10px;
@@ -2531,6 +2499,8 @@ const StudyPreviewTimeLabels = styled.div`
 `;
 
 const TagRow = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -2546,6 +2516,8 @@ const TagChip = styled.span`
 `;
 
 const ActiveSeatHeader = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2571,6 +2543,8 @@ const SeatRoomTitle = styled.div`
 `;
 
 const TempNoticeBox = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   gap: 10px;
   background: #fefce8;
@@ -2599,6 +2573,8 @@ const NoticeBulletList = styled.ul`
 `;
 
 const SeatTimeInfo = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -2609,12 +2585,16 @@ const SeatTimeInfo = styled.div`
 `;
 
 const ActionRow = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
 `;
 
 const ReminderRow = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2629,6 +2609,8 @@ const ReminderRow = styled.div`
 `;
 
 const ReservationList = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2641,6 +2623,8 @@ const ReservationList = styled.div`
 `;
 
 const ReservationTop = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2661,6 +2645,8 @@ const ReservationStatus = styled.span`
 `;
 
 const ReservationTime = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -2670,12 +2656,16 @@ const ReservationTime = styled.div`
 `;
 
 const ReservationNote = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   font-size: 11px;
   color: var(--text-disabled, #8b95a1);
   margin-bottom: 10px;
 `;
 
 const ReservationActionRow = styled.div`
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   gap: 6px;
   margin-top: 10px;

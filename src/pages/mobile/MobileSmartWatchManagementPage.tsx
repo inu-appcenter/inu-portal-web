@@ -242,7 +242,7 @@ export default function MobileSmartWatchManagementPage() {
       ) : (
         <JobList>
           {activeJobs.map((job) => (
-            <Box key={`${job.source}_${job.id}`} style={{ padding: "16px" }}>
+            <Box key={`${job.source}_${job.id}`} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
               <CardTop>
                 <BadgeGroup>
                   <DomainBadge>{job.domainName}</DomainBadge>
@@ -353,6 +353,8 @@ const DisabledNoticeCard = styled.div`
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     flex-direction: row;
@@ -388,6 +390,8 @@ const HubSection = styled.div`
   flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     display: grid;
@@ -404,6 +408,8 @@ const HubCard = styled.div`
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 16px;
   padding: 14px 16px;
+  width: 100%;
+  box-sizing: border-box;
   cursor: pointer;
   transition: transform 0.12s ease-in-out;
 
@@ -453,6 +459,8 @@ const SectionHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SectionTitle = styled.h3`
@@ -496,6 +504,8 @@ const EmptyBox = styled.div`
   border-radius: 16px;
   text-align: center;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const EmptyText = styled.div`
@@ -516,6 +526,8 @@ const JobList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     display: grid;
@@ -529,6 +541,8 @@ const CardTop = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const BadgeGroup = styled.div`
@@ -571,12 +585,16 @@ const TargetName = styled.div`
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary, #191f28);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const ConditionDesc = styled.div`
   font-size: 13px;
   color: var(--text-secondary, #4e5968);
   margin-top: 4px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const CardFooter = styled.div`
@@ -586,6 +604,8 @@ const CardFooter = styled.div`
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border-default, #f1f5f9);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const NoticeText = styled.span`
@@ -620,6 +640,8 @@ const PastJobCard = styled.div`
   background: var(--bg-muted, #f8fafc);
   border: 1px solid var(--border-default, #f1f5f9);
   border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const PastJobTitle = styled.div`
