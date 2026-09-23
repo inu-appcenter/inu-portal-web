@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import styled, { keyframes } from "styled-components";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useAgentBridge, AIState } from "@/hooks/useAgentBridge";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
@@ -143,57 +143,65 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
   };
 
   return (
-    <>
-      {/* 1. 배경 딤 (Scrim - 블러 제거된 깔끔한 어두움 효과) */}
-      <Scrim
-        $active={isSheetOpen}
-        $state={aiState}
-        onPointerDown={handleScrimPointerDown}
-        onPointerUp={handleScrimPointerUp}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isSheetOpen ? 1 : 0 }}
-        transition={{ duration: 0.2 }}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* 1. 배경 딤 (Scrim) */}
+          <Scrim
+            $active={true}
+            $state={aiState}
+            onPointerDown={handleScrimPointerDown}
+            onPointerUp={handleScrimPointerUp}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
 
-      {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
-      {isOpen && isAmbientGlowActive && (
-        <AmbientEdgeGlow $active={isAmbientGlowActive} />
-      )}
+          {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
+          {isAmbientGlowActive && (
+            <AmbientEdgeGlow $active={true} />
+          )}
 
-      {/* 3. 플로팅 시트 컨테이너 (백그라운드 웜업 Preload 및 부드러운 Fade-In / Fade-Out) */}
-      <SheetContainer
-        id="ai-sheet-container"
-        $height={currentHeight}
-        $isExpanded={isExpanded}
-        $isDragging={isDragging}
-        $isOpen={isSheetOpen}
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-      >
-        {/* Child iframe */}
-        <IframeWrapper $isDragging={isDragging}>
-          <StyledIframe
-            ref={iframeRef}
-            src={iframeSrc}
-            title="INU AI Campus Assistant Floating Sheet"
-            allow="clipboard-write; clipboard-read; microphone"
-            onLoad={() => {
-              sendClientContextToIframe();
+          {/* 3. 플로팅 시트 컨테이너 (부드러운 Fade-In / Fade-Out) */}
+          <SheetContainer
+            id="ai-sheet-container"
+            $height={currentHeight}
+            $isExpanded={isExpanded}
+            $isDragging={isDragging}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+          >
+            {/* Child iframe */}
+            <IframeWrapper $isDragging={isDragging}>
+              <StyledIframe
+                ref={iframeRef}
+                src={iframeSrc}
+                title="INU AI Campus Assistant Floating Sheet"
+                allow="clipboard-write; clipboard-read; microphone"
+                onLoad={() => {
+                  sendClientContextToIframe();
+                }}
+              />
+            </IframeWrapper>
+          </SheetContainer>
+
+          {/* 학적/포털 연동 계정 모달 */}
+          <PortalAccountModal
+            isOpen={isPortalModalOpen}
+            onClose={() => setIsPortalModalOpen(false)}
+            onSuccess={() => {
+              setIsPortalModalOpen(false);
+              sendClientContextToIframe(true);
             }}
           />
-        </IframeWrapper>
-      </SheetContainer>
-
-      {/* 학적/포털 연동 계정 모달 */}
-      <PortalAccountModal
-        isOpen={isPortalModalOpen}
-        onClose={() => setIsPortalModalOpen(false)}
-        onSuccess={() => {
-          setIsPortalModalOpen(false);
-          sendClientContextToIframe(true);
-        }}
-      />
-    </>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -252,11 +260,10 @@ const AmbientEdgeGlow = styled.div<{ $active: boolean }>`
   transition: opacity 0.35s ease, transform 0.35s ease;
 `;
 
-const SheetContainer = styled.div<{
+const SheetContainer = styled(motion.div)<{
   $height: string;
   $isExpanded: boolean;
   $isDragging: boolean;
-  $isOpen: boolean;
 }>`
   position: fixed;
   bottom: 0;
@@ -273,13 +280,7 @@ const SheetContainer = styled.div<{
   flex-direction: column;
   overflow: hidden;
   will-change: height, opacity;
-  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
-  pointer-events: ${({ $isOpen, $isDragging }) =>
-    $isOpen ? ($isDragging ? "none" : "auto") : "none"};
-  visibility: ${({ $isOpen }) => ($isOpen ? "visible" : "hidden")};
-  transition: opacity 0.22s ease-out,
-    visibility 0.22s ease-out,
-    height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+  transition: height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
     border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     background-color 0.25s ease;
