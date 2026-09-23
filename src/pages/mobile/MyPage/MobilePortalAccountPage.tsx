@@ -17,6 +17,7 @@ import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -189,6 +190,14 @@ export default function MobilePortalAccountPage() {
                 <li>학산도서관 (열람실 좌석 배정 및 스터디룸을 예약해요)</li>
               </UsageGuideList>
             </UsageGuideBox>
+
+            <CapsuleButton
+              variant="brand"
+              style={{ marginTop: "16px", padding: "10px 20px", fontSize: "14px" }}
+              onClick={() => openIntipAppOrStore("mypage/portal")}
+            >
+              앱 열기 및 설치
+            </CapsuleButton>
 
             <FootnoteText style={{ marginTop: "16px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
           </NotAppCard>
