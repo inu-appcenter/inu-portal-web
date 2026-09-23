@@ -16,6 +16,7 @@ import {
   Trash2,
   ScanLine,
   MoreVertical,
+  School,
 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
@@ -37,6 +38,7 @@ import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
 import TimetableMenuBottomSheet from "@/components/mobile/timetable/TimetableMenuBottomSheet";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
+import PortalTimetableImportSheet from "@/components/mobile/timetable/PortalTimetableImportSheet";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
@@ -137,6 +139,7 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isPortalImportSheetOpen, setIsPortalImportSheetOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
   // const {
@@ -329,6 +332,17 @@ const MobileTimeTablePage = () => {
     if (!isLoggedIn || !activeTimetable) return [];
 
     return [
+      {
+        label: "학교 포털에서 가져오기",
+        icon: <School size={20} color="#0061ff" />,
+        onClick: () => {
+          mixpanelTrack.timetableFeatureClicked(
+            "학교 포털에서 가져오기",
+            "헤더 메뉴",
+          );
+          setIsPortalImportSheetOpen(true);
+        },
+      },
       {
         label: "시간표 이미지로 등록",
         icon: <ScanLine size={20} />,
@@ -723,19 +737,34 @@ const MobileTimeTablePage = () => {
             <ImageImportPrompt>
               <ImageImportPromptText>
                 <strong>다른 서비스에서 시간표를 가져올 수 있어요.</strong>
-                <span>수강신청 앱 또는 에브리타임에서 가져와 보세요.</span>
+                <span>학교 포털이나 수강신청 앱, 에브리타임에서 가져와 보세요.</span>
               </ImageImportPromptText>
-              <ImageImportButton
-                type="button"
-                onClick={() =>
-                  navigate(
-                    `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
-                  )
-                }
-              >
-                <ScanLine size={18} />
-                이미지로 가져오기
-              </ImageImportButton>
+              <PromptButtonGroup>
+                <PortalImportButton
+                  type="button"
+                  onClick={() => {
+                    mixpanelTrack.timetableFeatureClicked(
+                      "포털에서 가져오기",
+                      "빈 시간표 프롬프트",
+                    );
+                    setIsPortalImportSheetOpen(true);
+                  }}
+                >
+                  <School size={16} />
+                  포털에서 가져오기
+                </PortalImportButton>
+                <ImageImportButton
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
+                    )
+                  }
+                >
+                  <ScanLine size={16} />
+                  이미지로 가져오기
+                </ImageImportButton>
+              </PromptButtonGroup>
             </ImageImportPrompt>
           )}
           <TimetableGrid
@@ -753,11 +782,25 @@ const MobileTimeTablePage = () => {
               <NoTimetableDescription>
                 {currentSemesterLabel} 시간표를 만들어볼까요?
                 <br />
-                수강신청 앱이나 에브리타임에서 시간표를 가져올 수 있어요.
+                학교 포털이나 수강신청 앱, 에브리타임에서 시간표를 가져올 수 있어요.
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
           <EmptyActionGroup>
+            <PortalImportActionButton
+              variant="brand"
+              fullWidth
+              leftIcon={<School size={20} />}
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "포털에서 시간표 가져오기",
+                  "등록된 시간표 없음",
+                );
+                setIsPortalImportSheetOpen(true);
+              }}
+            >
+              학교 포털에서 시간표 가져오기
+            </PortalImportActionButton>
             <EmptyActionButton
               variant="primary"
               fullWidth
@@ -770,7 +813,7 @@ const MobileTimeTablePage = () => {
                 setIsCreateModalOpen(true);
               }}
             >
-              시간표 생성하기
+              직접 시간표 생성하기
             </EmptyActionButton>
             <ImageImportActionButton
               variant="brand"
@@ -866,6 +909,27 @@ const MobileTimeTablePage = () => {
           eventsKey={timetableEvents}
         />
       )}
+
+      <TimeTableCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setCreateThenImport(false);
+        }}
+        initialSemester={displayedSemesterLabel}
+        onSuccess={(created) => {
+          if (createThenImport) {
+            navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
+          }
+        }}
+      />
+
+      <PortalTimetableImportSheet
+        isOpen={isPortalImportSheetOpen}
+        onClose={() => setIsPortalImportSheetOpen(false)}
+        targetTimetableId={activeTimetable?.id}
+        initialSemester={displayedSemesterLabel}
+      />
     </MobileTimeTablePageWrapper>
   );
 };
@@ -1017,19 +1081,41 @@ const ImageImportPromptText = styled.div`
   }
 `;
 
-const ImageImportButton = styled.button`
+const PromptButtonGroup = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 6px;
   flex: 0 0 auto;
+`;
+
+const PortalImportButton = styled.button`
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 10px;
   background: #0061ff;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+`;
+
+const ImageImportButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #d3e5ff;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0061ff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
 `;
 
 const EmptyActionGroup = styled.div`
@@ -1037,7 +1123,7 @@ const EmptyActionGroup = styled.div`
   width: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 `;
 
 /* 빈 시간표 CTA는 공용 CapsuleButton(20px)보다 작은 heading-2(16px SemiBold)를
@@ -1047,6 +1133,11 @@ const EmptyActionButton = styled(CapsuleButton)`
   padding: 12px 20px;
   font-size: 16px;
   line-height: 1.4;
+`;
+
+const PortalImportActionButton = styled(EmptyActionButton)`
+  background: #0061ff;
+  color: #ffffff;
 `;
 
 /* 보조 CTA는 brand 팔레트(연한 파랑 배경 + 파란 글자)에 테두리를 더한 형태다.

@@ -505,24 +505,34 @@ export function parseTimetableList(responseBody: string): TimetableCourseItem[] 
     return [];
   }
 
-  return rows.map((row) => {
-    const timeInfoRaw = row["timeInfo"] || "";
-    return {
-      courseName: (row["scNm"] || "").trim(),
-      courseCode: (row["haksuNo"] || "").trim(),
-      credits: (row["hp"] || "0").trim(),
-      professorName: (row["profNm"] || "").trim(),
-      courseType: (row["cptnGbn"] || "").trim(),
-      departmentName: (row["openHgMjNm"] || "").trim(),
-      targetGrade: (row["openHySeqGbn"] || "").trim(),
-      lessonType: (row["lsnTypeGbn"] || "").trim(),
-      timeInfoRaw,
-      timeSlots: parseTimeInfo(timeInfoRaw),
-      year: (row["yy"] || "").trim(),
-      semester: (row["tmGbn"] || "").trim(),
-      status: (row["delGbn"] || "신청").trim(),
-      rawFields: row,
-    };
-  });
+  return rows
+    .map((row) => {
+      const timeInfoRaw = row["timeInfo"] || "";
+      const status = (row["delGbn"] || "신청").trim();
+      return {
+        courseName: (row["scNm"] || "").trim(),
+        courseCode: (row["haksuNo"] || "").trim(),
+        credits: (row["hp"] || "0").trim(),
+        professorName: (row["profNm"] || "").trim(),
+        courseType: (row["cptnGbn"] || "").trim(),
+        departmentName: (row["openHgMjNm"] || "").trim(),
+        targetGrade: (row["openHySeqGbn"] || "").trim(),
+        lessonType: (row["lsnTypeGbn"] || "").trim(),
+        timeInfoRaw,
+        timeSlots: parseTimeInfo(timeInfoRaw),
+        year: (row["yy"] || "").trim(),
+        semester: (row["tmGbn"] || "").trim(),
+        status,
+        rawFields: row,
+      };
+    })
+    .filter((item) => {
+      // 수강 취소/삭제된 과목은 제외하고 정상 '신청' 상태인 과목만 포함
+      const s = item.status;
+      if (s === "취소" || s === "삭제" || s === "C" || s === "Y" || s.includes("취소") || s.includes("삭제")) {
+        return false;
+      }
+      return true;
+    });
 }
 

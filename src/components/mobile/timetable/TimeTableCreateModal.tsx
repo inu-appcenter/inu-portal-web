@@ -9,6 +9,8 @@ import { useCreateTimeTable } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import { School } from "lucide-react";
+
 export const getDefaultTimetableName = (
   semester: string,
   timetables: Timetable[],
@@ -32,6 +34,7 @@ interface TimeTableCreateModalProps {
   initialSemester?: string;
   onClose: () => void;
   onSuccess?: (created: TimeTable) => void;
+  onOpenPortalImport?: (semester?: string) => void;
 }
 
 export default function TimeTableCreateModal({
@@ -39,6 +42,7 @@ export default function TimeTableCreateModal({
   initialSemester,
   onClose,
   onSuccess,
+  onOpenPortalImport,
 }: TimeTableCreateModalProps) {
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
   const { semesters } = useSemesters();
@@ -142,9 +146,45 @@ export default function TimeTableCreateModal({
         onChange={setModalName}
         placeholder="시간표 이름을 입력하세요"
       />
+
+      {onOpenPortalImport && (
+        <PortalShortcutButton
+          type="button"
+          onClick={() => {
+            const currentLabel = getSemesterLabel(modalSemesterId);
+            onClose();
+            onOpenPortalImport(currentLabel);
+          }}
+        >
+          <School size={16} color="#0061ff" />
+          <span>학교 포털에서 시간표 바로 불러오기</span>
+        </PortalShortcutButton>
+      )}
     </Modal>
   );
 }
+
+const PortalShortcutButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  background-color: #f0f6ff;
+  border: 1px solid #d3e5ff;
+  border-radius: 10px;
+  color: #0061ff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #e5f0ff;
+  }
+`;
 
 const SelectContainer = styled.div`
   position: relative;

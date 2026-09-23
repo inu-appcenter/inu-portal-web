@@ -61,6 +61,7 @@ export const ROUTES = {
     ROUTINE: "/labs/routine",
     PORTAL: {
       BASIC_INFO: "/labs/portal/basic-info",
+      TIMETABLE: "/labs/portal/timetable",
     },
   },
 

@@ -1,4 +1,4 @@
-import { parseAcademicBasicInfo } from "@/utils/ssvParser";
+import { parseAcademicBasicInfo, parseTimetableList, TimetableCourseItem } from "@/utils/ssvParser";
 
 export interface AcademicInfoData {
   studentId: string;
@@ -198,6 +198,63 @@ export async function fetchAcademicInfoFromApp(forceRefresh = false): Promise<Ag
   })();
 
   return inflightAcademicPromise;
+}
+
+/**
+ * 모바일 앱 백그라운드 SSO를 통해 포털 ERP에서 학생별 수강신청/시간표 목록 조회 및 파싱
+ */
+export async function fetchStudentTimetableFromApp(params?: {
+  yy?: string;
+  tmGbn?: string;
+}): Promise<AgentActionResult<TimetableCourseItem[]>> {
+  const instruction = {
+    actionId: 'PORTAL_GET_STUDENT_TIMETABLE',
+    authDomain: 'PORTAL',
+    request: {
+      url: 'https://erp.inu.ac.kr:8443/uni/cour/CorrCtr/findStdSukangAplyList.do?menuId=M003150&pgmId=P001416',
+      method: 'POST',
+      datasetName: 'DS_COND',
+      data: {
+        deptClsfCd: '0000587',
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        pageType: 'sukang',
+      },
+    },
+  };
+
+  const res = await sendBridgeAction<any>('executeAgentAction', { instruction }, 45000);
+  if (!res.success) {
+    return {
+      success: false,
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage,
+    };
+  }
+
+  try {
+    const rawPayload = res.data?.data || res.data?.rawSsv || res.data;
+    if (typeof rawPayload === 'string') {
+      const parsed = parseTimetableList(rawPayload);
+      return {
+        success: true,
+        data: parsed,
+      };
+    } else if (Array.isArray(rawPayload)) {
+      return {
+        success: true,
+        data: rawPayload,
+      };
+    } else {
+      throw new Error('포털 시간표 원본 응답 데이터가 비어있습니다.');
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      errorCode: 'ERP_ERROR',
+      errorMessage: err?.message || '포털 시간표 파싱 오류',
+    };
+  }
 }
 
 /**

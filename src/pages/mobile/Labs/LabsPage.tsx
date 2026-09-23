@@ -152,7 +152,7 @@ const LabsPage = () => {
                 <AppItem
                   title={"내 기본 학적 정보 가져오기"}
                   description={
-                    "인천대학교 포털 사이트에서 내 기본 학적 정보를 가져옵니다."
+                    "인천대학교 포털 사이트에서 내 기본 학적 정보를 가져와요."
                   }
                   onClick={() => {
                     if (!tokenInfo.accessToken) {
@@ -165,6 +165,26 @@ const LabsPage = () => {
                       }
                     } else {
                       navigate(ROUTES.LABS.PORTAL.BASIC_INFO);
+                    }
+                  }}
+                />
+                <Divider margin="0" />
+                <AppItem
+                  title={"포털 수강 시간표 가져오기"}
+                  description={
+                    "인천대학교 포털 사이트에서 내 수강신청 시간표를 직접 조회하고 테스트해요."
+                  }
+                  onClick={() => {
+                    if (!tokenInfo.accessToken) {
+                      if (
+                        window.confirm(
+                          "INTIP 로그인이 필요해요. 로그인 페이지로 이동할까요?",
+                        )
+                      ) {
+                        navigate(ROUTES.LOGIN);
+                      }
+                    } else {
+                      navigate(ROUTES.LABS.PORTAL.TIMETABLE);
                     }
                   }}
                 />

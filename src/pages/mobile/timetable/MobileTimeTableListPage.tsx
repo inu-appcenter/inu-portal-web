@@ -1,13 +1,14 @@
+import { useMemo, useCallback, useState } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { useNavigate } from "react-router-dom";
 import { useTimetableStore, Timetable } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
-import { useMemo, useCallback, useState } from "react";
 import Icon from "@/components/common/Icon";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
+import PortalTimetableImportSheet from "@/components/mobile/timetable/PortalTimetableImportSheet";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import {
@@ -124,6 +125,8 @@ export default function MobileTimeTableListPage() {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalSemester, setAddModalSemester] = useState("");
+  const [isPortalImportOpen, setIsPortalImportOpen] = useState(false);
+  const [portalImportSemester, setPortalImportSemester] = useState("");
 
   const semesters = useMemo(
     () => serverSemesters.map((s) => formatSemester(s.year, s.term)),
@@ -274,6 +277,16 @@ export default function MobileTimeTableListPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         initialSemester={addModalSemester}
+        onOpenPortalImport={(semester) => {
+          setPortalImportSemester(semester || addModalSemester);
+          setIsPortalImportOpen(true);
+        }}
+      />
+
+      <PortalTimetableImportSheet
+        isOpen={isPortalImportOpen}
+        onClose={() => setIsPortalImportOpen(false)}
+        initialSemester={portalImportSemester || addModalSemester}
       />
 
       <Modal

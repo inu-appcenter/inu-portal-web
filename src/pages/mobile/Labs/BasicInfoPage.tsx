@@ -112,12 +112,12 @@ const BasicInfoPage = () => {
   // 모바일 앱 브릿지를 통해 직접 학적 정보 가져오기
   const fetchAcademicDataFromBridge = async () => {
     if (!isMobileAppEnvironment()) {
-      alert("포털 학적 정보 조회는 INTIP 모바일 앱 환경에서만 가능합니다.");
+      alert("포털 학적 정보 조회는 INTIP 모바일 앱 환경에서만 가능해요.");
       return;
     }
 
     setIsLoading(true);
-    setLoadingMessage("포털 로그인 및 학적 정보를 확인 중입니다... (약 10초)");
+    setLoadingMessage("포털 로그인 및 학적 정보를 확인하고 있어요... (약 10초)");
 
     try {
       const res = await fetchAcademicInfoFromApp(true);
@@ -139,7 +139,7 @@ const BasicInfoPage = () => {
 
         alert("성공적으로 학적 정보를 가져왔어요.");
       } else {
-        const errText = res.errorMessage || "포털 로그인에 실패했습니다.";
+        const errText = res.errorMessage || "포털 로그인에 실패했어요.";
         const isCredError =
           errText.includes("비밀번호") ||
           errText.includes("아이디") ||
@@ -149,15 +149,15 @@ const BasicInfoPage = () => {
         if (isCredError) {
           await deletePortalAccount().catch(() => {});
           setIsPortalLinked(false);
-          alert("포털 계정 정보가 올바르지 않습니다. 마이페이지에서 다시 연동해 주세요.");
+          alert("포털 계정 정보가 올바르지 않아요. 마이페이지에서 다시 연동해 주세요.");
           navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
         } else {
-          alert(`학적 정보를 가져오는 데 실패했습니다: ${errText}`);
+          alert(`학적 정보를 가져오는 데 실패했어요: ${errText}`);
         }
       }
     } catch (error: any) {
       console.error("학적 조회 실패:", error);
-      alert(error?.message || "학적 정보를 가져오는 중 오류가 발생했습니다.");
+      alert(error?.message || "학적 정보를 가져오는 중 오류가 발생했어요.");
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -166,7 +166,7 @@ const BasicInfoPage = () => {
 
   const handleMainAction = async () => {
     if (!isMobileAppEnvironment()) {
-      alert("포털 학적 정보 연동은 INTIP 모바일 앱 환경에서만 지원됩니다.");
+      alert("포털 학적 정보 연동은 INTIP 모바일 앱 환경에서만 지원돼요.");
       return;
     }
 
@@ -198,7 +198,7 @@ const BasicInfoPage = () => {
             setStudentInfo(null);
             setLastUpdated(null);
             setIsFetched(false);
-            alert("캐시 데이터가 삭제되었습니다.");
+            alert("캐시 데이터가 삭제되었어요.");
           }
         },
       });

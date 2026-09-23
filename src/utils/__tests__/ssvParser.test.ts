@@ -90,6 +90,21 @@ describe("Academic SSV Parser (Web Centralized)", () => {
     expect(mobile.timeSlots[0].room).toBe("104호");
   });
 
+  it("수강 취소(delGbn: 취소)된 과목은 시간표 목록에서 제외해야 한다", () => {
+    const timetableSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_LIST",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fdeptClsfCd\u001fstuno\u001ftimeInfo\u001fkorNm\u001fdelGbn\u001fscNm\u001fmodDttm\u001finptDttm\u001fyy\u001ftmGbn\u001fhaksuNo\u001frepeatGbn\u001fopenHgMjNm\u001fopenHySeqGbn\u001flsnTypeGbn\u001fprofNm",
+      "N\u001f전공심화\u001f3\u001f0000587\u001f202001518\u001f[07-304:금(1)(2)(3)]\u001f배현준\u001f신청\u001f자연어처리\u001f2025-08-18 14:00:19\u001f2025-08-18 14:00:19\u001f2025\u001f20\u001f0010925001\u001f-\u001f컴퓨터공학부\u001f3\u001fe-Learning\u001f신유현",
+      "N\u001f전공선택\u001f3\u001f0000587\u001f202001518\u001f[07-201:화(1)(2)(3)]\u001f배현준\u001f취소\u001f운영체제\u001f2025-08-18 14:00:20\u001f2025-08-18 14:00:20\u001f2025\u001f20\u001f0010926001\u001f-\u001f컴퓨터공학부\u001f3\u001f강의(이론)\u001f홍길동",
+      "N\u001f심화교양\u001f3\u001f0000587\u001f202001518\u001f[04-104:월(7-8A)(8B-9)]\u001f배현준\u001f신청\u001f디지털시대의모바일앱만들기\u001f2025-08-18 14:00:24\u001f2025-08-18 14:00:24\u001f2025\u001f20\u001f0011842001\u001f-\u001f교양\u001f전학년\u001f강의(이론)\u001f박승진",
+    ].join(RECORD_SEPARATOR);
+
+    const list = parseTimetableList(timetableSsv);
+    expect(list).toHaveLength(2);
+    expect(list.map((c) => c.courseName)).toEqual(["자연어처리", "디지털시대의모바일앱만들기"]);
+  });
+
   it("timeInfo 포맷을 정확히 파싱해야 한다", () => {
     const slots1 = parseTimeInfo("[07-304:금(1)(2)(3)]");
     expect(slots1).toEqual([
