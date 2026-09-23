@@ -90,7 +90,6 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
 
   const effectiveState = isOpen ? (aiState === "closed" ? "listening" : aiState) : "closed";
   const currentHeight = getSheetHeight(effectiveState);
-  const isSheetOpen = isOpen;
   const isAmbientGlowActive =
     isOpen &&
     (effectiveState === "listening" || effectiveState === "recognized" || effectiveState === "thinking");
