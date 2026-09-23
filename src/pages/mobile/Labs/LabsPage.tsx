@@ -112,11 +112,7 @@ const LabsPage = () => {
                     "학식 · 버스 · 시간표 · 공지 통합 캠퍼스 비서"
                   }
                   onClick={() => {
-                    if (window.innerWidth <= 768) {
-                      navigate("/agent");
-                    } else {
-                      openAgent();
-                    }
+                    openAgent();
                   }}
                 />
                 <Divider margin="0" />

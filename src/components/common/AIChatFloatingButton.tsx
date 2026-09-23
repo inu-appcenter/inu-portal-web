@@ -21,7 +21,7 @@ const AIChatFloatingButton = ({
   // [임시 조치 보관용]
   // const navigate = useNavigate();
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isOpen, isAgentOpen, closeChat, openChat, closeAgent } =
+  const { isOpen, isAgentOpen, closeChat, closeAgent, openAgent } =
     useAIChatStore();
 
   useSheetBackHandler(isOpen || isAgentOpen, () => {
@@ -41,17 +41,15 @@ const AIChatFloatingButton = ({
   }, [isOpen, isAgentOpen]);
 
   const handleButtonClick = () => {
-    if (isOpen) {
-      closeChat();
-      return;
-    }
     if (isAgentOpen) {
       closeAgent();
       return;
     }
-    // [임시 조치] 옵션 메뉴 선택 대신 무조건 학사 챗봇 챗불이 바로 열기
-    // setIsMenuOpen((prev) => !prev);
-    openChat();
+    if (isOpen) {
+      closeChat();
+      return;
+    }
+    openAgent();
   };
 
   return (

@@ -98,7 +98,7 @@ interface ServiceCategory {
 const AiBrandPage = () => {
   useHeader({ title: "횃불이 AI" });
   const navigate = useNavigate();
-  const { openChat } = useAIChatStore();
+  const { openAgent } = useAIChatStore();
 
   const categories: ServiceCategory[] = [
     {
@@ -110,7 +110,7 @@ const AiBrandPage = () => {
             "인천대학교 AI 챗봇 챗불이에게 학사 관련 질문을 해보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
           iconSrc: ChatBulButtonImg,
           onClick: () => {
-            openChat();
+            openAgent();
           },
         },
         {
