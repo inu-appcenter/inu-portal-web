@@ -158,9 +158,17 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
           />
 
           {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
-          {isAmbientGlowActive && (
-            <AmbientEdgeGlow $active={true} />
-          )}
+          <AnimatePresence>
+            {isAmbientGlowActive && (
+              <AmbientEdgeGlow
+                $active={true}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              />
+            )}
+          </AnimatePresence>
 
           {/* 3. 플로팅 시트 컨테이너 (부드러운 Fade-In / Fade-Out) */}
           <SheetContainer
@@ -236,7 +244,7 @@ const Scrim = styled(motion.div)<{ $active: boolean; $state: AIState }>`
   pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
 `;
 
-const AmbientEdgeGlow = styled.div<{ $active: boolean }>`
+const AmbientEdgeGlow = styled(motion.div)<{ $active: boolean }>`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -253,10 +261,7 @@ const AmbientEdgeGlow = styled.div<{ $active: boolean }>`
   border-radius: 9999px 9999px 0 0;
   z-index: 9995;
   pointer-events: none;
-  opacity: ${({ $active }) => ($active ? 1 : 0)};
-  transform: ${({ $active }) => ($active ? "translateY(0)" : "translateY(20px)")};
   animation: ${pulseGlow} 2.5s infinite ease-in-out;
-  transition: opacity 0.35s ease, transform 0.35s ease;
 `;
 
 const SheetContainer = styled(motion.div)<{
