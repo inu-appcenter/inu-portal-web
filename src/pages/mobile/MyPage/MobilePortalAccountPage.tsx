@@ -29,6 +29,7 @@ import {
   Trash2,
   ChevronRight,
   AlertCircle,
+  Smartphone,
 } from "lucide-react";
 
 export default function MobilePortalAccountPage() {
@@ -86,7 +87,7 @@ export default function MobilePortalAccountPage() {
           }
         }
       } else {
-        setIsLinked(Boolean(savedInfo));
+        setIsLinked(false);
       }
     } finally {
       setIsLoading(false);
@@ -169,6 +170,28 @@ export default function MobilePortalAccountPage() {
         <ContentContainer>
           <Skeleton width="100%" height="160px" style={{ borderRadius: "20px" }} />
           <Skeleton width="100%" height="220px" style={{ borderRadius: "20px" }} />
+        </ContentContainer>
+      ) : !isMobileAppEnvironment() ? (
+        /* ================= 0. 모바일 앱 환경 아닐 때 안내 화면 ================= */
+        <ContentContainer>
+          <NotAppCard>
+            <Smartphone size={36} color="#0061ff" />
+            <NotAppTitle>INTIP 모바일 앱 전용 기능이에요</NotAppTitle>
+            <NotAppDesc>
+              포털 계정 연동은 기기 보안 저장소(KeyStore)를 이용하므로 INTIP 모바일 앱 환경에서만 등록하고 이용할 수 있어요.
+            </NotAppDesc>
+
+            <UsageGuideBox style={{ width: "100%", boxSizing: "border-box", textAlign: "left" }}>
+              <UsageGuideTitle>연동 시 이용 가능한 기능</UsageGuideTitle>
+              <UsageGuideList>
+                <li>기본 학적 정보 (취득 학점, 성적, 학적 상태를 조회해요)</li>
+                <li>이러닝 LMS (과제 마감 알림과 수강 강좌를 확인해요)</li>
+                <li>학산도서관 (열람실 좌석 배정 및 스터디룸을 예약해요)</li>
+              </UsageGuideList>
+            </UsageGuideBox>
+
+            <FootnoteText style={{ marginTop: "16px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+          </NotAppCard>
         </ContentContainer>
       ) : isLinked && !isRelinkMode ? (
         /* ================= 1. 연동 완료 상태 화면 ================= */
@@ -617,6 +640,33 @@ const FootnoteText = styled.p`
   color: var(--text-tertiary, #8b95a1);
   text-align: center;
   line-height: 1.4;
+`;
+
+const NotAppCard = styled.div`
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 20px;
+  padding: 32px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+`;
+
+const NotAppTitle = styled.h3`
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary, #191f28);
+`;
+
+const NotAppDesc = styled.p`
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--text-secondary, #6b7684);
+  line-height: 1.5;
+  max-width: 320px;
 `;
 
 const HeroCard = styled.div`
