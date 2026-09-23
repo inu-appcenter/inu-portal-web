@@ -343,9 +343,10 @@ export async function cancelLmsDeadlineOngoingBridge(): Promise<AgentActionResul
  * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {
-  const context: Record<string, any> = {};
+  const isApp = isMobileAppEnvironment();
+  const context: Record<string, any> = { isApp };
 
-  if (!isMobileAppEnvironment()) {
+  if (!isApp) {
     return context;
   }
 
