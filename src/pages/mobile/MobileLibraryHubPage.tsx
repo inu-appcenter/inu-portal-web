@@ -108,7 +108,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
       isCurrentOccupied: false,
       currentOccupiedUntil: null,
       availableMinutesFromNow: 120,
-      summaryText: "실시간 시간표 확인 가능",
+      summaryText: "시간표 확인 가능",
       badgeLabel: "현황 확인",
       badgeType: "avail",
       previewSlots: [],
@@ -255,6 +255,17 @@ export default function MobileLibraryHubPage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
+  // 안내/알림 공용 모달 상태
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
   // 열람실 좌석 선택 바텀시트 상태
   const [selectedSeatRoom, setSelectedSeatRoom] = useState<LibrarySeatRoom | null>(null);
   const [roomSeats, setRoomSeats] = useState<LibrarySeat[]>([]);
@@ -303,6 +314,10 @@ export default function MobileLibraryHubPage() {
   const showToast = (msg: string) => {
     setActionMessage(msg);
     setTimeout(() => setActionMessage(null), 3000);
+  };
+
+  const showAlert = (title: string, description: string) => {
+    setAlertModal({ isOpen: true, title, description });
   };
 
   // 10분 단위 시간 생성 헬퍼
@@ -416,24 +431,30 @@ export default function MobileLibraryHubPage() {
 
   // 좌석 배치도 열기
   const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
-    setSelectedSeatRoom(room);
     setIsLoadingSeats(true);
     try {
       const res = await getRoomSeats(room.id);
-      if (res.success) {
+      if (res.success && res.seats.length > 0) {
         setRoomSeats(res.seats);
+        setSelectedSeatRoom(room);
+      } else if (res.errorCode === "NOT_IN_APP") {
+        showAlert(
+          "모바일 앱 전용 기능",
+          "좌석 배정 및 배치도 확인은 INTIP 모바일 앱 환경에서 이용하실 수 있습니다."
+        );
       } else {
-        alert(res.errorMessage || "좌석 목록을 불러오지 못했습니다.");
-        setSelectedSeatRoom(null);
+        showAlert(
+          "좌석 조회 안내",
+          res.errorMessage || "좌석 목록을 불러오지 못했습니다. 계정 연동 상태를 확인해 주세요."
+        );
       }
     } catch (e: any) {
       console.error(e);
       if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
         window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       } else {
-        alert("좌석 목록을 불러오지 못했습니다.");
+        showAlert("좌석 조회 오류", "좌석 목록을 불러오는 중 오류가 발생했습니다.");
       }
-      setSelectedSeatRoom(null);
     } finally {
       setIsLoadingSeats(false);
     }
@@ -455,14 +476,14 @@ export default function MobileLibraryHubPage() {
             await loadMyData();
             setActiveTab("my");
           } else {
-            alert(res.message || "좌석 배정에 실패했습니다.");
+            showAlert("좌석 배정 실패", res.message || "좌석 배정에 실패했습니다.");
           }
         } catch (e: any) {
           console.error(e);
           if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
             window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
           } else {
-            alert(e?.message || "좌석 배정 중 오류가 발생했습니다.");
+            showAlert("좌석 배정 오류", e?.message || "좌석 배정 중 오류가 발생했습니다.");
           }
         }
       },
@@ -481,7 +502,7 @@ export default function MobileLibraryHubPage() {
       showToast(`'${seat.name || seat.code}' 빈자리 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("빈자리 알림 등록에 실패했습니다.");
+      showAlert("알림 등록 실패", "빈자리 알림 등록에 실패했습니다.");
     }
   };
 
@@ -496,7 +517,7 @@ export default function MobileLibraryHubPage() {
       showToast(`'${room.name}' 빈자리 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("알림 등록에 실패했습니다.");
+      showAlert("알림 등록 실패", "알림 등록에 실패했습니다.");
     }
   };
 
@@ -514,7 +535,7 @@ export default function MobileLibraryHubPage() {
       await loadMyData();
     } catch (e) {
       console.error(e);
-      alert("선호좌석 설정 처리에 실패했습니다.");
+      showAlert("선호좌석 오류", "선호좌석 설정 처리에 실패했습니다.");
     }
   };
 
@@ -525,13 +546,12 @@ export default function MobileLibraryHubPage() {
       await loadMyData();
     } catch (e) {
       console.error(e);
-      alert("선호좌석 해제에 실패했습니다.");
+      showAlert("선호좌석 오류", "선호좌석 해제에 실패했습니다.");
     }
   };
 
   // 스터디룸 예약 바텀시트 열기
   const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
-    setSelectedStudyRoom(sRoom);
     setCompanions([]);
     setCompanionName("");
     setCompanionMemberNo("");
@@ -573,15 +593,22 @@ export default function MobileLibraryHubPage() {
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [sRoom.id]: res.detail! }));
+        setSelectedStudyRoom(sRoom);
+      } else if (res.errorCode === "NOT_IN_APP") {
+        showAlert(
+          "모바일 앱 전용 기능",
+          "스터디룸 상세 시간표 확인 및 예약은 INTIP 모바일 앱 환경에서 이용하실 수 있습니다."
+        );
+      } else {
+        showAlert("스터디룸 조회 안내", res.errorMessage || "스터디룸 정보를 불러오지 못했습니다.");
       }
     } catch (e: any) {
       console.error(e);
       if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
         window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       } else {
-        alert("스터디룸 상세 정보를 불러오지 못했습니다.");
+        showAlert("스터디룸 조회 오류", "스터디룸 상세 정보를 불러오는 중 오류가 발생했습니다.");
       }
-      setSelectedStudyRoom(null);
     } finally {
       setIsLoadingTimeline(false);
     }
@@ -637,11 +664,11 @@ export default function MobileLibraryHubPage() {
   const handleAddCompanion = async () => {
     if (!selectedStudyRoom) return;
     if (!companionName.trim() || !companionMemberNo.trim()) {
-      alert("동반이용자의 이름과 학번을 모두 입력해주세요.");
+      showAlert("입력 안내", "동반이용자의 이름과 학번을 모두 입력해주세요.");
       return;
     }
     if (companions.some((c) => c.memberNo === companionMemberNo.trim())) {
-      alert("이미 등록된 동반이용자입니다.");
+      showAlert("중복 안내", "이미 등록된 동반이용자입니다.");
       return;
     }
 
@@ -658,10 +685,10 @@ export default function MobileLibraryHubPage() {
         setCompanionName("");
         setCompanionMemberNo("");
       } else {
-        alert(res.message || "학산도서관 등록 이용자 정보와 일치하지 않습니다. 이름과 학번을 다시 확인해주세요.");
+        showAlert("동반이용자 확인", res.message || "학산도서관 등록 이용자 정보와 일치하지 않습니다. 이름과 학번을 다시 확인해주세요.");
       }
     } catch (e: any) {
-      alert(e?.message || "동반이용자 조회에 실패했습니다.");
+      showAlert("동반이용자 조회 오류", e?.message || "동반이용자 조회에 실패했습니다.");
     } finally {
       setIsSearchingCompanion(false);
     }
@@ -678,22 +705,21 @@ export default function MobileLibraryHubPage() {
     const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1;
     const maxQuota = studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10;
     const minCompanions = Math.max(0, minQuota - 1);
-    const maxCompanions = Math.max(0, maxQuota - 1);
 
     if (companions.length < minCompanions) {
-      alert(`본인을 제외하고 동반이용자를 최소 ${minCompanions}명 이상 등록해야 합니다.`);
+      showAlert("인원 미달", `본인을 제외하고 동반이용자를 최소 ${minCompanions}명 이상 등록해야 합니다.`);
       return;
     }
-    if (companions.length > maxCompanions) {
-      alert(`동반이용자는 최대 ${maxCompanions}명까지 등록할 수 있습니다.`);
+    if (companions.length + 1 > maxQuota) {
+      showAlert("인원 초과", `최대 수용 인원은 ${maxQuota}명입니다.`);
       return;
     }
     if (!isPrivacyAgreed) {
-      alert("동반이용자 개인정보 수집 및 이용 동의에 체크해주세요.");
+      showAlert("동의 필요", "동반이용자 개인정보 수집 및 이용 동의에 체크해주세요.");
       return;
     }
     if (!reservePurpose.trim()) {
-      alert("사용 목적을 입력해주세요.");
+      showAlert("목적 입력 필요", "사용 목적을 입력해주세요.");
       return;
     }
 
@@ -701,11 +727,11 @@ export default function MobileLibraryHubPage() {
     const minTime = studyRoomDetail?.rule?.minTime || 30;
     const maxTime = studyRoomDetail?.rule?.maxTime || 240;
     if (durationMin < minTime) {
-      alert(`최소 이용 시간은 ${minTime}분입니다.`);
+      showAlert("시간 범위 안내", `최소 이용 시간은 ${minTime}분입니다.`);
       return;
     }
     if (durationMin > maxTime) {
-      alert(`최대 이용 시간은 ${maxTime}분입니다.`);
+      showAlert("시간 범위 안내", `최대 이용 시간은 ${maxTime}분입니다.`);
       return;
     }
 
@@ -727,11 +753,11 @@ export default function MobileLibraryHubPage() {
         await loadMyData();
         setActiveTab("my");
       } else {
-        alert(res.message || "스터디룸 예약에 실패했습니다.");
+        showAlert("예약 실패", res.message || "스터디룸 예약에 실패했습니다.");
       }
     } catch (e: any) {
       console.error(e);
-      alert(e?.message || "예약 처리 중 오류가 발생했습니다.");
+      showAlert("예약 처리 오류", e?.message || "예약 처리 중 오류가 발생했습니다.");
     } finally {
       setIsSubmittingBooking(false);
     }
@@ -753,7 +779,7 @@ export default function MobileLibraryHubPage() {
       showToast(`'${sRoom.name}' 취소표 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("취소표 알림 등록에 실패했습니다.");
+      showAlert("알림 등록 실패", "취소표 알림 등록에 실패했습니다.");
     }
   };
 
@@ -773,7 +799,7 @@ export default function MobileLibraryHubPage() {
       showToast(`'${selectedStudyRoom.name}' ${selectedDate} ${reserveBeginTime} 취소표 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("알림 등록에 실패했습니다.");
+      showAlert("알림 등록 실패", "알림 등록에 실패했습니다.");
     }
   };
 
@@ -786,10 +812,10 @@ export default function MobileLibraryHubPage() {
         showToast("좌석 이용 시간이 연장되었습니다.");
         await loadMyData();
       } else {
-        alert("연장에 실패했습니다.");
+        showAlert("연장 실패", "좌석 연장에 실패했습니다.");
       }
     } catch (e: any) {
-      alert(e?.message || "연장 처리 중 오류가 발생했습니다.");
+      showAlert("연장 오류", e?.message || "연장 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -809,19 +835,19 @@ export default function MobileLibraryHubPage() {
             if (res.success) {
               showToast("예약이 취소되었습니다.");
             } else {
-              alert(res.message || "예약 취소에 실패했습니다.");
+              showAlert("취소 실패", res.message || "예약 취소에 실패했습니다.");
             }
           } else {
             const res = await returnCurrentSeat(mySeat.chargeId);
             if (res.success) {
               showToast("좌석이 반납되었습니다.");
             } else {
-              alert(res.message || "좌석 반납에 실패했습니다.");
+              showAlert("반납 실패", res.message || "좌석 반납에 실패했습니다.");
             }
           }
           await loadMyData();
         } catch (e: any) {
-          alert(e?.message || "반납/취소 처리 중 오류가 발생했습니다.");
+          showAlert("처리 오류", e?.message || "반납/취소 처리 중 오류가 발생했습니다.");
         }
       },
     });
@@ -836,10 +862,10 @@ export default function MobileLibraryHubPage() {
         showToast("좌석 배정이 확정되었습니다.");
         await loadMyData();
       } else {
-        alert(res.message || "배정 확정에 실패했습니다.");
+        showAlert("배정 확정 실패", res.message || "배정 확정에 실패했습니다.");
       }
     } catch (e: any) {
-      alert(e?.message || "배정 확정 중 오류가 발생했습니다.");
+      showAlert("배정 확정 오류", e?.message || "배정 확정 중 오류가 발생했습니다.");
     }
   };
 
@@ -857,10 +883,10 @@ export default function MobileLibraryHubPage() {
             showToast("스터디룸 예약이 취소되었습니다.");
             await loadMyData();
           } else {
-            alert("취소에 실패했습니다.");
+            showAlert("취소 실패", "예약 취소에 실패했습니다.");
           }
         } catch (e: any) {
-          alert(e?.message || "취소 중 오류가 발생했습니다.");
+          showAlert("취소 오류", e?.message || "취소 중 오류가 발생했습니다.");
         }
       },
     });
@@ -874,10 +900,10 @@ export default function MobileLibraryHubPage() {
         showToast("입실 체크인이 완료되었습니다.");
         await loadMyData();
       } else {
-        alert("체크인에 실패했습니다.");
+        showAlert("체크인 실패", "입실 체크인에 실패했습니다.");
       }
     } catch (e: any) {
-      alert(e?.message || "체크인 중 오류가 발생했습니다.");
+      showAlert("체크인 오류", e?.message || "체크인 중 오류가 발생했습니다.");
     }
   };
 
@@ -893,7 +919,7 @@ export default function MobileLibraryHubPage() {
       showToast("좌석 만료 20분 전 알림이 등록되었습니다.");
     } catch (e) {
       console.error(e);
-      alert("알림 등록에 실패했습니다.");
+      showAlert("알림 등록 실패", "알림 등록에 실패했습니다.");
     }
   };
 
@@ -942,7 +968,7 @@ export default function MobileLibraryHubPage() {
           <Bell size={18} color="#0061ff" />
           <BannerText>
             <strong>빈자리 및 마감 알림 관리</strong>
-            <span>실시간 빈자리 알림 및 좌석 만료 알림 목록</span>
+            <span>빈자리 알림 및 좌석 만료 알림 목록</span>
           </BannerText>
         </BannerLeft>
         <ChevronRight size={18} color="#94a3b8" />
@@ -1000,7 +1026,7 @@ export default function MobileLibraryHubPage() {
           )}
 
           <SectionHeader>
-            <SectionTitle>실시간 열람실 좌석 현황</SectionTitle>
+            <SectionTitle>열람실 좌석 현황</SectionTitle>
             <RefreshButton onClick={loadData}>
               <RefreshCw size={13} />
               <span>새로고침</span>
@@ -1010,10 +1036,16 @@ export default function MobileLibraryHubPage() {
           {isLoading ? (
             <SkeletonList>
               {[1, 2, 3, 4].map((i) => (
-                <Box key={i} style={{ padding: "16px" }}>
-                  <Skeleton width="45%" height="20px" style={{ borderRadius: "6px" }} />
-                  <Skeleton width="100%" height="8px" style={{ borderRadius: "999px", margin: "12px 0 8px" }} />
-                  <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
+                <Box key={i} style={{ padding: "16px", width: "100%" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: "12px" }}>
+                    <Skeleton width="45%" height="22px" style={{ borderRadius: "6px" }} />
+                    <Skeleton width="60px" height="22px" style={{ borderRadius: "6px" }} />
+                  </div>
+                  <Skeleton width="100%" height="6px" style={{ borderRadius: "999px", marginBottom: "8px" }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                    <Skeleton width="60px" height="14px" />
+                    <Skeleton width="100px" height="14px" />
+                  </div>
                 </Box>
               ))}
             </SkeletonList>
@@ -1029,7 +1061,11 @@ export default function MobileLibraryHubPage() {
                 const isFull = available === 0 && total > 0;
 
                 return (
-                  <Box key={room.id} style={{ padding: "16px" }}>
+                  <RoomCardBox
+                    key={room.id}
+                    onClick={() => handleOpenSeatPicker(room)}
+                    style={{ padding: "16px" }}
+                  >
                     <RoomHeader>
                       <RoomName>{room.name}</RoomName>
                       <SeatBadge $isFull={isFull}>
@@ -1048,21 +1084,21 @@ export default function MobileLibraryHubPage() {
                       </span>
                     </SeatStatRow>
 
-                    {/* 버튼 영역: 좌석 직접 배정 + 빈자리 알림 */}
-                    <ButtonRow>
-                      <PrimaryActionBtn onClick={() => handleOpenSeatPicker(room)}>
-                        <BookOpen size={14} />
-                        <span>좌석 선택 배정</span>
-                      </PrimaryActionBtn>
-
-                      {isFull && (
-                        <SecondaryActionBtn onClick={() => handleRegisterSeatSniper(room)}>
+                    {isFull && (
+                      <ButtonRow style={{ marginTop: "10px" }}>
+                        <SecondaryActionBtn
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRegisterSeatSniper(room);
+                          }}
+                          style={{ width: "100%", justifyContent: "center" }}
+                        >
                           <Bell size={14} />
-                          <span>빈자리 알림</span>
+                          <span>빈자리 알림 등록</span>
                         </SecondaryActionBtn>
-                      )}
-                    </ButtonRow>
-                  </Box>
+                      </ButtonRow>
+                    )}
+                  </RoomCardBox>
                 );
               })}
             </RoomGrid>
@@ -1082,16 +1118,23 @@ export default function MobileLibraryHubPage() {
           </SectionHeader>
 
           <NoticeBanner>
-            날짜별 10분 단위 예약 현황을 실시간으로 확인하고 직접 예약할 수 있습니다.
+            날짜별 10분 단위 예약 현황을 확인하고 직접 예약할 수 있습니다.
           </NoticeBanner>
 
           {isLoading ? (
             <SkeletonList>
-              {[1, 2, 3].map((i) => (
-                <Box key={i} style={{ padding: "16px" }}>
-                  <Skeleton width="50%" height="20px" style={{ borderRadius: "6px" }} />
-                  <Skeleton width="80%" height="14px" style={{ margin: "8px 0" }} />
-                  <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
+              {[1, 2, 3, 4].map((i) => (
+                <Box key={i} style={{ padding: "16px", width: "100%" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: "8px" }}>
+                    <Skeleton width="40%" height="22px" style={{ borderRadius: "6px" }} />
+                    <Skeleton width="70px" height="22px" style={{ borderRadius: "6px" }} />
+                  </div>
+                  <Skeleton width="50%" height="14px" style={{ marginBottom: "12px" }} />
+                  <Skeleton width="100%" height="50px" style={{ borderRadius: "8px", marginBottom: "12px" }} />
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <Skeleton width="100%" height="38px" style={{ borderRadius: "10px" }} />
+                    <Skeleton width="100%" height="38px" style={{ borderRadius: "10px" }} />
+                  </div>
                 </Box>
               ))}
             </SkeletonList>
@@ -1117,7 +1160,7 @@ export default function MobileLibraryHubPage() {
                       </div>
                     </StudyHeader>
 
-                    {/* 향후 2시간 실시간 점유 프리뷰 바 */}
+                    {/* 향후 2시간 점유 현황 프리뷰 바 */}
                     {occInfo.previewSlots.length > 0 && (
                       <StudyPreviewBarBox>
                         <StudyPreviewHeader>
@@ -1180,7 +1223,19 @@ export default function MobileLibraryHubPage() {
 
           {/* 3-1. 열람실 좌석 섹션 */}
           <SubTitle>현재 이용 중인 열람실 좌석</SubTitle>
-          {mySeat ? (
+          {isLoadingMy ? (
+            <Box style={{ padding: "16px", width: "100%" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: "12px" }}>
+                <Skeleton width="80px" height="24px" style={{ borderRadius: "6px" }} />
+                <Skeleton width="120px" height="24px" style={{ borderRadius: "6px" }} />
+              </div>
+              <Skeleton width="60%" height="16px" style={{ marginBottom: "14px" }} />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <Skeleton width="100%" height="38px" style={{ borderRadius: "10px" }} />
+                <Skeleton width="100%" height="38px" style={{ borderRadius: "10px" }} />
+              </div>
+            </Box>
+          ) : mySeat ? (
             <Box style={{ padding: "16px" }}>
               <ActiveSeatHeader>
                 <ActiveBadge $isTemp={mySeat.isTempCharge}>
@@ -1280,15 +1335,26 @@ export default function MobileLibraryHubPage() {
                 <span>종료 20분 전 알림 받기</span>
               </ReminderRow>
             </Box>
-          ) : isLoadingMy ? (
-            <EmptyBox>좌석 이용 현황 확인 중...</EmptyBox>
           ) : (
             <EmptyBox>현재 배정된 열람실 좌석이 없습니다.</EmptyBox>
           )}
 
           {/* 3-2. 스터디룸 예약 섹션 */}
           <SubTitle style={{ marginTop: "24px" }}>내 스터디룸 예약 내역</SubTitle>
-          {myStudyReservations.length > 0 ? (
+          {isLoadingMy ? (
+            <SkeletonList>
+              {[1, 2].map((i) => (
+                <Box key={i} style={{ padding: "16px", width: "100%" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", width: "100%", marginBottom: "8px" }}>
+                    <Skeleton width="40%" height="20px" style={{ borderRadius: "6px" }} />
+                    <Skeleton width="60px" height="18px" style={{ borderRadius: "4px" }} />
+                  </div>
+                  <Skeleton width="60%" height="14px" style={{ marginBottom: "12px" }} />
+                  <Skeleton width="100%" height="34px" style={{ borderRadius: "8px" }} />
+                </Box>
+              ))}
+            </SkeletonList>
+          ) : myStudyReservations.length > 0 ? (
             <ReservationList>
               {myStudyReservations.map((res) => {
                 const isCheckinCompleted =
@@ -1332,8 +1398,6 @@ export default function MobileLibraryHubPage() {
                 );
               })}
             </ReservationList>
-          ) : isLoadingMy ? (
-            <EmptyBox>스터디룸 예약 내역 확인 중...</EmptyBox>
           ) : (
             <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
           )}
@@ -1392,10 +1456,11 @@ export default function MobileLibraryHubPage() {
           </SheetHeader>
 
           {isLoadingSeats ? (
-            <SheetLoading>
-              <RefreshCw size={24} className="spin" />
-              <span>좌석 배치도를 불러오는 중...</span>
-            </SheetLoading>
+            <SeatGridContainer style={{ minHeight: "260px" }}>
+              {Array.from({ length: 24 }).map((_, i) => (
+                <Skeleton key={i} height="48px" style={{ borderRadius: "8px" }} />
+              ))}
+            </SeatGridContainer>
           ) : roomSeats.length === 0 ? (
             <EmptyBox style={{ margin: "20px 0" }}>조회된 좌석이 없습니다.</EmptyBox>
           ) : (
@@ -1539,10 +1604,11 @@ export default function MobileLibraryHubPage() {
             </TimelineHeader>
 
             {isLoadingTimeline ? (
-              <SheetLoading>
-                <RefreshCw size={20} className="spin" />
-                <span>타임라인 로딩 중...</span>
-              </SheetLoading>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", padding: "8px 0" }}>
+                <Skeleton height="16px" width="100%" />
+                <Skeleton height="16px" width="100%" />
+                <Skeleton height="16px" width="100%" />
+              </div>
             ) : studyRoomDetail?.timeLine ? (
               <TimelineGrid>
                 {studyRoomDetail.timeLine.map((slot) => (
@@ -1819,6 +1885,19 @@ export default function MobileLibraryHubPage() {
         }}
       />
 
+      {/* 안내 공용 모달 */}
+      <Modal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal((prev) => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        description={alertModal.description}
+        primaryButton={{
+          text: "확인",
+          variant: "brand",
+          onClick: () => setAlertModal((prev) => ({ ...prev, isOpen: false })),
+        }}
+      />
+
       {/* 도서관 계정 연동 모달 */}
       <LibraryAccountModal
         isOpen={isAuthModalOpen}
@@ -2020,17 +2099,30 @@ const RoomGrid = styled.div`
   }
 `;
 
+const RoomCardBox = styled(Box)`
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.12s ease-in-out;
+
+  &:active {
+    transform: scale(0.99);
+  }
+`;
+
 const RoomHeader = styled.div`
   display: flex;
+  width: 100%;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  box-sizing: border-box;
 `;
 
 const RoomName = styled.div`
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary, #191f28);
+  flex: 1;
 `;
 
 const SeatBadge = styled.span<{ $isFull: boolean }>`
@@ -2038,6 +2130,7 @@ const SeatBadge = styled.span<{ $isFull: boolean }>`
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 6px;
+  flex-shrink: 0;
   background: ${({ $isFull }) => ($isFull ? "var(--bg-error, #fef2f2)" : "var(--bg-brand-subtle, #eff6ff)")};
   color: ${({ $isFull }) => ($isFull ? "var(--text-error, #ef4444)" : "var(--text-brand, #0061ff)")};
 `;
@@ -2064,14 +2157,14 @@ const SeatStatRow = styled.div`
   justify-content: space-between;
   font-size: 12px;
   color: var(--text-secondary, #8b95a1);
-  margin-bottom: 12px;
+  margin-bottom: 4px;
 `;
 
 const ButtonRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
+  width: 100%;
 `;
 
 const PrimaryActionBtn = styled.button`
@@ -2531,29 +2624,6 @@ const SheetTitle = styled.h2`
 const SheetSubtitle = styled.div`
   font-size: 13px;
   color: var(--text-secondary, #6b7684);
-`;
-
-const SheetLoading = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 40px 0;
-  color: var(--text-secondary, #6b7684);
-  font-size: 13px;
-
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 const SeatLegendRow = styled.div`

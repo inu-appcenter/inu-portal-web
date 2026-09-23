@@ -45,7 +45,22 @@ export default function MobileSmartWatchManagementPage() {
   const [targetJobToCancel, setTargetJobToCancel] = useState<UnifiedWatchJob | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
+  // 오류 및 알림 안내 모달 상태
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
   const navigate = useNavigate();
+
+  const showAlert = (title: string, description: string) => {
+    setAlertModal({ isOpen: true, title, description });
+  };
 
   useHeader({
     title: "빈자리 및 일정 알림",
@@ -95,7 +110,7 @@ export default function MobileSmartWatchManagementPage() {
       setTargetJobToCancel(null);
     } catch (e) {
       console.error("알림 취소 실패:", e);
-      alert("알림 취소에 실패했습니다.");
+      showAlert("알림 취소 오류", "알림 취소 처리에 실패했습니다.");
     } finally {
       setIsCancelling(false);
     }
@@ -285,6 +300,18 @@ export default function MobileSmartWatchManagementPage() {
           text: "닫기",
           variant: "secondary",
           onClick: () => setTargetJobToCancel(null),
+        }}
+      />
+
+      <Modal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal((prev) => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        description={alertModal.description}
+        primaryButton={{
+          text: "확인",
+          variant: "brand",
+          onClick: () => setAlertModal((prev) => ({ ...prev, isOpen: false })),
         }}
       />
     </Container>

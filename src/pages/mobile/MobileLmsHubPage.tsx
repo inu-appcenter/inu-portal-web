@@ -25,6 +25,7 @@ import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import Modal from "@/components/common/Modal";
 import {
   GraduationCap,
   Calendar,
@@ -56,11 +57,26 @@ export default function MobileLmsHubPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
+  // 안내/경고 공용 모달 상태
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
   // 강좌 주차별 상세 바텀시트 상태
   const [selectedCourse, setSelectedCourse] = useState<LmsCourse | null>(null);
   const [courseSections, setCourseSections] = useState<LmsSection[]>([]);
   const [completionMap, setCompletionMap] = useState<Record<number, boolean>>({});
   const [isLoadingCourseDetail, setIsLoadingCourseDetail] = useState<boolean>(false);
+
+  const showAlert = (title: string, description: string) => {
+    setAlertModal({ isOpen: true, title, description });
+  };
 
   useHeader({
     title: "이러닝 (LMS)",
@@ -119,7 +135,7 @@ export default function MobileLmsHubPage() {
       setCompletionMap(completions);
     } catch (e) {
       console.error(e);
-      alert("강좌 상세 정보를 불러오지 못했습니다.");
+      showAlert("강좌 상세 조회 오류", "강좌 상세 정보를 불러오지 못했습니다.");
     } finally {
       setIsLoadingCourseDetail(false);
     }
@@ -134,7 +150,10 @@ export default function MobileLmsHubPage() {
   // 과제 마감 알림 예약
   const handleRegisterAssignmentReminder = async (item: LmsAssignmentEvent) => {
     if (!isMobileAppEnvironment()) {
-      alert("과제 알림은 모바일 앱에서 신청할 수 있습니다.");
+      showAlert(
+        "모바일 앱 전용 기능",
+        "과제 마감 알림 등록은 INTIP 모바일 앱 환경에서 이용하실 수 있습니다."
+      );
       return;
     }
 
@@ -147,7 +166,7 @@ export default function MobileLmsHubPage() {
         endTime: dueIso,
       });
 
-      // 마감까지 3시간 이내로 남은 경우 실시간 잠금화면 Now Bar Ongoing 알림 동시 활성화
+      // 마감까지 3시간 이내로 남은 경우 잠금화면 Now Bar Ongoing 알림 동시 활성화
       const now = Date.now();
       if (dueTimestamp > now && dueTimestamp - now <= 3 * 60 * 60 * 1000) {
         startLmsDeadlineOngoingBridge({
@@ -164,7 +183,7 @@ export default function MobileLmsHubPage() {
       showToast(`'${item.name}' 마감 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("알림 예약에 실패했습니다.");
+      showAlert("알림 등록 실패", "알림 예약에 실패했습니다.");
     }
   };
 
@@ -412,10 +431,24 @@ export default function MobileLmsHubPage() {
           </SheetHeader>
 
           {isLoadingCourseDetail ? (
-            <SheetLoading>
-              <RefreshCw size={24} className="spin" />
-              <span>주차별 학습 내용을 불러오는 중...</span>
-            </SheetLoading>
+            <SectionListContainer>
+              {[1, 2, 3].map((s) => (
+                <SectionGroup key={s}>
+                  <Skeleton width="120px" height="18px" style={{ marginBottom: "6px" }} />
+                  <ModuleList>
+                    {[1, 2].map((m) => (
+                      <ModuleItem key={m}>
+                        <ModuleLeft>
+                          <Skeleton width="18px" height="18px" style={{ borderRadius: "4px" }} />
+                          <Skeleton width="160px" height="16px" />
+                        </ModuleLeft>
+                        <Skeleton width="60px" height="20px" style={{ borderRadius: "6px" }} />
+                      </ModuleItem>
+                    ))}
+                  </ModuleList>
+                </SectionGroup>
+              ))}
+            </SectionListContainer>
           ) : courseSections.length === 0 ? (
             <EmptyBox style={{ margin: "20px 0" }}>등록된 주차별 콘텐츠가 없습니다.</EmptyBox>
           ) : (
@@ -476,6 +509,19 @@ export default function MobileLmsHubPage() {
           setIsAuthModalOpen(false);
           showToast("LMS 계정이 성공적으로 연동되었습니다.");
           loadData();
+        }}
+      />
+
+      {/* 안내/경고 공용 모달 */}
+      <Modal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal((prev) => ({ ...prev, isOpen: false }))}
+        title={alertModal.title}
+        description={alertModal.description}
+        primaryButton={{
+          text: "확인",
+          variant: "brand",
+          onClick: () => setAlertModal((prev) => ({ ...prev, isOpen: false })),
         }}
       />
     </Container>
@@ -839,29 +885,6 @@ const SheetTitle = styled.h2`
 const SheetSubtitle = styled.div`
   font-size: 13px;
   color: var(--text-secondary, #6b7684);
-`;
-
-const SheetLoading = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 40px 0;
-  color: var(--text-secondary, #6b7684);
-  font-size: 13px;
-
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 const SectionListContainer = styled.div`
