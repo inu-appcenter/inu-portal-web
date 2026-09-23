@@ -8,8 +8,7 @@ import useAIChatStore from "@/stores/useAIChatStore";
 // [임시 조치 보관용 import]
 // import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
-// import AIChatMenuCard from "./AIChatMenuCard";
-import AgentChatModal from "@/components/mobile/chat/AgentChatModal";
+import AgentFloatingBottomSheet from "@/components/mobile/chat/AgentFloatingBottomSheet";
 import ChatBulModal from "@/components/mobile/chat/ChatBulModal";
 
 interface AIChatFloatingButtonProps {
@@ -57,8 +56,8 @@ const AIChatFloatingButton = ({
 
   return (
     <>
-      {/* 1. New INTIP Agent Chat Modal */}
-      <AgentChatModal isOpen={isAgentOpen} onClose={closeAgent} />
+      {/* 1. New INTIP Agent Floating BottomSheet (Bixby / Gemini Style) */}
+      <AgentFloatingBottomSheet isOpen={isAgentOpen} onClose={closeAgent} />
 
       {/* 2. ChatBul Academic Chat Modal (인팁 캠퍼스 비서와 동일한 레이아웃 & 노출 방식 적용) */}
       <ChatBulModal isOpen={isOpen} onClose={closeChat} />

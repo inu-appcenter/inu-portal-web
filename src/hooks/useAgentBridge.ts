@@ -7,16 +7,33 @@ import {
   cancelLocalWatchJobInApp,
 } from "@/apis/mobileAgentBridge";
 
+export type AIState = 'closed' | 'listening' | 'recognized' | 'thinking' | 'answering' | 'expanded';
+
 interface UseAgentBridgeOptions {
   onClose?: () => void;
+  onStateChange?: (state: AIState, payload?: any) => void;
 }
 
 export function useAgentBridge(options?: UseAgentBridgeOptions) {
   const navigate = useNavigate();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
+  const [aiState, setAiState] = useState<AIState>("closed");
+  const [recognizedText, setRecognizedText] = useState<string>("");
   const pendingContextPromiseRef = useRef<Promise<Record<string, any>> | null>(null);
   const cachedClientContextRef = useRef<Record<string, any> | null>(null);
+
+  const sendHostCommand = useCallback((action: 'TRIGGER_OPEN' | 'FORCE_CLOSE' | 'SET_EXPANDED' | 'SET_HALF') => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        {
+          type: "HOST_COMMAND",
+          action,
+        },
+        "*"
+      );
+    }
+  }, []);
 
   const sendClientContextToIframe = useCallback(async (forceRefresh = false) => {
     try {
@@ -80,6 +97,12 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
           } else {
             navigate(data.url);
           }
+        } else if (data.type === "AI_STATE_CHANGE" && data.state) {
+          setAiState(data.state);
+          if (data.payload?.recognizedText !== undefined) {
+            setRecognizedText(data.payload.recognizedText);
+          }
+          options?.onStateChange?.(data.state, data.payload);
         } else if (data.type === "OPEN_PORTAL_ACCOUNT_MODAL" || data.type === "openPortalAccountModal") {
           setIsPortalModalOpen(true);
         } else if (data.type === "GET_CLIENT_CONTEXT") {
@@ -124,5 +147,10 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
     isPortalModalOpen,
     setIsPortalModalOpen,
     sendClientContextToIframe,
+    aiState,
+    setAiState,
+    recognizedText,
+    sendHostCommand,
   };
 }
+
