@@ -975,8 +975,8 @@ export default function MobileLibraryHubPage() {
         </TabItem>
       </TabBar>
 
-      {/* 포털/도서관 계정 연동 유도 배너 */}
-      {isLinked === false && (
+      {/* 포털/도서관 계정 연동 유도 배너 (앱 환경에서만 노출) */}
+      {isMobileAppEnvironment() && isLinked === false && (
         <PortalLinkBanner
           title="도서관 계정 연동"
           description="포털 계정을 연동하면 열람실 좌석 배정 및 스터디룸 예약이 가능해요."

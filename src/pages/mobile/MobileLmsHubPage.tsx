@@ -26,7 +26,6 @@ import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
-import PortalLinkBanner from "@/components/common/PortalLinkBanner";
 import {
   Search,
   X,
@@ -309,16 +308,6 @@ export default function MobileLmsHubPage() {
         </SectionWrapper>
       ) : (
         <>
-          {/* 포털 계정 미연동 시 토스 스타일 공용 안내 배너 */}
-          {!isLinked && (
-            <PortalLinkBanner
-              title="포털 계정 연동 필요"
-              description="포털 계정을 등록하면 수강 강좌와 과제 마감 일정이 동기화돼요."
-              actionText="연동하기"
-              onAction={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-            />
-          )}
-
           {/* ================= 1. 과제 & 마감 일정 탭 ================= */}
           {activeTab === "assignments" && (
             <SectionWrapper>

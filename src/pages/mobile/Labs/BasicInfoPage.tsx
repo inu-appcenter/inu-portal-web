@@ -16,12 +16,12 @@ import {
 } from "@/apis/mobileAgentBridge";
 import { StudentInfo } from "@/types/portal";
 import Divider from "@/components/common/Divider";
-import PortalLinkBanner from "@/components/common/PortalLinkBanner";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { postApiLogs } from "@/apis/members";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
-import { KeyRound } from "lucide-react";
+import { KeyRound, Smartphone } from "lucide-react";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 
 interface InfoItemProps {
   title: string;
@@ -218,19 +218,26 @@ const BasicInfoPage = () => {
 
   return (
     <MoreAppsPageWrapper>
-      {!isPortalLinked && !isFetched && (
-        <PortalLinkBanner
-          title="포털 계정 연동 필요"
-          description="포털 계정을 등록하면 학적 정보를 바로 조회할 수 있어요."
-          actionText="연동하기"
-          onAction={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-        />
-      )}
-
       <ContentSection>
         <TitleContentArea description="인천대학교 포털 시스템에서 내 기본 학적 정보를 가져와요. 이 폰에서 직접 작업이 수행되며 서버에는 저장되지 않아요." />
 
-        {!isPortalLinked && !isFetched ? (
+        {!isMobileAppEnvironment() ? (
+          <EmptyCard>
+            <Smartphone size={32} color="#0061ff" />
+            <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
+            <EmptyDesc>
+              학적 정보 조회는 INTIP 모바일 앱 환경에서 제공돼요.
+            </EmptyDesc>
+            <CapsuleButton
+              variant="brand"
+              style={{ marginTop: "12px", padding: "10px 20px", fontSize: "14px" }}
+              onClick={() => openIntipAppOrStore("basic-info")}
+            >
+              앱에서 보기
+            </CapsuleButton>
+            <FootnoteText style={{ marginTop: "12px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+          </EmptyCard>
+        ) : !isPortalLinked && !isFetched ? (
           <EmptyCard>
             <KeyRound size={32} color="#0061ff" />
             <EmptyTitle>포털 계정 연동 후 학적 정보를 확인할 수 있어요</EmptyTitle>
