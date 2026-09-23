@@ -95,7 +95,7 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
             {!isIframeLoaded && (
               <LoadingOverlay>
                 <SpinIcon size={28} />
-                <LoadingText>캠퍼스 비서 불러오는 중...</LoadingText>
+                <LoadingText>챗불이 에이전트 불러오는 중...</LoadingText>
               </LoadingOverlay>
             )}
 

@@ -347,8 +347,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <SidebarContainer $isOpen={isOpen}>
       <SidebarHeader>
         <SidebarBrand>
-          <BrandLogo src={ChatbotLogo} alt="인팁 비서 로고" />
-          <BrandName>인팁 비서</BrandName>
+          <BrandLogo src={ChatbotLogo} alt="챗불이 에이전트 로고" />
+          <BrandName>챗불이 에이전트</BrandName>
         </SidebarBrand>
         <CollapseButton onClick={onToggleSidebar} title="사이드바 닫기">
           <PanelLeftClose size={20} />

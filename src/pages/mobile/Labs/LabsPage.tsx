@@ -107,9 +107,9 @@ const LabsPage = () => {
               <div style={{ width: "100%" }}>
                 <AppItem
                   iconElement={<Sparkles size={22} color="#0061ff" />}
-                  title={"인팁 캠퍼스 비서"}
+                  title={"챗불이 에이전트"}
                   description={
-                    "학식 · 버스 · 시간표 · 공지 통합 캠퍼스 비서"
+                    "학식 · 버스 · 시간표 · 공지 통합 캠퍼스 에이전트"
                   }
                   onClick={() => {
                     openAgent();

@@ -122,7 +122,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </IconButton>
         <HeaderTitleContainer>
           <HeaderTitle>
-            <span>인팁 비서</span>
+            <span>챗불이 에이전트</span>
             <BetaBadge>AI</BetaBadge>
           </HeaderTitle>
         </HeaderTitleContainer>

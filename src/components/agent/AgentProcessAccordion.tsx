@@ -205,7 +205,7 @@ export const AgentProcessAccordion: React.FC<AgentProcessAccordionProps> = ({
           ? `${tools.length}개의 캠퍼스 도구를 참조하여 답변을 작성했습니다.`
           : "캠퍼스 지식을 기반으로 답변을 작성했습니다.";
       default:
-        return process.message || "캠퍼스 비서가 추론 중입니다...";
+        return process.message || "챗불이 에이전트가 추론 중입니다...";
     }
   };
 

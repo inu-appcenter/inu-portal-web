@@ -39,10 +39,10 @@ export default function AIChatMenuCard({
           </IconCircle>
           <TextGroup>
             <TitleRow>
-              <MainTitle>인팁 캠퍼스 비서</MainTitle>
+              <MainTitle>챗불이 에이전트</MainTitle>
               <Badge>NEW</Badge>
             </TitleRow>
-            <SubTitle>학식 · 버스 · 시간표 · 공지 통합 비서</SubTitle>
+            <SubTitle>학식 · 버스 · 시간표 · 공지 통합 에이전트</SubTitle>
           </TextGroup>
         </MenuRow>
 
