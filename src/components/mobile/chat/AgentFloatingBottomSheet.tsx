@@ -225,13 +225,11 @@ const pulseGlow = keyframes`
 const Scrim = styled(motion.div)<{ $active: boolean; $state: AIState }>`
   position: fixed;
   inset: 0;
-  background: ${({ $state }) =>
-    $state === "listening" || $state === "recognized"
-      ? "rgba(0, 0, 0, 0.2)"
-      : "rgba(0, 0, 0, 0.4)"};
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   z-index: 9990;
   pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
-  transition: opacity 0.25s ease, background 0.25s ease;
 `;
 
 const AmbientEdgeGlow = styled.div<{ $active: boolean }>`
