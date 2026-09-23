@@ -103,6 +103,12 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
             setRecognizedText(data.payload.recognizedText);
           }
           options?.onStateChange?.(data.state, data.payload);
+          if (data.state === "closed") {
+            options?.onClose?.();
+          }
+        } else if (data.type === "AGENT_CLOSE" || data.type === "FORCE_CLOSE") {
+          setAiState("closed");
+          options?.onClose?.();
         } else if (data.type === "OPEN_PORTAL_ACCOUNT_MODAL" || data.type === "openPortalAccountModal") {
           setIsPortalModalOpen(true);
         } else if (data.type === "GET_CLIENT_CONTEXT") {
