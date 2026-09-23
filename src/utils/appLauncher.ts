@@ -3,7 +3,7 @@
  */
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=inu.appcenter.intip_android";
-const APP_STORE_URL = "https://apps.apple.com/app/id6503956321";
+const APP_STORE_URL = "https://apps.apple.com/app/id6740070975?l=ko";
 
 export function openIntipAppOrStore(targetPath?: string) {
   const isAndroid = /android/i.test(navigator.userAgent);

@@ -6,7 +6,7 @@ interface AppUpdateModalProps {
 }
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=inu.appcenter.intip_android";
-const APP_STORE_URL = "https://apps.apple.com/app/id6503956321"; // iOS 앱 스토어 ID가 결정되면 수정 가능하도록 설정
+const APP_STORE_URL = "https://apps.apple.com/app/id6740070975?l=ko";
 
 export default function AppUpdateModal({ onUpdate }: AppUpdateModalProps) {
   const handleUpdate = () => {
