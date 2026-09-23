@@ -4,6 +4,12 @@ import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "@/apis/members";
+import {
+  savePortalAccount,
+  fetchAcademicInfoFromApp,
+  isMobileAppEnvironment,
+} from "@/apis/mobileAgentBridge";
+import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
 import TermsLinks from "@/components/common/TermsLinks";
@@ -46,8 +52,28 @@ export default function LoginForm() {
 
     try {
       setLoading(true);
-      const response = await login(studentId, password);
+      const trimmedId = studentId.trim();
+      const trimmedPassword = password.trim();
+
+      const response = await login(trimmedId, trimmedPassword);
       setTokenInfo(response.data);
+
+      // 모바일 앱 환경인 경우 기기 보안 KeyStore에 포털 계정 1회 자동 등록 및 학적 사전 캐싱
+      if (isMobileAppEnvironment()) {
+        try {
+          await savePortalAccount(trimmedId, trimmedPassword);
+          void fetchAcademicInfoFromApp().then((res) => {
+            if (res.success && res.data) {
+              const student = adaptAcademicInfoToStudentInfo(res.data);
+              localStorage.setItem("portal_student_info", JSON.stringify(student));
+              localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+            }
+          }).catch(() => {});
+        } catch (bridgeErr) {
+          console.debug("[LoginForm] auto portal account link error:", bridgeErr);
+        }
+      }
+
       setLoading(false);
 
       const redirectPath = getRedirectPath(location.search);

@@ -91,6 +91,7 @@ import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSet
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
 import MobileDailyBriefPage from "@/pages/mobile/MobileDailyBriefPage";
 import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
+import MobilePortalAccountPage from "@/pages/mobile/MyPage/MobilePortalAccountPage";
 import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
@@ -299,6 +300,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.COMMENTS, element: <MobileMyPageComment /> },
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
+          { path: ROUTES.MYPAGE.PORTAL_ACCOUNT, element: <MobilePortalAccountPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
           { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
           { path: ROUTES.DAILY_BRIEF.ROOT, element: <MobileDailyBriefPage /> },

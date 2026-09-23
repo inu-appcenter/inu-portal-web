@@ -81,6 +81,7 @@ export const ROUTES = {
     DELETE: "/mypage/delete",
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
+    PORTAL_ACCOUNT: "/mypage/portal",
     DAILY_BRIEF: "/mypage/notification/daily-brief",
     SMART_WATCH: "/mypage/notification/smart-watch",
   },

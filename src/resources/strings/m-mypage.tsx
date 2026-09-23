@@ -15,6 +15,7 @@ export type MyPageMenuItem = Omit<MenuItemProps, "onClick">;
 
 /** 로그인한 사용자에게만 보이는 계정 설정. */
 export const MyPageAccountMenu: MyPageMenuItem[] = [
+  { title: "포털 계정 관리", icon: "user-circle", info: "학적 · 이러닝 · 도서관" },
   { title: "알림 설정", icon: "bell", info: "채팅 · 공지" },
   { title: "차단 사용자 관리", icon: "user-close" },
 ];

@@ -66,7 +66,7 @@ import {
   ChevronUp,
   Check,
 } from "lucide-react";
-import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountModal";
+import PortalLinkBanner from "@/components/common/PortalLinkBanner";
 
 /**
  * 한국 표준시(KST, UTC+9) 기준 YYYY-MM-DD 문자열을 반환합니다.
@@ -263,7 +263,6 @@ export default function MobileLibraryHubPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMy, setIsLoadingMy] = useState<boolean>(false);
   const [isLinked, setIsLinked] = useState<boolean | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // 안내/알림 공용 모달 상태
@@ -409,12 +408,12 @@ export default function MobileLibraryHubPage() {
   useEffect(() => {
     loadData();
 
-    const handleOpenModal = () => setIsAuthModalOpen(true);
+    const handleOpenModal = () => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
     window.addEventListener("openLibraryAccountModal", handleOpenModal);
     return () => {
       window.removeEventListener("openLibraryAccountModal", handleOpenModal);
     };
-  }, []);
+  }, [navigate]);
 
   // 임시 배정 남은 시간 카운트다운
   useEffect(() => {
@@ -974,18 +973,14 @@ export default function MobileLibraryHubPage() {
         </TabItem>
       </TabBar>
 
-      {/* 도서관 계정 연동 유도 배너 */}
+      {/* 포털/도서관 계정 연동 유도 배너 */}
       {isLinked === false && (
-        <AuthBannerCard onClick={() => setIsAuthModalOpen(true)}>
-          <BannerLeft>
-            <KeyRound size={18} color="#d97706" />
-            <BannerText>
-              <strong style={{ color: "#92400e" }}>도서관 계정 연동하기</strong>
-              <span style={{ color: "#b45309" }}>학산도서관 계정을 연동하면 좌석 배정 및 스터디룸 예약이 가능해요</span>
-            </BannerText>
-          </BannerLeft>
-          <ChevronRight size={18} color="#d97706" />
-        </AuthBannerCard>
+        <PortalLinkBanner
+          title="도서관 계정 연동"
+          description="포털 계정을 연동하면 열람실 좌석 배정 및 스터디룸 예약이 가능해요."
+          actionText="연동하기"
+          onAction={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+        />
       )}
 
       {/* 알림 관리 바로가기 배너 */}
@@ -1336,10 +1331,10 @@ export default function MobileLibraryHubPage() {
                 <CapsuleButton
                   variant="brand"
                   style={{ padding: "8px 16px", fontSize: "13px" }}
-                  onClick={() => setIsAuthModalOpen(true)}
+                  onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
                   leftIcon={<KeyRound size={14} />}
                 >
-                  도서관 계정 연동하기
+                  포털 계정 연동하기
                 </CapsuleButton>
               )}
             </DisabledNoticeCard>
@@ -2033,17 +2028,6 @@ export default function MobileLibraryHubPage() {
           onClick: () => setAlertModal((prev) => ({ ...prev, isOpen: false })),
         }}
       />
-
-      {/* 도서관 계정 연동 모달 */}
-      <LibraryAccountModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => {
-          setIsAuthModalOpen(false);
-          showToast("도서관 계정이 성공적으로 연동되었습니다.");
-          loadData();
-        }}
-      />
     </Container>
   );
 }
@@ -2097,18 +2081,6 @@ const BadgeDot = styled.div`
   height: 6px;
   border-radius: 50%;
   background: var(--text-brand, #0061ff);
-`;
-
-const AuthBannerCard = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 14px;
-  cursor: pointer;
 `;
 
 const BannerCard = styled.div`

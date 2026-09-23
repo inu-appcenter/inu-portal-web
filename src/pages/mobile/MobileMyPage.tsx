@@ -98,6 +98,9 @@ export default function MobileMyPage() {
       case "프로필 수정":
         navigate(ROUTES.MYPAGE.PROFILE);
         break;
+      case "포털 계정 관리":
+        navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
+        break;
       case "알림 설정":
         navigate(ROUTES.MYPAGE.NOTIFICATION);
         break;

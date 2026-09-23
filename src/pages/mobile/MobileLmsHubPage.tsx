@@ -26,6 +26,7 @@ import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
+import PortalLinkBanner from "@/components/common/PortalLinkBanner";
 import {
   Search,
   X,
@@ -46,7 +47,6 @@ import {
   KeyRound,
   Check,
 } from "lucide-react";
-import { LmsAccountModal } from "@/components/mobile/agent/LmsAccountModal";
 
 export default function MobileLmsHubPage() {
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ export default function MobileLmsHubPage() {
   const [courses, setCourses] = useState<LmsCourse[]>([]);
   const [grades, setGrades] = useState<LmsCourseGrade[]>([]);
   const [isLinked, setIsLinked] = useState<boolean>(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -118,12 +117,12 @@ export default function MobileLmsHubPage() {
   useEffect(() => {
     loadData();
 
-    const handleOpenModal = () => setIsAuthModalOpen(true);
+    const handleOpenModal = () => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
     window.addEventListener("openLmsAccountModal", handleOpenModal);
     return () => {
       window.removeEventListener("openLmsAccountModal", handleOpenModal);
     };
-  }, []);
+  }, [navigate]);
 
   const showToast = (msg: string) => {
     setActionMessage(msg);
@@ -308,36 +307,14 @@ export default function MobileLmsHubPage() {
         </SectionWrapper>
       ) : (
         <>
-          {/* 포털 계정 미연동 시 비활성화 안내 배너 */}
+          {/* 포털 계정 미연동 시 토스 스타일 공용 안내 배너 */}
           {!isLinked && (
-            <DisabledNoticeCard>
-              <DisabledNoticeLeft>
-                <KeyRound size={20} color="#0061ff" />
-                <DisabledNoticeText>
-                  {!isMobileAppEnvironment() ? (
-                    <>
-                      <strong>이러닝 연동은 INTIP 모바일 앱에서 지원해요</strong>
-                      <span>모바일 앱에서 포털 계정을 연동하면 수강 강좌와 과제 마감 일정이 동기화됩니다.</span>
-                    </>
-                  ) : (
-                    <>
-                      <strong>이러닝(LMS) 계정을 연동해주세요</strong>
-                      <span>포털 계정을 연동하면 수강 강좌와 과제 마감 일정이 동기화됩니다.</span>
-                    </>
-                  )}
-                </DisabledNoticeText>
-              </DisabledNoticeLeft>
-              {isMobileAppEnvironment() && (
-                <CapsuleButton
-                  variant="brand"
-                  style={{ padding: "8px 16px", fontSize: "13px" }}
-                  onClick={() => setIsAuthModalOpen(true)}
-                  leftIcon={<KeyRound size={14} />}
-                >
-                  LMS 계정 연동하기
-                </CapsuleButton>
-              )}
-            </DisabledNoticeCard>
+            <PortalLinkBanner
+              title="포털 계정 연동 필요"
+              description="포털 계정을 등록하면 수강 강좌와 과제 마감 일정이 동기화돼요."
+              actionText="연동하기"
+              onAction={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+            />
           )}
 
           {/* ================= 1. 과제 & 마감 일정 탭 ================= */}
@@ -389,9 +366,16 @@ export default function MobileLmsHubPage() {
 
               {!isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>LMS 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
+                  <KeyRound size={28} color="#0061ff" />
+                  <EmptyTitle>포털 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시됩니다.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                  >
+                    포털 계정 연동하기
+                  </CapsuleButton>
                 </EmptyBox>
               ) : assignments.length === 0 ? (
                 <EmptyBox>
@@ -476,9 +460,16 @@ export default function MobileLmsHubPage() {
 
               {!isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>LMS 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
+                  <KeyRound size={28} color="#0061ff" />
+                  <EmptyTitle>포털 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>이번 학기 수강 중인 강좌 목록과 주차별 학습 현황을 확인해보세요.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                  >
+                    포털 계정 연동하기
+                  </CapsuleButton>
                 </EmptyBox>
               ) : courses.length === 0 ? (
                 <EmptyBox>
@@ -545,9 +536,16 @@ export default function MobileLmsHubPage() {
 
               {!isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>LMS 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
+                  <KeyRound size={28} color="#0061ff" />
+                  <EmptyTitle>포털 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있습니다.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                  >
+                    포털 계정 연동하기
+                  </CapsuleButton>
                 </EmptyBox>
               ) : grades.length === 0 ? (
                 <EmptyBox>
@@ -644,7 +642,7 @@ export default function MobileLmsHubPage() {
                             <ModuleRight>
                               {mod.modname === "vod" ? (
                                 <StatusBadge $done={isCompleted}>
-                                  {isCompleted ? "출석 완료" : "미시청"}
+                                   {isCompleted ? "출석 완료" : "미시청"}
                                 </StatusBadge>
                               ) : mod.modname === "assign" ? (
                                 <StatusBadge $done={isCompleted}>
@@ -670,17 +668,6 @@ export default function MobileLmsHubPage() {
           )}
         </SheetContainer>
       </BottomSheet>
-
-      {/* LMS 계정 연동 모달 */}
-      <LmsAccountModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => {
-          setIsAuthModalOpen(false);
-          showToast("LMS 계정이 성공적으로 연동되었습니다.");
-          loadData();
-        }}
-      />
 
       {/* 안내/경고 공용 모달 */}
       <Modal
@@ -784,47 +771,6 @@ const BannerText = styled.div`
     font-size: 12px;
     color: var(--text-secondary, #6b7684);
     margin-top: 2px;
-  }
-`;
-
-const DisabledNoticeCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media ${DESKTOP_MEDIA} {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-`;
-
-const DisabledNoticeLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const DisabledNoticeText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  strong {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text-primary, #191f28);
-  }
-  span {
-    font-size: 12px;
-    color: var(--text-secondary, #6b7684);
-    line-height: 1.4;
   }
 `;
 
