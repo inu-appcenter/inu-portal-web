@@ -219,13 +219,26 @@ export default function MobileSmartWatchManagementPage() {
           ))}
         </JobList>
       ) : activeJobs.length === 0 ? (
-        <EmptyBox>
-          <Bell size={28} color="#94a3b8" />
-          <EmptyText>진행 중인 알림이 없습니다.</EmptyText>
-          <EmptySubText>
-            도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
-          </EmptySubText>
-        </EmptyBox>
+        <>
+          {!isMobileAppEnvironment() && (
+            <DisabledNoticeCard>
+              <DisabledNoticeLeft>
+                <Smartphone size={20} color="#0061ff" />
+                <DisabledNoticeText>
+                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
+                  <span>기기 백그라운드 빈자리 및 마감 알림은 INTIP 모바일 앱 환경에서 확인하실 수 있습니다.</span>
+                </DisabledNoticeText>
+              </DisabledNoticeLeft>
+            </DisabledNoticeCard>
+          )}
+          <EmptyBox>
+            <Bell size={28} color="#94a3b8" />
+            <EmptyText>진행 중인 알림이 없습니다.</EmptyText>
+            <EmptySubText>
+              도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
+            </EmptySubText>
+          </EmptyBox>
+        </>
       ) : (
         <JobList>
           {activeJobs.map((job) => (
@@ -328,6 +341,45 @@ const Container = styled.div`
   @media ${DESKTOP_MEDIA} {
     max-width: 1200px;
     padding: 24px 0 40px;
+  }
+`;
+
+const DisabledNoticeCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+
+  @media ${DESKTOP_MEDIA} {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const DisabledNoticeLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const DisabledNoticeText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary, #191f28);
+  }
+  span {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7684);
+    line-height: 1.4;
   }
 `;
 

@@ -262,24 +262,29 @@ export default function MobileLmsHubPage() {
             ))}
           </ListContainer>
         </SectionWrapper>
-      ) : !isLinked ? (
-        <EmptyBox>
-          <GraduationCap size={36} color="#94a3b8" />
-          <EmptyTitle>포털 계정 연동이 필요합니다</EmptyTitle>
-          <EmptyDesc>
-            포털 SSO 계정을 연동하면 다가오는 과제 마감 일정과 주차별 강의 출석 현황을 확인할 수 있습니다.
-          </EmptyDesc>
-          <CapsuleButton
-            variant="brand"
-            style={{ marginTop: "16px", padding: "10px 24px", fontSize: "14px" }}
-            onClick={() => setIsAuthModalOpen(true)}
-            leftIcon={<KeyRound size={16} />}
-          >
-            포털 계정 연동하기
-          </CapsuleButton>
-        </EmptyBox>
       ) : (
         <>
+          {/* 포털 계정 미연동 시 비활성화 안내 배너 */}
+          {!isLinked && (
+            <DisabledNoticeCard>
+              <DisabledNoticeLeft>
+                <KeyRound size={20} color="#0061ff" />
+                <DisabledNoticeText>
+                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
+                  <span>포털 SSO 계정을 연동하면 수강 강좌 및 과제 마감 일정이 동기화됩니다.</span>
+                </DisabledNoticeText>
+              </DisabledNoticeLeft>
+              <CapsuleButton
+                variant="brand"
+                style={{ padding: "8px 16px", fontSize: "13px" }}
+                onClick={() => setIsAuthModalOpen(true)}
+                leftIcon={<KeyRound size={14} />}
+              >
+                포털 계정 연동하기
+              </CapsuleButton>
+            </DisabledNoticeCard>
+          )}
+
           {/* ================= 1. 과제 & 마감 일정 탭 ================= */}
           {activeTab === "assignments" && (
             <SectionWrapper>
@@ -291,7 +296,32 @@ export default function MobileLmsHubPage() {
                 </RefreshBtn>
               </SectionTop>
 
-              {assignments.length === 0 ? (
+              {!isLinked ? (
+                <ListContainer>
+                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+                    <AssignTop>
+                      <CourseNameBadge>컴퓨터네트워크 (예시)</CourseNameBadge>
+                      <DueBadge>D-3</DueBadge>
+                    </AssignTop>
+                    <AssignTitle>중간과제 보고서 제출</AssignTitle>
+                    <TimeRow>
+                      <Clock size={13} />
+                      <span>마감: 포털 계정 연동 후 실제 일정 표시</span>
+                    </TimeRow>
+                  </Box>
+                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+                    <AssignTop>
+                      <CourseNameBadge>인공지능개론 (예시)</CourseNameBadge>
+                      <DueBadge>D-5</DueBadge>
+                    </AssignTop>
+                    <AssignTitle>4주차 온라인 강의 출석</AssignTitle>
+                    <TimeRow>
+                      <Clock size={13} />
+                      <span>마감: 포털 계정 연동 후 실제 일정 표시</span>
+                    </TimeRow>
+                  </Box>
+                </ListContainer>
+              ) : assignments.length === 0 ? (
                 <EmptyBox>
                   <CheckCircle2 size={32} color="#16a34a" />
                   <EmptyTitle>마감 예정인 일정이 없습니다</EmptyTitle>
@@ -340,14 +370,43 @@ export default function MobileLmsHubPage() {
           {activeTab === "courses" && (
             <SectionWrapper>
               <SectionTop>
-                <SectionTitle>수강 중인 강좌 ({courses.length})</SectionTitle>
+                <SectionTitle>수강 중인 강좌 ({isLinked ? courses.length : 0})</SectionTitle>
                 <RefreshBtn onClick={loadData}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
               </SectionTop>
 
-              {courses.length === 0 ? (
+              {!isLinked ? (
+                <ListContainer>
+                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+                    <CourseHeader>
+                      <div>
+                        <CourseTitle>컴퓨터네트워크 (예시)</CourseTitle>
+                        <CourseCode>CSE301-01</CourseCode>
+                      </div>
+                      <ChevronRight size={18} color="#94a3b8" />
+                    </CourseHeader>
+                    <CourseMetaRow>
+                      <span>수강생 45명</span>
+                      <OpenDetailText>주차별 진도 확인</OpenDetailText>
+                    </CourseMetaRow>
+                  </Box>
+                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+                    <CourseHeader>
+                      <div>
+                        <CourseTitle>인공지능개론 (예시)</CourseTitle>
+                        <CourseCode>AI201-02</CourseCode>
+                      </div>
+                      <ChevronRight size={18} color="#94a3b8" />
+                    </CourseHeader>
+                    <CourseMetaRow>
+                      <span>수강생 60명</span>
+                      <OpenDetailText>주차별 진도 확인</OpenDetailText>
+                    </CourseMetaRow>
+                  </Box>
+                </ListContainer>
+              ) : courses.length === 0 ? (
                 <EmptyBox>
                   <GraduationCap size={32} color="#94a3b8" />
                   <EmptyTitle>수강 중인 강좌가 없습니다</EmptyTitle>
@@ -385,7 +444,19 @@ export default function MobileLmsHubPage() {
                 </RefreshBtn>
               </SectionTop>
 
-              {grades.length === 0 ? (
+              {!isLinked ? (
+                <ListContainer>
+                  <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+                    <GradeCardInner>
+                      <GradeLeft>
+                        <GradeCourseName>컴퓨터네트워크 (예시)</GradeCourseName>
+                        <GradeRaw>원점수: 95.0</GradeRaw>
+                      </GradeLeft>
+                      <GradeBadge>A+</GradeBadge>
+                    </GradeCardInner>
+                  </Box>
+                </ListContainer>
+              ) : grades.length === 0 ? (
                 <EmptyBox>
                   <Award size={32} color="#94a3b8" />
                   <EmptyTitle>조회된 성적 정보가 없습니다</EmptyTitle>
@@ -612,6 +683,45 @@ const BannerText = styled.div`
     font-size: 12px;
     color: var(--text-secondary, #6b7684);
     margin-top: 2px;
+  }
+`;
+
+const DisabledNoticeCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+
+  @media ${DESKTOP_MEDIA} {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const DisabledNoticeLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const DisabledNoticeText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary, #191f28);
+  }
+  span {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7684);
+    line-height: 1.4;
   }
 `;
 

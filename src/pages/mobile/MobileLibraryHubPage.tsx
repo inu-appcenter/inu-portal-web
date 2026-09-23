@@ -109,7 +109,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
       currentOccupiedUntil: null,
       availableMinutesFromNow: 120,
       summaryText: "시간표 확인 가능",
-      badgeLabel: "현황 확인",
+      badgeLabel: "",
       badgeType: "avail",
       previewSlots: [],
     };
@@ -1145,19 +1145,21 @@ export default function MobileLibraryHubPage() {
                 return (
                   <Box key={s.id} style={{ padding: "16px" }}>
                     <StudyHeader>
-                      <div>
-                        <StudyName>{s.name}</StudyName>
+                      <StudyHeaderLeft>
+                        <StudyTitleRow>
+                          <StudyName>{s.name}</StudyName>
+                          <QuotaBadge>{s.quota}</QuotaBadge>
+                        </StudyTitleRow>
                         <StudyLocation>
                           <MapPin size={12} />
                           <span>{s.location}</span>
                         </StudyLocation>
-                      </div>
-                      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      </StudyHeaderLeft>
+                      {occInfo.badgeLabel && (
                         <StudyOccupancyBadge $type={occInfo.badgeType}>
                           {occInfo.badgeLabel}
                         </StudyOccupancyBadge>
-                        <QuotaBadge>{s.quota}</QuotaBadge>
-                      </div>
+                      )}
                     </StudyHeader>
 
                     {/* 향후 2시간 점유 현황 프리뷰 바 */}
@@ -1220,6 +1222,27 @@ export default function MobileLibraryHubPage() {
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
+
+          {/* 도서관 계정 미연동 시 비활성화 안내 배너 */}
+          {isLinked === false && (
+            <DisabledNoticeCard>
+              <DisabledNoticeLeft>
+                <KeyRound size={20} color="#d97706" />
+                <DisabledNoticeText>
+                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
+                  <span>도서관 SSO 계정을 연동하면 내 열람실 좌석 및 스터디룸 예약 현황을 실시간으로 관리할 수 있습니다.</span>
+                </DisabledNoticeText>
+              </DisabledNoticeLeft>
+              <CapsuleButton
+                variant="brand"
+                style={{ padding: "8px 16px", fontSize: "13px" }}
+                onClick={() => setIsAuthModalOpen(true)}
+                leftIcon={<KeyRound size={14} />}
+              >
+                도서관 계정 연동하기
+              </CapsuleButton>
+            </DisabledNoticeCard>
+          )}
 
           {/* 3-1. 열람실 좌석 섹션 */}
           <SubTitle>현재 이용 중인 열람실 좌석</SubTitle>
@@ -1335,6 +1358,19 @@ export default function MobileLibraryHubPage() {
                 <span>종료 20분 전 알림 받기</span>
               </ReminderRow>
             </Box>
+          ) : isLinked === false ? (
+            <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+              <ActiveSeatHeader>
+                <ActiveBadge>이용 중 (예시)</ActiveBadge>
+                <SeatRoomTitle>
+                  자유열람실 <strong>12번 좌석</strong>
+                </SeatRoomTitle>
+              </ActiveSeatHeader>
+              <SeatTimeInfo>
+                <Clock size={15} color="#0061ff" />
+                <span>이용 시간: 09:00 ~ 13:00 (포털 계정 연동 후 실제 데이터 표시)</span>
+              </SeatTimeInfo>
+            </Box>
           ) : (
             <EmptyBox>현재 배정된 열람실 좌석이 없습니다.</EmptyBox>
           )}
@@ -1398,6 +1434,17 @@ export default function MobileLibraryHubPage() {
                 );
               })}
             </ReservationList>
+          ) : isLinked === false ? (
+            <Box style={{ padding: "16px", opacity: 0.6, pointerEvents: "none" }}>
+              <ReservationTop>
+                <strong>제1스터디룸 (4인실)</strong>
+                <ReservationStatus>예약됨 (예시)</ReservationStatus>
+              </ReservationTop>
+              <ReservationTime>
+                <Clock size={13} />
+                <span>14:00 ~ 16:00 (포털 계정 연동 후 실제 데이터 표시)</span>
+              </ReservationTime>
+            </Box>
           ) : (
             <EmptyBox>진행 중인 스터디룸 예약이 없습니다.</EmptyBox>
           )}
@@ -1433,6 +1480,8 @@ export default function MobileLibraryHubPage() {
                 </FavCard>
               ))}
             </FavGrid>
+          ) : isLinked === false ? (
+            <EmptyBox style={{ opacity: 0.7 }}>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</EmptyBox>
           ) : (
             <EmptyBox>등록된 선호좌석이 없습니다. 열람실 좌석에서 ★을 눌러 등록해보세요.</EmptyBox>
           )}
@@ -2357,6 +2406,18 @@ const StudyHeader = styled.div`
   margin-bottom: 10px;
 `;
 
+const StudyHeaderLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+`;
+
+const StudyTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const StudyName = styled.div`
   font-size: 15px;
   font-weight: 700;
@@ -2369,7 +2430,45 @@ const StudyLocation = styled.div`
   gap: 4px;
   font-size: 12px;
   color: var(--text-secondary, #6b7684);
-  margin-top: 2px;
+`;
+
+const DisabledNoticeCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+
+  @media ${DESKTOP_MEDIA} {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const DisabledNoticeLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const DisabledNoticeText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary, #191f28);
+  }
+  span {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7684);
+    line-height: 1.4;
+  }
 `;
 
 const StudyOccupancyBadge = styled.span<{ $type: string }>`
