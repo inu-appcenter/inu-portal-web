@@ -314,18 +314,29 @@ export default function MobileLmsHubPage() {
               <DisabledNoticeLeft>
                 <KeyRound size={20} color="#0061ff" />
                 <DisabledNoticeText>
-                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
-                  <span>포털 SSO 계정을 연동하면 수강 강좌 및 과제 마감 일정이 동기화됩니다.</span>
+                  {!isMobileAppEnvironment() ? (
+                    <>
+                      <strong>이러닝 연동은 INTIP 모바일 앱에서 지원해요</strong>
+                      <span>모바일 앱에서 포털 계정을 연동하면 수강 강좌와 과제 마감 일정이 동기화됩니다.</span>
+                    </>
+                  ) : (
+                    <>
+                      <strong>이러닝(LMS) 계정을 연동해주세요</strong>
+                      <span>포털 계정을 연동하면 수강 강좌와 과제 마감 일정이 동기화됩니다.</span>
+                    </>
+                  )}
                 </DisabledNoticeText>
               </DisabledNoticeLeft>
-              <CapsuleButton
-                variant="brand"
-                style={{ padding: "8px 16px", fontSize: "13px" }}
-                onClick={() => setIsAuthModalOpen(true)}
-                leftIcon={<KeyRound size={14} />}
-              >
-                포털 계정 연동하기
-              </CapsuleButton>
+              {isMobileAppEnvironment() && (
+                <CapsuleButton
+                  variant="brand"
+                  style={{ padding: "8px 16px", fontSize: "13px" }}
+                  onClick={() => setIsAuthModalOpen(true)}
+                  leftIcon={<KeyRound size={14} />}
+                >
+                  LMS 계정 연동하기
+                </CapsuleButton>
+              )}
             </DisabledNoticeCard>
           )}
 
@@ -379,8 +390,8 @@ export default function MobileLmsHubPage() {
               {!isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>포털 SSO 계정을 연동하면 마감 예정 과제 및 학습 일정이 동기화됩니다.</EmptyDesc>
+                  <EmptyTitle>LMS 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시됩니다.</EmptyDesc>
                 </EmptyBox>
               ) : assignments.length === 0 ? (
                 <EmptyBox>
@@ -466,8 +477,8 @@ export default function MobileLmsHubPage() {
               {!isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>포털 SSO 계정을 연동하면 수강 중인 강좌 목록과 진도를 확인할 수 있습니다.</EmptyDesc>
+                  <EmptyTitle>LMS 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>이번 학기 수강 중인 강좌 목록과 주차별 학습 현황을 확인해보세요.</EmptyDesc>
                 </EmptyBox>
               ) : courses.length === 0 ? (
                 <EmptyBox>
@@ -535,8 +546,8 @@ export default function MobileLmsHubPage() {
               {!isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#94a3b8" />
-                  <EmptyTitle>포털 계정 연동 후 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>포털 SSO 계정을 연동하면 과목별 성적 현황이 동기화됩니다.</EmptyDesc>
+                  <EmptyTitle>LMS 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
+                  <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있습니다.</EmptyDesc>
                 </EmptyBox>
               ) : grades.length === 0 ? (
                 <EmptyBox>

@@ -291,15 +291,15 @@ export default function MobileSmartWatchManagementPage() {
               <DisabledNoticeLeft>
                 <Smartphone size={20} color="#0061ff" />
                 <DisabledNoticeText>
-                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
-                  <span>기기 백그라운드 빈자리 및 마감 알림은 INTIP 모바일 앱 환경에서 확인하실 수 있습니다.</span>
+                  <strong>알림 기능은 INTIP 모바일 앱에서 이용할 수 있어요</strong>
+                  <span>도서관 빈자리 알림 및 과제 마감 리마인더는 모바일 앱에서 등록하고 푸시 알림을 받을 수 있습니다.</span>
                 </DisabledNoticeText>
               </DisabledNoticeLeft>
             </DisabledNoticeCard>
           )}
           <EmptyBox>
             <Bell size={28} color="#94a3b8" />
-            <EmptyText>진행 중인 알림이 없습니다.</EmptyText>
+            <EmptyText>진행 중인 알림이 없습니다</EmptyText>
             <EmptySubText>
               도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
             </EmptySubText>

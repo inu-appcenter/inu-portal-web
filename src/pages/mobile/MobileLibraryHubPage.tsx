@@ -35,6 +35,7 @@ import {
   checkLibraryAccountLinked,
   startLibrarySeatSessionBridge,
   cancelLibrarySeatSessionBridge,
+  isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
@@ -1318,18 +1319,29 @@ export default function MobileLibraryHubPage() {
               <DisabledNoticeLeft>
                 <KeyRound size={20} color="#d97706" />
                 <DisabledNoticeText>
-                  <strong>포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요.</strong>
-                  <span>도서관 SSO 계정을 연동하면 내 열람실 좌석 및 스터디룸 예약 현황을 실시간으로 관리할 수 있습니다.</span>
+                  {!isMobileAppEnvironment() ? (
+                    <>
+                      <strong>내 이용 현황은 INTIP 모바일 앱에서 이용할 수 있어요</strong>
+                      <span>모바일 앱에서 도서관 계정을 연동하면 좌석 이용 시간 확인, 연장/반납 및 스터디룸 예약 관리가 가능합니다.</span>
+                    </>
+                  ) : (
+                    <>
+                      <strong>도서관 계정을 연동해주세요</strong>
+                      <span>학산도서관 계정을 연동하면 내 열람실 좌석 및 스터디룸 예약 현황을 관리할 수 있습니다.</span>
+                    </>
+                  )}
                 </DisabledNoticeText>
               </DisabledNoticeLeft>
-              <CapsuleButton
-                variant="brand"
-                style={{ padding: "8px 16px", fontSize: "13px" }}
-                onClick={() => setIsAuthModalOpen(true)}
-                leftIcon={<KeyRound size={14} />}
-              >
-                도서관 계정 연동하기
-              </CapsuleButton>
+              {isMobileAppEnvironment() && (
+                <CapsuleButton
+                  variant="brand"
+                  style={{ padding: "8px 16px", fontSize: "13px" }}
+                  onClick={() => setIsAuthModalOpen(true)}
+                  leftIcon={<KeyRound size={14} />}
+                >
+                  도서관 계정 연동하기
+                </CapsuleButton>
+              )}
             </DisabledNoticeCard>
           )}
 
@@ -1450,7 +1462,7 @@ export default function MobileLibraryHubPage() {
           ) : (
             <EmptyBox>
               {isLinked === false
-                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                ? "도서관 계정 연동 후 배정된 좌석을 확인할 수 있어요."
                 : "현재 배정된 열람실 좌석이 없습니다."}
             </EmptyBox>
           )}
@@ -1517,7 +1529,7 @@ export default function MobileLibraryHubPage() {
           ) : (
             <EmptyBox>
               {isLinked === false
-                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                ? "도서관 계정 연동 후 예약 내역을 확인할 수 있어요."
                 : "진행 중인 스터디룸 예약이 없습니다."}
             </EmptyBox>
           )}
@@ -1556,7 +1568,7 @@ export default function MobileLibraryHubPage() {
           ) : (
             <EmptyBox>
               {isLinked === false
-                ? "포털 계정 연동 후(또는 INTIP 모바일 앱에서) 확인할 수 있어요."
+                ? "도서관 계정 연동 후 선호좌석을 관리할 수 있어요."
                 : "등록된 선호좌석이 없습니다. 열람실 좌석에서 ★을 눌러 등록해보세요."}
             </EmptyBox>
           )}
