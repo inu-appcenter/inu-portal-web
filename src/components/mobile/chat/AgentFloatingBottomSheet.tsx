@@ -93,7 +93,7 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
   }, []);
 
   const currentHeight = getSheetHeight(isOpen ? aiState : "closed");
-  const isScrimActive = isOpen && (aiState === "answering" || aiState === "expanded");
+  const isSheetOpen = isOpen && aiState !== "closed";
   const isAmbientGlowActive =
     isOpen &&
     (aiState === "listening" || aiState === "recognized" || aiState === "thinking");
@@ -137,13 +137,14 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
 
   return (
     <>
-      {/* 1. 배경 딤 (Scrim) */}
+      {/* 1. 배경 딤 (Scrim - 플로팅 입력창 상태에서도 외부 터치 시 즉시 닫기 지원) */}
       <Scrim
-        $active={isScrimActive}
+        $active={isSheetOpen}
+        $state={aiState}
         onClick={handleScrimClick}
         initial={{ opacity: 0 }}
-        animate={{ opacity: isScrimActive ? 1 : 0 }}
-        transition={{ duration: 0.25 }}
+        animate={{ opacity: isSheetOpen ? 1 : 0 }}
+        transition={{ duration: 0.2 }}
       />
 
       {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
@@ -207,15 +208,24 @@ const pulseGlow = keyframes`
   }
 `;
 
-const Scrim = styled(motion.div)<{ $active: boolean }>`
+const Scrim = styled(motion.div)<{ $active: boolean; $state: AIState }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.48);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: ${({ $state }) =>
+    $state === "listening" || $state === "recognized"
+      ? "rgba(0, 0, 0, 0.2)"
+      : "rgba(0, 0, 0, 0.45)"};
+  backdrop-filter: ${({ $state }) =>
+    $state === "listening" || $state === "recognized"
+      ? "blur(2px)"
+      : "blur(6px)"};
+  -webkit-backdrop-filter: ${({ $state }) =>
+    $state === "listening" || $state === "recognized"
+      ? "blur(2px)"
+      : "blur(6px)"};
   z-index: 9990;
   pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease, background 0.25s ease;
 `;
 
 const AmbientEdgeGlow = styled.div<{ $active: boolean }>`
