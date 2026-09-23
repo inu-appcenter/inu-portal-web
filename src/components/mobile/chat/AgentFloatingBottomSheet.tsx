@@ -158,13 +158,6 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
       >
-        {/* 상단 드래그 핸들 (Answering / Expanded 상태일 때) */}
-        {(aiState === "answering" || aiState === "expanded") && (
-          <DragHandleArea>
-            <DragHandleBar />
-          </DragHandleArea>
-        )}
-
         {/* Child iframe */}
         <IframeWrapper $isDragging={isDragging}>
           <StyledIframe
@@ -277,36 +270,6 @@ const SheetContainer = styled.div<{
   @media (max-width: 768px) {
     max-width: 100%;
     padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
-  }
-`;
-
-const DragHandleArea = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 20;
-  cursor: grab;
-  touch-action: none;
-
-  &:active {
-    cursor: grabbing;
-  }
-`;
-
-const DragHandleBar = styled.div`
-  width: 36px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 9999px;
-  transition: background 0.2s ease, transform 0.2s ease;
-
-  ${DragHandleArea}:hover & {
-    background: rgba(255, 255, 255, 0.7);
   }
 `;
 
