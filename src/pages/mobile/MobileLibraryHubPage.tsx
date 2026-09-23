@@ -33,24 +33,25 @@ import { postRegisterCampusWatch } from "@/apis/agent";
 import {
   registerLocalWatchJobInApp,
   checkLibraryAccountLinked,
-  isMobileAppEnvironment,
   startLibrarySeatSessionBridge,
   cancelLibrarySeatSessionBridge,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import Skeleton from "@/components/common/Skeleton";
+import Box from "@/components/common/Box";
+import BottomSheet from "@/components/common/BottomSheet";
+import CapsuleButton from "@/components/common/CapsuleButton";
+import Modal from "@/components/common/Modal";
 import {
   BookOpen,
   Users,
   Clock,
-  Crosshair,
+  Bell,
   RefreshCw,
   CheckCircle,
   RotateCw,
   LogOut,
-  Bell,
-  Sparkles,
   Calendar,
   ChevronRight,
   X,
@@ -68,7 +69,6 @@ import { LibraryAccountModal } from "@/components/mobile/agent/LibraryAccountMod
 
 /**
  * 한국 표준시(KST, UTC+9) 기준 YYYY-MM-DD 문자열을 반환합니다.
- * @param offsetDays 오늘 기준 날짜 오프셋 (0: 오늘, 1: 내일, 2: 모레)
  */
 function getKstDateString(offsetDays: number = 0): string {
   const d = new Date();
@@ -126,7 +126,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
       isCurrentOccupied: false,
       currentOccupiedUntil: null,
       availableMinutesFromNow: 0,
-      summaryText: "현재 운영 시간 외 (09:00 ~ 22:00 운영)",
+      summaryText: "운영 시간 외 (09:00 ~ 22:00)",
       badgeLabel: "운영 종료",
       badgeType: "closed",
       previewSlots: [],
@@ -185,7 +185,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
     previewSlots.push({
       timeStr,
       type: isPast ? "past" : isOcc ? "occ" : "avail",
-      label: `${timeStr} ${isPast ? "(만료)" : isOcc ? "(점유됨)" : "(이용 가능)"}`,
+      label: `${timeStr} ${isPast ? "(마감)" : isOcc ? "(점유됨)" : "(이용 가능)"}`,
     });
   }
 
@@ -204,22 +204,22 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
     badgeType = "occupied";
     badgeLabel = "현재 이용 중";
     summaryText = currentOccupiedUntilStr
-      ? `🔴 현재 이용 중 (~${currentOccupiedUntilStr}까지 점유됨)`
-      : "🔴 현재 이용 중 (예약 있음)";
+      ? `현재 이용 중 (~${currentOccupiedUntilStr})`
+      : "현재 이용 중";
   } else if (availableConsecutiveMin >= 120) {
     badgeType = "avail";
-    badgeLabel = "지금 2시간 가능";
-    summaryText = "✨ 지금부터 2시간 연속 예약 가능";
+    badgeLabel = "2시간 예약 가능";
+    summaryText = "지금부터 2시간 연속 예약 가능";
   } else if (availableConsecutiveMin > 0) {
     badgeType = "warning";
     const hrs = Math.floor(availableConsecutiveMin / 60);
     const remMins = availableConsecutiveMin % 60;
     badgeLabel = `~${hrs > 0 ? `${hrs}시간 ` : ""}${remMins > 0 ? `${remMins}분 ` : ""}가능`;
-    summaryText = `⚡ 지금부터 ${availableConsecutiveMin}분간 이용 가능 (이후 예약 있음)`;
+    summaryText = `지금부터 ${availableConsecutiveMin}분간 이용 가능`;
   } else {
     badgeType = "occupied";
     badgeLabel = "점유됨";
-    summaryText = "🔴 현재 예약이 차있습니다.";
+    summaryText = "현재 예약이 차있습니다.";
   }
 
   return {
@@ -248,159 +248,136 @@ export default function MobileLibraryHubPage() {
   const [mySeat, setMySeat] = useState<CurrentSeatInfo | null>(null);
   const [myStudyReservations, setMyStudyReservations] = useState<StudyRoomReservation[]>([]);
   const [favoriteSeats, setFavoriteSeats] = useState<LibrarySeat[]>([]);
-  const [isLinked, setIsLinked] = useState<boolean | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingMy, setIsLoadingMy] = useState<boolean>(false);
+  const [isLinked, setIsLinked] = useState<boolean | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  // 1. 열람실 좌석 선택 모달 상태
+  // 열람실 좌석 선택 바텀시트 상태
   const [selectedSeatRoom, setSelectedSeatRoom] = useState<LibrarySeatRoom | null>(null);
   const [roomSeats, setRoomSeats] = useState<LibrarySeat[]>([]);
   const [isLoadingSeats, setIsLoadingSeats] = useState<boolean>(false);
 
-  // 2. 스터디룸 타임라인 & 예약 모달 상태
+  // 스터디룸 예약 바텀시트 상태
   const [selectedStudyRoom, setSelectedStudyRoom] = useState<LibraryStudyRoom | null>(null);
   const [studyRoomDetail, setStudyRoomDetail] = useState<StudyRoomDetail | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>(() => getKstDateString(0));
-  const [reserveBeginTime, setReserveBeginTime] = useState<string>("10:00");
-  const [reserveEndTime, setReserveEndTime] = useState<string>("12:00");
-  const [reserveDurationHours, setReserveDurationHours] = useState<number>(2);
-  const [reservePurpose, setReservePurpose] = useState<string>("조별 과제 및 토의");
+  const [reserveBeginTime, setReserveBeginTime] = useState<string>("09:00");
+  const [reserveEndTime, setReserveEndTime] = useState<string>("11:00");
+  const [, setReserveDurationHours] = useState<number>(2);
+  const [reservePurpose, setReservePurpose] = useState<string>("");
   const [reserveNotes, setReserveNotes] = useState<string>("");
-  const [companions, setCompanions] = useState<CompanionPatron[]>([]);
   const [companionName, setCompanionName] = useState<string>("");
   const [companionMemberNo, setCompanionMemberNo] = useState<string>("");
-  const [isSearchingCompanion, setIsSearchingCompanion] = useState<boolean>(false);
+  const [companions, setCompanions] = useState<CompanionPatron[]>([]);
   const [isPrivacyAgreed, setIsPrivacyAgreed] = useState<boolean>(false);
-  const [showAttention, setShowAttention] = useState<boolean>(true);
-  const [isLoadingTimeline, setIsLoadingTimeline] = useState<boolean>(false);
+  const [isSearchingCompanion, setIsSearchingCompanion] = useState<boolean>(false);
   const [isSubmittingBooking, setIsSubmittingBooking] = useState<boolean>(false);
+  const [isLoadingTimeline, setIsLoadingTimeline] = useState<boolean>(false);
+  const [showAttention, setShowAttention] = useState<boolean>(false);
 
-  // 임시 배정 남은 시간(초) 카운트다운
+  // 임시 배정 타이머
   const [remainingCheckinSec, setRemainingCheckinSec] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!mySeat?.isTempCharge || !mySeat?.checkinExpiryDate) {
-      setRemainingCheckinSec(null);
-      return;
-    }
-
-    const calcRemaining = () => {
-      if (!mySeat?.checkinExpiryDate) {
-        setRemainingCheckinSec(null);
-        return;
-      }
-      const expiry = new Date(mySeat.checkinExpiryDate).getTime();
-      if (isNaN(expiry)) {
-        setRemainingCheckinSec(null);
-        return;
-      }
-      const now = Date.now();
-      const diffSec = Math.max(0, Math.floor((expiry - now) / 1000));
-      setRemainingCheckinSec(diffSec);
-    };
-
-    calcRemaining();
-    const timer = setInterval(calcRemaining, 1000);
-    return () => clearInterval(timer);
-  }, [mySeat?.isTempCharge, mySeat?.checkinExpiryDate]);
-
-  // 임시 배정 상태일 때 15초 주기로 도서관 게이트 출입 로그 기반 자동 배정 확정 폴러
-  useEffect(() => {
-    if (!mySeat?.isTempCharge || !mySeat?.chargeId) return;
-
-    const autoConfirmTimer = setInterval(async () => {
-      try {
-        const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
-        if (res.success) {
-          showToast("🎉 도서관 게이트 입실이 감지되어 좌석 배정이 자동으로 확정되었습니다!");
-          loadMyStatus();
-        }
-      } catch {}
-    }, 15000);
-
-    return () => clearInterval(autoConfirmTimer);
-  }, [mySeat?.isTempCharge, mySeat?.chargeId, mySeat?.roomId]);
+  // 확인 모달 상태
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   useHeader({
-    title: "학산도서관 스마트 허브",
+    title: "학산도서관",
     subHeader: null,
     hasback: true,
   });
 
-  // 열람실/스터디룸 전체 목록 조회 (독립 실행)
-  const loadRoomsData = async () => {
+  const showToast = (msg: string) => {
+    setActionMessage(msg);
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
+  // 10분 단위 시간 생성 헬퍼
+  const timeOptions10Min = Array.from({ length: 14 * 6 + 1 }, (_, i) => {
+    const totalMinutes = 9 * 60 + i * 10;
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    if (h > 22 || (h === 22 && m > 0)) return null;
+    return `${h < 10 ? `0${h}` : h}:${m === 0 ? "00" : m}`;
+  }).filter(Boolean) as string[];
+
+  const parseTimeToMinutes = (t: string): number => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const loadData = async () => {
     setIsLoading(true);
     try {
-      const [roomsData, studyData] = await Promise.all([
+      const [rRooms, sRooms] = await Promise.all([
         getReadingRooms().catch(() => []),
         getStudyRooms().catch(() => []),
       ]);
-      setRooms(roomsData);
-      setStudyRooms(studyData);
+      setRooms(rRooms);
+      setStudyRooms(sRooms);
 
-      // 스터디룸별 당일 실시간 타임라인 점유 정보 병렬 로드
-      if (studyData && studyData.length > 0) {
-        const todayStr = getKstDateString(0);
-        Promise.allSettled(
-          studyData.map((r) => getStudyRoomDetail(r.id, todayStr))
-        ).then((results) => {
-          const map: Record<number, StudyRoomDetail> = {};
-          results.forEach((res, idx) => {
-            if (res.status === "fulfilled" && res.value.success && res.value.detail) {
-              map[studyData[idx].id] = res.value.detail;
+      if (sRooms.length > 0) {
+        const today = getKstDateString(0);
+        void Promise.all(
+          sRooms.slice(0, 8).map(async (sr) => {
+            const res = await getStudyRoomDetail(sr.id, today).catch(() => null);
+            if (res && res.success && res.detail) {
+              setStudyDetailsMap((prev) => ({ ...prev, [sr.id]: res.detail! }));
             }
-          });
-          setStudyDetailsMap(map);
-        }).catch(() => {});
+          })
+        );
       }
+
+      await loadMyData();
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 내 이용 현황 및 선호좌석 조회 (병렬 독립 실행 및 즉각 갱신)
-  const loadMyStatus = async () => {
-    if (!isMobileAppEnvironment()) return;
+  const loadMyData = async () => {
     setIsLoadingMy(true);
     try {
       const linkRes = await checkLibraryAccountLinked().catch(() => ({ linked: false }));
       setIsLinked(linkRes.linked);
+
       if (linkRes.linked) {
-        const [seat, studyRes, favs] = await Promise.all([
+        const [curSeat, curStudy, favSeats] = await Promise.all([
           getMyCurrentSeat().catch(() => null),
           getMyStudyRoomReservations().catch(() => []),
           getFavoriteSeats().catch(() => []),
         ]);
-        setMySeat(seat);
-        if (seat && seat.endTime) {
+        setMySeat(curSeat);
+        setMyStudyReservations(curStudy);
+        setFavoriteSeats(favSeats);
+
+        if (curSeat) {
           startLibrarySeatSessionBridge({
-            seatId: seat.seatId,
-            seatNo: seat.seatName,
-            roomName: seat.roomName,
-            roomId: seat.roomId,
-            startTime: seat.beginTime,
-            endTime: seat.endTime,
+            seatNo: curSeat.seatName,
+            roomName: curSeat.roomName,
+            endTime: curSeat.endTime,
+            seatId: curSeat.seatId,
+            roomId: curSeat.roomId,
           }).catch(() => {});
-        } else if (!seat) {
+        } else {
           cancelLibrarySeatSessionBridge().catch(() => {});
         }
-        // 스터디룸 예약 목록에 현재 배정된 열람실 좌석이 중복 포함되지 않도록 안전 필터링
-        const filteredStudyRes = (studyRes || []).filter(
-          (res) => !(res.roomName || "").includes("열람실") && (!seat || res.id !== seat.chargeId)
-        );
-        setMyStudyReservations(filteredStudyRes);
-        setFavoriteSeats(favs);
       }
     } finally {
       setIsLoadingMy(false);
     }
-  };
-
-  const loadData = () => {
-    loadRoomsData();
-    loadMyStatus();
   };
 
   useEffect(() => {
@@ -413,354 +390,322 @@ export default function MobileLibraryHubPage() {
     };
   }, []);
 
-  // URL query의 roomId 처리 (외부나 에이전트 카드에서 진입 시 자동 모달 열기)
+  // 임시 배정 남은 시간 카운트다운
   useEffect(() => {
-    const rawRoomId = searchParams.get("roomId");
-    if (!rawRoomId) return;
-    const targetRoomId = Number(rawRoomId);
-    if (isNaN(targetRoomId)) return;
-
-    if (activeTab === "study" && studyRooms.length > 0 && !selectedStudyRoom) {
-      const matched = studyRooms.find((r) => r.id === targetRoomId);
-      if (matched) {
-        handleOpenStudyBooking(matched);
-      }
-    } else if (activeTab === "seats" && rooms.length > 0 && !selectedSeatRoom) {
-      const matched = rooms.find((r) => r.id === targetRoomId);
-      if (matched) {
-        handleOpenSeatPicker(matched);
-      }
-    }
-  }, [searchParams, activeTab, rooms, studyRooms]);
-
-  const showToast = (msg: string) => {
-    setActionMessage(msg);
-    setTimeout(() => setActionMessage(null), 3500);
-  };
-
-  // --- 열람실 좌석 선택 모달 열기 ---
-  const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
-    if (!isMobileAppEnvironment()) {
-      alert("좌석 선택 및 즉시 배정은 INTIP 모바일 앱 환경에서 이용하실 수 있습니다.");
+    if (!mySeat?.isTempCharge || !mySeat.beginTime) {
+      setRemainingCheckinSec(null);
       return;
     }
+
+    const calcRemaining = () => {
+      try {
+        const beginDate = new Date(mySeat.beginTime.replace(" ", "T"));
+        const deadlineDate = new Date(beginDate.getTime() + 20 * 60 * 1000);
+        const now = new Date();
+        const diffSec = Math.max(0, Math.floor((deadlineDate.getTime() - now.getTime()) / 1000));
+        setRemainingCheckinSec(diffSec);
+      } catch {
+        setRemainingCheckinSec(null);
+      }
+    };
+
+    calcRemaining();
+    const interval = setInterval(calcRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [mySeat]);
+
+  // 좌석 배치도 열기
+  const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
     setSelectedSeatRoom(room);
     setIsLoadingSeats(true);
     try {
       const res = await getRoomSeats(room.id);
       if (res.success) {
         setRoomSeats(res.seats);
-      } else if (res.errorCode === "AUTH_REQUIRED" || res.errorMessage?.includes("로그인")) {
-        alert("열람실 좌석 조회를 위해 학산도서관 계정 연동이 필요합니다.");
-        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
-        setSelectedSeatRoom(null);
       } else {
         alert(res.errorMessage || "좌석 목록을 불러오지 못했습니다.");
+        setSelectedSeatRoom(null);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("좌석 목록을 불러오지 못했습니다.");
+      if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+      } else {
+        alert("좌석 목록을 불러오지 못했습니다.");
+      }
+      setSelectedSeatRoom(null);
     } finally {
       setIsLoadingSeats(false);
     }
   };
 
-  // 좌석 배정 신청
+  // 좌석 즉시 배정
   const handleAssignSeat = async (seat: LibrarySeat) => {
-    if (seat.isOccupied || seat.isActive === false) {
-      alert("현재 배정할 수 없는 좌석입니다.");
-      return;
-    }
-
-    const roomName = selectedSeatRoom?.name || "열람실";
-    const confirmPrompt =
-      `[${roomName}] ${seat.code}번 좌석을 배정하시겠습니까?\n\n` +
-      `⚠️ [배정 확정 및 이용 규정 안내]\n` +
-      `• 배정 즉시 20분간 '임시 배정' 상태가 됩니다.\n` +
-      `• 20분 내로 도서관 1층 게이트를 통과하시거나 키오스크에서 입실 확인을 완료해야 합니다.\n` +
-      `• 20분이 지나도 미입실 시 예약이 자동 취소되며, 3회 누적 시 7일간 도서관 이용이 정지됩니다.\n` +
-      `• 도착이 어려울 경우 20분 내 [예약 취소]를 누르면 페널티 없이 취소됩니다.`;
-
-    if (!window.confirm(confirmPrompt)) return;
-
-    try {
-      const res = await reserveSeat(seat.id);
-      if (res.success) {
-        showToast(`🎉 ${seat.code}번 좌석이 성공적으로 배정되었습니다!`);
-        setSelectedSeatRoom(null);
-        setActiveTab("my");
-        // 내 이용 현황을 즉시 먼저 갱신하여 탭 전환 시 바로 표시되도록 보장
-        await loadMyStatus();
-        loadRoomsData();
-      } else if (res.errorCode === "AUTH_REQUIRED" || res.message?.includes("로그인")) {
-        alert("좌석 배정을 위해 학산도서관 계정 연동이 필요합니다.");
-        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
-      } else {
-        alert(res.message || "좌석 배정에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("좌석 배정 중 오류가 발생했습니다.");
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "좌석 배정",
+      description: `'${seat.name || seat.code}' 좌석을 배정하시겠습니까?`,
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        try {
+          const res = await reserveSeat(seat.id);
+          if (res.success) {
+            showToast(`'${seat.name || seat.code}' 좌석이 배정되었습니다.`);
+            setSelectedSeatRoom(null);
+            await loadMyData();
+            setActiveTab("my");
+          } else {
+            alert(res.message || "좌석 배정에 실패했습니다.");
+          }
+        } catch (e: any) {
+          console.error(e);
+          if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+            window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+          } else {
+            alert(e?.message || "좌석 배정 중 오류가 발생했습니다.");
+          }
+        }
+      },
+    });
   };
 
-  // 선호좌석 삭제
-  const handleRemoveFavoriteSeat = async (seatId: number) => {
-    if (!window.confirm("선호좌석 지정을 해제하시겠습니까?")) return;
-    try {
-      const ok = await unsetFavoriteSeat(seatId);
-      if (ok) {
-        showToast("⭐ 선호좌석이 해제되었습니다.");
-        loadMyStatus();
-      } else {
-        alert("선호좌석 해제에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // 선호좌석 빈자리 감시 등록
-  const handleRegisterFavSeatSniper = async (fav: LibrarySeat) => {
-    if (!isMobileAppEnvironment()) {
-      alert("특정 좌석 빈자리 실시간 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
-      return;
-    }
-    if (!window.confirm(`[${fav.name}]\n현재 이용 중인 좌석입니다.\n자리가 비었을 때(퇴실/반납 시) 알림을 받으시겠습니까?`)) {
-      return;
-    }
+  // 특정 좌석 빈자리 알림 등록
+  const handleRegisterSpecificSeatSniper = async (seat: LibrarySeat) => {
     try {
       await registerLocalWatchJobInApp({
         watchType: "SPECIFIC_SEAT_SNIPER",
-        roomId: 0,
-        roomName: fav.name || "선호좌석",
-        seatId: fav.id,
-        seatNo: fav.code,
-        durationMinutes: 90,
+        seatId: seat.id,
+        seatName: seat.name || `${seat.code}번 좌석`,
+        durationMinutes: 120,
       });
-      showToast(`🎯 [${fav.name}] 빈자리 감시가 시작되었습니다! (최대 90분)`);
+      showToast(`'${seat.name || seat.code}' 빈자리 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("빈자리 감시 등록에 실패했습니다.");
+      alert("빈자리 알림 등록에 실패했습니다.");
     }
   };
 
-  // Helper: 시간 변환 및 10분 단위 옵션
-  const parseTimeToMinutes = (t: string) => {
-    const [h, m] = t.split(":").map(Number);
-    return (h || 0) * 60 + (m || 0);
+  // 열람실 전체 빈자리 알림 등록
+  const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
+    try {
+      await postRegisterCampusWatch({
+        domain: "LIBRARY_SEAT",
+        targetId: String(room.id),
+        targetName: room.name,
+      });
+      showToast(`'${room.name}' 빈자리 알림이 등록되었습니다.`);
+    } catch (e) {
+      console.error(e);
+      alert("알림 등록에 실패했습니다.");
+    }
   };
 
-  const formatMinutesToTime = (totalMinutes: number) => {
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    const hh = h < 10 ? `0${h}` : `${h}`;
-    const mm = m < 10 ? `0${m}` : `${m}`;
-    return `${hh}:${mm}`;
-  };
-
-  const timeOptions10Min: string[] = (() => {
-    const list: string[] = [];
-    for (let h = 9; h <= 22; h++) {
-      for (let m = 0; m < 60; m += 10) {
-        if (h === 22 && m > 0) break;
-        const hh = h < 10 ? `0${h}` : `${h}`;
-        const mm = m < 10 ? `0${m}` : `${m}`;
-        list.push(`${hh}:${mm}`);
+  // 선호좌석 등록 / 해제
+  const handleToggleFavoriteSeat = async () => {
+    if (!mySeat) return;
+    try {
+      if (mySeat.isFavoriteSeat) {
+        await unsetFavoriteSeat(mySeat.seatId);
+        showToast("선호좌석이 해제되었습니다.");
+      } else {
+        await setFavoriteSeat(mySeat.seatId);
+        showToast("선호좌석으로 등록되었습니다.");
       }
+      await loadMyData();
+    } catch (e) {
+      console.error(e);
+      alert("선호좌석 설정 처리에 실패했습니다.");
     }
-    return list;
-  })();
+  };
 
-  // --- 스터디룸 타임라인 & 예약 모달 열기 ---
-  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
-    if (!isMobileAppEnvironment()) {
-      alert("스터디룸 타임라인 조회 및 예약은 INTIP 모바일 앱 환경에서 지원됩니다.");
-      return;
+  const handleRemoveFavoriteSeat = async (seatId: number) => {
+    try {
+      await unsetFavoriteSeat(seatId);
+      showToast("선호좌석이 해제되었습니다.");
+      await loadMyData();
+    } catch (e) {
+      console.error(e);
+      alert("선호좌석 해제에 실패했습니다.");
     }
-    const todayStr = getKstDateString(0);
+  };
+
+  // 스터디룸 예약 바텀시트 열기
+  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
     setSelectedStudyRoom(sRoom);
-    setSelectedDate(todayStr);
     setCompanions([]);
     setCompanionName("");
     setCompanionMemberNo("");
     setIsPrivacyAgreed(false);
-    setReservePurpose("조별 과제 및 토의");
-    setReserveNotes("");
-    setReserveBeginTime("10:00");
-    setReserveEndTime("12:00");
-    setReserveDurationHours(2);
-    setShowAttention(true);
-    await loadStudyTimeline(sRoom.id, todayStr);
-  };
+    setShowAttention(false);
+    const today = getKstDateString(0);
+    setSelectedDate(today);
 
-  const loadStudyTimeline = async (roomId: number, dateStr: string) => {
+    const now = new Date();
+    const curHour = now.getHours();
+    const curMin = now.getMinutes();
+    const nextSlotMin = Math.ceil(curMin / 10) * 10;
+    let startH = curHour;
+    let startM = nextSlotMin;
+    if (startM >= 60) {
+      startH += 1;
+      startM = 0;
+    }
+    if (startH < 9) {
+      startH = 9;
+      startM = 0;
+    } else if (startH >= 20) {
+      startH = 20;
+      startM = 0;
+    }
+    const beginStr = `${startH < 10 ? `0${startH}` : startH}:${startM === 0 ? "00" : startM}`;
+    const endH = Math.min(22, startH + 2);
+    const endStr = `${endH < 10 ? `0${endH}` : endH}:${startM === 0 ? "00" : startM}`;
+
+    setReserveBeginTime(beginStr);
+    setReserveEndTime(endStr);
+    setReserveDurationHours(2);
+    setReservePurpose("");
+    setReserveNotes("");
+
     setIsLoadingTimeline(true);
     try {
-      const res = await getStudyRoomDetail(roomId, dateStr);
+      const res = await getStudyRoomDetail(sRoom.id, today);
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
-      } else if (res.errorCode === "AUTH_REQUIRED" || res.errorMessage?.includes("로그인")) {
-        alert("스터디룸 시간표 조회를 위해 학산도서관 계정 연동이 필요합니다.");
-        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
-        setSelectedStudyRoom(null);
-      } else {
-        setStudyRoomDetail(null);
+        setStudyDetailsMap((prev) => ({ ...prev, [sRoom.id]: res.detail! }));
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      setStudyRoomDetail(null);
+      if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+        window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
+      } else {
+        alert("스터디룸 상세 정보를 불러오지 못했습니다.");
+      }
+      setSelectedStudyRoom(null);
     } finally {
       setIsLoadingTimeline(false);
     }
   };
 
-  const handleDateChange = (newDate: string) => {
-    setSelectedDate(newDate);
-    if (selectedStudyRoom) {
-      loadStudyTimeline(selectedStudyRoom.id, newDate);
+  // 날짜 변경 시 타임라인 갱신
+  const handleDateChange = async (dateStr: string) => {
+    setSelectedDate(dateStr);
+    if (!selectedStudyRoom) return;
+    setIsLoadingTimeline(true);
+    try {
+      const res = await getStudyRoomDetail(selectedStudyRoom.id, dateStr);
+      if (res.success && res.detail) {
+        setStudyRoomDetail(res.detail);
+        setStudyDetailsMap((prev) => ({ ...prev, [selectedStudyRoom.id]: res.detail! }));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingTimeline(false);
     }
   };
 
-  // 시작 시간 변경 시 자동 종료시간 및 지속시간 재계산
   const handleBeginTimeChange = (newBegin: string) => {
     setReserveBeginTime(newBegin);
-    const startMin = parseTimeToMinutes(newBegin);
-    const currentEndMin = parseTimeToMinutes(reserveEndTime);
-    const duration = currentEndMin - startMin;
-    const minTime = studyRoomDetail?.rule?.minTime || 30;
+    const beginMin = parseTimeToMinutes(newBegin);
+    const minTime = studyRoomDetail?.rule?.minTime || 60;
     const maxTime = studyRoomDetail?.rule?.maxTime || 240;
+    const targetEndMin = Math.min(22 * 60, beginMin + Math.min(120, maxTime));
 
-    if (duration < minTime || duration > maxTime) {
-      const defDuration = Math.min(120, maxTime);
-      const newEnd = Math.min(22 * 60, startMin + defDuration);
-      setReserveEndTime(formatMinutesToTime(newEnd));
-      setReserveDurationHours(Math.max(1, Math.round(defDuration / 60)));
+    if (targetEndMin > beginMin && targetEndMin - beginMin >= minTime) {
+      const endH = Math.floor(targetEndMin / 60);
+      const endM = targetEndMin % 60;
+      setReserveEndTime(`${endH < 10 ? `0${endH}` : endH}:${endM === 0 ? "00" : endM}`);
     } else {
-      setReserveDurationHours(Math.max(1, Math.round(duration / 60)));
+      const fallbackEndMin = Math.min(22 * 60, beginMin + minTime);
+      const endH = Math.floor(fallbackEndMin / 60);
+      const endM = fallbackEndMin % 60;
+      setReserveEndTime(`${endH < 10 ? `0${endH}` : endH}:${endM === 0 ? "00" : endM}`);
     }
   };
 
-  // 빠른 이용 시간 선택 버튼
-  const handleSelectDuration = (minutes: number) => {
-    const startMin = parseTimeToMinutes(reserveBeginTime);
-    const newEnd = Math.min(22 * 60, startMin + minutes);
-    setReserveEndTime(formatMinutesToTime(newEnd));
-    setReserveDurationHours(Math.max(1, Math.round(minutes / 60)));
+  const handleSelectDuration = (durationMinutes: number) => {
+    const beginMin = parseTimeToMinutes(reserveBeginTime);
+    const targetEndMin = Math.min(22 * 60, beginMin + durationMinutes);
+    const endH = Math.floor(targetEndMin / 60);
+    const endM = targetEndMin % 60;
+    setReserveEndTime(`${endH < 10 ? `0${endH}` : endH}:${endM === 0 ? "00" : endM}`);
+    setReserveDurationHours(Math.max(1, Math.round(durationMinutes / 60)));
   };
 
-  // 동반이용자 검색 및 추가
+  // 동반이용자 추가
   const handleAddCompanion = async () => {
     if (!selectedStudyRoom) return;
-    const name = companionName.trim();
-    const memberNo = companionMemberNo.trim();
-    if (!name || !memberNo) {
-      alert("동반 이용자의 이름과 학번을 모두 입력해주세요.");
+    if (!companionName.trim() || !companionMemberNo.trim()) {
+      alert("동반이용자의 이름과 학번을 모두 입력해주세요.");
       return;
     }
-    if (companions.some((c) => c.memberNo === memberNo)) {
-      alert("이미 등록된 동반 이용자입니다.");
-      return;
-    }
-    const maxCompanions = Math.max(
-      0,
-      (studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10) - 1
-    );
-    if (companions.length >= maxCompanions) {
-      alert(`최대 동반 가능 인원(${maxCompanions}명)을 초과할 수 없습니다.`);
+    if (companions.some((c) => c.memberNo === companionMemberNo.trim())) {
+      alert("이미 등록된 동반이용자입니다.");
       return;
     }
 
     setIsSearchingCompanion(true);
     try {
-      const res = await checkCompanionPatron(selectedStudyRoom.id, name, memberNo, selectedDate);
+      const res = await checkCompanionPatron(
+        selectedStudyRoom.id,
+        companionName.trim(),
+        companionMemberNo.trim(),
+        selectedDate
+      );
       if (res.success && res.patron) {
         setCompanions((prev) => [...prev, res.patron!]);
         setCompanionName("");
         setCompanionMemberNo("");
-        showToast(`✅ 동반 이용자 '${res.patron.name}'님이 추가되었습니다.`);
       } else {
-        alert(res.message || "동반 이용자를 찾을 수 없습니다. 이름과 학번을 확인해주세요.");
+        alert(res.message || "학산도서관 등록 이용자 정보와 일치하지 않습니다. 이름과 학번을 다시 확인해주세요.");
       }
-    } catch (e) {
-      console.error(e);
-      alert("동반 이용자 확인 중 오류가 발생했습니다.");
+    } catch (e: any) {
+      alert(e?.message || "동반이용자 조회에 실패했습니다.");
     } finally {
       setIsSearchingCompanion(false);
     }
   };
 
-  // 동반이용자 삭제
-  const handleRemoveCompanion = (id: number) => {
-    setCompanions((prev) => prev.filter((c) => c.id !== id));
+  const handleRemoveCompanion = (patronId: number) => {
+    setCompanions((prev) => prev.filter((c) => c.id !== patronId));
   };
 
   // 스터디룸 예약 제출
   const handleSubmitStudyBooking = async () => {
     if (!selectedStudyRoom) return;
 
-    if (!reservePurpose.trim()) {
-      alert("예약 용도(사용 목적)를 입력해주세요.");
-      return;
-    }
-
     const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1;
     const maxQuota = studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10;
     const minCompanions = Math.max(0, minQuota - 1);
     const maxCompanions = Math.max(0, maxQuota - 1);
 
-    if (minCompanions > 0 && companions.length < minCompanions) {
-      alert(
-        `[${selectedStudyRoom.name}]은(는) 본인 포함 최소 ${minQuota}인실입니다.\n동반 이용자를 최소 ${minCompanions}명 이상 등록해야 예약할 수 있습니다. (현재: ${companions.length}명 등록됨)`
-      );
+    if (companions.length < minCompanions) {
+      alert(`본인을 제외하고 동반이용자를 최소 ${minCompanions}명 이상 등록해야 합니다.`);
       return;
     }
-
     if (companions.length > maxCompanions) {
-      alert(`최대 동반 가능 인원(${maxCompanions}명)을 초과할 수 없습니다.`);
+      alert(`동반이용자는 최대 ${maxCompanions}명까지 등록할 수 있습니다.`);
       return;
     }
-
     if (!isPrivacyAgreed) {
-      alert("동반이용자 개인정보 수집 및 이용에 동의해야 예약할 수 있습니다.");
+      alert("동반이용자 개인정보 수집 및 이용 동의에 체크해주세요.");
+      return;
+    }
+    if (!reservePurpose.trim()) {
+      alert("사용 목적을 입력해주세요.");
       return;
     }
 
-    const startMin = parseTimeToMinutes(reserveBeginTime);
-    const endMin = parseTimeToMinutes(reserveEndTime);
-    const durationMin = endMin - startMin;
-    const minTimeAllowed = studyRoomDetail?.rule?.minTime || 30;
-    const maxTimeAllowed = studyRoomDetail?.rule?.maxTime || 240;
-
-    if (durationMin <= 0) {
-      alert("종료 시간은 시작 시간 이후여야 합니다.");
+    const durationMin = parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime);
+    const minTime = studyRoomDetail?.rule?.minTime || 30;
+    const maxTime = studyRoomDetail?.rule?.maxTime || 240;
+    if (durationMin < minTime) {
+      alert(`최소 이용 시간은 ${minTime}분입니다.`);
       return;
     }
-
-    if (durationMin < minTimeAllowed || durationMin > maxTimeAllowed) {
-      alert(
-        `이용 가능 시간은 ${minTimeAllowed}분 ~ ${maxTimeAllowed}분입니다. (선택된 시간: ${durationMin}분)`
-      );
-      return;
-    }
-
-    const beginFull = `${selectedDate} ${reserveBeginTime}`;
-    const endFull = `${selectedDate} ${reserveEndTime}`;
-
-    const companionListText =
-      companions.length > 0
-        ? `\n동반자 (${companions.length}명): ${companions.map((c) => `${c.name}(${c.memberNo})`).join(", ")}`
-        : "";
-
-    const confirmMsg =
-      `[${selectedStudyRoom.name}]\n` +
-      `일시: ${beginFull} ~ ${reserveEndTime} (${durationMin}분)\n` +
-      `총 인원: ${companions.length + 1}명 (본인 + 동반자 ${companions.length}명)${companionListText}\n` +
-      `용도: ${reservePurpose}\n` +
-      (reserveNotes.trim() ? `요청사항: ${reserveNotes.trim()}\n` : "") +
-      `\n위 내용으로 예약하시겠습니까?`;
-
-    if (!window.confirm(confirmMsg)) {
+    if (durationMin > maxTime) {
+      alert(`최대 이용 시간은 ${maxTime}분입니다.`);
       return;
     }
 
@@ -768,237 +713,32 @@ export default function MobileLibraryHubPage() {
     try {
       const res = await reserveStudyRoom({
         roomId: selectedStudyRoom.id,
-        beginTime: beginFull,
-        endTime: endFull,
-        companionCnt: companions.length,
+        beginTime: `${selectedDate} ${reserveBeginTime}`,
+        endTime: `${selectedDate} ${reserveEndTime}`,
+        companionCnt: companions.length + 1,
         companionPatrons: companions.map((c) => c.id),
-        purpose: reservePurpose,
-        patronMessage: reserveNotes,
+        purpose: reservePurpose.trim(),
+        patronMessage: reserveNotes.trim(),
       });
 
       if (res.success) {
-        showToast(`🎉 '${selectedStudyRoom.name}' 예약이 완료되었습니다!`);
+        showToast(`'${selectedStudyRoom.name}' 예약이 완료되었습니다.`);
         setSelectedStudyRoom(null);
+        await loadMyData();
         setActiveTab("my");
-        loadData();
       } else {
         alert(res.message || "스터디룸 예약에 실패했습니다.");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("예약 처리 중 오류가 발생했습니다.");
+      alert(e?.message || "예약 처리 중 오류가 발생했습니다.");
     } finally {
       setIsSubmittingBooking(false);
     }
   };
 
-  // --- 스터디룸 예약 취소 및 체크인 ---
-  const handleCancelStudyReservation = async (chargeId: number, roomName: string) => {
-    if (!window.confirm(`'${roomName}' 스터디룸 예약을 취소하시겠습니까?`)) return;
-    try {
-      const ok = await cancelStudyRoomReservation(chargeId);
-      if (ok) {
-        showToast("스터디룸 예약이 취소되었습니다.");
-        loadData();
-      } else {
-        alert("예약 취소에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleCheckinStudyReservation = async (chargeId: number) => {
-    try {
-      const ok = await checkinStudyRoom(chargeId);
-      if (ok) {
-        showToast("✅ 스터디룸 입실 체크인이 완료되었습니다!");
-        loadData();
-      } else {
-        alert("체크인 가능 시간이 아니거나 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // --- 열람실 좌석 체크인, 연장, 반납 ---
-  const handleCheckinSeat = async () => {
-    if (!mySeat) return;
-    try {
-      const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
-      if (res.success) {
-        showToast("🎉 좌석 배정이 정상 확정되었습니다!");
-        loadData();
-      } else {
-        alert(
-          res.message ||
-            "도서관 게이트(출입구) 통과 기록이 확인되지 않았습니다.\n도서관 게이트 통과 후 '배정 확정'을 다시 누르시거나 도서관 키오스크에서 태그해주세요."
-        );
-      }
-    } catch (e) {
-      console.error(e);
-      alert("배정 확정 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleToggleFavoriteSeat = async () => {
-    if (!mySeat) return;
-    try {
-      if (mySeat.isFavoriteSeat) {
-        await unsetFavoriteSeat(mySeat.seatId);
-        showToast("⭐ 선호좌석 지정이 해제되었습니다.");
-      } else {
-        await setFavoriteSeat(mySeat.seatId);
-        showToast("⭐ 선호좌석으로 정상 등록되었습니다!");
-      }
-      loadData();
-    } catch (e) {
-      console.error(e);
-      alert("선호좌석 처리 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleRenewSeat = async () => {
-    if (!mySeat) return;
-    try {
-      const ok = await renewCurrentSeat(mySeat.chargeId);
-      if (ok) {
-        showToast("🔄 좌석 이용 시간이 1시간 정상 연장되었습니다.");
-        loadData();
-      } else {
-        alert("좌석 연장 가능 시간이 아니거나 연장에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleReturnSeat = async () => {
-    if (!mySeat) return;
-    const isTemp = mySeat.isTempCharge;
-    const confirmMsg = isTemp
-      ? "아직 입실하지 않은 임시 배정 상태입니다.\n좌석 배정을 취소하시겠습니까?"
-      : "정말 퇴실 반납하시겠습니까?";
-
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      if (isTemp) {
-        const cancelRes = await cancelSeatReservation(mySeat.chargeId);
-        if (cancelRes.success) {
-          showToast("🚪 좌석 배정이 정상 취소되었습니다.");
-          setMySeat(null);
-          cancelLibrarySeatSessionBridge().catch(() => {});
-          loadData();
-          return;
-        }
-      }
-
-      const res = await returnCurrentSeat(mySeat.chargeId);
-      if (res.success) {
-        showToast(res.message || "🚪 좌석이 정상 반납되었습니다.");
-        setMySeat(null);
-        cancelLibrarySeatSessionBridge().catch(() => {});
-        loadData();
-      } else {
-        alert(res.message || "좌석 반납/취소에 실패했습니다.");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("좌석 반납/취소 중 오류가 발생했습니다.");
-    }
-  };
-
-  // --- 감시 알림 등록 ---
-  // 1. 열람실 전체 빈자리 감시 (서버 FCM)
-  const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
-    try {
-      await postRegisterCampusWatch({
-        domain: "LIBRARY_SEAT",
-        targetId: String(room.id),
-        targetName: room.name,
-        durationMinutes: 90,
-      });
-      showToast(`🎯 '${room.name}' 빈자리 감시가 시작되었습니다! (최대 90분)`);
-    } catch (e) {
-      console.error(e);
-      alert("빈자리 감시 등록에 실패했습니다.");
-    }
-  };
-
-  // 2. 열람실 특정 좌석 번호 빈자리 감시 (모바일 기기 로컬 폴러)
-  const handleRegisterSpecificSeatSniper = async (seat: LibrarySeat) => {
-    if (!selectedSeatRoom) return;
-    if (!isMobileAppEnvironment()) {
-      alert("특정 좌석 빈자리 실시간 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
-      return;
-    }
-
-    const seatDisplay = `${selectedSeatRoom.name} ${seat.code}번 좌석`;
-    if (!window.confirm(`[${seatDisplay}]\n현재 다른 학우가 사용 중인 좌석입니다.\n자리가 비었을 때(퇴실/반납 시) 알림을 받으시겠습니까?`)) {
-      return;
-    }
-
-    try {
-      await registerLocalWatchJobInApp({
-        watchType: "SPECIFIC_SEAT_SNIPER",
-        roomId: selectedSeatRoom.id,
-        roomName: selectedSeatRoom.name,
-        seatId: seat.id,
-        seatNo: seat.code,
-        durationMinutes: 90,
-      });
-      showToast(`🎯 [${seatDisplay}] 빈자리 감시가 시작되었습니다! (최대 90분)`);
-      setSelectedSeatRoom(null);
-    } catch (e) {
-      console.error(e);
-      alert("특정 좌석 빈자리 감시 등록에 실패했습니다.");
-    }
-  };
-
-  // 3. 스터디룸 희망 시간대 취소표 감시 (모바일 기기 로컬 폴러)
-  const handleRegisterStudySlotSniper = async () => {
-    if (!selectedStudyRoom) return;
-    if (!isMobileAppEnvironment()) {
-      alert("스터디룸 취소표 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
-      return;
-    }
-
-    const startHour = parseInt(reserveBeginTime.split(":")[0], 10);
-    const dateLabel = selectedDate === getKstDateString(0) ? "오늘" : selectedDate;
-
-    if (
-      !window.confirm(
-        `[${selectedStudyRoom.name}]\n일자: ${dateLabel} (${selectedDate})\n희망 시간: ${startHour}:00 (${reserveDurationHours}시간)\n취소표가 발생했을 때 즉시 알림을 받으시겠습니까?`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await registerLocalWatchJobInApp({
-        watchType: "STUDY_ROOM_SNIPER",
-        roomId: selectedStudyRoom.id,
-        roomName: selectedStudyRoom.name,
-        hopeDate: selectedDate,
-        targetHour: startHour,
-        durationMinutes: 60,
-      });
-      showToast(`🎯 [${selectedStudyRoom.name} ${startHour}시] 취소표 감시가 시작되었습니다!`);
-      setSelectedStudyRoom(null);
-    } catch (e) {
-      console.error(e);
-      alert("취소표 감시 등록에 실패했습니다.");
-    }
-  };
-
+  // 스터디룸 취소표 알림 등록
   const handleRegisterStudySniper = async (sRoom: LibraryStudyRoom) => {
-    if (!isMobileAppEnvironment()) {
-      alert("취소표 백그라운드 감시는 INTIP 모바일 앱에서 이용할 수 있습니다.");
-      return;
-    }
-    // 카드에서 바로 누를 때는 현재 시간 기준 다음 정시 또는 기본 15시
     const nextHour = Math.min(20, Math.max(9, new Date().getHours() + 1));
     const today = getKstDateString(0);
     try {
@@ -1010,13 +750,138 @@ export default function MobileLibraryHubPage() {
         targetHour: nextHour,
         durationMinutes: 60,
       });
-      showToast(`🎯 '${sRoom.name}' 오늘 ${nextHour}시 취소표 감시가 시작되었습니다! (60분)`);
+      showToast(`'${sRoom.name}' 취소표 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
-      alert("취소표 감시 등록에 실패했습니다.");
+      alert("취소표 알림 등록에 실패했습니다.");
     }
   };
 
+  // 스터디룸 특정 시간대 취소표 알림 등록
+  const handleRegisterStudySlotSniper = async () => {
+    if (!selectedStudyRoom) return;
+    const targetH = parseInt(reserveBeginTime.split(":")[0], 10);
+    try {
+      await registerLocalWatchJobInApp({
+        watchType: "STUDY_ROOM_SNIPER",
+        roomId: selectedStudyRoom.id,
+        roomName: selectedStudyRoom.name,
+        hopeDate: selectedDate,
+        targetHour: targetH,
+        durationMinutes: 60,
+      });
+      showToast(`'${selectedStudyRoom.name}' ${selectedDate} ${reserveBeginTime} 취소표 알림이 등록되었습니다.`);
+    } catch (e) {
+      console.error(e);
+      alert("알림 등록에 실패했습니다.");
+    }
+  };
+
+  // 내 좌석 연장
+  const handleRenewSeat = async () => {
+    if (!mySeat) return;
+    try {
+      const ok = await renewCurrentSeat(mySeat.chargeId);
+      if (ok) {
+        showToast("좌석 이용 시간이 연장되었습니다.");
+        await loadMyData();
+      } else {
+        alert("연장에 실패했습니다.");
+      }
+    } catch (e: any) {
+      alert(e?.message || "연장 처리 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 내 좌석 반납/취소
+  const handleReturnSeat = async () => {
+    if (!mySeat) return;
+    const isTemp = mySeat.isTempCharge;
+    setConfirmModal({
+      isOpen: true,
+      title: isTemp ? "예약 취소" : "퇴실 반납",
+      description: isTemp ? "좌석 배정 예약을 취소하시겠습니까?" : "좌석을 반납하고 퇴실 처리하시겠습니까?",
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        try {
+          if (isTemp) {
+            const res = await cancelSeatReservation(mySeat.chargeId);
+            if (res.success) {
+              showToast("예약이 취소되었습니다.");
+            } else {
+              alert(res.message || "예약 취소에 실패했습니다.");
+            }
+          } else {
+            const res = await returnCurrentSeat(mySeat.chargeId);
+            if (res.success) {
+              showToast("좌석이 반납되었습니다.");
+            } else {
+              alert(res.message || "좌석 반납에 실패했습니다.");
+            }
+          }
+          await loadMyData();
+        } catch (e: any) {
+          alert(e?.message || "반납/취소 처리 중 오류가 발생했습니다.");
+        }
+      },
+    });
+  };
+
+  // 임시 배정 확정
+  const handleCheckinSeat = async () => {
+    if (!mySeat) return;
+    try {
+      const res = await checkinSeat(mySeat.chargeId, mySeat.roomId);
+      if (res.success) {
+        showToast("좌석 배정이 확정되었습니다.");
+        await loadMyData();
+      } else {
+        alert(res.message || "배정 확정에 실패했습니다.");
+      }
+    } catch (e: any) {
+      alert(e?.message || "배정 확정 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 스터디룸 예약 취소
+  const handleCancelStudyReservation = async (bookingId: number, roomName: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "예약 취소",
+      description: `'${roomName}' 스터디룸 예약을 취소하시겠습니까?`,
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        try {
+          const ok = await cancelStudyRoomReservation(bookingId);
+          if (ok) {
+            showToast("스터디룸 예약이 취소되었습니다.");
+            await loadMyData();
+          } else {
+            alert("취소에 실패했습니다.");
+          }
+        } catch (e: any) {
+          alert(e?.message || "취소 중 오류가 발생했습니다.");
+        }
+      },
+    });
+  };
+
+  // 스터디룸 입실 체크인
+  const handleCheckinStudyReservation = async (bookingId: number) => {
+    try {
+      const ok = await checkinStudyRoom(bookingId);
+      if (ok) {
+        showToast("입실 체크인이 완료되었습니다.");
+        await loadMyData();
+      } else {
+        alert("체크인에 실패했습니다.");
+      }
+    } catch (e: any) {
+      alert(e?.message || "체크인 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 좌석 만료 알림 등록
   const handleRegisterSeatReminder = async () => {
     if (!mySeat) return;
     try {
@@ -1025,14 +890,13 @@ export default function MobileLibraryHubPage() {
         seatName: `${mySeat.roomName} ${mySeat.seatName}`,
         endTime: mySeat.endTime,
       });
-      showToast("⏰ 좌석 만료 20분 전 정각 알람이 예약되었습니다.");
+      showToast("좌석 만료 20분 전 알림이 등록되었습니다.");
     } catch (e) {
       console.error(e);
-      alert("알람 등록에 실패했습니다.");
+      alert("알림 등록에 실패했습니다.");
     }
   };
 
-  // 날짜 옵션 생성 (오늘, 내일, 모레 - 한국 시간 KST 기준)
   const dateOptions = [0, 1, 2].map((offset) => {
     const str = getKstDateString(offset);
     const label = offset === 0 ? "오늘" : offset === 1 ? "내일" : "모레";
@@ -1044,15 +908,15 @@ export default function MobileLibraryHubPage() {
       {/* 상단 탭 네비게이션 */}
       <TabBar>
         <TabItem $active={activeTab === "seats"} onClick={() => setActiveTab("seats")}>
-          <BookOpen size={16} />
+          <BookOpen size={15} />
           <span>열람실 좌석</span>
         </TabItem>
         <TabItem $active={activeTab === "study"} onClick={() => setActiveTab("study")}>
-          <Users size={16} />
+          <Users size={15} />
           <span>스터디룸 예약</span>
         </TabItem>
         <TabItem $active={activeTab === "my"} onClick={() => setActiveTab("my")}>
-          <Clock size={16} />
+          <Clock size={15} />
           <span>내 이용 현황</span>
           {(mySeat || myStudyReservations.length > 0) && <BadgeDot />}
         </TabItem>
@@ -1072,13 +936,13 @@ export default function MobileLibraryHubPage() {
         </AuthBannerCard>
       )}
 
-      {/* 스마트 감시 대시보드 바로가기 배너 */}
+      {/* 알림 관리 바로가기 배너 */}
       <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
         <BannerLeft>
-          <Sparkles size={18} color="#2563eb" />
+          <Bell size={18} color="#0061ff" />
           <BannerText>
-            <strong>스마트 감시 & 리마인더 관리</strong>
-            <span>실시간 빈자리 감시 및 자동 만료 알람 내역</span>
+            <strong>빈자리 및 마감 알림 관리</strong>
+            <span>실시간 빈자리 알림 및 좌석 만료 알림 목록</span>
           </BannerText>
         </BannerLeft>
         <ChevronRight size={18} color="#94a3b8" />
@@ -1087,7 +951,7 @@ export default function MobileLibraryHubPage() {
       {/* 액션 피드백 토스트 */}
       {actionMessage && (
         <ToastMessage>
-          <CheckCircle size={16} color="#16a34a" />
+          <Check size={16} />
           <span>{actionMessage}</span>
         </ToastMessage>
       )}
@@ -1095,7 +959,7 @@ export default function MobileLibraryHubPage() {
       {/* ================= 1. 열람실 좌석 탭 ================= */}
       {activeTab === "seats" && (
         <Section>
-          {/* 내 선호좌석 퀵 리스트 */}
+          {/* 선호좌석 퀵 리스트 */}
           {favoriteSeats.length > 0 && (
             <FavSection>
               <FavHeader>
@@ -1120,8 +984,8 @@ export default function MobileLibraryHubPage() {
                           <span>즉시 배정</span>
                         </FavActionBtn>
                       ) : (
-                        <FavActionBtn onClick={() => handleRegisterFavSeatSniper(fav)}>
-                          <Crosshair size={13} />
+                        <FavActionBtn onClick={() => handleRegisterSpecificSeatSniper(fav)}>
+                          <Bell size={13} />
                           <span>빈자리 알림</span>
                         </FavActionBtn>
                       )}
@@ -1138,7 +1002,7 @@ export default function MobileLibraryHubPage() {
           <SectionHeader>
             <SectionTitle>실시간 열람실 좌석 현황</SectionTitle>
             <RefreshButton onClick={loadData}>
-              <RefreshCw size={14} />
+              <RefreshCw size={13} />
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
@@ -1146,11 +1010,11 @@ export default function MobileLibraryHubPage() {
           {isLoading ? (
             <SkeletonList>
               {[1, 2, 3, 4].map((i) => (
-                <SkeletonCard key={i}>
+                <Box key={i} style={{ padding: "16px" }}>
                   <Skeleton width="45%" height="20px" style={{ borderRadius: "6px" }} />
-                  <Skeleton width="100%" height="10px" style={{ borderRadius: "999px" }} />
+                  <Skeleton width="100%" height="8px" style={{ borderRadius: "999px", margin: "12px 0 8px" }} />
                   <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
-                </SkeletonCard>
+                </Box>
               ))}
             </SkeletonList>
           ) : rooms.length === 0 ? (
@@ -1165,7 +1029,7 @@ export default function MobileLibraryHubPage() {
                 const isFull = available === 0 && total > 0;
 
                 return (
-                  <RoomCard key={room.id} $isFull={isFull}>
+                  <Box key={room.id} style={{ padding: "16px" }}>
                     <RoomHeader>
                       <RoomName>{room.name}</RoomName>
                       <SeatBadge $isFull={isFull}>
@@ -1184,7 +1048,7 @@ export default function MobileLibraryHubPage() {
                       </span>
                     </SeatStatRow>
 
-                    {/* 버튼 영역: 좌석 직접 배정 + 빈자리 감시 */}
+                    {/* 버튼 영역: 좌석 직접 배정 + 빈자리 알림 */}
                     <ButtonRow>
                       <PrimaryActionBtn onClick={() => handleOpenSeatPicker(room)}>
                         <BookOpen size={14} />
@@ -1192,13 +1056,13 @@ export default function MobileLibraryHubPage() {
                       </PrimaryActionBtn>
 
                       {isFull && (
-                        <SniperActionBtn onClick={() => handleRegisterSeatSniper(room)}>
-                          <Crosshair size={14} />
+                        <SecondaryActionBtn onClick={() => handleRegisterSeatSniper(room)}>
+                          <Bell size={14} />
                           <span>빈자리 알림</span>
-                        </SniperActionBtn>
+                        </SecondaryActionBtn>
                       )}
                     </ButtonRow>
-                  </RoomCard>
+                  </Box>
                 );
               })}
             </RoomGrid>
@@ -1210,25 +1074,25 @@ export default function MobileLibraryHubPage() {
       {activeTab === "study" && (
         <Section>
           <SectionHeader>
-            <SectionTitle>스터디룸 시간대 확인 및 예약</SectionTitle>
+            <SectionTitle>스터디룸 현황 및 예약</SectionTitle>
             <RefreshButton onClick={loadData}>
-              <RefreshCw size={14} />
+              <RefreshCw size={13} />
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
 
           <NoticeBanner>
-            💡 날짜별 10분 단위 예약 현황을 실시간으로 확인하고 직접 예약할 수 있습니다.
+            날짜별 10분 단위 예약 현황을 실시간으로 확인하고 직접 예약할 수 있습니다.
           </NoticeBanner>
 
           {isLoading ? (
             <SkeletonList>
               {[1, 2, 3].map((i) => (
-                <SkeletonCard key={i}>
+                <Box key={i} style={{ padding: "16px" }}>
                   <Skeleton width="50%" height="20px" style={{ borderRadius: "6px" }} />
-                  <Skeleton width="80%" height="14px" style={{ borderRadius: "4px" }} />
+                  <Skeleton width="80%" height="14px" style={{ margin: "8px 0" }} />
                   <Skeleton width="100%" height="36px" style={{ borderRadius: "8px" }} />
-                </SkeletonCard>
+                </Box>
               ))}
             </SkeletonList>
           ) : (
@@ -1236,7 +1100,7 @@ export default function MobileLibraryHubPage() {
               {studyRooms.map((s) => {
                 const occInfo = computeStudyRoom2HourStatus(studyDetailsMap[s.id]);
                 return (
-                  <StudyCard key={s.id}>
+                  <Box key={s.id} style={{ padding: "16px" }}>
                     <StudyHeader>
                       <div>
                         <StudyName>{s.name}</StudyName>
@@ -1258,7 +1122,7 @@ export default function MobileLibraryHubPage() {
                       <StudyPreviewBarBox>
                         <StudyPreviewHeader>
                           <span>{occInfo.summaryText}</span>
-                          <span style={{ fontSize: "10.5px", color: "#64748b" }}>향후 2시간</span>
+                          <span style={{ fontSize: "11px", color: "var(--text-disabled, #8b95a1)" }}>향후 2시간</span>
                         </StudyPreviewHeader>
                         <StudyPreviewSlotRow>
                           {occInfo.previewSlots.map((slot, sIdx) => (
@@ -1288,14 +1152,14 @@ export default function MobileLibraryHubPage() {
                     <ButtonRow>
                       <PrimaryActionBtn onClick={() => handleOpenStudyBooking(s)}>
                         <Calendar size={14} />
-                        <span>시간표 조회 & 예약</span>
+                        <span>시간표 및 예약</span>
                       </PrimaryActionBtn>
-                      <SniperActionBtn onClick={() => handleRegisterStudySniper(s)}>
-                        <Crosshair size={14} />
-                        <span>취소표 감시</span>
-                      </SniperActionBtn>
+                      <SecondaryActionBtn onClick={() => handleRegisterStudySniper(s)}>
+                        <Bell size={14} />
+                        <span>취소표 알림</span>
+                      </SecondaryActionBtn>
                     </ButtonRow>
-                  </StudyCard>
+                  </Box>
                 );
               })}
             </StudyGrid>
@@ -1307,9 +1171,9 @@ export default function MobileLibraryHubPage() {
       {activeTab === "my" && (
         <Section>
           <SectionHeader>
-            <SectionTitle>내 도서관 이용 및 예약 현황</SectionTitle>
+            <SectionTitle>내 도서관 이용 현황</SectionTitle>
             <RefreshButton onClick={loadData}>
-              <RefreshCw size={14} />
+              <RefreshCw size={13} />
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
@@ -1317,7 +1181,7 @@ export default function MobileLibraryHubPage() {
           {/* 3-1. 열람실 좌석 섹션 */}
           <SubTitle>현재 이용 중인 열람실 좌석</SubTitle>
           {mySeat ? (
-            <ActiveSeatCard>
+            <Box style={{ padding: "16px" }}>
               <ActiveSeatHeader>
                 <ActiveBadge $isTemp={mySeat.isTempCharge}>
                   {mySeat.isTempCharge ? "임시 배정 (미입실)" : "이용 중"}
@@ -1335,16 +1199,16 @@ export default function MobileLibraryHubPage() {
                       <strong style={{ fontSize: "13px", color: "#78350f" }}>배정 확정 안내</strong>
                       {remainingCheckinSec !== null && (
                         <ExpiryBadge $urgent={remainingCheckinSec < 300}>
-                          ⏳ 남은 시간: {Math.floor(remainingCheckinSec / 60)}분{" "}
+                          남은 시간: {Math.floor(remainingCheckinSec / 60)}분{" "}
                           {(remainingCheckinSec % 60) < 10 ? `0${remainingCheckinSec % 60}` : remainingCheckinSec % 60}초
                         </ExpiryBadge>
                       )}
                     </div>
                     <span style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.45 }}>
-                      학산도서관 1층 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시거나, 도서관 내에 계시면 잠시 후 자동으로 배정이 확정됩니다.
+                      학산도서관 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시면 정상 이용 상태로 변경됩니다.
                     </span>
                     <NoticeBulletList>
-                      <li>• 20분 내 미입실 시 예약이 자동 취소되며, <strong>누적 3회 시 7일간 이용이 정지</strong>됩니다.</li>
+                      <li>• 20분 내 미입실 시 예약이 자동 취소되며, 3회 누적 시 7일간 이용이 제한됩니다.</li>
                       <li>• 지금 이용하기 어려우실 경우 20분 내 <strong>[예약 취소]</strong>를 누르시면 페널티 없이 취소됩니다.</li>
                     </NoticeBulletList>
                   </div>
@@ -1352,7 +1216,7 @@ export default function MobileLibraryHubPage() {
               )}
 
               <SeatTimeInfo>
-                <Clock size={16} color="#2563eb" />
+                <Clock size={15} color="#0061ff" />
                 <span>
                   이용 시간:{" "}
                   {mySeat.beginTime
@@ -1372,56 +1236,50 @@ export default function MobileLibraryHubPage() {
               <ActionRow>
                 {mySeat.isTempCharge ? (
                   <>
-                    <ActionButton
-                      onClick={handleCheckinSeat}
-                      style={{ background: "#2563eb", color: "#fff", border: "none" }}
-                    >
+                    <PrimaryActionBtn onClick={handleCheckinSeat}>
                       <CheckCircle size={14} />
                       <span>배정 확정</span>
-                    </ActionButton>
-                    <ActionButton onClick={handleToggleFavoriteSeat}>
+                    </PrimaryActionBtn>
+                    <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
                         color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
                         fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
                       />
-                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
-                    </ActionButton>
-                    <ActionButton onClick={handleReturnSeat} $danger>
+                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
+                    </SecondaryActionBtn>
+                    <DangerActionBtn onClick={handleReturnSeat}>
                       <LogOut size={14} />
                       <span>예약 취소</span>
-                    </ActionButton>
+                    </DangerActionBtn>
                   </>
                 ) : (
                   <>
-                    <ActionButton
-                      onClick={handleRenewSeat}
-                      style={{ background: "#2563eb", color: "#fff", border: "none" }}
-                    >
+                    <PrimaryActionBtn onClick={handleRenewSeat}>
                       <RotateCw size={14} />
                       <span>1시간 연장</span>
-                    </ActionButton>
-                    <ActionButton onClick={handleToggleFavoriteSeat}>
+                    </PrimaryActionBtn>
+                    <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
                         color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
                         fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
                       />
-                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석지정"}</span>
-                    </ActionButton>
-                    <ActionButton onClick={handleReturnSeat} $danger>
+                      <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
+                    </SecondaryActionBtn>
+                    <DangerActionBtn onClick={handleReturnSeat}>
                       <LogOut size={14} />
                       <span>퇴실 반납</span>
-                    </ActionButton>
+                    </DangerActionBtn>
                   </>
                 )}
               </ActionRow>
 
               <ReminderRow onClick={handleRegisterSeatReminder}>
                 <Bell size={14} color="#d97706" />
-                <span>종료 20분 전 정각 알람 신청하기</span>
+                <span>종료 20분 전 알림 받기</span>
               </ReminderRow>
-            </ActiveSeatCard>
+            </Box>
           ) : isLoadingMy ? (
             <EmptyBox>좌석 이용 현황 확인 중...</EmptyBox>
           ) : (
@@ -1440,7 +1298,7 @@ export default function MobileLibraryHubPage() {
                   res.status === "CHARGE";
 
                 return (
-                  <ReservationCard key={res.id}>
+                  <Box key={res.id} style={{ padding: "16px" }}>
                     <ReservationTop>
                       <strong>{res.roomName}</strong>
                       <ReservationStatus>{res.status || "예약됨"}</ReservationStatus>
@@ -1470,7 +1328,7 @@ export default function MobileLibraryHubPage() {
                         <span>예약 취소</span>
                       </SmallActionBtn>
                     </ReservationActionRow>
-                  </ReservationCard>
+                  </Box>
                 );
               })}
             </ReservationList>
@@ -1481,7 +1339,7 @@ export default function MobileLibraryHubPage() {
           )}
 
           {/* 3-3. 내 선호좌석 목록 섹션 */}
-          <SubTitle style={{ marginTop: "24px" }}>내 선호좌석 목록 ({favoriteSeats.length})</SubTitle>
+          <SubTitle style={{ marginTop: "24px" }}>내 선호좌석 ({favoriteSeats.length})</SubTitle>
           {favoriteSeats.length > 0 ? (
             <FavGrid>
               {favoriteSeats.map((fav) => (
@@ -1499,8 +1357,8 @@ export default function MobileLibraryHubPage() {
                         <span>즉시 배정</span>
                       </FavActionBtn>
                     ) : (
-                      <FavActionBtn onClick={() => handleRegisterFavSeatSniper(fav)}>
-                        <Crosshair size={13} />
+                      <FavActionBtn onClick={() => handleRegisterSpecificSeatSniper(fav)}>
+                        <Bell size={13} />
                         <span>빈자리 알림</span>
                       </FavActionBtn>
                     )}
@@ -1517,429 +1375,449 @@ export default function MobileLibraryHubPage() {
         </Section>
       )}
 
-      {/* ================= 모달 1: 열람실 좌석 선택 모달 ================= */}
-      {selectedSeatRoom && (
-        <ModalOverlay onClick={() => setSelectedSeatRoom(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <div>
-                <ModalTitle>{selectedSeatRoom.name} 좌석 선택</ModalTitle>
-                <ModalSubtitle>비어있는 파란색 좌석을 터치하여 배정하세요.</ModalSubtitle>
-              </div>
-              <CloseBtn onClick={() => setSelectedSeatRoom(null)}>
-                <X size={20} />
-              </CloseBtn>
-            </ModalHeader>
+      {/* ================= 바텀시트 1: 열람실 좌석 선택 ================= */}
+      <BottomSheet
+        open={Boolean(selectedSeatRoom)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedSeatRoom(null);
+        }}
+        height="85%"
+        maxHeight="92%"
+        showCloseButton={true}
+      >
+        <SheetContainer>
+          <SheetHeader>
+            <SheetTitle>{selectedSeatRoom?.name} 좌석 선택</SheetTitle>
+            <SheetSubtitle>원하시는 좌석을 터치하여 배정하세요.</SheetSubtitle>
+          </SheetHeader>
 
-            {isLoadingSeats ? (
-              <ModalLoading>
-                <RefreshCw size={24} className="spin" />
-                <span>좌석 배치도를 불러오는 중...</span>
-              </ModalLoading>
-            ) : roomSeats.length === 0 ? (
-              <EmptyBox>조회된 좌석이 없습니다.</EmptyBox>
-            ) : (
-              <>
-                <SeatLegendRow>
-                  <SeatLegendItem>
-                    <SeatLegendBox $color="#eff6ff" $border="#93c5fd" />
-                    <span>배정 가능 (터치 시 배정)</span>
-                  </SeatLegendItem>
-                  <SeatLegendItem>
-                    <SeatLegendBox $color="#fef2f2" $border="#fca5a5" />
-                    <span>사용 중 (터치 시 빈자리 알림)</span>
-                  </SeatLegendItem>
-                </SeatLegendRow>
+          {isLoadingSeats ? (
+            <SheetLoading>
+              <RefreshCw size={24} className="spin" />
+              <span>좌석 배치도를 불러오는 중...</span>
+            </SheetLoading>
+          ) : roomSeats.length === 0 ? (
+            <EmptyBox style={{ margin: "20px 0" }}>조회된 좌석이 없습니다.</EmptyBox>
+          ) : (
+            <>
+              <SeatLegendRow>
+                <SeatLegendItem>
+                  <SeatLegendBox $color="#eff6ff" $border="#93c5fd" />
+                  <span>배정 가능 (터치 시 배정)</span>
+                </SeatLegendItem>
+                <SeatLegendItem>
+                  <SeatLegendBox $color="#fef2f2" $border="#fca5a5" />
+                  <span>사용 중 (터치 시 알림)</span>
+                </SeatLegendItem>
+              </SeatLegendRow>
 
-                <SeatGridContainer>
-                  {roomSeats.map((seat) => {
-                    const isAvailable = !seat.isOccupied && seat.isActive !== false;
-                    return (
-                      <SeatButton
-                        key={seat.id}
-                        $isOccupied={seat.isOccupied}
-                        $isReservable={isAvailable}
-                        $isDisabled={seat.isActive === false}
-                        disabled={seat.isActive === false}
-                        title={
-                          isAvailable
-                            ? `${seat.code}번 좌석 배정하기`
-                            : seat.isOccupied
-                            ? `${seat.code}번 좌석 빈자리 알림받기`
-                            : `${seat.code}번 미운영 좌석`
+              <SeatGridContainer>
+                {roomSeats.map((seat) => {
+                  const isAvailable = !seat.isOccupied && seat.isActive !== false;
+                  return (
+                    <SeatButton
+                      key={seat.id}
+                      $isOccupied={seat.isOccupied}
+                      $isReservable={isAvailable}
+                      $isDisabled={seat.isActive === false}
+                      disabled={seat.isActive === false}
+                      onClick={() => {
+                        if (isAvailable) {
+                          handleAssignSeat(seat);
+                        } else if (seat.isOccupied) {
+                          handleRegisterSpecificSeatSniper(seat);
                         }
-                        onClick={() => {
-                          if (isAvailable) {
-                            handleAssignSeat(seat);
-                          } else if (seat.isOccupied) {
-                            handleRegisterSpecificSeatSniper(seat);
-                          }
-                        }}
-                      >
-                        <span>{seat.code}</span>
-                      </SeatButton>
-                    );
-                  })}
-                </SeatGridContainer>
-              </>
-            )}
-          </ModalContent>
-        </ModalOverlay>
-      )}
+                      }}
+                    >
+                      <span>{seat.code}</span>
+                    </SeatButton>
+                  );
+                })}
+              </SeatGridContainer>
+            </>
+          )}
+        </SheetContainer>
+      </BottomSheet>
 
-      {/* ================= 모달 2: 스터디룸 타임라인 & 예약 모달 ================= */}
-      {selectedStudyRoom && (
-        <ModalOverlay onClick={() => setSelectedStudyRoom(null)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <div>
-                <ModalTitle>{selectedStudyRoom.name} 예약</ModalTitle>
-                <RoomInfoBadgesRow>
-                  <RoomInfoBadgeItem>
-                    <MapPin size={12} />
-                    <span>
-                      {studyRoomDetail?.building?.name || "중앙관"}{" "}
-                      {studyRoomDetail?.floor?.name || selectedStudyRoom.location}
-                    </span>
-                  </RoomInfoBadgeItem>
-                  <RoomInfoBadgeItem>
-                    <Users size={12} />
-                    <span>
-                      수용 {studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1} ~{" "}
-                      {studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10}명
-                    </span>
-                  </RoomInfoBadgeItem>
-                  <RoomInfoBadgeItem>
-                    <Clock size={12} />
-                    <span>
-                      {studyRoomDetail?.rule?.minTime || 30} ~{" "}
-                      {studyRoomDetail?.rule?.maxTime || 240}분
-                    </span>
-                  </RoomInfoBadgeItem>
-                </RoomInfoBadgesRow>
-              </div>
-              <CloseBtn onClick={() => setSelectedStudyRoom(null)}>
-                <X size={20} />
-              </CloseBtn>
-            </ModalHeader>
+      {/* ================= 바텀시트 2: 스터디룸 타임라인 및 예약 ================= */}
+      <BottomSheet
+        open={Boolean(selectedStudyRoom)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudyRoom(null);
+        }}
+        height="90%"
+        maxHeight="95%"
+        showCloseButton={true}
+      >
+        <SheetContainer>
+          <SheetHeader>
+            <SheetTitle>{selectedStudyRoom?.name} 예약</SheetTitle>
+            <RoomInfoBadgesRow>
+              <RoomInfoBadgeItem>
+                <MapPin size={12} />
+                <span>
+                  {studyRoomDetail?.building?.name || "중앙관"}{" "}
+                  {studyRoomDetail?.floor?.name || selectedStudyRoom?.location}
+                </span>
+              </RoomInfoBadgeItem>
+              <RoomInfoBadgeItem>
+                <Users size={12} />
+                <span>
+                  수용 {studyRoomDetail?.minQuota || selectedStudyRoom?.minQuota || 1} ~{" "}
+                  {studyRoomDetail?.maxQuota || selectedStudyRoom?.maxQuota || 10}명
+                </span>
+              </RoomInfoBadgeItem>
+              <RoomInfoBadgeItem>
+                <Clock size={12} />
+                <span>
+                  {studyRoomDetail?.rule?.minTime || 30} ~{" "}
+                  {studyRoomDetail?.rule?.maxTime || 240}분
+                </span>
+              </RoomInfoBadgeItem>
+            </RoomInfoBadgesRow>
+          </SheetHeader>
 
-            {/* 안내 및 주의사항 카드 */}
-            {(studyRoomDetail?.description || studyRoomDetail?.attention) && (
-              <NoticeCard>
-                <NoticeHeader onClick={() => setShowAttention((prev) => !prev)}>
-                  <NoticeTitle>
-                    <Info size={15} color="#2563eb" />
-                    <span>공간 설명 및 이용 주의사항</span>
-                  </NoticeTitle>
-                  <NoticeToggleBtn type="button">
-                    {showAttention ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </NoticeToggleBtn>
-                </NoticeHeader>
-                {showAttention && (
-                  <NoticeBody>
-                    {studyRoomDetail.description && (
-                      <NoticeSection>
-                        <NoticeSubTitle>📌 공간 설명</NoticeSubTitle>
-                        <NoticeText>{studyRoomDetail.description}</NoticeText>
-                      </NoticeSection>
-                    )}
-                    {studyRoomDetail.attention && (
-                      <NoticeSection>
-                        <NoticeSubTitle>⚠️ 이용 주의사항 (필독)</NoticeSubTitle>
-                        <NoticeText>{studyRoomDetail.attention}</NoticeText>
-                      </NoticeSection>
-                    )}
-                  </NoticeBody>
-                )}
-              </NoticeCard>
-            )}
-
-            {/* 날짜 선택 */}
-            <DateSelectorRow>
-              {dateOptions.map((opt) => (
-                <DateBtn
-                  key={opt.value}
-                  $active={selectedDate === opt.value}
-                  onClick={() => handleDateChange(opt.value)}
-                >
-                  {opt.label}
-                </DateBtn>
-              ))}
-            </DateSelectorRow>
-
-            {/* 10분 단위 타임라인 시각화 */}
-            <TimelineSection>
-              <TimelineHeader>
-                <span>시간대별 점유 현황 (10분 단위)</span>
-                <LegendRow>
-                  <LegendItem>
-                    <LegendDot $type="avail" /> 가능
-                  </LegendItem>
-                  <LegendItem>
-                    <LegendDot $type="occ" /> 점유됨
-                  </LegendItem>
-                  <LegendItem>
-                    <LegendDot $type="past" /> 만료
-                  </LegendItem>
-                </LegendRow>
-              </TimelineHeader>
-
-              {isLoadingTimeline ? (
-                <ModalLoading>
-                  <RefreshCw size={20} className="spin" />
-                  <span>타임라인 로딩 중...</span>
-                </ModalLoading>
-              ) : studyRoomDetail?.timeLine ? (
-                <TimelineGrid>
-                  {studyRoomDetail.timeLine.map((slot) => (
-                    <HourSlot key={slot.hour}>
-                      <HourLabel>{slot.hour}시</HourLabel>
-                      <MinuteBars>
-                        {slot.minutes.map((m, mIdx) => {
-                          const isPast = m.class === "disabled";
-                          const isOcc = m.class === "occupied";
-                          const timeStr = `${slot.hour < 10 ? `0${slot.hour}` : slot.hour}:${
-                            mIdx * 10 === 0 ? "00" : mIdx * 10
-                          }`;
-                          return (
-                            <MinuteBar
-                              key={mIdx}
-                              $type={isPast ? "past" : isOcc ? "occ" : "avail"}
-                              title={`${timeStr} ${isPast ? "(만료)" : isOcc ? "(점유됨)" : "(선택 가능)"}`}
-                              style={{ cursor: !isPast && !isOcc ? "pointer" : "default" }}
-                              onClick={() => {
-                                if (!isPast && !isOcc) {
-                                  handleBeginTimeChange(timeStr);
-                                }
-                              }}
-                            />
-                          );
-                        })}
-                      </MinuteBars>
-                    </HourSlot>
-                  ))}
-                </TimelineGrid>
-              ) : (
-                <EmptyBox>해당 일자의 타임라인 정보를 불러올 수 없습니다.</EmptyBox>
+          {/* 안내 및 주의사항 카드 */}
+          {(studyRoomDetail?.description || studyRoomDetail?.attention) && (
+            <NoticeCard>
+              <NoticeHeader onClick={() => setShowAttention((prev) => !prev)}>
+                <NoticeTitle>
+                  <Info size={15} color="#0061ff" />
+                  <span>공간 설명 및 이용 주의사항</span>
+                </NoticeTitle>
+                <NoticeToggleBtn type="button">
+                  {showAttention ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </NoticeToggleBtn>
+              </NoticeHeader>
+              {showAttention && (
+                <NoticeBody>
+                  {studyRoomDetail.description && (
+                    <NoticeSection>
+                      <NoticeSubTitle>공간 설명</NoticeSubTitle>
+                      <NoticeText>{studyRoomDetail.description}</NoticeText>
+                    </NoticeSection>
+                  )}
+                  {studyRoomDetail.attention && (
+                    <NoticeSection>
+                      <NoticeSubTitle>이용 주의사항</NoticeSubTitle>
+                      <NoticeText>{studyRoomDetail.attention}</NoticeText>
+                    </NoticeSection>
+                  )}
+                </NoticeBody>
               )}
-            </TimelineSection>
+            </NoticeCard>
+          )}
 
-            {/* 예약 입력 폼 */}
-            <BookingForm>
-              {/* 시작 시간 & 종료 시간 (10분 단위) */}
-              <TimeRangeRow>
-                <TimeSelectBox>
-                  <FormLabel>시작 시간 (10분 단위)</FormLabel>
-                  <FormSelect
-                    value={reserveBeginTime}
-                    onChange={(e) => handleBeginTimeChange(e.target.value)}
-                  >
-                    {timeOptions10Min.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </FormSelect>
-                </TimeSelectBox>
-                <TimeSelectBox>
-                  <FormLabel>
-                    종료 시간
-                    <DurationSummaryText>
-                      ({parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime)}분)
-                    </DurationSummaryText>
-                  </FormLabel>
-                  <FormSelect
-                    value={reserveEndTime}
-                    onChange={(e) => {
-                      setReserveEndTime(e.target.value);
-                      const diff = parseTimeToMinutes(e.target.value) - parseTimeToMinutes(reserveBeginTime);
-                      setReserveDurationHours(Math.max(1, Math.round(diff / 60)));
-                    }}
-                  >
-                    {timeOptions10Min
-                      .filter((t) => parseTimeToMinutes(t) > parseTimeToMinutes(reserveBeginTime))
-                      .map((t) => {
-                        const diffMin = parseTimeToMinutes(t) - parseTimeToMinutes(reserveBeginTime);
+          {/* 날짜 선택 */}
+          <DateSelectorRow>
+            {dateOptions.map((opt) => (
+              <DateBtn
+                key={opt.value}
+                $active={selectedDate === opt.value}
+                onClick={() => handleDateChange(opt.value)}
+              >
+                {opt.label}
+              </DateBtn>
+            ))}
+          </DateSelectorRow>
+
+          {/* 10분 단위 타임라인 */}
+          <TimelineSection>
+            <TimelineHeader>
+              <span>시간대별 현황 (10분 단위)</span>
+              <LegendRow>
+                <LegendItem>
+                  <LegendDot $type="avail" /> 가능
+                </LegendItem>
+                <LegendItem>
+                  <LegendDot $type="occ" /> 점유됨
+                </LegendItem>
+                <LegendItem>
+                  <LegendDot $type="past" /> 마감
+                </LegendItem>
+              </LegendRow>
+            </TimelineHeader>
+
+            {isLoadingTimeline ? (
+              <SheetLoading>
+                <RefreshCw size={20} className="spin" />
+                <span>타임라인 로딩 중...</span>
+              </SheetLoading>
+            ) : studyRoomDetail?.timeLine ? (
+              <TimelineGrid>
+                {studyRoomDetail.timeLine.map((slot) => (
+                  <HourSlot key={slot.hour}>
+                    <HourLabel>{slot.hour}시</HourLabel>
+                    <MinuteBars>
+                      {slot.minutes.map((m, mIdx) => {
+                        const isPast = m.class === "disabled";
+                        const isOcc = m.class === "occupied";
+                        const timeStr = `${slot.hour < 10 ? `0${slot.hour}` : slot.hour}:${
+                          mIdx * 10 === 0 ? "00" : mIdx * 10
+                        }`;
                         return (
-                          <option key={t} value={t}>
-                            {t} ({diffMin}분)
-                          </option>
+                          <MinuteBar
+                            key={mIdx}
+                            $type={isPast ? "past" : isOcc ? "occ" : "avail"}
+                            title={`${timeStr} ${isPast ? "(마감)" : isOcc ? "(점유됨)" : "(선택 가능)"}`}
+                            style={{ cursor: !isPast && !isOcc ? "pointer" : "default" }}
+                            onClick={() => {
+                              if (!isPast && !isOcc) {
+                                handleBeginTimeChange(timeStr);
+                              }
+                            }}
+                          />
                         );
                       })}
-                  </FormSelect>
-                </TimeSelectBox>
-              </TimeRangeRow>
+                    </MinuteBars>
+                  </HourSlot>
+                ))}
+              </TimelineGrid>
+            ) : (
+              <EmptyBox>해당 일자의 타임라인 정보를 불러올 수 없습니다.</EmptyBox>
+            )}
+          </TimelineSection>
 
-              {/* 빠른 이용 시간 선택 */}
-              <FormGroup>
-                <FormLabel>이용 시간 빠른 선택</FormLabel>
-                <DurationBtnGroup>
-                  {[30, 60, 120, 180, 240].map((mins) => {
-                    const minAllowed = studyRoomDetail?.rule?.minTime || 30;
-                    const maxAllowed = studyRoomDetail?.rule?.maxTime || 240;
-                    if (mins < minAllowed || mins > maxAllowed) return null;
-                    const currentDuration =
-                      parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime);
-                    return (
-                      <DurationBtn
-                        key={mins}
-                        $active={currentDuration === mins}
-                        onClick={() => handleSelectDuration(mins)}
-                      >
-                        {mins < 60 ? `${mins}분` : `${mins / 60}시간`}
-                      </DurationBtn>
-                    );
-                  })}
-                </DurationBtnGroup>
-              </FormGroup>
-
-              {/* 사용 목적 (용도 - 필수) */}
-              <FormGroup>
+          {/* 예약 입력 폼 */}
+          <BookingForm>
+            {/* 시작 시간 & 종료 시간 */}
+            <TimeRangeRow>
+              <TimeSelectBox>
+                <FormLabel>시작 시간</FormLabel>
+                <FormSelect
+                  value={reserveBeginTime}
+                  onChange={(e) => handleBeginTimeChange(e.target.value)}
+                >
+                  {timeOptions10Min.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </FormSelect>
+              </TimeSelectBox>
+              <TimeSelectBox>
                 <FormLabel>
-                  사용 용도 <span style={{ color: "#ef4444" }}>*필수</span>
+                  종료 시간
+                  <DurationSummaryText>
+                    ({parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime)}분)
+                  </DurationSummaryText>
                 </FormLabel>
-                <FormInput
-                  type="text"
-                  value={reservePurpose}
-                  onChange={(e) => setReservePurpose(e.target.value)}
-                  placeholder="예: 조별 과제 및 토의"
-                />
-              </FormGroup>
+                <FormSelect
+                  value={reserveEndTime}
+                  onChange={(e) => {
+                    setReserveEndTime(e.target.value);
+                    const diff = parseTimeToMinutes(e.target.value) - parseTimeToMinutes(reserveBeginTime);
+                    setReserveDurationHours(Math.max(1, Math.round(diff / 60)));
+                  }}
+                >
+                  {timeOptions10Min
+                    .filter((t) => parseTimeToMinutes(t) > parseTimeToMinutes(reserveBeginTime))
+                    .map((t) => {
+                      const diffMin = parseTimeToMinutes(t) - parseTimeToMinutes(reserveBeginTime);
+                      return (
+                        <option key={t} value={t}>
+                          {t} ({diffMin}분)
+                        </option>
+                      );
+                    })}
+                </FormSelect>
+              </TimeSelectBox>
+            </TimeRangeRow>
 
-              {/* 동반 이용자 등록 섹션 (필수) */}
-              {(() => {
-                const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom.minQuota || 1;
-                const maxQuota = studyRoomDetail?.maxQuota || selectedStudyRoom.maxQuota || 10;
-                const minCompanions = Math.max(0, minQuota - 1);
-                const maxCompanions = Math.max(0, maxQuota - 1);
-                const isSatisfied = companions.length >= minCompanions;
+            {/* 빠른 이용 시간 선택 */}
+            <FormGroup>
+              <FormLabel>이용 시간 빠른 선택</FormLabel>
+              <DurationBtnGroup>
+                {[30, 60, 120, 180, 240].map((mins) => {
+                  const minAllowed = studyRoomDetail?.rule?.minTime || 30;
+                  const maxAllowed = studyRoomDetail?.rule?.maxTime || 240;
+                  if (mins < minAllowed || mins > maxAllowed) return null;
+                  const currentDuration =
+                    parseTimeToMinutes(reserveEndTime) - parseTimeToMinutes(reserveBeginTime);
+                  return (
+                    <DurationBtn
+                      key={mins}
+                      $active={currentDuration === mins}
+                      onClick={() => handleSelectDuration(mins)}
+                    >
+                      {mins < 60 ? `${mins}분` : `${mins / 60}시간`}
+                    </DurationBtn>
+                  );
+                })}
+              </DurationBtnGroup>
+            </FormGroup>
 
-                return (
-                  <CompanionSection>
-                    <CompanionHeader>
-                      <div>
-                        <CompanionTitle>동반 이용자 등록</CompanionTitle>
-                        {minCompanions > 0 && (
-                          <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "6px" }}>
-                            (본인 포함 {minQuota}~{maxQuota}인실)
+            {/* 사용 목적 */}
+            <FormGroup>
+              <FormLabel>
+                사용 목적 <span style={{ color: "#ef4444" }}>*필수</span>
+              </FormLabel>
+              <FormInput
+                type="text"
+                value={reservePurpose}
+                onChange={(e) => setReservePurpose(e.target.value)}
+                placeholder="예: 과제 및 스터디"
+              />
+            </FormGroup>
+
+            {/* 동반 이용자 등록 */}
+            {(() => {
+              const minQuota = studyRoomDetail?.minQuota || selectedStudyRoom?.minQuota || 1;
+              const minCompanions = Math.max(0, minQuota - 1);
+              const isSatisfied = companions.length >= minCompanions;
+
+              return (
+                <CompanionSection>
+                  <CompanionHeader>
+                    <div>
+                      <CompanionTitle>동반 이용자 등록</CompanionTitle>
+                      {minCompanions > 0 && (
+                        <span style={{ fontSize: "11px", color: "var(--text-secondary, #6b7684)", marginLeft: "6px" }}>
+                          (본인 포함 {minQuota}~{studyRoomDetail?.maxQuota || selectedStudyRoom?.maxQuota || 10}인실)
+                        </span>
+                      )}
+                    </div>
+                    <CompanionQuotaBadge $isSatisfied={isSatisfied}>
+                      {minCompanions > 0
+                        ? `동반자 ${companions.length}/${minCompanions}명 ${isSatisfied ? "충족" : "필요"}`
+                        : `동반자 ${companions.length}명`}
+                    </CompanionQuotaBadge>
+                  </CompanionHeader>
+
+                  {minCompanions > 0 && !isSatisfied && (
+                    <span style={{ fontSize: "11.5px", color: "#ef4444" }}>
+                      ※ 동반 이용자를 최소 {minCompanions}명 이상 등록해야 예약이 가능합니다.
+                    </span>
+                  )}
+
+                  <CompanionInputRow>
+                    <CompanionInput
+                      type="text"
+                      placeholder="이름"
+                      value={companionName}
+                      onChange={(e) => setCompanionName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCompanion();
+                        }
+                      }}
+                    />
+                    <CompanionInput
+                      type="text"
+                      placeholder="학번"
+                      value={companionMemberNo}
+                      onChange={(e) => setCompanionMemberNo(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCompanion();
+                        }
+                      }}
+                    />
+                    <CompanionAddBtn
+                      type="button"
+                      disabled={isSearchingCompanion || !companionName.trim() || !companionMemberNo.trim()}
+                      onClick={handleAddCompanion}
+                    >
+                      {isSearchingCompanion ? (
+                        <RefreshCw size={14} className="spin" />
+                      ) : (
+                        <UserPlus size={14} />
+                      )}
+                      <span>추가</span>
+                    </CompanionAddBtn>
+                  </CompanionInputRow>
+
+                  {companions.length > 0 && (
+                    <CompanionChipList>
+                      {companions.map((c) => (
+                        <CompanionChip key={c.id}>
+                          <span>
+                            {c.name} ({c.memberNo})
                           </span>
-                        )}
-                      </div>
-                      <CompanionQuotaBadge $isSatisfied={isSatisfied}>
-                        {minCompanions > 0
-                          ? `동반자 ${companions.length}/${minCompanions}명 (최대 ${maxCompanions}명) ${
-                              isSatisfied ? "충족" : "필요"
-                            }`
-                          : `동반자 ${companions.length}/${maxCompanions}명`}
-                      </CompanionQuotaBadge>
-                    </CompanionHeader>
+                          <CompanionChipDeleteBtn
+                            type="button"
+                            onClick={() => handleRemoveCompanion(c.id)}
+                            title="삭제"
+                          >
+                            <X size={14} />
+                          </CompanionChipDeleteBtn>
+                        </CompanionChip>
+                      ))}
+                    </CompanionChipList>
+                  )}
+                </CompanionSection>
+              );
+            })()}
 
-                    {minCompanions > 0 && !isSatisfied && (
-                      <span style={{ fontSize: "11.5px", color: "#ef4444" }}>
-                        ※ 본인을 제외하고 동반 이용자를 최소 {minCompanions}명 이상 등록해야 예약이 가능합니다.
-                      </span>
-                    )}
+            {/* 동반이용자 개인정보 동의 */}
+            <PrivacyAgreeContainer onClick={() => setIsPrivacyAgreed((prev) => !prev)}>
+              <PrivacyAgreeLabel>
+                <CustomCheckbox $checked={isPrivacyAgreed}>
+                  {isPrivacyAgreed && <Check size={11} color="#fff" strokeWidth={3} />}
+                </CustomCheckbox>
+                <span>
+                  동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "#ef4444" }}>*필수</span>
+                </span>
+              </PrivacyAgreeLabel>
+              <PrivacyNoticeText>
+                스터디룸 이용 및 입실 확인 관리를 위해 동반이용자의 이름 및 학번 정보를 수집·이용하는 것에 동의합니다.
+              </PrivacyNoticeText>
+            </PrivacyAgreeContainer>
 
-                    <CompanionInputRow>
-                      <CompanionInput
-                        type="text"
-                        placeholder="이름 (예: 홍길동)"
-                        value={companionName}
-                        onChange={(e) => setCompanionName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddCompanion();
-                          }
-                        }}
-                      />
-                      <CompanionInput
-                        type="text"
-                        placeholder="학번 (예: 202301234)"
-                        value={companionMemberNo}
-                        onChange={(e) => setCompanionMemberNo(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddCompanion();
-                          }
-                        }}
-                      />
-                      <CompanionAddBtn
-                        type="button"
-                        disabled={isSearchingCompanion || !companionName.trim() || !companionMemberNo.trim()}
-                        onClick={handleAddCompanion}
-                      >
-                        {isSearchingCompanion ? (
-                          <RefreshCw size={14} className="spin" />
-                        ) : (
-                          <UserPlus size={14} />
-                        )}
-                        <span>추가</span>
-                      </CompanionAddBtn>
-                    </CompanionInputRow>
+            {/* 기타 요청사항 */}
+            <FormGroup>
+              <FormLabel>기타 요청사항 (선택)</FormLabel>
+              <FormInput
+                type="text"
+                value={reserveNotes}
+                onChange={(e) => setReserveNotes(e.target.value)}
+                placeholder="요청사항이 있을 경우 입력해주세요."
+              />
+            </FormGroup>
 
-                    {companions.length > 0 && (
-                      <CompanionChipList>
-                        {companions.map((c) => (
-                          <CompanionChip key={c.id}>
-                            <span>
-                              {c.name} ({c.memberNo})
-                            </span>
-                            <CompanionChipDeleteBtn
-                              type="button"
-                              onClick={() => handleRemoveCompanion(c.id)}
-                              title="삭제"
-                            >
-                              <X size={14} />
-                            </CompanionChipDeleteBtn>
-                          </CompanionChip>
-                        ))}
-                      </CompanionChipList>
-                    )}
-                  </CompanionSection>
-                );
-              })()}
+            <ModalActionBtnGroup>
+              <CapsuleButton
+                variant="primary"
+                fullWidth
+                disabled={isSubmittingBooking}
+                loading={isSubmittingBooking}
+                onClick={handleSubmitStudyBooking}
+                style={{ fontSize: "15px", padding: "12px 20px" }}
+              >
+                예약 신청하기
+              </CapsuleButton>
+              <SecondaryActionBtn
+                type="button"
+                onClick={handleRegisterStudySlotSniper}
+                style={{ width: "100%", padding: "12px", justifyContent: "center" }}
+              >
+                <Bell size={14} />
+                <span>이 시간대 취소표 알림 받기</span>
+              </SecondaryActionBtn>
+            </ModalActionBtnGroup>
+          </BookingForm>
+        </SheetContainer>
+      </BottomSheet>
 
-              {/* 동반이용자 개인정보 수집 및 이용 동의 (필수) */}
-              <PrivacyAgreeContainer onClick={() => setIsPrivacyAgreed((prev) => !prev)}>
-                <PrivacyAgreeLabel>
-                  <CustomCheckbox $checked={isPrivacyAgreed}>
-                    {isPrivacyAgreed && <Check size={11} color="#fff" strokeWidth={3} />}
-                  </CustomCheckbox>
-                  <span>
-                    동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "#ef4444" }}>*필수</span>
-                  </span>
-                </PrivacyAgreeLabel>
-                <PrivacyNoticeText>
-                  스터디룸 이용 및 입실 확인, 이용 내역 관리를 위해 동반이용자의 이름 및 학번 정보를 수집·이용하는 것에 동의합니다.
-                </PrivacyNoticeText>
-              </PrivacyAgreeContainer>
-
-              {/* 요청사항 (선택) */}
-              <FormGroup>
-                <FormLabel>기타 요청사항 (선택)</FormLabel>
-                <FormInput
-                  type="text"
-                  value={reserveNotes}
-                  onChange={(e) => setReserveNotes(e.target.value)}
-                  placeholder="예: 마이크 사용 희망 등"
-                />
-              </FormGroup>
-
-              <ModalActionBtnGroup>
-                <SubmitBtn disabled={isSubmittingBooking} onClick={handleSubmitStudyBooking}>
-                  {isSubmittingBooking ? "예약 처리 중..." : "위 조건으로 즉시 예약"}
-                </SubmitBtn>
-                <StudySniperSlotBtn type="button" onClick={handleRegisterStudySlotSniper}>
-                  <Crosshair size={14} />
-                  <span>이 시간대 취소표 알림받기</span>
-                </StudySniperSlotBtn>
-              </ModalActionBtnGroup>
-            </BookingForm>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      {/* 확인/취소 공용 모달 */}
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        primaryButton={{
+          text: "확인",
+          variant: "brand",
+          onClick: confirmModal.onConfirm,
+        }}
+        secondaryButton={{
+          text: "취소",
+          variant: "secondary",
+          onClick: () => setConfirmModal((prev) => ({ ...prev, isOpen: false })),
+        }}
+      />
 
       {/* 도서관 계정 연동 모달 */}
       <LibraryAccountModal
@@ -1947,7 +1825,7 @@ export default function MobileLibraryHubPage() {
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={() => {
           setIsAuthModalOpen(false);
-          showToast("🎉 학산도서관 계정이 성공적으로 연동되었습니다!");
+          showToast("도서관 계정이 성공적으로 연동되었습니다.");
           loadData();
         }}
       />
@@ -1956,21 +1834,20 @@ export default function MobileLibraryHubPage() {
 }
 
 // ================= STYLES =================
+
 const Container = styled.div`
   padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
-  background: #f8fafc;
 `;
 
 const TabBar = styled.div`
   display: flex;
-  background: #ffffff;
+  background: var(--bg-muted, #f2f4f6);
   padding: 4px;
-  border-radius: 12px;
+  border-radius: 14px;
   margin-bottom: 16px;
-  border: 1px solid #e2e8f0;
 `;
 
 const TabItem = styled.button<{ $active: boolean }>`
@@ -1980,24 +1857,26 @@ const TabItem = styled.button<{ $active: boolean }>`
   justify-content: center;
   gap: 6px;
   padding: 10px 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
-  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
-  background: ${({ $active }) => ($active ? "#eff6ff" : "transparent")};
-  border-radius: 8px;
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #6b7684)")};
+  background: ${({ $active }) => ($active ? "var(--bg-base, #ffffff)" : "transparent")};
+  border-radius: 10px;
   border: none;
   cursor: pointer;
+  box-shadow: ${({ $active }) => ($active ? "0 2px 6px rgba(0, 0, 0, 0.06)" : "none")};
   position: relative;
+  transition: all 0.15s ease;
 `;
 
-const BadgeDot = styled.span`
+const BadgeDot = styled.div`
   position: absolute;
-  top: 6px;
-  right: 12px;
+  top: 8px;
+  right: 14px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ef4444;
+  background: var(--text-brand, #0061ff);
 `;
 
 const AuthBannerCard = styled.div`
@@ -2006,9 +1885,9 @@ const AuthBannerCard = styled.div`
   justify-content: space-between;
   background: #fef3c7;
   border: 1px solid #fde68a;
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
   cursor: pointer;
 `;
 
@@ -2016,18 +1895,24 @@ const BannerCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 12px 16px;
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 16px;
+  padding: 14px 16px;
   margin-bottom: 16px;
   cursor: pointer;
+  transition: transform 0.12s ease-in-out;
+
+  &:active {
+    transform: scale(0.98);
+    background: var(--bg-muted, #f8fafc);
+  }
 `;
 
 const BannerLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const BannerText = styled.div`
@@ -2035,11 +1920,12 @@ const BannerText = styled.div`
   flex-direction: column;
   strong {
     font-size: 14px;
-    color: #1e40af;
+    color: var(--text-primary, #191f28);
   }
   span {
     font-size: 12px;
-    color: #3b82f6;
+    color: var(--text-secondary, #6b7684);
+    margin-top: 2px;
   }
 `;
 
@@ -2047,72 +1933,74 @@ const ToastMessage = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #dcfce7;
-  border: 1px solid #86efac;
-  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 13px;
+  font-weight: 500;
   margin-bottom: 14px;
 `;
 
 const Section = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 4px;
 `;
 
-const SectionTitle = styled.h2`
-  font-size: 16px;
+const SectionTitle = styled.h3`
+  font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary, #191f28);
   margin: 0;
 `;
 
-const SubTitle = styled.h3`
+const SubTitle = styled.h4`
   font-size: 14px;
-  font-weight: 700;
-  color: #334155;
-  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: var(--text-secondary, #4e5968);
+  margin: 0 0 6px 4px;
 `;
 
 const RefreshButton = styled.button`
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: #64748b;
   background: none;
   border: none;
+  font-size: 12px;
+  color: var(--text-secondary, #6b7684);
   cursor: pointer;
 `;
 
 const NoticeBanner = styled.div`
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #475569;
+  background: var(--bg-brand-subtle, #eff6ff);
+  border: 1px solid #dbeafe;
+  color: #1e40af;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+`;
+
+const SkeletonList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
 
 const RoomGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-`;
-
-const RoomCard = styled.div<{ $isFull: boolean }>`
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid ${({ $isFull }) => ($isFull ? "#fecaca" : "#e2e8f0")};
 `;
 
 const RoomHeader = styled.div`
@@ -2122,77 +2010,216 @@ const RoomHeader = styled.div`
   margin-bottom: 10px;
 `;
 
-const RoomName = styled.span`
+const RoomName = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary, #191f28);
 `;
 
 const SeatBadge = styled.span<{ $isFull: boolean }>`
   font-size: 12px;
   font-weight: 700;
   padding: 3px 8px;
-  border-radius: 999px;
-  background: ${({ $isFull }) => ($isFull ? "#fee2e2" : "#dbeafe")};
-  color: ${({ $isFull }) => ($isFull ? "#b91c1c" : "#1d4ed8")};
+  border-radius: 6px;
+  background: ${({ $isFull }) => ($isFull ? "var(--bg-error, #fef2f2)" : "var(--bg-brand-subtle, #eff6ff)")};
+  color: ${({ $isFull }) => ($isFull ? "var(--text-error, #ef4444)" : "var(--text-brand, #0061ff)")};
 `;
 
 const ProgressBarContainer = styled.div`
-  height: 8px;
-  background: #f1f5f9;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-muted, #f1f3f5);
   border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 `;
 
 const ProgressBarFill = styled.div<{ $rate: number; $isFull: boolean }>`
+  width: ${({ $rate }) => Math.min(100, Math.max(0, $rate))}%;
   height: 100%;
-  width: ${({ $rate }) => `${Math.min(100, $rate)}%`};
-  background: ${({ $isFull }) => ($isFull ? "#ef4444" : "#3b82f6")};
+  background: ${({ $isFull }) => ($isFull ? "var(--text-error, #ef4444)" : "var(--interactive-primary, #0061ff)")};
+  border-radius: 999px;
   transition: width 0.3s ease;
 `;
 
 const SeatStatRow = styled.div`
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  color: #64748b;
+  font-size: 12px;
+  color: var(--text-secondary, #8b95a1);
   margin-bottom: 12px;
 `;
 
 const ButtonRow = styled.div`
   display: flex;
+  align-items: center;
   gap: 8px;
+  margin-top: 6px;
 `;
 
 const PrimaryActionBtn = styled.button`
   flex: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px 0;
-  border-radius: 8px;
+  padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  background: #2563eb;
   color: #ffffff;
+  background: var(--interactive-primary, #0061ff);
   border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const SecondaryActionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #4e5968);
+  background: var(--bg-muted, #f2f4f6);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const DangerActionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-error, #ef4444);
+  background: var(--bg-error, #fef2f2);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+const EmptyBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 16px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px dashed var(--border-default, #e5e8eb);
+  border-radius: 14px;
+  font-size: 13px;
+  color: var(--text-secondary, #8b95a1);
+  text-align: center;
+`;
+
+const FavSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FavHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const FavTitle = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #191f28);
+`;
+
+const FavGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+`;
+
+const FavCard = styled.div`
+  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FavCardTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const FavName = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #191f28);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const FavBadge = styled.span<{ $isAvail: boolean }>`
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "#fee2e2")};
+  color: ${({ $isAvail }) => ($isAvail ? "#15803d" : "#dc2626")};
+`;
+
+const FavBtnRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const FavActionBtn = styled.button`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand-subtle, #eff6ff);
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 `;
 
-const SniperActionBtn = styled.button`
+const FavDeleteBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  background: #f8fafc;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
+  padding: 6px;
+  color: var(--text-disabled, #8b95a1);
+  background: var(--bg-muted, #f2f4f6);
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 `;
 
@@ -2202,25 +2229,17 @@ const StudyGrid = styled.div`
   gap: 12px;
 `;
 
-const StudyCard = styled.div`
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #e2e8f0;
-`;
-
 const StudyHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 10px;
 `;
 
-const StudyName = styled.h4`
+const StudyName = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 4px 0;
+  color: var(--text-primary, #191f28);
 `;
 
 const StudyLocation = styled.div`
@@ -2228,16 +2247,67 @@ const StudyLocation = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--text-secondary, #6b7684);
+  margin-top: 2px;
+`;
+
+const StudyOccupancyBadge = styled.span<{ $type: string }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#dcfce7" : $type === "warning" ? "#fef3c7" : "#fee2e2"};
+  color: ${({ $type }) =>
+    $type === "avail" ? "#15803d" : $type === "warning" ? "#b45309" : "#dc2626"};
 `;
 
 const QuotaBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-muted, #f2f4f6);
+  color: var(--text-secondary, #4e5968);
+  padding: 3px 7px;
+  border-radius: 6px;
+`;
+
+const StudyPreviewBarBox = styled.div`
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #f1f5f9);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+`;
+
+const StudyPreviewHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 12px;
   font-weight: 600;
-  background: #f1f5f9;
-  color: #334155;
-  padding: 3px 8px;
-  border-radius: 6px;
+  color: var(--text-primary, #333d4b);
+  margin-bottom: 8px;
+`;
+
+const StudyPreviewSlotRow = styled.div`
+  display: flex;
+  gap: 3px;
+  height: 10px;
+`;
+
+const StudyPreviewSlot = styled.div<{ $type: string }>`
+  flex: 1;
+  border-radius: 3px;
+  background: ${({ $type }) =>
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#e2e8f0"};
+`;
+
+const StudyPreviewTimeLabels = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-disabled, #8b95a1);
+  margin-top: 4px;
 `;
 
 const TagRow = styled.div`
@@ -2249,137 +2319,63 @@ const TagRow = styled.div`
 
 const TagChip = styled.span`
   font-size: 11px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #475569;
-  padding: 2px 6px;
-  border-radius: 4px;
-`;
-
-const StudyOccupancyBadge = styled.span<{ $type: "avail" | "warning" | "occupied" | "closed" }>`
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 7px;
+  color: var(--text-secondary, #6b7684);
+  background: var(--bg-muted, #f2f4f6);
+  padding: 2px 7px;
   border-radius: 6px;
-  white-space: nowrap;
-  ${({ $type }) => {
-    switch ($type) {
-      case "avail":
-        return "background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;";
-      case "warning":
-        return "background: #fef9c3; color: #a16207; border: 1px solid #fde047;";
-      case "occupied":
-        return "background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;";
-      case "closed":
-      default:
-        return "background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;";
-    }
-  }}
-`;
-
-const StudyPreviewBarBox = styled.div`
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 10px;
-`;
-
-const StudyPreviewHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 6px;
-`;
-
-const StudyPreviewSlotRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 3px;
-  height: 12px;
-  margin-bottom: 4px;
-`;
-
-const StudyPreviewSlot = styled.div<{ $type: "avail" | "occ" | "past" }>`
-  border-radius: 2px;
-  background: ${({ $type }) =>
-    $type === "avail" ? "#60a5fa" : $type === "occ" ? "#475569" : "#cbd5e1"};
-  transition: all 0.15s ease;
-`;
-
-const StudyPreviewTimeLabels = styled.div`
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: #94a3b8;
-`;
-
-const ActiveSeatCard = styled.div`
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1.5px solid #3b82f6;
 `;
 
 const ActiveSeatHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  margin-bottom: 12px;
 `;
 
 const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  background: ${({ $isTemp }) => ($isTemp ? "#fef3c7" : "#2563eb")};
-  color: ${({ $isTemp }) => ($isTemp ? "#b45309" : "#ffffff")};
-  border: 1px solid ${({ $isTemp }) => ($isTemp ? "#fde68a" : "#2563eb")};
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: ${({ $isTemp }) => ($isTemp ? "#fef3c7" : "#dcfce7")};
+  color: ${({ $isTemp }) => ($isTemp ? "#b45309" : "#15803d")};
+`;
+
+const SeatRoomTitle = styled.div`
+  font-size: 15px;
+  color: var(--text-primary, #191f28);
+  strong {
+    font-size: 16px;
+    color: var(--text-brand, #0061ff);
+  }
 `;
 
 const TempNoticeBox = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #92400e;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 11.5px;
-  line-height: 1.45;
-  margin-bottom: 14px;
+  gap: 10px;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
 `;
 
 const ExpiryBadge = styled.span<{ $urgent?: boolean }>`
   font-size: 11px;
   font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
   background: ${({ $urgent }) => ($urgent ? "#fee2e2" : "#fef3c7")};
-  color: ${({ $urgent }) => ($urgent ? "#dc2626" : "#b45309")};
-  border: 1px solid ${({ $urgent }) => ($urgent ? "#fca5a5" : "#fde68a")};
-  padding: 2px 8px;
-  border-radius: 999px;
-  white-space: nowrap;
+  color: ${({ $urgent }) => ($urgent ? "#dc2626" : "#92400e")};
 `;
 
 const NoticeBulletList = styled.ul`
-  margin: 4px 0 0 0;
+  margin: 6px 0 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 11px;
-  color: #a16207;
-`;
-
-const SeatRoomTitle = styled.span`
-  font-size: 15px;
-  color: #0f172a;
+  font-size: 11.5px;
+  color: #78350f;
+  line-height: 1.5;
 `;
 
 const SeatTimeInfo = styled.div`
@@ -2387,43 +2383,26 @@ const SeatTimeInfo = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #334155;
+  font-weight: 500;
+  color: var(--text-secondary, #333d4b);
   margin-bottom: 14px;
 `;
 
 const ActionRow = styled.div`
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 `;
 
-const ActionButton = styled.button<{ $danger?: boolean }>`
-  flex: 1;
+const ReminderRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px 0;
+  padding: 8px;
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  background: ${({ $danger }) => ($danger ? "#fee2e2" : "#f1f5f9")};
-  color: ${({ $danger }) => ($danger ? "#b91c1c" : "#334155")};
-  border: 1px solid ${({ $danger }) => ($danger ? "#fca5a5" : "#cbd5e1")};
-  cursor: pointer;
-`;
-
-const ReminderRow = styled.button`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   background: #fffbeb;
-  border: 1px solid #fde68a;
   color: #b45309;
-  padding: 8px 0;
-  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -2435,29 +2414,22 @@ const ReservationList = styled.div`
   gap: 10px;
 `;
 
-const ReservationCard = styled.div`
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-`;
-
 const ReservationTop = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 6px;
   strong {
     font-size: 14px;
-    color: #0f172a;
+    color: var(--text-primary, #191f28);
   }
 `;
 
 const ReservationStatus = styled.span`
   font-size: 11px;
-  font-weight: 700;
-  color: #2563eb;
-  background: #eff6ff;
+  font-weight: 600;
+  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand, #0061ff);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -2465,21 +2437,24 @@ const ReservationStatus = styled.span`
 const ReservationTime = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 12px;
-  color: #475569;
+  color: var(--text-secondary, #6b7684);
   margin-bottom: 4px;
 `;
 
 const ReservationNote = styled.div`
   font-size: 11px;
-  color: #64748b;
-  margin-bottom: 8px;
+  color: var(--text-disabled, #8b95a1);
+  margin-bottom: 10px;
 `;
 
 const ReservationActionRow = styled.div`
   display: flex;
   gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-default, #f1f5f9);
 `;
 
 const SmallActionBtn = styled.button<{ $danger?: boolean }>`
@@ -2488,104 +2463,52 @@ const SmallActionBtn = styled.button<{ $danger?: boolean }>`
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 6px 0;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  background: ${({ $danger }) => ($danger ? "#fee2e2" : "#f1f5f9")};
-  color: ${({ $danger }) => ($danger ? "#b91c1c" : "#334155")};
-  border: 1px solid ${({ $danger }) => ($danger ? "#fca5a5" : "#e2e8f0")};
-  cursor: pointer;
-`;
-
-const EmptyBox = styled.div`
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 24px;
-  text-align: center;
-  font-size: 13px;
-  color: #94a3b8;
-  border: 1px dashed #cbd5e1;
-`;
-
-const SkeletonList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const SkeletonCard = styled.div`
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-// ================= MODAL STYLES =================
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
-`;
-
-const ModalContent = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  background: #ffffff;
-  border-radius: 20px 20px 0 0;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 20px 16px 36px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-`;
-
-const ModalTitle = styled.h3`
-  font-size: 17px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 2px 0;
-`;
-
-const ModalSubtitle = styled.p`
+  padding: 8px;
   font-size: 12px;
-  color: #64748b;
-  margin: 0;
-`;
-
-const CloseBtn = styled.button`
-  background: none;
+  font-weight: 600;
+  border-radius: 8px;
   border: none;
-  color: #64748b;
   cursor: pointer;
-  padding: 4px;
+  background: ${({ $danger }) => ($danger ? "var(--bg-error, #fef2f2)" : "var(--interactive-primary, #0061ff)")};
+  color: ${({ $danger }) => ($danger ? "var(--text-error, #ef4444)" : "#ffffff")};
 `;
 
-const ModalLoading = styled.div`
+// 바텀시트 공용 스타일
+const SheetContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+`;
+
+const SheetHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const SheetTitle = styled.h2`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary, #191f28);
+`;
+
+const SheetSubtitle = styled.div`
+  font-size: 13px;
+  color: var(--text-secondary, #6b7684);
+`;
+
+const SheetLoading = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 40px 0;
-  color: #64748b;
+  color: var(--text-secondary, #6b7684);
   font-size: 13px;
+
   .spin {
     animation: spin 1s linear infinite;
   }
@@ -2601,26 +2524,21 @@ const ModalLoading = styled.div`
 
 const SeatLegendRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding: 6px 10px;
-  background: #f8fafc;
-  border-radius: 8px;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-secondary, #4e5968);
 `;
 
 const SeatLegendItem = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: #475569;
 `;
 
-const SeatLegendBox = styled.span<{ $color: string; $border: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+const SeatLegendBox = styled.div<{ $color: string; $border: string }>`
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
   background: ${({ $color }) => $color};
   border: 1px solid ${({ $border }) => $border};
 `;
@@ -2629,81 +2547,149 @@ const SeatGridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 8px;
-  padding: 6px 0 16px;
-  max-height: 50vh;
+  max-height: 420px;
   overflow-y: auto;
+  padding: 4px;
 `;
 
 const SeatButton = styled.button<{
   $isOccupied: boolean;
   $isReservable: boolean;
-  $isDisabled?: boolean;
+  $isDisabled: boolean;
 }>`
   aspect-ratio: 1;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
   border: 1px solid
-    ${({ $isOccupied, $isReservable }) =>
-      $isOccupied ? "#fca5a5" : $isReservable ? "#93c5fd" : "#e2e8f0"};
-  background: ${({ $isOccupied, $isReservable }) =>
-    $isOccupied ? "#fef2f2" : $isReservable ? "#eff6ff" : "#f8fafc"};
-  color: ${({ $isOccupied, $isReservable }) =>
-    $isOccupied ? "#dc2626" : $isReservable ? "#1d4ed8" : "#94a3b8"};
-  cursor: ${({ $isDisabled }) => ($isDisabled ? "not-allowed" : "pointer")};
-  transition: all 0.15s ease;
-
-  &:hover {
     ${({ $isReservable, $isOccupied }) =>
-      $isReservable
-        ? "background: #dbeafe; border-color: #60a5fa;"
-        : $isOccupied
-        ? "background: #fee2e2; border-color: #f87171;"
-        : ""}
-  }
+      $isReservable ? "#bfdbfe" : $isOccupied ? "#fecaca" : "#e2e8f0"};
+  background: ${({ $isReservable, $isOccupied }) =>
+    $isReservable ? "#eff6ff" : $isOccupied ? "#fef2f2" : "#f1f5f9"};
+  color: ${({ $isReservable, $isOccupied }) =>
+    $isReservable ? "#1d4ed8" : $isOccupied ? "#dc2626" : "#94a3b8"};
+  cursor: ${({ $isDisabled }) => ($isDisabled ? "not-allowed" : "pointer")};
+  transition: transform 0.1s ease;
 
   &:active {
-    ${({ $isDisabled }) => (!$isDisabled ? "transform: scale(0.93);" : "")}
+    transform: ${({ $isDisabled }) => ($isDisabled ? "none" : "scale(0.95)")};
   }
+`;
+
+const RoomInfoBadgesRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+`;
+
+const RoomInfoBadgeItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary, #6b7684);
+  background: var(--bg-muted, #f2f4f6);
+  padding: 3px 8px;
+  border-radius: 6px;
+`;
+
+const NoticeCard = styled.div`
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  overflow: hidden;
+`;
+
+const NoticeHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+`;
+
+const NoticeTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #191f28);
+`;
+
+const NoticeToggleBtn = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-secondary, #6b7684);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+`;
+
+const NoticeBody = styled.div`
+  padding: 0 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const NoticeSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const NoticeSubTitle = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #333d4b);
+`;
+
+const NoticeText = styled.div`
+  font-size: 11.5px;
+  color: var(--text-secondary, #6b7684);
+  line-height: 1.45;
+  white-space: pre-wrap;
 `;
 
 const DateSelectorRow = styled.div`
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 8px;
 `;
 
 const DateBtn = styled.button<{ $active: boolean }>`
   flex: 1;
-  padding: 8px 0;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
-  border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e2e8f0")};
+  padding: 10px;
+  font-size: 13px;
+  font-weight: ${({ $active }) => ($active ? "700" : "500")};
+  border-radius: 10px;
+  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
   cursor: pointer;
 `;
 
 const TimelineSection = styled.div`
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #f1f5f9);
+  border-radius: 12px;
   padding: 12px;
-  margin-bottom: 16px;
 `;
 
 const TimelineHeader = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   font-size: 12px;
   font-weight: 600;
-  color: #334155;
-  margin-bottom: 10px;
+  color: var(--text-primary, #333d4b);
 `;
 
 const LegendRow = styled.div`
@@ -2714,78 +2700,108 @@ const LegendRow = styled.div`
 const LegendItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  color: #64748b;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary, #6b7684);
 `;
 
-const LegendDot = styled.span<{ $type: "avail" | "occ" | "past" }>`
+const LegendDot = styled.div<{ $type: string }>`
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: 50%;
   background: ${({ $type }) =>
-    $type === "avail" ? "#60a5fa" : $type === "occ" ? "#475569" : "#cbd5e1"};
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#cbd5e1"};
 `;
 
 const TimelineGrid = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
-  max-height: 180px;
+  max-height: 200px;
   overflow-y: auto;
+  padding: 4px 0;
 `;
 
 const HourSlot = styled.div`
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 3px;
 `;
 
-const HourLabel = styled.span`
-  width: 34px;
-  font-size: 11px;
-  color: #64748b;
-  font-weight: 600;
+const HourLabel = styled.div`
+  font-size: 10px;
+  color: var(--text-disabled, #8b95a1);
+  text-align: center;
 `;
 
 const MinuteBars = styled.div`
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
-  height: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 `;
 
-const MinuteBar = styled.div<{ $type: "avail" | "occ" | "past" }>`
-  border-radius: 3px;
+const MinuteBar = styled.div<{ $type: string }>`
+  height: 6px;
+  border-radius: 2px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "#e2e8f0"};
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#e2e8f0"};
 `;
 
 const BookingForm = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 `;
 
-const FormGroup = styled.div`
+const TimeRangeRow = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const TimeSelectBox = styled.div`
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
 `;
 
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
 const FormLabel = styled.label`
   font-size: 12px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-secondary, #333d4b);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const DurationSummaryText = styled.span`
+  color: var(--text-brand, #0061ff);
 `;
 
 const FormSelect = styled.select`
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
+  font-size: 14px;
+  color: var(--text-primary, #191f28);
+  outline: none;
+`;
+
+const FormInput = styled.input`
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
   font-size: 13px;
-  background: #ffffff;
+  color: var(--text-primary, #191f28);
+  outline: none;
 `;
 
 const DurationBtnGroup = styled.div`
@@ -2796,292 +2812,23 @@ const DurationBtnGroup = styled.div`
 const DurationBtn = styled.button<{ $active: boolean }>`
   flex: 1;
   padding: 8px 0;
-  border-radius: 6px;
   font-size: 12px;
-  font-weight: 600;
-  background: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
-  border: 1px solid ${({ $active }) => ($active ? "#2563eb" : "#e2e8f0")};
-  cursor: pointer;
-`;
-
-const FormInput = styled.input`
-  padding: 8px 10px;
+  font-weight: ${({ $active }) => ($active ? "700" : "500")};
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 13px;
-`;
-
-const ModalActionBtnGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const SubmitBtn = styled.button`
-  width: 100%;
-  padding: 12px 0;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  border: none;
+  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f8fafc)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
   cursor: pointer;
-
-  &:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
-`;
-
-const StudySniperSlotBtn = styled.button`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 11px 0;
-  border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: #dbeafe;
-  }
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-const FavSection = styled.div`
-  background: #fefce8;
-  border: 1px solid #fef08a;
-  border-radius: 12px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const FavHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const FavTitle = styled.h3`
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #854d0e;
-  margin: 0;
-`;
-
-const FavGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
-`;
-
-const FavCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #fde047;
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-`;
-
-const FavCardTop = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const FavName = styled.span`
-  font-size: 13px;
-  font-weight: 700;
-  color: #1e293b;
-`;
-
-const FavBadge = styled.span<{ $isAvail: boolean }>`
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "#f1f5f9")};
-  color: ${({ $isAvail }) => ($isAvail ? "#16a34a" : "#64748b")};
-`;
-
-const FavBtnRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const FavActionBtn = styled.button`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 0;
-  border-radius: 6px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover {
-    background: #1d4ed8;
-  }
-`;
-
-const FavDeleteBtn = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #94a3b8;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background: #fee2e2;
-    color: #ef4444;
-  }
-`;
-
-const RoomInfoBadgesRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-`;
-
-const RoomInfoBadgeItem = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-`;
-
-const NoticeCard = styled.div`
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 8px;
-`;
-
-const NoticeHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: #f1f5f9;
-  cursor: pointer;
-  user-select: none;
-`;
-
-const NoticeTitle = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #334155;
-`;
-
-const NoticeToggleBtn = styled.button`
-  background: none;
-  border: none;
-  padding: 0;
-  color: #64748b;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-`;
-
-const NoticeBody = styled.div`
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #475569;
-  max-height: 200px;
-  overflow-y: auto;
-`;
-
-const NoticeSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const NoticeSubTitle = styled.div`
-  font-weight: 700;
-  color: #1e293b;
-  font-size: 12px;
-`;
-
-const NoticeText = styled.div`
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: #ffffff;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  font-size: 11.5px;
-  color: #334155;
-`;
-
-const TimeRangeRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-`;
-
-const TimeSelectBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const DurationSummaryText = styled.span`
-  font-size: 11.5px;
-  color: #2563eb;
-  font-weight: 600;
-  margin-left: 6px;
 `;
 
 const CompanionSection = styled.div`
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #f1f5f9);
+  border-radius: 12px;
+  padding: 12px;
 `;
 
 const CompanionHeader = styled.div`
@@ -3091,18 +2838,18 @@ const CompanionHeader = styled.div`
 `;
 
 const CompanionTitle = styled.span`
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #191f28);
 `;
 
 const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
   font-size: 11px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 6px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
   background: ${({ $isSatisfied }) => ($isSatisfied ? "#dcfce7" : "#fee2e2")};
-  color: ${({ $isSatisfied }) => ($isSatisfied ? "#16a34a" : "#dc2626")};
+  color: ${({ $isSatisfied }) => ($isSatisfied ? "#15803d" : "#dc2626")};
 `;
 
 const CompanionInputRow = styled.div`
@@ -3114,32 +2861,29 @@ const CompanionInput = styled.input`
   flex: 1;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 12.5px;
-  background: #ffffff;
-
-  &::placeholder {
-    color: #94a3b8;
-  }
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base, #ffffff);
+  font-size: 12px;
+  color: var(--text-primary, #191f28);
+  outline: none;
 `;
 
 const CompanionAddBtn = styled.button`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 4px;
-  padding: 0 12px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
+  padding: 8px 12px;
   border-radius: 8px;
-  font-size: 12.5px;
+  border: none;
+  background: var(--interactive-primary, #0061ff);
+  color: #ffffff;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
 
   &:disabled {
-    background: #94a3b8;
+    background: var(--bg-disabled, #e5e8eb);
+    color: var(--text-disabled, #b0b8c1);
     cursor: not-allowed;
   }
 `;
@@ -3151,73 +2895,68 @@ const CompanionChipList = styled.div`
 `;
 
 const CompanionChip = styled.div`
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 5px 8px 5px 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand, #0061ff);
   font-size: 12px;
-  color: #1e293b;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 `;
 
 const CompanionChipDeleteBtn = styled.button`
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-brand, #0061ff);
   cursor: pointer;
   display: flex;
   align-items: center;
   padding: 0;
-
-  &:hover {
-    color: #ef4444;
-  }
 `;
 
 const PrivacyAgreeContainer = styled.div`
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 10px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-default, #f1f5f9);
+  cursor: pointer;
 `;
 
 const PrivacyAgreeLabel = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #1e3a8a;
-  cursor: pointer;
-  pointer-events: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary, #191f28);
 `;
 
 const CustomCheckbox = styled.div<{ $checked: boolean }>`
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   border-radius: 4px;
-  border: 2px solid ${({ $checked }) => ($checked ? "#2563eb" : "#94a3b8")};
-  background: ${({ $checked }) => ($checked ? "#2563eb" : "#ffffff")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #cbd5e1)")};
+  background: ${({ $checked }) => ($checked ? "var(--interactive-primary, #0061ff)" : "var(--bg-base, #ffffff)")};
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
+  transition: all 0.15s ease;
 `;
 
-const PrivacyNoticeText = styled.span`
+const PrivacyNoticeText = styled.div`
   font-size: 11px;
-  color: #3b82f6;
+  color: var(--text-secondary, #6b7684);
   line-height: 1.4;
-  padding-left: 25px;
+  padding-left: 24px;
 `;
 
-
-
+const ModalActionBtnGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+`;

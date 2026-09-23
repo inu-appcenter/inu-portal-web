@@ -102,14 +102,14 @@ const LabsPage = () => {
         <ContentSection>
           <TitleContentArea description="실험 기능을 사용해 보세요. 실험실 기능은 바람처럼 나타났다 소리 없이 사라질 수 있어요." />
 
-          <TitleContentArea title={"캠퍼스 스마트 서비스"}>
+          <TitleContentArea title={"캠퍼스 편의 기능"}>
             <Box>
               <div style={{ width: "100%" }}>
                 <AppItem
                   iconElement={<Sparkles size={22} color="#0061ff" />}
                   title={"인팁 캠퍼스 비서"}
                   description={
-                    "학식 · 버스 · 시간표 · 공지 통합 AI 캠퍼스 비서"
+                    "학식 · 버스 · 시간표 · 공지 통합 캠퍼스 비서"
                   }
                   onClick={() => {
                     if (window.innerWidth <= 768) {
@@ -122,27 +122,27 @@ const LabsPage = () => {
                 <Divider margin="0" />
                 <AppItem
                   iconElement={<BookOpen size={22} color="#2563eb" />}
-                  title={"학산도서관 스마트 허브"}
+                  title={"학산도서관 좌석 및 스터디룸"}
                   description={
-                    "실시간 열람실·스터디룸 현황 조회 및 빈자리/취소표 스나이퍼 알림"
+                    "열람실 잔여 좌석 조회 및 스터디룸 예약, 빈자리 알림 신청"
                   }
                   onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}
                 />
                 <Divider margin="0" />
                 <AppItem
                   iconElement={<GraduationCap size={22} color="#16a34a" />}
-                  title={"이러닝(LMS) 스마트 허브"}
+                  title={"이러닝 (LMS)"}
                   description={
-                    "이번 학기 수강 강좌 확인 및 과제·퀴즈 마감 전 정시 리마인더 예약"
+                    "수강 강좌 및 주차별 강의 출석, 과제 마감 일정 확인"
                   }
                   onClick={() => navigate(ROUTES.SERVICES.LMS)}
                 />
                 <Divider margin="0" />
                 <AppItem
                   iconElement={<Radar size={22} color="#9333ea" />}
-                  title={"실시간 스마트 감시 관리"}
+                  title={"빈자리 및 마감 알림 관리"}
                   description={
-                    "현재 백그라운드에서 실행 중인 좌석·스터디룸 실시간 감시 목록 확인 및 관리"
+                    "신청한 열람실 빈자리 알림 및 과제 마감 리마인더 목록"
                   }
                   onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}
                 />
