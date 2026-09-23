@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { X, KeyRound } from "lucide-react";
+import { X, KeyRound, Smartphone } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
+import { isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 
 export interface PortalLinkBannerProps {
   title?: string;
@@ -18,9 +20,9 @@ export interface PortalLinkBannerProps {
 }
 
 export default function PortalLinkBanner({
-  title = "포털 계정 연동 필요",
+  title,
   description,
-  actionText = "연동",
+  actionText,
   onAction,
   onClose,
   dismissKey = "dismiss_portal_link_banner",
@@ -31,6 +33,7 @@ export default function PortalLinkBanner({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const [isDismissed, setIsDismissed] = useState(false);
+  const inApp = isMobileAppEnvironment();
 
   useEffect(() => {
     if (dismissKey) {
@@ -45,15 +48,27 @@ export default function PortalLinkBanner({
     return null;
   }
 
-  const defaultDescription = userInfo?.nickname
-    ? `${userInfo.nickname}님, 학적·이러닝·도서관을 연결해요`
-    : "학적·이러닝·도서관 기능을 한 번에 연결해요";
+  const resolvedTitle =
+    title || (inApp ? "포털 계정 연동 필요" : "INTIP 앱에서 이용 가능");
+
+  const resolvedDescription =
+    description ||
+    (inApp
+      ? userInfo?.nickname
+        ? `${userInfo.nickname}님, 학적·이러닝·도서관을 연결해요`
+        : "학적·이러닝·도서관 기능을 한 번에 연결해요"
+      : "이러닝 및 도서관 기능은 INTIP 모바일 앱에서 이용할 수 있어요.");
+
+  const resolvedActionText =
+    actionText || (inApp ? "연동" : "앱 열기");
 
   const handleAction = () => {
     if (onAction) {
       onAction();
-    } else {
+    } else if (inApp) {
       navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
+    } else {
+      openIntipAppOrStore();
     }
   };
 
@@ -76,14 +91,14 @@ export default function PortalLinkBanner({
         </CloseButton>
       )}
       <IconBox>
-        <KeyRound size={20} color="#0061ff" />
+        {inApp ? <KeyRound size={20} color="#0061ff" /> : <Smartphone size={20} color="#0061ff" />}
       </IconBox>
       <TextContent>
-        <Title>{title}</Title>
-        <Description>{description || defaultDescription}</Description>
+        <Title>{resolvedTitle}</Title>
+        <Description>{resolvedDescription}</Description>
       </TextContent>
       <ActionButton type="button" onClick={handleAction}>
-        {actionText}
+        {resolvedActionText}
       </ActionButton>
     </BannerWrapper>
   );

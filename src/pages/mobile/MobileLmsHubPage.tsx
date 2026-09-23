@@ -46,7 +46,9 @@ import {
   ChevronRight,
   KeyRound,
   Check,
+  Smartphone,
 } from "lucide-react";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 
 export default function MobileLmsHubPage() {
   const navigate = useNavigate();
@@ -364,11 +366,24 @@ export default function MobileLmsHubPage() {
                 </FilterArea>
               )}
 
-              {!isLinked ? (
+              {!isMobileAppEnvironment() ? (
+                <EmptyBox>
+                  <Smartphone size={32} color="#0061ff" />
+                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
+                  <EmptyDesc>과제 마감 일정 및 수강 강좌 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => openIntipAppOrStore("lms")}
+                  >
+                    앱에서 보기
+                  </CapsuleButton>
+                </EmptyBox>
+              ) : !isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#0061ff" />
                   <EmptyTitle>포털 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시됩니다.</EmptyDesc>
+                  <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시돼요.</EmptyDesc>
                   <CapsuleButton
                     variant="brand"
                     style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
@@ -458,7 +473,20 @@ export default function MobileLmsHubPage() {
                 </FilterArea>
               )}
 
-              {!isLinked ? (
+              {!isMobileAppEnvironment() ? (
+                <EmptyBox>
+                  <Smartphone size={32} color="#0061ff" />
+                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
+                  <EmptyDesc>수강 강좌 및 주차별 강의 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => openIntipAppOrStore("lms")}
+                  >
+                    앱에서 보기
+                  </CapsuleButton>
+                </EmptyBox>
+              ) : !isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#0061ff" />
                   <EmptyTitle>포털 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
@@ -474,12 +502,12 @@ export default function MobileLmsHubPage() {
               ) : courses.length === 0 ? (
                 <EmptyBox>
                   <GraduationCap size={32} color="#94a3b8" />
-                  <EmptyTitle>수강 중인 강좌가 없습니다</EmptyTitle>
+                  <EmptyTitle>수강 중인 강좌가 없어요</EmptyTitle>
                 </EmptyBox>
               ) : filteredCourses.length === 0 ? (
                 <EmptyBox>
                   <Search size={28} color="#94a3b8" />
-                  <EmptyTitle>일치하는 강좌가 없습니다</EmptyTitle>
+                  <EmptyTitle>일치하는 강좌가 없어요</EmptyTitle>
                   <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
                 </EmptyBox>
               ) : (
@@ -534,11 +562,24 @@ export default function MobileLmsHubPage() {
                 </FilterArea>
               )}
 
-              {!isLinked ? (
+              {!isMobileAppEnvironment() ? (
+                <EmptyBox>
+                  <Smartphone size={32} color="#0061ff" />
+                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
+                  <EmptyDesc>과목별 성적 조회는 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
+                  <CapsuleButton
+                    variant="brand"
+                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={() => openIntipAppOrStore("lms")}
+                  >
+                    앱에서 보기
+                  </CapsuleButton>
+                </EmptyBox>
+              ) : !isLinked ? (
                 <EmptyBox>
                   <KeyRound size={28} color="#0061ff" />
                   <EmptyTitle>포털 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있습니다.</EmptyDesc>
+                  <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있어요.</EmptyDesc>
                   <CapsuleButton
                     variant="brand"
                     style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
@@ -550,13 +591,13 @@ export default function MobileLmsHubPage() {
               ) : grades.length === 0 ? (
                 <EmptyBox>
                   <Award size={32} color="#94a3b8" />
-                  <EmptyTitle>조회된 성적 정보가 없습니다</EmptyTitle>
-                  <EmptyDesc>학기 말 성적 입력 기간 또는 LMS에 공개된 성적이 표시됩니다.</EmptyDesc>
+                  <EmptyTitle>조회된 성적 정보가 없어요</EmptyTitle>
+                  <EmptyDesc>학기 말 성적 입력 기간 또는 LMS에 공개된 성적이 표시돼요.</EmptyDesc>
                 </EmptyBox>
               ) : filteredGrades.length === 0 ? (
                 <EmptyBox>
                   <Search size={28} color="#94a3b8" />
-                  <EmptyTitle>일치하는 과목 성적이 없습니다</EmptyTitle>
+                  <EmptyTitle>일치하는 과목 성적이 없어요</EmptyTitle>
                   <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
                 </EmptyBox>
               ) : (

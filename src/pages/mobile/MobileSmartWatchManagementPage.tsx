@@ -14,6 +14,8 @@ import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import Modal from "@/components/common/Modal";
+import CapsuleButton from "@/components/common/CapsuleButton";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 import {
   Search,
   X,
@@ -284,31 +286,33 @@ export default function MobileSmartWatchManagementPage() {
             </Box>
           ))}
         </JobList>
+      ) : !isMobileAppEnvironment() ? (
+        <EmptyBox>
+          <Smartphone size={32} color="#0061ff" />
+          <EmptyText>INTIP 모바일 앱에서 이용할 수 있어요</EmptyText>
+          <EmptySubText>
+            도서관 빈자리 알림 및 과제 마감 리마인더는 INTIP 모바일 앱에서 제공돼요.
+          </EmptySubText>
+          <CapsuleButton
+            variant="brand"
+            style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
+            onClick={() => openIntipAppOrStore("smart-watch")}
+          >
+            앱에서 보기
+          </CapsuleButton>
+        </EmptyBox>
       ) : activeJobs.length === 0 ? (
-        <>
-          {!isMobileAppEnvironment() && (
-            <DisabledNoticeCard>
-              <DisabledNoticeLeft>
-                <Smartphone size={20} color="#0061ff" />
-                <DisabledNoticeText>
-                  <strong>알림 기능은 INTIP 모바일 앱에서 이용할 수 있어요</strong>
-                  <span>도서관 빈자리 알림 및 과제 마감 리마인더는 모바일 앱에서 등록하고 푸시 알림을 받을 수 있습니다.</span>
-                </DisabledNoticeText>
-              </DisabledNoticeLeft>
-            </DisabledNoticeCard>
-          )}
-          <EmptyBox>
-            <Bell size={28} color="#94a3b8" />
-            <EmptyText>진행 중인 알림이 없습니다</EmptyText>
-            <EmptySubText>
-              도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
-            </EmptySubText>
-          </EmptyBox>
-        </>
+        <EmptyBox>
+          <Bell size={28} color="#94a3b8" />
+          <EmptyText>진행 중인 알림이 없어요</EmptyText>
+          <EmptySubText>
+            도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
+          </EmptySubText>
+        </EmptyBox>
       ) : filteredActiveJobs.length === 0 ? (
         <EmptyBox>
           <Search size={28} color="#94a3b8" />
-          <EmptyText>일치하는 알림이 없습니다.</EmptyText>
+          <EmptyText>일치하는 알림이 없어요</EmptyText>
           <EmptySubText>검색어나 필터 조건을 변경해보세요.</EmptySubText>
         </EmptyBox>
       ) : (
@@ -424,47 +428,6 @@ const FootnoteText = styled.p`
   color: var(--text-tertiary, #8b95a1);
   text-align: center;
   line-height: 1.4;
-`;
-
-const DisabledNoticeCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media ${DESKTOP_MEDIA} {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-`;
-
-const DisabledNoticeLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const DisabledNoticeText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  strong {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text-primary, #191f28);
-  }
-  span {
-    font-size: 12px;
-    color: var(--text-secondary, #6b7684);
-    line-height: 1.4;
-  }
 `;
 
 const HubSection = styled.div`
