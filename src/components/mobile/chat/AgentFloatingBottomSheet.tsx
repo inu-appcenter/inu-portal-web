@@ -37,17 +37,13 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
   useEffect(() => {
     if (isOpen) {
       initialLocationRef.current = location.pathname + location.search;
-      if (aiState === "closed") {
-        setAiState("listening");
-        sendHostCommand("TRIGGER_OPEN");
-      }
+      setAiState("listening");
+      sendHostCommand("TRIGGER_OPEN");
     } else {
-      if (aiState !== "closed") {
-        setAiState("closed");
-        sendHostCommand("FORCE_CLOSE");
-      }
+      setAiState("closed");
+      sendHostCommand("FORCE_CLOSE");
     }
-  }, [isOpen, aiState, sendHostCommand, setAiState]);
+  }, [isOpen, sendHostCommand, setAiState]);
 
   // 페이지 이동 시 자동 닫기
   useEffect(() => {
