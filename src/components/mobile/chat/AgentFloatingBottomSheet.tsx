@@ -79,7 +79,7 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
       case "thinking":
         return "240px";
       case "answering":
-        return "min(760px, 82dvh)";
+        return "min(920px, 92dvh)";
       case "expanded":
         return "100dvh";
       case "closed":
@@ -92,6 +92,7 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
   const isSheetOpen = isOpen && aiState !== "closed";
   const isAmbientGlowActive =
     isOpen &&
+    aiState !== "closed" &&
     (aiState === "listening" || aiState === "recognized" || aiState === "thinking");
   const isExpanded = aiState === "expanded";
 
@@ -147,7 +148,7 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
 
   return (
     <>
-      {/* 1. 배경 딤 (Scrim - 드래그 간섭 방지 및 순수 바깥 탭 시 닫기) */}
+      {/* 1. 배경 딤 (Scrim - 블러 제거된 깔끔한 어두움 효과) */}
       <Scrim
         $active={isSheetOpen}
         $state={aiState}
@@ -158,8 +159,10 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
         transition={{ duration: 0.2 }}
       />
 
-      {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
-      <AmbientEdgeGlow $active={isAmbientGlowActive} />
+      {/* 2. 하단 에지 라이팅 (Ambient Edge Glow - 닫힐 때 즉시 언마운트) */}
+      {isOpen && isAmbientGlowActive && (
+        <AmbientEdgeGlow $active={isAmbientGlowActive} />
+      )}
 
       {/* 3. 플로팅 시트 컨테이너 (#ai-sheet-container) */}
       <SheetContainer
@@ -225,15 +228,7 @@ const Scrim = styled(motion.div)<{ $active: boolean; $state: AIState }>`
   background: ${({ $state }) =>
     $state === "listening" || $state === "recognized"
       ? "rgba(0, 0, 0, 0.2)"
-      : "rgba(0, 0, 0, 0.45)"};
-  backdrop-filter: ${({ $state }) =>
-    $state === "listening" || $state === "recognized"
-      ? "blur(2px)"
-      : "blur(6px)"};
-  -webkit-backdrop-filter: ${({ $state }) =>
-    $state === "listening" || $state === "recognized"
-      ? "blur(2px)"
-      : "blur(6px)"};
+      : "rgba(0, 0, 0, 0.4)"};
   z-index: 9990;
   pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
   transition: opacity 0.25s ease, background 0.25s ease;
