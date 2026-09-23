@@ -81,9 +81,9 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
       case "recognized":
         return "105px";
       case "thinking":
-        return "155px";
+        return "240px";
       case "answering":
-        return "min(400px, 58dvh)";
+        return "min(760px, 82dvh)";
       case "expanded":
         return "100dvh";
       case "closed":
