@@ -37,7 +37,7 @@ import {
   cancelLibrarySeatSessionBridge,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
-import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
@@ -1840,6 +1840,11 @@ const Container = styled.div`
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 80px;
+  }
 `;
 
 const TabBar = styled.div`
@@ -1995,12 +2000,24 @@ const SkeletonList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const RoomGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const RoomHeader = styled.div`
@@ -2153,6 +2170,11 @@ const FavGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+
+  @media ${DESKTOP_MEDIA} {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
 `;
 
 const FavCard = styled.div`
@@ -2227,6 +2249,12 @@ const StudyGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const StudyHeader = styled.div`
@@ -2412,6 +2440,12 @@ const ReservationList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const ReservationTop = styled.div`

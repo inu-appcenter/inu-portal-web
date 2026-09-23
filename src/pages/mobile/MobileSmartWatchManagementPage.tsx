@@ -10,7 +10,7 @@ import {
 } from "@/apis/mobileAgentBridge";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import Modal from "@/components/common/Modal";
@@ -297,6 +297,11 @@ const Container = styled.div`
   flex-direction: column;
   max-width: 600px;
   margin: 0 auto;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 40px;
+  }
 `;
 
 const HubSection = styled.div`
@@ -304,6 +309,12 @@ const HubSection = styled.div`
   flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
 `;
 
 const HubCard = styled.div`
@@ -426,6 +437,12 @@ const JobList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const CardTop = styled.div`

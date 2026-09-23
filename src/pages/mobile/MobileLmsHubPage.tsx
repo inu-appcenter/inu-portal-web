@@ -20,7 +20,7 @@ import {
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
-import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
@@ -489,6 +489,11 @@ const Container = styled.div`
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 80px;
+  }
 `;
 
 const TabBar = styled.div`
@@ -640,6 +645,12 @@ const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  @media ${DESKTOP_MEDIA} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
 `;
 
 const AssignTop = styled.div`
