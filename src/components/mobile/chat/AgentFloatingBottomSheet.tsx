@@ -84,17 +84,17 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
         return "100dvh";
       case "closed":
       default:
-        return "0px";
+        return "105px";
     }
   }, []);
 
-  const currentHeight = getSheetHeight(isOpen ? aiState : "closed");
-  const isSheetOpen = isOpen && aiState !== "closed";
+  const effectiveState = isOpen ? (aiState === "closed" ? "listening" : aiState) : "closed";
+  const currentHeight = getSheetHeight(effectiveState);
+  const isSheetOpen = isOpen;
   const isAmbientGlowActive =
     isOpen &&
-    aiState !== "closed" &&
-    (aiState === "listening" || aiState === "recognized" || aiState === "thinking");
-  const isExpanded = aiState === "expanded";
+    (effectiveState === "listening" || effectiveState === "recognized" || effectiveState === "thinking");
+  const isExpanded = effectiveState === "expanded";
 
   // 드래그 제스처 핸들러 (Half ↔ Full)
   const dragStartYRef = useRef<number>(0);
@@ -142,10 +142,6 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
     }
   };
 
-  if (!isOpen && aiState === "closed") {
-    return null;
-  }
-
   return (
     <>
       {/* 1. 배경 딤 (Scrim - 블러 제거된 깔끔한 어두움 효과) */}
@@ -159,17 +155,18 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
         transition={{ duration: 0.2 }}
       />
 
-      {/* 2. 하단 에지 라이팅 (Ambient Edge Glow - 닫힐 때 즉시 언마운트) */}
+      {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
       {isOpen && isAmbientGlowActive && (
         <AmbientEdgeGlow $active={isAmbientGlowActive} />
       )}
 
-      {/* 3. 플로팅 시트 컨테이너 (#ai-sheet-container) */}
+      {/* 3. 플로팅 시트 컨테이너 (백그라운드 웜업 Preload 및 부드러운 Fade-In / Fade-Out) */}
       <SheetContainer
         id="ai-sheet-container"
         $height={currentHeight}
         $isExpanded={isExpanded}
         $isDragging={isDragging}
+        $isOpen={isSheetOpen}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
       >
@@ -259,6 +256,7 @@ const SheetContainer = styled.div<{
   $height: string;
   $isExpanded: boolean;
   $isDragging: boolean;
+  $isOpen: boolean;
 }>`
   position: fixed;
   bottom: 0;
@@ -274,8 +272,14 @@ const SheetContainer = styled.div<{
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  will-change: height, transform;
-  transition: height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+  will-change: height, opacity;
+  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
+  pointer-events: ${({ $isOpen, $isDragging }) =>
+    $isOpen ? ($isDragging ? "none" : "auto") : "none"};
+  visibility: ${({ $isOpen }) => ($isOpen ? "visible" : "hidden")};
+  transition: opacity 0.22s ease-out,
+    visibility 0.22s ease-out,
+    height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
     border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
     background-color 0.25s ease;
