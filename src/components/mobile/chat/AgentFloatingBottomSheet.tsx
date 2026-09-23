@@ -268,7 +268,7 @@ const SheetContainer = styled.div<{
   width: 100%;
   max-width: ${({ $isExpanded }) => ($isExpanded ? "100%" : "680px")};
   height: ${({ $height }) => $height};
-  background: transparent;
+  background: ${({ $isExpanded }) => ($isExpanded ? "#f8fafe" : "transparent")};
   border-radius: ${({ $isExpanded }) => ($isExpanded ? "0" : "28px 28px 0 0")};
   z-index: 9999;
   display: flex;
@@ -277,13 +277,26 @@ const SheetContainer = styled.div<{
   will-change: height, transform;
   transition: height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
     border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s ease;
   box-sizing: border-box;
   touch-action: none;
 
   @media (max-width: 768px) {
     max-width: 100%;
-    padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+    ${({ $isExpanded }) =>
+      $isExpanded
+        ? `
+      padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+      padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+      padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+      padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+      background-color: #f8fafe;
+    `
+        : `
+      padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+      background-color: transparent;
+    `}
   }
 `;
 
