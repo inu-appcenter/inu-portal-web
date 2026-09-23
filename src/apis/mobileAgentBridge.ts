@@ -214,6 +214,10 @@ export async function fetchStudentTimetableFromApp(params?: {
       url: 'https://erp.inu.ac.kr:8443/uni/cour/CorrCtr/findStdSukangAplyList.do?menuId=M003150&pgmId=P001416',
       method: 'POST',
       datasetName: 'DS_COND',
+      params: {
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+      },
       data: {
         deptClsfCd: '0000587',
         ...(params?.yy ? { yy: params.yy } : {}),
@@ -233,7 +237,17 @@ export async function fetchStudentTimetableFromApp(params?: {
   }
 
   try {
-    const rawPayload = res.data?.data || res.data?.rawSsv || res.data;
+    let rawPayload = res.data;
+    if (typeof rawPayload === 'object' && rawPayload !== null) {
+      if (typeof rawPayload.ssv === 'string') {
+        rawPayload = rawPayload.ssv;
+      } else if (typeof rawPayload.rawSsv === 'string') {
+        rawPayload = rawPayload.rawSsv;
+      } else if (typeof rawPayload.data === 'string') {
+        rawPayload = rawPayload.data;
+      }
+    }
+
     if (typeof rawPayload === 'string') {
       const parsed = parseTimetableList(rawPayload);
       return {
