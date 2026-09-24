@@ -413,6 +413,8 @@ const MobileTimeTablePage = () => {
   useHeader({
     title: headerTitle,
     showAlarm: false,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=COURSE`,
     hasback: false,
     rightArea: headerRight,
     rightAreaNotCircle: true,

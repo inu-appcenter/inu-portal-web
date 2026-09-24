@@ -213,6 +213,8 @@ const MobileTipsPage = () => {
   useHeader({
     title: "커뮤니티",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=POST`,
     subHeader,
     floatingSubHeader: true,
   });

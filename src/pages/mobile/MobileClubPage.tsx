@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import useUserStore from "../../stores/useUserStore.ts";
 import ClubAdmin from "@/components/mobile/club/ClubAdmin";
 import { useHeader } from "@/context/HeaderContext";
+import { ROUTES } from "@/constants/routes";
 import Box from "@/components/common/Box.tsx";
 import FillButton from "@/components/mobile/common/FillButton";
 import Label from "@/components/mobile/common/Label";
@@ -231,6 +232,8 @@ export default function MobileClubPage() {
   useHeader({
     title: "동아리",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=CLUB`,
     subHeader: subHeader,
     floatingSubHeader: true,
   });

@@ -22,6 +22,9 @@ export default function MobileCalendarPage() {
 
   useHeader({
     title: "학사일정",
+    hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=SCHEDULE`,
   });
 
   const handleNotificationClick = () => {

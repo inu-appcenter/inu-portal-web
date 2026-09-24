@@ -40,12 +40,12 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   );
 };
 
-const SearchButton = () => {
+const SearchButton = ({ searchPath }: { searchPath?: string }) => {
   const navigate = useNavigate();
 
   const handleSearchBtnClick = () => {
     mixpanelTrack.featureClicked("Search Button", "Header");
-    navigate(ROUTES.UNIFIED_SEARCH);
+    navigate(searchPath || ROUTES.UNIFIED_SEARCH);
   };
 
   return (
@@ -113,6 +113,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       onBack,
       showAlarm,
       showSearch,
+      searchPath,
       menuItems,
       rightArea,
       visible,
@@ -202,7 +203,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
-              {showSearch && <SearchButton />}
+              {showSearch && <SearchButton searchPath={searchPath} />}
               {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
               {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
