@@ -734,37 +734,24 @@ const MobileTimeTablePage = () => {
           {activeTimetable.events.length === 0 && (
             <ImageImportPrompt>
               <ImageImportPromptText>
-                <strong>다른 서비스에서 시간표를 가져올 수 있어요.</strong>
-                <span>학교 포털이나 수강신청 앱, 에브리타임에서 가져와 보세요.</span>
+                <strong>학교 포털에서 시간표를 가져올 수 있어요.</strong>
+                <span>수강신청 시간표와 성적 정보를 한 번에 등록해 보세요.</span>
               </ImageImportPromptText>
-              <PromptButtonGroup>
-                <PortalImportButton
-                  type="button"
-                  onClick={() => {
-                    mixpanelTrack.timetableFeatureClicked(
-                      "포털에서 가져오기",
-                      "빈 시간표 프롬프트",
-                    );
-                    navigate(
-                      `${ROUTES.TIMETABLE.PORTAL_IMPORT}?id=${activeTimetable.id}`,
-                    );
-                  }}
-                >
-                  <School size={16} />
-                  포털에서 가져오기
-                </PortalImportButton>
-                <ImageImportButton
-                  type="button"
-                  onClick={() =>
-                    navigate(
-                      `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
-                    )
-                  }
-                >
-                  <ScanLine size={16} />
-                  이미지로 가져오기
-                </ImageImportButton>
-              </PromptButtonGroup>
+              <PortalImportButton
+                type="button"
+                onClick={() => {
+                  mixpanelTrack.timetableFeatureClicked(
+                    "포털에서 가져오기",
+                    "빈 시간표 프롬프트",
+                  );
+                  navigate(
+                    `${ROUTES.TIMETABLE.IMPORT_HUB}?id=${activeTimetable.id}`,
+                  );
+                }}
+              >
+                <School size={16} />
+                포털에서 가져오기
+              </PortalImportButton>
             </ImageImportPrompt>
           )}
           <TimetableGrid
@@ -1075,41 +1062,25 @@ const ImageImportPromptText = styled.div`
   }
 `;
 
-const PromptButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 0 0 auto;
-`;
-
 const PortalImportButton = styled.button`
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border: 0;
   border-radius: 10px;
   background: #0061ff;
   color: #ffffff;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-`;
+  flex: 0 0 auto;
+  transition: all 0.15s ease;
 
-const ImageImportButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: 1px solid #d3e5ff;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #0061ff;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
+  &:active {
+    transform: scale(0.97);
+  }
 `;
 
 const EmptyActionGroup = styled.div`
