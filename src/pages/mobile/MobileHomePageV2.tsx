@@ -67,6 +67,8 @@ const SOCIAL_LINKS = [
   icon: FontelloIconName;
 }[];
 
+import Ripple from "@/components/common/Ripple";
+
 export default function MobileHomePageV2() {
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
@@ -79,6 +81,15 @@ export default function MobileHomePageV2() {
 
   useHeader({
     showAlarm: true,
+    rightArea: (
+      <HeaderSearchBtn
+        onClick={() => navigate(ROUTES.UNIFIED_SEARCH)}
+        aria-label="통합 검색"
+      >
+        <Ripple />
+        <Icon name="search" size={22} color="#1E293B" />
+      </HeaderSearchBtn>
+    ),
   });
 
   useEffect(() => {
@@ -551,4 +562,19 @@ const GreetingChevron = styled.div`
   justify-content: center;
   flex-shrink: 0;
   margin-left: 12px;
+`;
+
+const HeaderSearchBtn = styled.button`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  margin-right: 4px;
 `;

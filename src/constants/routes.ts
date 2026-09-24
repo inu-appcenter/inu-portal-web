@@ -8,6 +8,9 @@ export const ROUTES = {
   MOBILE_HOME: "/m/home",
   HOME_V2: "/home/v2",
 
+  // 통합 검색
+  UNIFIED_SEARCH: "/search",
+
   // 횃불이 AI
   AI: {
     ROOT: "/ai",

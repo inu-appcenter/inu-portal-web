@@ -98,6 +98,7 @@ import MobilePortalAccountPage from "@/pages/mobile/MyPage/MobilePortalAccountPa
 import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
+import MobileUnifiedSearchPage from "@/pages/mobile/search/MobileUnifiedSearchPage";
 
 export const router = createBrowserRouter([
   {
@@ -192,6 +193,10 @@ export const router = createBrowserRouter([
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },
+
+          // 통합 검색
+          { path: ROUTES.UNIFIED_SEARCH, element: <MobileUnifiedSearchPage /> },
+          { path: "/m/search", element: <MobileUnifiedSearchPage /> },
 
           //앱센터의 다른 앱
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
