@@ -30,6 +30,7 @@ import { useSemesters } from "@/hooks/useSemesters";
 import {
   useCreateTimeTable,
   useCreateTimeTableCourseItem,
+  useUpdateTimeTablePrimary,
   syncTimeTableDetail,
 } from "@/hooks/useTimeTables";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -72,6 +73,7 @@ export default function MobilePortalTimetableImportPage() {
   const { timetables, setActiveTimetable, setSemester } = useTimetableStore();
   const createTimeTableMutation = useCreateTimeTable();
   const createItemMutation = useCreateTimeTableCourseItem();
+  const updatePrimaryMutation = useUpdateTimeTablePrimary();
 
   const targetTimetableId = useMemo(() => {
     const paramId = searchParams.get("id");
@@ -386,6 +388,7 @@ export default function MobilePortalTimetableImportPage() {
         setLoadingMessage(`${group.label} 시간표를 저장하고 있어요...`);
 
         let destTimetableId: number | null = null;
+        let isNewlyCreated = false;
 
         if (
           groupsWithSelections.length === 1 &&
@@ -407,6 +410,7 @@ export default function MobilePortalTimetableImportPage() {
             timeTableName: `${group.year}-${termShort} 포털시간표`,
           });
           destTimetableId = created.id;
+          isNewlyCreated = true;
         }
 
         lastCreatedTimetableId = destTimetableId;
@@ -437,6 +441,14 @@ export default function MobilePortalTimetableImportPage() {
         }
 
         await syncTimeTableDetail(queryClient, destTimetableId);
+
+        if (isNewlyCreated) {
+          try {
+            await updatePrimaryMutation.mutateAsync(destTimetableId);
+          } catch (primaryErr) {
+            console.warn("대표 시간표 설정 실패:", primaryErr);
+          }
+        }
       }
 
       if (lastCreatedTimetableId) {
