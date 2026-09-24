@@ -1848,7 +1848,7 @@ export default function MobileGradeCalculatorPage() {
             </NoticeDescText>
           </PortalNoticeCard>
           <SecurityNoticeText>
-            가져오는 과정은 휴대폰 보안 영역에서만 안전하게 처리되며 외부에 전송되지 않아요.
+            포털 로그인 정보는 서버에 전송되지 않으며, 기기에서 직접 안전하게 성적을 불러와요.
           </SecurityNoticeText>
         </PortalModalContent>
       </Modal>

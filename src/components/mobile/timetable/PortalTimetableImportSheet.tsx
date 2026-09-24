@@ -834,9 +834,9 @@ export default function PortalTimetableImportSheet({
                     <CheckCircle2 size={18} color="#0061ff" />
                   </FeatureIconBox>
                   <FeatureTextBox>
-                    <FeatureTextTitle>서버 전송 없는 안전한 기기 내 저장</FeatureTextTitle>
+                    <FeatureTextTitle>안전한 기기 내 포털 조회</FeatureTextTitle>
                     <FeatureTextDesc>
-                      성적 정보는 오직 내 휴대폰 로컬 저장소에만 안전하게 보관돼요.
+                      포털 로그인 정보는 서버에 전송되지 않으며, 기기에서 직접 안전하게 불러와요.
                     </FeatureTextDesc>
                   </FeatureTextBox>
                 </FeatureItem>
