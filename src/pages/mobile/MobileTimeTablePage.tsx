@@ -38,7 +38,6 @@ import InputField from "@/components/common/InputField";
 import TimetableThemeBottomSheet from "@/components/mobile/timetable/TimetableThemeBottomSheet";
 import TimetableMenuBottomSheet from "@/components/mobile/timetable/TimetableMenuBottomSheet";
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
-import PortalTimetableImportSheet from "@/components/mobile/timetable/PortalTimetableImportSheet";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { formatSemester } from "@/utils/semester";
@@ -139,7 +138,6 @@ const MobileTimeTablePage = () => {
   const [isThemeSheetOpen, setIsThemeSheetOpen] = useState(false);
   const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isPortalImportSheetOpen, setIsPortalImportSheetOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
 
   // const {
@@ -340,7 +338,7 @@ const MobileTimeTablePage = () => {
             "시간표 및 성적 가져오기",
             "헤더 메뉴",
           );
-          setIsPortalImportSheetOpen(true);
+          navigate(`${ROUTES.TIMETABLE.IMPORT_HUB}?id=${activeTimetable.id}`);
         },
       },
       {
@@ -747,7 +745,9 @@ const MobileTimeTablePage = () => {
                       "포털에서 가져오기",
                       "빈 시간표 프롬프트",
                     );
-                    setIsPortalImportSheetOpen(true);
+                    navigate(
+                      `${ROUTES.TIMETABLE.PORTAL_IMPORT}?id=${activeTimetable.id}`,
+                    );
                   }}
                 >
                   <School size={16} />
@@ -796,7 +796,7 @@ const MobileTimeTablePage = () => {
                   "시간표 및 성적 가져오기",
                   "등록된 시간표 없음",
                 );
-                setIsPortalImportSheetOpen(true);
+                navigate(ROUTES.TIMETABLE.IMPORT_HUB);
               }}
             >
               시간표 및 성적 가져오기
@@ -924,12 +924,6 @@ const MobileTimeTablePage = () => {
         }}
       />
 
-      <PortalTimetableImportSheet
-        isOpen={isPortalImportSheetOpen}
-        onClose={() => setIsPortalImportSheetOpen(false)}
-        targetTimetableId={activeTimetable?.id}
-        initialSemester={displayedSemesterLabel}
-      />
     </MobileTimeTablePageWrapper>
   );
 };

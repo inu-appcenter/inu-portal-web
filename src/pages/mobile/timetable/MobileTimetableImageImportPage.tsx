@@ -12,15 +12,11 @@ import {
   Calendar,
   ChevronDown,
   Check,
-  School,
-  ChevronRight,
 } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
-import PortalTimetableImportSheet from "@/components/mobile/timetable/PortalTimetableImportSheet";
-import { ROUTES } from "@/constants/routes";
 import { backHandler } from "@/utils/backHandler";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -95,7 +91,6 @@ export default function MobileTimetableImageImportPage() {
     useTimetableStore();
 
   const [isTimetableSheetOpen, setIsTimetableSheetOpen] = useState(false);
-  const [isPortalImportOpen, setIsPortalImportOpen] = useState(false);
 
   const groupedTimetables = useMemo(() => {
     type SemesterGroup = {
@@ -278,7 +273,7 @@ export default function MobileTimetableImageImportPage() {
   };
 
   useHeader({
-    title: "시간표 및 성적 가져오기",
+    title: "시간표 이미지로 등록",
     hasback: true,
     showAlarm: false,
     onBack: handleHeaderBack,
@@ -599,33 +594,6 @@ export default function MobileTimetableImageImportPage() {
                 <ChevronDown className="chevron" size={14} />
               </TargetTimetableBadge>
             </HeadlineGroup>
-
-            <PortalFastTrackCard
-              type="button"
-              onClick={() => setIsPortalImportOpen(true)}
-            >
-              <FastTrackLeft>
-                <FastTrackIconBox>
-                  <School size={22} color="#0061ff" />
-                </FastTrackIconBox>
-                <FastTrackTextGroup>
-                  <FastTrackTitleRow>
-                    <FastTrackTitle>포털에서 시간표 및 성적 바로 가져오기</FastTrackTitle>
-                    <FastTrackBadge>추천</FastTrackBadge>
-                  </FastTrackTitleRow>
-                  <FastTrackSubtitle>
-                    캡처 없이 로그인 한 번으로 시간표와 학점 계산기 성적을 자동 등록해요
-                  </FastTrackSubtitle>
-                </FastTrackTextGroup>
-              </FastTrackLeft>
-              <ChevronRight size={18} color="#0061ff" />
-            </PortalFastTrackCard>
-
-            <OrDivider>
-              <OrLine />
-              <OrText>또는 이미지로 등록</OrText>
-              <OrLine />
-            </OrDivider>
 
             <DropzoneCard
               type="button"
@@ -1059,15 +1027,6 @@ export default function MobileTimetableImageImportPage() {
           </SheetContent>
         </SheetContainer>
       </BottomSheet>
-
-      <PortalTimetableImportSheet
-        isOpen={isPortalImportOpen}
-        onClose={() => setIsPortalImportOpen(false)}
-        targetTimetableId={targetTimetableId}
-        onSuccess={() => {
-          navigate(ROUTES.TIMETABLE.ROOT);
-        }}
-      />
     </PageWrapper>
   );
 }
@@ -1269,95 +1228,6 @@ const PrimaryBadge = styled.span`
   color: #0061ff;
   font-size: 11px;
   font-weight: 600;
-`;
-
-const PortalFastTrackCard = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: #ffffff;
-  border: 1.5px solid #0061ff;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  text-align: left;
-  box-shadow: 0 4px 16px rgba(0, 97, 255, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-  &:active {
-    transform: scale(0.99);
-  }
-`;
-
-const FastTrackLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const FastTrackIconBox = styled.div`
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #e8f3ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const FastTrackTextGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const FastTrackTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const FastTrackTitle = styled.div`
-  font-size: 15px;
-  font-weight: 700;
-  color: #191f28;
-`;
-
-const FastTrackBadge = styled.span`
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #0061ff;
-  color: #ffffff;
-  font-size: 10.5px;
-  font-weight: 700;
-`;
-
-const FastTrackSubtitle = styled.div`
-  font-size: 12.5px;
-  color: #6b7684;
-  line-height: 1.35;
-`;
-
-const OrDivider = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 6px 0;
-  width: 100%;
-`;
-
-const OrLine = styled.div`
-  flex: 1;
-  height: 1px;
-  background: #e5e8eb;
-`;
-
-const OrText = styled.span`
-  font-size: 12px;
-  color: #8b95a1;
-  font-weight: 500;
 `;
 
 const DropzoneCard = styled.button`
