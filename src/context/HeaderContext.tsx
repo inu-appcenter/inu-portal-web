@@ -22,6 +22,7 @@ export interface HeaderConfig {
   backPath?: string;
   onBack?: () => void;
   showAlarm?: boolean;
+  showSearch?: boolean;
   menuItems?: MenuItemType[];
   rightArea?: ReactNode; // 추가
   visible?: boolean;
@@ -49,6 +50,7 @@ const defaultHeaderConfig: HeaderConfig = {
   title: undefined,
   hasback: true,
   showAlarm: false,
+  showSearch: false,
   visible: true,
   subHeader: null,
   floatingSubHeader: false,

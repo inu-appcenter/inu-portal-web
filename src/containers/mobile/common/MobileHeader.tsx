@@ -32,11 +32,27 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   };
 
   return (
-    <BellWrapper onClick={handleNotiBtnClick}>
+    <BellWrapper onClick={handleNotiBtnClick} aria-label="알림">
       <Ripple />
       <Icon name="bell" size={24} />
       {hasNew && <Badge />}
     </BellWrapper>
+  );
+};
+
+const SearchButton = () => {
+  const navigate = useNavigate();
+
+  const handleSearchBtnClick = () => {
+    mixpanelTrack.featureClicked("Search Button", "Header");
+    navigate(ROUTES.UNIFIED_SEARCH);
+  };
+
+  return (
+    <SearchButtonWrapper onClick={handleSearchBtnClick} aria-label="통합 검색">
+      <Ripple />
+      <Icon name="search" size={24} />
+    </SearchButtonWrapper>
   );
 };
 
@@ -48,6 +64,21 @@ const BellWrapper = styled.div`
   cursor: pointer;
   pointer-events: auto;
   width: 100%;
+  min-width: 28px;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+`;
+
+const SearchButtonWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  width: 100%;
+  min-width: 28px;
   height: 100%;
   border-radius: 999px;
   overflow: hidden;
@@ -81,6 +112,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       backPath,
       onBack,
       showAlarm,
+      showSearch,
       menuItems,
       rightArea,
       visible,
@@ -158,18 +190,19 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             </TitleArea>
           )}
 
-          {(showAlarm || hasMenuItems || rightArea) && (
+          {(showAlarm || showSearch || hasMenuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
                 rightAreaNotCircle
                   ? false
-                  : [showAlarm, hasMenuItems, rightArea].filter(Boolean).length ===
-                    1
+                  : [showAlarm, showSearch, hasMenuItems, rightArea].filter(Boolean)
+                      .length === 1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
+              {showSearch && <SearchButton />}
               {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
               {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
