@@ -157,7 +157,7 @@ export default function TimeTableCreateModal({
           }}
         >
           <School size={16} color="#0061ff" />
-          <span>학교 포털에서 시간표 바로 불러오기</span>
+          <span>포털에서 시간표 및 성적 바로 불러오기</span>
         </PortalShortcutButton>
       )}
     </Modal>

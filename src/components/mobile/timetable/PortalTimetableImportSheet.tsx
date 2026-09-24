@@ -12,7 +12,13 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  ScanLine,
+  ChevronRight,
+  Sparkles,
+  GraduationCap,
+  CheckCircle2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -20,6 +26,7 @@ import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal
 import {
   checkPortalAccountLinked,
   fetchStudentTimetableFromApp,
+  fetchFullAcademicReportFromApp,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import {
@@ -39,6 +46,8 @@ import {
   termToTmGbn,
 } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { ROUTES } from "@/constants/routes";
+import { savePortalGradesToCalculatorStorage } from "@/utils/portalGradeSync";
 import type { Term } from "@/types/timetables";
 
 interface PortalTimetableImportSheetProps {
@@ -49,7 +58,14 @@ interface PortalTimetableImportSheetProps {
   onSuccess?: (addedCount: number) => void;
 }
 
-type ImportStep = "READY" | "FETCHING" | "REVIEW" | "SAVING";
+type ImportStep =
+  | "READY"
+  | "FETCHING"
+  | "REVIEW"
+  | "SAVING"
+  | "ASK_GRADE_IMPORT"
+  | "FETCHING_GRADES"
+  | "GRADE_SUCCESS";
 
 export interface SemesterCourseGroup {
   semesterId: number;
@@ -67,6 +83,7 @@ export default function PortalTimetableImportSheet({
   initialSemester,
   onSuccess,
 }: PortalTimetableImportSheetProps) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { semesters } = useSemesters();
   const { timetables, setActiveTimetable, setSemester } = useTimetableStore();
@@ -80,6 +97,18 @@ export default function PortalTimetableImportSheet({
   const [errorMessage, setErrorMessage] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
   const [createNewTimetable, setCreateNewTimetable] = useState(false);
+
+  // 성적 연동 관련 상태
+  const [savedTimetableResult, setSavedTimetableResult] = useState<{
+    totalAdded: number;
+    totalSkipped: number;
+    semesterCount: number;
+  }>({ totalAdded: 0, totalSkipped: 0, semesterCount: 0 });
+
+  const [gradeResult, setGradeResult] = useState<{
+    semestersCount: number;
+    subjectsCount: number;
+  }>({ semestersCount: 0, subjectsCount: 0 });
 
   // 학기 옵션 설정
   const semesterOptions = useMemo(
@@ -399,18 +428,55 @@ export default function PortalTimetableImportSheet({
         },
       );
 
-      const message =
-        totalSkipped > 0
-          ? `총 ${totalAdded}개 강의를 ${groupsWithSelections.length}개 학기 시간표에 등록했어요. (중복/충돌 ${totalSkipped}개 제외)`
-          : `총 ${totalAdded}개 강의를 ${groupsWithSelections.length}개 학기 시간표에 등록했어요.`;
+      setSavedTimetableResult({
+        totalAdded,
+        totalSkipped,
+        semesterCount: groupsWithSelections.length,
+      });
 
-      alert(message);
-      onSuccess?.(totalAdded);
-      onClose();
+      // 성적 정보를 학점 계산기에 불러올까요? 스텝으로 전환
+      setStep("ASK_GRADE_IMPORT");
     } catch (err: any) {
       console.error("시간표 일괄 등록 중 오류:", err);
       alert(err?.response?.data?.msg || err?.message || "강의 등록에 실패했어요.");
       setStep("REVIEW");
+    }
+  };
+
+  const handleSkipGrade = () => {
+    const message =
+      savedTimetableResult.totalSkipped > 0
+        ? `총 ${savedTimetableResult.totalAdded}개 강의를 ${savedTimetableResult.semesterCount}개 학기 시간표에 등록했어요. (중복/충돌 ${savedTimetableResult.totalSkipped}개 제외)`
+        : `총 ${savedTimetableResult.totalAdded}개 강의를 ${savedTimetableResult.semesterCount}개 학기 시간표에 등록했어요.`;
+
+    alert(message);
+    onSuccess?.(savedTimetableResult.totalAdded);
+    onClose();
+  };
+
+  const handleImportGrades = async () => {
+    setStep("FETCHING_GRADES");
+    setLoadingMessage("포털에서 전체 학기 성적을 불러와 학점 계산기에 저장하고 있어요...");
+
+    try {
+      const reportRes = await fetchFullAcademicReportFromApp();
+      if (!reportRes.success || !reportRes.data) {
+        throw new Error(reportRes.errorMessage || "성적 정보를 불러오지 못했어요.");
+      }
+
+      const saveResult = savePortalGradesToCalculatorStorage(
+        reportRes.data.courseGrades,
+      );
+
+      setGradeResult({
+        semestersCount: saveResult.semestersCount,
+        subjectsCount: saveResult.subjectsCount,
+      });
+      setStep("GRADE_SUCCESS");
+    } catch (err: any) {
+      console.error("성적 불러오기 오류:", err);
+      alert(err?.message || "성적 정보를 불러오지 못했습니다.");
+      handleSkipGrade();
     }
   };
 
@@ -438,15 +504,38 @@ export default function PortalTimetableImportSheet({
           <Header>
             <TitleRow>
               <School size={22} color="#0061ff" />
-              <Title>학교 포털에서 시간표 가져오기</Title>
+              <Title>시간표 및 성적 가져오기</Title>
             </TitleRow>
             <SubTitle>
-              인천대 포털(학사행정)에 등록된 내 수강신청 시간표를 직접 불러와 등록해요.
+              인천대 포털(학사행정)에 등록된 내 시간표와 전 학기 성적을 안전하게 연동해요.
             </SubTitle>
           </Header>
 
           {step === "READY" && (
             <ReadyContent>
+              <ImageImportLinkCard
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate(
+                    `${ROUTES.TIMETABLE.IMAGE_IMPORT}${targetTimetableId ? `?id=${targetTimetableId}` : ""}`,
+                  );
+                }}
+              >
+                <ImageImportLinkLeft>
+                  <ScanLine size={18} color="#0061ff" />
+                  <div>
+                    <ImageImportLinkTitle>
+                      시간표 이미지(캡처)로 등록하기
+                    </ImageImportLinkTitle>
+                    <ImageImportLinkSub>
+                      수강신청 앱, 에브리타임 캡처본이 있다면 이미지로 등록할 수 있어요
+                    </ImageImportLinkSub>
+                  </div>
+                </ImageImportLinkLeft>
+                <ChevronRight size={18} color="#8b95a1" />
+              </ImageImportLinkCard>
+
               <SectionGroup>
                 <SemesterHeaderRow>
                   <Label>가져올 학기 선택 (여러 개 선택할 수 있어요)</Label>
@@ -543,11 +632,17 @@ export default function PortalTimetableImportSheet({
             </ReadyContent>
           )}
 
-          {(step === "FETCHING" || step === "SAVING") && (
+          {(step === "FETCHING" ||
+            step === "SAVING" ||
+            step === "FETCHING_GRADES") && (
             <LoadingContainer>
               <Spinner />
               <LoadingTitle>
-                {step === "FETCHING" ? "포털 연동 중" : "시간표 저장 중"}
+                {step === "FETCHING"
+                  ? "포털 연동 중"
+                  : step === "FETCHING_GRADES"
+                    ? "성적 정보 가져오는 중"
+                    : "시간표 저장 중"}
               </LoadingTitle>
               <LoadingDesc>{loadingMessage}</LoadingDesc>
             </LoadingContainer>
@@ -706,6 +801,102 @@ export default function PortalTimetableImportSheet({
                 </CapsuleButton>
               </ButtonGroup>
             </ReviewContent>
+          )}
+
+          {step === "ASK_GRADE_IMPORT" && (
+            <GradePromptContent>
+              <PromptBadge>
+                <Sparkles size={16} color="#0061ff" />
+                <span>시간표 등록 완료</span>
+              </PromptBadge>
+
+              <PromptTitle>
+                성적 정보를 학점 계산기에 불러올까요?
+              </PromptTitle>
+              <PromptDesc>
+                방금 등록한 시간표와 함께 포털에 등록된 전체 학기 성적(과목별 성적, 취득학점, 평점)을 학점 계산기에 자동으로 연동할 수 있어요.
+              </PromptDesc>
+
+              <PromptFeatureCard>
+                <FeatureItem>
+                  <FeatureIconBox>
+                    <GraduationCap size={18} color="#0061ff" />
+                  </FeatureIconBox>
+                  <FeatureTextBox>
+                    <FeatureTextTitle>전 학기 과목 및 평점 자동 등록</FeatureTextTitle>
+                    <FeatureTextDesc>
+                      과목명, 취득학점, 성적(A+, A0 등), 전공/교양 이수구분이 자동으로 채워져요.
+                    </FeatureTextDesc>
+                  </FeatureTextBox>
+                </FeatureItem>
+                <FeatureItem>
+                  <FeatureIconBox>
+                    <CheckCircle2 size={18} color="#0061ff" />
+                  </FeatureIconBox>
+                  <FeatureTextBox>
+                    <FeatureTextTitle>서버 전송 없는 안전한 기기 내 저장</FeatureTextTitle>
+                    <FeatureTextDesc>
+                      성적 정보는 오직 내 휴대폰 로컬 저장소에만 안전하게 보관돼요.
+                    </FeatureTextDesc>
+                  </FeatureTextBox>
+                </FeatureItem>
+              </PromptFeatureCard>
+
+              <ButtonGroup>
+                <CapsuleButton
+                  variant="secondary"
+                  fullWidth
+                  onClick={handleSkipGrade}
+                >
+                  다음에 할게요
+                </CapsuleButton>
+                <CapsuleButton
+                  variant="brand"
+                  fullWidth
+                  leftIcon={<Sparkles size={16} />}
+                  onClick={handleImportGrades}
+                >
+                  불러올게요
+                </CapsuleButton>
+              </ButtonGroup>
+            </GradePromptContent>
+          )}
+
+          {step === "GRADE_SUCCESS" && (
+            <GradeSuccessContent>
+              <SuccessIconCircle>
+                <CheckCircle2 size={36} color="#0061ff" />
+              </SuccessIconCircle>
+              <SuccessTitle>성적 연동이 완료되었어요!</SuccessTitle>
+              <SuccessDesc>
+                총 <strong>{gradeResult.semestersCount}개 학기</strong>,{" "}
+                <strong>{gradeResult.subjectsCount}개 과목</strong> 성적이 학점 계산기에 안전하게 저장되었어요.
+              </SuccessDesc>
+
+              <ButtonGroup>
+                <CapsuleButton
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => {
+                    onSuccess?.(savedTimetableResult.totalAdded);
+                    onClose();
+                    navigate(ROUTES.TIMETABLE.CALCULATOR);
+                  }}
+                >
+                  학점 계산기 보러가기
+                </CapsuleButton>
+                <CapsuleButton
+                  variant="brand"
+                  fullWidth
+                  onClick={() => {
+                    onSuccess?.(savedTimetableResult.totalAdded);
+                    onClose();
+                  }}
+                >
+                  완료
+                </CapsuleButton>
+              </ButtonGroup>
+            </GradeSuccessContent>
           )}
         </Container>
       </BottomSheet>
@@ -1143,4 +1334,162 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 8px;
   margin-top: 4px;
+`;
+
+const ImageImportLinkCard = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  background-color: #f7f9fc;
+  border: 1px solid #e5e8eb;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #f0f4fa;
+  }
+`;
+
+const ImageImportLinkLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const ImageImportLinkTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #191f28;
+`;
+
+const ImageImportLinkSub = styled.div`
+  font-size: 11.5px;
+  color: #8b95a1;
+  margin-top: 2px;
+`;
+
+const GradePromptContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 4px 16px;
+  gap: 16px;
+`;
+
+const PromptBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e8f3ff;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0061ff;
+`;
+
+const PromptTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 700;
+  color: #191f28;
+  margin: 0;
+  line-height: 1.4;
+`;
+
+const PromptDesc = styled.p`
+  font-size: 13.5px;
+  color: #6b7684;
+  margin: 0;
+  line-height: 1.5;
+  word-break: keep-all;
+`;
+
+const PromptFeatureCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  background-color: #f9fafb;
+  border: 1px solid #f2f4f6;
+  border-radius: 14px;
+  text-align: left;
+`;
+
+const FeatureItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+`;
+
+const FeatureIconBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #e8f3ff;
+  flex-shrink: 0;
+`;
+
+const FeatureTextBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const FeatureTextTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #333d4b;
+`;
+
+const FeatureTextDesc = styled.div`
+  font-size: 12px;
+  color: #8b95a1;
+  line-height: 1.4;
+`;
+
+const GradeSuccessContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 4px 16px;
+  gap: 16px;
+`;
+
+const SuccessIconCircle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #e8f3ff;
+`;
+
+const SuccessTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 700;
+  color: #191f28;
+  margin: 0;
+`;
+
+const SuccessDesc = styled.p`
+  font-size: 14px;
+  color: #4e5968;
+  margin: 0;
+  line-height: 1.5;
+  word-break: keep-all;
+
+  strong {
+    color: #0061ff;
+  }
 `;

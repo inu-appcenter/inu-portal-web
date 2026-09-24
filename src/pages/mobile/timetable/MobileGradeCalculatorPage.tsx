@@ -7,7 +7,7 @@ import {
   useBeforeUnload,
   useNavigate,
 } from "react-router-dom";
-import { Calendar, ClipboardPaste } from "lucide-react";
+import { Calendar, ClipboardPaste, School } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -18,6 +18,12 @@ import GraduationRequirementCard from "@/components/mobile/timetable/GraduationR
 import GraduationSettingModal, {
   type GraduationProfile,
 } from "@/components/mobile/timetable/GraduationSettingModal";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import {
+  checkPortalAccountLinked,
+  fetchFullAcademicReportFromApp,
+} from "@/apis/mobileAgentBridge";
+import { convertPortalGradesToSemestersData } from "@/utils/portalGradeSync";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
 import {
   calculateRequiredAverageGpa,
@@ -398,6 +404,77 @@ export default function MobileGradeCalculatorPage() {
     useState<string>("");
   const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isPortalModalOpen, setIsPortalModalOpen] = useState<boolean>(false);
+  const [isFetchingPortalGrades, setIsFetchingPortalGrades] = useState<boolean>(false);
+
+  const handleExecutePortalGradeImport = async () => {
+    setIsFetchingPortalGrades(true);
+    try {
+      const reportRes = await fetchFullAcademicReportFromApp();
+      if (!reportRes.success || !reportRes.data) {
+        if (reportRes.errorCode === "AUTH_REQUIRED") {
+          setIsPortalModalOpen(true);
+          return;
+        }
+        throw new Error(
+          reportRes.errorMessage || "포털 성적 정보를 불러오지 못했습니다.",
+        );
+      }
+
+      const incomingData = convertPortalGradesToSemestersData(
+        reportRes.data.courseGrades,
+      );
+      const incomingSemCount = Object.keys(incomingData).length;
+      const incomingSubCount = reportRes.data.courseGrades.length;
+
+      setSemestersData((prev) => {
+        const next = { ...prev };
+        Object.entries(incomingData).forEach(([semKey, subs]) => {
+          if (!next[semKey]) {
+            next[semKey] = subs;
+          } else {
+            const currentList = [...next[semKey]];
+            subs.forEach((inSub) => {
+              const idx = currentList.findIndex(
+                (c) =>
+                  (c.courseCode && c.courseCode === inSub.courseCode) ||
+                  c.name.trim() === inSub.name.trim(),
+              );
+              if (idx >= 0) {
+                currentList[idx] = {
+                  ...currentList[idx],
+                  ...inSub,
+                  id: currentList[idx].id,
+                };
+              } else {
+                currentList.push(inSub);
+              }
+            });
+            next[semKey] = currentList;
+          }
+        });
+        return next;
+      });
+
+      alert(
+        `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러왔어요!`,
+      );
+    } catch (err: any) {
+      console.error("포털 성적 연동 실패:", err);
+      alert(err?.message || "포털 성적을 불러오는 중 오류가 발생했습니다.");
+    } finally {
+      setIsFetchingPortalGrades(false);
+    }
+  };
+
+  const handlePortalGradeImport = async () => {
+    const isLinked = await checkPortalAccountLinked();
+    if (!isLinked) {
+      setIsPortalModalOpen(true);
+      return;
+    }
+    await handleExecutePortalGradeImport();
+  };
 
   const [graduationProfile, setGraduationProfile] = useState<GraduationProfile>(
     EMPTY_GRADUATION_PROFILE,
@@ -1477,6 +1554,15 @@ export default function MobileGradeCalculatorPage() {
               </SemesterStatsRow>
 
               <ImportButtonRow>
+                <ImportTimetableButton
+                  onClick={handlePortalGradeImport}
+                  disabled={isFetchingPortalGrades}
+                >
+                  <School size={16} className="calendar-icon" color="#0061ff" />
+                  <span className="import-text">
+                    {isFetchingPortalGrades ? "가져오는 중..." : "포털 성적 가져오기"}
+                  </span>
+                </ImportTimetableButton>
                 <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
                   <Calendar size={16} className="calendar-icon" />
                   <span className="import-text">시간표 불러오기</span>
@@ -1746,6 +1832,15 @@ export default function MobileGradeCalculatorPage() {
         onClose={() => setShowGradeImportSheet(false)}
         targetSemesterLabel={selectedSemesterLabel}
         onApply={handleApplyImportedGrades}
+      />
+
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          handleExecutePortalGradeImport();
+        }}
       />
 
       <FloatingSaveArea>

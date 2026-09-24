@@ -333,11 +333,11 @@ const MobileTimeTablePage = () => {
 
     return [
       {
-        label: "학교 포털에서 가져오기",
+        label: "시간표 및 성적 가져오기",
         icon: <School size={20} color="#0061ff" />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked(
-            "학교 포털에서 가져오기",
+            "시간표 및 성적 가져오기",
             "헤더 메뉴",
           );
           setIsPortalImportSheetOpen(true);
@@ -782,7 +782,7 @@ const MobileTimeTablePage = () => {
               <NoTimetableDescription>
                 {currentSemesterLabel} 시간표를 만들어볼까요?
                 <br />
-                학교 포털이나 수강신청 앱, 에브리타임에서 시간표를 가져올 수 있어요.
+                포털에서 시간표와 성적을 한 번에 가져오거나, 캡처 이미지로 등록할 수 있어요.
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
@@ -793,13 +793,13 @@ const MobileTimeTablePage = () => {
               leftIcon={<School size={20} />}
               onClick={() => {
                 mixpanelTrack.timetableFeatureClicked(
-                  "포털에서 시간표 가져오기",
+                  "시간표 및 성적 가져오기",
                   "등록된 시간표 없음",
                 );
                 setIsPortalImportSheetOpen(true);
               }}
             >
-              학교 포털에서 시간표 가져오기
+              시간표 및 성적 가져오기
             </PortalImportActionButton>
             <EmptyActionButton
               variant="primary"
