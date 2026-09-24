@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { parseAcademicBasicInfo, parseTimetableList, parseTimeInfo } from "../ssvParser";
+import {
+  parseAcademicBasicInfo,
+  parseTimetableList,
+  parseTimeInfo,
+  parseTlsnTimetableList,
+  parseFullAcademicReport,
+} from "../ssvParser";
 
 describe("Academic SSV Parser (Web Centralized)", () => {
   const RECORD_SEPARATOR = String.fromCharCode(30);
@@ -125,5 +131,95 @@ describe("Academic SSV Parser (Web Centralized)", () => {
     const empty = parseTimeInfo("");
     expect(empty).toEqual([]);
   });
+
+  it("개인학적조회 수강탭(DS_COUR760V2)의 시간표를 정상 파싱해야 한다", () => {
+    const tlsnSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_COUR760V2",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fdeptClsfCd\u001fscNm\u001fhour\u001fyy\u001fdeptClsfNm\u001ftmGbn\u001fhaksuNo\u001fprofEmpNm\u001flsnTypeGbn\u001fsuupTime",
+      "N\u001f23\u001f3\u001f0000587\u001f디지털시대의모바일앱만들기\u001f3\u001f2025\u001f대학\u001f20\u001f0011842001\u001f박승진\u001f강의(이론)\u001f[04-104:월(7-8A)(8B-9)]",
+      "N\u001f41\u001f3\u001f0000587\u001f자연어처리\u001f3\u001f2025\u001f대학\u001f20\u001f0010925001\u001f신유현\u001fe-Learning\u001f[07-304:금(1)(2)(3)]",
+    ].join(RECORD_SEPARATOR);
+
+    const items = parseTlsnTimetableList(tlsnSsv);
+    expect(items).toHaveLength(2);
+    expect(items[0].courseName).toBe("디지털시대의모바일앱만들기");
+    expect(items[0].professorName).toBe("박승진");
+    expect(items[0].courseType).toBe("교양선택");
+    expect(items[0].timeSlots[0].building).toBe("4호관");
+
+    expect(items[1].courseName).toBe("자연어처리");
+    expect(items[1].professorName).toBe("신유현");
+    expect(items[1].courseType).toBe("전공선택");
+  });
+
+  it("종합 학업 리포트(학기별 성적, 과목별 성적, 취득학점, 장학금)를 정상 파싱해야 한다", () => {
+    const semGradesSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR400V",
+      "_RowType_\u001fstuno\u001faplyHp\u001fpercentage\u001fsumAplyHp\u001facqHp\u001fhySeqGbn\u001fyy\u001ftotRank\u001fsumAcqHp\u001ftmGbn\u001favgMrks\u001fsumMrksAvg\u001fsumPercent",
+      "N\u001f202001518\u001f10\u001f98.30\u001f140\u001f10\u001f4\u001f2025\u001f14/92\u001f140\u001f20\u001f4.33\u001f4.24\u001f97.40",
+    ].join(RECORD_SEPARATOR);
+
+    const crsGradesSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR300V1",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fstuno\u001fmrksGrdGbn\u001fscNm\u001fyy\u001ftmGbn\u001fscCd\u001fmrks\u001frepeatYn",
+      "N\u001f23\u001f3\u001f202001518\u001fA+\u001f디지털시대의모바일앱만들기\u001f2025\u001f20\u001f0011842\u001f4.50\u001fN",
+      "N\u001f41\u001f3\u001f202001518\u001fA0\u001f자연어처리\u001f2025\u001f20\u001f0010925\u001f4.00\u001fN",
+    ].join(RECORD_SEPARATOR);
+
+    const creditSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR300V2",
+      "_RowType_\u001fscoTot\u001fdetmTot\u001fscoMj\u001fscoCore\u001fscoDeep\u001fscoCul\u001fsco10\u001fsco11",
+      "N\u001f140\u001f130\u001f98\u001f28\u001f58\u001f42\u001f19\u001f2",
+      "Dataset:DS_SCOR300V3",
+      "_RowType_\u001fcptnFldGbnNm\u001fcptnGbnNm\u001fhp\u001fdetmHp",
+      "N\u001fINU핵심문제해결\u001f교양필수\u001f3\u001f3",
+    ].join(RECORD_SEPARATOR);
+
+    const scalSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_ENRO020",
+      "_RowType_\u001fpayMthdGbn\u001fscalAmtNm\u001fyy\u001ftmGbn\u001fsumAmt\u001ftuitAmt\u001fentrAmt",
+      "N\u001f1\u001f학업우수(우수)\u001f2025\u001f20\u001f1544000\u001f1544000\u001f0",
+    ].join(RECORD_SEPARATOR);
+
+    const payload = {
+      studentId: "202001518",
+      semesterGradesSsv: semGradesSsv,
+      courseGradesSsv: crsGradesSsv,
+      creditSummarySsv: creditSsv,
+      scholarshipSsv: scalSsv,
+    };
+
+    const report = parseFullAcademicReport(payload);
+    expect(report.studentId).toBe("202001518");
+    expect(report.semesterGrades).toHaveLength(1);
+    expect(report.semesterGrades[0].averageScore).toBe("4.33");
+    expect(report.semesterGrades[0].percentage).toBe("98.30");
+    expect(report.semesterGrades[0].rank).toBe("14/92");
+    expect(report.semesterGrades[0].cumulativeAverageScore).toBe("4.24");
+
+    expect(report.courseGrades).toHaveLength(2);
+    expect(report.courseGrades[0].courseName).toBe("디지털시대의모바일앱만들기");
+    expect(report.courseGrades[0].grade).toBe("A+");
+    expect(report.courseGrades[0].score).toBe("4.50");
+
+    expect(report.creditSummary.totalCredits).toBe("140");
+    expect(report.creditSummary.majorCredits).toBe("98");
+    expect(report.creditSummary.generalCredits).toBe("42");
+
+    expect(report.generalEducationAreas).toHaveLength(1);
+    expect(report.generalEducationAreas[0].areaName).toBe("INU핵심문제해결");
+    expect(report.generalEducationAreas[0].isSatisfied).toBe(true);
+
+    expect(report.scholarships).toHaveLength(1);
+    expect(report.scholarships[0].scholarshipName).toBe("학업우수(우수)");
+    expect(report.scholarships[0].amount).toBe(1544000);
+    expect(report.totalScholarshipAmount).toBe(1544000);
+  });
 });
+
 

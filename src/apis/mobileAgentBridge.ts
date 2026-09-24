@@ -1,4 +1,11 @@
-import { parseAcademicBasicInfo, parseTimetableList, TimetableCourseItem } from "@/utils/ssvParser";
+import {
+  parseAcademicBasicInfo,
+  parseTimetableList,
+  parseTlsnTimetableList,
+  parseFullAcademicReport,
+  TimetableCourseItem,
+  FullAcademicReport,
+} from "@/utils/ssvParser";
 
 export interface AcademicInfoData {
   studentId: string;
@@ -202,6 +209,7 @@ export async function fetchAcademicInfoFromApp(forceRefresh = false): Promise<Ag
 
 /**
  * 모바일 앱 백그라운드 SSO를 통해 포털 ERP에서 학생별 수강신청/시간표 목록 조회 및 파싱
+ * (개인학적조회 M002043/P001878 수강탭 기반)
  */
 export async function fetchStudentTimetableFromApp(params?: {
   yy?: string;
@@ -211,18 +219,18 @@ export async function fetchStudentTimetableFromApp(params?: {
     actionId: 'PORTAL_GET_STUDENT_TIMETABLE',
     authDomain: 'PORTAL',
     request: {
-      url: 'https://erp.inu.ac.kr:8443/uni/cour/CorrCtr/findStdSukangAplyList.do?menuId=M003150&pgmId=P001416',
+      url: 'https://erp.inu.ac.kr:8443/uni/sreg/TsimCtr/findTlsnAplyDetaCtntList.do?menuId=M002043&pgmId=P001878',
       method: 'POST',
-      datasetName: 'DS_COND',
+      datasetName: 'DS_COND02',
       params: {
+        menuId: 'M002043',
+        pgmId: 'P001878',
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
       },
       data: {
-        deptClsfCd: '0000587',
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
-        pageType: 'sukang',
       },
     },
   };
@@ -239,7 +247,9 @@ export async function fetchStudentTimetableFromApp(params?: {
   try {
     let rawPayload = res.data;
     if (typeof rawPayload === 'object' && rawPayload !== null) {
-      if (typeof rawPayload.ssv === 'string') {
+      if (typeof rawPayload.timetableSsv === 'string') {
+        rawPayload = rawPayload.timetableSsv;
+      } else if (typeof rawPayload.ssv === 'string') {
         rawPayload = rawPayload.ssv;
       } else if (typeof rawPayload.rawSsv === 'string') {
         rawPayload = rawPayload.rawSsv;
@@ -249,7 +259,11 @@ export async function fetchStudentTimetableFromApp(params?: {
     }
 
     if (typeof rawPayload === 'string') {
-      const parsed = parseTimetableList(rawPayload);
+      // 신규 개인학적조회 수강탭 우선 시도 후 fallback
+      let parsed = parseTlsnTimetableList(rawPayload);
+      if (parsed.length === 0) {
+        parsed = parseTimetableList(rawPayload);
+      }
       return {
         success: true,
         data: parsed,
@@ -270,6 +284,58 @@ export async function fetchStudentTimetableFromApp(params?: {
     };
   }
 }
+
+/**
+ * 모바일 앱 백그라운드 SSO를 통해 개인학적조회(M002043) 종합 데이터(시간표, 학기별성적, 과목별성적, 이수학점, 장학금 등) 조회
+ * (개인정보는 서버로 전송되지 않고 클라이언트 웹에서만 파싱되어 메모리/로컬스토리지에 보관됨)
+ */
+export async function fetchFullAcademicReportFromApp(params?: {
+  yy?: string;
+  tmGbn?: string;
+}): Promise<AgentActionResult<FullAcademicReport>> {
+  const instruction = {
+    actionId: 'PORTAL_GET_FULL_ACADEMIC_RECORD',
+    authDomain: 'PORTAL',
+    request: {
+      url: 'https://erp.inu.ac.kr:8443/uni/sreg/TsimCtr/findBaseSchregInfoOne.do?menuId=M002043&pgmId=P001878',
+      method: 'POST',
+      params: {
+        menuId: 'M002043',
+        pgmId: 'P001878',
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+      },
+      data: {
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+      },
+    },
+  };
+
+  const res = await sendBridgeAction<any>('executeAgentAction', { instruction }, 50000);
+  if (!res.success) {
+    return {
+      success: false,
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage,
+    };
+  }
+
+  try {
+    const parsed = parseFullAcademicReport(res.data);
+    return {
+      success: true,
+      data: parsed,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      errorCode: 'PARSE_ERROR',
+      errorMessage: err?.message || '포털 학업 종합 데이터 파싱 오류',
+    };
+  }
+}
+
 
 /**
  * 도서관 계정 연동 상태 확인

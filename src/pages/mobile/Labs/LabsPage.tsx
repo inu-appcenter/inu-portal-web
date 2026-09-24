@@ -170,9 +170,9 @@ const LabsPage = () => {
                 />
                 <Divider margin="0" />
                 <AppItem
-                  title={"포털 수강 시간표 가져오기"}
+                  title={"포털 시간표 및 성적 종합 가져오기"}
                   description={
-                    "인천대학교 포털 사이트에서 내 수강신청 시간표를 직접 조회하고 테스트해요."
+                    "포털 개인학적조회에서 수강 시간표, 학기·과목별 성적, 이수학점, 장학금을 한 번에 가져와요."
                   }
                   onClick={() => {
                     if (!tokenInfo.accessToken) {

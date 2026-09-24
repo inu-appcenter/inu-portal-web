@@ -536,3 +536,402 @@ export function parseTimetableList(responseBody: string): TimetableCourseItem[] 
     });
 }
 
+// ==========================================
+// 신규 개인학적조회(M002043) 기반 종합 성적/장학/시간표 타입 및 파서
+// ==========================================
+
+export interface SemesterGradeItem {
+  year: string;
+  semester: string;
+  semesterName: string;
+  targetGrade: string; // 학년
+  appliedCredits: string; // 신청학점
+  acquiredCredits: string; // 취득학점
+  averageScore: string; // 평점평균 (예: 4.33)
+  percentage: string; // 백분위 (예: 98.30)
+  rank: string; // 전공석차 (예: 14/92)
+  departmentRank?: string;
+  cumulativeAppliedCredits: string; // 총누적신청학점
+  cumulativeAcquiredCredits: string; // 총누적취득학점
+  cumulativeAverageScore: string; // 총누적평점평균 (예: 4.24)
+  cumulativePercentage: string; // 총누적백분위 (예: 97.40)
+  isAcademicWarning: boolean;
+}
+
+export interface CourseGradeItem {
+  year: string;
+  semester: string;
+  semesterName: string;
+  courseCode: string; // 학수번호
+  courseName: string;
+  courseNameEng?: string;
+  courseType: string; // 이수구분 코드
+  courseTypeName: string; // 이수구분명 (전선, 전필 등)
+  credits: string; // 학점
+  grade: string; // 등급 (A+, A0, P 등)
+  score: string; // 평점 (4.50, 4.00 등)
+  isRetake: boolean; // 재수강 여부
+  isPassed: boolean;
+}
+
+export interface CreditSummary {
+  totalCredits: string;
+  standardTotalCredits: string;
+  majorCredits: string;
+  majorCoreCredits: string;
+  majorDeepCredits: string;
+  generalCredits: string;
+  generalRequiredCredits: string;
+  collegeGeneralCredits: string;
+  completedSemesterCount: string;
+}
+
+export interface GeneralEducationAreaItem {
+  areaName: string; // 영역명 (예: INU핵심문제해결)
+  courseTypeName: string; // 이수구분명 (교양필수, 교양선택 등)
+  acquiredCredits: string; // 취득학점
+  standardCredits: string; // 기준학점
+  isSatisfied: boolean;
+}
+
+export interface ScholarshipItem {
+  year: string;
+  semester: string;
+  semesterName: string;
+  scholarshipName: string;
+  amount: number;
+  tuitionAmount: number;
+  entranceAmount: number;
+  paymentMethod: string;
+}
+
+export interface GraduationRequirement {
+  passFlag: string;
+  graduationYear?: string;
+  graduationDate?: string;
+  englishTestPassed: boolean;
+  thesisPassed: boolean;
+  degreeName?: string;
+}
+
+export interface FullAcademicReport {
+  studentId: string;
+  semesterGrades: SemesterGradeItem[];
+  courseGrades: CourseGradeItem[];
+  creditSummary: CreditSummary;
+  generalEducationAreas: GeneralEducationAreaItem[];
+  scholarships: ScholarshipItem[];
+  totalScholarshipAmount: number;
+  graduation: GraduationRequirement | null;
+  timetable: TimetableCourseItem[];
+}
+
+/**
+ * 학기 코드 변환 헬퍼 (10: 1학기, 20: 2학기, 30: 여름학기, 40: 겨울학기)
+ */
+export function formatTmGbn(tmGbn: string): string {
+  switch (tmGbn) {
+    case "10":
+      return "1학기";
+    case "20":
+      return "2학기";
+    case "30":
+      return "여름학기";
+    case "40":
+      return "겨울학기";
+    default:
+      return `${tmGbn}학기`;
+  }
+}
+
+/**
+ * 이수구분 코드 한글 변환
+ */
+export function formatCourseType(cptnGbn: string): string {
+  switch (cptnGbn) {
+    case "10":
+      return "교양필수";
+    case "11":
+      return "단과대교양";
+    case "20":
+    case "21":
+    case "23":
+    case "25":
+      return "교양선택";
+    case "30":
+    case "31":
+      return "전공필수";
+    case "40":
+    case "41":
+      return "전공선택";
+    case "50":
+      return "일반선택";
+    case "60":
+      return "교직";
+    default:
+      return "기타";
+  }
+}
+
+/**
+ * findTlsnAplyDetaCtntList.do (개인학적조회 수강탭) 응답 SSV 파싱
+ */
+export function parseTlsnTimetableList(responseBody: string): TimetableCourseItem[] {
+  let ssv = responseBody;
+  if (responseBody.startsWith("{")) {
+    try {
+      const envelope = JSON.parse(responseBody);
+      if (envelope.timetableSsv) ssv = envelope.timetableSsv;
+      else if (envelope.ssv) ssv = envelope.ssv;
+    } catch {}
+  }
+
+  if (!ssv || !ssv.includes("ErrorCode:int=0")) {
+    return [];
+  }
+
+  let rows: Record<string, string>[] = [];
+  try {
+    // 개인학적조회 수강탭 데이터셋은 DS_COUR760V2
+    rows = parseRows(ssv, "DS_COUR760V2");
+  } catch (err: any) {
+    // Fallback: 기존 DS_LIST
+    try {
+      rows = parseRows(ssv, "DS_LIST");
+    } catch {
+      return [];
+    }
+  }
+
+  return rows.map((row) => {
+    const timeInfoRaw = row["suupTime"] || row["timeInfo"] || "";
+    const status = (row["delGbn"] || "신청").trim();
+    return {
+      courseName: (row["scNm"] || "").trim(),
+      courseCode: (row["haksuNo"] || "").trim(),
+      credits: (row["hp"] || "0").trim(),
+      professorName: (row["profEmpNm"] || row["profNm"] || "").trim(),
+      courseType: formatCourseType((row["cptnGbn"] || "").trim()),
+      departmentName: (row["deptClsfNm"] || row["openHgMjNm"] || "").trim(),
+      targetGrade: (row["hySeqGbn"] || row["openHySeqGbn"] || "").trim(),
+      lessonType: (row["lsnTypeGbn"] || "").trim(),
+      timeInfoRaw,
+      timeSlots: parseTimeInfo(timeInfoRaw),
+      year: (row["yy"] || "").trim(),
+      semester: (row["tmGbn"] || "").trim(),
+      status,
+      rawFields: row,
+    };
+  });
+}
+
+/**
+ * 종합 학적·성적·장학·시간표 데이터 파싱
+ */
+export function parseFullAcademicReport(payload: any): FullAcademicReport {
+  let envelope: any = payload;
+  if (typeof payload === "string") {
+    try {
+      envelope = JSON.parse(payload);
+    } catch {
+      envelope = { ssv: payload };
+    }
+  }
+
+  const timetableSsv = envelope.timetableSsv || envelope.ssv || "";
+  const semGradesSsv = envelope.semesterGradesSsv || "";
+  const crsGradesSsv = envelope.courseGradesSsv || "";
+  const creditSsv = envelope.creditSummarySsv || "";
+  const tmCntSsv = envelope.semesterCountSsv || "";
+  const scalSsv = envelope.scholarshipSsv || "";
+  const grdtSsv = envelope.graduationSsv || "";
+
+  // 1. 시간표
+  const timetable = parseTlsnTimetableList(timetableSsv);
+
+  // 2. 학기별 성적 (DS_SCOR400V)
+  let semesterGrades: SemesterGradeItem[] = [];
+  try {
+    if (semGradesSsv) {
+      const rows = parseRows(semGradesSsv, "DS_SCOR400V");
+      semesterGrades = rows.map((r) => {
+        const yy = r["yy"] || "";
+        const tm = r["tmGbn"] || "";
+        return {
+          year: yy,
+          semester: tm,
+          semesterName: `${yy}년 ${formatTmGbn(tm)}`,
+          targetGrade: r["hySeqGbn"] ? `${r["hySeqGbn"]}학년` : "",
+          appliedCredits: (r["aplyHp"] || "0").trim(),
+          acquiredCredits: (r["acqHp"] || "0").trim(),
+          averageScore: (r["avgMrks"] || "0.0").trim(),
+          percentage: (r["percentage"] || "0.0").trim(),
+          rank: (r["totRank"] || "").trim(),
+          departmentRank: (r["deptClsfRank"] || "").trim(),
+          cumulativeAppliedCredits: (r["sumAplyHp"] || "0").trim(),
+          cumulativeAcquiredCredits: (r["sumAcqHp"] || "0").trim(),
+          cumulativeAverageScore: (r["sumMrksAvg"] || "0.0").trim(),
+          cumulativePercentage: (r["sumPercent"] || "0.0").trim(),
+          isAcademicWarning: r["schaffWarnYn"] === "1",
+        };
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to parse semester grades:", e);
+  }
+
+  // 3. 과목별 성적 (DS_SCOR300V1)
+  let courseGrades: CourseGradeItem[] = [];
+  try {
+    if (crsGradesSsv) {
+      const rows = parseRows(crsGradesSsv, "DS_SCOR300V1");
+      courseGrades = rows.map((r) => {
+        const yy = r["yy"] || "";
+        const tm = r["tmGbn"] || "";
+        const cptn = (r["cptnGbn"] || "").trim();
+        const grade = (r["mrksGrdGbn"] || "").trim();
+        const score = (r["mrks"] || "").trim().replace(/\x03/g, "");
+        return {
+          year: yy,
+          semester: tm,
+          semesterName: `${yy}년 ${formatTmGbn(tm)}`,
+          courseCode: (r["scCd"] || "").trim(),
+          courseName: (r["scNm"] || "").trim(),
+          courseNameEng: (r["scNmEng"] || "").trim(),
+          courseType: cptn,
+          courseTypeName: formatCourseType(cptn),
+          credits: (r["hp"] || "0").trim(),
+          grade,
+          score,
+          isRetake: r["repeatYn"] === "Y" || r["repeatYn"] === "1",
+          isPassed: grade !== "F" && grade !== "NP" && grade !== "FA",
+        };
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to parse course grades:", e);
+  }
+
+  // 4. 이수구분별 취득학점 (DS_SCOR300V2 & DS_TMCNT)
+  let creditSummary: CreditSummary = {
+    totalCredits: "0",
+    standardTotalCredits: "0",
+    majorCredits: "0",
+    majorCoreCredits: "0",
+    majorDeepCredits: "0",
+    generalCredits: "0",
+    generalRequiredCredits: "0",
+    collegeGeneralCredits: "0",
+    completedSemesterCount: "0",
+  };
+
+  try {
+    if (creditSsv) {
+      const rows = parseRows(creditSsv, "DS_SCOR300V2");
+      if (rows.length > 0) {
+        const r = rows[0];
+        creditSummary.totalCredits = (r["scoTot"] || r["hpTot"] || "0").trim();
+        creditSummary.standardTotalCredits = (r["detmTot"] || "0").trim();
+        creditSummary.majorCredits = (r["scoMj"] || "0").trim();
+        creditSummary.majorCoreCredits = (r["scoCore"] || "0").trim();
+        creditSummary.majorDeepCredits = (r["scoDeep"] || "0").trim();
+        creditSummary.generalCredits = (r["scoCul"] || "0").trim();
+        creditSummary.generalRequiredCredits = (r["sco10"] || "0").trim();
+        creditSummary.collegeGeneralCredits = (r["sco11"] || "0").trim();
+      }
+    }
+    if (tmCntSsv) {
+      const rows = parseRows(tmCntSsv, "DS_TMCNT");
+      if (rows.length > 0) {
+        creditSummary.completedSemesterCount = (rows[0]["allTmCnt"] || "").trim();
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to parse credit summary:", e);
+  }
+
+  // 5. 교양 영역별 이수 현황 (DS_SCOR300V3)
+  let generalEducationAreas: GeneralEducationAreaItem[] = [];
+  try {
+    if (creditSsv) {
+      const rows = parseRows(creditSsv, "DS_SCOR300V3");
+      generalEducationAreas = rows.map((r) => {
+        const acquired = Number(r["hp"] || 0);
+        const standard = Number(r["detmHp"] || 0);
+        return {
+          areaName: (r["cptnFldGbnNm"] || "").trim(),
+          courseTypeName: (r["cptnGbnNm"] || "").trim(),
+          acquiredCredits: String(acquired),
+          standardCredits: String(standard),
+          isSatisfied: standard > 0 ? acquired >= standard : acquired > 0,
+        };
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to parse GE areas:", e);
+  }
+
+  // 6. 장학금 수혜 내역 (DS_ENRO020)
+  let scholarships: ScholarshipItem[] = [];
+  let totalScholarshipAmount = 0;
+  try {
+    if (scalSsv) {
+      const rows = parseRows(scalSsv, "DS_ENRO020");
+      scholarships = rows.map((r) => {
+        const sumAmt = parseInt(r["sumAmt"] || "0", 10) || 0;
+        const tuitAmt = parseInt(r["tuitAmt"] || "0", 10) || 0;
+        const entrAmt = parseInt(r["entrAmt"] || "0", 10) || 0;
+        const yy = r["yy"] || "";
+        const tm = r["tmGbn"] || "";
+        totalScholarshipAmount += sumAmt;
+        return {
+          year: yy,
+          semester: tm,
+          semesterName: `${yy}년 ${formatTmGbn(tm)}`,
+          scholarshipName: (r["scalAmtNm"] || "").trim(),
+          amount: sumAmt,
+          tuitionAmount: tuitAmt,
+          entranceAmount: entrAmt,
+          paymentMethod: r["payMthdGbn"] === "1" ? "등록금 감면" : "계좌 지급",
+        };
+      });
+    }
+  } catch (e) {
+    console.warn("Failed to parse scholarships:", e);
+  }
+
+  // 7. 졸업 요건 (DS_GRDT504)
+  let graduation: GraduationRequirement | null = null;
+  try {
+    if (grdtSsv) {
+      const rows = parseRows(grdtSsv, "DS_GRDT504");
+      if (rows.length > 0) {
+        const r = rows[0];
+        graduation = {
+          passFlag: (r["passFlag"] || "").trim(),
+          graduationYear: (r["grdtYy"] || "").trim(),
+          graduationDate: formatNexacroDate(r["grdtDt"]),
+          englishTestPassed: Boolean(r["engVldScGbnNm"]),
+          thesisPassed: Boolean(r["thssApprRsltCtnt"]),
+          degreeName: (r["degrNm"] || "").trim(),
+        };
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to parse graduation:", e);
+  }
+
+  return {
+    studentId: envelope.studentId || "",
+    semesterGrades,
+    courseGrades,
+    creditSummary,
+    generalEducationAreas,
+    scholarships,
+    totalScholarshipAmount,
+    graduation,
+    timetable,
+  };
+}
+
+
