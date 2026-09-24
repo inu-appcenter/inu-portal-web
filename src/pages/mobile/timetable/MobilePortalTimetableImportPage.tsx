@@ -10,6 +10,7 @@ import {
   Sparkles,
   GraduationCap,
   CheckCircle2,
+  Info,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -84,6 +85,7 @@ export default function MobilePortalTimetableImportPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
   const [createNewTimetable, setCreateNewTimetable] = useState(false);
+  const [emptySemesterLabels, setEmptySemesterLabels] = useState<string[]>([]);
 
   const [savedTimetableResult, setSavedTimetableResult] = useState<{
     totalAdded: number;
@@ -219,7 +221,7 @@ export default function MobilePortalTimetableImportPage() {
     setErrorMessage("");
 
     const fetchedGroups: SemesterCourseGroup[] = [];
-    let emptyCount = 0;
+    const emptyLabels: string[] = [];
 
     for (let i = 0; i < targets.length; i++) {
       const sem = targets[i];
@@ -247,7 +249,7 @@ export default function MobilePortalTimetableImportPage() {
 
         const rawItems = res.data ?? [];
         if (rawItems.length === 0) {
-          emptyCount += 1;
+          emptyLabels.push(sem.label);
           continue;
         }
 
@@ -277,9 +279,11 @@ export default function MobilePortalTimetableImportPage() {
       }
     }
 
+    setEmptySemesterLabels(emptyLabels);
+
     if (fetchedGroups.length === 0) {
       setErrorMessage(
-        emptyCount > 0
+        emptyLabels.length > 0
           ? "선택한 학기에 등록된 수강신청 내역이 없습니다."
           : "포털에서 시간표를 불러오지 못했습니다. 계정 정보를 확인해주세요.",
       );
@@ -678,6 +682,14 @@ export default function MobilePortalTimetableImportPage() {
                 총 <strong>{semesterGroups.length}개 학기</strong>,{" "}
                 <strong>{totalFoundCourses}개</strong> 과목을 찾았어요
               </SummaryText>
+              {emptySemesterLabels.length > 0 && (
+                <ExcludedNoticeBox>
+                  <Info size={15} color="#4e5968" />
+                  <span>
+                    {emptySemesterLabels.join(", ")}은(는) 수강 내역이 없어 제외되었어요.
+                  </span>
+                </ExcludedNoticeBox>
+              )}
             </ReviewHeader>
 
             <SemesterGroupsWrapper>
@@ -797,9 +809,27 @@ export default function MobilePortalTimetableImportPage() {
 
         {step === "ASK_GRADE_IMPORT" && (
           <GradePromptContent>
+            <TimetableSuccessSummaryCard>
+              <TimetableSuccessIconBox>
+                <CheckCircle2 size={20} color="#0061ff" />
+              </TimetableSuccessIconBox>
+              <TimetableSuccessTextBox>
+                <TimetableSuccessTitle>
+                  {savedTimetableResult.semesterCount > 1
+                    ? `${savedTimetableResult.semesterCount}개 학기 시간표 등록 완료`
+                    : "시간표 등록 완료"}
+                </TimetableSuccessTitle>
+                <TimetableSuccessDesc>
+                  총 {savedTimetableResult.totalAdded}개 강의를 시간표에 등록했어요.
+                  {savedTimetableResult.totalSkipped > 0 &&
+                    ` (중복 ${savedTimetableResult.totalSkipped}개 제외)`}
+                </TimetableSuccessDesc>
+              </TimetableSuccessTextBox>
+            </TimetableSuccessSummaryCard>
+
             <PromptBadge>
               <Sparkles size={16} color="#0061ff" />
-              <span>시간표 등록 완료</span>
+              <span>성적 연동</span>
             </PromptBadge>
 
             <PromptTitle>성적 정보를 학점 계산기에 불러올까요?</PromptTitle>
@@ -1287,8 +1317,21 @@ const ReviewContent = styled.div`
 
 const ReviewHeader = styled.div`
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+`;
+
+const ExcludedNoticeBox = styled.div`
+  display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #f2f4f6;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #4e5968;
 `;
 
 const SummaryText = styled.div`
@@ -1467,6 +1510,49 @@ const GradePromptContent = styled.div`
   text-align: center;
   padding: 24px 4px 16px;
   gap: 16px;
+`;
+
+const TimetableSuccessSummaryCard = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e8eb;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  text-align: left;
+`;
+
+const TimetableSuccessIconBox = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f0f6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TimetableSuccessTextBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+`;
+
+const TimetableSuccessTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #191f28;
+`;
+
+const TimetableSuccessDesc = styled.div`
+  font-size: 13px;
+  color: #6b7684;
 `;
 
 const PromptBadge = styled.div`
