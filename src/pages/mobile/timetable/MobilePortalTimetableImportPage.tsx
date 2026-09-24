@@ -126,12 +126,52 @@ export default function MobilePortalTimetableImportPage() {
       .filter((id): id is string => Boolean(id));
   }, [activeTimetable, createNewTimetable]);
 
+  const isMultipleSemesters = selectedSemesterIds.length > 1;
+
+  const singleSelectedSemester = useMemo(
+    () =>
+      selectedSemesterIds.length === 1
+        ? semesterOptions.find((s) => s.id === selectedSemesterIds[0]) ?? null
+        : null,
+    [selectedSemesterIds, semesterOptions],
+  );
+
+  const isSemesterMatched = useMemo(() => {
+    if (!activeTimetable || !singleSelectedSemester) return false;
+    return (
+      activeTimetable.year === singleSelectedSemester.year &&
+      activeTimetable.term === singleSelectedSemester.term
+    );
+  }, [activeTimetable, singleSelectedSemester]);
+
+  const canAddToCurrent = Boolean(
+    !isMultipleSemesters && activeTimetable && isSemesterMatched,
+  );
+
+  const disabledReason = useMemo(() => {
+    if (isMultipleSemesters) {
+      return "여러 학기를 동시에 가져올 때는 각 학기별로 새로운 시간표가 생성돼요.";
+    }
+    if (!activeTimetable) {
+      return "추가할 기존 시간표가 없습니다.";
+    }
+    if (!isSemesterMatched && singleSelectedSemester) {
+      return `현재 시간표(${activeTimetable.semester})와 선택한 학기(${singleSelectedSemester.label})가 달라 추가할 수 없어요.`;
+    }
+    return null;
+  }, [isMultipleSemesters, activeTimetable, isSemesterMatched, singleSelectedSemester]);
+
   useEffect(() => {
     const current = pickCurrentSemester(semesters);
     const initialId = current?.id ?? semesterOptions[0]?.id ?? null;
     setSelectedSemesterIds(initialId ? [initialId] : []);
-    setCreateNewTimetable(!targetTimetableId);
-  }, [semesters, semesterOptions, targetTimetableId]);
+  }, [semesters, semesterOptions]);
+
+  useEffect(() => {
+    if (!canAddToCurrent) {
+      setCreateNewTimetable(true);
+    }
+  }, [canAddToCurrent]);
 
   useHeader({
     title: "포털에서 가져오기",
@@ -543,23 +583,40 @@ export default function MobilePortalTimetableImportPage() {
 
             <SectionGroup>
               <Label>등록 방식</Label>
-              {activeTimetable && (
-                <OptionCard
-                  $selected={!createNewTimetable}
-                  onClick={() => setCreateNewTimetable(false)}
-                >
-                  <RadioCircle $selected={!createNewTimetable}>
-                    {!createNewTimetable && <RadioDot />}
-                  </RadioCircle>
-                  <OptionInfo>
-                    <OptionTitle>현재 시간표에 추가</OptionTitle>
-                    <OptionDesc>
-                      "{activeTimetable.name}"에 과목들을 바로 추가해요.
-                    </OptionDesc>
-                  </OptionInfo>
-                </OptionCard>
-              )}
 
+              {/* 1. 현재 시간표에 추가 */}
+              <OptionCard
+                $selected={!createNewTimetable && canAddToCurrent}
+                $disabled={!canAddToCurrent}
+                onClick={() => {
+                  if (!canAddToCurrent) return;
+                  setCreateNewTimetable(false);
+                }}
+              >
+                <RadioCircle
+                  $selected={!createNewTimetable && canAddToCurrent}
+                  $disabled={!canAddToCurrent}
+                >
+                  {!createNewTimetable && canAddToCurrent && <RadioDot />}
+                </RadioCircle>
+                <OptionInfo>
+                  <OptionTitleRow>
+                    <OptionTitle $disabled={!canAddToCurrent}>
+                      현재 시간표에 추가
+                    </OptionTitle>
+                    {!canAddToCurrent && (
+                      <DisabledBadge>선택 불가</DisabledBadge>
+                    )}
+                  </OptionTitleRow>
+                  <OptionDesc $disabled={!canAddToCurrent}>
+                    {canAddToCurrent
+                      ? `"${activeTimetable?.name}"에 과목들을 바로 추가해요.`
+                      : disabledReason}
+                  </OptionDesc>
+                </OptionInfo>
+              </OptionCard>
+
+              {/* 2. 새 시간표로 만들기 */}
               <OptionCard
                 $selected={createNewTimetable}
                 onClick={() => setCreateNewTimetable(true)}
@@ -568,10 +625,19 @@ export default function MobilePortalTimetableImportPage() {
                   {createNewTimetable && <RadioDot />}
                 </RadioCircle>
                 <OptionInfo>
-                  <OptionTitle>새 시간표로 만들기</OptionTitle>
+                  <OptionTitleRow>
+                    <OptionTitle>
+                      {isMultipleSemesters
+                        ? "학기별 새 시간표로 만들기"
+                        : "새 시간표로 만들기"}
+                    </OptionTitle>
+                    {isMultipleSemesters && (
+                      <AutoSelectedBadge>기본 선택</AutoSelectedBadge>
+                    )}
+                  </OptionTitleRow>
                   <OptionDesc>
-                    {selectedSemesterIds.length > 1
-                      ? "학기별로 새 시간표를 각각 생성해 과목들을 등록해요."
+                    {isMultipleSemesters
+                      ? `선택한 ${selectedSemesterIds.length}개 학기 각각에 대해 새로운 시간표를 생성해 과목들을 등록해요.`
                       : "새로운 시간표를 생성해 과목들을 등록해요."}
                   </OptionDesc>
                 </OptionInfo>
@@ -1071,22 +1137,42 @@ const SemesterLabelText = styled.span`
   color: #191f28;
 `;
 
-const OptionCard = styled.div<{ $selected: boolean }>`
+const OptionCard = styled.div<{ $selected: boolean; $disabled?: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: ${(props) => (props.$selected ? "#f0f6ff" : "#ffffff")};
-  border: 1.5px solid ${(props) => (props.$selected ? "#0061ff" : "#f2f4f6")};
+  background: ${(props) =>
+    props.$disabled
+      ? "#f8f9fa"
+      : props.$selected
+        ? "#f0f6ff"
+        : "#ffffff"};
+  border: 1.5px solid
+    ${(props) =>
+      props.$disabled
+        ? "#e5e8eb"
+        : props.$selected
+          ? "#0061ff"
+          : "#f2f4f6"};
   border-radius: 14px;
-  cursor: pointer;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? 0.72 : 1)};
+  transition: all 0.15s ease;
 `;
 
-const RadioCircle = styled.div<{ $selected: boolean }>`
+const RadioCircle = styled.div<{ $selected: boolean; $disabled?: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid ${(props) => (props.$selected ? "#0061ff" : "#d1d6db")};
+  border: 2px solid
+    ${(props) =>
+      props.$disabled
+        ? "#d1d6db"
+        : props.$selected
+          ? "#0061ff"
+          : "#d1d6db"};
+  background: ${(props) => (props.$disabled ? "#f2f4f6" : "transparent")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1103,18 +1189,45 @@ const RadioDot = styled.div`
 const OptionInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
 `;
 
-const OptionTitle = styled.div`
+const OptionTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const OptionTitle = styled.div<{ $disabled?: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: #191f28;
+  color: ${(props) => (props.$disabled ? "#8b95a1" : "#191f28")};
 `;
 
-const OptionDesc = styled.div`
-  font-size: 12px;
+const DisabledBadge = styled.span`
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f2f4f6;
   color: #8b95a1;
+  font-size: 11px;
+  font-weight: 600;
+`;
+
+const AutoSelectedBadge = styled.span`
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e8f3ff;
+  color: #0061ff;
+  font-size: 11px;
+  font-weight: 600;
+`;
+
+const OptionDesc = styled.div<{ $disabled?: boolean }>`
+  font-size: 12px;
+  color: ${(props) => (props.$disabled ? "#8b95a1" : "#6b7684")};
+  line-height: 1.35;
 `;
 
 const ErrorBox = styled.div`
