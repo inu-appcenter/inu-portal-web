@@ -177,11 +177,15 @@ export default function MobilePortalTimetableImportPage() {
     }
   }, [canAddToCurrent]);
 
+  const isLoading =
+    step === "FETCHING" || step === "SAVING" || step === "FETCHING_GRADES";
+
   useHeader({
     title: "포털에서 가져오기",
-    hasback: true,
+    hasback: !isLoading,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
     onBack: () => {
+      if (isLoading) return;
       if (step === "SELECT_MODE") {
         setStep("SELECT_SEMESTER");
       } else if (step === "REVIEW") {
@@ -659,9 +663,7 @@ export default function MobilePortalTimetableImportPage() {
           </ReadyContent>
         )}
 
-        {(step === "FETCHING" ||
-          step === "SAVING" ||
-          step === "FETCHING_GRADES") && (
+        {isLoading && (
           <LoadingContainer>
             <Spinner />
             <LoadingTitle>
@@ -672,6 +674,9 @@ export default function MobilePortalTimetableImportPage() {
                   : "시간표 저장 중"}
             </LoadingTitle>
             <LoadingDesc>{loadingMessage}</LoadingDesc>
+            <LoadingWarning>
+              진행 중에는 화면을 닫거나 다른 앱으로 이동하지 마세요.
+            </LoadingWarning>
           </LoadingContainer>
         )}
 
@@ -1307,6 +1312,15 @@ const LoadingTitle = styled.div`
 const LoadingDesc = styled.div`
   font-size: 13.5px;
   color: #8b95a1;
+`;
+
+const LoadingWarning = styled.div`
+  font-size: 12px;
+  color: #8b95a1;
+  background: #f2f4f6;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
 `;
 
 const ReviewContent = styled.div`
