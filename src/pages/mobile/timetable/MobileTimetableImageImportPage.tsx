@@ -12,6 +12,7 @@ import {
   Calendar,
   ChevronDown,
   Check,
+  School,
 } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
@@ -23,6 +24,8 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import BottomSheet from "@/components/common/BottomSheet";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { TERM_LABELS, TERM_ORDER } from "@/utils/semester";
+import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   useCreateTimeTableCourseItem,
   useTimeTables,
@@ -895,6 +898,26 @@ export default function MobileTimetableImageImportPage() {
       {/* 하단 고정 액션바 */}
       <FixedBottomArea>
         <FixedBottomContent>
+          {view === "intro" && (
+            <FloatingPortalCTA
+              type="button"
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "포털에서 시간표 불러오기",
+                  "이미지 등록 플로팅 버튼",
+                );
+                navigate(
+                  `${ROUTES.TIMETABLE.PORTAL_IMPORT}${
+                    targetTimetableId ? `?id=${targetTimetableId}` : ""
+                  }`,
+                );
+              }}
+            >
+              <School size={15} color="#0061ff" />
+              <span>포털에서 시간표 불러오기</span>
+            </FloatingPortalCTA>
+          )}
+
           <FixedButtonRow>
             <CancelBottomButton
               variant="secondary"
@@ -1785,6 +1808,39 @@ const FixedButtonRow = styled.div`
   align-items: center;
   gap: 8px;
   width: 100%;
+`;
+
+const FloatingPortalCTA = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background-color: var(--bg-surface, #ffffff);
+  color: var(--interactive-primary, #0061ff);
+  border: 1px solid var(--border-brand, rgba(0, 97, 255, 0.25));
+  box-shadow:
+    0 4px 12px rgba(0, 97, 255, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+  font-family: Pretendard;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: var(--bg-brand-subtle, #eff6ff);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 97, 255, 0.18);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 const CancelBottomButton = styled(CapsuleButton)`

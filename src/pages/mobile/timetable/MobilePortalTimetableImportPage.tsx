@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import {
-  Download,
-  School,
-  RefreshCw,
   AlertCircle,
   Check,
   Clock,
@@ -44,10 +41,12 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { ROUTES } from "@/constants/routes";
 import { savePortalGradesToCalculatorStorage } from "@/utils/portalGradeSync";
 import { useHeader } from "@/context/HeaderContext";
+import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import type { Term } from "@/types/timetables";
 
 type ImportStep =
-  | "READY"
+  | "SELECT_SEMESTER"
+  | "SELECT_MODE"
   | "FETCHING"
   | "REVIEW"
   | "SAVING"
@@ -78,7 +77,7 @@ export default function MobilePortalTimetableImportPage() {
     return paramId && !Number.isNaN(Number(paramId)) ? Number(paramId) : null;
   }, [searchParams]);
 
-  const [step, setStep] = useState<ImportStep>("READY");
+  const [step, setStep] = useState<ImportStep>("SELECT_SEMESTER");
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
   const [selectedSemesterIds, setSelectedSemesterIds] = useState<number[]>([]);
   const [semesterGroups, setSemesterGroups] = useState<SemesterCourseGroup[]>([]);
@@ -138,6 +137,17 @@ export default function MobilePortalTimetableImportPage() {
     title: "포털에서 가져오기",
     hasback: true,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    onBack: () => {
+      if (step === "SELECT_MODE") {
+        setStep("SELECT_SEMESTER");
+      } else if (step === "REVIEW") {
+        setStep("SELECT_MODE");
+      } else if (step === "ASK_GRADE_IMPORT" || step === "GRADE_SUCCESS") {
+        navigate(ROUTES.TIMETABLE.ROOT);
+      } else {
+        navigate(-1);
+      }
+    },
   });
 
   const toggleSemesterSelection = (semesterId: number) => {
@@ -186,7 +196,7 @@ export default function MobilePortalTimetableImportPage() {
         if (!res.success) {
           if (res.errorCode === "AUTH_REQUIRED") {
             setIsPortalModalOpen(true);
-            setStep("READY");
+            setStep("SELECT_MODE");
             return;
           }
           console.warn(`${sem.label} 조회 실패:`, res.errorMessage);
@@ -231,7 +241,7 @@ export default function MobilePortalTimetableImportPage() {
           ? "선택한 학기에 등록된 수강신청 내역이 없습니다."
           : "포털에서 시간표를 불러오지 못했습니다. 계정 정보를 확인해주세요.",
       );
-      setStep("READY");
+      setStep("SELECT_MODE");
       return;
     }
 
@@ -453,22 +463,20 @@ export default function MobilePortalTimetableImportPage() {
     0,
   );
 
-  const isSingleSemester = selectedSemesterIds.length === 1;
-
   return (
     <PageWrapper>
       <ScrollContainer>
-        {step === "READY" && (
+        {step === "SELECT_SEMESTER" && (
           <ReadyContent>
-            <BannerCard>
-              <School size={22} color="#0061ff" />
-              <BannerTextGroup>
-                <BannerTitle>인천대 포털 공식 학사행정 연동</BannerTitle>
-                <BannerDesc>
-                  수강신청 완료된 시간표(강의실·시간)를 오차 없이 정확하게 불러옵니다.
-                </BannerDesc>
-              </BannerTextGroup>
-            </BannerCard>
+            <TitleContentArea
+              description={
+                <>
+                  인천대학교 포털사이트에서 시간표 정보를 가져와요.{" "}
+                  <strong>가져오는 과정은 이 기기에서만 처리</strong>되며, 가져온
+                  데이터를 INTIP 시간표에 등록해요.
+                </>
+              }
+            />
 
             <SectionGroup>
               <SemesterHeaderRow>
@@ -501,9 +509,41 @@ export default function MobilePortalTimetableImportPage() {
               </SemesterCheckList>
             </SectionGroup>
 
-            {isSingleSemester && activeTimetable && (
-              <SectionGroup>
-                <Label>등록 방식</Label>
+            {errorMessage && (
+              <ErrorBox>
+                <AlertCircle size={16} color="#f04452" />
+                <span>{errorMessage}</span>
+              </ErrorBox>
+            )}
+          </ReadyContent>
+        )}
+
+        {step === "SELECT_MODE" && (
+          <ReadyContent>
+            <TitleContentArea
+              description={
+                selectedSemesterIds.length > 1
+                  ? `선택한 ${selectedSemesterIds.length}개 학기의 시간표를 등록할 방식을 선택해 주세요.`
+                  : "가져온 시간표를 어떻게 등록할지 선택해 주세요."
+              }
+            />
+
+            <SelectedSemesterSummaryCard>
+              <SummaryLabel>
+                선택된 학기 ({selectedSemesterIds.length}개)
+              </SummaryLabel>
+              <SummarySemesterChips>
+                {semesterOptions
+                  .filter((s) => selectedSemesterIds.includes(s.id))
+                  .map((s) => (
+                    <SemesterChip key={s.id}>{s.label}</SemesterChip>
+                  ))}
+              </SummarySemesterChips>
+            </SelectedSemesterSummaryCard>
+
+            <SectionGroup>
+              <Label>등록 방식</Label>
+              {activeTimetable && (
                 <OptionCard
                   $selected={!createNewTimetable}
                   onClick={() => setCreateNewTimetable(false)}
@@ -518,23 +558,25 @@ export default function MobilePortalTimetableImportPage() {
                     </OptionDesc>
                   </OptionInfo>
                 </OptionCard>
+              )}
 
-                <OptionCard
-                  $selected={createNewTimetable}
-                  onClick={() => setCreateNewTimetable(true)}
-                >
-                  <RadioCircle $selected={createNewTimetable}>
-                    {createNewTimetable && <RadioDot />}
-                  </RadioCircle>
-                  <OptionInfo>
-                    <OptionTitle>새 시간표로 만들기</OptionTitle>
-                    <OptionDesc>
-                      새로운 시간표를 생성해 과목들을 등록해요.
-                    </OptionDesc>
-                  </OptionInfo>
-                </OptionCard>
-              </SectionGroup>
-            )}
+              <OptionCard
+                $selected={createNewTimetable}
+                onClick={() => setCreateNewTimetable(true)}
+              >
+                <RadioCircle $selected={createNewTimetable}>
+                  {createNewTimetable && <RadioDot />}
+                </RadioCircle>
+                <OptionInfo>
+                  <OptionTitle>새 시간표로 만들기</OptionTitle>
+                  <OptionDesc>
+                    {selectedSemesterIds.length > 1
+                      ? "학기별로 새 시간표를 각각 생성해 과목들을 등록해요."
+                      : "새로운 시간표를 생성해 과목들을 등록해요."}
+                  </OptionDesc>
+                </OptionInfo>
+              </OptionCard>
+            </SectionGroup>
 
             {errorMessage && (
               <ErrorBox>
@@ -542,13 +584,6 @@ export default function MobilePortalTimetableImportPage() {
                 <span>{errorMessage}</span>
               </ErrorBox>
             )}
-
-            <InfoBanner>
-              <School size={16} color="#0061ff" />
-              <span>
-                로그인 정보 및 학사 데이터는 외부 서버에 저장되지 않고 안전하게 처리돼요.
-              </span>
-            </InfoBanner>
           </ReadyContent>
         )}
 
@@ -745,80 +780,98 @@ export default function MobilePortalTimetableImportPage() {
         )}
       </ScrollContainer>
 
-      {/* 하단 고정 액션 버튼 영역 */}
+      {/* 하단 고정 액션바 */}
       <FixedBottomArea>
-        {step === "READY" && (
-          <CapsuleButton
-            variant="brand"
-            fullWidth
-            leftIcon={<Download size={18} />}
-            disabled={selectedSemesterIds.length === 0}
-            onClick={handleStartFetch}
-          >
-            {selectedSemesterIds.length > 1
-              ? `포털에서 ${selectedSemesterIds.length}개 학기 시간표 불러오기`
-              : "포털에서 시간표 불러오기"}
-          </CapsuleButton>
-        )}
+        <FixedBottomContent>
+          {step === "SELECT_SEMESTER" && (
+            <FixedButtonRow>
+              <CancelBottomButton
+                variant="secondary"
+                onClick={() => navigate(-1)}
+              >
+                취소
+              </CancelBottomButton>
+              <PrimaryBottomButton
+                variant="primary"
+                disabled={selectedSemesterIds.length === 0}
+                onClick={() => setStep("SELECT_MODE")}
+              >
+                다음
+              </PrimaryBottomButton>
+            </FixedButtonRow>
+          )}
 
-        {step === "REVIEW" && (
-          <BottomButtonGroup>
-            <CapsuleButton
-              variant="secondary"
-              leftIcon={<RefreshCw size={16} />}
-              onClick={() => setStep("READY")}
-            >
-              다시 설정
-            </CapsuleButton>
-            <CapsuleButton
-              variant="brand"
-              fullWidth
-              disabled={totalSelectedCount === 0}
-              onClick={handleApplyToTimetable}
-            >
-              선택한 {totalSelectedCount}개 강의 등록하기
-            </CapsuleButton>
-          </BottomButtonGroup>
-        )}
+          {step === "SELECT_MODE" && (
+            <FixedButtonRow>
+              <CancelBottomButton
+                variant="secondary"
+                onClick={() => setStep("SELECT_SEMESTER")}
+              >
+                이전
+              </CancelBottomButton>
+              <PrimaryBottomButton
+                variant="primary"
+                onClick={handleStartFetch}
+              >
+                {selectedSemesterIds.length > 1
+                  ? `포털에서 ${selectedSemesterIds.length}개 학기 시간표 불러오기`
+                  : "포털에서 시간표 불러오기"}
+              </PrimaryBottomButton>
+            </FixedButtonRow>
+          )}
 
-        {step === "ASK_GRADE_IMPORT" && (
-          <BottomButtonGroup>
-            <CapsuleButton
-              variant="secondary"
-              fullWidth
-              onClick={handleSkipGrade}
-            >
-              다음에 할게요
-            </CapsuleButton>
-            <CapsuleButton
-              variant="brand"
-              fullWidth
-              leftIcon={<Sparkles size={16} />}
-              onClick={handleImportGrades}
-            >
-              불러올게요
-            </CapsuleButton>
-          </BottomButtonGroup>
-        )}
+          {step === "REVIEW" && (
+            <FixedButtonRow>
+              <CancelBottomButton
+                variant="secondary"
+                onClick={() => setStep("SELECT_MODE")}
+              >
+                다시 설정
+              </CancelBottomButton>
+              <PrimaryBottomButton
+                variant="primary"
+                disabled={totalSelectedCount === 0}
+                onClick={handleApplyToTimetable}
+              >
+                선택한 {totalSelectedCount}개 강의 등록
+              </PrimaryBottomButton>
+            </FixedButtonRow>
+          )}
 
-        {step === "GRADE_SUCCESS" && (
-          <BottomButtonGroup>
-            <CapsuleButton
-              variant="secondary"
-              fullWidth
-              onClick={() => navigate(ROUTES.TIMETABLE.CALCULATOR)}
-            >
-              학점 계산기 보러가기
-            </CapsuleButton>
-            <CapsuleButton
-              variant="brand"
-              fullWidth
-              onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}
-            >
-              시간표 보러가기
-            </CapsuleButton>
-          </BottomButtonGroup>
-        )}
+          {step === "ASK_GRADE_IMPORT" && (
+            <FixedButtonRow>
+              <CancelBottomButton
+                variant="secondary"
+                onClick={handleSkipGrade}
+              >
+                다음에 할게요
+              </CancelBottomButton>
+              <PrimaryBottomButton
+                variant="primary"
+                onClick={handleImportGrades}
+              >
+                불러올게요
+              </PrimaryBottomButton>
+            </FixedButtonRow>
+          )}
+
+          {step === "GRADE_SUCCESS" && (
+            <FixedButtonRow>
+              <CancelBottomButton
+                variant="secondary"
+                onClick={() => navigate(ROUTES.TIMETABLE.CALCULATOR)}
+              >
+                학점 계산기
+              </CancelBottomButton>
+              <PrimaryBottomButton
+                variant="primary"
+                onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}
+              >
+                시간표 보러가기
+              </PrimaryBottomButton>
+            </FixedButtonRow>
+          )}
+        </FixedBottomContent>
       </FixedBottomArea>
 
       <PortalAccountModal
@@ -841,52 +894,100 @@ const PageWrapper = styled.div`
 
 const ScrollContainer = styled.div`
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 16px 20px 32px;
+  box-sizing: border-box;
+  padding: 16px 20px 140px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const FixedBottomArea = styled.div`
-  padding: 12px 20px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom));
-  background: #ffffff;
-  border-top: 1px solid #f2f4f6;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 45%,
+    rgba(248, 249, 251, 0.85) 100%
+  );
+  z-index: 100;
+  pointer-events: none;
 `;
 
-const BottomButtonGroup = styled.div`
+const FixedBottomContent = styled.div`
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   gap: 8px;
+  pointer-events: auto;
 `;
 
-const BannerCard = styled.div`
+const FixedButtonRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  width: 100%;
+`;
+
+const CancelBottomButton = styled(CapsuleButton)`
+  width: 120px;
+  height: 56px;
+  min-height: 56px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+const PrimaryBottomButton = styled(CapsuleButton)`
+  flex: 1;
+  height: 56px;
+  min-height: 56px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+const SelectedSemesterSummaryCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   padding: 14px 16px;
   background: #ffffff;
   border: 1px solid #e5e8eb;
   border-radius: 14px;
 `;
 
-const BannerTextGroup = styled.div`
+const SummaryLabel = styled.span`
+  font-size: 13px;
+  font-weight: 600;
+  color: #4e5968;
+`;
+
+const SummarySemesterChips = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: 6px;
 `;
 
-const BannerTitle = styled.div`
-  font-size: 14px;
-  font-weight: 700;
-  color: #191f28;
-`;
-
-const BannerDesc = styled.div`
-  font-size: 12.5px;
-  color: #6b7684;
-  line-height: 1.35;
+const SemesterChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand, #0061ff);
+  font-size: 13px;
+  font-weight: 600;
 `;
 
 const ReadyContent = styled.div`
@@ -1025,18 +1126,6 @@ const ErrorBox = styled.div`
   border-radius: 10px;
   font-size: 13px;
   color: #f04452;
-`;
-
-const InfoBanner = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  background: #f7f9fc;
-  border-radius: 12px;
-  font-size: 12.5px;
-  color: #6b7684;
-  line-height: 1.4;
 `;
 
 const LoadingContainer = styled.div`
