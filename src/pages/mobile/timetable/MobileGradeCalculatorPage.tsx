@@ -7,7 +7,7 @@ import {
   useBeforeUnload,
   useNavigate,
 } from "react-router-dom";
-import { Calendar, ClipboardPaste, School } from "lucide-react";
+import { Calendar, ClipboardPaste, School, AlertCircle } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
@@ -406,6 +406,7 @@ export default function MobileGradeCalculatorPage() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isPortalModalOpen, setIsPortalModalOpen] = useState<boolean>(false);
   const [isFetchingPortalGrades, setIsFetchingPortalGrades] = useState<boolean>(false);
+  const [showPortalGradeConfirmModal, setShowPortalGradeConfirmModal] = useState<boolean>(false);
 
   const handleExecutePortalGradeImport = async () => {
     setIsFetchingPortalGrades(true);
@@ -427,37 +428,16 @@ export default function MobileGradeCalculatorPage() {
       const incomingSemCount = Object.keys(incomingData).length;
       const incomingSubCount = reportRes.data.courseGrades.length;
 
-      setSemestersData((prev) => {
-        const next = { ...prev };
-        Object.entries(incomingData).forEach(([semKey, subs]) => {
-          if (!next[semKey]) {
-            next[semKey] = subs;
-          } else {
-            const currentList = [...next[semKey]];
-            subs.forEach((inSub) => {
-              const idx = currentList.findIndex(
-                (c) =>
-                  (c.courseCode && c.courseCode === inSub.courseCode) ||
-                  c.name.trim() === inSub.name.trim(),
-              );
-              if (idx >= 0) {
-                currentList[idx] = {
-                  ...currentList[idx],
-                  ...inSub,
-                  id: currentList[idx].id,
-                };
-              } else {
-                currentList.push(inSub);
-              }
-            });
-            next[semKey] = currentList;
-          }
-        });
-        return next;
-      });
+      // 포털 공식 성적표 데이터로 전체 덮어쓰기 (기존 수동/임의 데이터 대체)
+      setSemestersData(incomingData);
+
+      const incomingKeys = Object.keys(incomingData).sort(compareSemesterKeys);
+      if (incomingKeys.length > 0) {
+        setSelectedSemesterKey(incomingKeys[incomingKeys.length - 1]);
+      }
 
       alert(
-        `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러왔어요!`,
+        `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러와 학점 계산기를 최신 정보로 업데이트했어요!`,
       );
     } catch (err: any) {
       console.error("포털 성적 연동 실패:", err);
@@ -467,7 +447,12 @@ export default function MobileGradeCalculatorPage() {
     }
   };
 
-  const handlePortalGradeImport = async () => {
+  const handleOpenPortalGradeConfirm = () => {
+    setShowPortalGradeConfirmModal(true);
+  };
+
+  const handleConfirmPortalGradeImport = async () => {
+    setShowPortalGradeConfirmModal(false);
     const isLinked = await checkPortalAccountLinked();
     if (!isLinked) {
       setIsPortalModalOpen(true);
@@ -1555,12 +1540,12 @@ export default function MobileGradeCalculatorPage() {
 
               <ImportButtonRow>
                 <ImportTimetableButton
-                  onClick={handlePortalGradeImport}
+                  onClick={handleOpenPortalGradeConfirm}
                   disabled={isFetchingPortalGrades}
                 >
                   <School size={16} className="calendar-icon" color="#0061ff" />
                   <span className="import-text">
-                    {isFetchingPortalGrades ? "가져오는 중..." : "포털 성적 가져오기"}
+                    {isFetchingPortalGrades ? "가져오는 중..." : "포털에서 성적 가져오기"}
                   </span>
                 </ImportTimetableButton>
                 <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
@@ -1833,6 +1818,40 @@ export default function MobileGradeCalculatorPage() {
         targetSemesterLabel={selectedSemesterLabel}
         onApply={handleApplyImportedGrades}
       />
+
+      <Modal
+        isOpen={showPortalGradeConfirmModal}
+        onClose={() => setShowPortalGradeConfirmModal(false)}
+        title="포털에서 성적 가져오기"
+        description="인천대학교 포털에서 전체 학기 성적표를 불러와 학점 계산기에 자동으로 입력해요."
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setShowPortalGradeConfirmModal(false),
+        }}
+        primaryButton={{
+          text: "가져오기",
+          variant: "brand",
+          onClick: handleConfirmPortalGradeImport,
+        }}
+      >
+        <PortalModalContent>
+          <PortalNoticeCard>
+            <NoticeTitleRow>
+              <AlertCircle size={15} color="#0061ff" />
+              <span>기존 데이터 덮어쓰기 안내</span>
+            </NoticeTitleRow>
+            <NoticeDescText>
+              포털 성적을 가져오면 현재 학점 계산기에 저장된 과목 내역은{" "}
+              <strong>포털의 공식 성적 데이터로 모두 대체(덮어쓰기)</strong>돼요.
+              <br />
+              (직접 수동 입력했던 미반영 과목 등은 포털 성적 기준으로 초기화됩니다.)
+            </NoticeDescText>
+          </PortalNoticeCard>
+          <SecurityNoticeText>
+            가져오는 과정은 휴대폰 보안 영역에서만 안전하게 처리되며 외부에 전송되지 않아요.
+          </SecurityNoticeText>
+        </PortalModalContent>
+      </Modal>
 
       <PortalAccountModal
         isOpen={isPortalModalOpen}
@@ -2628,3 +2647,49 @@ const EmptySemesterState = styled.div`
     margin-bottom: 8px;
   }
 `;
+
+const PortalModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+`;
+
+const PortalNoticeCard = styled.div`
+  background-color: var(--bg-subtle, #f8f9fa);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+`;
+
+const NoticeTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--interactive-primary, #0061ff);
+`;
+
+const NoticeDescText = styled.p`
+  font-size: 12.5px;
+  color: var(--text-secondary, #4e5968);
+  line-height: 1.45;
+  margin: 0;
+
+  strong {
+    color: var(--text-primary, #191f28);
+    font-weight: 600;
+  }
+`;
+
+const SecurityNoticeText = styled.div`
+  font-size: 11.5px;
+  color: var(--text-tertiary, #8b95a1);
+  text-align: center;
+`;
+

@@ -96,10 +96,11 @@ export function convertPortalGradesToSemestersData(
 }
 
 /**
- * 포털 성적 목록을 학점 계산기 로컬스토리지에 병합 저장
+ * 포털 성적 목록을 학점 계산기 로컬스토리지에 저장 (기본: 포털 공식 성적으로 전체 덮어쓰기)
  */
 export function savePortalGradesToCalculatorStorage(
   courseGrades: CourseGradeItem[],
+  options?: { merge?: boolean },
 ): {
   semestersCount: number;
   subjectsCount: number;
@@ -125,33 +126,36 @@ export function savePortalGradesToCalculatorStorage(
   }
 
   const incomingData = convertPortalGradesToSemestersData(courseGrades);
-  const mergedData: CalculatorSemestersData = { ...existingSemestersData };
+  const finalData: CalculatorSemestersData = options?.merge
+    ? { ...existingSemestersData }
+    : { ...incomingData };
 
   let totalSubjects = 0;
 
-  Object.entries(incomingData).forEach(([semKey, incomingSubjects]) => {
-    if (!mergedData[semKey]) {
-      mergedData[semKey] = incomingSubjects;
-    } else {
-      // 기존 학기 과목들과 병합 (포털에서 온 성적 정보로 최신화)
-      const currentList = [...mergedData[semKey]];
-      incomingSubjects.forEach((inSub) => {
-        const idx = currentList.findIndex(
-          (c) =>
-            (c.courseCode && c.courseCode === inSub.courseCode) ||
-            c.name.trim() === inSub.name.trim(),
-        );
-        if (idx >= 0) {
-          currentList[idx] = { ...currentList[idx], ...inSub, id: currentList[idx].id };
-        } else {
-          currentList.push(inSub);
-        }
-      });
-      mergedData[semKey] = currentList;
-    }
-  });
+  if (options?.merge) {
+    Object.entries(incomingData).forEach(([semKey, incomingSubjects]) => {
+      if (!finalData[semKey]) {
+        finalData[semKey] = incomingSubjects;
+      } else {
+        const currentList = [...finalData[semKey]];
+        incomingSubjects.forEach((inSub) => {
+          const idx = currentList.findIndex(
+            (c) =>
+              (c.courseCode && c.courseCode === inSub.courseCode) ||
+              c.name.trim() === inSub.name.trim(),
+          );
+          if (idx >= 0) {
+            currentList[idx] = { ...currentList[idx], ...inSub, id: currentList[idx].id };
+          } else {
+            currentList.push(inSub);
+          }
+        });
+        finalData[semKey] = currentList;
+      }
+    });
+  }
 
-  Object.values(mergedData).forEach((subs) => {
+  Object.values(finalData).forEach((subs) => {
     totalSubjects += subs.length;
   });
 
@@ -159,7 +163,7 @@ export function savePortalGradesToCalculatorStorage(
   localStorage.setItem(
     LOCAL_STORAGE_GRADE_CALCULATOR_KEY,
     JSON.stringify({
-      semestersData: mergedData,
+      semestersData: finalData,
       targetCredits,
       graduationProfile,
       targetCreditsOverridden,
@@ -169,6 +173,6 @@ export function savePortalGradesToCalculatorStorage(
   return {
     semestersCount: Object.keys(incomingData).length,
     subjectsCount: courseGrades.length,
-    mergedData,
+    mergedData: finalData,
   };
 }
