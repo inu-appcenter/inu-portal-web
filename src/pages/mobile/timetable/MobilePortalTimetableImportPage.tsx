@@ -168,7 +168,9 @@ export default function MobilePortalTimetableImportPage() {
   }, [semesters, semesterOptions]);
 
   useEffect(() => {
-    if (!canAddToCurrent) {
+    if (canAddToCurrent) {
+      setCreateNewTimetable(false);
+    } else {
       setCreateNewTimetable(true);
     }
   }, [canAddToCurrent]);
