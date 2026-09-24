@@ -736,7 +736,7 @@ export default function MobilePortalTimetableImportPage() {
 
             <PromptTitle>성적 정보를 학점 계산기에 불러올까요?</PromptTitle>
             <PromptDesc>
-              방금 등록한 시간표와 함께 포털에 등록된 전체 학기 성적(과목별 성적, 취득학점, 평점)을 학점 계산기에 자동으로 연동할 수 있어요.
+              방금 등록한 시간표와 함께 포털에 등록된 전체 학기 성적(과목별 성적, 취득학점, 평점)을 학점 계산기에 자동으로 등록할 수 있어요.
             </PromptDesc>
 
             <PromptFeatureCard>
@@ -771,7 +771,7 @@ export default function MobilePortalTimetableImportPage() {
             <SuccessIconCircle>
               <CheckCircle2 size={36} color="#0061ff" />
             </SuccessIconCircle>
-            <SuccessTitle>성적 연동이 완료되었어요!</SuccessTitle>
+            <SuccessTitle>성적을 모두 불러왔어요!</SuccessTitle>
             <SuccessDesc>
               총 <strong>{gradeResult.semestersCount}개 학기</strong>,{" "}
               <strong>{gradeResult.subjectsCount}개 과목</strong> 성적이 학점 계산기에 안전하게 저장되었어요.
