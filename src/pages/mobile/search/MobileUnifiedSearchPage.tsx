@@ -50,6 +50,7 @@ export default function MobileUnifiedSearchPage() {
   useHeader({
     title: "통합 검색",
     hasback: true,
+    pageBgColor: "var(--bg-subtle, #f8f9fb)",
   });
 
   useEffect(() => {
@@ -577,21 +578,19 @@ export default function MobileUnifiedSearchPage() {
 const PageWrapper = styled.div`
   width: 100%;
   min-height: 100vh;
-  background-color: #F8FAFC;
+  background-color: var(--bg-subtle, #f8f9fb);
   padding-bottom: 60px;
 `;
 
 const SearchHeaderContainer = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background-color: #ffffff;
-  padding: 12px ${MOBILE_PAGE_GUTTER};
-  border-bottom: 1px solid #F1F5F9;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px ${MOBILE_PAGE_GUTTER} 12px;
 
   ${DESKTOP_MEDIA} {
     max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
     margin: 0 auto;
+    padding: 12px 0 12px;
   }
 `;
 
@@ -600,15 +599,14 @@ const SearchBarWrapper = styled.div`
 `;
 
 const TabContainer = styled.div`
-  position: sticky;
-  top: 61px;
-  z-index: 15;
-  background-color: #ffffff;
-  border-bottom: 1px solid #E2E8F0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 ${MOBILE_PAGE_GUTTER} 12px;
 
   ${DESKTOP_MEDIA} {
     max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
     margin: 0 auto;
+    padding: 0 0 12px;
   }
 `;
 
