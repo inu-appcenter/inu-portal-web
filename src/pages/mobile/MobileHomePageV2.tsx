@@ -79,6 +79,7 @@ export default function MobileHomePageV2() {
 
   useHeader({
     showAlarm: true,
+    showSearch: true,
   });
 
   useEffect(() => {
@@ -552,3 +553,4 @@ const GreetingChevron = styled.div`
   flex-shrink: 0;
   margin-left: 12px;
 `;
+

@@ -265,6 +265,8 @@ const MobileSchoolNoticePage = () => {
   useHeader({
     title: committedQuery ? "검색 결과" : "학교 공지사항",
     showAlarm: false,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=NOTICE`,
     hasback: true,
     onBack: committedQuery ? handleBackToAll : undefined,
     subHeader: !committedQuery ? subHeader : undefined,

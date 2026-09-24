@@ -134,6 +134,8 @@ const MobileDeptNoticePage = () => {
   useHeader({
     title: currentDept ? `${currentDept} 공지사항` : "학과 공지사항",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=DEPT_NOTICE`,
     menuItems,
   });
 

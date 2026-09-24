@@ -180,6 +180,8 @@ const MobilePhoneBookPage = () => {
   useHeader({
     title: "INU 전화번호부",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=DIRECTORY`,
   });
 
   return (
