@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -47,9 +47,18 @@ export default function MobileUnifiedSearchPage() {
     }
   });
 
+  const handleBack = useCallback(() => {
+    if (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate(ROUTES.HOME, { replace: true });
+    }
+  }, [navigate]);
+
   useHeader({
     title: "통합 검색",
     hasback: true,
+    onBack: handleBack,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
   });
 
@@ -116,12 +125,16 @@ export default function MobileUnifiedSearchPage() {
       return;
     }
     saveRecentKeyword(kw);
-    navigate(`${ROUTES.UNIFIED_SEARCH}?q=${encodeURIComponent(kw)}&tab=${tabParam}`);
+    navigate(
+      `${ROUTES.UNIFIED_SEARCH}?q=${encodeURIComponent(kw)}&tab=${tabParam}`,
+      { replace: true },
+    );
   };
 
   const handleTabChange = (selectedTab: string) => {
     navigate(
       `${ROUTES.UNIFIED_SEARCH}?q=${encodeURIComponent(queryParam)}&tab=${selectedTab}`,
+      { replace: true },
     );
   };
 
