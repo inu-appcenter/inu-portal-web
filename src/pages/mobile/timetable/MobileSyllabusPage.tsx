@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
@@ -80,8 +80,11 @@ interface SyllabusLocationState {
 const MobileSyllabusPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const state = (location.state ?? {}) as SyllabusLocationState;
-  const courseOfferingId = state.courseOfferingId;
+  const paramId = searchParams.get("id") || searchParams.get("courseOfferingId");
+  const courseOfferingId =
+    state.courseOfferingId ?? (paramId ? Number(paramId) : undefined);
 
   const {
     syllabus,
@@ -118,8 +121,10 @@ const MobileSyllabusPage = () => {
     }));
   };
 
-  const courseName = content?.과목명 || state.courseName || "-";
-  const professor = content?.교수 || state.professor || "-";
+  const courseName =
+    content?.과목명 || state.courseName || searchParams.get("name") || "-";
+  const professor =
+    content?.교수 || state.professor || searchParams.get("professor") || "-";
 
   const deliveryRows = useMemo(
     () => toRatioEntries(content?.수업방식비율),

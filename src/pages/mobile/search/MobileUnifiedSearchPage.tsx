@@ -579,7 +579,19 @@ export default function MobileUnifiedSearchPage() {
                       </SectionHeader>
                       <ItemList>
                         {data.courses.items.map((item) => (
-                          <ResultItem key={`course-${item.id}`}>
+                          <ResultItem
+                            key={`course-${item.id}`}
+                            onClick={() => {
+                              const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
+                              navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
+                                state: {
+                                  courseOfferingId: item.id,
+                                  courseName: item.title,
+                                  professor: item.professor,
+                                },
+                              });
+                            }}
+                          >
                             <Ripple />
                             <ItemMeta>
                               {item.subjectNumber && (
@@ -622,7 +634,19 @@ export default function MobileUnifiedSearchPage() {
                         {data.clubs.items.map((item) => (
                           <ResultItem
                             key={`club-${item.id}`}
-                            onClick={() => navigate(ROUTES.BOARD.CLUB)}
+                            onClick={() => {
+                              const categoryParam = item.category
+                                ? `?category=${encodeURIComponent(item.category)}`
+                                : "";
+                              const separator = categoryParam ? "&" : "?";
+                              const query = `${categoryParam}${separator}clubId=${item.id}&name=${encodeURIComponent(item.name)}`;
+                              navigate(`${ROUTES.BOARD.CLUB}${query}`, {
+                                state: {
+                                  targetClubId: item.id,
+                                  targetClubName: item.name,
+                                },
+                              });
+                            }}
                           >
                             <Ripple />
                             <ItemMeta>
