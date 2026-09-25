@@ -50,6 +50,11 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
     } else {
       setAiState("closed");
       sendHostCommand("FORCE_CLOSE");
+      // 만약 게시물 이동(RESUME_ON_BACK) 중이 아니라 사용자가 직접 시트를 닫은 것이라면 복원 플래그 정리
+      if (sessionStorage.getItem("INTIP_AGENT_RESUME_ON_BACK") !== "true") {
+        sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+        sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
+      }
     }
   }, [isOpen, sendHostCommand, setAiState]);
 

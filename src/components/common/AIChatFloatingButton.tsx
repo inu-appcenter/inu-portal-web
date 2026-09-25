@@ -62,12 +62,19 @@ const AIChatFloatingButton = ({
   const handleButtonClick = () => {
     if (isAgentOpen) {
       closeAgent();
+      sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
+      sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+      sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
       return;
     }
     if (isOpen) {
       closeChat();
       return;
     }
+    // 플로팅 버튼을 직접 눌러 열 때는 항상 깨끗한 새 질문 세션으로 시작
+    sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
+    sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+    sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
     openAgent();
   };
 
