@@ -7,14 +7,38 @@ import Icon from "@/components/common/Icon";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
 import useUserStore from "@/stores/useUserStore";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { trackPageView, mixpanelTrack } from "@/utils/mixpanel";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 
 export default function MobileCalendarPage() {
   const { userInfo } = useUserStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const targetDateStr =
+    searchParams.get("date") ||
+    (location.state as { date?: string } | null)?.date;
+
+  const baseDate = useMemo(() => {
+    if (targetDateStr) {
+      // YYYY-MM-DD 또는 ISO 문자열 파싱
+      const dateParts = targetDateStr.split("T")[0].split("-").map(Number);
+      if (dateParts.length >= 3 && !dateParts.some(isNaN)) {
+        const parsed = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+      const fallback = new Date(targetDateStr);
+      if (!isNaN(fallback.getTime())) {
+        return fallback;
+      }
+    }
+    return new Date();
+  }, [targetDateStr]);
 
   useEffect(() => {
     trackPageView("학사일정");
@@ -63,7 +87,7 @@ export default function MobileCalendarPage() {
           </>
         }
       />
-      <Calendar />
+      <Calendar baseDate={baseDate} />
 
       <FloatingActionButton
         text="일정 알림 받기"

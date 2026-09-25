@@ -13,10 +13,26 @@ export interface FloatingSearchBarRef {
 interface FloatingSearchBarProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
+  onSubmit?: (query: string) => void;
   onActiveChange?: (isActive: boolean) => void;
   searchParamKey?: string;
   /** 접혀있을 때(비활성 상태) FAB 지름(px). 다른 FAB과 크기를 맞출 때 사용. 기본 48px. */
   size?: number;
+  /** 외부에서 제어하는 검색어 값 */
+  value?: string;
+  /** 검색어 변경 핸들러 */
+  onChange?: (value: string) => void;
+  /** 외부에서 제어하는 펼침(활성화) 상태 */
+  isActive?: boolean;
+  /** 초기 펼침(활성화) 상태 (기본 false) */
+  defaultActive?: boolean;
+  /** 외부 터치 시 자동으로 접히지 않도록 방지 */
+  disableCollapse?: boolean;
+  /** 브라우저 히스토리 스택(popstate) 조작 방지 */
+  disableHistory?: boolean;
+  /** 자동 포커스 여부 */
+  autoFocus?: boolean;
+  className?: string;
 }
 
 const SEARCH_HISTORY_STATE_KEY = "__intipFloatingSearchBarOpen";
@@ -24,234 +40,271 @@ const SEARCH_HISTORY_STATE_KEY = "__intipFloatingSearchBarOpen";
 const FloatingSearchBar = forwardRef<
   FloatingSearchBarRef,
   FloatingSearchBarProps
->(({ placeholder = "검색어를 입력하세요", onSearch, onActiveChange, searchParamKey, size = 48 }, ref) => {
-  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  
-  const [searchParams, setSearchParams] = useSearchParams();
+>(
+  (
+    {
+      placeholder = "검색어를 입력하세요",
+      onSearch,
+      onSubmit,
+      onActiveChange,
+      searchParamKey,
+      size = 48,
+      value,
+      onChange,
+      isActive,
+      defaultActive = false,
+      disableCollapse = false,
+      disableHistory = false,
+      autoFocus = false,
+      className,
+    },
+    ref,
+  ) => {
+    const isControlledActive = typeof isActive === "boolean";
+    const [internalActive, setInternalActive] = useState<boolean>(defaultActive);
+    const isSearchActive = isControlledActive ? isActive : internalActive;
 
-  const isSearchActiveRef = useRef(false);
-  const hasSearchHistoryEntryRef = useRef(false);
-  const isSyncingSearchHistoryRef = useRef(false);
+    const isControlledValue = typeof value === "string";
+    const [internalQuery, setInternalQuery] = useState<string>("");
+    const searchQuery = isControlledValue ? value : internalQuery;
 
-  const handleActiveChange = (active: boolean) => {
-    setIsSearchActive(active);
-    if (onActiveChange) {
-      onActiveChange(active);
-    }
-  };
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
-    if (searchParamKey) {
-      const paramVal = searchParams.get(searchParamKey) || "";
-      if (paramVal !== searchQuery) {
-        setSearchQuery(paramVal);
-        if (paramVal) {
-          handleActiveChange(true);
-          if (onSearch) {
-            onSearch(paramVal);
+    const isSearchActiveRef = useRef(isSearchActive);
+    const hasSearchHistoryEntryRef = useRef(false);
+    const isSyncingSearchHistoryRef = useRef(false);
+
+    const handleActiveChange = (active: boolean) => {
+      if (disableCollapse && !active) return;
+      if (!isControlledActive) {
+        setInternalActive(active);
+      }
+      if (onActiveChange) {
+        onActiveChange(active);
+      }
+    };
+
+    const handleQueryChange = (nextQuery: string) => {
+      if (!isControlledValue) {
+        setInternalQuery(nextQuery);
+      }
+      if (onChange) {
+        onChange(nextQuery);
+      }
+    };
+
+    useEffect(() => {
+      if (searchParamKey) {
+        const paramVal = searchParams.get(searchParamKey) || "";
+        if (paramVal !== searchQuery) {
+          handleQueryChange(paramVal);
+          if (paramVal) {
+            handleActiveChange(true);
+            if (onSearch) {
+              onSearch(paramVal);
+            }
+            if (onSubmit) {
+              onSubmit(paramVal);
+            }
           }
         }
       }
-    }
-  }, [searchParams, searchParamKey]);
+    }, [searchParams, searchParamKey]);
 
-  useEffect(() => {
-    isSearchActiveRef.current = isSearchActive;
-  }, [isSearchActive]);
+    useEffect(() => {
+      isSearchActiveRef.current = isSearchActive;
+    }, [isSearchActive]);
 
-  useEffect(() => {
-    const handlePopState = () => {
-      if (isSyncingSearchHistoryRef.current) {
-        isSyncingSearchHistoryRef.current = false;
+    useEffect(() => {
+      if (disableHistory || disableCollapse) return;
+
+      const handlePopState = () => {
+        if (isSyncingSearchHistoryRef.current) {
+          isSyncingSearchHistoryRef.current = false;
+          hasSearchHistoryEntryRef.current = false;
+          return;
+        }
+
+        if (!isSearchActiveRef.current) return;
+
+        // 우리가 쌓은 엔트리가 아직 스택에 남아 있다면 이 popstate 는 우리 것이 아니다.
+        if (window.history.state?.[SEARCH_HISTORY_STATE_KEY]) return;
+
         hasSearchHistoryEntryRef.current = false;
-        return;
-      }
-
-      if (!isSearchActiveRef.current) return;
-
-      // 우리가 쌓은 엔트리가 아직 스택에 남아 있다면 이 popstate 는 우리 것이
-      // 아니다. 같은 문서 안에서 히스토리를 쓰는 주체가 여럿이라(시트·드롭다운
-      // 오버레이의 useSheetBackHandler/useHistoryBackedOverlay, 네이티브 셸의
-      // 딥링크 합성 popstate, 뒤로가기 위임의 webViewGoBack) 남의 back() 이
-      // 만든 pop 까지 받아 검색바가 제멋대로 접히곤 했다. 착지한 엔트리에
-      // 우리 플래그가 그대로 있으면 무시한다.
-      if (window.history.state?.[SEARCH_HISTORY_STATE_KEY]) return;
-
-      hasSearchHistoryEntryRef.current = false;
-      inputRef.current?.blur();
-      handleActiveChange(false);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isSearchActive) {
-      if (!hasSearchHistoryEntryRef.current) {
-        window.history.pushState(
-          {
-            ...(window.history.state ?? {}),
-            [SEARCH_HISTORY_STATE_KEY]: true,
-          },
-          "",
-        );
-        hasSearchHistoryEntryRef.current = true;
-      }
-      return;
-    }
-
-    if (
-      hasSearchHistoryEntryRef.current &&
-      window.history.state?.[SEARCH_HISTORY_STATE_KEY]
-    ) {
-      isSyncingSearchHistoryRef.current = true;
-      window.history.back();
-    }
-  }, [isSearchActive]);
-
-  // 검색어가 비어있는 상태에서 다른 영역을 만지면(탭/드래그) 검색바 닫기.
-  //
-  // 드래그 신호로 scroll 이 아니라 touchmove 를 쓴다. 네이티브 웹뷰에서는 인풋에
-  // 포커스가 가면 소프트 키보드가 올라오며 뷰포트가 줄고(안드로이드는 셸이 웹뷰를
-  // 키보드 높이만큼 줄이고, iOS 는 WKWebView 가 스크롤뷰에 인셋을 넣고 포커스된
-  // 요소를 보이게 스크롤한다) 그게 window 의 scroll 로 나타난다. 사용자가 스크롤한
-  // 적이 없는데 여기서 닫혀서, 포커스가 가자마자 키보드가 닫히고 검색바가 접혔다
-  // (브라우저는 포커스만으로 뷰포트가 변하지 않아 재현되지 않는다). 손가락 드래그는
-  // 그런 오인이 없다.
-  useEffect(() => {
-    if (!isSearchActive) return;
-
-    const handleOutsideInteraction = (e: Event) => {
-      // 검색바 자신을 만지는 건 "바깥 상호작용"이 아니다.
-      if ((e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")) {
-        return;
-      }
-
-      if (!searchQuery.trim()) {
         inputRef.current?.blur();
         handleActiveChange(false);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }, [disableHistory, disableCollapse]);
+
+    useEffect(() => {
+      if (disableHistory || disableCollapse) return;
+
+      if (isSearchActive) {
+        if (!hasSearchHistoryEntryRef.current) {
+          window.history.pushState(
+            {
+              ...(window.history.state ?? {}),
+              [SEARCH_HISTORY_STATE_KEY]: true,
+            },
+            "",
+          );
+          hasSearchHistoryEntryRef.current = true;
+        }
+        return;
       }
-    };
 
-    document.addEventListener("pointerdown", handleOutsideInteraction, {
-      passive: true,
-    });
-    document.addEventListener("touchmove", handleOutsideInteraction, {
-      passive: true,
-    });
-
-    return () => {
-      document.removeEventListener("pointerdown", handleOutsideInteraction);
-      document.removeEventListener("touchmove", handleOutsideInteraction);
-    };
-  }, [isSearchActive, searchQuery]);
-
-  const handleClear = (e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    setSearchQuery("");
-    if (searchParamKey) {
-      const nextParams = new URLSearchParams(window.location.search);
-      nextParams.delete(searchParamKey);
-      setSearchParams(nextParams, { replace: true });
-    }
-    if (onSearch) {
-      onSearch("");
-    }
-    inputRef.current?.focus();
-  };
-
-  useImperativeHandle(ref, () => ({
-    blur: () => {
-      inputRef.current?.blur();
-      if (!searchQuery.trim()) {
-        handleActiveChange(false);
+      if (
+        hasSearchHistoryEntryRef.current &&
+        window.history.state?.[SEARCH_HISTORY_STATE_KEY]
+      ) {
+        isSyncingSearchHistoryRef.current = true;
+        window.history.back();
       }
-    },
-    focus: () => {
-      handleActiveChange(true);
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-    },
-    clear: () => {
-      handleClear();
-    },
-  }));
+    }, [isSearchActive, disableHistory, disableCollapse]);
 
-  const executeSearch = (query: string) => {
-    resetScrollToTop();
-    if (onSearch) {
-      onSearch(query);
-    }
-    if (searchParamKey) {
-      const nextParams = new URLSearchParams(window.location.search);
-      if (query.trim()) {
-        nextParams.set(searchParamKey, query);
-      } else {
+    // 검색어가 비어있는 상태에서 다른 영역을 만지면(탭/드래그) 검색바 닫기.
+    useEffect(() => {
+      if (!isSearchActive || disableCollapse) return;
+
+      const handleOutsideInteraction = (e: Event) => {
+        // 검색바 자신을 만지는 건 "바깥 상호작용"이 아니다.
+        if ((e.target as HTMLElement)?.closest?.(".floating-search-bar-wrapper")) {
+          return;
+        }
+
+        if (!searchQuery.trim()) {
+          inputRef.current?.blur();
+          handleActiveChange(false);
+        }
+      };
+
+      document.addEventListener("pointerdown", handleOutsideInteraction, {
+        passive: true,
+      });
+      document.addEventListener("touchmove", handleOutsideInteraction, {
+        passive: true,
+      });
+
+      return () => {
+        document.removeEventListener("pointerdown", handleOutsideInteraction);
+        document.removeEventListener("touchmove", handleOutsideInteraction);
+      };
+    }, [isSearchActive, searchQuery, disableCollapse]);
+
+    const handleClear = (e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation();
+      }
+      handleQueryChange("");
+      if (searchParamKey) {
+        const nextParams = new URLSearchParams(window.location.search);
         nextParams.delete(searchParamKey);
+        setSearchParams(nextParams, { replace: true });
       }
-      setSearchParams(nextParams, { replace: true });
-    }
-    inputRef.current?.blur();
-  };
+      if (onSearch) {
+        onSearch("");
+      }
+      inputRef.current?.focus();
+    };
 
-  return (
-    <SearchBarWrapper
-      className="floating-search-bar-wrapper"
-      $isActive={isSearchActive}
-      $size={size}
-    >
-      <SearchInput
-        ref={inputRef}
-        $isActive={isSearchActive}
-        $hasValue={searchQuery.length > 0}
-        placeholder={placeholder}
-        value={searchQuery}
-        onChange={(e) => {
-          setSearchQuery(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            executeSearch(searchQuery);
-          }
-        }}
-      />
-      {isSearchActive && searchQuery.length > 0 && (
-        <ClearButton
-          type="button"
-          onClick={handleClear}
-          aria-label="검색어 지우기"
-        >
-          <Icon name="close-md" size={14} />
-        </ClearButton>
-      )}
-      <SearchButtonCircle
+    useImperativeHandle(ref, () => ({
+      blur: () => {
+        inputRef.current?.blur();
+        if (!searchQuery.trim() && !disableCollapse) {
+          handleActiveChange(false);
+        }
+      },
+      focus: () => {
+        handleActiveChange(true);
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      },
+      clear: () => {
+        handleClear();
+      },
+    }));
+
+    const executeSearch = (query: string) => {
+      resetScrollToTop();
+      if (onSearch) {
+        onSearch(query);
+      }
+      if (onSubmit) {
+        onSubmit(query);
+      }
+      if (searchParamKey) {
+        const nextParams = new URLSearchParams(window.location.search);
+        if (query.trim()) {
+          nextParams.set(searchParamKey, query);
+        } else {
+          nextParams.delete(searchParamKey);
+        }
+        setSearchParams(nextParams, { replace: true });
+      }
+      inputRef.current?.blur();
+    };
+
+    return (
+      <SearchBarWrapper
+        className={`floating-search-bar-wrapper ${className ?? ""}`.trim()}
         $isActive={isSearchActive}
         $size={size}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isSearchActive) {
-            handleActiveChange(true);
-            setTimeout(() => {
-              inputRef.current?.focus();
-            }, 100);
-          } else {
-            executeSearch(searchQuery);
-          }
-        }}
       >
-        <Icon name="search" size={20} />
-      </SearchButtonCircle>
-    </SearchBarWrapper>
-  );
-});
+        <SearchInput
+          ref={inputRef}
+          $isActive={isSearchActive}
+          $hasValue={searchQuery.length > 0}
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={(e) => {
+            handleQueryChange(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              executeSearch(searchQuery);
+            }
+          }}
+          autoFocus={autoFocus}
+        />
+        {isSearchActive && searchQuery.length > 0 && (
+          <ClearButton
+            type="button"
+            onClick={handleClear}
+            aria-label="검색어 지우기"
+          >
+            <Icon name="close-md" size={14} />
+          </ClearButton>
+        )}
+        <SearchButtonCircle
+          type="button"
+          $isActive={isSearchActive}
+          $size={size}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isSearchActive) {
+              handleActiveChange(true);
+              setTimeout(() => {
+                inputRef.current?.focus();
+              }, 100);
+            } else {
+              executeSearch(searchQuery);
+            }
+          }}
+        >
+          <Icon name="search" size={20} />
+        </SearchButtonCircle>
+      </SearchBarWrapper>
+    );
+  },
+);
 
 FloatingSearchBar.displayName = "FloatingSearchBar";
 

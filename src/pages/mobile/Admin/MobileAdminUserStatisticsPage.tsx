@@ -9,7 +9,7 @@ import { getMemberLogs } from "@/apis/admin";
 import { MemberLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive.ts";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import { ROUTES } from "@/constants/routes";
@@ -183,14 +183,18 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
           </ListSection>
         </Row>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="검색어를 입력하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
       </PageWrapper>
     </AdminLayout>
   );
@@ -353,7 +357,7 @@ const ListHeader = styled.div`
 `;
 
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

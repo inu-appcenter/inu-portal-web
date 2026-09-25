@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 
 interface SaveSearchFormProps {
   onSearch: (query: string) => void;
@@ -9,21 +9,26 @@ interface SaveSearchFormProps {
 export default function SaveSearchForm({ onSearch }: SaveSearchFormProps) {
   const [query, setQuery] = useState("");
 
-  const handleSearch = () => {
-    if (query.trim().length < 2) {
+  const handleSearch = (targetQuery?: string) => {
+    const q = (targetQuery ?? query).trim();
+    if (q.length < 2) {
       alert("검색어는 두 글자 이상 입력해주세요.");
       return;
     }
 
-    onSearch(query);
+    onSearch(q);
   };
 
   return (
-    <MobilePillSearchBar
+    <FloatingSearchBar
       value={query}
       onChange={setQuery}
-      onSubmit={handleSearch}
+      onSubmit={() => handleSearch()}
+      onSearch={(q) => handleSearch(q)}
       placeholder="검색어를 입력해주세요"
+      isActive={true}
+      disableCollapse={true}
+      disableHistory={true}
     />
   );
 }

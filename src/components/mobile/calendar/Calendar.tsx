@@ -95,6 +95,13 @@ export default function Calendar({
 
   const today = useMemo(() => new Date(), []);
   const [currentDate, setCurrentDate] = useState(baseDate);
+
+  useEffect(() => {
+    if (baseDate && !isNaN(baseDate.getTime())) {
+      setCurrentDate(baseDate);
+    }
+  }, [baseDate]);
+
   const [allLoadedEvents, setAllLoadedEvents] = useState<ScheduleEvent[]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
 import { RefreshCw, Settings2, Flag as FlagIcon } from "lucide-react";
 import Icon from "@/components/common/Icon";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 import {
@@ -169,14 +169,18 @@ export default function MobileAdminFeatureFlagsPage() {
           <SearchSpacer />
         </FlagsGrid>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="플래그 키를 검색하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
 
         {/* 생성 모달 */}
         <AdminModal
@@ -362,7 +366,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

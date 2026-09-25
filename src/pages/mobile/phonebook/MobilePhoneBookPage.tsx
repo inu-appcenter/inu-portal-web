@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import Box from "@/components/common/Box";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import {
@@ -294,14 +294,18 @@ const MobilePhoneBookPage = () => {
 
       <SearchSpacer />
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
+      <FloatingSearchBarContainer>
+        <FloatingSearchBar
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
+          onSearch={handleSearchSubmit}
           placeholder="검색어를 입력해주세요"
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
-      </FloatingSearchBar>
+      </FloatingSearchBarContainer>
     </MobilePhoneBookPageWrapper>
   );
 };
@@ -531,7 +535,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

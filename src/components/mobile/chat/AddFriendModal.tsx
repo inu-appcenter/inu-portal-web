@@ -4,7 +4,7 @@ import Icon from "@/components/common/Icon";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { requestFriend, searchFriend } from "@/apis/friends";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { FriendResponseDto } from "@/types/friends";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -126,14 +126,18 @@ export default function AddFriendModal({
               )}
             </ResultArea>
 
-            <MobilePillSearchBar
+            <FloatingSearchBar
               value={nicknameInput}
               onChange={(val) => {
                 setNicknameInput(val);
                 if (searchResult) setSearchResult(null);
               }}
               onSubmit={handleSearch}
+              onSearch={handleSearch}
               placeholder="닉네임을 입력하세요."
+              isActive={true}
+              disableCollapse={true}
+              disableHistory={true}
             />
           </Content>
         </StyledContent>
