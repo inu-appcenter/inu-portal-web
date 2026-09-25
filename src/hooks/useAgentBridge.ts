@@ -23,12 +23,13 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
   const pendingContextPromiseRef = useRef<Promise<Record<string, any>> | null>(null);
   const cachedClientContextRef = useRef<Record<string, any> | null>(null);
 
-  const sendHostCommand = useCallback((action: 'TRIGGER_OPEN' | 'FORCE_CLOSE' | 'SET_EXPANDED' | 'SET_HALF') => {
+  const sendHostCommand = useCallback((action: 'TRIGGER_OPEN' | 'FORCE_CLOSE' | 'SET_EXPANDED' | 'SET_HALF' | 'RESUME', state?: AIState) => {
     if (iframeRef.current?.contentWindow) {
       iframeRef.current.contentWindow.postMessage(
         {
           type: "HOST_COMMAND",
           action,
+          state,
         },
         "*"
       );
@@ -85,8 +86,8 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
             window.location.href = data.url;
             return;
           }
-          options?.onClose?.();
           if (data.url.startsWith("http://") || data.url.startsWith("https://")) {
+            options?.onClose?.();
             if (window.ReactNativeWebView) {
               window.ReactNativeWebView.postMessage(
                 JSON.stringify({ type: "openUrl", payload: { url: data.url } })
@@ -95,6 +96,10 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
               window.open(data.url, "_blank", "noopener,noreferrer");
             }
           } else {
+            // 내부 상세 화면으로 이동: 뒤로가기 복귀 시 에이전트 복원을 위한 세션 플래그 설정
+            sessionStorage.setItem("INTIP_AGENT_RESUME_ON_BACK", "true");
+            sessionStorage.setItem("INTIP_AGENT_PREV_STATE", aiState);
+            options?.onClose?.();
             navigate(data.url);
           }
         } else if (data.type === "AI_STATE_CHANGE" && data.state) {
