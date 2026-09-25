@@ -37,15 +37,28 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
   useEffect(() => {
     if (isOpen) {
       initialLocationRef.current = location.pathname + location.search;
-      setAiState("listening");
-      sendHostCommand("TRIGGER_OPEN");
+      const isRestoring = sessionStorage.getItem("INTIP_AGENT_SHOULD_RESTORE") === "true";
+      if (isRestoring) {
+        sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+        const prevState = (sessionStorage.getItem("INTIP_AGENT_PREV_STATE") || "expanded") as AIState;
+        setAiState(prevState);
+        sendHostCommand("RESUME", prevState);
+      } else {
+        setAiState("listening");
+        sendHostCommand("TRIGGER_OPEN");
+      }
     } else {
       setAiState("closed");
       sendHostCommand("FORCE_CLOSE");
+      // 만약 게시물 이동(RESUME_ON_BACK) 중이 아니라 사용자가 직접 시트를 닫은 것이라면 복원 플래그 정리
+      if (sessionStorage.getItem("INTIP_AGENT_RESUME_ON_BACK") !== "true") {
+        sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+        sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
+      }
     }
   }, [isOpen, sendHostCommand, setAiState]);
 
-  // 페이지 이동 시 자동 닫기
+  // 페이지 이동 시 자동 닫기 (단, 에이전트 내 링크 이동 시에는 위에서 이미 onClose를 처리함)
   useEffect(() => {
     if (isOpen && initialLocationRef.current !== location.pathname + location.search) {
       onClose();
@@ -141,70 +154,87 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
     }
   };
 
+  const hasBeenOpenedRef = useRef(false);
+  if (isOpen) {
+    hasBeenOpenedRef.current = true;
+  }
+  const hasBeenOpenedOnce = hasBeenOpenedRef.current || isOpen;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* 1. 배경 딤 (Scrim) */}
-          <Scrim
-            $active={true}
-            $state={aiState}
-            onPointerDown={handleScrimPointerDown}
-            onPointerUp={handleScrimPointerUp}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          />
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* 1. 배경 딤 (Scrim) */}
+            <Scrim
+              $active={true}
+              $state={aiState}
+              onPointerDown={handleScrimPointerDown}
+              onPointerUp={handleScrimPointerUp}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
 
-          {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
-          <AmbientEdgeGlow
-            $active={true}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isAmbientGlowActive ? 1 : 0, y: isAmbientGlowActive ? 0 : 20 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-          />
+            {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
+            <AmbientEdgeGlow
+              $active={true}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isAmbientGlowActive ? 1 : 0, y: isAmbientGlowActive ? 0 : 20 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            />
+          </>
+        )}
+      </AnimatePresence>
 
-          {/* 3. 플로팅 시트 컨테이너 (부드러운 Fade-In / Fade-Out) */}
-          <SheetContainer
-            id="ai-sheet-container"
-            $height={currentHeight}
-            $isExpanded={isExpanded}
-            $isDragging={isDragging}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerUp}
-          >
-            {/* Child iframe */}
-            <IframeWrapper $isDragging={isDragging}>
-              <StyledIframe
-                ref={iframeRef}
-                src={iframeSrc}
-                title="INU AI Campus Assistant Floating Sheet"
-                allow="clipboard-write; clipboard-read; microphone"
-                onLoad={() => {
-                  sendClientContextToIframe();
-                }}
-              />
-            </IframeWrapper>
-          </SheetContainer>
-
-          {/* 학적/포털 연동 계정 모달 */}
-          <PortalAccountModal
-            isOpen={isPortalModalOpen}
-            onClose={() => setIsPortalModalOpen(false)}
-            onSuccess={() => {
-              setIsPortalModalOpen(false);
-              sendClientContextToIframe(true);
-            }}
-          />
-        </>
+      {/* 3. 플로팅 시트 컨테이너 (한 번 열린 후에는 iframe을 언마운트하지 않고 유지하여 대화 세션 완전 보존) */}
+      {hasBeenOpenedOnce && (
+        <SheetContainer
+          id="ai-sheet-container"
+          $height={currentHeight}
+          $isExpanded={isExpanded}
+          $isDragging={isDragging}
+          initial={false}
+          animate={{
+            opacity: isOpen ? 1 : 0,
+            y: isOpen ? 0 : 20,
+            scale: isOpen ? 1 : 0.98,
+          }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{
+            visibility: isOpen ? "visible" : "hidden",
+            pointerEvents: isOpen ? (isDragging ? "none" : "auto") : "none",
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+        >
+          {/* Child iframe */}
+          <IframeWrapper $isDragging={isDragging}>
+            <StyledIframe
+              ref={iframeRef}
+              src={iframeSrc}
+              title="INU AI Campus Assistant Floating Sheet"
+              allow="clipboard-write; clipboard-read; microphone"
+              onLoad={() => {
+                sendClientContextToIframe();
+              }}
+            />
+          </IframeWrapper>
+        </SheetContainer>
       )}
-    </AnimatePresence>
+
+      {/* 학적/포털 연동 계정 모달 */}
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe(true);
+        }}
+      />
+    </>
   );
 };
 

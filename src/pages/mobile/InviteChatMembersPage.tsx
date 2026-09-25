@@ -7,7 +7,7 @@ import { getChatRoomMembers, inviteFriendsToChatRoom } from "@/apis/chat";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 
 export default function InviteChatMembersPage() {
@@ -93,12 +93,15 @@ export default function InviteChatMembersPage() {
   return (
     <PageWrapper>
       <SearchBarWrapper>
-        <MobilePillSearchBar
-          variant="clean"
+        <FloatingSearchBar
           value={searchTerm}
           onChange={setSearchTerm}
           onSubmit={() => undefined}
+          onSearch={() => undefined}
           placeholder="닉네임, 학번으로 검색"
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
       </SearchBarWrapper>
 

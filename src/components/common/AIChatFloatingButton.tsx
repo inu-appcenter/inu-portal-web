@@ -40,15 +40,41 @@ const AIChatFloatingButton = ({
     };
   }, [isOpen, isAgentOpen]);
 
+  // 에이전트 내 링크 클릭 후 상세 페이지에서 뒤로가기(popstate)로 복귀 시 에이전트 창 자동 복원
+  useEffect(() => {
+    const handlePopState = () => {
+      const shouldResume = sessionStorage.getItem("INTIP_AGENT_RESUME_ON_BACK") === "true";
+      if (shouldResume) {
+        sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
+        sessionStorage.setItem("INTIP_AGENT_SHOULD_RESTORE", "true");
+        setTimeout(() => {
+          openAgent();
+        }, 60);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [openAgent]);
+
   const handleButtonClick = () => {
     if (isAgentOpen) {
       closeAgent();
+      sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
+      sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+      sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
       return;
     }
     if (isOpen) {
       closeChat();
       return;
     }
+    // 플로팅 버튼을 직접 눌러 열 때는 항상 깨끗한 새 질문 세션으로 시작
+    sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
+    sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+    sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
     openAgent();
   };
 

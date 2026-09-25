@@ -27,9 +27,16 @@ import { resetScrollToTop } from "@/utils/scroll";
 interface ClubListSectionProps {
   category: string;
   onRecruitClick: (clubId: number, clubName: string) => void;
+  targetClubId?: number;
+  targetClubName?: string;
 }
 
-const ClubListSection = ({ category, onRecruitClick }: ClubListSectionProps) => {
+const ClubListSection = ({
+  category,
+  onRecruitClick,
+  targetClubId,
+  targetClubName,
+}: ClubListSectionProps) => {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,10 +55,32 @@ const ClubListSection = ({ category, onRecruitClick }: ClubListSectionProps) => 
     fetchClubs();
   }, [category]);
 
-  // 카테고리 로딩 및 변경 시 강건하게 최상단 스크롤 리셋
+  // 카테고리 로딩 및 변경 시 최상단 스크롤 리셋 (타겟 동아리가 없을 때만)
   useEffect(() => {
-    resetScrollToTop();
-  }, [category, isLoading]);
+    if (!targetClubId && !targetClubName) {
+      resetScrollToTop();
+    }
+  }, [category, isLoading, targetClubId, targetClubName]);
+
+  // 타겟 동아리가 있을 경우 스크롤 이동
+  useEffect(() => {
+    if (!isLoading && clubs.length > 0 && (targetClubId || targetClubName)) {
+      const targetClub = clubs.find(
+        (c) =>
+          (targetClubId && c.id === targetClubId) ||
+          (targetClubName && c.name === targetClubName),
+      );
+      if (targetClub) {
+        const timer = setTimeout(() => {
+          const el = document.getElementById(`club-card-${targetClub.id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading, clubs, targetClubId, targetClubName]);
 
   return (
     <ClubList>
@@ -76,69 +105,92 @@ const ClubListSection = ({ category, onRecruitClick }: ClubListSectionProps) => 
               </ContentWrapper>
             </Box>
           ))
-        : clubs.map((club) => (
-            <Box key={club.id}>
-              <ContentWrapper>
-                <img
-                  src={club.imageUrl}
-                  alt={club.name}
-                  className="club-logo"
-                />
-                <RightArea>
-                  <FirstLine>
-                    <h3>{club.name}</h3>
-                    <span className="label-wrapper">
-                      {club.isRecruiting && (
-                        <Label>
-                          <strong>모집 중🔥</strong>
-                        </Label>
-                      )}
-                      <Label>{club.category}</Label>
-                    </span>
-                  </FirstLine>
-                  <ButtonsWrapper>
-                    {club.url && (
-                      <FillButton
-                        onClick={() => {
-                          mixpanelTrack.clubExternalLinkClicked(
-                            club.name,
-                            "Intro",
-                          );
-                          window.open(club.url, "_blank");
-                        }}
-                        isExternalLink={true}
-                      >
-                        소개 페이지
-                      </FillButton>
-                    )}
-                    {club.homeUrl && (
-                      <FillButton
-                        onClick={() => {
-                          mixpanelTrack.clubExternalLinkClicked(
-                            club.name,
-                            "Homepage",
-                          );
-                          window.open(club.homeUrl, "_blank");
-                        }}
-                        isExternalLink={true}
-                      >
-                        동아리 홈페이지
-                      </FillButton>
-                    )}
-                    {club.isRecruiting && (
-                      <FillButton
-                        onClick={() =>
-                          onRecruitClick(club.id, club.name)
+        : clubs.map((club) => {
+            const isTarget = Boolean(
+              (targetClubId && club.id === targetClubId) ||
+                (targetClubName && club.name === targetClubName),
+            );
+
+            return (
+              <div
+                key={club.id}
+                id={`club-card-${club.id}`}
+                style={{ width: "100%" }}
+              >
+                <Box
+                  style={
+                    isTarget
+                      ? {
+                          borderColor: "var(--brand-primary, #2563eb)",
+                          boxShadow: "0 0 0 2px rgba(37, 99, 235, 0.25)",
+                          transition: "all 0.3s ease",
                         }
-                      >
-                        모집 공고
-                      </FillButton>
-                    )}
-                  </ButtonsWrapper>
-                </RightArea>
-              </ContentWrapper>
-            </Box>
-          ))}
+                      : undefined
+                  }
+                >
+                  <ContentWrapper>
+                    <img
+                      src={club.imageUrl}
+                      alt={club.name}
+                      className="club-logo"
+                    />
+                    <RightArea>
+                      <FirstLine>
+                        <h3>{club.name}</h3>
+                        <span className="label-wrapper">
+                          {club.isRecruiting && (
+                            <Label>
+                              <strong>모집 중🔥</strong>
+                            </Label>
+                          )}
+                          <Label>{club.category}</Label>
+                        </span>
+                      </FirstLine>
+                      <ButtonsWrapper>
+                        {club.url && (
+                          <FillButton
+                            onClick={() => {
+                              mixpanelTrack.clubExternalLinkClicked(
+                                club.name,
+                                "Intro",
+                              );
+                              window.open(club.url, "_blank");
+                            }}
+                            isExternalLink={true}
+                          >
+                            소개 페이지
+                          </FillButton>
+                        )}
+                        {club.homeUrl && (
+                          <FillButton
+                            onClick={() => {
+                              mixpanelTrack.clubExternalLinkClicked(
+                                club.name,
+                                "Homepage",
+                              );
+                              window.open(club.homeUrl, "_blank");
+                            }}
+                            isExternalLink={true}
+                          >
+                            동아리 홈페이지
+                          </FillButton>
+                        )}
+                        {club.isRecruiting && (
+                          <FillButton
+                            onClick={() =>
+                              onRecruitClick(club.id, club.name)
+                            }
+                          >
+                            모집 공고
+                          </FillButton>
+                        )}
+                      </ButtonsWrapper>
+                    </RightArea>
+                  </ContentWrapper>
+                </Box>
+              </div>
+            );
+          })}
     </ClubList>
   );
 };
@@ -150,13 +202,21 @@ export default function MobileClubPage() {
 
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "전체";
+  const targetClubId =
+    Number(params.get("clubId")) ||
+    (location.state as { targetClubId?: number } | null)?.targetClubId;
+  const targetClubName =
+    params.get("name") ||
+    (location.state as { targetClubName?: string } | null)?.targetClubName;
 
   const [isClubAdminOpen, setIsClubAdminOpen] = useState(false);
 
-  // 카테고리 변경 시 스크롤 상단 이동
+  // 카테고리 변경 시 스크롤 상단 이동 (타겟 동아리가 없을 때만)
   useEffect(() => {
-    resetScrollToTop();
-  }, [selectedCategory]);
+    if (!targetClubId && !targetClubName) {
+      resetScrollToTop();
+    }
+  }, [selectedCategory, targetClubId, targetClubName]);
 
   const handleRecruitingBtn = (clubId: number, clubName: string) => {
     navigate(`/home/recruitdetail?id=${clubId}&name=${clubName}`);
@@ -259,6 +319,8 @@ export default function MobileClubPage() {
                 <ClubListSection
                   category={category}
                   onRecruitClick={handleRecruitingBtn}
+                  targetClubId={targetClubId}
+                  targetClubName={targetClubName}
                 />
               </SwiperSlide>
             ))}

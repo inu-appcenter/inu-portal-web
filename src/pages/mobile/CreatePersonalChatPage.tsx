@@ -11,7 +11,7 @@ import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
 import Switch from "@/components/common/Switch";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import FriendManagementView from "@/components/mobile/chat/FriendManagementView";
 import { FriendResponseDto } from "@/types/friends";
 
@@ -188,16 +188,19 @@ export default function CreatePersonalChatPage() {
 
       {/* 2. 검색 바 */}
       <SearchBarWrapper>
-        <MobilePillSearchBar
-          variant="clean"
+        <FloatingSearchBar
           value={searchTerm}
           onChange={setSearchTerm}
           onSubmit={handleSearchSubmit}
+          onSearch={handleSearchSubmit}
           placeholder={
             isAdminMode
               ? "학번으로 유저 검색 후 추가"
               : "닉네임, 학번으로 검색"
           }
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
       </SearchBarWrapper>
 

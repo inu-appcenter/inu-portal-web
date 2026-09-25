@@ -6,14 +6,24 @@ import { IoCloseCircle, IoChevronForward, IoCalendarOutline, IoCallOutline, IoMa
 
 import { getUnifiedSearch } from "@/apis/search";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import HighlightText from "@/components/common/HighlightText";
 import EmptyState from "@/components/common/EmptyState";
 import Ripple from "@/components/common/Ripple";
 import Skeleton from "@/components/common/Skeleton";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
-import { SearchTab, UnifiedSearchResponse } from "@/types/search";
+import { formatTimeAgo } from "@/utils/date";
+import {
+  savePhonebookDetailState,
+  getPhonebookDetailPath,
+} from "@/pages/mobile/phonebook/phonebookDetailState";
+import { DirectoryEntry } from "@/types/directory";
+import {
+  DirectorySearchItem,
+  SearchTab,
+  UnifiedSearchResponse,
+} from "@/types/search";
 import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
@@ -138,6 +148,27 @@ export default function MobileUnifiedSearchPage() {
     );
   };
 
+  const handleOpenDirectoryDetail = (item: DirectorySearchItem) => {
+    const entry: DirectoryEntry = {
+      id: item.id,
+      category: "UNIVERSITY",
+      categoryName: item.affiliation ?? "",
+      affiliation: item.affiliation ?? "",
+      detailAffiliation: item.detailAffiliation ?? "",
+      name: item.name,
+      position: item.position ?? "",
+      duties: item.duties ?? null,
+      phoneNumber: item.phoneNumber ?? null,
+      email: item.email ?? null,
+      profileUrl: null,
+      lastSyncedAt: "",
+    };
+    savePhonebookDetailState({ kind: "person", entry });
+    navigate(getPhonebookDetailPath("person", item.id), {
+      state: { kind: "person", entry },
+    });
+  };
+
   // 카테고리 탭 리스트 구성
   const categories = useMemo(() => {
     const totalCount = data?.totalCount;
@@ -165,12 +196,16 @@ export default function MobileUnifiedSearchPage() {
     <PageWrapper>
       <SearchHeaderContainer>
         <SearchBarWrapper>
-          <MobilePillSearchBar
+          <FloatingSearchBar
             value={inputValue}
             onChange={setInputValue}
             onSubmit={() => handleSearchSubmit()}
+            onSearch={(kw) => handleSearchSubmit(kw)}
             placeholder="공지, 게시글, 일정, 교수님, 강의 검색"
             autoFocus={!queryParam}
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
         </SearchBarWrapper>
       </SearchHeaderContainer>
@@ -281,15 +316,20 @@ export default function MobileUnifiedSearchPage() {
                           <ResultItem
                             key={`notice-${item.id}`}
                             onClick={() => {
-                              if (item.url) window.open(item.url, "_blank");
-                              else navigate(ROUTES.BOARD.NOTICE_DETAIL(item.id));
+                              if (item.id) {
+                                navigate(ROUTES.BOARD.NOTICE_DETAIL(item.id));
+                              } else if (item.url) {
+                                window.open(item.url, "_blank");
+                              }
                             }}
                           >
                             <Ripple />
                             <ItemMeta>
                               {item.category && <CategoryTag>{item.category}</CategoryTag>}
                               {item.writer && <MetaText>{item.writer}</MetaText>}
-                              {item.createDate && <MetaText>{item.createDate}</MetaText>}
+                              {item.createDate && (
+                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                              )}
                             </ItemMeta>
                             <ItemTitle>
                               <HighlightText text={item.title} />
@@ -337,7 +377,9 @@ export default function MobileUnifiedSearchPage() {
                               {item.departmentName && (
                                 <CategoryTag>{item.departmentName}</CategoryTag>
                               )}
-                              {item.createDate && <MetaText>{item.createDate}</MetaText>}
+                              {item.createDate && (
+                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                              )}
                             </ItemMeta>
                             <ItemTitle>
                               <HighlightText text={item.title} />
@@ -379,7 +421,9 @@ export default function MobileUnifiedSearchPage() {
                             <ItemMeta>
                               {item.category && <CategoryTag>{item.category}</CategoryTag>}
                               {item.writer && <MetaText>{item.writer}</MetaText>}
-                              {item.createDate && <MetaText>{item.createDate}</MetaText>}
+                              {item.createDate && (
+                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                              )}
                             </ItemMeta>
                             <ItemTitle>
                               <HighlightText text={item.title} />
@@ -423,7 +467,14 @@ export default function MobileUnifiedSearchPage() {
                         {data.schedules.items.map((item) => (
                           <ResultItem
                             key={`schedule-${item.id}`}
-                            onClick={() => navigate(ROUTES.BOARD.CALENDAR)}
+                            onClick={() => {
+                              const query = item.startDate
+                                ? `?date=${encodeURIComponent(item.startDate)}`
+                                : "";
+                              navigate(`${ROUTES.BOARD.CALENDAR}${query}`, {
+                                state: { date: item.startDate },
+                              });
+                            }}
                           >
                             <Ripple />
                             <ScheduleRow>
@@ -435,7 +486,10 @@ export default function MobileUnifiedSearchPage() {
                                   <HighlightText text={item.content} />
                                 </ItemTitle>
                                 <MetaText>
-                                  {item.startDate} {item.endDate && item.endDate !== item.startDate ? `~ ${item.endDate}` : ""}
+                                  {item.startDate}{" "}
+                                  {item.endDate && item.endDate !== item.startDate
+                                    ? `~ ${item.endDate}`
+                                    : ""}
                                 </MetaText>
                               </div>
                             </ScheduleRow>
@@ -463,7 +517,10 @@ export default function MobileUnifiedSearchPage() {
                       </SectionHeader>
                       <ItemList>
                         {data.directory.items.map((item) => (
-                          <ResultItem key={`dir-${item.id}`}>
+                          <ResultItem
+                            key={`dir-${item.id}`}
+                            onClick={() => handleOpenDirectoryDetail(item)}
+                          >
                             <Ripple />
                             <DirectoryHeader>
                               <DirectoryName>
@@ -482,12 +539,18 @@ export default function MobileUnifiedSearchPage() {
                             )}
                             <DirectoryContactRow>
                               {item.phoneNumber && (
-                                <ContactLink href={`tel:${item.phoneNumber}`}>
+                                <ContactLink
+                                  href={`tel:${item.phoneNumber}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <IoCallOutline size={13} /> {item.phoneNumber}
                                 </ContactLink>
                               )}
                               {item.email && (
-                                <ContactLink href={`mailto:${item.email}`}>
+                                <ContactLink
+                                  href={`mailto:${item.email}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <IoMailOutline size={13} /> {item.email}
                                 </ContactLink>
                               )}
@@ -516,7 +579,19 @@ export default function MobileUnifiedSearchPage() {
                       </SectionHeader>
                       <ItemList>
                         {data.courses.items.map((item) => (
-                          <ResultItem key={`course-${item.id}`}>
+                          <ResultItem
+                            key={`course-${item.id}`}
+                            onClick={() => {
+                              const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
+                              navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
+                                state: {
+                                  courseOfferingId: item.id,
+                                  courseName: item.title,
+                                  professor: item.professor,
+                                },
+                              });
+                            }}
+                          >
                             <Ripple />
                             <ItemMeta>
                               {item.subjectNumber && (
@@ -559,7 +634,19 @@ export default function MobileUnifiedSearchPage() {
                         {data.clubs.items.map((item) => (
                           <ResultItem
                             key={`club-${item.id}`}
-                            onClick={() => navigate(ROUTES.BOARD.CLUB)}
+                            onClick={() => {
+                              const categoryParam = item.category
+                                ? `?category=${encodeURIComponent(item.category)}`
+                                : "";
+                              const separator = categoryParam ? "&" : "?";
+                              const query = `${categoryParam}${separator}clubId=${item.id}&name=${encodeURIComponent(item.name)}`;
+                              navigate(`${ROUTES.BOARD.CLUB}${query}`, {
+                                state: {
+                                  targetClubId: item.id,
+                                  targetClubName: item.name,
+                                },
+                              });
+                            }}
                           >
                             <Ripple />
                             <ItemMeta>

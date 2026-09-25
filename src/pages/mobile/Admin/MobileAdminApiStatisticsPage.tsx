@@ -9,7 +9,7 @@ import { ApiLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -175,14 +175,18 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
           <SearchSpacer />
         </LogsSection>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="메소드 또는 엔드포인트를 검색하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
       </PageWrapper>
     </AdminLayout>
   );
@@ -273,7 +277,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

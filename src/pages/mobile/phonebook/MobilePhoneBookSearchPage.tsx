@@ -11,7 +11,7 @@ import {
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import {
@@ -367,14 +367,18 @@ const MobilePhoneBookSearchPage = () => {
 
       <SearchSpacer />
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
+      <FloatingSearchBarContainer>
+        <FloatingSearchBar
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
+          onSearch={handleSearchSubmit}
           placeholder={SEARCH_PLACEHOLDER}
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
-      </FloatingSearchBar>
+      </FloatingSearchBarContainer>
     </PageWrapper>
   );
 };
@@ -675,7 +679,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
