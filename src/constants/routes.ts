@@ -160,6 +160,7 @@ export const ROUTES = {
     FEATURE_FLAGS: "/admin/feature-flags",
     CHAT: "/admin/chat",
     BUS: "/admin/bus",
+    SEARCH: "/admin/search",
   },
 
 } as const;

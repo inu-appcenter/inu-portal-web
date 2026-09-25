@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Activity, Flag, ArrowRight, Bot, Bus } from "lucide-react";
+import { Activity, Flag, ArrowRight, Bot, Bus, Search } from "lucide-react";
 
 import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
@@ -25,6 +25,14 @@ const MobileAdminPage = () => {
   }/&service=intip`;
 
   const adminPages = [
+    {
+      label: "검색 엔진 색인 관리",
+      path: ROUTES.ADMIN.SEARCH,
+      description: "Elasticsearch 인덱스 재생성, 동의어 반영 및 백필",
+      icon: (size: number) => <Search size={size} color="#fff" />,
+      color: "#0284c7",
+      isExternal: false,
+    },
     {
       label: "접속 유저 통계",
       path: ROUTES.ADMIN.USER_STAT,
@@ -81,7 +89,6 @@ const MobileAdminPage = () => {
       color: "#2563eb",
       isExternal: false,
     },
-
   ];
 
   const [stats, setStats] = useState({

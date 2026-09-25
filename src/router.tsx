@@ -48,6 +48,7 @@ import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserS
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
 import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
+import MobileAdminSearchPage from "@/pages/mobile/Admin/MobileAdminSearchPage";
 
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileSchoolNoticeDetailPage from "@/pages/mobile/MobileSchoolNoticeDetailPage";
@@ -371,6 +372,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.BUS,
             element: <MobileAdminBusPage />,
+          },
+          {
+            path: ROUTES.ADMIN.SEARCH,
+            element: <MobileAdminSearchPage />,
           },
 
         ],
