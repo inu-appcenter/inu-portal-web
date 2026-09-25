@@ -26,14 +26,6 @@ const MobileAdminPage = () => {
 
   const adminPages = [
     {
-      label: "검색 엔진 색인 관리",
-      path: ROUTES.ADMIN.SEARCH,
-      description: "Elasticsearch 인덱스 재생성, 동의어 반영 및 백필",
-      icon: (size: number) => <Search size={size} color="#fff" />,
-      color: "#0284c7",
-      isExternal: false,
-    },
-    {
       label: "접속 유저 통계",
       path: ROUTES.ADMIN.USER_STAT,
       description: "전체 활성 유저 및 유형별 유입 통계",
@@ -87,6 +79,14 @@ const MobileAdminPage = () => {
       description: "동적 노선 구간 슬라이싱 및 30초 수집 정류장 설정",
       icon: (size: number) => <Bus size={size} color="#fff" />,
       color: "#2563eb",
+      isExternal: false,
+    },
+    {
+      label: "검색 엔진 색인 관리",
+      path: ROUTES.ADMIN.SEARCH,
+      description: "Elasticsearch 인덱스 재생성, 동의어 반영 및 백필",
+      icon: (size: number) => <Search size={size} color="#fff" />,
+      color: "#0284c7",
       isExternal: false,
     },
   ];
