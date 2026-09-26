@@ -147,7 +147,7 @@ export const onRequest: PagesFunction = async (context) => {
     url: url.toString(),
   };
 
-  return new HTMLRewriter()
+  const transformed = new HTMLRewriter()
     .on('meta[property="og:title"]', new OgMetaHandler(values))
     .on('meta[property="og:image"]', new OgMetaHandler(values))
     .on('meta[property="og:image:width"]', new OgMetaHandler(values))
@@ -157,4 +157,10 @@ export const onRequest: PagesFunction = async (context) => {
     .on('meta[name="description"]', new DescriptionMetaHandler(values.description))
     .on("title", new TitleTagHandler(values.title))
     .transform(response);
+
+  transformed.headers.set("Cache-Control", "no-cache, must-revalidate");
+  transformed.headers.set("Pragma", "no-cache");
+  transformed.headers.set("Expires", "0");
+
+  return transformed;
 };
