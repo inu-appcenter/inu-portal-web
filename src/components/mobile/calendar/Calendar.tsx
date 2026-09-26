@@ -85,7 +85,7 @@ interface CalendarbarProps {
 
 export default function Calendar({
   mode = "monthly",
-  baseDate = new Date(),
+  baseDate,
 }: CalendarbarProps) {
   const { tokenInfo, userInfo } = useUserStore();
 
@@ -94,13 +94,15 @@ export default function Calendar({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const today = useMemo(() => new Date(), []);
-  const [currentDate, setCurrentDate] = useState(baseDate);
+  const [currentDate, setCurrentDate] = useState(() => (baseDate && !isNaN(baseDate.getTime()) ? baseDate : new Date()));
+
+  const baseDateTime = baseDate && !isNaN(baseDate.getTime()) ? baseDate.getTime() : null;
 
   useEffect(() => {
-    if (baseDate && !isNaN(baseDate.getTime())) {
-      setCurrentDate(baseDate);
+    if (baseDateTime !== null) {
+      setCurrentDate(new Date(baseDateTime));
     }
-  }, [baseDate]);
+  }, [baseDateTime]);
 
   const [allLoadedEvents, setAllLoadedEvents] = useState<ScheduleEvent[]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
