@@ -24,6 +24,7 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import { SOFT_CHIP_SHADOW } from "@/styles/shadows";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { Check } from "lucide-react";
 
 import Skeleton from "@/components/common/Skeleton";
 
@@ -83,6 +84,7 @@ export function MobileSchoolAlarmSetting({
   );
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [newKeyword, setNewKeyword] = useState("");
+  const [isExcluded, setIsExcluded] = useState(false);
   const [selectedCategoryForKeyword, setSelectedCategoryForKeyword] =
     useState("전체");
   const [isLoading, setIsLoading] = useState(true);
@@ -136,14 +138,16 @@ export function MobileSchoolAlarmSetting({
         selectedCategoryForKeyword === "전체"
           ? undefined
           : selectedCategoryForKeyword;
-      await createKeyword(newKeyword, undefined, categoryParam);
+      await createKeyword(newKeyword, undefined, categoryParam, isExcluded);
       mixpanelTrack.noticeKeywordAdded(
         "School",
         newKeyword,
         selectedCategoryForKeyword,
         location,
+        isExcluded,
       );
       setNewKeyword("");
+      setIsExcluded(false);
       const keyRes = await getKeywords();
       setKeywords(
         keyRes.data.filter(
@@ -173,6 +177,7 @@ export function MobileSchoolAlarmSetting({
           targetKeyword.keyword || "",
           targetKeyword.category || "전체",
           location,
+          Boolean(targetKeyword.isExcluded),
         );
       }
       setKeywords((prev) => prev.filter((k) => k.keywordId !== keywordId));
@@ -265,7 +270,11 @@ export function MobileSchoolAlarmSetting({
               </HorizontalScrollWrapper>
               <InputWrapper>
                 <StyledInput
-                  placeholder={"알림 받을 키워드를 입력해주세요."}
+                  placeholder={
+                    isExcluded
+                      ? "제외할 키워드를 입력해주세요."
+                      : "알림 받을 키워드를 입력해주세요."
+                  }
                   value={newKeyword}
                   onChange={(e) => setNewKeyword(e.target.value)}
                   onKeyDown={handleKeyDown} // 엔터 감지
@@ -277,13 +286,24 @@ export function MobileSchoolAlarmSetting({
                   등록
                 </TextButton>
               </InputWrapper>
+
+              <ExcludeToggleRow onClick={() => setIsExcluded(!isExcluded)}>
+                <ExcludeCheckCircle $checked={isExcluded}>
+                  {isExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
+                </ExcludeCheckCircle>
+                <ExcludeLabel>이 키워드가 포함된 공지는 알림에서 제외하기</ExcludeLabel>
+              </ExcludeToggleRow>
             </Wrapper>
           </Box>
         </TitleContentArea>
 
         {(isLoading || keywords.length > 0) && (
           <TitleContentArea
-            description={`${keywords.length}개 키워드로 알림을 받고 있어요.`}
+            description={
+              keywords.some((k) => k.isExcluded)
+                ? `알림 키워드 ${keywords.filter((k) => !k.isExcluded).length}개 · 제외 키워드 ${keywords.filter((k) => k.isExcluded).length}개`
+                : `${keywords.length}개 키워드로 알림을 받고 있어요.`
+            }
           >
             <Box style={{ padding: "16px 20px" }}>
               <ListWrapper>
@@ -303,6 +323,7 @@ export function MobileSchoolAlarmSetting({
                     <React.Fragment key={item.keywordId}>
                       <RegisteredKeywordItem
                         keyword={`${item.keyword}${item.category ? ` (${item.category})` : " (전체)"}`}
+                        isExcluded={Boolean(item.isExcluded)}
                         onDelete={() => handleDeleteKeyword(item.keywordId)}
                       />
                       {index < keywords.length - 1 && (
@@ -331,6 +352,7 @@ function MobileDeptAlarmSetting({
   const locationPath = useLocation();
 
   const [keyword, setKeyword] = useState("");
+  const [isExcluded, setIsExcluded] = useState(false);
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [allAlarm, setAllAlarm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -377,14 +399,16 @@ function MobileDeptAlarmSetting({
     if (!keyword) return;
 
     try {
-      await createKeyword(keyword, userInfo.departmentCode);
+      await createKeyword(keyword, userInfo.departmentCode, undefined, isExcluded);
       mixpanelTrack.noticeKeywordAdded(
         "Department",
         keyword,
         userInfo.department,
         location,
+        isExcluded,
       );
       setKeyword("");
+      setIsExcluded(false);
       fetchKeywords();
     } catch (error) {
       console.error("키워드 등록 실패:", error);
@@ -412,6 +436,7 @@ function MobileDeptAlarmSetting({
           targetKeyword.keyword || "",
           userInfo.department,
           location,
+          Boolean(targetKeyword.isExcluded),
         );
       }
       fetchKeywords();
@@ -502,7 +527,11 @@ function MobileDeptAlarmSetting({
             <Wrapper>
               <InputWrapper>
                 <StyledInput
-                  placeholder={"알림 받을 키워드를 입력해주세요."}
+                  placeholder={
+                    isExcluded
+                      ? "제외할 키워드를 입력해주세요."
+                      : "알림 받을 키워드를 입력해주세요."
+                  }
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   onKeyDown={handleKeyDown} // 엔터 감지
@@ -512,6 +541,13 @@ function MobileDeptAlarmSetting({
                 </TextButton>
               </InputWrapper>
 
+              <ExcludeToggleRow onClick={() => setIsExcluded(!isExcluded)}>
+                <ExcludeCheckCircle $checked={isExcluded}>
+                  {isExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
+                </ExcludeCheckCircle>
+                <ExcludeLabel>이 키워드가 포함된 공지는 알림에서 제외하기</ExcludeLabel>
+              </ExcludeToggleRow>
+
               <CategorySelectorNew categories={NoticeRecommendKeywords} />
             </Wrapper>
           </Box>
@@ -519,8 +555,11 @@ function MobileDeptAlarmSetting({
 
         {(isLoading || registeredKeywords.length > 0) && (
           <TitleContentArea
-            // title={"등록된 키워드 목록"}
-            description={`${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`}
+            description={
+              registeredKeywords.some((k) => k.isExcluded)
+                ? `알림 키워드 ${registeredKeywords.filter((k) => !k.isExcluded).length}개 · 제외 키워드 ${registeredKeywords.filter((k) => k.isExcluded).length}개`
+                : `${registeredKeywords.length}개 키워드로 알림을 받고 있어요.`
+            }
           >
             <Box style={{ padding: "16px 20px" }}>
               <ListWrapper>
@@ -540,6 +579,7 @@ function MobileDeptAlarmSetting({
                     <React.Fragment key={item.keywordId}>
                       <RegisteredKeywordItem
                         keyword={item.keyword}
+                        isExcluded={Boolean(item.isExcluded)}
                         onDelete={() => handleDeleteKeyword(item.keywordId)}
                       />
                       {index < registeredKeywords.length - 1 && (
@@ -713,3 +753,32 @@ const HorizontalScrollWrapper = styled.div`
     display: none;
   }
 `;
+
+const ExcludeToggleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 2px;
+`;
+
+const ExcludeCheckCircle = styled.div<{ $checked: boolean }>`
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid ${({ $checked }) => ($checked ? "#ef4444" : "#cbd5e1")};
+  background-color: ${({ $checked }) => ($checked ? "#ef4444" : "#ffffff")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+`;
+
+const ExcludeLabel = styled.span`
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+`;
+
