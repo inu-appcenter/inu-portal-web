@@ -1,7 +1,11 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { AlertTriangle, Megaphone, Settings2 } from "lucide-react";
 import Icon from "@/components/common/Icon";
-import type { GraduationEvaluation } from "@/types/graduation";
+import type {
+  GraduationEvaluation,
+  RequiredMajorCourseProgress,
+} from "@/types/graduation";
 import type { ResolvedGraduationRule } from "@/utils/graduationRequirements";
 import { MAX_GPA } from "@/utils/graduationRequirements";
 import type { GraduationProfile } from "./GraduationSettingModal";
@@ -39,6 +43,7 @@ export default function GraduationRequirementCard({
   onEdit,
 }: GraduationRequirementCardProps) {
   const departmentTitle = findTitleOrCode(profile.departmentCode);
+  const [showDoneMajorCourses, setShowDoneMajorCourses] = useState(false);
 
 
   const emptyMessage = (() => {
@@ -56,6 +61,12 @@ export default function GraduationRequirementCard({
   const requiredCourses = evaluation.requiredCourses.filter(
     (course) => course.status !== "EXEMPT",
   );
+  // 전공필수는 학과마다 10~30과목이라 남은 과목만 펼쳐 두고 이수한 과목은 접는다.
+  const { requiredMajorCourses } = evaluation;
+  const missingMajorCourses =
+    requiredMajorCourses?.filter((course) => !course.done) ?? [];
+  const doneMajorCourses =
+    requiredMajorCourses?.filter((course) => course.done) ?? [];
 
   return (
     <Card>
@@ -158,22 +169,57 @@ export default function GraduationRequirementCard({
             </Section>
           )}
 
+          {requiredMajorCourses && requiredMajorCourses.length > 0 && (
+            <Section>
+              <SectionTitle>
+                전공필수 {doneMajorCourses.length} / {requiredMajorCourses.length}
+                과목
+              </SectionTitle>
+              {missingMajorCourses.length === 0 ? (
+                <SectionText>교육과정표의 전공필수 과목을 모두 들었어요.</SectionText>
+              ) : (
+                <CourseList>
+                  {missingMajorCourses.map((course) => (
+                    <MajorCourseRow key={course.courseName} course={course} />
+                  ))}
+                </CourseList>
+              )}
+              {doneMajorCourses.length > 0 && (
+                <ToggleButton
+                  type="button"
+                  onClick={() => setShowDoneMajorCourses((open) => !open)}
+                >
+                  {showDoneMajorCourses
+                    ? "이수한 과목 접기"
+                    : `이수한 ${doneMajorCourses.length}과목 보기`}
+                </ToggleButton>
+              )}
+              {showDoneMajorCourses && (
+                <CourseList>
+                  {doneMajorCourses.map((course) => (
+                    <MajorCourseRow key={course.courseName} course={course} />
+                  ))}
+                </CourseList>
+              )}
+            </Section>
+          )}
+
           {evaluation.coreGeneral && !evaluation.coreGeneral.unverifiable && (
             <Section>
               <SectionTitle>
-                핵심교양 {evaluation.coreGeneral.areas.length} /{" "}
-                {evaluation.coreGeneral.required}개 영역
+                핵심교양 {evaluation.coreGeneral.courses.length} /{" "}
+                {evaluation.coreGeneral.required}과목
               </SectionTitle>
               <AreaList>
-                {evaluation.coreGeneral.areas.map((area) => (
-                  <AreaTag key={area}>{area}</AreaTag>
+                {evaluation.coreGeneral.courses.map((course, index) => (
+                  <AreaTag key={`${course}-${index}`}>{course}</AreaTag>
                 ))}
               </AreaList>
               {!evaluation.coreGeneral.satisfied && (
                 <SectionText>
                   {evaluation.coreGeneral.required -
-                    evaluation.coreGeneral.areas.length}
-                  개 영역을 더 들어야 해요.
+                    evaluation.coreGeneral.courses.length}
+                  과목을 더 들어야 해요.
                 </SectionText>
               )}
             </Section>
@@ -250,6 +296,30 @@ export default function GraduationRequirementCard({
         </>
       )}
     </Card>
+  );
+}
+
+/** 전공기초·전공핵심 태그는 "기초"·"핵심"으로 줄인다. */
+const MAJOR_DIVISION_LABELS: Record<RequiredMajorCourseProgress["division"], string> = {
+  전공기초: "기초",
+  전공핵심: "핵심",
+  전공필수: "필수",
+};
+
+function MajorCourseRow({ course }: { course: RequiredMajorCourseProgress }) {
+  return (
+    <CourseRow>
+      <CourseName>
+        <CategoryTag>{MAJOR_DIVISION_LABELS[course.division]}</CategoryTag>
+        <span>{course.courseName}</span>
+      </CourseName>
+      <CourseStatus $status={course.done ? "DONE" : "MISSING"}>
+        {course.done && <Icon name="check" size={14} />}
+        <span>
+          {course.done ? "이수" : `미이수 · ${course.credits}학점`}
+        </span>
+      </CourseStatus>
+    </CourseRow>
   );
 }
 
@@ -482,6 +552,16 @@ const CourseStatus = styled.div<{ $status: string }>`
     if ($status === "MISSING") return "var(--text-error, #ef4444)";
     return "var(--text-tertiary, #8b95a1)";
   }};
+`;
+
+const ToggleButton = styled.button`
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-brand, #0061ff);
 `;
 
 const NoticeList = styled.ul`

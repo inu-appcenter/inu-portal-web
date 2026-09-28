@@ -25,7 +25,10 @@ export interface GeneralRequirements {
   /** 상한이 없는 학번대(2008학번 이전 등)는 수집 관례상 999가 들어온다. */
   maxGeneralCredits: number;
   minTotalCredits: number;
-  /** 핵심교양 최소 이수 영역 수. 과목명만으로는 판정할 수 없어 안내만 한다. */
+  /**
+   * 핵심교양 최소 이수 과목 수. 학칙은 "6개 영역 중 영역 관계없이 3과목 이상(영역 중복 가능,
+   * 2022학년도까지 이수한 INU핵심교양 포함)"이라 영역 수가 아니라 과목 수다.
+   */
   minCoreGeneralCount?: number;
   requiredGeneralCourses: RequiredGeneralCourse[];
 }
@@ -71,6 +74,33 @@ export interface DepartmentGraduationRequirement {
   sourceUrl: string | null;
   /** 학번(입학연도) 오름차순 */
   rules: GraduationRule[];
+}
+
+/**
+ * 전공필수 이수구분. 인천대 현행 이수구분에서 전공필수 = 전공기초 + 전공핵심이고,
+ * 옛 교육과정표에는 "전공필수"로 적혀 있다.
+ */
+export type RequiredMajorDivision = "전공기초" | "전공핵심" | "전공필수";
+
+/** [과목명, 학점, 이수구분]. 학과×학번 전체를 담는 생성 데이터라 튜플로 줄였다. */
+export type RequiredMajorCourse = [
+  courseName: string,
+  credits: number,
+  division: RequiredMajorDivision,
+];
+
+/** 학과 교육과정표에서 뽑은 입학연도 구간별 전공필수 과목 */
+export interface RequiredMajorCourseSet {
+  startYear: number;
+  endYear: number;
+  courses: RequiredMajorCourse[];
+}
+
+export interface RequiredMajorCourseProgress {
+  courseName: string;
+  credits: number;
+  division: RequiredMajorDivision;
+  done: boolean;
 }
 
 /** 졸업요건 판정에 넣는 최소 과목 정보 */
@@ -119,12 +149,12 @@ export interface RequiredCourseProgress {
 }
 
 export interface CoreGeneralProgress {
-  /** 이수해야 하는 핵심교양 영역 수 */
+  /** 이수해야 하는 핵심교양 과목 수 */
   required: number;
-  /** 이수한 핵심교양 이수영역들 */
-  areas: string[];
+  /** 이수한 핵심교양(옛 INU핵심교양 포함) 과목명 */
+  courses: string[];
   satisfied: boolean;
-  /** 이수영역 정보가 없어 자동 판정이 불가능한 상태 */
+  /** 이수구분 정보가 없어 자동 판정이 불가능한 상태 */
   unverifiable: boolean;
 }
 
@@ -134,6 +164,8 @@ export interface GraduationEvaluation {
   credits: CreditProgress[];
   /** 필수 교양 과목 차집합 결과 */
   requiredCourses: RequiredCourseProgress[];
+  /** 학과 교육과정표 전공필수 과목. 그 학번의 교육과정표가 있을 때만 채워진다. */
+  requiredMajorCourses?: RequiredMajorCourseProgress[];
   /** 핵심교양 영역 수 요건이 있는 학번대에서만 채워진다. */
   coreGeneral?: CoreGeneralProgress;
   /** 교양 상한 초과분(초과분은 졸업학점에 안 들어갈 수 있다). 상한이 없으면 0. */

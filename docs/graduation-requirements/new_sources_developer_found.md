@@ -1,0 +1,6 @@
+- 수학교육과: https://mathedu.inu.ac.kr/edumath/4303/subview.do
+- 패션산업학과: https://uifashion.inu.ac.kr/inu/666/subview.do (학사과 공통 기준)
+- 바이오로봇시스템공학과: https://bio-robot.inu.ac.kr/meca/3047/subview.do
+- 소비자학과: https://ccs.inu.ac.kr/ccs/2787/subview.do 및 @./소비자아동학과_소비자학과 졸업사전 기준 안내.pdf
+- 전자공학부: https://ee.inu.ac.kr/electron/13794/subview.do (이미지로 첨부돼있음. 이미지 받아서 추론 필요)
+- 일본지역문화학과: https://unjapan.inu.ac.kr/unjapan/2053/subview.do (학사정보 -> 학사개요 -> 졸업요건 순으로 탐색했더니 나옴 )

@@ -32,6 +32,8 @@ import {
   resolveGraduationRule,
 } from "@/utils/graduationRequirements";
 import { findDepartmentCodeByName } from "@/utils/departmentOptions";
+import { loadRequiredMajorCourses } from "@/utils/requiredMajorCourses";
+import type { RequiredMajorCourse } from "@/types/graduation";
 import {
   hasSeenGradeCalculatorIntro,
   markGradeCalculatorIntroSeen,
@@ -972,6 +974,30 @@ export default function MobileGradeCalculatorPage() {
     [graduationProfile.departmentCode, graduationProfile.entryYear],
   );
 
+  // 전공필수 과목은 데이터가 커서 학과·학번이 정해진 뒤에만 불러온다.
+  const [requiredMajorCourses, setRequiredMajorCourses] = useState<
+    RequiredMajorCourse[] | null
+  >(null);
+  const requiredMajorDepartment = resolvedGraduationRule?.departmentCode;
+  const requiredMajorEntryYear = graduationProfile.entryYear;
+
+  useEffect(() => {
+    setRequiredMajorCourses(null);
+    if (!requiredMajorDepartment || requiredMajorEntryYear === null) return;
+
+    let cancelled = false;
+    loadRequiredMajorCourses(requiredMajorDepartment, requiredMajorEntryYear)
+      .then((courses) => {
+        if (!cancelled) setRequiredMajorCourses(courses);
+      })
+      .catch(() => {
+        // 못 불러오면 전공필수 과목 판정만 빠진다.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [requiredMajorDepartment, requiredMajorEntryYear]);
+
   const graduationEvaluation = useMemo(() => {
     if (!resolvedGraduationRule) return null;
 
@@ -990,14 +1016,18 @@ export default function MobileGradeCalculatorPage() {
       resolvedGraduationRule.rule,
       subjects,
       resolvedGraduationRule.departmentCode,
-      // 직접 고친 취득 학점이 있으면 졸업요건도 그 기준으로 본다.
-      targetCreditsOverridden ? { minTotalCredits: targetCredits } : undefined,
+      {
+        // 직접 고친 취득 학점이 있으면 졸업요건도 그 기준으로 본다.
+        minTotalCredits: targetCreditsOverridden ? targetCredits : undefined,
+        requiredMajorCourses,
+      },
     );
   }, [
     resolvedGraduationRule,
     semestersData,
     targetCredits,
     targetCreditsOverridden,
+    requiredMajorCourses,
   ]);
 
   const requiredAverageGpa = useMemo(() => {

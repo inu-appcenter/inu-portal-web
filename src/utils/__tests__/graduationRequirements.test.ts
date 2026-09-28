@@ -191,7 +191,8 @@ describe("evaluateGraduation", () => {
     ).toBe(3);
   });
 
-  it("핵심교양은 학점이 아니라 이수영역 수로 센다", () => {
+  it("핵심교양은 영역 관계없이 과목 수로 센다", () => {
+    // 학칙: 6개 영역 중 영역 관계없이 3과목 이상, 영역 중복이수 가능
     const evaluation = evaluateGraduation(rule, [
       subject("서양철학의이해", 3, {
         isuName: "핵심교양",
@@ -201,21 +202,42 @@ describe("evaluateGraduation", () => {
         isuName: "핵심교양",
         isuFldName: "(핵심)인문",
       }),
-      subject("사회학개론", 3, {
-        isuName: "핵심교양",
-        isuFldName: "(핵심)사회",
-      }),
-      // 이수영역이 비어 있는 행("-")은 셀 수 없다.
       subject("스포츠와건강", 1, { isuName: "기초교양", isuFldName: "-" }),
     ]);
 
     expect(evaluation.coreGeneral?.required).toBe(3);
-    expect(evaluation.coreGeneral?.areas).toEqual(["(핵심)인문", "(핵심)사회"]);
+    expect(evaluation.coreGeneral?.courses).toEqual([
+      "서양철학의이해",
+      "논리와사고",
+    ]);
     expect(evaluation.coreGeneral?.satisfied).toBe(false);
     expect(evaluation.coreGeneral?.unverifiable).toBe(false);
   });
 
-  it("이수영역 정보가 없으면 핵심교양은 판정하지 않고 안내만 한다", () => {
+  it("2022학년도까지 이수한 INU핵심교양도 핵심교양으로 센다", () => {
+    // 옛 성적표: 이수구분 "교양필수", 이수영역 "INU핵심창의융합"
+    const evaluation = evaluateGraduation(rule, [
+      subject("디지털기술과미래", 3, {
+        isuName: "교양필수",
+        isuFldName: "INU핵심창의융합",
+      }),
+      subject("현대사회와빅데이터", 3, {
+        isuName: "교양필수",
+        isuFldName: "INU핵심문제해결",
+      }),
+      subject("사회학개론", 3, {
+        isuName: "핵심교양",
+        isuFldName: "(핵심)사회",
+      }),
+      // 같은 교양필수라도 이수영역에 "핵심"이 없으면 기초교양이다.
+      subject("대학영어", 2, { isuName: "교양필수", isuFldName: "학문의기초" }),
+    ]);
+
+    expect(evaluation.coreGeneral?.courses).toHaveLength(3);
+    expect(evaluation.coreGeneral?.satisfied).toBe(true);
+  });
+
+  it("이수구분 정보가 없으면 핵심교양은 판정하지 않고 안내만 한다", () => {
     const evaluation = evaluateGraduation(rule, [subject("서양철학의이해", 3)]);
 
     expect(evaluation.coreGeneral?.unverifiable).toBe(true);
@@ -280,7 +302,7 @@ describe("calculateRequiredAverageGpa", () => {
   });
 });
 
-describe("SW 필수 교양 면제 (정보기술대학)", () => {
+describe("SW 필수 교양 이수 대상", () => {
   const rule = resolveGraduationRule("COMPUTER_ENGINEERING", 2023)!.rule;
   const findSw = (evaluation: ReturnType<typeof evaluateGraduation>) =>
     evaluation.requiredCourses.find((course) => course.category === "SW");
@@ -293,11 +315,33 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     expect(isSwRequirementExempt("EMBEDDED_SYSTEM")).toBe(true);
   });
 
-  it("다른 단과대 학과와 빈 코드는 면제가 아니다", () => {
-    expect(isSwRequirementExempt("MECHANICAL_ENGINEERING")).toBe(false);
+  it("2026 교양 교육과정표의 이수 대상이 아닌 학과는 면제다", () => {
+    // 공과·도시과학·생명과학기술대학은 일부 학과만, 사범대학은 수학교육과 제외
+    expect(isSwRequirementExempt("MECHANICAL_ENGINEERING")).toBe(true);
+    expect(isSwRequirementExempt("URBAN_ENGINEERING")).toBe(true);
+    expect(isSwRequirementExempt("LIFE_SCIENCE")).toBe(true);
+    expect(isSwRequirementExempt("MATH_EDUCATION")).toBe(true);
+  });
+
+  it("이수 대상 학과와 빈 코드는 면제가 아니다", () => {
+    expect(isSwRequirementExempt("SAFETY_ENGINEERING")).toBe(false);
+    expect(isSwRequirementExempt("URBAN_ARCHITECTURE")).toBe(false);
+    expect(isSwRequirementExempt("BIOENGINEERING")).toBe(false);
+    expect(isSwRequirementExempt("KOREAN_EDUCATION")).toBe(false);
     expect(isSwRequirementExempt("BUSINESS_ADMINISTRATION")).toBe(false);
     expect(isSwRequirementExempt("")).toBe(false);
     expect(isSwRequirementExempt(null)).toBe(false);
+  });
+
+  it("수학교육과는 SW를 안 들어도 미이수로 잡지 않는다", () => {
+    const mathEducation = resolveGraduationRule("MATH_EDUCATION", 2024)!;
+    const evaluation = evaluateGraduation(
+      mathEducation.rule,
+      [],
+      mathEducation.departmentCode,
+    );
+
+    expect(findSw(evaluation)?.status).toBe("EXEMPT");
   });
 
   it("SW 과목을 안 들었어도 미이수로 잡지 않는다", () => {
@@ -325,7 +369,7 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     expect(sw?.matchedNames).toEqual([]);
   });
 
-  it("면제 학과가 아니면 SW 요건을 그대로 판정한다", () => {
+  it("학과가 전공 과목으로 대체한 SW 요건은 면제 학과여도 그대로 판정한다", () => {
     const mechanical = resolveGraduationRule("MECHANICAL_ENGINEERING", 2023)!;
     const evaluation = evaluateGraduation(
       mechanical.rule,

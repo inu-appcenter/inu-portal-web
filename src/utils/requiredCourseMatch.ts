@@ -70,6 +70,16 @@ const STOP_TOKENS = new Set([
  * "영어(대학영어 또는 Academic English)" → ["대학영어", "academicenglish", …]
  * 영역만 가리키는 조각("영어")은 별칭이 아니라 카테고리 폴백으로 넘긴다.
  */
+/**
+ * 2026학년도 기초교양 개편으로 이름이 바뀐 과목. 개편 전 학번도 새 이름 과목으로,
+ * 개편 후 학번도 옛 이름으로 이수한 과목을 인정한다(대학 공통기준
+ * "AI사고와데이터리터러시(컴퓨팅적사고와SW)").
+ */
+const RENAMED_COURSES: string[][] = [
+  ["컴퓨팅적사고와sw", "ai사고와데이터리터러시"],
+  ["글쓰기이론과실제", "ai시대의글쓰기이론과실제"],
+];
+
 const buildAliases = (course: RequiredGeneralCourse): string[] => {
   const segments = course.courseName
     .replace(/[()]/g, " ")
@@ -84,6 +94,12 @@ const buildAliases = (course: RequiredGeneralCourse): string[] => {
     // 너무 짧은 조각은 아무 과목명에나 걸린다.
     if (normalized.length < 3) return;
     aliases.add(normalized);
+  });
+
+  RENAMED_COURSES.forEach((names) => {
+    if (names.some((name) => aliases.has(name))) {
+      names.forEach((name) => aliases.add(name));
+    }
   });
 
   return [...aliases];
