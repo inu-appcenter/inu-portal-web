@@ -18,10 +18,7 @@ interface AIChatFloatingButtonProps {
 const AIChatFloatingButton = ({
   isFloatingButtonVisible = true,
 }: AIChatFloatingButtonProps) => {
-  // [임시 조치 보관용]
-  // const navigate = useNavigate();
-  // const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isOpen, isAgentOpen, closeChat, closeAgent, openAgent } =
+  const { isOpen, isAgentOpen, closeChat, openChat, closeAgent, openAgent } =
     useAIChatStore();
 
   useSheetBackHandler(isOpen || isAgentOpen, () => {
@@ -71,11 +68,8 @@ const AIChatFloatingButton = ({
       closeChat();
       return;
     }
-    // 플로팅 버튼을 직접 눌러 열 때는 항상 깨끗한 새 질문 세션으로 시작
-    sessionStorage.removeItem("INTIP_AGENT_RESUME_ON_BACK");
-    sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
-    sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
-    openAgent();
+
+    openChat();
   };
 
   return (
