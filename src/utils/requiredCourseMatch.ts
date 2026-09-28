@@ -81,10 +81,19 @@ const RENAMED_COURSES: string[][] = [
 ];
 
 const buildAliases = (course: RequiredGeneralCourse): string[] => {
-  const segments = course.courseName
-    .replace(/[()]/g, " ")
-    .split(/또는|,|\/|=/g)
-    .flatMap((segment) => [segment, ...segment.split(/\s+/)]);
+  // "물리1,2"처럼 번호만 이어 적은 요건은 "물리1,물리2"로 푼다.
+  const expanded = course.courseName.replace(
+    /([가-힣A-Za-z]+)(\d),(\d)/g,
+    "$1$2,$1$3",
+  );
+  const wholeSegments = expanded.replace(/[()]/g, " ").split(/또는|,|\/|=/g);
+  // 띄어쓴 조각은 그 자체가 과목명일 때만 쓴다("SW(=전공필수 기계기초프로그래밍)"의
+  // "기계기초프로그래밍"). "글쓰기 이론과 실제"의 "글쓰기"·"이론과"나 "Academic English"의
+  // "english" 같은 조각은 미디어글쓰기·ENGLISH PRESENTATION 등 다른 과목까지 끌어온다.
+  const courseTokens = wholeSegments
+    .flatMap((segment) => segment.split(/\s+/))
+    .filter((token) => isCatalogCourseName(normalizeFull(token)));
+  const segments = [...wholeSegments, ...courseTokens];
 
   const aliases = new Set<string>();
   segments.forEach((segment) => {
@@ -109,6 +118,15 @@ const buildAliases = (course: RequiredGeneralCourse): string[] => {
 const REQUIREMENT_POOL = GENERAL_COURSE_CATALOG.filter(
   (entry) => entry.division === "기초교양" || entry.substitute,
 );
+
+/** 요건이 가리킬 수 있는 과목의 이름(번호만 다른 과목 포함)인지 */
+const isCatalogCourseName = (normalized: string): boolean =>
+  !!normalized &&
+  REQUIREMENT_POOL.some(
+    (entry) =>
+      entry.normalized === normalized ||
+      normalizeBase(entry.normalized) === normalized,
+  );
 
 /**
  * 요건 이름 → 실제 개설 과목들.
@@ -167,6 +185,22 @@ export const resolveRequirement = (
   aliases: buildAliases(course),
 });
 
+/**
+ * 과목명에 별칭이 들어 있는지. 별칭 바로 뒤에 글자가 더 붙으면 다른 과목이다
+ * ("대학영어" 요건에 "대학영어회화1"은 아니고 "대학영어1"은 맞다).
+ */
+const containsAlias = (name: string, alias: string): boolean => {
+  for (
+    let index = name.indexOf(alias);
+    index >= 0;
+    index = name.indexOf(alias, index + 1)
+  ) {
+    const next = name.charAt(index + alias.length);
+    if (!/[가-힣a-z]/.test(next)) return true;
+  }
+  return false;
+};
+
 /** 과목 하나가 요건 하나에 얼마나 잘 맞는지. 0이면 안 맞는다. */
 export const scoreMatch = (
   requirement: ResolvedRequirement,
@@ -179,11 +213,18 @@ export const scoreMatch = (
     return MATCH_SCORE.EXACT_COURSE;
   }
   const base = normalizeBase(name);
+  // "물리"처럼 별칭으로 쓰기엔 짧은 요건도, 번호 없는 이름이면 번호만 다른 과목("물리(1)")을 받는다.
+  const requirementName = normalizeFull(requirement.course.courseName);
+  const matchesShortName =
+    requirementName === name ||
+    (requirementName === normalizeBase(requirementName) &&
+      requirementName === base);
   if (
+    matchesShortName ||
     requirement.courses.some(
       (entry) => normalizeBase(entry.normalized) === base,
     ) ||
-    requirement.aliases.some((alias) => name.includes(alias))
+    requirement.aliases.some((alias) => containsAlias(name, alias))
   ) {
     return MATCH_SCORE.COURSE_VARIANT;
   }

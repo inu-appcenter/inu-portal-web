@@ -140,6 +140,63 @@ describe("evaluateGraduation", () => {
     expect(sw?.status).toBe("MISSING");
   });
 
+  it("과목명이 정해진 기타 요건(물리1·선형대수학 등)은 이름으로 판정한다", () => {
+    const electronics = resolveGraduationRule("ELECTRONICS_ENGINEERING", 2024)!;
+    const evaluation = evaluateGraduation(
+      electronics.rule,
+      [
+        subject("물리(1)", 3, { isuName: "기초교양" }),
+        subject("선형대수학", 3, { isuName: "기초교양" }),
+      ],
+      electronics.departmentCode,
+    );
+    const statuses = Object.fromEntries(
+      evaluation.requiredCourses.map((course) => [
+        course.courseName,
+        course.status,
+      ]),
+    );
+
+    expect(statuses["물리1"]).toBe("DONE");
+    expect(statuses["물리2"]).toBe("MISSING");
+    expect(statuses["선형대수학"]).toBe("DONE");
+    expect(statuses["복소함수및벡터"]).toBe("MISSING");
+  });
+
+  it("번호 없는 짧은 과목명과 번호를 이어 적은 요건도 판정한다", () => {
+    const bioRobot2024 = resolveGraduationRule("BIO_ROBOTICS_ENGINEERING", 2024)!;
+    const bioRobot2023 = resolveGraduationRule("BIO_ROBOTICS_ENGINEERING", 2023)!;
+    const subjects = [
+      subject("물리(1)", 3, { isuName: "기초교양" }),
+      subject("물리(2)", 3, { isuName: "기초교양" }),
+      subject("공업수학1", 3, { isMajor: true, isuName: "전공기초" }),
+    ];
+    const status = (
+      rule: typeof bioRobot2024.rule,
+      courseName: string,
+    ) =>
+      evaluateGraduation(rule, subjects).requiredCourses.find(
+        (course) => course.courseName === courseName,
+      );
+
+    // "물리" 3학점 ← 물리(1)
+    expect(status(bioRobot2024.rule, "물리")?.status).toBe("DONE");
+    // "물리1,2" 6학점 ← 물리(1) + 물리(2)
+    expect(status(bioRobot2023.rule, "물리1,2")?.earnedCredits).toBe(6);
+    // 학과에 따라 전공기초로 개설되는 과목도 인정한다.
+    expect(status(bioRobot2023.rule, "공업수학1")?.status).toBe("DONE");
+  });
+
+  it("이수구분 이름이 적힌 요건은 판정하지 않고 확인 필요로 둔다", () => {
+    const design = resolveGraduationRule("DESIGN", 2024)!;
+    const evaluation = evaluateGraduation(design.rule, [], design.departmentCode);
+
+    expect(
+      evaluation.requiredCourses.find((course) => course.courseName === "기초교양")
+        ?.status,
+    ).toBe("UNKNOWN");
+  });
+
   it("전공필수로 대체되는 요건은 전공 과목으로도 채워진다", () => {
     // 기계공학과 SW 요건은 "SW(=전공필수 기계기초프로그래밍)"으로 적혀 있다.
     const mechanical = resolveGraduationRule("MECHANICAL_ENGINEERING", 2023)!;

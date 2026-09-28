@@ -137,6 +137,13 @@ type SubjectKind = "MAJOR" | "GENERAL" | "OTHER";
  * (서버가 실제로 쓰는 값은 courseFilterModel.ts의 SERVER_ISU_NAMES 참고.)
  * 옛 성적표에는 이전 명칭이 그대로 남아 있어 양쪽을 다 본다.
  */
+/** 과목명 대신 이수구분 이름이 적힌 필수 교양 요건. 이름으로 판정할 수 없다. */
+const DIVISION_REQUIREMENT_NAMES = new Set([
+  "기초교양",
+  "핵심교양",
+  "심화교양",
+]);
+
 const REQUIRED_MAJOR_ISU_NAMES = ["전공기초", "전공핵심", "전공필수"];
 
 /**
@@ -283,7 +290,14 @@ export const evaluateGraduation = (
     ) {
       return "EXEMPT";
     }
-    if (course.category === "기타") return "UNKNOWN";
+    // 과목명이 아니라 이수구분을 요건으로 적은 경우(예: 디자인학부 "기초교양 8학점")만 판정하지 않는다.
+    // 물리1·선형대수학처럼 과목명이 정해진 "기타" 요건은 이름으로 맞춘다.
+    if (
+      course.category === "기타" &&
+      DIVISION_REQUIREMENT_NAMES.has(course.courseName)
+    ) {
+      return "UNKNOWN";
+    }
     return null;
   };
 
@@ -299,8 +313,10 @@ export const evaluateGraduation = (
     resolved,
     passed,
     (requirement, subject) =>
-      // "SW(=전공필수 기계기초프로그래밍)"처럼 전공으로 대체되는 요건만 전공 과목까지 본다.
+      // "SW(=전공필수 기계기초프로그래밍)"처럼 전공으로 대체되는 요건과, 학과마다 전공기초로도
+      // 개설되는 과목명 요건("기타": 공업수학1 등)은 전공 과목까지 본다.
       requirement.course.courseName.includes("전공") ||
+      requirement.course.category === "기타" ||
       classifySubject(subject) !== "MAJOR",
   );
 

@@ -6050,7 +6050,7 @@ export const GRADUATION_REQUIREMENTS: Record<
               category: "국어",
             },
             {
-              courseName: "컴퓨터적 사고와 SW",
+              courseName: "컴퓨팅적사고와 SW",
               credits: 2,
               category: "SW",
             },

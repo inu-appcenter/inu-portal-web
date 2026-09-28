@@ -56,6 +56,18 @@ describe("normalizeMajorCourseName", () => {
     );
   });
 
+  it("한글 바로 뒤에 붙은 로마 숫자도 숫자로 본다", () => {
+    expect(normalizeMajorCourseName("비즈니스프로그래밍I")).toBe(
+      normalizeMajorCourseName("비즈니스 프로그래밍1"),
+    );
+    expect(normalizeMajorCourseName("자기설계세미나II")).toBe(
+      normalizeMajorCourseName("자기설계Seminar Ⅱ"),
+    );
+    expect(normalizeMajorCourseName("자기설계세미나II")).not.toBe(
+      normalizeMajorCourseName("자기설계세미나I"),
+    );
+  });
+
   it("단어 안의 대문자 I는 숫자로 바꾸지 않는다", () => {
     expect(normalizeMajorCourseName("AI비젼시스템")).toBe("ai비젼시스템");
   });
