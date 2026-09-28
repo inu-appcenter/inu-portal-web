@@ -46,6 +46,27 @@ describe("resolveGraduationRule", () => {
     expect(resolved?.rule.startYear).toBe(2020);
   });
 
+  it("폐강된 대학영어 대신 Academic English를 2023학번 이후 영어 요건으로 쓴다", () => {
+    // 대학영어1·2(0005058·0005059)는 2023학년도를 끝으로 개설되지 않는다.
+    for (const code of [
+      "KOREAN_EDUCATION",
+      "PHYSICAL_EDUCATION",
+      "CHEMISTRY",
+      "EARLY_CHILDHOOD_EDUCATION",
+    ]) {
+      const rule = resolveGraduationRule(code, 2024)!.rule;
+      const names = rule.generalRequirements.requiredGeneralCourses.map(
+        (course) => course.courseName,
+      );
+
+      expect(names).toContain("Academic English");
+      expect(names.some((name) => name.startsWith("대학영어1"))).toBe(false);
+      expect(names).not.toContain("대학영어");
+      expect(rule.generalRequirements.minCoreGeneralCount).toBe(3);
+      expect(rule.generalRequirements.minTotalCredits).toBe(130);
+    }
+  });
+
   it("학과나 학번이 없으면 판정하지 않는다", () => {
     expect(resolveGraduationRule("", 2023)).toBeNull();
     expect(resolveGraduationRule("COMPUTER_ENGINEERING", null)).toBeNull();
@@ -555,7 +576,8 @@ describe("필수 교양 매칭 (강의 카탈로그 기반)", () => {
   });
 
   it("요건이 지목한 대체 과목도 인정한다", () => {
-    const chemistry = resolveGraduationRule("CHEMISTRY", 2020)!;
+    // 화학과 학과 페이지의 2017~2018학번 기준: "글쓰기이론과실제 또는 공학작문및발표"
+    const chemistry = resolveGraduationRule("CHEMISTRY", 2018)!;
     const evaluation = evaluateGraduation(
       chemistry.rule,
       [subject("공학작문및발표", 2, { isuName: "교양선택" })],
