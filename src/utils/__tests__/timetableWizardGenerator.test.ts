@@ -178,3 +178,139 @@ describe("generateWizardCandidates - 필수 분반 지정(#397)", () => {
     }
   });
 });
+
+describe("generateWizardCandidates - 새 시안(마법사) 표기", () => {
+  const monday = makeCourse({
+    courseId: 1,
+    courseOfferingId: 1,
+    subjectNumber: "CS101-01",
+    title: "자바프로그래밍",
+    meetings: [{ day: 0, startTime: 10, endTime: 11.5, location: null }],
+  });
+  const tuesdayEvening = makeCourse({
+    courseId: 2,
+    courseOfferingId: 2,
+    subjectNumber: "CS102-01",
+    title: "자료구조",
+    meetings: [{ day: 1, startTime: 16.5, endTime: 18, location: null }],
+  });
+
+  it("후보 이름은 '마법사 A'부터 붙고 첫 후보만 추천이다", () => {
+    const result = generateWizardCandidates(
+      makeConditions([
+        { course: monday, required: true },
+        { course: tuesdayEvening, required: true },
+      ]),
+    );
+    expect(result.candidates[0].label).toBe("마법사 A");
+    expect(result.candidates[0].recommended).toBe(true);
+  });
+
+  it("야간 판정은 18시 이후 '종료' 기준이라 18:00 정각에 끝나는 수업은 야간이 아니다", () => {
+    const result = generateWizardCandidates({
+      ...makeConditions([{ course: tuesdayEvening, required: true }]),
+      preference: { ...DEFAULT_PREFERENCE_CONDITIONS, noNightClasses: true },
+    });
+    const night = result.candidates[0].reasons.find((r) => r.tag?.label.includes("야간"));
+    expect(night?.tag).toEqual({ label: "야간 없음", tone: "success" });
+  });
+
+  it("공강 최대화는 지정 공강 요일과 주말을 빼고 추가로 빈 평일만 센다", () => {
+    const result = generateWizardCandidates({
+      ...makeConditions([
+        { course: monday, required: true },
+        { course: tuesdayEvening, required: true },
+      ]),
+      preference: {
+        ...DEFAULT_PREFERENCE_CONDITIONS,
+        manyFreeDays: true,
+        freeDayOfWeek: { enabled: true, days: [4] },
+      },
+    });
+    const tags = result.candidates[0].reasons.map((r) => r.tag?.label);
+    // 월·화 수업, 금 지정 공강 → 추가로 빈 평일은 수·목 2일
+    expect(tags).toContain("공강 2일");
+    expect(tags).toContain("금 공강");
+  });
+
+  it("공강 요일 때문에 조합이 없으면 kind=freeDay와 요일을 담는다", () => {
+    const result = generateWizardCandidates({
+      ...makeConditions([{ course: monday, required: true }]),
+      preference: {
+        ...DEFAULT_PREFERENCE_CONDITIONS,
+        freeDayOfWeek: { enabled: true, days: [0] },
+      },
+    });
+    expect(result.candidates).toHaveLength(0);
+    expect(result.conflicts[0]).toMatchObject({ kind: "freeDay", days: [0] });
+  });
+
+  it("목표 학점에 못 미치면 kind=credit과 가능한 학점 목록을 담는다", () => {
+    const result = generateWizardCandidates({
+      ...makeConditions([
+        { course: monday, required: false },
+        { course: tuesdayEvening, required: false },
+      ]),
+      basic: {
+        semester: null,
+        minCredit: 18,
+        maxCredit: 18,
+        wishlist: [
+          { course: monday, required: false },
+          { course: tuesdayEvening, required: false },
+        ],
+      },
+    });
+    expect(result.candidates).toHaveLength(0);
+    expect(result.conflicts[0].kind).toBe("credit");
+    expect(result.conflicts[0].achievableCredits?.at(-1)).toBe(6);
+  });
+});
+
+describe("generateWizardCandidates - 전부 선택(비필수) 강의일 때 원인 진단", () => {
+  const mon = (id: number, credit: number, start: number) =>
+    makeCourse({
+      courseId: id,
+      courseOfferingId: id,
+      subjectNumber: `S${id}`,
+      title: `과목${id}`,
+      credit,
+      meetings: [{ day: 0, startTime: start, endTime: start + 1.5, location: null }],
+    });
+  const withTarget = (wishlist: WizardWishlistItem[], credit: number): WizardConditions => ({
+    ...makeConditions(wishlist),
+    basic: { semester: null, minCredit: credit, maxCredit: credit, wishlist },
+  });
+
+  it("공강 요일 때문에 빠진 강의가 있어야 학점을 채울 수 있으면 freeDay로 짚는다", () => {
+    const a = mon(1, 3, 9);
+    const b = { ...mon(2, 3, 9), meetings: [{ day: 1, startTime: 9, endTime: 10.5, location: null }] };
+    const result = generateWizardCandidates({
+      ...withTarget([{ course: a, required: false }, { course: b, required: false }], 6),
+      preference: { ...DEFAULT_PREFERENCE_CONDITIONS, freeDayOfWeek: { enabled: true, days: [0] } },
+    });
+    expect(result.conflicts[0]).toMatchObject({ kind: "freeDay", days: [0] });
+    expect(result.conflicts[0].courses?.map((c) => c.title)).toEqual(["과목1"]);
+  });
+
+  it("겹치는 두 강의를 모두 넣어야만 학점을 채울 수 있으면 overlap으로 두 강의를 짚는다", () => {
+    const result = generateWizardCandidates(
+      withTarget(
+        [
+          { course: mon(1, 3, 9), required: false },
+          { course: mon(2, 3, 9.5), required: false },
+        ],
+        6,
+      ),
+    );
+    expect(result.conflicts[0].kind).toBe("overlap");
+    expect(result.conflicts[0].courses).toHaveLength(2);
+  });
+
+  it("다 넣어도 학점이 모자라면 credit으로 짚는다", () => {
+    const result = generateWizardCandidates(
+      withTarget([{ course: mon(1, 3, 9), required: false }], 18),
+    );
+    expect(result.conflicts[0].kind).toBe("credit");
+  });
+});

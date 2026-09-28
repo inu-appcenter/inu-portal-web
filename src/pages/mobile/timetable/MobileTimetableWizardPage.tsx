@@ -1,40 +1,51 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
-import CapsuleButton from "@/components/common/CapsuleButton";
-import Badge from "@/components/common/Badge";
 import { useSemesters } from "@/hooks/useSemesters";
-import { pickCurrentSemester } from "@/utils/semester";
+import { formatSemester, pickCurrentSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
+import { showToast } from "@/utils/toast";
 import {
+  WIZARD_CREDIT_TOLERANCE,
   WIZARD_MAX_CREDIT_SCALE,
   WIZARD_MIN_CREDIT_SCALE,
+  getWizardCreditRange,
   useTimetableWizardStore,
 } from "@/stores/useTimetableWizardStore";
 import { generateWizardCandidates } from "@/utils/timetableWizardGenerator";
-import CreditRangeSlider from "@/components/mobile/timetable/wizard/CreditRangeSlider";
 import WizardStepIndicator from "@/components/mobile/timetable/wizard/WizardStepIndicator";
 import WizardCourseSearchSheet from "@/components/mobile/timetable/wizard/WizardCourseSearchSheet";
-import WizardStep3Exclusion from "@/components/mobile/timetable/wizard/WizardStep3Exclusion";
 import WizardGeneratingScreen from "@/components/mobile/timetable/wizard/WizardGeneratingScreen";
 import WizardResultsScreen from "@/components/mobile/timetable/wizard/WizardResultsScreen";
 import WizardDetailScreen from "@/components/mobile/timetable/wizard/WizardDetailScreen";
-import WizardSaveFlow from "@/components/mobile/timetable/wizard/WizardSaveFlow";
+import WizardSaveCandidatesSheet from "@/components/mobile/timetable/wizard/WizardSaveCandidatesSheet";
 import {
   WizardEmptyState,
   WizardErrorState,
 } from "@/components/mobile/timetable/wizard/WizardEmptyErrorScreens";
 import {
+  WizardBottomCTA,
+  WizardCard,
+  WizardCreditSlider,
+  WizardDashedButton,
+  WizardDayChip,
+  WizardSectionLabel,
+  WizardSelectField,
+  WizardToggleRow,
+} from "@/components/mobile/timetable/wizard/ui";
+import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+import {
+  WIZARD_DAY_NAMES,
   mapWizardCoursesToClassItems,
   toWishlistCourseCards,
 } from "@/utils/timetableWizardFormat";
-import type {
-  WizardPreferenceConditions,
-  WizardCourseOption,
+import {
+  DEFAULT_EXCLUSION_CONDITIONS,
+  type WizardPreferenceConditions,
+  type WizardCourseOption,
 } from "@/types/timetableWizard";
 import { CourseCard } from "@/components/mobile/timetable/CourseCard";
 import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBottomSheet";
@@ -42,18 +53,12 @@ import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { CourseCardOfferingView } from "@/types/courseCardView";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
-const DAY_LABELS = ["월", "화", "수", "목", "금"];
+/** 새 시안은 강의선택 → 조건설정 2단계 */
+const TOTAL_CONDITION_STEPS = 2;
+/** 조건설정 "오전 수업 피하기": 10시 이전에 시작하는 수업을 감점 (시안 문구) */
+const MORNING_START_AFTER = 10;
 
-// Figma 시안의 "2026-2학기" 표기를 위한 축약 포맷 (앱 전역 formatSemester와는 별개, 드롭다운 전용)
-const COMPACT_TERM_LABELS: Record<string, string> = {
-  FIRST: "1학기",
-  SECOND: "2학기",
-  SUMMER: "여름학기",
-  WINTER: "겨울학기",
-};
-const formatSemesterCompact = (year: number, term: string) =>
-  `${year}-${COMPACT_TERM_LABELS[term] ?? term}`;
-
+// Figma: INTIP / 시간표 마법사 (5834:17926)
 export default function MobileTimetableWizardPage() {
   const navigate = useNavigate();
   const { semesters } = useSemesters();
@@ -61,20 +66,19 @@ export default function MobileTimetableWizardPage() {
 
   const step = useTimetableWizardStore((s) => s.step);
   const semester = useTimetableWizardStore((s) => s.semester);
-  const minCredit = useTimetableWizardStore((s) => s.minCredit);
-  const maxCredit = useTimetableWizardStore((s) => s.maxCredit);
+  const targetCredit = useTimetableWizardStore((s) => s.targetCredit);
+  const allowCreditTolerance = useTimetableWizardStore((s) => s.allowCreditTolerance);
   const wishlist = useTimetableWizardStore((s) => s.wishlist);
   const preference = useTimetableWizardStore((s) => s.preference);
-  const exclusion = useTimetableWizardStore((s) => s.exclusion);
   const result = useTimetableWizardStore((s) => s.result);
   const selectedCandidateId = useTimetableWizardStore((s) => s.selectedCandidateId);
   const isSaveSheetOpen = useTimetableWizardStore((s) => s.isSaveSheetOpen);
 
   const setStep = useTimetableWizardStore((s) => s.setStep);
   const setSemester = useTimetableWizardStore((s) => s.setSemester);
-  const setCreditRange = useTimetableWizardStore((s) => s.setCreditRange);
+  const setTargetCredit = useTimetableWizardStore((s) => s.setTargetCredit);
+  const setAllowCreditTolerance = useTimetableWizardStore((s) => s.setAllowCreditTolerance);
   const removeWishlistCourse = useTimetableWizardStore((s) => s.removeWishlistCourse);
-  const toggleWishlistRequired = useTimetableWizardStore((s) => s.toggleWishlistRequired);
   const updatePreference = useTimetableWizardStore((s) => s.updatePreference);
   const setResult = useTimetableWizardStore((s) => s.setResult);
   const selectCandidate = useTimetableWizardStore((s) => s.selectCandidate);
@@ -90,6 +94,12 @@ export default function MobileTimetableWizardPage() {
     seedDefaultMajor(userDepartment || "컴퓨터공학부");
   }, [userDepartment, seedDefaultMajor]);
 
+  // 이전 버전의 3단계(제외 조건)는 새 시안에 없다. 스토어 복원이 접어 주지만,
+  // 런타임에 들어오는 경우까지 마지막 조건 단계로 돌린다.
+  useEffect(() => {
+    if (step === "step3") setStep("step2");
+  }, [step, setStep]);
+
   // 아직 고른 학기가 없거나, 저장돼 있던 학기가 서버 목록에서 사라진 경우 기본값을 채운다
   // (진행중 학기 우선). 후자를 방치하면 select의 value와 실제 조회 학기가 어긋난다.
   useEffect(() => {
@@ -101,18 +111,23 @@ export default function MobileTimetableWizardPage() {
   }, [semesters, semester, setSemester]);
 
   // 조합 생성. 위시리스트가 강의 스냅샷을 들고 있어 서버 조회에 전혀 의존하지 않으므로
-  // 이 단계는 순수 계산이다 - 개설강의 전체 선로딩, 로딩/에러 경합, 페이지가 도착할
-  // 때마다 계산이 처음부터 다시 도는 문제가 구조적으로 사라졌다.
-  // 타이머는 결과가 순식간에 튀어 나와 화면이 깜빡이는 걸 막는 최소 노출 시간일 뿐이다.
+  // 이 단계는 순수 계산이다. 타이머는 결과가 순식간에 튀어 나와 화면이 깜빡이는 걸 막는
+  // 최소 노출 시간일 뿐이다.
   useEffect(() => {
     if (step !== "generating") return;
 
     let generated;
     try {
       generated = generateWizardCandidates({
-        basic: { semester, minCredit, maxCredit, wishlist },
+        basic: {
+          semester,
+          ...getWizardCreditRange(targetCredit, allowCreditTolerance),
+          wishlist,
+        },
         preference,
-        exclusion,
+        // 새 시안에는 제외 조건 화면이 없다. 예전 버전에서 저장된 제외 조건이 보이지 않는
+        // 채로 결과를 깎아 먹지 않도록 항상 빈 조건으로 돌린다.
+        exclusion: DEFAULT_EXCLUSION_CONDITIONS,
       });
     } catch (e) {
       console.error("시간표 조합 생성 실패:", e);
@@ -129,19 +144,17 @@ export default function MobileTimetableWizardPage() {
   }, [
     step,
     semester,
-    minCredit,
-    maxCredit,
+    targetCredit,
+    allowCreditTolerance,
     wishlist,
     preference,
-    exclusion,
     setResult,
     setStep,
   ]);
 
   const runGeneration = useCallback(() => setStep("generating"), [setStep]);
 
-  // 빈 결과 화면에서 원인 강의를 바로 빼고 그 자리에서 재생성한다(#248). Step1로
-  // 돌아가 사용자가 직접 어떤 강의였는지 기억해 빼야 했던 흐름을 없앤다.
+  // 빈 결과 화면에서 원인 강의를 바로 빼고 그 자리에서 재생성한다(#248).
   const handleRemoveWishlistCourseFromConflict = useCallback(
     (subjectNumber: string) => {
       removeWishlistCourse(subjectNumber);
@@ -150,12 +163,9 @@ export default function MobileTimetableWizardPage() {
     [removeWishlistCourse, runGeneration],
   );
 
-  // 원인 강의를 다른 분반으로 "교체"한다(#248). 강의 자체를 빼고, 같은 과목명으로
-  // 미리 필터링된 검색 시트를 열어 다른 분반을 바로 담을 수 있게 한다. 시트에서
-  // 담은 뒤 재생성은 자동으로 이어지지 않는다 - 사용자가 몇 개를 더 조정할지
-  // 스스로 판단해야 하는 흐름(빈 결과 화면과 달리 여기서는 몇 번이고 검색/담기를
-  // 반복할 수 있음)이라, 매번 자동 재생성하면 오히려 방해가 된다. 다 고른 뒤
-  // "다시 만들기"로 직접 재생성한다.
+  // 원인 강의를 다른 분반으로 "교체"한다(#248). 강의를 빼고, 같은 과목명으로 미리
+  // 필터링된 검색 시트를 연다. 몇 개를 더 조정할지는 사용자가 정하므로 자동 재생성은
+  // 하지 않는다 - 다 고른 뒤 "다시 만들기"로 직접 재생성한다.
   const handleReplaceWishlistCourseFromConflict = useCallback(
     (course: WizardCourseOption) => {
       removeWishlistCourse(course.subjectNumber);
@@ -167,10 +177,7 @@ export default function MobileTimetableWizardPage() {
   // 위시리스트는 개설강의 단위 스냅샷이고 카드는 과목 단위라, 그리기 직전에만 묶는다.
   const wishlistCards = useMemo(() => toWishlistCourseCards(wishlist), [wishlist]);
 
-  // Step1에서 이미 담은(=필수/선택 표시가 붙은) 강의 행을 눌러도 상세 모달이 뜨지
-  // 않던 문제(#397) - 검색 시트에서 담기 전에는 강의 정보를 볼 수 있는데, 담은
-  // 뒤에는 그 정보를 다시 볼 방법이 없었다. 후보로 담긴 강의는 서버 재조회 없이
-  // 스냅샷 그대로 보여주면 되므로, 편집 화면과 같은 ClassDetailBottomSheet를 재사용한다.
+  // 담은 강의 행을 누르면 편집 화면과 같은 ClassDetailBottomSheet로 상세를 보여 준다(#397).
   const wishlistGridEvents = useMemo(
     () => mapWizardCoursesToClassItems(wishlist.map((item) => item.course)),
     [wishlist],
@@ -182,8 +189,7 @@ export default function MobileTimetableWizardPage() {
   const handleSelectWishlistOffering = useCallback(
     (offering: CourseCardOfferingView) => {
       // gridEvents에서 되찾지 않고 위시리스트 스냅샷에서 직접 만든다 - 시간 정보가 없는
-      // (이러닝 등) 강의는 gridEvents에 항목 자체가 없어(WizardDetailScreen과 동일한 이유)
-      // 찾기에 의존하면 그 강의는 영영 상세를 못 연다.
+      // (이러닝 등) 강의는 gridEvents에 항목 자체가 없다.
       const item = wishlist.find((w) => w.course.courseOfferingId === offering.offeringId);
       if (!item) return;
       const firstMeeting = item.course.meetings[0];
@@ -213,6 +219,21 @@ export default function MobileTimetableWizardPage() {
     [result, selectedCandidateId],
   );
 
+  const goToTimetable = useCallback(
+    (timeTableId: number) => {
+      resetWizard();
+      const path = `${ROUTES.TIMETABLE.ROOT}?id=${timeTableId}`;
+      // 멀티 웹뷰 앱에서는 네이티브 스택을 root로 collapse하고 그 root를 이 경로로
+      // 이동시켜야 한다(마법사는 push된 별도 웹뷰라 SPA navigate로는 root가 안 바뀐다).
+      if (supportsMultiWebView()) {
+        appBridge.goHome(path);
+      } else {
+        navigate(path, { replace: true });
+      }
+    },
+    [resetWizard, navigate],
+  );
+
   // 뒤로가기 한 번이 무엇을 닫는지는 스토어의 closeTopLayer가 단독으로 결정한다
   // (필터 오버레이 → 강의 시트 → 스텝). 화면마다 제각각 판단하지 않는다.
   const handleBack = useCallback(() => {
@@ -221,48 +242,42 @@ export default function MobileTimetableWizardPage() {
       case "step1":
         navigate(-1);
         break;
-      case "step2":
-        setStep("step1");
-        break;
-      case "step3":
-        setStep("step2");
-        break;
       case "detail":
         setStep("results");
         break;
       default:
-        setStep("step3");
+        setStep(step === "step2" ? "step1" : "step2");
     }
   }, [closeTopLayer, step, navigate, setStep]);
 
   const headerConfig = useMemo(() => {
     switch (step) {
       case "step1":
-        return { title: "기본 조건", rightArea: <StepBadge>1/3</StepBadge> };
+        return { title: "필수 조건" };
       case "step2":
-        return { title: "선호 조건", rightArea: <StepBadge>2/3</StepBadge> };
       case "step3":
-        return { title: "제외 조건", rightArea: <StepBadge>3/3</StepBadge> };
+        return { title: "선택 조건" };
       case "generating":
-        return { visible: false };
-      case "results":
-        return {
-          title: "추천 시간표",
-          rightArea: (
-            <HeaderTextButton onClick={runGeneration}>다시 만들기</HeaderTextButton>
-          ),
-        };
+        return { title: "조건 설정" };
       case "detail":
         return {
           title: selectedCandidate?.label ?? "추천 시간표",
           rightArea: selectedCandidate && (
-            <Badge
-              text={`${selectedCandidate.totalCredit}학점 · ${selectedCandidate.courses.length}과목`}
-            />
+            <HeaderSummary>
+              {selectedCandidate.totalCredit}학점 · {selectedCandidate.courses.length}과목
+            </HeaderSummary>
           ),
         };
       default:
-        return { title: "추천 시간표" };
+        // 결과·실패 화면 모두 조건을 그대로 둔 채 다시 뽑을 수 있다 (시안 동일)
+        return {
+          title: "추천 시간표",
+          rightArea: (
+            <HeaderTextButton type="button" onClick={runGeneration}>
+              다시 만들기
+            </HeaderTextButton>
+          ),
+        };
     }
   }, [step, runGeneration, selectedCandidate]);
 
@@ -270,103 +285,87 @@ export default function MobileTimetableWizardPage() {
     hasback: true,
     showAlarm: false,
     pageBgColor: "var(--bg-subtle, #f8f9fb)",
-    // 헤더 우측 영역이 기본 원형(아이콘 전용) 폭으로 제한되어 "1/3"보다 긴 텍스트/배지가
-    // 줄바꿈되는 문제 방지 (MobileHeader의 $isCircle 로직 참고)
+    // 헤더 우측 영역이 기본 원형(아이콘 전용) 폭으로 제한되어 긴 텍스트가 줄바꿈되는 문제 방지
     rightAreaNotCircle: true,
     onBack: handleBack,
     ...headerConfig,
   });
 
-  const isConditionStep = step === "step1" || step === "step2" || step === "step3";
-
-  const handlePrimaryNext = () => {
-    if (step === "step1") setStep("step2");
-    else if (step === "step2") setStep("step3");
-    else if (step === "step3") runGeneration();
+  // 실패 원인에 따라 고칠 곳이 있는 단계로 보낸다(공강 요일은 조건설정, 나머지는 강의선택)
+  const handleRelax = () => {
+    const kind = result?.conflicts[0]?.kind;
+    setStep(kind === "freeDay" ? "step2" : "step1");
   };
-
-  const semesterLabel = semester
-    ? formatSemesterCompact(semester.year, semester.term)
-    : "학기를 선택하세요";
 
   return (
     <PageWrapper>
-      {isConditionStep && (
-        <WizardStepIndicator step={step === "step1" ? 1 : step === "step2" ? 2 : 3} />
-      )}
-
       {step === "step1" && (
-        <ScrollContent>
-          <Card>
-            <CardLabel>
-              학기<Required>*</Required>
-            </CardLabel>
-            <SelectBox
-              value={semester?.id ?? ""}
-              onChange={(e) => {
-                const found = semesters.find((s) => s.id === Number(e.target.value));
-                if (!found) return;
-                setSemester({ id: found.id, year: found.year, term: found.term });
-              }}
-            >
-              {semesters.length === 0 && <option value="">{semesterLabel}</option>}
-              {semesters.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {formatSemesterCompact(s.year, s.term)}
-                </option>
-              ))}
-            </SelectBox>
-          </Card>
-
-          <Card>
-            <CardLabelRow>
-              <CardLabel>목표 학점</CardLabel>
-              <CardLabelValue>
-                {minCredit} ~ {maxCredit}학점
-              </CardLabelValue>
-            </CardLabelRow>
-            <CreditRangeSlider
-              min={WIZARD_MIN_CREDIT_SCALE}
-              max={WIZARD_MAX_CREDIT_SCALE}
-              valueMin={minCredit}
-              valueMax={maxCredit}
-              onChange={({ min, max }) => setCreditRange(min, max)}
-            />
-          </Card>
-
-          <Card>
-            <CardLabelRow>
-              <CardLabel>듣고 싶은 강의 선택</CardLabel>
-              <CardLabelCount>{wishlist.length}개</CardLabelCount>
-            </CardLabelRow>
-            <CardHint>
-              강의 후보를 담아주세요. 반드시 들어가야 하는 강의는 "필수"로 바꿔주세요.
-            </CardHint>
-            {wishlistCards.map((card) => (
-              <CourseCard
-                key={card.courseId}
-                data={card}
-                onRemoveOffering={(offering) =>
-                  removeWishlistCourse(offering.subjectNumber)
-                }
-                onToggleRequired={(offering) =>
-                  toggleWishlistRequired(offering.subjectNumber)
-                }
-                onSelectOffering={handleSelectWishlistOffering}
+        <>
+          <WizardStepIndicator step={1} total={TOTAL_CONDITION_STEPS} />
+          <Body $gap={32}>
+            <Section>
+              <WizardSectionLabel required>학기</WizardSectionLabel>
+              <WizardSelectField
+                aria-label="학기"
+                placeholder="학기를 선택하세요"
+                value={semester ? String(semester.id) : ""}
+                options={semesters.map((s) => ({
+                  value: String(s.id),
+                  label: formatSemester(s.year, s.term),
+                }))}
+                onChange={(value) => {
+                  const found = semesters.find((s) => s.id === Number(value));
+                  if (!found) return;
+                  setSemester({ id: found.id, year: found.year, term: found.term });
+                }}
               />
-            ))}
-            {/* 학기만 정해지면 항상 열 수 있다. 조회 결과가 0건이어도 시트 안에서
-                필터를 되돌릴 수 있어야 하므로 결과 개수로 막지 않는다. */}
-            <AddCourseButton
-              type="button"
-              disabled={semester === null}
-              onClick={() => openCourseSearch("wishlist")}
-            >
-              <Icon name="add-plus-sm" size={18} />
-              강의 추가
-            </AddCourseButton>
-          </Card>
-          <BottomActionsSpacer />
+            </Section>
+
+            <Section>
+              <WizardSectionLabel trailing={`${targetCredit}학점`}>
+                목표 학점
+              </WizardSectionLabel>
+              <WizardCard>
+                <SliderArea>
+                  <WizardCreditSlider
+                    min={WIZARD_MIN_CREDIT_SCALE}
+                    max={WIZARD_MAX_CREDIT_SCALE}
+                    value={targetCredit}
+                    onChange={setTargetCredit}
+                  />
+                </SliderArea>
+                <WizardToggleRow
+                  title="오차 범위 허용"
+                  description={`목표 학점에서 ±${WIZARD_CREDIT_TOLERANCE} 정도 차이나요.`}
+                  checked={allowCreditTolerance}
+                  onCheckedChange={setAllowCreditTolerance}
+                  hideDivider
+                />
+              </WizardCard>
+            </Section>
+
+            <Section $gap={12}>
+              <WizardSectionLabel>장바구니</WizardSectionLabel>
+              {/* 학기만 정해지면 항상 열 수 있다. 조회 결과가 0건이어도 시트 안에서
+                  필터를 되돌릴 수 있어야 하므로 결과 개수로 막지 않는다. */}
+              <WizardDashedButton
+                disabled={semester === null}
+                onClick={() => openCourseSearch("wishlist")}
+              >
+                + 강의 담기
+              </WizardDashedButton>
+              {wishlistCards.map((card) => (
+                <CourseCard
+                  key={card.courseId}
+                  data={card}
+                  onRemoveOffering={(offering) =>
+                    removeWishlistCourse(offering.subjectNumber)
+                  }
+                  onSelectOffering={handleSelectWishlistOffering}
+                />
+              ))}
+            </Section>
+          </Body>
 
           <ClassDetailBottomSheet
             open={isWishlistDetailOpen}
@@ -376,35 +375,48 @@ export default function MobileTimetableWizardPage() {
             colorMap={wishlistColorMap}
             readOnly
           />
-        </ScrollContent>
+
+          <WizardBottomCTA disabled={semester === null} onClick={() => setStep("step2")}>
+            다음
+          </WizardBottomCTA>
+        </>
       )}
 
-      {step === "step2" && (
-        <Step2PreferenceConditions preference={preference} onChange={updatePreference} />
+      {(step === "step2" || step === "step3") && (
+        <>
+          <WizardStepIndicator step={2} total={TOTAL_CONDITION_STEPS} />
+          <ConditionStep preference={preference} onChange={updatePreference} />
+          <WizardBottomCTA onClick={runGeneration}>시간표 만들기</WizardBottomCTA>
+        </>
       )}
 
-      {step === "step3" && <WizardStep3Exclusion />}
-
-      {step === "generating" && <WizardGeneratingScreen onCancel={() => setStep("step3")} />}
+      {step === "generating" && <WizardGeneratingScreen onCancel={() => setStep("step2")} />}
 
       {step === "results" && result && (
-        <WizardResultsScreen
-          candidates={result.candidates}
-          onSelectCandidate={(id) => {
-            selectCandidate(id);
-            setStep("detail");
-          }}
-        />
+        <>
+          <WizardResultsScreen
+            candidates={result.candidates}
+            onSelectCandidate={(id) => {
+              selectCandidate(id);
+              setStep("detail");
+            }}
+          />
+          <WizardBottomCTA onClick={openSaveSheet}>시간표 저장하기</WizardBottomCTA>
+        </>
       )}
 
       {step === "detail" && selectedCandidate && (
-        <WizardDetailScreen candidate={selectedCandidate} />
+        <>
+          <WizardDetailScreen candidate={selectedCandidate} reserveBottomSpace={false} />
+          <WizardBottomCTA onClick={openSaveSheet}>이 시간표 저장</WizardBottomCTA>
+        </>
       )}
 
       {step === "empty" && result && (
         <WizardEmptyState
           conflicts={result.conflicts}
-          onRelax={() => setStep("step1")}
+          targetCredit={targetCredit}
+          onRelax={handleRelax}
           onRemoveWishlistCourse={handleRemoveWishlistCourseFromConflict}
           onReplaceWishlistCourse={handleReplaceWishlistCourseFromConflict}
         />
@@ -412,50 +424,26 @@ export default function MobileTimetableWizardPage() {
 
       {step === "error" && <WizardErrorState onRetry={runGeneration} />}
 
-      {isConditionStep && (
-        <FixedBottomContainer>
-          <BottomActionButton
-            variant="primary"
-            disabled={step === "step1" && semester === null}
-            onClick={handlePrimaryNext}
-          >
-            {step === "step1" ? "시작하기" : step === "step3" ? "시간표 만들기" : "다음"}
-          </BottomActionButton>
-        </FixedBottomContainer>
-      )}
-
-      {step === "detail" && selectedCandidate && (
-        <FixedBottomContainer>
-          <BottomActionButton variant="primary" onClick={openSaveSheet}>
-            이 시간표 저장
-          </BottomActionButton>
-        </FixedBottomContainer>
-      )}
-
       <WizardCourseSearchSheet />
 
-      {selectedCandidate && (
-        <WizardSaveFlow
+      {/* 결과 화면("시간표 저장하기")과 상세 화면("이 시간표 저장")이 같은 시트를 쓴다
+          (Figma 3901:12300). 상세에서 열면 보던 시간표만 체크된 채로 연다. */}
+      {result && (
+        <WizardSaveCandidatesSheet
           open={isSaveSheetOpen}
           onOpenChange={(open) => {
             if (!open) closeSaveSheet();
           }}
-          candidate={selectedCandidate}
+          candidates={result.candidates}
           semesterId={semester?.id ?? null}
-          // 위시리스트 등 조건은 그대로 둔 채(resetWizard 미호출) 결과만 새로 뽑는다 -
-          // 헤더의 "다시 만들기"와 동일한 동작.
-          onGenerateMore={runGeneration}
-          onViewTimetable={(timeTableId) => {
-            resetWizard();
-            const path = `${ROUTES.TIMETABLE.ROOT}?id=${timeTableId}`;
-            // 멀티 웹뷰 앱에서는 네이티브 스택을 root로 collapse하고 그 root를
-            // 이 경로로 이동시켜야 한다(마법사는 push된 별도 웹뷰이므로 일반 SPA
-            // navigate로는 그 웹뷰 자신만 이동하고 root의 시간표 탭은 안 바뀐다).
-            if (supportsMultiWebView()) {
-              appBridge.goHome(path);
-            } else {
-              navigate(path, { replace: true });
-            }
+          initialSelectedIds={
+            step === "detail" && selectedCandidate ? [selectedCandidate.id] : undefined
+          }
+          onSaved={(ids) => {
+            if (ids.length === 0) return;
+            showToast(`시간표 ${ids.length}개를 저장했어요`, {
+              action: { text: "보러 가기", onClick: () => goToTimetable(ids[0]) },
+            });
           }}
         />
       )}
@@ -463,155 +451,92 @@ export default function MobileTimetableWizardPage() {
   );
 }
 
-// --- Step 2: 선호조건 --------------------------------------------------
+// --- 조건설정 (Figma 3231:9737) -------------------------------------------
 
-interface Step2Props {
+interface ConditionStepProps {
   preference: WizardPreferenceConditions;
   onChange: (
     updater: (prev: WizardPreferenceConditions) => WizardPreferenceConditions,
   ) => void;
 }
 
-function Step2PreferenceConditions({ preference, onChange }: Step2Props) {
-  const toggleDay = (day: number) => {
+function ConditionStep({ preference, onChange }: ConditionStepProps) {
+  const selectedDays = preference.freeDayOfWeek.enabled ? preference.freeDayOfWeek.days : [];
+
+  const toggleDay = (day: number) =>
     onChange((prev) => {
-      const days = prev.freeDayOfWeek.days.includes(day)
-        ? prev.freeDayOfWeek.days.filter((d) => d !== day)
-        : [...prev.freeDayOfWeek.days, day];
-      return { ...prev, freeDayOfWeek: { ...prev.freeDayOfWeek, days } };
+      const current = prev.freeDayOfWeek.enabled ? prev.freeDayOfWeek.days : [];
+      const days = current.includes(day)
+        ? current.filter((d) => d !== day)
+        : [...current, day].sort((a, b) => a - b);
+      // 시안에는 켜고 끄는 스위치가 없다 - 요일을 하나라도 고르면 조건이 켜진 것으로 본다
+      return { ...prev, freeDayOfWeek: { enabled: days.length > 0, days } };
     });
-  };
 
   return (
-    <ScrollContent>
-      <SectionHeading>원하는 조건을 골라주세요 (중복 선택 가능)</SectionHeading>
-
-      <PreferenceCard
-        checked={preference.manyFreeDays}
-        onToggle={() => onChange((prev) => ({ ...prev, manyFreeDays: !prev.manyFreeDays }))}
-        title="공강 많은 시간표"
-        code="C-01"
-      />
-
-      <PreferenceCard
-        checked={preference.freeDayOfWeek.enabled}
-        onToggle={() =>
-          onChange((prev) => ({
-            ...prev,
-            freeDayOfWeek: {
-              ...prev.freeDayOfWeek,
-              enabled: !prev.freeDayOfWeek.enabled,
-            },
-          }))
-        }
-        title="특정 요일 공강"
-        code="C-02"
-      >
-        {preference.freeDayOfWeek.enabled && (
-          <DayRow>
-            {DAY_LABELS.map((label, index) => (
-              <DayButton
+    <Body $gap={20}>
+      <Section>
+        <WizardSectionLabel>반드시 지킬 조건</WizardSectionLabel>
+        <OffDaysCard>
+          <CardText>
+            <CardTitle>공강으로 비울 요일</CardTitle>
+            <CardDescription>선택한 요일에 수업이 하나라도 있으면 제외돼요</CardDescription>
+          </CardText>
+          <DayChips role="group" aria-label="공강으로 비울 요일">
+            {WIZARD_DAY_NAMES.map((label, day) => (
+              <WizardDayChip
                 key={label}
-                type="button"
-                $active={preference.freeDayOfWeek.days.includes(index)}
-                onClick={() => toggleDay(index)}
-              >
-                {label}
-              </DayButton>
+                label={label}
+                selected={selectedDays.includes(day)}
+                onClick={() => toggleDay(day)}
+              />
             ))}
-          </DayRow>
-        )}
-      </PreferenceCard>
+          </DayChips>
+        </OffDaysCard>
+      </Section>
 
-      <PreferenceCard
-        checked={preference.noMorningClasses.enabled}
-        onToggle={() =>
-          onChange((prev) => ({
-            ...prev,
-            noMorningClasses: {
-              ...prev.noMorningClasses,
-              enabled: !prev.noMorningClasses.enabled,
-            },
-          }))
-        }
-        title="오전 수업 없는 시간표"
-        code="C-03"
-      >
-        {preference.noMorningClasses.enabled && (
-          <SelectBox
-            value={preference.noMorningClasses.startAfter}
-            onChange={(e) =>
+      <Section>
+        <WizardSectionLabel>이왕이면 이런 시간표</WizardSectionLabel>
+        <WizardCard>
+          <WizardToggleRow
+            title="공강 최대화"
+            description="지정한 요일 외에 빈 평일이 더 생기면 가점"
+            checked={preference.manyFreeDays}
+            onCheckedChange={(checked) =>
+              onChange((prev) => ({ ...prev, manyFreeDays: checked }))
+            }
+          />
+          <WizardToggleRow
+            title="오전 수업 피하기"
+            description="10시 이전 시작 수업 감점"
+            checked={preference.noMorningClasses.enabled}
+            onCheckedChange={(checked) =>
               onChange((prev) => ({
                 ...prev,
-                noMorningClasses: {
-                  ...prev.noMorningClasses,
-                  startAfter: Number(e.target.value),
-                },
+                noMorningClasses: { enabled: checked, startAfter: MORNING_START_AFTER },
               }))
             }
-          >
-            <option value={9.5}>9:30 이후 시작</option>
-            <option value={10}>10:00 이후 시작</option>
-            <option value={10.5}>10:30 이후 시작</option>
-            <option value={11}>11:00 이후 시작</option>
-            <option value={12}>12:00 이후 시작</option>
-          </SelectBox>
-        )}
-        {preference.noMorningClasses.enabled && (
-          <WarningInline>⚠ 선택한 조건으로는 시간표가 안 나올 수 있어요</WarningInline>
-        )}
-      </PreferenceCard>
-
-      <PreferenceCard
-        checked={preference.noNightClasses}
-        onToggle={() =>
-          onChange((prev) => ({ ...prev, noNightClasses: !prev.noNightClasses }))
-        }
-        title="야간 수업 제외"
-        code="C-04"
-      />
-
-      <PreferenceCard
-        checked={preference.fewConsecutive}
-        onToggle={() =>
-          onChange((prev) => ({ ...prev, fewConsecutive: !prev.fewConsecutive }))
-        }
-        title="연강 적은 시간표"
-        code="C-05"
-      />
-
-      <PreferenceCard
-        checked={preference.avoidCommute}
-        onToggle={() => onChange((prev) => ({ ...prev, avoidCommute: !prev.avoidCommute }))}
-        title="통학 시간 피하기"
-        code="C-06"
-      />
-
-      <BottomActionsSpacer />
-    </ScrollContent>
-  );
-}
-
-interface PreferenceCardProps {
-  checked: boolean;
-  onToggle: () => void;
-  title: string;
-  code: string;
-  children?: React.ReactNode;
-}
-
-function PreferenceCard({ checked, onToggle, title, code, children }: PreferenceCardProps) {
-  return (
-    <PreferenceCardBox $checked={checked}>
-      <PreferenceHead onClick={onToggle}>
-        <CheckboxInput type="checkbox" checked={checked} readOnly />
-        <PreferenceTextWrap>
-          <PreferenceTitle $checked={checked}>{title}</PreferenceTitle>
-          <PreferenceCode>{code}</PreferenceCode>
-        </PreferenceTextWrap>
-      </PreferenceHead>
-      {checked && children}
-    </PreferenceCardBox>
+          />
+          <WizardToggleRow
+            title="야간 수업 피하기"
+            description="18시 이후 종료 수업 감점"
+            checked={preference.noNightClasses}
+            onCheckedChange={(checked) =>
+              onChange((prev) => ({ ...prev, noNightClasses: checked }))
+            }
+          />
+          <WizardToggleRow
+            title="연강 피하기"
+            description="3시간 이상 연속 수업 감점"
+            checked={preference.fewConsecutive}
+            onCheckedChange={(checked) =>
+              onChange((prev) => ({ ...prev, fewConsecutive: checked }))
+            }
+            hideDivider
+          />
+        </WizardCard>
+      </Section>
+    </Body>
   );
 }
 
@@ -626,261 +551,74 @@ const PageWrapper = styled.div`
   background-color: var(--bg-subtle, #f8f9fb);
 `;
 
-const ScrollContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
+const Body = styled.div<{ $gap: number }>`
+  width: 100%;
+  box-sizing: border-box;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  -webkit-overflow-scrolling: touch;
+  gap: ${({ $gap }) => $gap}px;
 `;
 
-const StepBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 14px;
-  font-weight: 600;
-`;
-
-const HeaderTextButton = styled.button`
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: var(--text-brand, #0061ff);
-  font-size: 15px;
-  font-weight: 600;
-  padding: 8px 4px;
-  white-space: nowrap;
-`;
-
-const Card = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 20px;
-  padding: 18px 16px;
+const Section = styled.section<{ $gap?: number }>`
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: 100%;
-  box-sizing: border-box;
-  flex-shrink: 0;
+  gap: ${({ $gap = 8 }) => $gap}px;
 `;
 
-const PreferenceCardBox = styled(Card)<{ $checked: boolean }>`
-  border-width: ${({ $checked }) => ($checked ? "1.5px" : "1px")};
-  border-color: ${({ $checked }) =>
-    $checked ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+const SliderArea = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid var(--border-default, #e5e8eb);
 `;
 
-const WarningInline = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #fff8e9;
-  border: 1px solid #fdd9aa;
-  color: #d97706;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 18px;
+const OffDaysCard = styled(WizardCard)`
+  padding: 16px;
+  gap: 16px;
 `;
 
-const CardLabelRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const CardLabel = styled.span`
-  color: var(--text-secondary, #333d4b);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 23px;
-`;
-
-const CardLabelValue = styled.span`
-  color: var(--interactive-primary, #3b82f6);
-  font-size: 15px;
-  font-weight: 600;
-`;
-
-const CardLabelCount = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
-  font-weight: 400;
-`;
-
-const Required = styled.span`
-  color: var(--interactive-primary, #3b82f6);
-  margin-left: 2px;
-`;
-
-const SelectBox = styled.select`
-  width: 100%;
-  height: 52px;
-  padding: 0 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #191f28);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 52px;
-  box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%238B95A1' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-`;
-
-const CardHint = styled.p`
-  margin: -8px 0 0;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 12px;
-  line-height: 18px;
-`;
-
-const AddCourseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 48px;
-  border-radius: 14px;
-  border: 1px dashed var(--interactive-primary, #3b82f6);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--interactive-primary, #3b82f6);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const SectionHeading = styled.h2`
-  margin: 0 0 4px;
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 20px;
-`;
-
-const PreferenceHead = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-`;
-
-const PreferenceTextWrap = styled.div`
+const CardText = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
 `;
 
-const PreferenceTitle = styled.span<{ $checked: boolean }>`
-  color: var(--text-primary, #191f28);
-  font-size: 15px;
-  font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
-  line-height: 23px;
+const CardTitle = styled.span`
+  color: var(--text-secondary, #333d4b);
+  ${typo.heading2}
 `;
 
-const PreferenceCode = styled.span`
+const CardDescription = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 11px;
-  line-height: 17px;
+  ${typo.caption1}
 `;
 
-const CheckboxInput = styled.input`
-  appearance: none;
-  -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  border: 1.5px solid var(--gray-400, #b0b8c1);
-  background-color: var(--bg-base, #ffffff);
-  position: relative;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s;
-
-  &:checked {
-    border-color: var(--interactive-primary, #3b82f6);
-    background-color: var(--interactive-primary, #3b82f6);
-  }
-
-  &:checked::after {
-    content: "";
-    position: absolute;
-    left: 7px;
-    top: 3px;
-    width: 5px;
-    height: 10px;
-    border: solid #ffffff;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
-`;
-
-const DayRow = styled.div`
+// 7개 요일(48px × 7 + 간격)이 좁은 화면에서 넘치면 가로로 밀어서 본다
+const DayChips = styled.div`
   display: flex;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -16px;
+  padding: 0 16px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
-const DayButton = styled.button<{ $active: boolean }>`
-  flex: 1;
-  height: 44px;
-  border-radius: 999px;
-  border: 1px solid
-    ${({ $active }) =>
-      $active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
-  background: ${({ $active }) =>
-    $active ? "var(--interactive-primary, #3b82f6)" : "var(--bg-subtle, #f8f9fb)"};
-  color: ${({ $active }) => ($active ? "#ffffff" : "var(--text-secondary, #333d4b)")};
-  font-size: 14px;
-  font-weight: 500;
+const HeaderTextButton = styled.button`
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  color: var(--text-brand, #0061ff);
+  white-space: nowrap;
   cursor: pointer;
+  ${typo.label1}
 `;
 
-const BottomActionsSpacer = styled.div`
-  height: 80px;
-  flex-shrink: 0;
-`;
-
-const FixedBottomContainer = styled.div`
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 768px;
-  background: transparent;
-  padding: 0 24px;
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  box-sizing: border-box;
-  z-index: 100;
-`;
-
-const BottomActionButton = styled(CapsuleButton)`
-  flex: 1 1 0;
-  width: auto;
-  min-width: 0;
-  height: 56px;
-  min-height: 56px;
-  padding: 12px 24px;
+const HeaderSummary = styled.span`
+  padding: 8px 4px;
+  color: var(--text-secondary, #333d4b);
+  white-space: nowrap;
+  ${typo.label1}
 `;

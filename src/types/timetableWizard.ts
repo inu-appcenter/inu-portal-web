@@ -84,10 +84,18 @@ export type WizardStep =
   | "empty"
   | "error";
 
+/** 결과 카드에 붙는 짧은 태그. success=조건 충족, warn=일부만 충족, error=빠진 강의 등 */
+export interface WizardReasonTag {
+  label: string;
+  tone: "success" | "warn" | "error";
+}
+
 export interface WizardReason {
   met: boolean; // true: ✓ 충족, false: ! 일부 충족/주의
   headline: string;
   detail?: string;
+  /** 결과 카드용 짧은 표기("월 공강", "오전 없음"). 없으면 카드에 태그를 달지 않는다 */
+  tag?: WizardReasonTag;
 }
 
 export interface WizardCandidate {
@@ -99,8 +107,28 @@ export interface WizardCandidate {
   recommended?: boolean;
 }
 
+/**
+ * 실패 원인 종류. 실패 화면이 종류별로 다른 문구를 보여준다(Figma 실패_겹침/지정공강/학점범위).
+ * - overlap: 담은 강의끼리 시간이 겹침
+ * - freeDay: 공강 요일 조건 때문에 모든 조합이 걸림
+ * - credit: 목표 학점에 맞는 조합이 없음
+ * - exclusion: 제외 시간대·제외 강의(그룹 마법사 등 제외 조건이 있는 흐름)
+ * - noWishlist: 담은 강의가 없음
+ */
+export type WizardConflictKind =
+  | "overlap"
+  | "freeDay"
+  | "credit"
+  | "exclusion"
+  | "noWishlist";
+
 export interface WizardConflictItem {
   label: string;
+  kind?: WizardConflictKind;
+  /** kind=freeDay: 원인이 된 공강 요일(0=월) */
+  days?: number[];
+  /** kind=credit: 담은 강의로 만들 수 있는 총 학점들(오름차순) */
+  achievableCredits?: number[];
   // 원인이 된 필수 강의(과목명·교수명·분반·요일·시간 식별용, formatCourseMeta()로 렌더링).
   // 시간 겹침·제외 시간대·제외 강의·공강 요일 원인 모두 채워져 실패 화면에서 바로
   // 빼기/교체할 수 있다(#397). 학점 범위처럼 특정 강의를 지목할 수 없는 원인은 비워둔다.

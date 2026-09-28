@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
+import { wizardGenerating } from "@/resources/assets/illustrations/timetable";
+import { WizardBottomCTA } from "@/components/mobile/timetable/wizard/ui";
+import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
 
 interface WizardGeneratingScreenProps {
   onCancel: () => void;
@@ -11,6 +14,7 @@ const ROTATING_SUBTITLES = [
   "선호 조건에 가까운 시간표를 고르고 있어요",
 ];
 
+// Figma: 시간표 마법사 / 생성중 (3057:9468)
 const WizardGeneratingScreen = ({ onCancel }: WizardGeneratingScreenProps) => {
   const [subtitleIndex, setSubtitleIndex] = useState(0);
 
@@ -23,87 +27,63 @@ const WizardGeneratingScreen = ({ onCancel }: WizardGeneratingScreenProps) => {
 
   return (
     <Wrapper>
-      <Center>
-        <Spinner />
-        <Title>시간표를 조합하는 중</Title>
-        <Subtitle>{ROTATING_SUBTITLES[subtitleIndex]}</Subtitle>
-      </Center>
-      <CancelArea>
-        <CancelButton type="button" onClick={onCancel}>
-          취소
-        </CancelButton>
-      </CancelArea>
+      <Loading role="status" aria-live="polite">
+        <Illustration src={wizardGenerating} alt="" />
+        <Copy>
+          <Title>시간표를 조합하는 중</Title>
+          <Subtitle>{ROTATING_SUBTITLES[subtitleIndex]}</Subtitle>
+        </Copy>
+      </Loading>
+      <WizardBottomCTA onClick={onCancel}>취소</WizardBottomCTA>
     </Wrapper>
   );
 };
 
 export default WizardGeneratingScreen;
 
-const spin = keyframes`
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-`;
-
 const Wrapper = styled.div`
+  flex: 1;
+  width: 100%;
+  min-height: calc(100dvh - var(--header-height, 56px));
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-base, #ffffff);
 `;
 
-const Center = styled.div`
+const Loading = styled.div`
   flex: 1;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 24px;
+  gap: 24px;
 `;
 
-const Spinner = styled.div`
-  width: 72px;
-  height: 72px;
-  border: 6px solid var(--bg-brand, #eff6ff);
-  border-top-color: var(--interactive-primary, #3b82f6);
-  border-radius: 50%;
-  animation: ${spin} 0.8s linear infinite;
+// 원본 일러스트는 세로로 길어 위아래를 15%씩 잘라 260×300 틀에 맞춘다(시안 동일)
+const Illustration = styled.img`
+  width: 260px;
+  height: 300px;
+  object-fit: cover;
 `;
 
-const Title = styled.h1`
-  margin: 0;
-  color: var(--text-primary, #191f28);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 27px;
-`;
-
-const Subtitle = styled.p`
-  margin: 0;
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
-  line-height: 21px;
+const Copy = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   text-align: center;
 `;
 
-const CancelArea = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 8px 0 calc(24px + env(safe-area-inset-bottom, 0px));
-  flex-shrink: 0;
+const Title = styled.p`
+  margin: 0;
+  color: var(--text-primary, #191f28);
+  ${typo.title2}
 `;
 
-const CancelButton = styled.button`
-  min-width: 120px;
-  height: 44px;
-  padding: 0 24px;
-  border: none;
-  background: none;
-  color: var(--text-brand, #0061ff);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+/* body/1 — Regular 16/1.6 */
+const Subtitle = styled.p`
+  margin: 0;
+  color: var(--text-secondary, #333d4b);
+  font-size: 16px;
+  line-height: 1.6;
 `;

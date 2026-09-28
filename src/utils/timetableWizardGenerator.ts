@@ -3,6 +3,7 @@ import type {
   WizardCandidate,
   WizardConditions,
   WizardConflictItem,
+  WizardConflictKind,
   WizardCourseMeeting,
   WizardCourseOption,
   WizardGenerationResult,
@@ -20,6 +21,7 @@ import type {
 // required=false(선택)로 표시한 그룹은 통째로 건너뛰는 분기도 함께 탐색한다.
 
 const DAY_NAMES = ["월", "화", "수", "목", "금", "토", "일"];
+const WEEKDAY_INDEXES = [0, 1, 2, 3, 4];
 const SLOT_STEP = 0.5;
 const NIGHT_THRESHOLD = 18;
 // 1교시 표준 강의시간을 90분으로 가정해 연속 구간의 대략적인 "N연강"을 추정한다 (서버에 교시 데이터 없음)
@@ -213,18 +215,16 @@ const findRequiredCoursesViolating = (
   return result;
 };
 
-// 필수 그룹끼리 시간이 겹쳐 조합이 아예 안 나올 때, 어느 강의끼리 겹치는지 짚어준다.
-// 선택(optional) 그룹은 통째로 건너뛸 수 있어 결과 0개의 원인이 될 수 없으므로(searchCombinations
-// 참고) 필수 그룹 사이의 겹침만 확인하면 된다. 그룹 안 모든 분반 조합이 전부 겹쳐야("피할 방법이
-// 없어야") 그 그룹 쌍을 원인으로 지목한다 - 분반을 바꾸면 피해지는 경우까지 잘못 지목하지 않기 위해서다.
-const findOverlappingRequiredPairs = (groups: WishlistGroup[]): WizardCourseOption[][] => {
-  const required = groups.filter((g) => g.required);
+// 주어진 그룹들 중 어느 강의끼리 시간이 겹치는지 짚어준다(diagnoseNoCandidates 참고).
+// 그룹 안 모든 분반 조합이 전부 겹쳐야("피할 방법이 없어야") 그 그룹 쌍을 원인으로 지목한다 -
+// 분반을 바꾸면 피해지는 경우까지 잘못 지목하지 않기 위해서다.
+const findOverlappingPairs = (groups: WishlistGroup[]): WizardCourseOption[][] => {
   const pairs: WizardCourseOption[][] = [];
 
-  for (let i = 0; i < required.length; i += 1) {
-    for (let j = i + 1; j < required.length; j += 1) {
-      const gi = required[i];
-      const gj = required[j];
+  for (let i = 0; i < groups.length; i += 1) {
+    for (let j = i + 1; j < groups.length; j += 1) {
+      const gi = groups[i];
+      const gj = groups[j];
       const allOptionsOverlap = gi.options.every((oi) =>
         gj.options.every((oj) => overlapsAny(oi, oj.meetings)),
       );
@@ -257,6 +257,7 @@ const buildReasons = (
       met: true,
       headline: `${names}요일 공강`,
       detail: "선택한 조건 그대로 충족했어요",
+      tag: { label: `${names} 공강`, tone: "success" },
     });
   }
 
@@ -273,50 +274,63 @@ const buildReasons = (
         met: true,
         headline: `오전 수업 없음 (${formatHoursToTime(startAfter)} 이후 시작)`,
         detail: "선택한 조건 그대로 충족했어요",
+        tag: { label: "오전 없음", tone: "success" },
       });
     } else {
       reasons.push({
         met: false,
         headline: `오전 수업 있음 (${formatHoursToTime(startAfter)} 이전 시작)`,
         detail: "담은 강의만으로는 오전 수업을 완전히 피할 수 없어요",
+        tag: { label: `오전 수업 ${earlyMeetings.length}개`, tone: "warn" },
       });
     }
   }
 
   if (pref.noNightClasses) {
-    const nightMeetings = allMeetings.filter((m) => m.startTime >= NIGHT_THRESHOLD);
+    // 시안 문구 기준 "18시 이후 종료 수업 감점" - 18:00 정각에 끝나는 수업은 야간이 아니다
+    const nightMeetings = allMeetings.filter((m) => m.endTime > NIGHT_THRESHOLD + EPSILON);
     if (nightMeetings.length === 0) {
       score += 3;
       reasons.push({
         met: true,
         headline: "야간 수업 없음",
-        detail: "18시 이후 시작하는 수업이 없어요",
+        detail: "18시 이후에 끝나는 수업이 없어요",
+        tag: { label: "야간 없음", tone: "success" },
       });
     } else {
       reasons.push({
         met: false,
-        headline: "야간 수업 포함",
-        detail: `${nightMeetings.length}개 수업이 18시 이후에 시작해요`,
+        headline: `야간 수업 ${nightMeetings.length}개 포함`,
+        detail: `${nightMeetings.length}개 수업이 18시 이후에 끝나요`,
+        tag: { label: `야간 수업 ${nightMeetings.length}개`, tone: "warn" },
       });
     }
   }
 
-  // C-01 공강 많은 시간표 (소프트: 많을수록 좋다 - 점수만 가중, 탈락 없음)
+  // C-01 공강 최대화 (소프트: 많을수록 좋다 - 점수만 가중, 탈락 없음).
+  // 시안 문구대로 "지정한 요일 외에 빈 평일"만 센다. 주말은 원래 비어 있어 변별력이 없고,
+  // 지정 공강 요일은 하드 조건으로 이미 비어 있다.
   if (pref.manyFreeDays) {
-    const freeDayCount = freeDays.filter(Boolean).length;
+    const requested = pref.freeDayOfWeek.enabled ? pref.freeDayOfWeek.days : [];
+    const extraFreeWeekdays = WEEKDAY_INDEXES.filter(
+      (day) => freeDays[day] && !requested.includes(day),
+    );
+    const freeDayCount = extraFreeWeekdays.length;
     score += freeDayCount * 1.5;
     if (freeDayCount > 0) {
-      const names = DAY_NAMES.filter((_, i) => freeDays[i]).join(", ");
+      const names = extraFreeWeekdays.map((day) => DAY_NAMES[day]).join(", ");
       reasons.push({
         met: true,
         headline: `${names}요일 공강`,
         detail: "담은 강의로 만들 수 있는 공강을 최대한 확보했어요",
+        tag: { label: `공강 ${freeDayCount}일`, tone: "success" },
       });
     } else {
       reasons.push({
         met: false,
-        headline: "공강 없음",
-        detail: "담은 강의만으로는 공강을 만들 수 없어요",
+        headline: "추가 공강 없음",
+        detail: "담은 강의만으로는 평일 공강을 더 만들 수 없어요",
+        tag: { label: "추가 공강 없음", tone: "warn" },
       });
     }
   }
@@ -354,12 +368,14 @@ const buildReasons = (
         met: true,
         headline: `연강 최대 ${maxPeriods}개`,
         detail: "3연강 이상 구간이 없어요",
+        tag: { label: "연강 없음", tone: "success" },
       });
     } else {
       reasons.push({
         met: false,
         headline: `연강 최대 ${maxPeriods}개`,
         detail: `${DAY_NAMES[maxDay]}요일에 연속 강의 구간이 있어요`,
+        tag: { label: `${maxPeriods}연강 있음`, tone: "warn" },
       });
     }
   }
@@ -408,6 +424,115 @@ const makeContext = (
   flags,
 });
 
+const sumCredit = (courses: WizardCourseOption[]) => courses.reduce((s, c) => s + c.credit, 0);
+
+// 조합이 하나도 안 남았을 때 원인을 짚는다. 실패 화면이 원인 종류별로 다른 안내를 한다.
+//
+// 새 시안에는 필수/선택 토글이 없어 담은 강의가 대부분 "선택"이다. 선택 그룹은 통째로 건너뛸
+// 수 있어서, 공강 요일이나 시간 겹침 때문에 강의가 빠져도 조합 자체는 남고 겉으로는 "학점
+// 부족"으로만 보인다. 그래서 "그 조건을 풀면 목표 학점을 채우는 조합이 생기는가"로 판정한다.
+const diagnoseNoCandidates = (
+  conditions: WizardConditions,
+  groups: WishlistGroup[],
+  full: WizardCourseOption[][],
+): WizardConflictItem[] => {
+  const { basic, preference, exclusion } = conditions;
+  const withinCredit = (courses: WizardCourseOption[]) => {
+    const total = sumCredit(courses);
+    return total >= basic.minCredit && total <= basic.maxCredit;
+  };
+
+  const excludedSlotSet = new Set(exclusion.excludedSlots);
+  const excludedSubjectNumberSet = new Set(
+    exclusion.excludedCourses.map((c) => c.subjectNumber),
+  );
+  const relaxationChecks: {
+    label: string;
+    kind: WizardConflictKind;
+    days?: number[];
+    flags: HardConstraintFlags;
+    violates: (course: WizardCourseOption) => boolean;
+  }[] = [];
+
+  if (exclusion.excludedSlots.length > 0) {
+    relaxationChecks.push({
+      label: `제외한 시간대 (${excludedSlotSet.size}칸)`,
+      kind: "exclusion",
+      flags: { ignoreExcludedSlots: true },
+      violates: (c) => courseGridSlots(c).some((slot) => excludedSlotSet.has(slot)),
+    });
+  }
+  if (exclusion.excludedCourses.length > 0) {
+    relaxationChecks.push({
+      label: `제외한 강의 (${exclusion.excludedCourses.length}개)`,
+      kind: "exclusion",
+      flags: { ignoreExcludedCourses: true },
+      violates: (c) => excludedSubjectNumberSet.has(c.subjectNumber),
+    });
+  }
+  if (preference.freeDayOfWeek.enabled && preference.freeDayOfWeek.days.length > 0) {
+    const days = [...preference.freeDayOfWeek.days].sort((a, b) => a - b);
+    relaxationChecks.push({
+      label: `${days.map((d) => DAY_NAMES[d]).join(", ")}요일 공강`,
+      kind: "freeDay",
+      days,
+      flags: { ignoreFreeDayOfWeek: true },
+      violates: (c) => c.meetings.some((m) => days.includes(m.day)),
+    });
+  }
+  // 오전/야간 회피(C-03/C-04)는 소프트 조건이라 후보를 탈락시키지 않으므로 원인이 될 수 없다.
+
+  const conflicts: WizardConflictItem[] = [];
+  for (const check of relaxationChecks) {
+    const relaxed = searchCombinations(groups, makeContext(conditions, check.flags));
+    if (!relaxed.some(withinCredit)) continue;
+    // 필수 강의가 걸리면 그것을, 아니면(전부 선택) 조건 때문에 못 들어간 강의를 짚는다
+    const required = findRequiredCoursesViolating(groups, check.violates);
+    conflicts.push({
+      label: check.label,
+      kind: check.kind,
+      days: check.days,
+      courses:
+        required.length > 0
+          ? required
+          : groups.flatMap((g) => g.options).filter(check.violates),
+    });
+  }
+  if (conflicts.length > 0) return conflicts;
+
+  // 겹침: 필수끼리 피할 수 없게 겹쳐 조합이 아예 없거나, 겹치는 강의를 둘 다 넣어야만
+  // 목표 학점을 채울 수 있는 경우(선택 강의끼리 겹쳐 하나가 빠진 경우)
+  const maxPossibleCredit = groups.reduce(
+    (sum, g) => sum + Math.max(...g.options.map((o) => o.credit)),
+    0,
+  );
+  const overlapPairs =
+    full.length === 0
+      ? findOverlappingPairs(groups.filter((g) => g.required))
+      : maxPossibleCredit >= basic.minCredit
+        ? findOverlappingPairs(groups)
+        : [];
+  if (full.length === 0 || overlapPairs.length > 0) {
+    return overlapPairs.length > 0
+      ? overlapPairs.map((pair) => ({
+          label: "담은 강의끼리 시간이 겹쳐요",
+          kind: "overlap" as const,
+          courses: pair,
+        }))
+      : [{ label: "담은 강의끼리 시간이 겹쳐요", kind: "overlap" }];
+  }
+
+  // 조건은 통과하지만 담은 강의만으로는 목표 학점 범위를 못 채움
+  const achievable = [...new Set(full.map(sumCredit))].sort((a, b) => a - b);
+  return [
+    {
+      label: `목표 학점 범위 (${basic.minCredit}~${basic.maxCredit}학점) - 담은 강의로 가능한 학점: ${achievable.join(", ")}학점`,
+      kind: "credit",
+      achievableCredits: achievable,
+    },
+  ];
+};
+
 export const generateWizardCandidates = (
   conditions: WizardConditions,
 ): WizardGenerationResult => {
@@ -417,7 +542,7 @@ export const generateWizardCandidates = (
   if (groups.length === 0) {
     return {
       candidates: [],
-      conflicts: [{ label: "듣고 싶은 강의를 먼저 담아주세요" }],
+      conflicts: [{ label: "듣고 싶은 강의를 먼저 담아주세요", kind: "noWishlist" }],
     };
   }
 
@@ -430,83 +555,7 @@ export const generateWizardCandidates = (
   });
 
   if (withinCredit.length === 0) {
-    const conflicts: WizardConflictItem[] = [];
-
-    if (full.length === 0) {
-      // 하드 조건을 하나씩 완화해보고, 완화 시 결과가 나오는 조건만 원인으로 지목한다
-      const { preference, exclusion } = conditions;
-      const excludedSlotSet = new Set(exclusion.excludedSlots);
-      const excludedSubjectNumberSet = new Set(
-        exclusion.excludedCourses.map((c) => c.subjectNumber),
-      );
-      const relaxationChecks: {
-        label: string;
-        flags: HardConstraintFlags;
-        findCourses: () => WizardCourseOption[];
-      }[] = [];
-
-      if (exclusion.excludedSlots.length > 0) {
-        relaxationChecks.push({
-          label: `제외한 시간대 (${excludedSlotSet.size}칸)`,
-          flags: { ignoreExcludedSlots: true },
-          findCourses: () =>
-            findRequiredCoursesViolating(groups, (c) =>
-              courseGridSlots(c).some((s) => excludedSlotSet.has(s)),
-            ),
-        });
-      }
-      if (exclusion.excludedCourses.length > 0) {
-        relaxationChecks.push({
-          label: `제외한 강의 (${exclusion.excludedCourses.length}개)`,
-          flags: { ignoreExcludedCourses: true },
-          findCourses: () =>
-            findRequiredCoursesViolating(groups, (c) =>
-              excludedSubjectNumberSet.has(c.subjectNumber),
-            ),
-        });
-      }
-      if (preference.freeDayOfWeek.enabled && preference.freeDayOfWeek.days.length > 0) {
-        const names = preference.freeDayOfWeek.days.map((d) => DAY_NAMES[d]).join(", ");
-        relaxationChecks.push({
-          label: `${names}요일 공강`,
-          flags: { ignoreFreeDayOfWeek: true },
-          findCourses: () =>
-            findRequiredCoursesViolating(groups, (c) =>
-              c.meetings.some((m) => preference.freeDayOfWeek.days.includes(m.day)),
-            ),
-        });
-      }
-      // 오전/야간 회피(C-03/C-04)는 소프트 조건이라 후보를 탈락시키지 않으므로 결과 0개의
-      // 원인이 될 수 없다 - 완화 후보 목록에서 제외.
-
-      for (const check of relaxationChecks) {
-        const relaxed = searchCombinations(groups, makeContext(conditions, check.flags));
-        if (relaxed.length > 0) {
-          conflicts.push({ label: check.label, courses: check.findCourses() });
-        }
-      }
-
-      if (conflicts.length === 0) {
-        const overlappingPairs = findOverlappingRequiredPairs(groups);
-        if (overlappingPairs.length > 0) {
-          overlappingPairs.forEach((pair) => {
-            conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요", courses: pair });
-          });
-        } else {
-          conflicts.push({ label: "담은 강의끼리 시간이 겹쳐요" });
-        }
-      }
-    } else {
-      // 하드 조건은 통과하지만 담은 강의만으로는 목표 학점 범위를 못 채움
-      const achievable = [...new Set(full.map((courses) => courses.reduce((s, c) => s + c.credit, 0)))].sort(
-        (a, b) => a - b,
-      );
-      conflicts.push({
-        label: `목표 학점 범위 (${basic.minCredit}~${basic.maxCredit}학점) - 담은 강의로 가능한 학점: ${achievable.join(", ")}학점`,
-      });
-    }
-
-    return { candidates: [], conflicts };
+    return { candidates: [], conflicts: diagnoseNoCandidates(conditions, groups, full) };
   }
 
   const optionalGroupTitles = groups.filter((g) => !g.required).map((g) => ({ courseId: g.courseId, title: g.title }));
@@ -523,6 +572,7 @@ export const generateWizardCandidates = (
       met: false,
       headline: `${g.title} 제외`,
       detail: "다른 조건과 시간이 맞지 않아 이번 조합에서는 빠졌어요",
+      tag: { label: `${g.title} 빠짐`, tone: "error" },
     }));
 
     return {
@@ -548,7 +598,7 @@ export const generateWizardCandidates = (
   const labels = ["A", "B", "C"];
   const candidates: WizardCandidate[] = unique.slice(0, 3).map((t, index) => ({
     id: labels[index],
-    label: `시안 ${labels[index]}`,
+    label: `마법사 ${labels[index]}`,
     courses: t.courses,
     totalCredit: t.totalCredit,
     reasons:

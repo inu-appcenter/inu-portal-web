@@ -3,6 +3,7 @@ import {
   formatCourseMeetings,
   formatCourseMeta,
   mapWizardCoursesToClassItems,
+  pickUniqueTimetableName,
 } from "../timetableWizardFormat";
 import type { WizardCourseOption } from "../../types/timetableWizard";
 
@@ -118,5 +119,17 @@ describe("mapWizardCoursesToClassItems", () => {
     const [item] = mapWizardCoursesToClassItems([course]);
 
     expect(item.evaluation).toBeUndefined();
+  });
+});
+
+describe("pickUniqueTimetableName", () => {
+  it("겹치는 이름이 없으면 그대로 쓴다", () => {
+    expect(pickUniqueTimetableName("마법사 A", new Set(["시간표 1"]))).toBe("마법사 A");
+  });
+
+  it("겹치면 비어 있는 가장 작은 번호를 붙인다", () => {
+    expect(
+      pickUniqueTimetableName("마법사 A", new Set(["마법사 A", "마법사 A (2)"])),
+    ).toBe("마법사 A (3)");
   });
 });
