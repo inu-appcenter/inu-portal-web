@@ -80,6 +80,16 @@ export default function MobileNotificationSettingsPage() {
     navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=${tab}`);
   };
 
+  const handleSchoolNoticeClick = () => {
+    mixpanelTrack.mypageMenuClicked("알림설정 - 학교 공지 알리미");
+    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
+  };
+
+  const handleDeptNoticeClick = () => {
+    mixpanelTrack.mypageMenuClicked("알림설정 - 학과 공지 알리미");
+    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
+  };
+
   return (
     <PageWrapper>
       <ContentContainer>
@@ -113,7 +123,7 @@ export default function MobileNotificationSettingsPage() {
 
             <Divider margin="0" />
 
-            <SettingRow onClick={() => handleTabClick("school", "학교 공지 알리미")}>
+            <SettingRow onClick={handleSchoolNoticeClick}>
               <RowContent>
                 <RowTitle>학교 공지 알리미</RowTitle>
                 <RowDescription>
@@ -125,7 +135,7 @@ export default function MobileNotificationSettingsPage() {
 
             <Divider margin="0" />
 
-            <SettingRow onClick={() => handleTabClick("dept", "학과 공지 알리미")}>
+            <SettingRow onClick={handleDeptNoticeClick}>
               <RowContent>
                 <RowTitle>학과 공지 알리미</RowTitle>
                 <RowDescription>

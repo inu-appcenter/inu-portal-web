@@ -9,8 +9,6 @@ import {
   Clock,
   Calendar,
   GraduationCap,
-  Bell,
-  Building2,
 } from "lucide-react";
 import {
   getAgentReminders,
@@ -21,7 +19,6 @@ import {
   updateDailyBriefSettings,
   getLocalDailyBriefSettings,
 } from "@/apis/dailyBrief";
-import { getKeywords } from "@/apis/notices";
 import {
   getTimetableNowBarSettings,
   setTimetableNowBarSettings,
@@ -30,7 +27,6 @@ import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentRemind
 import type { DailyBriefSettings } from "@/types/dailyBrief";
 import { ROUTES } from "@/constants/routes";
 import { trackEvent } from "@/utils/mixpanel";
-import useUserStore from "@/stores/useUserStore";
 import { renderRoutineIcon, getDefaultIconAndBgForTools } from "@/pages/mobile/MobileRoutineDetailPage";
 import { useRoutineSync, notifyRoutineUpdated } from "@/utils/routineSync";
 import Ripple from "@/components/common/Ripple";
@@ -199,78 +195,6 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenSubtitle: "오전 08:30\n평일 (월~금)",
     whatTitle: "주요 학사일정 사전 안내",
   },
-  {
-    id: "preset-school-notice",
-    category: "study",
-    title: "새 학교 공지사항 알림",
-    description: "인천대학교 대표 홈페이지에 새 공지사항이 등록되면 소식을 감지해요.",
-    targetTime: "09:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["NOTICE"],
-    toolParams: {
-      iconType: "notice",
-      iconBg: "#5c9cf8",
-      triggers: [
-        {
-          id: "trig-school-1",
-          type: "SCHOOL_NOTICE",
-          title: "새 학교 공지 등록 시",
-          subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
-        },
-      ],
-      actions: [
-        {
-          id: "act-school-1",
-          type: "SCHOOL_NOTICE",
-          title: "새 학교 공지사항 알림",
-          subtitle: "전체 카테고리 공지 소식",
-          iconBg: "#5c9cf8",
-          schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
-        },
-      ],
-    },
-    iconType: "notice",
-    iconBg: "#5c9cf8",
-    whenTitle: "새 공지 등록 시",
-    whenSubtitle: "학교 새 공지 등록 시 실시간",
-    whatTitle: "새 학교 공지사항 실시간 감지",
-  },
-  {
-    id: "preset-dept-notice",
-    category: "study",
-    title: "새 학과 공지사항 알림",
-    description: "내 학과 홈페이지에 새 공지사항 또는 관심 키워드 글이 올라오면 소식을 감지해요.",
-    targetTime: "09:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["DEPT_NOTICE"],
-    toolParams: {
-      iconType: "dept",
-      iconBg: "#ff7a00",
-      triggers: [
-        {
-          id: "trig-dept-1",
-          type: "DEPT_NOTICE",
-          title: "새 학과 공지 등록 시",
-          subtitle: "내 학과 홈페이지에 새 공지가 올라올 때",
-        },
-      ],
-      actions: [
-        {
-          id: "act-dept-1",
-          type: "DEPT_NOTICE",
-          title: "새 학과 공지사항 알림",
-          subtitle: "새 공지 및 관심 키워드 소식",
-          iconBg: "#ff7a00",
-          deptNoticeParams: { deptCode: "", deptName: "내 학과", includeKeywords: [], excludeKeywords: [] },
-        },
-      ],
-    },
-    iconType: "dept",
-    iconBg: "#ff7a00",
-    whenTitle: "새 공지 등록 시",
-    whenSubtitle: "학과 새 공지 등록 시 실시간",
-    whatTitle: "새 학과 공지사항 실시간 감지",
-  },
 
   // 2. 이동 및 교통
   {
@@ -339,14 +263,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
 
 export default function MobileAgentReminderSetting() {
   const navigate = useNavigate();
-  const { userInfo } = useUserStore();
 
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
-  const [schoolKeywordsCount, setSchoolKeywordsCount] = useState<number>(0);
-  const [deptKeywordsCount, setDeptKeywordsCount] = useState<number>(0);
-  const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState<boolean>(true);
-  const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState<boolean>(true);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
   const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState<number>(15);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -357,10 +276,9 @@ export default function MobileAgentReminderSetting() {
       setIsInitialLoading(true);
     }
     try {
-      const [remindersRes, briefRes, keywordsRes, nowBarRes] = await Promise.all([
+      const [remindersRes, briefRes, nowBarRes] = await Promise.all([
         getAgentReminders().catch(() => ({ data: [] })),
         getDailyBriefSettings().catch(() => ({ data: null })),
-        getKeywords().catch(() => ({ data: [] })),
         getTimetableNowBarSettings().catch(() => null),
       ]);
 
@@ -369,12 +287,6 @@ export default function MobileAgentReminderSetting() {
       }
       if (briefRes?.data) {
         setDailyBriefSettings(briefRes.data);
-      }
-      if (keywordsRes?.data) {
-        const schoolKeys = keywordsRes.data.filter((k) => k.type === "SCHOOL_NOTICE" && k.keyword !== null);
-        const deptKeys = keywordsRes.data.filter((k) => k.type === "DEPARTMENT" && k.keyword !== null);
-        setSchoolKeywordsCount(schoolKeys.length);
-        setDeptKeywordsCount(deptKeys.length);
       }
       if (nowBarRes) {
         setIsNowBarEnabled(nowBarRes.enabled);
@@ -454,22 +366,6 @@ export default function MobileAgentReminderSetting() {
       setDailyBriefSettings((prev) => ({ ...prev, scheduleAlertEnabled: !next }));
       alert("설정을 변경하지 못했어요.");
     }
-  };
-
-  const handleToggleSchoolNotice = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const next = !isSchoolNoticeEnabled;
-    setIsSchoolNoticeEnabled(next);
-    trackEvent("[Daily Brief] 시스템 학교 공지 알림 토글", { enabled: next });
-    notifyRoutineUpdated();
-  };
-
-  const handleToggleDeptNotice = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const next = !isDeptNoticeEnabled;
-    setIsDeptNoticeEnabled(next);
-    trackEvent("[Daily Brief] 시스템 학과 공지 알림 토글", { enabled: next });
-    notifyRoutineUpdated();
   };
 
   // Custom routine toggle
@@ -773,62 +669,6 @@ export default function MobileAgentReminderSetting() {
                 <Switch
                   checked={dailyBriefSettings.scheduleAlertEnabled}
                   onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
-
-            <CardDivider />
-
-            {/* 4. 학교 공지 알림 */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-school-notice"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#5c9cf8">
-                <Bell size={20} color="#ffffff" />
-              </IconCircle>
-
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!isSchoolNoticeEnabled}>
-                  학교 공지 알림
-                </RowMainTitle>
-                <RowSubTitle>
-                  {isSchoolNoticeEnabled
-                    ? `학교 새 공지${schoolKeywordsCount > 0 ? ` • 키워드 ${schoolKeywordsCount}개` : ""}`
-                    : "알림 꺼짐"}
-                </RowSubTitle>
-              </TextContentWrapper>
-
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={isSchoolNoticeEnabled}
-                  onCheckedChange={() => handleToggleSchoolNotice({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
-
-            <CardDivider />
-
-            {/* 5. 학과 공지 알림 */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-dept-notice"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#ff7a00">
-                <Building2 size={20} color="#ffffff" />
-              </IconCircle>
-
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!isDeptNoticeEnabled}>
-                  학과 공지 알림
-                </RowMainTitle>
-                <RowSubTitle>
-                  {isDeptNoticeEnabled
-                    ? `${userInfo.department ? `${userInfo.department} 새 공지` : "내 학과 새 공지"}${deptKeywordsCount > 0 ? ` • 키워드 ${deptKeywordsCount}개` : ""}`
-                    : "알림 꺼짐"}
-                </RowSubTitle>
-              </TextContentWrapper>
-
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={isDeptNoticeEnabled}
-                  onCheckedChange={() => handleToggleDeptNotice({ stopPropagation: () => {} } as any)}
                 />
               </RowRightAction>
             </GroupRow>

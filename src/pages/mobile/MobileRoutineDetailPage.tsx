@@ -48,13 +48,6 @@ import {
   updateDailyBriefSettings,
   getLocalDailyBriefSettings,
 } from "@/apis/dailyBrief";
-import {
-  getKeywords,
-  getKeywordsNotice,
-  subscribeKeywordsNotice,
-  getSubscribedDepartments,
-  subscribeSchoolDepartment,
-} from "@/apis/notices";
 import { getSchoolDepartments, type SchoolDepartment } from "@/apis/departments";
 import { getSchoolNoticeCategories } from "@/apis/categories";
 import {
@@ -240,78 +233,6 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     whenTitle: "매일 아침",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
     whatTitle: "주요 학사일정 사전 안내",
-  },
-  {
-    id: "preset-school-notice",
-    category: "study",
-    title: "새 학교 공지사항 알림",
-    description: "인천대학교 대표 홈페이지에 새 공지사항이 등록되면 소식을 감지해요.",
-    targetTime: "09:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["NOTICE"],
-    toolParams: {
-      iconType: "notice",
-      iconBg: "#5c9cf8",
-      triggers: [
-        {
-          id: "trig-school-1",
-          type: "SCHOOL_NOTICE",
-          title: "새 학교 공지 등록 시",
-          subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
-        },
-      ],
-      actions: [
-        {
-          id: "act-school-1",
-          type: "SCHOOL_NOTICE",
-          title: "새 학교 공지사항 알림",
-          subtitle: "전체 카테고리 공지 소식",
-          iconBg: "#5c9cf8",
-          schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
-        },
-      ],
-    },
-    iconType: "notice",
-    iconBg: "#5c9cf8",
-    whenTitle: "새 공지 등록 시",
-    whenSubtitle: "학교 새 공지 등록 시 실시간",
-    whatTitle: "새 학교 공지사항 실시간 감지",
-  },
-  {
-    id: "preset-dept-notice",
-    category: "study",
-    title: "새 학과 공지사항 알림",
-    description: "내 학과 홈페이지에 새 공지사항 또는 관심 키워드 글이 올라오면 소식을 감지해요.",
-    targetTime: "09:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["DEPT_NOTICE"],
-    toolParams: {
-      iconType: "dept",
-      iconBg: "#ff7a00",
-      triggers: [
-        {
-          id: "trig-dept-1",
-          type: "DEPT_NOTICE",
-          title: "새 학과 공지 등록 시",
-          subtitle: "내 학과 홈페이지에 새 공지가 올라올 때",
-        },
-      ],
-      actions: [
-        {
-          id: "act-dept-1",
-          type: "DEPT_NOTICE",
-          title: "새 학과 공지사항 알림",
-          subtitle: "새 공지 및 관심 키워드 소식",
-          iconBg: "#ff7a00",
-          deptNoticeParams: { deptCode: "", deptName: "내 학과", includeKeywords: [], excludeKeywords: [] },
-        },
-      ],
-    },
-    iconType: "dept",
-    iconBg: "#ff7a00",
-    whenTitle: "새 공지 등록 시",
-    whenSubtitle: "학과 새 공지 등록 시 실시간",
-    whatTitle: "새 학과 공지사항 실시간 감지",
   },
 
   // 2. 이동 및 교통
@@ -622,7 +543,7 @@ export const formatDaysSummary = (days: string[]) => {
     .join(", ");
 };
 
-type SystemRoutineType = "timetable-brief" | "timetable-pre" | "timetable-nowbar" | "schedule" | "school-notice" | "dept-notice";
+type SystemRoutineType = "timetable-brief" | "timetable-pre" | "timetable-nowbar" | "schedule";
 
 export default function MobileRoutineDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -644,16 +565,12 @@ export default function MobileRoutineDetailPage() {
     if (id === "system-timetable-pre") return "timetable-pre";
     if (id === "system-timetable-nowbar" || id === "preset-timetable-nowbar") return "timetable-nowbar";
     if (id === "system-schedule") return "schedule";
-    if (id === "system-school-notice") return "school-notice";
-    if (id === "system-dept-notice") return "dept-notice";
     return null;
   }, [id]);
 
   const [reminder, setReminder] = useState<AgentReminder | null>(null);
   const [preset, setPreset] = useState<RoutinePreset | null>(null);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
-  const [isSchoolNoticeEnabled, setIsSchoolNoticeEnabled] = useState(true);
-  const [isDeptNoticeEnabled, setIsDeptNoticeEnabled] = useState(true);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState(true);
   const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState(15);
   
@@ -1007,11 +924,9 @@ export default function MobileRoutineDetailPage() {
         getSchoolDepartments().catch(() => ({ data: [] })),
       ]);
 
-      let loadedDepts: SchoolDepartment[] = [];
       if (noticeCatRes?.data) setSchoolCategories(noticeCatRes.data);
       if (deptsRes?.data) {
         setAllDepartments(deptsRes.data);
-        loadedDepts = deptsRes.data;
       }
 
       if (isNew) {
@@ -1021,19 +936,9 @@ export default function MobileRoutineDetailPage() {
       }
 
       if (isSystemRoutine) {
-        const [briefRes, keywordsRes, subCatRes, subDeptsRes] = await Promise.all([
-          getDailyBriefSettings().catch(() => ({ data: null })),
-          getKeywords().catch(() => ({ data: [] })),
-          getKeywordsNotice().catch(() => ({ data: [] })),
-          getSubscribedDepartments().catch(() => ({ data: [] })),
-        ]);
-
+        const briefRes = await getDailyBriefSettings().catch(() => ({ data: null }));
         const curSettings = briefRes?.data || getLocalDailyBriefSettings();
         setDailyBriefSettings(curSettings);
-
-        const subCats = subCatRes?.data?.map((k) => k.category || "") || [];
-        const subDepts = subDeptsRes?.data || [];
-        const allKw = keywordsRes?.data || [];
 
         if (systemType === "timetable-brief") {
           const time = curSettings.timetableDailyBriefTime || "08:00";
@@ -1161,105 +1066,6 @@ export default function MobileRoutineDetailPage() {
               scheduleParams: { scope, advanceDays: adv },
             },
           ]);
-        } else if (systemType === "school-notice") {
-          const schoolKws = allKw.filter((k) => k.type === "SCHOOL_NOTICE");
-          const incKws = schoolKws.filter((k) => !k.isExcluded).map((k) => k.keyword || "").filter(Boolean);
-          const excKws = schoolKws.filter((k) => k.isExcluded).map((k) => k.keyword || "").filter(Boolean);
-          const catText =
-            subCats.length > 0
-              ? `${subCats.slice(0, 2).join(", ")}${subCats.length > 2 ? ` 외 ${subCats.length - 2}개` : ""}`
-              : "전체 카테고리";
-          const kwText = incKws.length > 0 ? ` • 키워드 ${incKws.length}개` : "";
-
-          setTitle("새 학교 공지사항 알림");
-          setSelectedIcon("notice");
-          setSelectedColor("#5c9cf8");
-          setTriggers([
-            {
-              id: "sys-trigger-school-notice",
-              type: "SCHOOL_NOTICE",
-              title: "새 학교 공지 등록 시",
-              subtitle: "학교 대표 홈페이지에 새 공지가 올라올 때",
-            },
-          ]);
-          setActions([
-            {
-              id: "sys-act-school-notice",
-              type: "SCHOOL_NOTICE",
-              title: "새 학교 공지사항 알림",
-              subtitle: `${catText}${kwText}`,
-              iconBg: "#5c9cf8",
-              schoolNoticeParams: {
-                categories: subCats,
-                includeKeywords: incKws,
-                excludeKeywords: excKws,
-              },
-            },
-          ]);
-        } else if (systemType === "dept-notice") {
-          const deptKws = allKw.filter((k) => k.type === "DEPARTMENT");
-          const subDeptCodes = subDepts.map((k) => (k as any).departmentCode || k.department || "").filter(Boolean);
-
-          setTitle("새 학과 공지사항 알림");
-          setSelectedIcon("dept");
-          setSelectedColor("#ff7a00");
-          setTriggers([
-            {
-              id: "sys-trigger-dept-notice",
-              type: "DEPT_NOTICE",
-              title: "새 학과 공지 등록 시",
-              subtitle: "선택한 학과 홈페이지에 새 공지가 올라올 때",
-            },
-          ]);
-
-          if (subDeptCodes.length > 0) {
-            const deptActions: RoutineActionBlock[] = subDeptCodes.map((code) => {
-              const foundDept = loadedDepts.find((d) => d.code === code);
-              const dName = foundDept ? foundDept.name : code;
-              const incKws = deptKws
-                .filter((k) => !k.isExcluded && (k.department === dName || k.department === code || !k.department))
-                .map((k) => k.keyword || "")
-                .filter(Boolean);
-              const excKws = deptKws
-                .filter((k) => k.isExcluded && (k.department === dName || k.department === code || !k.department))
-                .map((k) => k.keyword || "")
-                .filter(Boolean);
-              return {
-                id: `sys-act-dept-${code}`,
-                type: "DEPT_NOTICE",
-                title: `${dName} 공지 알림`,
-                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "새 공지 및 관심 키워드 알림",
-                iconBg: "#ff7a00",
-                deptNoticeParams: {
-                  deptCode: code,
-                  deptName: dName,
-                  includeKeywords: incKws,
-                  excludeKeywords: excKws,
-                },
-              };
-            });
-            setActions(deptActions);
-          } else {
-            const myDept = userInfo.department || "내 학과";
-            const myCode = userInfo.departmentCode || "";
-            const incKws = deptKws.filter((k) => !k.isExcluded).map((k) => k.keyword || "").filter(Boolean);
-            const excKws = deptKws.filter((k) => k.isExcluded).map((k) => k.keyword || "").filter(Boolean);
-            setActions([
-              {
-                id: "sys-act-dept-default",
-                type: "DEPT_NOTICE",
-                title: `${myDept} 공지 알림`,
-                subtitle: incKws.length > 0 ? `키워드: ${incKws.join(", ")}` : "새 공지 및 관심 키워드 알림",
-                iconBg: "#ff7a00",
-                deptNoticeParams: {
-                  deptCode: myCode,
-                  deptName: myDept,
-                  includeKeywords: incKws,
-                  excludeKeywords: excKws,
-                },
-              },
-            ]);
-          }
         }
       } else if (isPreset) {
         const found = ROUTINE_PRESETS.find((p) => p.id === id);
@@ -2124,21 +1930,6 @@ export default function MobileRoutineDetailPage() {
             advanceDays: schedAct?.scheduleParams?.advanceDays ?? 1,
           });
           alert("학사일정 알림 설정을 저장했어요!");
-        } else if (systemType === "school-notice") {
-          const schoolAct = actions.find((a) => a.type === "SCHOOL_NOTICE");
-          if (schoolAct && schoolAct.schoolNoticeParams) {
-            await subscribeKeywordsNotice(schoolAct.schoolNoticeParams.categories || []);
-          }
-          alert("학교 공지 알림 설정을 저장했어요!");
-        } else if (systemType === "dept-notice") {
-          const deptActs = actions.filter((a) => a.type === "DEPT_NOTICE");
-          const deptCodes = deptActs
-            .map((a) => a.deptNoticeParams?.deptCode)
-            .filter(Boolean) as string[];
-          if (deptCodes.length > 0) {
-            await subscribeSchoolDepartment(deptCodes);
-          }
-          alert("학과 공지 알림 설정을 저장했어요!");
         }
         notifyRoutineUpdated();
         setIsEditing(false);
@@ -2290,10 +2081,6 @@ export default function MobileRoutineDetailPage() {
           await setTimetableNowBarSettings({ enabled: false });
         } else if (systemType === "schedule") {
           await updateDailyBriefSettings({ scheduleAlertEnabled: false });
-        } else if (systemType === "school-notice") {
-          setIsSchoolNoticeEnabled(false);
-        } else if (systemType === "dept-notice") {
-          setIsDeptNoticeEnabled(false);
         }
         trackEvent("[Daily Brief] 시스템 루틴 삭제/해제", { systemType });
         notifyRoutineUpdated();
@@ -2358,23 +2145,6 @@ export default function MobileRoutineDetailPage() {
             titleTemplate: "🎓 주요 학사일정 안내",
             bodyTemplate: "",
             route: "/schedule",
-          });
-        } else if (systemType === "school-notice") {
-          await testCustomAgentReminder({
-            title: "학교 공지사항 알림",
-            targetTool: "NOTICE",
-            titleTemplate: "📢 학교 새 공지사항",
-            bodyTemplate: "",
-            route: "/notices",
-          });
-        } else {
-          await testCustomAgentReminder({
-            title: "학과 공지사항 알림",
-            targetTool: "DEPT_NOTICE",
-            toolParamsJson: JSON.stringify({ deptCode: userInfo.departmentCode }),
-            titleTemplate: "🏢 학과 새 공지사항",
-            bodyTemplate: "",
-            route: "/notices",
           });
         }
         alert("테스트 알림을 발송했어요!\n(기기 상단 알림창을 확인해 보세요)");
@@ -2514,13 +2284,7 @@ export default function MobileRoutineDetailPage() {
       ? dailyBriefSettings.scheduleAlertEnabled
         ? `매일 아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"}에 ${dailyBriefSettings.advanceDays === 0 ? "당일" : `${dailyBriefSettings.advanceDays || 1}일 전`} 주요 학사일정을 안내해 드려요.`
         : "학사일정 브리핑 루틴이 꺼져 있어요."
-      : systemType === "school-notice"
-      ? isSchoolNoticeEnabled
-        ? "학교 새 공지와 설정한 관심 키워드 소식을 감지해요."
-        : "학교 공지 알림 루틴이 꺼져 있어요."
-      : isDeptNoticeEnabled
-      ? `${userInfo.department ? `${userInfo.department} 새 공지와 관심 키워드 소식을 감지해요.` : "내 학과 새 공지와 관심 키워드 소식을 감지해요."}`
-      : "학과 공지 알림 루틴이 꺼져 있어요."
+      : "시스템 루틴이 꺼져 있어요."
     : triggers.length > 0 && actions.length > 0
     ? `${triggers[0]?.title}에 ${actions.map((a) => a.title).join(" • ")} 동작을 실행해요.`
     : preset?.description || "언제 어떤 캠퍼스 동작을 실행할지 자유롭게 조합해 보세요.";
@@ -2598,23 +2362,7 @@ export default function MobileRoutineDetailPage() {
                       >
                         {dailyBriefSettings.scheduleAlertEnabled ? "루틴 끄기" : "루틴 켜기"}
                       </CapsuleButton>
-                    ) : systemType === "school-notice" ? (
-                      <CapsuleButton
-                        variant={isSchoolNoticeEnabled ? "primary" : "secondary"}
-                        onClick={() => setIsSchoolNoticeEnabled(!isSchoolNoticeEnabled)}
-                        style={{ padding: "8px 24px", fontSize: "14.5px", fontWeight: 700, height: "40px", borderRadius: "9999px" }}
-                      >
-                        {isSchoolNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    ) : (
-                      <CapsuleButton
-                        variant={isDeptNoticeEnabled ? "primary" : "secondary"}
-                        onClick={() => setIsDeptNoticeEnabled(!isDeptNoticeEnabled)}
-                        style={{ padding: "8px 24px", fontSize: "14.5px", fontWeight: 700, height: "40px", borderRadius: "9999px" }}
-                      >
-                        {isDeptNoticeEnabled ? "루틴 끄기" : "루틴 켜기"}
-                      </CapsuleButton>
-                    )
+                    ) : null
                   ) : reminder ? (
                     <CapsuleButton
                       variant={reminder.enabled ? "primary" : "secondary"}
