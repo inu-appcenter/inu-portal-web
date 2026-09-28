@@ -157,15 +157,22 @@ const isRequiredMajor = (subject: EvaluatedSubject): boolean => {
   return REQUIRED_MAJOR_ISU_NAMES.some((name) => isuName.includes(name));
 };
 
-/** 핵심교양 이수영역. "-"처럼 영역이 비어 있는 행은 셀 수 없다. */
 /**
  * 핵심교양 과목인지. 현행은 이수구분 "핵심교양"(이수영역 "(핵심)인문" 등)이고,
  * 2022학년도까지의 INU핵심교양은 이수구분 "교양필수"에 이수영역 "INU핵심창의융합"처럼 찍힌다.
- * 같은 "교양필수"라도 이수영역에 "핵심"이 없으면 기초교양이라 세지 않는다.
+ * 이수영역은 "(핵심)"·"INU핵심"으로 시작하는 것만 본다 — 전공 과목의 이수영역 "전공핵심"이나
+ * 같은 "교양필수"의 기초교양은 핵심교양이 아니다.
  */
-const isCoreGeneral = (subject: EvaluatedSubject): boolean =>
-  (subject.isuName ?? "").includes("핵심교양") ||
-  (subject.isuFldName ?? "").includes("핵심");
+const isCoreGeneral = (subject: EvaluatedSubject): boolean => {
+  const isuName = subject.isuName ?? "";
+  if (isuName.includes("전공")) return false;
+  const area = (subject.isuFldName ?? "").trim();
+  return (
+    isuName.includes("핵심교양") ||
+    area.startsWith("(핵심)") ||
+    area.startsWith("INU핵심")
+  );
+};
 
 const toStatus = (
   earned: number,

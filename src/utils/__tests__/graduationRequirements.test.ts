@@ -231,6 +231,17 @@ describe("evaluateGraduation", () => {
       }),
       // 같은 교양필수라도 이수영역에 "핵심"이 없으면 기초교양이다.
       subject("대학영어", 2, { isuName: "교양필수", isuFldName: "학문의기초" }),
+      // 전공 과목의 이수영역 "전공핵심"은 핵심교양이 아니다.
+      subject("자료구조", 3, {
+        isMajor: true,
+        isuName: "전공핵심",
+        isuFldName: "전공핵심",
+      }),
+      subject("Java언어", 3, {
+        isMajor: true,
+        isuName: "전공기초",
+        isuFldName: "전공핵심",
+      }),
     ]);
 
     expect(evaluation.coreGeneral?.courses).toHaveLength(3);
