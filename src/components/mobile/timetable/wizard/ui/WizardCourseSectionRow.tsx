@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { typo } from "./tokens";
+import { typography } from "@/styles/typography";
 
 export interface WizardCourseSectionDetail {
   label: string;
@@ -140,17 +140,17 @@ const ProfessorInfo = styled.div`
 `;
 
 const ProfName = styled.span`
-  ${typo.heading3}
+  ${typography.heading3}
 `;
 
 const SubjectNumber = styled.span`
-  ${typo.caption1}
+  ${typography.caption1}
 `;
 
 const SubText = styled.p`
   margin: 0;
   color: var(--text-tertiary, #8b95a1);
-  ${typo.caption1}
+  ${typography.caption1}
 `;
 
 const Right = styled.div`

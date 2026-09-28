@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import type { FontelloIconName } from "@/components/common/fontelloIcons";
-import { buttonReset, typo } from "./tokens";
+import { buttonReset } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardPillButtonProps {
   children: React.ReactNode;
@@ -46,7 +47,7 @@ const Button = styled.button`
   background: var(--bg-base, #ffffff);
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-  ${typo.label2}
+  ${typography.label2}
 
   &:active:not(:disabled) {
     background: var(--bg-muted, #f1f3f5);

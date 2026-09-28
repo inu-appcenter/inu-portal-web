@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { buttonReset, typo, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardDayChipProps {
   label: string;
@@ -51,7 +52,7 @@ const Chip = styled.button<{ $selected: boolean }>`
     background-color 0.15s ease,
     border-color 0.15s ease,
     transform 0.1s ease;
-  ${typo.label1}
+  ${typography.label1}
 
   &:active:not(:disabled) {
     transform: scale(0.95);

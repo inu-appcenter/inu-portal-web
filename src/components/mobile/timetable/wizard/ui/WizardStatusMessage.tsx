@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { typo } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardStatusMessageProps {
   /** 횃불이 일러스트 (240×246) */
@@ -58,11 +58,11 @@ const Texts = styled.div`
 const Title = styled.h2`
   margin: 0;
   color: var(--text-primary, #191f28);
-  ${typo.heading1}
+  ${typography.heading1}
 `;
 
 const Description = styled.p`
   margin: 0;
   color: var(--text-secondary, #333d4b);
-  ${typo.body2}
+  ${typography.body2}
 `;

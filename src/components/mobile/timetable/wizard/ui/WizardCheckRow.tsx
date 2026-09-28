@@ -1,6 +1,7 @@
 import styled, { css } from "styled-components";
 import WizardCheckbox from "./WizardCheckbox";
-import { buttonReset, typo } from "./tokens";
+import { buttonReset } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardCheckRowProps {
   label: string;
@@ -71,5 +72,5 @@ const BoxArea = styled.span<{ $variant: "compact" | "list" }>`
 const Label = styled.span<{ $variant: "compact" | "list" }>`
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-  ${({ $variant }) => ($variant === "compact" ? typo.label2 : typo.heading2)}
+  ${({ $variant }) => ($variant === "compact" ? typography.label2 : typography.heading2)}
 `;

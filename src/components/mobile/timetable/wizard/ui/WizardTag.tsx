@@ -1,5 +1,6 @@
 import styled, { css } from "styled-components";
-import { typo, WIZARD_SUCCESS } from "./tokens";
+import { WIZARD_SUCCESS } from "./tokens";
+import { typography } from "@/styles/typography";
 
 export type WizardTagTone = "brand" | "success" | "warn" | "error";
 
@@ -61,6 +62,6 @@ const Tag = styled.span<{ $tone: WizardTagTone; $size: "sm" | "md" }>`
   border: 1px solid transparent;
   border-radius: 999px;
   white-space: nowrap;
-  ${typo.label3}
+  ${typography.label3}
   ${({ $tone }) => TONE_STYLES[$tone]}
 `;

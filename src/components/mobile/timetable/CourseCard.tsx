@@ -6,11 +6,12 @@ import {
   WizardFavButton,
   WizardTag,
 } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+
 import type {
   CourseCardOfferingView,
   CourseCardView,
 } from "@/types/courseCardView";
+import { typography } from "@/styles/typography";
 
 interface CourseCardProps {
   /**
@@ -139,7 +140,7 @@ const HeaderInfo = styled.div`
 const Title = styled.span`
   color: var(--text-primary, #191f28);
   word-break: break-word;
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const MetaRow = styled.div`
@@ -153,7 +154,7 @@ const MetaRow = styled.div`
 const MetaText = styled.span`
   color: var(--text-tertiary, #8b95a1);
   white-space: nowrap;
-  ${typo.label3}
+  ${typography.label3}
 `;
 
 const Chevron = styled.span<{ $collapsed: boolean }>`

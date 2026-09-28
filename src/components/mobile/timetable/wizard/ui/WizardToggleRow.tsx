@@ -1,7 +1,7 @@
 import { useId } from "react";
 import styled from "styled-components";
 import WizardToggle from "./WizardToggle";
-import { typo } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardToggleRowProps {
   title: string;
@@ -63,10 +63,10 @@ const Txt = styled.div`
 
 const Title = styled.span`
   color: var(--text-secondary, #333d4b);
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const Description = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  ${typo.caption1}
+  ${typography.caption1}
 `;

@@ -97,6 +97,7 @@ declare const tokens: {
     warn: DesignToken;
   };
   interactive: {
+    brand: DesignToken;
     primary: DesignToken;
     "primary-hover": DesignToken;
     "primary-pressed": DesignToken;
@@ -180,19 +181,90 @@ declare const tokens: {
       text: DesignToken;
     };
   };
-  display: DesignToken;
-  "title-1": DesignToken;
-  "title-2": DesignToken;
-  "title-3": DesignToken;
-  "title-4": DesignToken;
-  "heading-1": DesignToken;
-  "heading-2": DesignToken;
-  "body-1": DesignToken;
-  "body-2": DesignToken;
-  "label-1": DesignToken;
-  "label-2": DesignToken;
-  "label-3": DesignToken;
-  "caption-1": DesignToken;
+  display: {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "title-1": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "title-2": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "title-3": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "title-4": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "heading-1": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "heading-2": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "heading-3": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "body-1": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "body-2": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "label-1": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "label-2": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "label-3": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
+  "caption-1": {
+    "font-size": DesignToken;
+    "font-weight": DesignToken;
+    "line-height": DesignToken;
+    "letter-spacing": DesignToken;
+  };
   Bottom_Sheet: DesignToken;
   Floating_Button: DesignToken;
   Dim: DesignToken;

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { typo } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardSectionLabelProps {
   children: React.ReactNode;
@@ -42,7 +42,7 @@ const Title = styled.h2`
   gap: 4px;
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-  ${typo.title2}
+  ${typography.title2}
 `;
 
 const Required = styled.span`
@@ -52,5 +52,5 @@ const Required = styled.span`
 const Trailing = styled.span`
   color: var(--text-brand, #0061ff);
   white-space: nowrap;
-  ${typo.label1}
+  ${typography.label1}
 `;

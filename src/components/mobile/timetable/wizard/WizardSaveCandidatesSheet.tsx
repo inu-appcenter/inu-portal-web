@@ -6,7 +6,7 @@ import {
   WizardCard,
   WizardCheckRow,
 } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+
 import {
   useCreateTimeTable,
   useCreateTimeTableCourseItem,
@@ -16,6 +16,7 @@ import { showToast } from "@/utils/toast";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { pickUniqueTimetableName } from "@/utils/timetableWizardFormat";
 import type { WizardCandidate } from "@/types/timetableWizard";
+import { typography } from "@/styles/typography";
 
 interface WizardSaveCandidatesSheetProps {
   open: boolean;
@@ -174,11 +175,11 @@ const Header = styled.div`
 const Title = styled.h2`
   margin: 0;
   color: var(--text-primary, #191f28);
-  ${typo.heading1}
+  ${typography.heading1}
 `;
 
 const Description = styled.p`
   margin: 0;
   color: var(--text-tertiary, #8b95a1);
-  ${typo.body2}
+  ${typography.body2}
 `;

@@ -6,12 +6,13 @@ import {
   WizardCourseSectionRow,
   WizardStatusMessage,
 } from "@/components/mobile/timetable/wizard/ui";
-import { buttonReset, typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import type {
   WizardConflictItem,
   WizardCourseOption,
 } from "@/types/timetableWizard";
 import { formatCourseMeetings, WIZARD_DAY_NAMES } from "@/utils/timetableWizardFormat";
+import { typography } from "@/styles/typography";
 
 interface WizardEmptyStateProps {
   conflicts: WizardConflictItem[];
@@ -178,5 +179,5 @@ const TextButton = styled.button`
   border: 1px solid var(--border-default, #e5e8eb);
   background: var(--bg-base, #ffffff);
   color: var(--text-secondary, #333d4b);
-  ${typo.label3}
+  ${typography.label3}
 `;

@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { typo, WIZARD_PRIMARY } from "./tokens";
+import { WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardCreditSliderProps {
   min: number;
@@ -119,5 +120,5 @@ const Scale = styled.div`
   display: flex;
   justify-content: space-between;
   color: var(--text-tertiary, #8b95a1);
-  ${typo.body2}
+  ${typography.body2}
 `;

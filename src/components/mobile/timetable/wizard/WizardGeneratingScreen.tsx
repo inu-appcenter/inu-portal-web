@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { wizardGenerating } from "@/resources/assets/illustrations/timetable";
 import { WizardBottomCTA } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardGeneratingScreenProps {
   onCancel: () => void;
@@ -77,7 +77,7 @@ const Copy = styled.div`
 const Title = styled.p`
   margin: 0;
   color: var(--text-primary, #191f28);
-  ${typo.title2}
+  ${typography.title2}
 `;
 
 /* body/1 — Regular 16/1.6 */

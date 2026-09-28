@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import { WizardCard, WizardCourseRow } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+
 import TimetableGrid, {
   type ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -10,6 +10,7 @@ import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBot
 import { formatCourseMeetings, mapWizardCoursesToClassItems } from "@/utils/timetableWizardFormat";
 import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { WizardCandidate } from "@/types/timetableWizard";
+import { typography } from "@/styles/typography";
 
 interface WizardDetailScreenProps {
   candidate: WizardCandidate;
@@ -171,7 +172,7 @@ const CourseListCard = styled(WizardCard)`
 const CardTitle = styled.h2`
   margin: 0;
   color: var(--text-primary, #191f28);
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const ReasonList = styled.div`
@@ -209,12 +210,12 @@ const ReasonText = styled.div`
 const ReasonHeadline = styled.span<{ $met: boolean }>`
   color: ${({ $met }) =>
     $met ? "var(--text-secondary, #333d4b)" : "var(--text-warn, #b58000)"};
-  ${typo.label2}
+  ${typography.label2}
 `;
 
 const ReasonDetail = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  ${typo.caption1}
+  ${typography.caption1}
 `;
 
 const BottomActionsSpacer = styled.div`

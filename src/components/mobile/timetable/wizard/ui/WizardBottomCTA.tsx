@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { buttonReset, typo, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardBottomCTAProps {
   children: React.ReactNode;
@@ -109,7 +110,7 @@ const Button = styled.button`
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;
-  ${typo.title3}
+  ${typography.title3}
 
   &:active:not(:disabled) {
     transform: scale(0.98);

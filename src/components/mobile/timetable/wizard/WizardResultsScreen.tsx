@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import { WizardResultCard } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+
 import type { WizardCandidate } from "@/types/timetableWizard";
+import { typography } from "@/styles/typography";
 
 interface WizardResultsScreenProps {
   candidates: WizardCandidate[];
@@ -59,12 +60,12 @@ const Hero = styled.div`
 
 const HeroTitle = styled.h1`
   margin: 0;
-  ${typo.title2}
+  ${typography.title2}
 `;
 
 const HeroCaption = styled.p`
   margin: 0;
-  ${typo.body2}
+  ${typography.body2}
 `;
 
 const CardList = styled.div`

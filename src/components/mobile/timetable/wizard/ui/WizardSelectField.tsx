@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
-import { typo, WIZARD_PRIMARY } from "./tokens";
+import { WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 export interface WizardSelectOption {
   value: string;
@@ -91,7 +92,7 @@ const Value = styled.span<{ $placeholder: boolean }>`
     $placeholder
       ? "var(--text-tertiary, #8b95a1)"
       : "var(--text-secondary, #333d4b)"};
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const Chevron = styled.span`

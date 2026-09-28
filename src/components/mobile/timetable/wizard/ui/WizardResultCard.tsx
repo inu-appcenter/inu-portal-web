@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import WizardTag, { type WizardTagTone } from "./WizardTag";
-import { typo, WIZARD_PRIMARY } from "./tokens";
+import { WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 export interface WizardResultTag {
   label: string;
@@ -111,14 +112,14 @@ const NameGroup = styled.div`
 const Name = styled.span`
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const Summary = styled.span`
   flex-shrink: 0;
   color: var(--text-tertiary, #8b95a1);
   white-space: nowrap;
-  ${typo.label2}
+  ${typography.label2}
 `;
 
 const Body = styled.div`
@@ -133,7 +134,7 @@ const Courses = styled.p`
   color: var(--text-secondary, #333d4b);
   /* 시안처럼 과목명 중간에서도 줄을 바꾼다(keep-all이면 줄 끝이 크게 비어 보인다) */
   overflow-wrap: anywhere;
-  ${typo.body2}
+  ${typography.body2}
 `;
 
 const Tags = styled.div`

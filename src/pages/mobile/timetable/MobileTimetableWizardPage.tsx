@@ -36,7 +36,7 @@ import {
   WizardSelectField,
   WizardToggleRow,
 } from "@/components/mobile/timetable/wizard/ui";
-import { typo } from "@/components/mobile/timetable/wizard/ui/tokens";
+
 import {
   WIZARD_DAY_NAMES,
   mapWizardCoursesToClassItems,
@@ -51,6 +51,7 @@ import { CourseCard } from "@/components/mobile/timetable/CourseCard";
 import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBottomSheet";
 import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import type { CourseCardOfferingView } from "@/types/courseCardView";
+import { typography } from "@/styles/typography";
 
 const GENERATING_MIN_VISIBLE_MS = 1600;
 /** 새 시안은 강의선택 → 조건설정 2단계 */
@@ -584,12 +585,12 @@ const CardText = styled.div`
 
 const CardTitle = styled.span`
   color: var(--text-secondary, #333d4b);
-  ${typo.heading2}
+  ${typography.heading2}
 `;
 
 const CardDescription = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  ${typo.caption1}
+  ${typography.caption1}
 `;
 
 // 7개 요일(48px × 7 + 간격)이 좁은 화면에서 넘치면 가로로 밀어서 본다
@@ -613,12 +614,12 @@ const HeaderTextButton = styled.button`
   color: var(--text-brand, #0061ff);
   white-space: nowrap;
   cursor: pointer;
-  ${typo.label1}
+  ${typography.label1}
 `;
 
 const HeaderSummary = styled.span`
   padding: 8px 4px;
   color: var(--text-secondary, #333d4b);
   white-space: nowrap;
-  ${typo.label1}
+  ${typography.label1}
 `;

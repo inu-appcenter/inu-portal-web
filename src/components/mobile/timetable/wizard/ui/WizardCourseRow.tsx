@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { typo } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardCourseRowProps {
   title: string;
@@ -64,6 +64,6 @@ const Title = styled.span`
 
 const Meta = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  ${typo.caption1}
+  ${typography.caption1}
   line-height: 18px;
 `;

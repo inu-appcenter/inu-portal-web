@@ -1,5 +1,6 @@
 import styled from "styled-components";
-import { buttonReset, typo, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { typography } from "@/styles/typography";
 
 interface WizardDashedButtonProps {
   children: React.ReactNode;
@@ -31,7 +32,7 @@ const Button = styled.button`
   border: 1px dashed ${WIZARD_PRIMARY};
   background: var(--bg-base, #ffffff);
   color: var(--text-brand, #0061ff);
-  ${typo.heading2}
+  ${typography.heading2}
 
   &:active:not(:disabled) {
     background: var(--bg-brand, #eff6ff);
