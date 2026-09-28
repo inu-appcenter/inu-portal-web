@@ -39,10 +39,11 @@ describe("resolveGraduationRule", () => {
   });
 
   it("최신 규정만 수집된 학과는 가장 가까운 규정으로 대체하고 알린다", () => {
+    // 행정학과는 2020학번 이후 규정만 있다.
     const resolved = resolveGraduationRule("PUBLIC_ADMINISTRATION", 2019);
 
     expect(resolved?.exact).toBe(false);
-    expect(resolved?.rule.startYear).toBe(2023);
+    expect(resolved?.rule.startYear).toBe(2020);
   });
 
   it("학과나 학번이 없으면 판정하지 않는다", () => {

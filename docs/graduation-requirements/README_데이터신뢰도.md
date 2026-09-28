@@ -22,12 +22,12 @@ COMPUTER_SCIENCE, ECONOMICS, KOREAN, MECHANICAL_ENGINEERING, ENGLISH_LITERATURE,
 ## B그룹 — 학과 자체 자료 또는 학과가 지정한 공통기준 적용 경로에서 확인 (현재 규정 위주 1개 규정)
 학과 홈페이지의 졸업요건 페이지에서 총학점/교양/전공/영어인증 수치를 직접 확인했거나, 학과 홈페이지 메뉴가 대학 공통 템플릿(`/inu/666/subview.do`)으로 명시적으로 연결되어 있어 "그 학과가 실제로 이 공통기준을 쓴다"는 사실 자체는 확인된 경우입니다. 과거 학번별 이력은 속도 우선 원칙에 따라 생략하고 최신 규정만 반영했습니다.
 
-PUBLIC_ADMINISTRATION(2023학번 이후만), CHEMISTRY, MARINE_SCIENCE, TRADE, ELECTRICAL_ENGINEERING, INDUSTRIAL_MANAGEMENT_ENGINEERING, MATERIALS_SCIENCE_ENGINEERING, SAFETY_ENGINEERING, INFORMATION_COMMUNICATION_ENGINEERING, BUSINESS_ADMINISTRATION, DATA_SCIENCE, TAX_ACCOUNTING, KOREAN_PAINTING, WESTERN_PAINTING, DESIGN, KOREAN_EDUCATION, ENGLISH_EDUCATION, JAPANESE_EDUCATION, PHYSICAL_EDUCATION, EARLY_CHILDHOOD_EDUCATION, HISTORY_EDUCATION, URBAN_ADMINISTRATION, SMART_CITY_ENGINEERING, LIFE_SCIENCE, MOLECULAR_BIOMEDICAL_SCIENCE, BIOENGINEERING, NANO_BIOENGINEERING, NORTHEAST_ASIA_TRADE, SMART_LOGISTICS_ENGINEERING, MEDIA_COMMUNICATION, SOCIAL_WELFARE, LIBRARY_INFORMATION_SCIENCE, CREATIVE_TALENT_DEVELOPMENT, POLITICAL_SCIENCE_DIPLOMACY(교양/총학점은 대학 공통기준 준용), FRENCH(전공학점은 대학 공통기준으로 추정), ENVIRONMENTAL_ENGINEERING(전공학점만 대학 공통문서에서 확인, 나머지는 추정),
+PUBLIC_ADMINISTRATION(2023학번 이후만), CHEMISTRY, MARINE_SCIENCE, TRADE, ELECTRICAL_ENGINEERING, INDUSTRIAL_MANAGEMENT_ENGINEERING, MATERIALS_SCIENCE_ENGINEERING, SAFETY_ENGINEERING, INFORMATION_COMMUNICATION_ENGINEERING, BUSINESS_ADMINISTRATION, TAX_ACCOUNTING, KOREAN_PAINTING, WESTERN_PAINTING, DESIGN, KOREAN_EDUCATION, ENGLISH_EDUCATION, JAPANESE_EDUCATION, PHYSICAL_EDUCATION, EARLY_CHILDHOOD_EDUCATION, HISTORY_EDUCATION, URBAN_ADMINISTRATION, SMART_CITY_ENGINEERING, LIFE_SCIENCE, MOLECULAR_BIOMEDICAL_SCIENCE, BIOENGINEERING, NANO_BIOENGINEERING, NORTHEAST_ASIA_TRADE, SMART_LOGISTICS_ENGINEERING, MEDIA_COMMUNICATION, SOCIAL_WELFARE, LIBRARY_INFORMATION_SCIENCE, CREATIVE_TALENT_DEVELOPMENT, POLITICAL_SCIENCE_DIPLOMACY(교양/총학점은 대학 공통기준 준용), FRENCH(전공학점은 대학 공통기준으로 추정), ENVIRONMENTAL_ENGINEERING(전공학점만 대학 공통문서에서 확인, 나머지는 추정),
 **MATHEMATICS**(학과 홈페이지 메뉴가 공통 템플릿으로 직접 연결됨을 확인),
 **LAW**(학과 홈페이지 메뉴가 공통 템플릿으로 직접 연결됨을 확인. 별도로 "법학부 전공 교과과정표(PDF)"는 있으나 미개봉),
 **ETHICS_EDUCATION**(학과 홈페이지 퀵메뉴가 공통 템플릿으로 직접 연결됨을 확인),
 **CIVIL_ENVIRONMENTAL_ENGINEERING**(학과 홈페이지 메뉴가 공통 템플릿으로 직접 연결됨을 확인),
-**SPORTS_SCIENCE**(학과 자체 "학사정보" 페이지에서 총 135학점·교양 30~55·전공 60학점 이상을 직접 확인 — 대학 공통기준인 130학점과 다름을 확인),
+**SPORTS_SCIENCE**(학부 사이트 `sports.inu.ac.kr:53034/sub3_3.php` 학사정보: 총 130학점 이상(2019학번까지 135), 교양 30~55, 전공 60. 1차 수집 때 본 옛 사이트 `inupe.inu.ac.kr`의 135는 옛 기준),
 **MATHEMATICS_EDUCATION**(3차: 학과 홈페이지 `/edumath/4303`이 대학 공통 졸업기준 전문을 게시함을 확인. 2026학번 기초교양 개편 반영),
 **FASHION_INDUSTRY**(3차: 학과 홈페이지 메뉴가 공통 템플릿 `/inu/666`으로 연결됨을 확인. 2026학번 기초교양 개편 반영),
 **ELECTRONIC_ENGINEERING**(3차: 학과 "졸업요건" 페이지(`/electron/13794`)의 이미지 안내에서 ~2019학번 140·2020~2022학번 137·2023학번~ 130학점, 기초교양 12학점(SW 없음)+기초과학공학 12학점(물리1·2, 선형대수학, 복소함수및벡터), 전공 72학점 확인. 전공기초+핵심 최소학점은 전자공학전공(6+19)과 옛 전자공학과(9+25) 기준의 학번 경계가 없어 반영하지 않음. 2018학번 이전 이력 없음),
@@ -38,6 +38,7 @@ PUBLIC_ADMINISTRATION(2023학번 이후만), CHEMISTRY, MARINE_SCIENCE, TRADE, E
 ## C그룹 — 학과 자체 페이지 미확인 / 확인은 했으나 학점 기준표가 없음 (전면 추정 또는 대학 공통기준 적용)
 아래 학과들은 2차 조사에서도 각 학과 공지사항·학과 홈페이지를 재검색했지만, 졸업 학점(총학점/교양/전공)에 대한 구체적인 수치표를 확보하지 못했습니다. 사유를 함께 표기합니다. 반드시 학과 사무실 또는 최신 수강편람으로 재확인이 필요합니다.
 
+- DATA_SCIENCE — 학과 사이트에 졸업요건 메뉴가 없고, 1차 때 쓴 링크(`/datascience/3710`)는 "메뉴가 존재하지 않습니다". 대학 공통기준(2023학번 이후 130, 전공 60) 적용
 - EXERCISE_HEALTH_SCIENCE — 학과 자체 "졸업요건" 페이지를 확인함. 세부전공(AT/GX/RT/PT/ERD 등)별 자격증·실습시간 요건만 있고 학점 기준은 게시되어 있지 않음(확인된 사실) → 학점 기준은 대학 공통기준을 학번대별(1979~2026+)로 펼쳐 적용
 - LIBERAL_STUDIES, INTERNATIONAL_LIBERAL_STUDIES, CONVERGENCE_STUDIES — 학과(융합자유전공대학) 홈페이지 메뉴를 재확인한 결과 "졸업요건" 메뉴 자체가 없음(비전및목표/로드맵만 존재). 공지사항에 "전공 가이드북"·"전공 진입 안내" 게시물은 있으나 숫자 기준표는 없음
   - 3차 확인: 자유전공학부·국제자유전공학부는 **2개 학기 이수 후 47개 학과(부)·전공 중 하나로 진입**한다(「2027학년도 1학기 자유전공학부 전공 진입 안내」, 예술체육대학·사범대학·스마트물류공학전공 제외). 졸업요건은 진입한 학과 기준이라 학과 자체 기준표는 원래 없다. 융합학부는 연계전공·학생설계융합전공(복수 42학점, 부전공 21학점, 복수전공 시 졸업논문)을 운영하는 단위로, 주전공 졸업요건의 대상이 아니다(「2026학년도 자유전공학부 전공 가이드북」).
@@ -51,6 +52,25 @@ PUBLIC_ADMINISTRATION(2023학번 이후만), CHEMISTRY, MARINE_SCIENCE, TRADE, E
 - IBE는 2020학번부터 교육과정표에 전공필수가 없고(전부 Major Elective) 2024학번부터 표가 없다 → 2020학번~ 빈 목록.
 - 한계: 택1 과목(예: 캡스톤디자인(1)/(2) 중 택1)과 과목명 변경은 구분하지 못한다. 2016학번 이전은 교육과정표가 없어 판정하지 않는다.
 
+
+## 교양 판정 기준 (기초교육원 자료)
+출처: 국어국문학과 공지에 게시된 기초교육원 자료 「2026학년도 교양 교육과정표」, 「2023학년도 이후 개편된 교양 교육과정 졸업요건 관련 주요사항」, 「교양 졸업요건 주요 문의사항 FAQ」(2026.2.3.), 수강신청편람 「교양이수 졸업요건」.
+
+- **SW 기초교양 이수 대상**(`isSwRequirementExempt`): 정보기술대학 해당 없음, 공과대학은 안전공학과·에너지화학공학과만, 도시과학대학은 도시행정학과·도시건축학부만, 생명과학기술대학은 생명공학부만, 사범대학은 수학교육과 제외. 학칙 표에는 "SW(해당학과)"로만 적혀 데이터에는 남기고 판정할 때 면제로 본다. 학과가 대체 과목을 정한 요건("SW(=전공필수 기계기초프로그래밍)")은 그대로 판정한다.
+- **개편으로 이름이 바뀐 동일 교과목**: 컴퓨팅적사고와SW = AI사고와데이터리터러시, 글쓰기이론과실제 = AI시대의글쓰기이론과실제. 학번과 무관하게 서로 인정한다.
+- **핵심교양**: 2019학번부터 "영역 관계없이 핵심교양(또는 2022학년도 이전 교양필수 INU핵심교양) 총 3과목". 영역 수가 아니라 과목 수이고 같은 영역 중복 이수를 인정한다(FAQ A3). 옛 성적표는 이수구분 "교양필수", 이수영역 "INU핵심창의융합"처럼 찍혀 이수영역이 "(핵심)"·"INU핵심"으로 시작하는 것으로 구분한다(전공 과목의 이수영역 "전공핵심"은 제외).
+- **대학영어 ≠ 대학영어회화**: 대학영어1·2(0005058·0005059, 2학점)는 "대학영어 또는 Academic English"의 한쪽으로 2023학년도를 끝으로 개설되지 않는다. 대학영어회화1·2(0005060·0005061, 1학점)는 별도 "회화" 요건이다.
+- 참고(미반영): 같은 표의 「대학수학(1),(2)」 이수 대상은 자연과학대학 수학·물리·화학·해양, 공과·정보기술대학 전체, 도시과학대학 도시환경공학부·도시공학과·도시건축학부, 사범대학 수학교육과, 생명과학기술대학 생명과학부·생명공학부.
+
+## 2020~2022학번 졸업학점 (학교 공식 표)
+출처: 학교 홈페이지 학사안내 > 수료/졸업(`https://www.inu.ac.kr/inu/666/subview.do`)의 "학과별 졸업학점 (2020~2022학년도 입학생)" 팝업 표. 학과 사이트들의 공통 졸업 문구도 이 페이지가 원본이다.
+
+- 모든 학과의 2020~2022학번 총학점을 이 표 값으로 맞췄다. 학과 자료로 만든 규칙이 이 구간을 덮고 있으면 내용은 두고 총학점만 바꿨고, 규칙이 없던 학과(2023학번 이후만 있던 B등급 등)는 공식 2019~2022 교양 기준(국어·영어(대학영어 또는 Academic English)·회화·SW, 수학 필요 학과는 대학수학, 핵심교양 3과목)으로 새 규칙을 만들었다(전공학점·영어인증은 그 학과 기존 규칙 값).
+- 기존 값과 달랐던 곳: 정치외교학과 130→135(공통기준 추정값이었음), 스포츠과학부 135→130(학과 현행 값을 이전 학번까지 늘려 쓴 것), 운동건강학부 2022학번 130("2022학년도 이후 입학생은 130").
+- 도시건축학부는 공식 표에서 도시건축학전공 140·건축공학전공 135로 갈리지만 앱 학과 코드가 하나라, 학과 졸업요건 탭과 같은 135를 둔다(도시건축학전공은 140).
+- 학과 페이지가 옛 문구로 남은 곳(화학·유아교육·국어교육·체육교육: 대학영어 4학점, "INU핵심교양 3개 영역 중 2개")과 2019학번 이전 기준은 아직 정리 전. 이전 학번은 각 학과 공지사항의 교과과정표로 채울 예정.
+
+## 공통으로 적용한 관례
 
 - `maxGeneralCredits`에 명시된 상한이 없는 경우(2008학번 이전 등) `999`를 "상한 없음"을 의미하는 관례값으로 사용했습니다.
 - 영어졸업인증 점수표의 "2009학년도 이전/2010학년도 이후" 라벨이 자료마다 뒤섞여 있어, 낮은 점수 기준표=2009학번 이전, 높은 점수 기준표=2010학번 이후로 통일해서 해석했습니다.

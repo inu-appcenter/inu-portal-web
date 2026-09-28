@@ -1011,21 +1011,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           maxGeneralCredits: 999,
           minTotalCredits: 140,
           requiredGeneralCourses: [
-            {
-              courseName: "국어 관련 1과목",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "영어 관련 과목",
-              credits: 4,
-              category: "영어",
-            },
+            { courseName: "국어 관련 1과목", credits: 2, category: "국어" },
+            { courseName: "영어 관련 과목", credits: 4, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 51,
-        },
+        majorRequirements: { minMajorCredits: 51 },
       },
       {
         startYear: 2008,
@@ -1036,21 +1026,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           maxGeneralCredits: 55,
           minTotalCredits: 135,
           requiredGeneralCourses: [
-            {
-              courseName: "국어 관련 1과목",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "영어 관련 과목",
-              credits: 4,
-              category: "영어",
-            },
+            { courseName: "국어 관련 1과목", credits: 2, category: "국어" },
+            { courseName: "영어 관련 과목", credits: 4, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 51,
-        },
+        majorRequirements: { minMajorCredits: 51 },
       },
       {
         startYear: 2010,
@@ -1061,21 +1041,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           maxGeneralCredits: 55,
           minTotalCredits: 135,
           requiredGeneralCourses: [
-            {
-              courseName: "국어 관련 1과목",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "영어 관련 과목",
-              credits: 4,
-              category: "영어",
-            },
+            { courseName: "국어 관련 1과목", credits: 2, category: "국어" },
+            { courseName: "영어 관련 과목", credits: 4, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
       {
         startYear: 2012,
@@ -1086,21 +1056,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           maxGeneralCredits: 55,
           minTotalCredits: 135,
           requiredGeneralCourses: [
-            {
-              courseName: "국어 관련 1과목",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "영어 관련 과목",
-              credits: 4,
-              category: "영어",
-            },
+            { courseName: "국어 관련 1과목", credits: 2, category: "국어" },
+            { courseName: "영어 관련 과목", credits: 4, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
       {
         startYear: 2016,
@@ -1111,21 +1071,9 @@ export const GRADUATION_REQUIREMENTS: Record<
           maxGeneralCredits: 55,
           minTotalCredits: 135,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
             {
               courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
@@ -1133,12 +1081,48 @@ export const GRADUATION_REQUIREMENTS: Record<
             },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
       {
         startYear: 2019,
+        endYear: 2019,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -1147,36 +1131,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -1185,6 +1147,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://inufrance.inu.ac.kr/inufrance/12395/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -1195,36 +1180,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -1233,6 +1196,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://www.inu.ac.kr/inu/666/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -1243,41 +1230,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 63,
-        },
+        majorRequirements: { minMajorCredits: 63 },
       },
     ],
   },
@@ -1613,6 +1574,54 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2017,
+        endYear: 2019,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 2,
+          requiredGeneralCourses: [
+            { courseName: "대학영어1,2", credits: 4, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            {
+              courseName: "글쓰기이론과실제 또는 공학작문및발표",
+              credits: 2,
+              category: "국어",
+            },
+            { courseName: "대학수학1,2", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 2,
+          requiredGeneralCourses: [
+            { courseName: "대학영어1,2", credits: 4, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            {
+              courseName: "글쓰기이론과실제 또는 공학작문및발표",
+              credits: 2,
+              category: "국어",
+            },
+            { courseName: "대학수학1,2", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
         generalRequirements: {
@@ -1621,41 +1630,19 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 2,
           requiredGeneralCourses: [
-            {
-              courseName: "대학영어1,2",
-              credits: 4,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
+            { courseName: "대학영어1,2", credits: 4, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
             {
               courseName: "글쓰기이론과실제 또는 공학작문및발표",
               credits: 2,
               category: "국어",
             },
-            {
-              courseName: "대학수학1,2",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "대학수학1,2", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 63,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -1664,6 +1651,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://uifashion.inu.ac.kr/inu/666/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "생활과학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
       {
         startYear: 2023,
         endYear: 2025,
@@ -1719,6 +1729,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://marine.inu.ac.kr/marine/2318/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -1728,46 +1763,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 63,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -1777,6 +1782,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://dsw.inu.ac.kr/dsw/2491/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
@@ -1786,36 +1814,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -1825,53 +1831,28 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://newdays.inu.ac.kr/shinbang/2536/subview.do",
     rules: [
       {
-        startYear: 2023,
-        endYear: 2099,
+        startYear: 2020,
+        endYear: 2022,
         track: "인문·사회·예체능계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
-          minTotalCredits: 130,
+          minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
             {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
+              courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
-    ],
-  },
-  LIBRARY_INFO: {
-    departmentName: "문헌정보학과",
-    confidence: "B",
-    sourceUrl: "https://cls.inu.ac.kr/cls/2446/subview.do",
-    rules: [
       {
         startYear: 2023,
         endYear: 2099,
@@ -1882,36 +1863,63 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
+        majorRequirements: { minMajorCredits: 60 },
+      },
+    ],
+  },
+  LIBRARY_INFO: {
+    departmentName: "문헌정보학과",
+    confidence: "B",
+    sourceUrl: "https://cls.inu.ac.kr/cls/2446/subview.do",
+    rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -1920,6 +1928,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://hrd.inu.ac.kr/hrd/2578/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -1930,41 +1962,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -1973,6 +1979,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://uipa.inu.ac.kr/uipa/7799/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -1983,36 +2012,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -2023,6 +2030,46 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2010,
+        endYear: 2019,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -2031,41 +2078,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -2400,6 +2421,26 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -2408,41 +2449,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -3009,6 +3024,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://elec.inu.ac.kr/elec/3319/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -3018,47 +3058,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
-          minRequiredMajorCredits: 24,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 72, minRequiredMajorCredits: 24 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -3172,6 +3181,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://ime.inu.ac.kr/ime/3096/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 137,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2025,
         track: "자연·공학계열",
@@ -3181,46 +3215,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -3230,63 +3234,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://mse.inu.ac.kr/mse/3141/subview.do",
     rules: [
       {
-        startYear: 2023,
-        endYear: 2099,
+        startYear: 2020,
+        endYear: 2022,
         track: "자연·공학계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
-          minTotalCredits: 130,
+          minTotalCredits: 140,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
             {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
+              courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
-    ],
-  },
-  SAFETY_ENGINEERING: {
-    departmentName: "안전공학과",
-    confidence: "B",
-    sourceUrl: "https://safety.inu.ac.kr/safety/3197/subview.do",
-    rules: [
       {
         startYear: 2023,
         endYear: 2099,
@@ -3297,46 +3268,69 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+    ],
+  },
+  SAFETY_ENGINEERING: {
+    departmentName: "안전공학과",
+    confidence: "B",
+    sourceUrl: "https://safety.inu.ac.kr/safety/3197/subview.do",
+    rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
         },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -4027,6 +4021,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://ite.inu.ac.kr/ite/3468/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -4036,41 +4055,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -4284,6 +4277,26 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -4292,48 +4305,22 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
   DATA_SCIENCE: {
     departmentName: "데이터과학과",
-    confidence: "B",
-    sourceUrl: "https://datascience.inu.ac.kr/datascience/3710/subview.do",
+    confidence: "C",
+    sourceUrl: "https://www.inu.ac.kr/inu/666/subview.do",
     rules: [
       {
         startYear: 2020,
@@ -4345,41 +4332,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -4390,6 +4351,26 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60, minRequiredMajorCredits: 27 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -4398,42 +4379,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-          minRequiredMajorCredits: 27,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60, minRequiredMajorCredits: 27 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -4467,6 +4421,52 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2019,
+        endYear: 2019,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -4475,36 +4475,18 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
             {
               courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -4515,6 +4497,22 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "기초교양", credits: 8, category: "기타" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 600, toeicSpeaking: 110, opic: "IL" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -4523,21 +4521,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "기초교양",
-              credits: 8,
-              category: "기타",
-            },
+            { courseName: "기초교양", credits: 8, category: "기타" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 600,
-          toeicSpeaking: 110,
-          opic: "IL",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 600, toeicSpeaking: 110, opic: "IL" },
       },
     ],
   },
@@ -4548,6 +4536,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 600, toeicSpeaking: 110 },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -4556,52 +4568,30 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
             {
               courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        // 학과 페이지 기준: 2010학번 이후도 TOEIC 600(대학 공통 700보다 낮음)
-        englishCertification: {
-          toeic: 600,
-          toeicSpeaking: 110,
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 600, toeicSpeaking: 110 },
       },
     ],
   },
   SPORTS_SCIENCE: {
     departmentName: "스포츠과학부",
     confidence: "B",
-    sourceUrl: "https://inupe.inu.ac.kr/inupe/4192/subview.do",
+    sourceUrl: "https://sports.inu.ac.kr:53034/sub3_3.php",
     rules: [
       {
         startYear: 2019,
-        endYear: 2099,
+        endYear: 2019,
         track: "인문·사회·예체능계열",
         generalRequirements: {
           minGeneralCredits: 30,
@@ -4609,36 +4599,64 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
             {
               courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -4772,12 +4790,32 @@ export const GRADUATION_REQUIREMENTS: Record<
       },
       {
         startYear: 2019,
-        endYear: 2022,
+        endYear: 2021,
         track: "인문·사회·예체능계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
           minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2022,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
             { courseName: "국어", credits: 2, category: "국어" },
@@ -4847,6 +4885,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://edukorean.inu.ac.kr/edukorean/4240/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
@@ -4856,36 +4918,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 2,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "대학영어",
-              credits: 4,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "대학영어", credits: 4, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -4894,6 +4934,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://eduenglish.inu.ac.kr/eduenglish/4414/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 800, toeicSpeaking: 140, opic: "IH" },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -4904,41 +4968,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 800,
-          toeicSpeaking: 140,
-          opic: "IH",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 800, toeicSpeaking: 140, opic: "IH" },
       },
     ],
   },
@@ -4947,6 +4985,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://edujapanese.inu.ac.kr/edujapanese/4600/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
       {
         startYear: 2023,
         endYear: 2099,
@@ -4962,36 +5023,18 @@ export const GRADUATION_REQUIREMENTS: Record<
               credits: 2,
               category: "국어",
             },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
             {
               courseName: "AI사고와데이터리터러시",
               credits: 2,
               category: "SW",
             },
-            {
-              courseName: "AI와인간중심윤리",
-              credits: 2,
-              category: "기타",
-            },
+            { courseName: "AI와인간중심윤리", credits: 2, category: "기타" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -5000,6 +5043,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     confidence: "B",
     sourceUrl: "https://mathedu.inu.ac.kr/edumath/4303/subview.do",
     rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
       {
         startYear: 2023,
         endYear: 2025,
@@ -5059,6 +5127,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://eduphysical.inu.ac.kr/eduphysical/4649/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
@@ -5068,31 +5159,13 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 2,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "대학영어",
-              credits: 4,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "대학영어", credits: 4, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -5103,6 +5176,38 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2016,
+        endYear: 2019,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 2,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "영어", credits: 6, category: "영어" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 2,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "영어", credits: 6, category: "영어" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -5111,21 +5216,11 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 2,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "영어",
-              credits: 6,
-              category: "영어",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "영어", credits: 6, category: "영어" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -5135,53 +5230,28 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://eduhistory.inu.ac.kr/eduhistory/7992/subview.do",
     rules: [
       {
-        startYear: 2023,
-        endYear: 2099,
+        startYear: 2020,
+        endYear: 2022,
         track: "인문·사회·예체능계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
-          minTotalCredits: 130,
+          minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
             {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
+              courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
-    ],
-  },
-  ETHICS_EDUCATION: {
-    departmentName: "윤리교육과",
-    confidence: "B",
-    sourceUrl: "https://eduethics.inu.ac.kr/inu/666/subview.do",
-    rules: [
       {
         startYear: 2023,
         endYear: 2099,
@@ -5192,36 +5262,63 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
+        majorRequirements: { minMajorCredits: 60 },
+      },
+    ],
+  },
+  ETHICS_EDUCATION: {
+    departmentName: "윤리교육과",
+    confidence: "B",
+    sourceUrl: "https://eduethics.inu.ac.kr/inu/666/subview.do",
+    rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
@@ -5232,6 +5329,46 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2010,
+        endYear: 2019,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -5240,41 +5377,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -5284,6 +5395,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://www.inu.ac.kr/inu/666/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -5293,46 +5429,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -5342,63 +5448,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://et.inu.ac.kr/et/7723/subview.do",
     rules: [
       {
-        startYear: 2023,
-        endYear: 2099,
+        startYear: 2020,
+        endYear: 2022,
         track: "자연·공학계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
-          minTotalCredits: 130,
+          minTotalCredits: 140,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
             {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
+              courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 66,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 66 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
-    ],
-  },
-  URBAN_ENGINEERING: {
-    departmentName: "도시공학과",
-    confidence: "B",
-    sourceUrl: "https://scity.inu.ac.kr/ucv/4748/subview.do",
-    rules: [
       {
         startYear: 2023,
         endYear: 2099,
@@ -5409,41 +5482,67 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
+        majorRequirements: { minMajorCredits: 66 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+    ],
+  },
+  URBAN_ENGINEERING: {
+    departmentName: "도시공학과",
+    confidence: "B",
+    sourceUrl: "https://scity.inu.ac.kr/ucv/4748/subview.do",
+    rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 72 },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 72 },
       },
     ],
   },
@@ -5606,6 +5705,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://life.inu.ac.kr/life/4962/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -5615,46 +5739,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 63,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -5664,6 +5758,31 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://life.inu.ac.kr/life/4962/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "자연·공학계열",
@@ -5673,46 +5792,16 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 135,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 63,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 63 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -5722,63 +5811,30 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://bioeng.inu.ac.kr/engineeringlife/5129/subview.do",
     rules: [
       {
-        startYear: 2023,
-        endYear: 2099,
+        startYear: 2020,
+        endYear: 2022,
         track: "자연·공학계열",
         generalRequirements: {
           minGeneralCredits: 30,
           maxGeneralCredits: 55,
-          minTotalCredits: 130,
+          minTotalCredits: 140,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
             {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
+              courseName: "영어(대학영어 또는 Academic English)",
               credits: 2,
               category: "영어",
             },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
-        },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
-        },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
-    ],
-  },
-  BIOENGINEERING_NANO: {
-    departmentName: "생명공학부(나노바이오공학전공)",
-    confidence: "B",
-    sourceUrl: "https://nanobio.inu.ac.kr/nanobio/5078/subview.do",
-    rules: [
       {
         startYear: 2023,
         endYear: 2099,
@@ -5789,46 +5845,69 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
-            {
-              courseName: "대학수학",
-              credits: 6,
-              category: "수학",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 72,
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+    ],
+  },
+  BIOENGINEERING_NANO: {
+    departmentName: "생명공학부(나노바이오공학전공)",
+    confidence: "B",
+    sourceUrl: "https://nanobio.inu.ac.kr/nanobio/5078/subview.do",
+    rules: [
+      {
+        startYear: 2020,
+        endYear: 2022,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 140,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
         },
-        englishCertification: {
-          toeic: 700,
-          toeicSpeaking: 130,
-          opic: "IM",
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
+      },
+      {
+        startYear: 2023,
+        endYear: 2099,
+        track: "자연·공학계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
+            { courseName: "대학수학", credits: 6, category: "수학" },
+          ],
         },
+        majorRequirements: { minMajorCredits: 72 },
+        englishCertification: { toeic: 700, toeicSpeaking: 130, opic: "IM" },
       },
     ],
   },
@@ -5983,6 +6062,26 @@ export const GRADUATION_REQUIREMENTS: Record<
     rules: [
       {
         startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 130,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 850, toeicSpeaking: 150, opic: "IH" },
+      },
+      {
+        startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
         generalRequirements: {
@@ -5991,41 +6090,15 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "국어",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "국어", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
-        englishCertification: {
-          toeic: 850,
-          toeicSpeaking: 150,
-          opic: "IH",
-        },
+        majorRequirements: { minMajorCredits: 60 },
+        englishCertification: { toeic: 850, toeicSpeaking: 150, opic: "IH" },
       },
     ],
   },
@@ -6296,6 +6369,29 @@ export const GRADUATION_REQUIREMENTS: Record<
     sourceUrl: "https://law.inu.ac.kr/inu/666/subview.do",
     rules: [
       {
+        startYear: 2020,
+        endYear: 2022,
+        track: "인문·사회·예체능계열",
+        generalRequirements: {
+          minGeneralCredits: 30,
+          maxGeneralCredits: 55,
+          minTotalCredits: 135,
+          minCoreGeneralCount: 3,
+          requiredGeneralCourses: [
+            { courseName: "국어", credits: 2, category: "국어" },
+            {
+              courseName: "영어(대학영어 또는 Academic English)",
+              credits: 2,
+              category: "영어",
+            },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "SW", credits: 2, category: "SW" },
+          ],
+        },
+        majorRequirements: { minMajorCredits: 60 },
+      },
+      {
         startYear: 2023,
         endYear: 2099,
         track: "인문·사회·예체능계열",
@@ -6305,36 +6401,14 @@ export const GRADUATION_REQUIREMENTS: Record<
           minTotalCredits: 130,
           minCoreGeneralCount: 3,
           requiredGeneralCourses: [
-            {
-              courseName: "글쓰기이론과실제",
-              credits: 2,
-              category: "국어",
-            },
-            {
-              courseName: "Academic English",
-              credits: 2,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화1",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "대학영어회화2",
-              credits: 1,
-              category: "영어",
-            },
-            {
-              courseName: "컴퓨팅적사고와 SW",
-              credits: 2,
-              category: "SW",
-            },
+            { courseName: "글쓰기이론과실제", credits: 2, category: "국어" },
+            { courseName: "Academic English", credits: 2, category: "영어" },
+            { courseName: "대학영어회화1", credits: 1, category: "영어" },
+            { courseName: "대학영어회화2", credits: 1, category: "영어" },
+            { courseName: "컴퓨팅적사고와 SW", credits: 2, category: "SW" },
           ],
         },
-        majorRequirements: {
-          minMajorCredits: 60,
-        },
+        majorRequirements: { minMajorCredits: 60 },
       },
     ],
   },
