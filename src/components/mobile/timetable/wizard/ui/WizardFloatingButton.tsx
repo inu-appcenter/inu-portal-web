@@ -2,6 +2,7 @@ import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import { buttonReset } from "./tokens";
+import { effects } from "@/styles/effects";
 
 interface WizardFloatingButtonProps {
   icon: FontelloIconName;
@@ -45,9 +46,7 @@ const Button = styled.button<{ $active?: boolean }>`
     $active ? "var(--bg-brand, #eff6ff)" : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
   color: ${({ $active }) =>
     $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  ${effects.floatingButton}
   transition: transform 0.1s ease;
 
   &:active {

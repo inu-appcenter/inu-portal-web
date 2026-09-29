@@ -175,8 +175,10 @@
   --caption-1-font-weight: 400;
   --caption-1-line-height: 16px;
   --caption-1-letter-spacing: 0;
-  --bottom-sheet: [object Object];
-  --floating-button: [object Object];
-  --dim: [object Object];
-  --elevation-1: [object Object];
+  --bottom-sheet-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
+  --floating-button-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --floating-button-backdrop-filter: blur(10px);
+  --dim-backdrop-filter: blur(2px);
+  --elevation-1-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.04);
+  --bubble-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
 }

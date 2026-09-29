@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { buttonReset, WIZARD_PRIMARY } from "./tokens";
 import { typography } from "@/styles/typography";
+import { effects } from "@/styles/effects";
 
 interface WizardBottomCTAProps {
   children: React.ReactNode;
@@ -105,8 +106,7 @@ const Button = styled.button`
   background: ${WIZARD_PRIMARY};
   color: var(--text-inverse, #ffffff);
   white-space: nowrap;
-  /* elevation/1 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  ${effects.elevation1}
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;

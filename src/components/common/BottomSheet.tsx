@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Drawer } from "vaul";
 import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { effects } from "@/styles/effects";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -175,7 +176,7 @@ const SheetInner = styled.div`
   position: relative;
   border-radius: 32px 32px 0 0;
   background: var(--bg-base, #ffffff);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
+  ${effects.bottomSheet}
   width: 100%;
   border-top: 1px solid var(--border-default, #e5e8eb);
   overflow: hidden;

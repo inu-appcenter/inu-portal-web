@@ -265,10 +265,22 @@ declare const tokens: {
     "line-height": DesignToken;
     "letter-spacing": DesignToken;
   };
-  Bottom_Sheet: DesignToken;
-  Floating_Button: DesignToken;
-  Dim: DesignToken;
+  Bottom_Sheet: {
+    shadow: DesignToken;
+  };
+  Floating_Button: {
+    shadow: DesignToken;
+    "backdrop-filter": DesignToken;
+  };
+  Dim: {
+    "backdrop-filter": DesignToken;
+  };
   elevation: {
-    "1": DesignToken;
+    "1": {
+      shadow: DesignToken;
+    };
+  };
+  Bubble: {
+    shadow: DesignToken;
   };
 };
