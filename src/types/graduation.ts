@@ -78,9 +78,13 @@ export interface DepartmentGraduationRequirement {
 
 /**
  * 전공필수 이수구분. 인천대 현행 이수구분에서 전공필수 = 전공기초 + 전공핵심이고,
- * 옛 교육과정표에는 "전공필수"로 적혀 있다.
+ * 옛 교육과정표에는 "전공필수"로 적혀 있다. 학과가 따로 필수로 지정한 전공심화 과목도 있다.
  */
-export type RequiredMajorDivision = "전공기초" | "전공핵심" | "전공필수";
+export type RequiredMajorDivision =
+  | "전공기초"
+  | "전공핵심"
+  | "전공필수"
+  | "전공심화";
 
 /** [과목명, 학점, 이수구분]. 학과×학번 전체를 담는 생성 데이터라 튜플로 줄였다. */
 export type RequiredMajorCourse = [

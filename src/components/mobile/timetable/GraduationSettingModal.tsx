@@ -79,7 +79,7 @@ export default function GraduationSettingModal({
       isOpen={isOpen}
       onClose={onClose}
       title="졸업요건 설정"
-      description="학과와 학번을 고르면 이수해야 할 학점을 자동으로 채워드려요."
+      description="학과와 학번을 고르면 졸업에 필요한 학점을 자동으로 채워드려요."
       primaryButton={{
         text: "저장",
         variant: "brand",

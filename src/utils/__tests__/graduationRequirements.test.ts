@@ -343,7 +343,7 @@ describe("evaluateGraduation", () => {
 
     expect(evaluation.generalOverflow).toBe(5); // 상한 55학점
     expect(
-      evaluation.notices.some((notice) => notice.includes("교양 상한")),
+      evaluation.notices.some((notice) => notice.includes("최대 55학점")),
     ).toBe(true);
   });
 

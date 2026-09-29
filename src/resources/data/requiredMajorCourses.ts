@@ -2428,6 +2428,7 @@ export const REQUIRED_MAJOR_COURSES: Record<string, RequiredMajorCourseSet[]> =
           ["운동처방론", 3, "전공핵심"],
           ["자기설계세미나 I", 1, "전공기초"],
           ["자기설계세미나II", 1, "전공기초"],
+          ["장애인체육론", 2, "전공심화"],
           ["하지운동손상평가", 2, "전공핵심"],
           ["해양훈련", 1, "전공기초"],
         ],

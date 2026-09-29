@@ -111,6 +111,15 @@ const SOURCES = {
   IBE: ["ibe.inu.ac.kr", "ibe", 152],
 };
 
+/**
+ * 교육과정표 이수구분은 전공심화인데 학과 졸업요건이 따로 필수로 지정한 과목.
+ * 그 해 교육과정표에 있을 때만 넣는다(학점·이수구분은 교육과정표 값).
+ */
+const EXTRA_REQUIRED = {
+  // https://uiex.inu.ac.kr/uiex/4061/subview.do "25학번은 전공심화 장애인체육론 필수"
+  HEALTH_EXERCISE: [{ fromYear: 2025, courseName: "장애인체육론" }],
+};
+
 const 기초 = "전공기초";
 const 핵심 = "전공핵심";
 
@@ -272,12 +281,13 @@ const fetchYear = async ([host, siteId, fnctNo], year) => {
  * "공통" 학년 행은 학년과 무관하게 골라 듣는 현장교육실습뿐이라 뺀다.
  * 연도끼리 비교할 수 있게 과목명 순으로 정렬하고, 같은 과목이 두 번 적히면 하나로 합친다.
  */
-const requiredCourses = (rows) => {
+const requiredCourses = (rows, extraNames = []) => {
   const byName = new Map();
   rows
     .filter(
       (row) =>
-        REQUIRED_DIVISIONS.has(row.division) &&
+        (REQUIRED_DIVISIONS.has(row.division) ||
+          extraNames.includes(row.courseName)) &&
         !/공통|Common/.test(row.grade ?? ""),
     )
     .forEach((row) => {
@@ -314,7 +324,10 @@ const collect = async (code, source) => {
     const rows = await fetchYear(source, year);
     // 교육과정표가 없는 해(학과 신설 전·미게시)는 건너뛴다. 표는 있는데 전공필수가
     // 없는 해(IBE 2020~)는 빈 목록으로 남겨 앞 학번 목록이 이어 붙지 않게 한다.
-    if (rows.length > 0) byYear.push([year, requiredCourses(rows)]);
+    const extraNames = (EXTRA_REQUIRED[code] ?? [])
+      .filter((extra) => year >= extra.fromYear)
+      .map((extra) => extra.courseName);
+    if (rows.length > 0) byYear.push([year, requiredCourses(rows, extraNames)]);
   }
   return [code, toRanges(byYear)];
 };

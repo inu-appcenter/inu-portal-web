@@ -14,7 +14,7 @@ const HIGHLIGHTS = [
   {
     icon: GraduationCap,
     title: "졸업요건 진단",
-    desc: "학과와 학번만 고르면 남은 학점과 아직 안 들은 필수 교양을 한눈에 알려드려요.",
+    desc: "학과와 학번만 고르면 남은 학점과 아직 안 들은 필수 과목을 한눈에 알려드려요.",
   },
   {
     icon: ClipboardPaste,

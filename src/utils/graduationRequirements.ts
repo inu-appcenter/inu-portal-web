@@ -271,7 +271,7 @@ export const evaluateGraduation = (
     );
     if (!hasIsuName) {
       notices.push(
-        "전공기초·전공핵심(옛 전공필수) 학점은 성적 붙여넣기로 불러온 과목(이수구분 정보)만 자동으로 셀 수 있어요.",
+        "전공기초·전공핵심 학점은 성적 붙여넣기로 불러온 과목만 셀 수 있어요.",
       );
     }
   }
@@ -343,7 +343,7 @@ export const evaluateGraduation = (
 
   if (requiredCourses.some((course) => course.status === "UNKNOWN")) {
     notices.push(
-      "일부 필수 교양은 과목명만으로 판정할 수 없어 직접 확인이 필요해요.",
+      "'확인 필요' 과목은 과목명만으로 판단할 수 없어요. 직접 확인해 주세요.",
     );
   }
 
@@ -373,7 +373,7 @@ export const evaluateGraduation = (
 
     if (unverifiable) {
       notices.push(
-        `핵심교양은 영역 관계없이 ${general.minCoreGeneralCount}과목 이상 이수해야 해요. 성적 붙여넣기로 불러오면 자동으로 확인해 드려요.`,
+        `핵심교양은 영역과 상관없이 ${general.minCoreGeneralCount}과목 이상 들어야 해요. 성적을 붙여넣으면 자동으로 확인해 드려요.`,
       );
     }
   }
@@ -383,7 +383,7 @@ export const evaluateGraduation = (
     options.minTotalCredits !== general.minTotalCredits
   ) {
     notices.push(
-      `총 취득학점은 직접 설정한 ${options.minTotalCredits}학점 기준으로 계산했어요. (학칙 기준 ${general.minTotalCredits}학점)`,
+      `직접 설정한 ${options.minTotalCredits}학점으로 계산했어요. (학교 기준 ${general.minTotalCredits}학점)`,
     );
   }
 
@@ -394,7 +394,7 @@ export const evaluateGraduation = (
 
   if (generalOverflow > 0) {
     notices.push(
-      `교양 상한(${general.maxGeneralCredits}학점)을 ${generalOverflow}학점 넘었어요. 초과분은 졸업학점에 안 들어갈 수 있어요.`,
+      `교양이 최대 ${general.maxGeneralCredits}학점을 ${generalOverflow}학점 넘었어요. 넘은 학점은 졸업학점에 들어가지 않을 수 있어요.`,
     );
   }
 

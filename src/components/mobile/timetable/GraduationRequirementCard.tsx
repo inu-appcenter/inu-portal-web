@@ -48,9 +48,9 @@ export default function GraduationRequirementCard({
 
   const emptyMessage = (() => {
     if (!profile.departmentCode || !profile.entryYear) {
-      return "학과와 학번을 설정하면 이수해야 할 학점과 남은 필수 과목을 알려드려요.";
+      return "학과와 학번을 설정하면 남은 학점과 필수 과목을 알려드려요.";
     }
-    return `아직 ${departmentTitle || "이 학과"}의 졸업요건 데이터가 없어요. 취득 학점은 직접 설정해 주세요.`;
+    return `${departmentTitle || "이 학과"} 졸업요건은 아직 준비 중이에요. 졸업 학점은 직접 설정할 수 있어요.`;
   })();
 
 
@@ -61,6 +61,31 @@ export default function GraduationRequirementCard({
   const requiredCourses = evaluation.requiredCourses.filter(
     (course) => course.status !== "EXEMPT",
   );
+  // 카드 상단 기준 안내는 하나만 띄운다: 다른 학번 기준으로 대체 > C(공통 기준) > B.
+  const ruleNotice = (() => {
+    if (!resolved.exact) {
+      const { startYear, endYear } = resolved.rule;
+      const range =
+        endYear >= 2099 ? `${startYear}학번 이후` : `${startYear}~${endYear}학번`;
+      return {
+        tone: "warn" as const,
+        text: `${profile.entryYear}학번 기준이 없어 가장 가까운 ${range} 기준으로 보여드려요. 다르다면 아래에서 제보해 주세요.`,
+      };
+    }
+    if (resolved.department.confidence === "C") {
+      return {
+        tone: "info" as const,
+        text: "학과 자료가 없어 학교 공통 기준으로 계산했어요. 정확한 기준은 학과 사무실에 확인해 주세요.",
+      };
+    }
+    if (resolved.department.confidence === "B") {
+      return {
+        tone: "info" as const,
+        text: "학과 홈페이지와 학교 공지를 바탕으로 정리한 기준이에요. 실제 졸업사정과 다를 수 있어요.",
+      };
+    }
+    return null;
+  })();
   // 전공필수는 학과마다 10~30과목이라 남은 과목만 펼쳐 두고 이수한 과목은 접는다.
   const { requiredMajorCourses } = evaluation;
   const missingMajorCourses =
@@ -87,23 +112,10 @@ export default function GraduationRequirementCard({
             {profile.entryYear}학번 · {resolved.rule.track}
           </RuleSummary>
 
-          {!resolved.exact && (
-            <NoticeBox $tone="warn">
+          {ruleNotice && (
+            <NoticeBox $tone={ruleNotice.tone}>
               <AlertTriangle size={14} />
-              <span>
-                유니님의 정보로 올바른 졸업요건 정보를 찾지 못했어요. 아래 "졸업요건 변경 제보하기" 버튼을 눌러 제보해주세요!
-              </span>
-            </NoticeBox>
-          )}
-
-          {resolved.department.confidence !== "A" && (
-            <NoticeBox $tone="info">
-              <AlertTriangle size={14} />
-              <span>
-                {resolved.department.confidence === "C"
-                  ? "학과 자료를 확보하지 못해 대학 공통기준으로 추정한 값이에요. 학과 사무실에 꼭 확인해 주세요."
-                  : "학과 최신 공지 기준으로 수집한 값이라 실제 적용 규정과 다를 수 있어요."}
-              </span>
+              <span>{ruleNotice.text}</span>
             </NoticeBox>
           )}
 
@@ -274,15 +286,15 @@ export default function GraduationRequirementCard({
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>학과 졸업요건 안내 보기</span>
+              <span>졸업요건 출처 보기</span>
               <Icon name="link-external" size={12} />
             </SourceLink>
           )}
 
           <ReportSection>
             <ReportText>
-              졸업요건은 학사 개편이나 학과 공지에 따라 바뀔 수 있어요. 실제
-              규정과 다른 부분을 발견하면 알려주시면 반영할게요.
+              졸업요건은 학사 개편이나 학과 공지에 따라 바뀔 수 있어요. 실제와
+              다르면 알려주세요.
             </ReportText>
             <ReportButton
               href={REQUIREMENT_REPORT_FORM_URL}
@@ -304,6 +316,7 @@ const MAJOR_DIVISION_LABELS: Record<RequiredMajorCourseProgress["division"], str
   전공기초: "기초",
   전공핵심: "핵심",
   전공필수: "필수",
+  전공심화: "심화",
 };
 
 function MajorCourseRow({ course }: { course: RequiredMajorCourseProgress }) {
