@@ -1,6 +1,9 @@
 import styled from "styled-components";
 
-import type { BusCircleTone } from "@/components/mobile/bus/busCircleTone";
+import {
+  BUS_TONE_COLOR,
+  type BusCircleTone,
+} from "@/components/mobile/bus/busCircleTone";
 
 interface BusCircleProps {
   number: string;
@@ -17,16 +20,7 @@ export default function BusCircle({
 const Circle = styled.div<{ $tone: BusCircleTone }>`
   //background-color: #ffffff;
   //box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
-  color: ${({ $tone }) => {
-    switch ($tone) {
-      case "green":
-        return "#2c9b37";
-      case "red":
-        return "#d64a3a";
-      default:
-        return "#1b4e9b";
-    }
-  }};
+  color: ${({ $tone }) => BUS_TONE_COLOR[$tone]};
   width: fit-content;
   min-width: fit-content;
   height: 40px;

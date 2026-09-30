@@ -9,37 +9,7 @@ import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import Skeleton from "@/components/common/Skeleton";
 import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import type { BusData } from "@/types/bus";
-
-// 버스 노선 유형별 테마 컬러 매핑 함수
-function getBusColor(busNumber: string): string {
-  if (
-    [
-      "6",
-      "6-1",
-      "6-2",
-      "8",
-      "16",
-      "43-1",
-      "58",
-      "셔틀",
-      "순환41",
-      "순환42",
-      "순환43",
-    ].includes(busNumber)
-  ) {
-    return "#0e4d9d"; // 간선/지선 블루
-  }
-  if (["46", "41"].includes(busNumber)) {
-    return "#00a82f"; // 지선 그린
-  }
-  if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
-    return "#e60012"; // 광역 레드
-  }
-  if (busNumber.includes("급행")) {
-    return "#6f2a8c"; // 급행 보라
-  }
-  return "#0061ff"; // 기본 브랜드 블루
-}
+import { getBusToneColor } from "@/components/mobile/bus/busCircleTone";
 
 const BusIcon = ({ color }: { color: string }) => (
   <svg
@@ -263,7 +233,7 @@ function BusStopCard({
               arrivalTime = "정보 없음";
             }
 
-            const busColor = getBusColor(bus.number);
+            const busColor = getBusToneColor(bus.number);
 
             return (
               <BusInfoRow

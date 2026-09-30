@@ -9,36 +9,7 @@ import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTables, useTimeTableDetail } from "@/hooks/useTimeTables";
 import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import type { BusData } from "@/types/bus";
-
-// 홈페이지 버스 위젯과 동일한 노선별 컬러 매핑
-function getBusColor(busNumber: string): string {
-  if (
-    [
-      "6",
-      "6-1",
-      "6-2",
-      "8",
-      "16",
-      "43-1",
-      "58",
-      "순환41",
-      "순환42",
-      "순환43",
-    ].includes(busNumber)
-  ) {
-    return "#0e4d9d"; // 간선/지선 블루
-  }
-  if (["46", "41"].includes(busNumber)) {
-    return "#00a82f"; // 지선 그린
-  }
-  if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
-    return "#e60012"; // 광역 레드
-  }
-  if (busNumber.includes("급행")) {
-    return "#6f2a8c"; // 급행 보라
-  }
-  return "#0061ff"; // 기본 브랜드 블루
-}
+import { getBusToneColor } from "@/components/mobile/bus/busCircleTone";
 
 const BusIcon = ({ color }: { color: string }) => (
   <svg
@@ -283,7 +254,7 @@ export default function DailyBriefBusCard() {
       return {
         id: `${bus.routeId ?? bus.id}-${bus.number}`,
         number: bus.number,
-        color: getBusColor(bus.number),
+        color: getBusToneColor(bus.number),
         time: arrivalTime,
         detail: bus.sectionLabel || "인천 시내버스",
         isHighlight,
