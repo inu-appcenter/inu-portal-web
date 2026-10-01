@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
+import { WizardCard, WizardCourseRow } from "@/components/mobile/timetable/wizard/ui";
+
 import TimetableGrid, {
   type ClassItem,
 } from "@/components/mobile/timetable/TimetableGrid";
@@ -8,12 +10,19 @@ import ClassDetailBottomSheet from "@/components/mobile/timetable/ClassDetailBot
 import { formatCourseMeetings, mapWizardCoursesToClassItems } from "@/utils/timetableWizardFormat";
 import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import type { WizardCandidate } from "@/types/timetableWizard";
+import { typography } from "@/styles/typography";
 
 interface WizardDetailScreenProps {
   candidate: WizardCandidate;
+  /**
+   * 화면 끝에 고정 버튼만큼 여백을 둘지. 하단 버튼을 WizardBottomCTA(자체 여백 포함)로
+   * 그리는 화면은 false로 넘긴다. 기본값 true는 자체 고정 버튼을 쓰는 그룹 마법사용.
+   */
+  reserveBottomSpace?: boolean;
 }
 
-const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
+// Figma: 시간표 마법사 / 추천시간표 (3059:9386)
+const WizardDetailScreen = ({ candidate, reserveBottomSpace = true }: WizardDetailScreenProps) => {
   const gridEvents = useMemo(
     () => mapWizardCoursesToClassItems(candidate.courses),
     [candidate.courses],
@@ -57,17 +66,19 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
   };
 
   return (
-    <ScrollContent>
-      <Card>
+    <Body>
+      <WizardCard>
         <TimetableGrid events={gridEvents} isFreeMode />
-      </Card>
+      </WizardCard>
 
-      <Card>
+      <ReasonsCard $radius={16}>
         <CardTitle>이 시간표를 추천한 이유</CardTitle>
         <ReasonList>
           {candidate.reasons.map((reason, index) => (
             <ReasonItem key={index}>
-              <ReasonIcon $met={reason.met}>{reason.met ? "✓" : "!"}</ReasonIcon>
+              <ReasonIcon $met={reason.met} aria-label={reason.met ? "충족" : "주의"}>
+                <Icon name={reason.met ? "check" : "triangle-warning"} size={20} />
+              </ReasonIcon>
               <ReasonText>
                 <ReasonHeadline $met={reason.met}>{reason.headline}</ReasonHeadline>
                 {reason.detail && <ReasonDetail>{reason.detail}</ReasonDetail>}
@@ -75,37 +86,37 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
             </ReasonItem>
           ))}
         </ReasonList>
-      </Card>
+      </ReasonsCard>
 
-      <Card>
+      {/* 시간 정보가 없는(이러닝 등) 강의는 격자에 안 나오므로 목록으로도 보여 준다 */}
+      <CourseListCard $radius={16}>
         <CardTitle>강의 목록</CardTitle>
-        <CourseList>
+        <div>
           {candidate.courses.map((course, index) => {
             const onlineTypeLabel = getOnlineTypeLabel(
               course.ssupTypeName,
               course.ssupTypeCode,
             );
+            const meta = [
+              course.professor,
+              `${course.credit}학점`,
+              formatCourseMeetings(course) || onlineTypeLabel,
+            ]
+              .filter(Boolean)
+              .join(" · ");
             return (
-              <CourseRow
+              <WizardCourseRow
                 key={course.subjectNumber}
+                title={course.title}
+                meta={meta}
                 onClick={() => handleCourseRowClick(course, index)}
-              >
-                <AccentBar $colorIndex={index} />
-                <CourseTextWrap>
-                  <CourseName>{course.title}</CourseName>
-                  <CourseMeta>
-                    {formatCourseMeetings(course)} · {course.credit}학점
-                    {onlineTypeLabel ? ` · ${onlineTypeLabel}` : ""}
-                  </CourseMeta>
-                </CourseTextWrap>
-                <Icon name="chevron-right" size={18} color="#8a96a5" />
-              </CourseRow>
+              />
             );
           })}
-        </CourseList>
-      </Card>
+        </div>
+      </CourseListCard>
 
-      <BottomActionsSpacer />
+      {reserveBottomSpace && <BottomActionsSpacer />}
 
       <ClassDetailBottomSheet
         open={detailOpen}
@@ -115,13 +126,13 @@ const WizardDetailScreen = ({ candidate }: WizardDetailScreenProps) => {
         colorMap={colorMap}
         readOnly
       />
-    </ScrollContent>
+    </Body>
   );
 };
 
 export default WizardDetailScreen;
 
-// WizardMiniTimetable과 동일한 --time-table-color-* 팔레트 (앱 전역 시간표 색감 통일)
+// 앱 전역 시간표 색감과 같은 --time-table-color-* 팔레트
 const BLOCK_COLORS = [
   "var(--time-table-color-pink, #fab5cd)",
   "var(--time-table-color-skyblue, #94cdfa)",
@@ -135,119 +146,76 @@ const BLOCK_COLORS = [
   "var(--time-table-color-red, #ffa6a6)",
 ];
 
-const ScrollContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
+const Body = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 16px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  -webkit-overflow-scrolling: touch;
+  gap: 12px;
 `;
 
-const Card = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 20px;
+const ReasonsCard = styled(WizardCard)`
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+`;
+
+const CourseListCard = styled(WizardCard)`
+  padding: 16px 8px 8px;
+  gap: 8px;
+
+  & > h2 {
+    padding: 0 8px;
+  }
 `;
 
 const CardTitle = styled.h2`
   margin: 0;
   color: var(--text-primary, #191f28);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 23px;
+  ${typography.heading2}
 `;
 
 const ReasonList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const ReasonItem = styled.div`
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 4px;
 `;
 
 const ReasonIcon = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "#16a34a" : "#d97706")};
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 20px;
-  width: 12px;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ $met }) =>
+    $met ? "var(--interactive-brand, #0061ff)" : "var(--text-warn, #b58000)"};
 `;
 
 const ReasonText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-`;
-
-const ReasonHeadline = styled.span<{ $met: boolean }>`
-  color: ${({ $met }) => ($met ? "var(--text-primary, #191f28)" : "#d97706")};
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 19px;
-`;
-
-const ReasonDetail = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-  font-size: 12px;
-  line-height: 18px;
-`;
-
-const CourseList = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const CourseRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  cursor: pointer;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const AccentBar = styled.div<{ $colorIndex: number }>`
-  width: 4px;
-  height: 32px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  background: ${({ $colorIndex }) => BLOCK_COLORS[$colorIndex % BLOCK_COLORS.length]};
-`;
-
-const CourseTextWrap = styled.div`
-  flex: 1;
+  flex: 1 0 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  word-break: break-word;
 `;
 
-const CourseName = styled.span`
-  color: var(--text-primary, #191f28);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
+const ReasonHeadline = styled.span<{ $met: boolean }>`
+  color: ${({ $met }) =>
+    $met ? "var(--text-secondary, #333d4b)" : "var(--text-warn, #b58000)"};
+  ${typography.label2}
 `;
 
-const CourseMeta = styled.span`
+const ReasonDetail = styled.span`
   color: var(--text-tertiary, #8b95a1);
-  font-size: 12px;
-  line-height: 18px;
+  ${typography.caption1}
 `;
 
 const BottomActionsSpacer = styled.div`

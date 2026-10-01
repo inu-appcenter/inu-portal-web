@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { effects } from "@/styles/effects";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -125,8 +126,7 @@ const ModalOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  ${effects.dim}
   z-index: 19999;
   animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 `;

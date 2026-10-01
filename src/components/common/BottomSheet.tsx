@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Drawer } from "vaul";
 import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { effects } from "@/styles/effects";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -21,6 +22,11 @@ export interface BottomSheetProps {
   height?: string | number;
   maxHeight?: string | number;
   closeOnBack?: boolean;
+  /**
+   * 손잡이 모양. default: 기존(36×5, 윗영역 36px) / compact: Figma BottomSheet 컴포넌트
+   * (40×4, 윗영역 20px). 기존 화면 모양을 바꾸지 않도록 기본값은 default로 둔다.
+   */
+  handle?: "default" | "compact";
 }
 
 export default function BottomSheet({
@@ -40,6 +46,7 @@ export default function BottomSheet({
   height,
   maxHeight,
   closeOnBack,
+  handle = "default",
 }: BottomSheetProps) {
   // snapPoints가 존재하지만 외부에서 활성 스냅 포인트 상태가 주어지지 않은 경우 내부에서 상태 관리
   const [internalActiveSnapPoint, setInternalActiveSnapPoint] = useState<string | number | null>(
@@ -116,8 +123,8 @@ export default function BottomSheet({
             바텀시트
           </Drawer.Title>
           <SheetInner>
-            <DragHeader>
-              <HandleBar />
+            <DragHeader $compact={handle === "compact"}>
+              <HandleBar $compact={handle === "compact"} />
             </DragHeader>
             {showCloseButton && (
               <CloseButton onClick={() => onOpenChange?.(false)}>
@@ -169,7 +176,7 @@ const SheetInner = styled.div`
   position: relative;
   border-radius: 32px 32px 0 0;
   background: var(--bg-base, #ffffff);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25);
+  ${effects.bottomSheet}
   width: 100%;
   border-top: 1px solid var(--border-default, #e5e8eb);
   overflow: hidden;
@@ -183,8 +190,8 @@ const SheetInner = styled.div`
   touch-action: none;
 `;
 
-const DragHeader = styled.div`
-  height: 36px;
+const DragHeader = styled.div<{ $compact: boolean }>`
+  height: ${({ $compact }) => ($compact ? "20px" : "36px")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,10 +200,10 @@ const DragHeader = styled.div`
   position: relative;
 `;
 
-const HandleBar = styled.div`
-  width: 36px;
-  height: 5px;
-  border-radius: 999px;
+const HandleBar = styled.div<{ $compact: boolean }>`
+  width: ${({ $compact }) => ($compact ? "40px" : "36px")};
+  height: ${({ $compact }) => ($compact ? "4px" : "5px")};
+  border-radius: ${({ $compact }) => ($compact ? "2px" : "999px")};
   background: var(--border-default, #e5e8eb);
 `;
 

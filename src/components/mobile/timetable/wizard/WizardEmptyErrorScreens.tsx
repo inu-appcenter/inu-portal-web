@@ -1,89 +1,132 @@
 import styled from "styled-components";
-import CapsuleButton from "@/components/common/CapsuleButton";
-import { guideMascot as 안내횃불이 } from "@/resources/assets/illustrations/book";
+import { wizardFailed } from "@/resources/assets/illustrations/timetable";
+import {
+  WizardBottomCTA,
+  WizardCard,
+  WizardCourseSectionRow,
+  WizardStatusMessage,
+} from "@/components/mobile/timetable/wizard/ui";
+import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import type {
   WizardConflictItem,
   WizardCourseOption,
 } from "@/types/timetableWizard";
-import { formatCourseMeta } from "@/utils/timetableWizardFormat";
+import { formatCourseMeetings, WIZARD_DAY_NAMES } from "@/utils/timetableWizardFormat";
+import { typography } from "@/styles/typography";
 
 interface WizardEmptyStateProps {
   conflicts: WizardConflictItem[];
+  /** "조건 수정하기" */
   onRelax: () => void;
+  /** 목표 학점. kind=credit 문구의 {N}. 생략하면 범위 문구 없이 안내한다 */
+  targetCredit?: number;
   // 담은 강의끼리 시간이 겹치는 conflict(courses가 채워진 경우, 항상 위시리스트
   // 항목이다 - timetableWizardGenerator.ts의 findOverlappingRequiredPairs 참고)를
-  // 이 화면에서 바로 뺄 수 있게 한다. 없으면(레거시 호출부) 빼기 버튼을 숨긴다.
+  // 이 화면에서 바로 뺄 수 있게 한다(#248). 없으면 빼기 버튼을 숨긴다.
   onRemoveWishlistCourse?: (subjectNumber: string) => void;
   // 같은 과목의 다른 분반으로 바꾸고 싶을 때 - 원인 강의를 빼고 그 과목명으로
   // 미리 필터링된 강의 검색 시트를 연다.
   onReplaceWishlistCourse?: (course: WizardCourseOption) => void;
 }
 
+// 실패 원인별 설명 (Figma 실패_겹침 / 실패_지정공강 / 실패_학점범위)
+const describeConflict = (
+  conflict: WizardConflictItem | undefined,
+  targetCredit: number | undefined,
+): React.ReactNode => {
+  switch (conflict?.kind) {
+    case "overlap":
+      return conflict.courses && conflict.courses.length > 1
+        ? "아래 두 강의가 같은 시간에 있어요"
+        : "담은 강의끼리 시간이 겹쳐요";
+    case "freeDay": {
+      const days = (conflict.days ?? []).map((d) => WIZARD_DAY_NAMES[d]).join(", ");
+      return `${days}요일 공강 조건 때문에 모든 조합이 걸렸어요`;
+    }
+    case "credit": {
+      const max = conflict.achievableCredits?.at(-1);
+      return (
+        <>
+          {targetCredit !== undefined
+            ? `목표 ${targetCredit}학점에 맞는 조합이 없어요`
+            : "목표 학점에 맞는 조합이 없어요"}
+          {max !== undefined && (
+            <>
+              <br />
+              지금 담은 강의로는 {max}학점까지 가능해요
+            </>
+          )}
+        </>
+      );
+    }
+    case "noWishlist":
+      return "듣고 싶은 강의를 먼저 담아주세요";
+    default:
+      return conflict?.label ?? "조건을 조금만 풀면 결과가 나올 수 있어요";
+  }
+};
+
 export function WizardEmptyState({
   conflicts,
   onRelax,
+  targetCredit,
   onRemoveWishlistCourse,
   onReplaceWishlistCourse,
 }: WizardEmptyStateProps) {
+  const primary = conflicts[0];
+  // 시안은 원인 하나만 보여 주고, 강의 카드는 "겹침" 실패에만 붙인다. 공강 요일 원인은
+  // 걸린 강의가 많아 목록이 길어지고, 고칠 곳도 강의가 아니라 조건(조건 수정하기)이다.
+  // 제외 조건 원인(그룹 마법사)은 강의를 짚어 줘야 뺄 수 있어 함께 붙인다.
+  const conflictCourses =
+    primary?.kind === "overlap" || primary?.kind === "exclusion"
+      ? (primary.courses ?? [])
+      : [];
+
   return (
     <Wrapper>
-      <Body>
-        <Illustration src={안내횃불이} alt="" />
-        <Title>조건에 맞는 시간표를 못 찾았어요</Title>
-        <Subtitle>조건을 조금만 풀면 결과가 나올 수 있어요</Subtitle>
-
-        {conflicts.length > 0 && (
-          <ConflictCard>
-            <ConflictHead>⚠ 서로 충돌하는 조건</ConflictHead>
-            <ConflictList>
-              {conflicts.map((c, index) => (
-                <ConflictItem key={index}>
-                  · {c.label}
-                  {c.courses && c.courses.length > 0 && (
-                    <ConflictCourseList>
-                      {c.courses.map((course, courseIndex) => (
-                        <ConflictCourseRow key={courseIndex}>
-                          <ConflictCourse>
-                            {course.title} ({formatCourseMeta(course)})
-                          </ConflictCourse>
-                          <ConflictCourseActions>
-                            {onReplaceWishlistCourse && (
-                              <ConflictCourseRemoveButton
-                                type="button"
-                                onClick={() =>
-                                  onReplaceWishlistCourse(course)
-                                }
-                              >
-                                교체
-                              </ConflictCourseRemoveButton>
-                            )}
-                            {onRemoveWishlistCourse && (
-                              <ConflictCourseRemoveButton
-                                type="button"
-                                onClick={() =>
-                                  onRemoveWishlistCourse(course.subjectNumber)
-                                }
-                              >
-                                빼기
-                              </ConflictCourseRemoveButton>
-                            )}
-                          </ConflictCourseActions>
-                        </ConflictCourseRow>
-                      ))}
-                    </ConflictCourseList>
-                  )}
-                </ConflictItem>
+      <Center>
+        <WizardStatusMessage
+          illustration={wizardFailed}
+          title="시간표를 만들 수 없어요"
+          description={describeConflict(primary, targetCredit)}
+        >
+          {conflictCourses.length > 0 && (
+            <WizardCard $radius={14}>
+              {conflictCourses.map((course) => (
+                <WizardCourseSectionRow
+                  key={course.courseOfferingId}
+                  professor={course.professor}
+                  subjectNumber={`${course.title} · ${course.subjectNumber}`}
+                  timeStr={formatCourseMeetings(course)}
+                  action={
+                    (onReplaceWishlistCourse || onRemoveWishlistCourse) && (
+                      <RowActions>
+                        {onReplaceWishlistCourse && (
+                          <TextButton
+                            type="button"
+                            onClick={() => onReplaceWishlistCourse(course)}
+                          >
+                            교체
+                          </TextButton>
+                        )}
+                        {onRemoveWishlistCourse && (
+                          <TextButton
+                            type="button"
+                            onClick={() => onRemoveWishlistCourse(course.subjectNumber)}
+                          >
+                            빼기
+                          </TextButton>
+                        )}
+                      </RowActions>
+                    )
+                  }
+                />
               ))}
-            </ConflictList>
-            <ConflictFootnote>이 조건들을 동시에 만족하는 조합이 없어요.</ConflictFootnote>
-          </ConflictCard>
-        )}
-      </Body>
-      <BottomArea>
-        <CapsuleButton variant="primary" fullWidth onClick={onRelax}>
-          조건 완화하기
-        </CapsuleButton>
-      </BottomArea>
+            </WizardCard>
+          )}
+        </WizardStatusMessage>
+      </Center>
+      <WizardBottomCTA onClick={onRelax}>조건 수정하기</WizardBottomCTA>
     </Wrapper>
   );
 }
@@ -95,154 +138,46 @@ interface WizardErrorStateProps {
 export function WizardErrorState({ onRetry }: WizardErrorStateProps) {
   return (
     <Wrapper>
-      <Body>
-        <ErrorIllustration>!</ErrorIllustration>
-        <Title>시간표를 만들지 못했어요</Title>
-        <Subtitle>네트워크 상태를 확인하고 다시 시도해주세요</Subtitle>
-      </Body>
-      <BottomArea>
-        <CapsuleButton variant="primary" fullWidth onClick={onRetry}>
-          다시 시도
-        </CapsuleButton>
-      </BottomArea>
+      <Center>
+        <WizardStatusMessage
+          illustration={wizardFailed}
+          title="시간표를 만들지 못했어요"
+          description="잠시 후 다시 시도해 주세요"
+        />
+      </Center>
+      <WizardBottomCTA onClick={onRetry}>다시 시도</WizardBottomCTA>
     </Wrapper>
   );
 }
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   flex: 1;
-  min-height: calc(100vh - var(--header-height));
   width: 100%;
-  box-sizing: border-box;
+  min-height: calc(100dvh - var(--header-height, 56px));
+  display: flex;
+  flex-direction: column;
 `;
 
-const Body = styled.div`
+const Center = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 40px 16px 24px;
-  gap: 8px;
-`;
-
-const Illustration = styled.img`
-  width: 120px;
-  height: 120px;
-  object-fit: contain;
-  margin-bottom: 16px;
-`;
-
-const ErrorIllustration = styled.div`
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
-  color: var(--text-tertiary, #8b95a1);
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 40px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  box-sizing: border-box;
+  padding: 24px 0;
 `;
 
-const Title = styled.h1`
-  margin: 0;
-  color: var(--text-primary, #191f28);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 27px;
-  text-align: center;
-`;
-
-const Subtitle = styled.p`
-  margin: 0 0 16px;
-  color: var(--text-secondary, #333d4b);
-  font-size: 14px;
-  line-height: 21px;
-  text-align: center;
-`;
-
-const ConflictCard = styled.div`
-  width: 100%;
-  background: #fff8e9;
-  border: 1px solid #fdd9aa;
-  border-radius: 16px;
-  padding: 16px;
+const RowActions = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-sizing: border-box;
-  color: #d97706;
-`;
-
-const ConflictHead = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-`;
-
-const ConflictList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const ConflictItem = styled.div`
-  font-size: 13px;
-  line-height: 20px;
-`;
-
-const ConflictCourseList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 2px;
-  padding-left: 12px;
-`;
-
-const ConflictCourseRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-`;
-
-const ConflictCourseActions = styled.div`
-  display: flex;
-  align-items: center;
   gap: 4px;
-  flex-shrink: 0;
 `;
 
-const ConflictCourse = styled.span`
-  font-size: 12px;
-  line-height: 18px;
-  word-break: break-all;
-`;
-
-const ConflictCourseRemoveButton = styled.button`
-  flex-shrink: 0;
-  padding: 2px 8px;
+// 시안에 없는 보조 동작(#248 빼기/교체)이라 눈에 덜 띄는 외곽선 pill로 둔다
+const TextButton = styled.button`
+  ${buttonReset}
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--border-default, #e5e8eb);
   background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #4e5968);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 16px;
-`;
-
-const ConflictFootnote = styled.span`
-  font-size: 12px;
-  line-height: 18px;
-`;
-
-const BottomArea = styled.div`
-  padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-  flex-shrink: 0;
+  color: var(--text-secondary, #333d4b);
+  ${typography.label3}
 `;
