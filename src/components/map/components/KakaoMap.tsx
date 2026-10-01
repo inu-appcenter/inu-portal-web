@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
 import { Navigation } from "lucide-react"; // 내 위치 아이콘용
-import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB";
+import { cafePlaces, places, restaurantPlaces, restPlaces, tumblerPlaces } from "../DB";
 import { MAP_TAB_CONFIG, TabType } from "../constants/mapConfig";
 import { useKakaoMapLoader } from "@/hooks/useKakaoMapLoader";
 
@@ -322,6 +322,7 @@ const KakaoMap = ({
       case "휴게실": return restPlaces;
       case "카페": return cafePlaces;
       case "식당": return restaurantPlaces;
+      case "텀블러": return tumblerPlaces;
       default: return [];
     }
   }, [currentTab]);

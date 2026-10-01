@@ -4,6 +4,7 @@ import {
   manRestroom as manRest,
   publicRestroom as publicRest,
   restaurant as RestaurantIcon,
+  tumblerWasher as TumblerWasherIcon,
   womanRestroom as womanRest,
 } from "@/resources/assets/illustrations/map/markers";
 import { BUILDING_PINS } from "@/resources/assets/illustrations/map/pins";
@@ -33,7 +34,7 @@ export const getRestIcon = (restCategory: string): string => {
   }
 };
 
-export { CafeIcon };
+export { CafeIcon, TumblerWasherIcon };
 
 export function getRestaurantIcon(restaurantCategory: string): string {
   if (restaurantCategory === "식당") {
