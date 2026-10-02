@@ -34,6 +34,16 @@ const RECENT_SEARCHES_STORAGE_KEY = "intip_recent_unified_searches";
 const MAX_RECENT_SEARCHES = 10;
 const MIN_QUERY_LENGTH = 2;
 
+const DEFAULT_SECTION_ORDER: SearchTab[] = [
+  "NOTICE",
+  "DEPT_NOTICE",
+  "POST",
+  "SCHEDULE",
+  "DIRECTORY",
+  "COURSE",
+  "CLUB",
+];
+
 export default function MobileUnifiedSearchPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -295,376 +305,388 @@ export default function MobileUnifiedSearchPage() {
               </EmptyResultWrapper>
             ) : (
               <ResultsContainer>
-                {/* 1. 학교 공지사항 */}
-                {(tabParam === "ALL" || tabParam === "NOTICE") &&
-                  data.notices &&
-                  data.notices.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>학교 공지사항</SectionTitle>
-                          <SectionCountBadge>{data.notices.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.notices.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("NOTICE")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.notices.items.map((item) => (
-                          <ResultItem
-                            key={`notice-${item.id}`}
-                            onClick={() => {
-                              if (item.id) {
-                                navigate(ROUTES.BOARD.NOTICE_DETAIL(item.id));
-                              } else if (item.url) {
-                                window.open(item.url, "_blank");
-                              }
-                            }}
-                          >
-                            <Ripple />
-                            <ItemMeta>
-                              {item.category && <CategoryTag>{item.category}</CategoryTag>}
-                              {item.writer && <MetaText>{item.writer}</MetaText>}
-                              {item.createDate && (
-                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                {(() => {
+                  const renderSection = (tab: SearchTab) => {
+                    switch (tab) {
+                      case "NOTICE":
+                        if (!data.notices || data.notices.items.length === 0) return null;
+                        return (
+                          <SectionCard key="notice-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>학교 공지사항</SectionTitle>
+                                <SectionCountBadge>{data.notices.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.notices.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("NOTICE")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
                               )}
-                            </ItemMeta>
-                            <ItemTitle>
-                              <HighlightText text={item.title} />
-                            </ItemTitle>
-                            {item.snippet && (
-                              <ItemSnippet>
-                                <HighlightText text={item.snippet} />
-                              </ItemSnippet>
-                            )}
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
-
-                {/* 2. 학과 공지사항 */}
-                {(tabParam === "ALL" || tabParam === "DEPT_NOTICE") &&
-                  data.departmentNotices &&
-                  data.departmentNotices.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>학과 공지사항</SectionTitle>
-                          <SectionCountBadge>
-                            {data.departmentNotices.totalCount}
-                          </SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" &&
-                          data.departmentNotices.totalCount > 3 && (
-                            <MoreButton onClick={() => handleTabChange("DEPT_NOTICE")}>
-                              더보기 <IoChevronForward size={14} />
-                            </MoreButton>
-                          )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.departmentNotices.items.map((item) => (
-                          <ResultItem
-                            key={`dept-notice-${item.id}`}
-                            onClick={() => {
-                              if (item.url) window.open(item.url, "_blank");
-                            }}
-                          >
-                            <Ripple />
-                            <ItemMeta>
-                              {item.departmentName && (
-                                <CategoryTag>{item.departmentName}</CategoryTag>
-                              )}
-                              {item.createDate && (
-                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
-                              )}
-                            </ItemMeta>
-                            <ItemTitle>
-                              <HighlightText text={item.title} />
-                            </ItemTitle>
-                            {item.snippet && (
-                              <ItemSnippet>
-                                <HighlightText text={item.snippet} />
-                              </ItemSnippet>
-                            )}
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
-
-                {/* 3. 커뮤니티 게시글 */}
-                {(tabParam === "ALL" || tabParam === "POST") &&
-                  data.posts &&
-                  data.posts.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>게시글</SectionTitle>
-                          <SectionCountBadge>{data.posts.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.posts.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("POST")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.posts.items.map((item) => (
-                          <ResultItem
-                            key={`post-${item.id}`}
-                            onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(item.id))}
-                          >
-                            <Ripple />
-                            <ItemMeta>
-                              {item.category && <CategoryTag>{item.category}</CategoryTag>}
-                              {item.writer && <MetaText>{item.writer}</MetaText>}
-                              {item.createDate && (
-                                <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
-                              )}
-                            </ItemMeta>
-                            <ItemTitle>
-                              <HighlightText text={item.title} />
-                            </ItemTitle>
-                            {item.snippet && (
-                              <ItemSnippet>
-                                <HighlightText text={item.snippet} />
-                              </ItemSnippet>
-                            )}
-                            <PostCounters>
-                              <PostCountItem>
-                                <IoThumbsUpOutline size={13} /> {item.good ?? 0}
-                              </PostCountItem>
-                              <PostCountItem>
-                                <IoBookmarkOutline size={13} /> {item.scrap ?? 0}
-                              </PostCountItem>
-                            </PostCounters>
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
-
-                {/* 4. 학사일정 */}
-                {(tabParam === "ALL" || tabParam === "SCHEDULE") &&
-                  data.schedules &&
-                  data.schedules.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>학사일정</SectionTitle>
-                          <SectionCountBadge>{data.schedules.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.schedules.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("SCHEDULE")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.schedules.items.map((item) => (
-                          <ResultItem
-                            key={`schedule-${item.id}`}
-                            onClick={() => {
-                              const query = item.startDate
-                                ? `?date=${encodeURIComponent(item.startDate)}`
-                                : "";
-                              navigate(`${ROUTES.BOARD.CALENDAR}${query}`, {
-                                state: { date: item.startDate },
-                              });
-                            }}
-                          >
-                            <Ripple />
-                            <ScheduleRow>
-                              <ScheduleIconWrapper>
-                                <IoCalendarOutline size={18} color="#2563EB" />
-                              </ScheduleIconWrapper>
-                              <div>
-                                <ItemTitle>
-                                  <HighlightText text={item.content} />
-                                </ItemTitle>
-                                <MetaText>
-                                  {item.startDate}{" "}
-                                  {item.endDate && item.endDate !== item.startDate
-                                    ? `~ ${item.endDate}`
-                                    : ""}
-                                </MetaText>
-                              </div>
-                            </ScheduleRow>
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
-
-                {/* 5. 교내 전화번호부 */}
-                {(tabParam === "ALL" || tabParam === "DIRECTORY") &&
-                  data.directory &&
-                  data.directory.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>교내 전화번호부</SectionTitle>
-                          <SectionCountBadge>{data.directory.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.directory.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("DIRECTORY")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.directory.items.map((item) => (
-                          <ResultItem
-                            key={`dir-${item.id}`}
-                            onClick={() => handleOpenDirectoryDetail(item)}
-                          >
-                            <Ripple />
-                            <DirectoryHeader>
-                              <DirectoryName>
-                                <HighlightText text={item.name} />
-                              </DirectoryName>
-                              {item.position && <PositionBadge>{item.position}</PositionBadge>}
-                            </DirectoryHeader>
-                            <MetaText>
-                              <HighlightText text={item.affiliation} />
-                              {item.detailAffiliation ? ` · ${item.detailAffiliation}` : ""}
-                            </MetaText>
-                            {item.duties && (
-                              <ItemSnippet>
-                                담당업무: <HighlightText text={item.duties} />
-                              </ItemSnippet>
-                            )}
-                            <DirectoryContactRow>
-                              {item.phoneNumber && (
-                                <ContactLink
-                                  href={`tel:${item.phoneNumber}`}
-                                  onClick={(e) => e.stopPropagation()}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.notices.items.map((item) => (
+                                <ResultItem
+                                  key={`notice-${item.id}`}
+                                  onClick={() => {
+                                    if (item.id) {
+                                      navigate(ROUTES.BOARD.NOTICE_DETAIL(item.id));
+                                    } else if (item.url) {
+                                      window.open(item.url, "_blank");
+                                    }
+                                  }}
                                 >
-                                  <IoCallOutline size={13} /> {item.phoneNumber}
-                                </ContactLink>
-                              )}
-                              {item.email && (
-                                <ContactLink
-                                  href={`mailto:${item.email}`}
-                                  onClick={(e) => e.stopPropagation()}
+                                  <Ripple />
+                                  <ItemMeta>
+                                    {item.category && <CategoryTag>{item.category}</CategoryTag>}
+                                    {item.writer && <MetaText>{item.writer}</MetaText>}
+                                    {item.createDate && (
+                                      <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                                    )}
+                                  </ItemMeta>
+                                  <ItemTitle>
+                                    <HighlightText text={item.title} />
+                                  </ItemTitle>
+                                  {item.snippet && (
+                                    <ItemSnippet>
+                                      <HighlightText text={item.snippet} />
+                                    </ItemSnippet>
+                                  )}
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
+
+                      case "DEPT_NOTICE":
+                        if (!data.departmentNotices || data.departmentNotices.items.length === 0) return null;
+                        return (
+                          <SectionCard key="dept-notice-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>학과 공지사항</SectionTitle>
+                                <SectionCountBadge>
+                                  {data.departmentNotices.totalCount}
+                                </SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" &&
+                                data.departmentNotices.totalCount > 3 && (
+                                  <MoreButton onClick={() => handleTabChange("DEPT_NOTICE")}>
+                                    더보기 <IoChevronForward size={14} />
+                                  </MoreButton>
+                                )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.departmentNotices.items.map((item) => (
+                                <ResultItem
+                                  key={`dept-notice-${item.id}`}
+                                  onClick={() => {
+                                    if (item.url) window.open(item.url, "_blank");
+                                  }}
                                 >
-                                  <IoMailOutline size={13} /> {item.email}
-                                </ContactLink>
-                              )}
-                            </DirectoryContactRow>
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
+                                  <Ripple />
+                                  <ItemMeta>
+                                    {item.departmentName && (
+                                      <CategoryTag>{item.departmentName}</CategoryTag>
+                                    )}
+                                    {item.createDate && (
+                                      <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                                    )}
+                                  </ItemMeta>
+                                  <ItemTitle>
+                                    <HighlightText text={item.title} />
+                                  </ItemTitle>
+                                  {item.snippet && (
+                                    <ItemSnippet>
+                                      <HighlightText text={item.snippet} />
+                                    </ItemSnippet>
+                                  )}
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
 
-                {/* 6. 개설 강의 */}
-                {(tabParam === "ALL" || tabParam === "COURSE") &&
-                  data.courses &&
-                  data.courses.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>개설 강의</SectionTitle>
-                          <SectionCountBadge>{data.courses.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.courses.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("COURSE")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.courses.items.map((item) => (
-                          <ResultItem
-                            key={`course-${item.id}`}
-                            onClick={() => {
-                              const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
-                              navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
-                                state: {
-                                  courseOfferingId: item.id,
-                                  courseName: item.title,
-                                  professor: item.professor,
-                                },
-                              });
-                            }}
-                          >
-                            <Ripple />
-                            <ItemMeta>
-                              {item.subjectNumber && (
-                                <CategoryTag>{item.subjectNumber}</CategoryTag>
+                      case "POST":
+                        if (!data.posts || data.posts.items.length === 0) return null;
+                        return (
+                          <SectionCard key="post-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>게시글</SectionTitle>
+                                <SectionCountBadge>{data.posts.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.posts.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("POST")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
                               )}
-                              {item.isuName && <MetaText>{item.isuName}</MetaText>}
-                              {item.credit && <MetaText>{item.credit}학점</MetaText>}
-                            </ItemMeta>
-                            <ItemTitle>
-                              <HighlightText text={item.title} />
-                            </ItemTitle>
-                            {item.professor && (
-                              <MetaText>
-                                교수: <HighlightText text={item.professor} />
-                              </MetaText>
-                            )}
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.posts.items.map((item) => (
+                                <ResultItem
+                                  key={`post-${item.id}`}
+                                  onClick={() => navigate(ROUTES.BOARD.TIPS_DETAIL(item.id))}
+                                >
+                                  <Ripple />
+                                  <ItemMeta>
+                                    {item.category && <CategoryTag>{item.category}</CategoryTag>}
+                                    {item.writer && <MetaText>{item.writer}</MetaText>}
+                                    {item.createDate && (
+                                      <MetaText>{formatTimeAgo(item.createDate)}</MetaText>
+                                    )}
+                                  </ItemMeta>
+                                  <ItemTitle>
+                                    <HighlightText text={item.title} />
+                                  </ItemTitle>
+                                  {item.snippet && (
+                                    <ItemSnippet>
+                                      <HighlightText text={item.snippet} />
+                                    </ItemSnippet>
+                                  )}
+                                  <PostCounters>
+                                    <PostCountItem>
+                                      <IoThumbsUpOutline size={13} /> {item.good ?? 0}
+                                    </PostCountItem>
+                                    <PostCountItem>
+                                      <IoBookmarkOutline size={13} /> {item.scrap ?? 0}
+                                    </PostCountItem>
+                                  </PostCounters>
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
 
-                {/* 7. 교내 동아리 */}
-                {(tabParam === "ALL" || tabParam === "CLUB") &&
-                  data.clubs &&
-                  data.clubs.items.length > 0 && (
-                    <SectionCard>
-                      <SectionHeader>
-                        <SectionTitleGroup>
-                          <SectionTitle>교내 동아리</SectionTitle>
-                          <SectionCountBadge>{data.clubs.totalCount}</SectionCountBadge>
-                        </SectionTitleGroup>
-                        {tabParam === "ALL" && data.clubs.totalCount > 3 && (
-                          <MoreButton onClick={() => handleTabChange("CLUB")}>
-                            더보기 <IoChevronForward size={14} />
-                          </MoreButton>
-                        )}
-                      </SectionHeader>
-                      <ItemList>
-                        {data.clubs.items.map((item) => (
-                          <ResultItem
-                            key={`club-${item.id}`}
-                            onClick={() => {
-                              const categoryParam = item.category
-                                ? `?category=${encodeURIComponent(item.category)}`
-                                : "";
-                              const separator = categoryParam ? "&" : "?";
-                              const query = `${categoryParam}${separator}clubId=${item.id}&name=${encodeURIComponent(item.name)}`;
-                              navigate(`${ROUTES.BOARD.CLUB}${query}`, {
-                                state: {
-                                  targetClubId: item.id,
-                                  targetClubName: item.name,
-                                },
-                              });
-                            }}
-                          >
-                            <Ripple />
-                            <ItemMeta>
-                              {item.category && <CategoryTag>{item.category}</CategoryTag>}
-                            </ItemMeta>
-                            <ItemTitle>
-                              <HighlightText text={item.name} />
-                            </ItemTitle>
-                            {item.snippet && (
-                              <ItemSnippet>
-                                <HighlightText text={item.snippet} />
-                              </ItemSnippet>
-                            )}
-                          </ResultItem>
-                        ))}
-                      </ItemList>
-                    </SectionCard>
-                  )}
+                      case "SCHEDULE":
+                        if (!data.schedules || data.schedules.items.length === 0) return null;
+                        return (
+                          <SectionCard key="schedule-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>학사일정</SectionTitle>
+                                <SectionCountBadge>{data.schedules.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.schedules.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("SCHEDULE")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
+                              )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.schedules.items.map((item) => (
+                                <ResultItem
+                                  key={`schedule-${item.id}`}
+                                  onClick={() => {
+                                    const query = item.startDate
+                                      ? `?date=${encodeURIComponent(item.startDate)}`
+                                      : "";
+                                    navigate(`${ROUTES.BOARD.CALENDAR}${query}`, {
+                                      state: { date: item.startDate },
+                                    });
+                                  }}
+                                >
+                                  <Ripple />
+                                  <ScheduleRow>
+                                    <ScheduleIconWrapper>
+                                      <IoCalendarOutline size={18} color="#2563EB" />
+                                    </ScheduleIconWrapper>
+                                    <div>
+                                      <ItemTitle>
+                                        <HighlightText text={item.content} />
+                                      </ItemTitle>
+                                      <MetaText>
+                                        {item.startDate}{" "}
+                                        {item.endDate && item.endDate !== item.startDate
+                                          ? `~ ${item.endDate}`
+                                          : ""}
+                                      </MetaText>
+                                    </div>
+                                  </ScheduleRow>
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
+
+                      case "DIRECTORY":
+                        if (!data.directory || data.directory.items.length === 0) return null;
+                        return (
+                          <SectionCard key="dir-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>교내 전화번호부</SectionTitle>
+                                <SectionCountBadge>{data.directory.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.directory.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("DIRECTORY")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
+                              )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.directory.items.map((item) => (
+                                <ResultItem
+                                  key={`dir-${item.id}`}
+                                  onClick={() => handleOpenDirectoryDetail(item)}
+                                >
+                                  <Ripple />
+                                  <DirectoryHeader>
+                                    <DirectoryName>
+                                      <HighlightText text={item.name} />
+                                    </DirectoryName>
+                                    {item.position && <PositionBadge>{item.position}</PositionBadge>}
+                                  </DirectoryHeader>
+                                  <MetaText>
+                                    <HighlightText text={item.affiliation} />
+                                    {item.detailAffiliation ? ` · ${item.detailAffiliation}` : ""}
+                                  </MetaText>
+                                  {item.duties && (
+                                    <ItemSnippet>
+                                      담당업무: <HighlightText text={item.duties} />
+                                    </ItemSnippet>
+                                  )}
+                                  <DirectoryContactRow>
+                                    {item.phoneNumber && (
+                                      <ContactLink
+                                        href={`tel:${item.phoneNumber}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <IoCallOutline size={13} /> {item.phoneNumber}
+                                      </ContactLink>
+                                    )}
+                                    {item.email && (
+                                      <ContactLink
+                                        href={`mailto:${item.email}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <IoMailOutline size={13} /> {item.email}
+                                      </ContactLink>
+                                    )}
+                                  </DirectoryContactRow>
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
+
+                      case "COURSE":
+                        if (!data.courses || data.courses.items.length === 0) return null;
+                        return (
+                          <SectionCard key="course-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>개설 강의</SectionTitle>
+                                <SectionCountBadge>{data.courses.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.courses.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("COURSE")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
+                              )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.courses.items.map((item) => (
+                                <ResultItem
+                                  key={`course-${item.id}`}
+                                  onClick={() => {
+                                    const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
+                                    navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
+                                      state: {
+                                        courseOfferingId: item.id,
+                                        courseName: item.title,
+                                        professor: item.professor,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  <Ripple />
+                                  <ItemMeta>
+                                    {item.subjectNumber && (
+                                      <CategoryTag>{item.subjectNumber}</CategoryTag>
+                                    )}
+                                    {item.isuName && <MetaText>{item.isuName}</MetaText>}
+                                    {item.credit && <MetaText>{item.credit}학점</MetaText>}
+                                  </ItemMeta>
+                                  <ItemTitle>
+                                    <HighlightText text={item.title} />
+                                  </ItemTitle>
+                                  {item.professor && (
+                                    <MetaText>
+                                      교수: <HighlightText text={item.professor} />
+                                    </MetaText>
+                                  )}
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
+
+                      case "CLUB":
+                        if (!data.clubs || data.clubs.items.length === 0) return null;
+                        return (
+                          <SectionCard key="club-section">
+                            <SectionHeader>
+                              <SectionTitleGroup>
+                                <SectionTitle>교내 동아리</SectionTitle>
+                                <SectionCountBadge>{data.clubs.totalCount}</SectionCountBadge>
+                              </SectionTitleGroup>
+                              {tabParam === "ALL" && data.clubs.totalCount > 3 && (
+                                <MoreButton onClick={() => handleTabChange("CLUB")}>
+                                  더보기 <IoChevronForward size={14} />
+                                </MoreButton>
+                              )}
+                            </SectionHeader>
+                            <ItemList>
+                              {data.clubs.items.map((item) => (
+                                <ResultItem
+                                  key={`club-${item.id}`}
+                                  onClick={() => {
+                                    const categoryParam = item.category
+                                      ? `?category=${encodeURIComponent(item.category)}`
+                                      : "";
+                                    const separator = categoryParam ? "&" : "?";
+                                    const query = `${categoryParam}${separator}clubId=${item.id}&name=${encodeURIComponent(item.name)}`;
+                                    navigate(`${ROUTES.BOARD.CLUB}${query}`, {
+                                      state: {
+                                        targetClubId: item.id,
+                                        targetClubName: item.name,
+                                      },
+                                    });
+                                  }}
+                                >
+                                  <Ripple />
+                                  <ItemMeta>
+                                    {item.category && <CategoryTag>{item.category}</CategoryTag>}
+                                  </ItemMeta>
+                                  <ItemTitle>
+                                    <HighlightText text={item.name} />
+                                  </ItemTitle>
+                                  {item.snippet && (
+                                    <ItemSnippet>
+                                      <HighlightText text={item.snippet} />
+                                    </ItemSnippet>
+                                  )}
+                                </ResultItem>
+                              ))}
+                            </ItemList>
+                          </SectionCard>
+                        );
+
+                      default:
+                        return null;
+                    }
+                  };
+
+                  if (tabParam === "ALL") {
+                    const order =
+                      data.sectionOrder && data.sectionOrder.length > 0
+                        ? data.sectionOrder
+                        : DEFAULT_SECTION_ORDER;
+                    return order.map((tab) => renderSection(tab));
+                  } else {
+                    return renderSection(tabParam);
+                  }
+                })()}
               </ResultsContainer>
             )}
           </>

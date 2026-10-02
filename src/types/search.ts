@@ -9,6 +9,7 @@ export type SearchTab =
   | "CLUB";
 
 export interface UnifiedSection<T> {
+  maxScore?: number;
   totalCount: number;
   items: T[];
 }
@@ -87,6 +88,7 @@ export interface UnifiedSearchResponse {
   query: string;
   tab: SearchTab;
   totalCount: number;
+  sectionOrder?: SearchTab[];
   notices?: UnifiedSection<NoticeSearchItem>;
   departmentNotices?: UnifiedSection<DepartmentNoticeSearchItem>;
   posts?: UnifiedSection<PostSearchItem>;
