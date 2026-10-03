@@ -5,6 +5,8 @@ import { X, Maximize2, Loader2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAgentBridge } from "@/hooks/useAgentBridge";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
 
 interface AgentChatModalProps {
   isOpen: boolean;
@@ -27,24 +29,42 @@ export const AgentChatModal: React.FC<AgentChatModalProps> = ({
     sendClientContextToIframe,
   } = useAgentBridge({ onClose });
 
+  const [authToken, setAuthToken] = useState<string>(() => {
+    try {
+      const fromStore = useUserStore.getState().tokenInfo?.accessToken;
+      if (fromStore) return fromStore;
+      const raw = localStorage.getItem("tokenInfo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.accessToken) return parsed.accessToken;
+      }
+    } catch {}
+    return (
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("accessToken") ||
+      ""
+    );
+  });
+
   useEffect(() => {
     if (isOpen) {
       initialLocationRef.current = location.pathname + location.search;
       setIsIframeLoaded(false);
+      // 모달 오픈 시 토큰 유효성 검사 및 필요시 자동 갱신
+      getValidAccessToken().then((freshToken) => {
+        if (freshToken && freshToken !== authToken) {
+          setAuthToken(freshToken);
+        }
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, authToken]);
 
   useEffect(() => {
     if (isOpen && initialLocationRef.current !== location.pathname + location.search) {
       onClose();
     }
   }, [location.pathname, location.search, isOpen, onClose]);
-
-  const authToken =
-    localStorage.getItem("accessToken") ||
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("accessToken") ||
-    "";
 
   const resolvedAgentUrl = useMemo(() => {
     let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";

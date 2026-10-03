@@ -6,6 +6,8 @@ import {
   registerLocalWatchJobInApp,
   cancelLocalWatchJobInApp,
 } from "@/apis/mobileAgentBridge";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
 
 export type AIState = 'closed' | 'listening' | 'recognized' | 'thinking' | 'answering' | 'expanded';
 
@@ -57,6 +59,14 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
       }
 
       const clientContext = await pendingContextPromiseRef.current;
+
+      // 선제적 최신 토큰 확보 및 주입
+      const freshToken = await getValidAccessToken();
+      if (freshToken) {
+        clientContext.accessToken = freshToken;
+        clientContext.auth = freshToken;
+      }
+
       cachedClientContextRef.current = clientContext;
 
       if (iframeRef.current?.contentWindow) {
@@ -73,6 +83,29 @@ export function useAgentBridge(options?: UseAgentBridgeOptions) {
       console.warn("[useAgentBridge] Failed to resolve client context:", err);
       return {};
     }
+  }, []);
+
+  // 토큰이 갱신(리프레시 또는 로그인 동기화)될 때 열려 있는 iframe으로 실시간 전파
+  useEffect(() => {
+    const unsubscribe = useUserStore.subscribe((state, prevState) => {
+      const currentToken = state.tokenInfo?.accessToken;
+      const prevToken = prevState.tokenInfo?.accessToken;
+      if (currentToken && currentToken !== prevToken && iframeRef.current?.contentWindow) {
+        iframeRef.current.contentWindow.postMessage(
+          {
+            type: "INTIP_TOKEN_UPDATED",
+            token: currentToken,
+            accessToken: currentToken,
+          },
+          "*"
+        );
+        if (cachedClientContextRef.current) {
+          cachedClientContextRef.current.accessToken = currentToken;
+          cachedClientContextRef.current.auth = currentToken;
+        }
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {

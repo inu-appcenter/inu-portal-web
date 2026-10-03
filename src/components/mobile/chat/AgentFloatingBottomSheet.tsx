@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { useAgentBridge, AIState } from "@/hooks/useAgentBridge";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
 
 interface AgentFloatingBottomSheetProps {
   isOpen: boolean;
@@ -65,11 +67,34 @@ export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> =
     }
   }, [location.pathname, location.search, isOpen, onClose]);
 
-  const authToken =
-    localStorage.getItem("accessToken") ||
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("accessToken") ||
-    "";
+  const [authToken, setAuthToken] = useState<string>(() => {
+    try {
+      const fromStore = useUserStore.getState().tokenInfo?.accessToken;
+      if (fromStore) return fromStore;
+      const raw = localStorage.getItem("tokenInfo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.accessToken) return parsed.accessToken;
+      }
+    } catch {}
+    return (
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("accessToken") ||
+      ""
+    );
+  });
+
+  // 모달 오픈 시 토큰 유효성 검사 및 필요시 자동 갱신
+  useEffect(() => {
+    if (isOpen) {
+      getValidAccessToken().then((freshToken) => {
+        if (freshToken && freshToken !== authToken) {
+          setAuthToken(freshToken);
+        }
+      });
+    }
+  }, [isOpen, authToken]);
 
   const resolvedAgentUrl = useMemo(() => {
     let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";

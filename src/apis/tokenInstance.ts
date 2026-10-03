@@ -42,7 +42,7 @@ useUserStore.subscribe((state) => {
 });
 
 /** 재발급을 단 한 번만 수행하고, 동시 호출자에게는 같은 결과를 나눠준다. */
-const refreshAccessToken = () => {
+export const refreshAccessToken = () => {
   if (!refreshPromise) {
     refreshPromise = refresh()
       .then(({ data }) => {
@@ -55,6 +55,40 @@ const refreshAccessToken = () => {
       });
   }
   return refreshPromise;
+};
+
+/**
+ * 현재 메모리/스토리지의 accessToken이 유효한지(만료되었는지) 확인하고,
+ * 만료되었거나 비어있으면 refreshAccessToken()을 수행하여 항상 유효한 accessToken을 반환합니다.
+ */
+export const getValidAccessToken = async (): Promise<string> => {
+  const { tokenInfo } = useUserStore.getState();
+  const accessToken = tokenInfo?.accessToken || "";
+  const expiredTime = tokenInfo?.accessTokenExpiredTime;
+
+  if (!accessToken) {
+    return "";
+  }
+
+  let isExpired = false;
+  if (expiredTime) {
+    const expiryDate = new Date(expiredTime).getTime();
+    // 만료 60초 전이거나 이미 지났으면 선제적 갱신
+    if (!isNaN(expiryDate) && Date.now() >= expiryDate - 60000) {
+      isExpired = true;
+    }
+  }
+
+  if (isExpired && tokenInfo?.refreshToken) {
+    try {
+      return await refreshAccessToken();
+    } catch (e) {
+      console.warn("getValidAccessToken 선제적 재발급 실패:", e);
+      return accessToken;
+    }
+  }
+
+  return accessToken;
 };
 
 // 요청 인터셉터 - 토큰 설정

@@ -1,20 +1,42 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 import { useAgentBridge } from "@/hooks/useAgentBridge";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
 
 export default function AgentPage() {
   const navigate = useNavigate();
   const { iframeRef, isPortalModalOpen, setIsPortalModalOpen, sendClientContextToIframe } =
     useAgentBridge({ onClose: () => navigate(-1) });
 
-  const authToken =
-    localStorage.getItem("accessToken") ||
-    localStorage.getItem("token") ||
-    sessionStorage.getItem("accessToken") ||
-    "";
+  const [authToken, setAuthToken] = useState<string>(() => {
+    try {
+      const fromStore = useUserStore.getState().tokenInfo?.accessToken;
+      if (fromStore) return fromStore;
+      const raw = localStorage.getItem("tokenInfo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.accessToken) return parsed.accessToken;
+      }
+    } catch {}
+    return (
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("accessToken") ||
+      ""
+    );
+  });
+
+  useEffect(() => {
+    getValidAccessToken().then((freshToken) => {
+      if (freshToken && freshToken !== authToken) {
+        setAuthToken(freshToken);
+      }
+    });
+  }, [authToken]);
 
   const resolvedAgentUrl = useMemo(() => {
     let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";

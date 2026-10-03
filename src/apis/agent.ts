@@ -1,4 +1,4 @@
-import tokenInstance from "@/apis/tokenInstance";
+import tokenInstance, { getValidAccessToken, refreshAccessToken } from "@/apis/tokenInstance";
 import useUserStore from "@/stores/useUserStore";
 import { ApiResponse } from "@/types/common";
 
@@ -91,7 +91,7 @@ export const streamAgentChat = async (
   const cleanBase = rawBase.replace(/\/+$/, "");
   const url = `${cleanBase}/api/agent/chat/stream`;
 
-  const { accessToken } = useUserStore.getState().tokenInfo;
+  let accessToken = await getValidAccessToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "text/event-stream",
@@ -106,13 +106,30 @@ export const streamAgentChat = async (
     clientContext: request.clientContext,
   };
 
-  const response = await fetch(url, {
+  let response = await fetch(url, {
     method: "POST",
     mode: "cors",
     credentials: "include",
     headers,
     body: JSON.stringify(reqBody),
   });
+
+  // 401 응답 시 토큰 재발급 후 1회 재시도
+  if (response.status === 401 && useUserStore.getState().tokenInfo.refreshToken) {
+    try {
+      accessToken = await refreshAccessToken();
+      headers["Auth"] = accessToken;
+      response = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers,
+        body: JSON.stringify(reqBody),
+      });
+    } catch (refreshErr) {
+      console.warn("streamAgentChat 401 재발급 재시도 실패:", refreshErr);
+    }
+  }
 
   if (!response.ok || !response.body) {
     throw new Error(`HTTP error! status: ${response.status}`);
