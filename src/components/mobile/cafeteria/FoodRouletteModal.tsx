@@ -8,6 +8,13 @@ import { getCafeterias } from "@/apis/cafeterias";
 import { parseCafeteriaSections, firstMenuOf } from "@/utils/cafeteriaMenu";
 import confetti from "canvas-confetti";
 
+// 모바일(iOS Safari 및 WebKit/안드로이드 웹뷰)에서 Web Worker/OffscreenCanvas 및 과도한 메모리로 인한
+// 전체 화면 백화(White Screen of Death) 현상을 방지하는 안전한 main-thread confetti 인스턴스
+const safeConfetti = confetti.create(undefined, {
+  useWorker: false,
+  resize: true,
+});
+
 // Material UI 컴포넌트 적극 활용
 import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
@@ -82,20 +89,32 @@ export default function FoodRouletteModal({
   const [isSpinning, setIsSpinning] = useState(false);
 
   // 결과 화면 진입 시 모달 상단(z-index: 25000)으로 축하 폭죽 발사
+  // 화면 전환 페인트(DOM paint)가 완료된 직후(100ms) 실행하여 모바일 브라우저 렌더링 충돌 방지
   useEffect(() => {
     if (view === "result") {
-      try {
-        confetti({
-          particleCount: 85,
-          spread: 75,
-          origin: { y: 0.45 },
-          zIndex: 25000,
-          colors: ["#0061ff", "#ffc72c", "#ef4444", "#10b981", "#8b5cf6"],
-          disableForReducedMotion: true,
-        });
-      } catch (e) {
-        void e;
-      }
+      const timer = setTimeout(() => {
+        try {
+          safeConfetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.45 },
+            zIndex: 25000,
+            colors: ["#0061ff", "#ffc72c", "#ef4444", "#10b981", "#8b5cf6"],
+            disableForReducedMotion: true,
+          });
+        } catch (e) {
+          void e;
+        }
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        try {
+          safeConfetti.reset();
+        } catch {
+          // 무시
+        }
+      };
     }
   }, [view]);
 
@@ -1265,7 +1284,6 @@ const ResultContainer = styled.div`
 const ResultIconWrapper = styled.div`
   font-size: 38px;
   line-height: 1;
-  filter: drop-shadow(0 4px 10px rgba(0, 97, 255, 0.25));
 `;
 
 const ResultHeaderBlock = styled.div`

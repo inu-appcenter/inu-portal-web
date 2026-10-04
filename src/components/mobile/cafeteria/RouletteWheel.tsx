@@ -7,7 +7,6 @@ import {
   useImperativeHandle,
 } from "react";
 import styled from "styled-components";
-import confetti from "canvas-confetti";
 
 export interface RouletteWheelHandle {
   spin: () => void;
@@ -176,19 +175,6 @@ const RouletteWheel = forwardRef<RouletteWheelHandle, RouletteWheelProps>(
 
       timerRef.current = setTimeout(() => {
         onSpinEnd(targetItem);
-
-        try {
-          confetti({
-            particleCount: 80,
-            spread: 70,
-            origin: { y: 0.45 },
-            zIndex: 25000,
-            colors: ["#0061ff", "#ffc72c", "#ef4444", "#10b981", "#8b5cf6"],
-            disableForReducedMotion: true,
-          });
-        } catch (e) {
-          console.error("Confetti execution error", e);
-        }
       }, 3500);
     };
 
