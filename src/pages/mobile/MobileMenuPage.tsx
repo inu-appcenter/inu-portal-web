@@ -17,6 +17,8 @@ import { cafeterias } from "@/resources/strings/cafeterias";
 import { useLocation, useNavigate } from "react-router-dom";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
+import FoodRouletteFab from "@/components/mobile/cafeteria/FoodRouletteFab";
+import FoodRouletteModal from "@/components/mobile/cafeteria/FoodRouletteModal";
 
 interface CafeteriaListContentProps {
   cafeteria: string;
@@ -74,39 +76,32 @@ const CafeteriaListContent = ({
   );
 };
 
+const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
+  const weekDates = [];
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const currentDay = date.getDay();
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
+
+  for (let i = 0; i < 7; i++) {
+    const weekDate = new Date(monday);
+    weekDate.setDate(monday.getDate() + i);
+    weekDates.push({
+      dayName: days[weekDate.getDay()],
+      date: `${weekDate.getDate()}`,
+    });
+  }
+  return weekDates;
+};
+
 export default function MobileMenuPage() {
   const [nowday, setNowDay] = useState(new Date().getDay());
-  const [weekDates, setWeekDates] = useState<
-    { dayName: string; date: string }[]
-  >([]);
-  const date = new Date();
+  const weekDates = useMemo(() => getWeekDates(new Date()), []);
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const selectedCafeteria = params.get("category") || "학생식당";
-
-  useEffect(() => {
-    setWeekDates(getWeekDates(date)); // 주의 날짜 설정
-  }, []);
-
-  const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
-    const weekDates = [];
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const currentDay = date.getDay();
-    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
-    const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday);
-
-    for (let i = 0; i < 7; i++) {
-      const weekDate = new Date(monday);
-      weekDate.setDate(monday.getDate() + i);
-      weekDates.push({
-        dayName: days[weekDate.getDay()],
-        date: `${weekDate.getDate()}`,
-      });
-    }
-    return weekDates;
-  };
 
   const cafeteriaCategories = useMemo(
     () => cafeterias.map((cafeteria) => cafeteria.title),
@@ -114,6 +109,7 @@ export default function MobileMenuPage() {
   );
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
+  const [isRouletteOpen, setIsRouletteOpen] = useState(false);
   const [hasSwiped, setHasSwiped] = useState(() => {
     return localStorage.getItem("has_swiped") === "true";
   });
@@ -156,6 +152,18 @@ export default function MobileMenuPage() {
     if (nextCategory && nextCategory !== selectedCafeteria) {
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
+      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    }
+  };
+
+  const handleGoToCafeteria = (cafeteriaName: string) => {
+    const idx = cafeteriaCategories.indexOf(cafeteriaName);
+    if (idx !== -1) {
+      if (swiperRef) {
+        swiperRef.slideTo(idx);
+      }
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set("category", cafeteriaName);
       navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
     }
   };
@@ -208,6 +216,16 @@ export default function MobileMenuPage() {
         hasSwiped={hasSwiped}
         currentIndex={currentIndex}
         totalSlides={cafeteriaCategories.length}
+      />
+
+      {/* 랜덤 학식 돌림판 플로팅 액션 버튼 (Google Material Fab) */}
+      <FoodRouletteFab onClick={() => setIsRouletteOpen(true)} />
+
+      {/* 랜덤 학식 돌림판 모달 */}
+      <FoodRouletteModal
+        isOpen={isRouletteOpen}
+        onClose={() => setIsRouletteOpen(false)}
+        onGoToCafeteria={handleGoToCafeteria}
       />
     </CafeteriaWrapper>
   );

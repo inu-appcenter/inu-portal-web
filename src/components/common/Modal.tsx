@@ -60,16 +60,20 @@ export default function Modal({
             }
           }}
         >
-          <HeaderContainer>
-            <Dialog.Title asChild>
-              <ModalTitle>{title}</ModalTitle>
-            </Dialog.Title>
-            {description && (
-              <Dialog.Description asChild>
-                <ModalDescription>{description}</ModalDescription>
-              </Dialog.Description>
-            )}
-          </HeaderContainer>
+          {title ? (
+            <HeaderContainer>
+              <Dialog.Title asChild>
+                <ModalTitle>{title}</ModalTitle>
+              </Dialog.Title>
+              {description && (
+                <Dialog.Description asChild>
+                  <ModalDescription>{description}</ModalDescription>
+                </Dialog.Description>
+              )}
+            </HeaderContainer>
+          ) : (
+            <Dialog.Title style={{ display: "none" }}>{title || "Modal"}</Dialog.Title>
+          )}
 
           {children && <ModalSlot>{children}</ModalSlot>}
 
@@ -200,6 +204,10 @@ const ModalSlot = styled.div`
   max-height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const ButtonContainer = styled.div`
