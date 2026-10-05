@@ -79,10 +79,13 @@ export const DEFAULT_DAILY_BRIEF_CARD_SETTINGS: DailyBriefCardSettings = {
   timeRules: [],
 };
 
+export type PreClassAlertMethod = "NOW_BAR" | "PUSH";
+
 export interface DailyBriefSettings {
   // 시간표 알림 설정
   timetableAlertEnabled: boolean; // 전체 시간표 알림 활성화 여부
   timetablePreAlertEnabled: boolean; // 수업 시작 전 알림 활성화 여부
+  timetablePreAlertMethod?: PreClassAlertMethod; // 수업 시작 전 알림 방식 ("NOW_BAR" | "PUSH")
   timetablePreAlertMinutes: number; // 수업 n분 전
   timetableDailyBriefEnabled: boolean; // 당일 강의 묶음 알림 활성화 여부
   timetableDailyBriefTime: string; // "HH:mm" 포맷 (예: "08:00")
@@ -100,6 +103,7 @@ export interface DailyBriefSettings {
 export const DEFAULT_DAILY_BRIEF_SETTINGS: DailyBriefSettings = {
   timetableAlertEnabled: true,
   timetablePreAlertEnabled: true,
+  timetablePreAlertMethod: "NOW_BAR",
   timetablePreAlertMinutes: 10,
   timetableDailyBriefEnabled: true,
   timetableDailyBriefTime: "08:00",

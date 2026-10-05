@@ -27,7 +27,6 @@ import {
   getLocalDailyBriefSettings,
 } from "@/apis/dailyBrief";
 import {
-  getTimetableNowBarSettings,
   setTimetableNowBarSettings,
 } from "@/apis/timetableNowBarBridge";
 import type { AgentReminder, AgentReminderRepeatType } from "@/types/agentReminder";
@@ -374,8 +373,6 @@ export default function MobileAgentReminderSetting() {
 
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
-  const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
-  const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState<number>(15);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const isFirstMountRef = React.useRef(true);
 
@@ -411,7 +408,7 @@ export default function MobileAgentReminderSetting() {
   const [tempBriefMinute, setTempBriefMinute] = useState("00");
 
   // 수업 시작 전 알림 통합 임시 상태
-  const [tempPreClassMinutes, setTempPreClassMinutes] = useState<number>(15);
+  const [tempPreClassMinutes, setTempPreClassMinutes] = useState<number>(10);
   const [tempPreClassMethod, setTempPreClassMethod] = useState<"NOW_BAR" | "PUSH">("NOW_BAR");
 
   const [tempScheduleAmpm, setTempScheduleAmpm] = useState<"AM" | "PM">("AM");
@@ -425,10 +422,9 @@ export default function MobileAgentReminderSetting() {
       setIsInitialLoading(true);
     }
     try {
-      const [remindersRes, briefRes, nowBarRes] = await Promise.all([
+      const [remindersRes, briefRes] = await Promise.all([
         getAgentReminders().catch(() => ({ data: [] })),
         getDailyBriefSettings().catch(() => ({ data: null })),
-        getTimetableNowBarSettings().catch(() => null),
       ]);
 
       if (remindersRes?.data) {
@@ -436,12 +432,13 @@ export default function MobileAgentReminderSetting() {
       }
       if (briefRes?.data) {
         setDailyBriefSettings(briefRes.data);
-      }
-      if (nowBarRes) {
-        setIsNowBarEnabled(nowBarRes.enabled);
-        if (typeof nowBarRes.leadTimeMinutes === "number") {
-          setNowBarLeadMinutes(nowBarRes.leadTimeMinutes);
-        }
+        // 네이티브 앱 환경일 경우 서버 설정을 단말기 로컬 Now Bar 설정으로 동기화
+        setTimetableNowBarSettings({
+          enabled:
+            briefRes.data.timetablePreAlertEnabled &&
+            (briefRes.data.timetablePreAlertMethod ?? "NOW_BAR") === "NOW_BAR",
+          leadTimeMinutes: briefRes.data.timetablePreAlertMinutes ?? 10,
+        }).catch(() => {});
       }
     } catch (error) {
       console.error("루틴 데이터 로드 실패:", error);
@@ -478,42 +475,25 @@ export default function MobileAgentReminderSetting() {
   };
 
   // 수업 시작 전 알림 통합 토글
-  const isPreClassAlertEnabled = isNowBarEnabled || dailyBriefSettings.timetablePreAlertEnabled;
+  const isPreClassAlertEnabled = dailyBriefSettings.timetablePreAlertEnabled;
   const handleTogglePreClass = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const next = !isPreClassAlertEnabled;
-    if (next) {
-      // 켤 때: 실시간 Now Bar 우선 활성화
-      setIsNowBarEnabled(true);
-      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: true }));
-      try {
-        await Promise.all([
-          setTimetableNowBarSettings({ enabled: true, leadTimeMinutes: nowBarLeadMinutes }),
-          updateDailyBriefSettings({ timetablePreAlertEnabled: true }),
-        ]);
-        trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: true });
-        notifyRoutineUpdated();
-      } catch {
-        setIsNowBarEnabled(false);
-        setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: false }));
-        alert("설정을 변경하지 못했어요.");
-      }
-    } else {
-      // 끌 때: 둘 다 비활성화
-      setIsNowBarEnabled(false);
-      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: false }));
-      try {
-        await Promise.all([
-          setTimetableNowBarSettings({ enabled: false, leadTimeMinutes: nowBarLeadMinutes }),
-          updateDailyBriefSettings({ timetablePreAlertEnabled: false }),
-        ]);
-        trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: false });
-        notifyRoutineUpdated();
-      } catch {
-        setIsNowBarEnabled(true);
-        setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: true }));
-        alert("설정을 변경하지 못했어요.");
-      }
+    const currentMethod = dailyBriefSettings.timetablePreAlertMethod ?? "NOW_BAR";
+    const currentMinutes = dailyBriefSettings.timetablePreAlertMinutes ?? 10;
+
+    setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: next }));
+    try {
+      await updateDailyBriefSettings({ timetablePreAlertEnabled: next });
+      setTimetableNowBarSettings({
+        enabled: next && currentMethod === "NOW_BAR",
+        leadTimeMinutes: currentMinutes,
+      }).catch(() => {});
+      trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: next });
+      notifyRoutineUpdated();
+    } catch {
+      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
+      alert("설정을 변경하지 못했어요.");
     }
   };
 
@@ -564,49 +544,29 @@ export default function MobileAgentReminderSetting() {
 
   // 2. 수업 시작 전 알림 통합 모달 핸들러
   const handleOpenPreClassModal = () => {
-    if (isNowBarEnabled) {
-      setTempPreClassMethod("NOW_BAR");
-      setTempPreClassMinutes(nowBarLeadMinutes || 15);
-    } else {
-      setTempPreClassMethod("PUSH");
-      setTempPreClassMinutes(dailyBriefSettings.timetablePreAlertMinutes ?? 10);
-    }
+    setTempPreClassMethod(dailyBriefSettings.timetablePreAlertMethod ?? "NOW_BAR");
+    setTempPreClassMinutes(dailyBriefSettings.timetablePreAlertMinutes ?? 10);
     setIsPreClassModalOpen(true);
   };
 
   const handleSavePreClassModal = async () => {
     setIsPreClassModalOpen(false);
+    setDailyBriefSettings((prev) => ({
+      ...prev,
+      timetablePreAlertEnabled: true,
+      timetablePreAlertMethod: tempPreClassMethod,
+      timetablePreAlertMinutes: tempPreClassMinutes,
+    }));
     try {
-      if (tempPreClassMethod === "NOW_BAR") {
-        setIsNowBarEnabled(true);
-        setNowBarLeadMinutes(tempPreClassMinutes);
-        setDailyBriefSettings((prev) => ({
-          ...prev,
-          timetablePreAlertEnabled: true,
-          timetablePreAlertMinutes: tempPreClassMinutes,
-        }));
-        await Promise.all([
-          setTimetableNowBarSettings({ enabled: true, leadTimeMinutes: tempPreClassMinutes }),
-          updateDailyBriefSettings({
-            timetablePreAlertEnabled: true,
-            timetablePreAlertMinutes: tempPreClassMinutes,
-          }),
-        ]);
-      } else {
-        setIsNowBarEnabled(false);
-        setDailyBriefSettings((prev) => ({
-          ...prev,
-          timetablePreAlertEnabled: true,
-          timetablePreAlertMinutes: tempPreClassMinutes,
-        }));
-        await Promise.all([
-          setTimetableNowBarSettings({ enabled: false, leadTimeMinutes: tempPreClassMinutes }),
-          updateDailyBriefSettings({
-            timetablePreAlertEnabled: true,
-            timetablePreAlertMinutes: tempPreClassMinutes,
-          }),
-        ]);
-      }
+      await updateDailyBriefSettings({
+        timetablePreAlertEnabled: true,
+        timetablePreAlertMethod: tempPreClassMethod,
+        timetablePreAlertMinutes: tempPreClassMinutes,
+      });
+      setTimetableNowBarSettings({
+        enabled: tempPreClassMethod === "NOW_BAR",
+        leadTimeMinutes: tempPreClassMinutes,
+      }).catch(() => {});
       trackEvent("[Daily Brief] 수업 시작 전 알림 설정 변경", {
         method: tempPreClassMethod,
         minutes: tempPreClassMinutes,
@@ -876,21 +836,19 @@ export default function MobileAgentReminderSetting() {
                     </IconCircle>
 
                     <TextContentWrapper>
-                      <RowMainTitle $disabled={!isPreClassAlertEnabled}>
+                      <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
                         수업 시작 전 알림
                       </RowMainTitle>
                       <RowSubTitle>
-                        {isNowBarEnabled
-                          ? `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`
-                          : dailyBriefSettings.timetablePreAlertEnabled
-                          ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`
-                          : `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`}
+                        {(dailyBriefSettings.timetablePreAlertMethod ?? "NOW_BAR") === "NOW_BAR"
+                          ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 실시간 카드 (Now Bar)`
+                          : `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`}
                       </RowSubTitle>
                     </TextContentWrapper>
 
                     <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
                       <Switch
-                        checked={isPreClassAlertEnabled}
+                        checked={dailyBriefSettings.timetablePreAlertEnabled}
                         onCheckedChange={() => handleTogglePreClass({ stopPropagation: () => {} } as any)}
                       />
                     </RowRightAction>
