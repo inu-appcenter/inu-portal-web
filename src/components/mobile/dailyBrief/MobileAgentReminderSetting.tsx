@@ -87,119 +87,7 @@ export interface RoutinePreset {
 }
 
 export const ROUTINE_PRESETS: RoutinePreset[] = [
-  // 1. 기본 제공 추천 루틴 (학업 & 캠퍼스)
-  {
-    id: "preset-timetable-brief",
-    category: "study",
-    title: "오늘 강의 시간표 알림",
-    description: "오늘 수강하는 수업과 강의실 위치를 알림으로 받아요.",
-    targetTime: "08:00",
-    repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE"],
-    toolParams: {
-      iconType: "timetable",
-      iconBg: "#a855f7",
-      triggers: [
-        {
-          id: "trig-time-1",
-          type: "TIME",
-          title: "평일 (월~금)",
-          subtitle: "오전 08:00",
-          timeParams: { ampm: "AM", hour: "08", minute: "00", selectedDays: ["MON", "TUE", "WED", "THU", "FRI"], repeatType: "WEEKDAYS" },
-        },
-      ],
-      actions: [
-        {
-          id: "act-time-1",
-          type: "TIMETABLE",
-          title: "오늘 강의 시간표 알림",
-          subtitle: "오늘 수업 시간표 및 강의실 위치",
-          iconBg: "#a855f7",
-        },
-      ],
-    },
-    iconType: "timetable",
-    iconBg: "#a855f7",
-    whenTitle: "지정한 시간",
-    whenSubtitle: "오전 08:00\n평일 (월~금)",
-    whatTitle: "오늘 수업 시간표 및 강의실 위치",
-  },
-  {
-    id: "preset-timetable-pre",
-    category: "study",
-    title: "수업 시작 전 알림",
-    description: "수업 시작 전 강의실을 실시간 Now Bar 카드 또는 일반 푸시로 안내받아요.",
-    targetTime: "08:45",
-    repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE_NOWBAR", "TIMETABLE"],
-    toolParams: {
-      iconType: "graduation",
-      iconBg: "#0055D4",
-      triggers: [
-        {
-          id: "trig-pre-1",
-          type: "BEFORE_CLASS",
-          title: "수업 시작 15분 전",
-          subtitle: "수업 시작 15분 전부터 종료 시까지",
-          beforeClassParams: { minutes: 15 },
-        },
-      ],
-      actions: [
-        {
-          id: "act-nowbar-1",
-          type: "TIMETABLE_NOWBAR",
-          title: "수업 시작 전 알림",
-          subtitle: "잠금화면 실시간 Now Bar 카드 또는 1회성 푸시",
-          iconBg: "#0055D4",
-          timetableNowBarParams: { leadTimeMinutes: 15 },
-        },
-      ],
-    },
-    iconType: "graduation",
-    iconBg: "#0055D4",
-    whenTitle: "수업 시작 전",
-    whenSubtitle: "수업 시작 15분 전 ~ 수업 종료 시",
-    whatTitle: "실시간 강의실 및 시간표 안내",
-  },
-  {
-    id: "preset-schedule",
-    category: "study",
-    title: "주요 학사일정 알림",
-    description: "다가오는 주요 학사일정을 알림으로 받아요.",
-    targetTime: "08:30",
-    repeatType: "WEEKDAYS",
-    targetTools: ["SCHEDULE"],
-    toolParams: {
-      iconType: "graduation",
-      iconBg: "#3b82f6",
-      triggers: [
-        {
-          id: "trig-time-1",
-          type: "TIME",
-          title: "평일 (월~금)",
-          subtitle: "오전 08:30",
-          timeParams: { ampm: "AM", hour: "08", minute: "30", selectedDays: ["MON", "TUE", "WED", "THU", "FRI"], repeatType: "WEEKDAYS" },
-        },
-      ],
-      actions: [
-        {
-          id: "act-sched-1",
-          type: "SCHEDULE",
-          title: "주요 학사일정 알림",
-          subtitle: "학교 및 학과 전체 • 당일 알림",
-          iconBg: "#3b82f6",
-          scheduleParams: { scope: "ALL" },
-        },
-      ],
-    },
-    iconType: "graduation",
-    iconBg: "#3b82f6",
-    whenTitle: "지정한 시간",
-    whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "주요 학사일정 알림",
-  },
-
-  // 2. 이동 및 교통
+  // 1. 이동 및 교통
   {
     id: "preset-bus-inip",
     category: "transit",
@@ -649,10 +537,6 @@ export default function MobileAgentReminderSetting() {
     () => ROUTINE_PRESETS.filter((p) => p.category === "time_place"),
     [],
   );
-  const studyPresets = useMemo(
-    () => ROUTINE_PRESETS.filter((p) => p.category === "study"),
-    [],
-  );
 
   return (
     <RoutinePageWrapper>
@@ -993,46 +877,6 @@ export default function MobileAgentReminderSetting() {
               </GroupCard>
             </SectionWrapper>
 
-            {/* 3. 수업 및 캠퍼스 생활 섹션 */}
-            <SectionWrapper>
-              <SectionTitleRow>
-                <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
-                <ChevronRight size={18} color="#9ca3af" />
-              </SectionTitleRow>
-
-              <GroupCard>
-                {studyPresets.map((preset, idx) => (
-                  <React.Fragment key={preset.id}>
-                    {idx > 0 && <CardDivider />}
-                    <GroupRow
-                      onClick={() => {
-                        if (preset.id === "preset-timetable-brief") {
-                          handleOpenTimetableBriefModal();
-                        } else if (preset.id === "preset-timetable-pre" || preset.id === "preset-timetable-nowbar") {
-                          handleOpenPreClassModal();
-                        } else if (preset.id === "preset-schedule") {
-                          handleOpenScheduleModal();
-                        } else {
-                          navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id));
-                        }
-                      }}
-                    >
-                      <Ripple color="rgba(0, 0, 0, 0.05)" />
-                      <IconCircle $bgColor={preset.iconBg}>
-                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
-                      </IconCircle>
-
-                      <TextContentWrapper>
-                        <RowMainTitle>{preset.title}</RowMainTitle>
-                        <RowSubTitle>{preset.description}</RowSubTitle>
-                      </TextContentWrapper>
-
-                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
-                    </GroupRow>
-                  </React.Fragment>
-                ))}
-              </GroupCard>
-            </SectionWrapper>
           </TabSlideContent>
         </SwiperSlide>
       </Swiper>
