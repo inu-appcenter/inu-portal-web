@@ -1420,7 +1420,7 @@ export default function MobileRoutineDetailPage() {
     setIsBeforeFirstClassModalOpen(false);
 
     // 종속 동작: 시간표가 없으면 추천 추가
-    if (!actions.some((a) => a.type === "TIMETABLE")) {
+    if (!isSystemRoutine && !actions.some((a) => a.type === "TIMETABLE")) {
       const autoAction: RoutineActionBlock = {
         id: `act-timetable-${Date.now()}`,
         type: "TIMETABLE",
@@ -1435,11 +1435,17 @@ export default function MobileRoutineDetailPage() {
   // 2. 강의 시작 전 트리거 저장
   const handleSaveBeforeClassTrigger = () => {
     const isEdit = editingTriggerId && editingTriggerId !== "new";
+    const isNowBar = systemType === "timetable-nowbar";
+    const triggerTitle = isNowBar ? "수업 시작 전부터" : "각 수업 시작 전";
+    const triggerSub = isNowBar
+      ? `수업 시작 ${tempBeforeClassMinutes}분 전부터 종료 시까지`
+      : `수업 시작 ${tempBeforeClassMinutes}분 전`;
+
     const newTrigger: RoutineTriggerCondition = {
       id: isEdit ? editingTriggerId! : `trigger-before-class-${Date.now()}`,
       type: "BEFORE_CLASS",
-      title: "각 수업 시작 전",
-      subtitle: `수업 시작 ${tempBeforeClassMinutes}분 전`,
+      title: triggerTitle,
+      subtitle: triggerSub,
       beforeClassParams: { minutes: tempBeforeClassMinutes },
     };
 
@@ -1451,8 +1457,8 @@ export default function MobileRoutineDetailPage() {
     });
     setIsBeforeClassTriggerModalOpen(false);
 
-    // 종속 동작 자동 연동: 시간표 동작 추가
-    if (!actions.some((a) => a.type === "TIMETABLE")) {
+    // 종속 동작 자동 연동: 시간표 동작 추가 (단, 시스템 루틴인 경우 동작 자동 추가 방지)
+    if (!isSystemRoutine && !actions.some((a) => a.type === "TIMETABLE")) {
       const autoAction: RoutineActionBlock = {
         id: `act-timetable-${Date.now()}`,
         type: "TIMETABLE",
