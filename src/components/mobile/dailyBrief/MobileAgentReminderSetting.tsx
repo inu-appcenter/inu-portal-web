@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -347,6 +347,31 @@ export default function MobileAgentReminderSetting() {
     }
   }, [currentIndex, swiperRef]);
 
+  // 상단 배너 카드 터치 시에도 좌우 슬라이드 전환 지원
+  const bannerTouchStartXRef = useRef<number | null>(null);
+  const bannerTouchStartYRef = useRef<number | null>(null);
+
+  const handleBannerTouchStart = useCallback((e: React.TouchEvent) => {
+    bannerTouchStartXRef.current = e.touches[0].clientX;
+    bannerTouchStartYRef.current = e.touches[0].clientY;
+  }, []);
+
+  const handleBannerTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (bannerTouchStartXRef.current === null || bannerTouchStartYRef.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - bannerTouchStartXRef.current;
+    const deltaY = e.changedTouches[0].clientY - bannerTouchStartYRef.current;
+    bannerTouchStartXRef.current = null;
+    bannerTouchStartYRef.current = null;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 35) {
+      if (deltaX < 0 && activeTab === "my") {
+        handleTabClick("recommend");
+      } else if (deltaX > 0 && activeTab === "recommend") {
+        handleTabClick("my");
+      }
+    }
+  }, [activeTab, handleTabClick]);
+
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
@@ -690,8 +715,11 @@ export default function MobileAgentReminderSetting() {
 
   return (
     <RoutinePageWrapper>
-      {/* 상단 헤더 & 일러스트 배너 */}
-      <HeaderBannerCard>
+      {/* 상단 헤더 & 일러스트 배너 (터치 스와이프 제스처 연동) */}
+      <HeaderBannerCard
+        onTouchStart={handleBannerTouchStart}
+        onTouchEnd={handleBannerTouchEnd}
+      >
         <HeaderBannerLeft>
           <BannerTitle>
             다양한 상황에 최적화된 일상의 루틴을 만들어 보세요.
@@ -785,13 +813,19 @@ export default function MobileAgentReminderSetting() {
         autoHeight={true}
         observer={true}
         observeParents={true}
+        nested={true}
+        touchAngle={45}
+        threshold={10}
         style={{
           width: "100%",
           height: "auto",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
         }}
       >
         {/* 슬라이드 0: 내 루틴 */}
-        <SwiperSlide style={{ height: "auto" }}>
+        <SwiperSlide style={{ height: "auto", display: "flex", flexDirection: "column" }}>
           <TabSlideContent>
             {/* 1. 시스템 제공 섹션 */}
             <SectionWrapper>
@@ -952,7 +986,7 @@ export default function MobileAgentReminderSetting() {
         </SwiperSlide>
 
         {/* 슬라이드 1: 추천 */}
-        <SwiperSlide style={{ height: "auto" }}>
+        <SwiperSlide style={{ height: "auto", display: "flex", flexDirection: "column" }}>
           <TabSlideContent>
             {/* 1. 이동할 때 유용한 섹션 */}
             <SectionWrapper>
@@ -1369,7 +1403,12 @@ const RoutinePageWrapper = styled.div`
   flex-direction: column;
   gap: 24px;
   background-color: transparent;
-  padding-bottom: 120px;
+  min-height: calc(100dvh - var(--header-height, 56px) - 40px);
+  flex: 1;
+
+  .swiper-autoheight {
+    transition: height 0ms !important;
+  }
 `;
 
 const HeaderBannerCard = styled.div`
@@ -1619,6 +1658,10 @@ const TabSlideContent = styled.div`
   gap: 24px;
   width: 100%;
   box-sizing: border-box;
+  flex: 1;
+  /* 내부 항목 수가 적어도 화면 전체 높이를 채워 화면 어디를 스와이프해도 탭 슬라이드가 인식되도록 처리 */
+  min-height: max(450px, calc(100dvh - var(--header-height, 56px) - 200px));
+  padding-bottom: 130px; /* 플로팅 네비게이션 바 하단 여백을 슬라이드 내부로 흡수 */
 `;
 
 const TimePickerModalContent = styled.div`
