@@ -59,13 +59,6 @@ export const SCHEDULE_SCOPE_OPTIONS: { label: string; value: ScheduleScope }[] =
   { label: "내 학과 학사일정만", value: "DEPT_ONLY" },
 ];
 
-export const ADVANCE_DAYS_OPTIONS = [
-  { label: "당일 알림 (D-Day)", value: 0 },
-  { label: "1일 전 사전 안내 (D-1, 권장)", value: 1 },
-  { label: "3일 전 사전 안내 (D-3)", value: 3 },
-  { label: "7일 전 사전 안내 (D-7)", value: 7 },
-];
-
 export const formatTimeLabel = (timeStr?: string) => {
   if (!timeStr) return "오전 08:00";
   const [hourStr, minStr] = timeStr.split(":");
@@ -75,13 +68,6 @@ export const formatTimeLabel = (timeStr?: string) => {
   let h12 = h % 12;
   if (h12 === 0) h12 = 12;
   return `${ampm} ${String(h12).padStart(2, "0")}:${(minStr || "00").padStart(2, "0")}`;
-};
-
-export const getScheduleAdvanceDaysLabel = (days?: number) => {
-  if (days === 0) return "당일 알림";
-  if (days === 3) return "3일 전 사전 안내";
-  if (days === 7) return "7일 전 사전 안내";
-  return "1일 전 사전 안내";
 };
 
 export interface RoutinePreset {
@@ -200,9 +186,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
           id: "act-sched-1",
           type: "SCHEDULE",
           title: "주요 학사일정 알림",
-          subtitle: "학교 및 학과 전체 • 1일 전 사전 안내",
+          subtitle: "학교 및 학과 전체 • 당일 알림",
           iconBg: "#3b82f6",
-          scheduleParams: { scope: "ALL", advanceDays: 1 },
+          scheduleParams: { scope: "ALL" },
         },
       ],
     },
@@ -210,7 +196,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#3b82f6",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "주요 학사일정 사전 안내",
+    whatTitle: "주요 학사일정 알림",
   },
 
   // 2. 이동 및 교통
@@ -415,7 +401,6 @@ export default function MobileAgentReminderSetting() {
   const [tempScheduleHour, setTempScheduleHour] = useState("08");
   const [tempScheduleMinute, setTempScheduleMinute] = useState("30");
   const [tempScheduleScope, setTempScheduleScope] = useState<ScheduleScope>("ALL");
-  const [tempScheduleAdvanceDays, setTempScheduleAdvanceDays] = useState<number>(1);
 
   const fetchData = useCallback(async (isBackground = false) => {
     if (!isBackground && isFirstMountRef.current) {
@@ -589,7 +574,6 @@ export default function MobileAgentReminderSetting() {
     setTempScheduleHour(String(h12).padStart(2, "0"));
     setTempScheduleMinute(minStr || "30");
     setTempScheduleScope(dailyBriefSettings.scheduleScope || "ALL");
-    setTempScheduleAdvanceDays(dailyBriefSettings.advanceDays ?? 1);
     setIsScheduleModalOpen(true);
   };
 
@@ -603,19 +587,16 @@ export default function MobileAgentReminderSetting() {
       ...prev,
       scheduleDailyBriefTime: timeStr,
       scheduleScope: tempScheduleScope,
-      advanceDays: tempScheduleAdvanceDays,
     }));
     setIsScheduleModalOpen(false);
     try {
       await updateDailyBriefSettings({
         scheduleDailyBriefTime: timeStr,
         scheduleScope: tempScheduleScope,
-        advanceDays: tempScheduleAdvanceDays,
       });
       trackEvent("[Daily Brief] 주요 학사일정 알림 설정 변경", {
         time: timeStr,
         scope: tempScheduleScope,
-        advanceDays: tempScheduleAdvanceDays,
       });
       notifyRoutineUpdated();
     } catch (e) {
@@ -868,7 +849,7 @@ export default function MobileAgentReminderSetting() {
                         주요 학사일정 알림
                       </RowMainTitle>
                       <RowSubTitle>
-                        {formatTimeLabel(dailyBriefSettings.scheduleDailyBriefTime || "08:30")} • {getScheduleAdvanceDaysLabel(dailyBriefSettings.advanceDays)}
+                        {formatTimeLabel(dailyBriefSettings.scheduleDailyBriefTime || "08:30")} 발송
                       </RowSubTitle>
                     </TextContentWrapper>
 
@@ -1325,25 +1306,6 @@ export default function MobileAgentReminderSetting() {
               </option>
             ))}
           </InlineSelect>
-
-          <ModalSectionLabel style={{ marginTop: "16px" }}>사전 안내 기준</ModalSectionLabel>
-          <ModalGroupCard>
-            {ADVANCE_DAYS_OPTIONS.map((opt, idx) => (
-              <React.Fragment key={opt.value}>
-                {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                <ModalGroupRow
-                  $selected={tempScheduleAdvanceDays === opt.value}
-                  onClick={() => setTempScheduleAdvanceDays(opt.value)}
-                >
-                  <Ripple color="rgba(0, 0, 0, 0.04)" />
-                  <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>
-                    {opt.label}
-                  </ModalOptionText>
-                  {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                </ModalGroupRow>
-              </React.Fragment>
-            ))}
-          </ModalGroupCard>
         </ModalFormSection>
       </Modal>
     </RoutinePageWrapper>

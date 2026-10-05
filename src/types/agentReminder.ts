@@ -95,7 +95,7 @@ export interface RoutineActionBlock {
   };
   scheduleParams?: {
     scope: "ALL" | "SCHOOL_ONLY" | "DEPT_ONLY";
-    advanceDays: number;
+    advanceDays?: number;
   };
 }
 

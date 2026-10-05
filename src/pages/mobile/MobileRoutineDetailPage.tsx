@@ -222,9 +222,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
           id: "act-sched-1",
           type: "SCHEDULE",
           title: "주요 학사일정 알림",
-          subtitle: "학교 및 학과 전체 • 1일 전 사전 안내",
+          subtitle: "학교 및 학과 전체 • 당일 알림",
           iconBg: "#3b82f6",
-          scheduleParams: { scope: "ALL", advanceDays: 1 },
+          scheduleParams: { scope: "ALL" },
         },
       ],
     },
@@ -232,7 +232,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#3b82f6",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
-    whatTitle: "주요 학사일정 사전 안내",
+    whatTitle: "주요 학사일정 알림",
   },
 
   // 2. 이동 및 교통
@@ -524,13 +524,6 @@ const LONG_BREAK_OPTIONS = [
   { label: "3시간 이상 공강 시", value: 180 },
 ];
 
-const ADVANCE_DAYS_OPTIONS = [
-  { label: "당일 알림", value: 0 },
-  { label: "1일 전 사전 알림 (추천)", value: 1 },
-  { label: "3일 전 사전 알림", value: 3 },
-  { label: "7일 전 (1주일 전) 사전 알림", value: 7 },
-];
-
 const SCHEDULE_SCOPE_OPTIONS = [
   { label: "학교 및 학과 전체 학사일정", value: "ALL" as ScheduleScope },
   { label: "학교 공식 학사일정만", value: "SCHOOL_ONLY" as ScheduleScope },
@@ -667,7 +660,6 @@ export default function MobileRoutineDetailPage() {
   // Schedule Action Modal
   const [isScheduleActionModalOpen, setIsScheduleActionModalOpen] = useState(false);
   const [tempScheduleScope, setTempScheduleScope] = useState<ScheduleScope>("ALL");
-  const [tempScheduleAdvanceDays, setTempScheduleAdvanceDays] = useState(1);
 
   // Before Class Trigger Modal
   const [isBeforeClassTriggerModalOpen, setIsBeforeClassTriggerModalOpen] = useState(false);
@@ -810,7 +802,7 @@ export default function MobileRoutineDetailPage() {
                 title: "학사일정 알림",
                 subtitle: "학교 및 학과 학사일정",
                 iconBg: "#3b82f6",
-                scheduleParams: { scope: "ALL", advanceDays: 1 },
+                scheduleParams: { scope: "ALL" },
               };
             }
             if (tool === "DEPT_NOTICE") {
@@ -925,9 +917,9 @@ export default function MobileRoutineDetailPage() {
                 id: `act-${idx + 1}`,
                 type: "SCHEDULE",
                 title: "주요 학사일정 알림",
-                subtitle: "학교 및 학과 전체 • 1일 전 사전 안내",
+                subtitle: "학교 및 학과 전체 • 당일 알림",
                 iconBg: "#3b82f6",
-                scheduleParams: { scope: "ALL", advanceDays: 1 },
+                scheduleParams: { scope: "ALL" },
               };
             }
             if (tool === "NOTICE") {
@@ -1073,9 +1065,7 @@ export default function MobileRoutineDetailPage() {
           ]);
         } else if (systemType === "schedule") {
           const time = curSettings.scheduleDailyBriefTime || "08:30";
-          const adv = curSettings.advanceDays ?? 1;
           const scope = curSettings.scheduleScope || "ALL";
-          const advText = adv === 0 ? "당일" : `${adv}일 전`;
           const scopeText =
             scope === "SCHOOL_ONLY" ? "학교 공식만" : scope === "DEPT_ONLY" ? "내 학과만" : "학교 및 학과 전체";
           const parts = time.split(":");
@@ -1107,9 +1097,9 @@ export default function MobileRoutineDetailPage() {
               id: "sys-act-schedule",
               type: "SCHEDULE",
               title: "주요 학사일정 알림",
-              subtitle: `${scopeText} • ${advText} 사전 안내`,
+              subtitle: `${scopeText} • 당일 알림`,
               iconBg: "#3b82f6",
-              scheduleParams: { scope, advanceDays: adv },
+              scheduleParams: { scope },
             },
           ]);
         }
@@ -1580,9 +1570,9 @@ export default function MobileRoutineDetailPage() {
         id: `act-schedule-${Date.now()}`,
         type: "SCHEDULE",
         title: "학사일정 알림",
-        subtitle: "학교 및 학과 전체 • 당일 사전 알림",
+        subtitle: "학교 및 학과 전체 • 당일 알림",
         iconBg: "#3b82f6",
-        scheduleParams: { scope: "ALL", advanceDays: 0 },
+        scheduleParams: { scope: "ALL" },
       };
       setActions((prev) => [...prev, autoAction]);
     }
@@ -1645,7 +1635,6 @@ export default function MobileRoutineDetailPage() {
       setIsCafeteriaActionModalOpen(true);
     } else if (type === "SCHEDULE") {
       setTempScheduleScope("ALL");
-      setTempScheduleAdvanceDays(1);
       setIsScheduleActionModalOpen(true);
     } else if (type === "TIMETABLE") {
       const newAction: RoutineActionBlock = {
@@ -1857,8 +1846,7 @@ export default function MobileRoutineDetailPage() {
         : tempScheduleScope === "DEPT_ONLY"
         ? "내 학과만"
         : "학교 및 학과 전체";
-    const advanceLabel = tempScheduleAdvanceDays === 0 ? "당일" : `${tempScheduleAdvanceDays}일 전`;
-    const sub = `${scopeLabel} • ${advanceLabel} 사전 안내`;
+    const sub = `${scopeLabel} • 당일 알림`;
 
     if (editingActionId) {
       setActions((prev) =>
@@ -1868,7 +1856,7 @@ export default function MobileRoutineDetailPage() {
                 ...a,
                 title: "학사일정 브리핑",
                 subtitle: sub,
-                scheduleParams: { scope: tempScheduleScope, advanceDays: tempScheduleAdvanceDays },
+                scheduleParams: { scope: tempScheduleScope },
               }
             : a,
         ),
@@ -1880,7 +1868,7 @@ export default function MobileRoutineDetailPage() {
         title: "학사일정 브리핑",
         subtitle: sub,
         iconBg: "#3b82f6",
-        scheduleParams: { scope: tempScheduleScope, advanceDays: tempScheduleAdvanceDays },
+        scheduleParams: { scope: tempScheduleScope },
       };
       setActions((prev) => [...prev, newAction]);
     }
@@ -1913,7 +1901,6 @@ export default function MobileRoutineDetailPage() {
       setIsCafeteriaActionModalOpen(true);
     } else if (action.type === "SCHEDULE") {
       setTempScheduleScope(action.scheduleParams?.scope || "ALL");
-      setTempScheduleAdvanceDays(action.scheduleParams?.advanceDays ?? 1);
       setIsScheduleActionModalOpen(true);
     }
   };
@@ -1979,7 +1966,6 @@ export default function MobileRoutineDetailPage() {
           await updateDailyBriefSettings({
             scheduleDailyBriefTime: finalTime,
             scheduleScope: schedAct?.scheduleParams?.scope || "ALL",
-            advanceDays: schedAct?.scheduleParams?.advanceDays ?? 1,
           });
           alert("학사일정 알림 설정을 저장했어요!");
         }
@@ -3440,25 +3426,6 @@ export default function MobileRoutineDetailPage() {
               </option>
             ))}
           </InlineSelect>
-
-          <ModalSectionLabel style={{ marginTop: "14px" }}>사전 안내 기준</ModalSectionLabel>
-          <ModalGroupScrollContainer>
-            <ModalGroupCard>
-              {ADVANCE_DAYS_OPTIONS.map((opt, idx) => (
-                <React.Fragment key={opt.value}>
-                  {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                  <ModalGroupRow
-                    $selected={tempScheduleAdvanceDays === opt.value}
-                    onClick={() => setTempScheduleAdvanceDays(opt.value)}
-                  >
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>{opt.label}</ModalOptionText>
-                    {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                  </ModalGroupRow>
-                </React.Fragment>
-              ))}
-            </ModalGroupCard>
-          </ModalGroupScrollContainer>
         </ModalFormSection>
       </Modal>
 
