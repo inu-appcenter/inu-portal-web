@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper as SwiperClass } from "swiper";
+import "swiper/css";
 import Switch from "@/components/common/Switch";
 import Skeleton from "@/components/common/Skeleton";
 import Modal from "@/components/common/Modal";
@@ -310,6 +313,40 @@ export default function MobileAgentReminderSetting() {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<RoutineMainTab>("my");
+  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
+  const tabList = useMemo<RoutineMainTab[]>(() => ["my", "recommend"], []);
+  const currentIndex = useMemo(() => {
+    const idx = tabList.indexOf(activeTab);
+    return idx === -1 ? 0 : idx;
+  }, [activeTab, tabList]);
+
+  const handleSlideChange = useCallback(
+    (swiper: SwiperClass) => {
+      const nextTab = tabList[swiper.activeIndex];
+      if (nextTab && nextTab !== activeTab) {
+        setActiveTab(nextTab);
+      }
+    },
+    [tabList, activeTab],
+  );
+
+  const handleTabClick = useCallback(
+    (tab: RoutineMainTab) => {
+      setActiveTab(tab);
+      const idx = tabList.indexOf(tab);
+      if (swiperRef && swiperRef.activeIndex !== idx) {
+        swiperRef.slideTo(idx);
+      }
+    },
+    [tabList, swiperRef],
+  );
+
+  useEffect(() => {
+    if (swiperRef && swiperRef.activeIndex !== currentIndex) {
+      swiperRef.slideTo(currentIndex);
+    }
+  }, [currentIndex, swiperRef]);
+
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
@@ -321,6 +358,27 @@ export default function MobileAgentReminderSetting() {
   const [isTimetableBriefModalOpen, setIsTimetableBriefModalOpen] = useState(false);
   const [isPreClassModalOpen, setIsPreClassModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+  const isAnyModalOpen =
+    isTimetableBriefModalOpen || isPreClassModalOpen || isScheduleModalOpen;
+
+  useEffect(() => {
+    if (!swiperRef) return;
+    swiperRef.allowTouchMove = !isAnyModalOpen;
+  }, [swiperRef, isAnyModalOpen]);
+
+  useEffect(() => {
+    if (swiperRef) {
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 50);
+      setTimeout(() => {
+        swiperRef.update();
+        swiperRef.updateAutoHeight();
+      }, 300);
+    }
+  }, [activeTab, isInitialLoading, reminders.length, swiperRef]);
 
   // 시스템 루틴 모달 내부 임시 상태
   const [tempBriefAmpm, setTempBriefAmpm] = useState<"AM" | "PM">("AM");
@@ -713,280 +771,304 @@ export default function MobileAgentReminderSetting() {
         </HeaderBannerIllustration>
       </HeaderBannerCard>
 
-      {activeTab === "my" ? (
-        <>
-          {/* 1. 시스템 제공 섹션 */}
-          <SectionWrapper>
-            <SectionTitleRow>
-              <SectionTitle>시스템 제공</SectionTitle>
-              <CountBadge>3</CountBadge>
-            </SectionTitleRow>
+      <Swiper
+        onSwiper={(swiper) => {
+          if (currentIndex !== 0) {
+            swiper.slideTo(currentIndex, 0);
+          }
+          setSwiperRef(swiper);
+        }}
+        initialSlide={currentIndex}
+        onSlideChange={handleSlideChange}
+        allowTouchMove={!isAnyModalOpen}
+        speed={320}
+        autoHeight={true}
+        observer={true}
+        observeParents={true}
+        style={{
+          width: "100%",
+          height: "auto",
+        }}
+      >
+        {/* 슬라이드 0: 내 루틴 */}
+        <SwiperSlide style={{ height: "auto" }}>
+          <TabSlideContent>
+            {/* 1. 시스템 제공 섹션 */}
+            <SectionWrapper>
+              <SectionTitleRow>
+                <SectionTitle>시스템 제공</SectionTitle>
+                <CountBadge>3</CountBadge>
+              </SectionTitleRow>
 
-            {isInitialLoading ? (
-              <GroupCard>
-                <GroupRow>
-                  <Skeleton variant="text" width="60%" height={22} />
-                </GroupRow>
-              </GroupCard>
-            ) : (
-              <GroupCard>
-                {/* 1. 오늘 강의 시간표 알림 */}
-                <GroupRow onClick={handleOpenTimetableBriefModal}>
-                  <Ripple color="rgba(0, 0, 0, 0.05)" />
-                  <IconCircle $bgColor="#a855f7">
-                    <Calendar size={20} color="#ffffff" />
-                  </IconCircle>
-
-                  <TextContentWrapper>
-                    <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
-                      오늘 강의 시간표 알림
-                    </RowMainTitle>
-                    <RowSubTitle>
-                      {formatTimeLabel(dailyBriefSettings.timetableDailyBriefTime || "08:00")} 발송
-                    </RowSubTitle>
-                  </TextContentWrapper>
-
-                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                    <Switch
-                      checked={dailyBriefSettings.timetableDailyBriefEnabled}
-                      onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
-                    />
-                  </RowRightAction>
-                </GroupRow>
-
-                <CardDivider />
-
-                {/* 2. 수업 시작 전 알림 (Now Bar 또는 일반 푸시 통합) */}
-                <GroupRow onClick={handleOpenPreClassModal}>
-                  <Ripple color="rgba(0, 0, 0, 0.05)" />
-                  <IconCircle $bgColor="#0055D4">
-                    <Clock size={20} color="#ffffff" />
-                  </IconCircle>
-
-                  <TextContentWrapper>
-                    <RowMainTitle $disabled={!isPreClassAlertEnabled}>
-                      수업 시작 전 알림
-                    </RowMainTitle>
-                    <RowSubTitle>
-                      {isNowBarEnabled
-                        ? `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`
-                        : dailyBriefSettings.timetablePreAlertEnabled
-                        ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`
-                        : `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`}
-                    </RowSubTitle>
-                  </TextContentWrapper>
-
-                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                    <Switch
-                      checked={isPreClassAlertEnabled}
-                      onCheckedChange={() => handleTogglePreClass({ stopPropagation: () => {} } as any)}
-                    />
-                  </RowRightAction>
-                </GroupRow>
-
-                <CardDivider />
-
-                {/* 3. 주요 학사일정 알림 */}
-                <GroupRow onClick={handleOpenScheduleModal}>
-                  <Ripple color="rgba(0, 0, 0, 0.05)" />
-                  <IconCircle $bgColor="#3b82f6">
-                    <GraduationCap size={20} color="#ffffff" />
-                  </IconCircle>
-
-                  <TextContentWrapper>
-                    <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
-                      주요 학사일정 알림
-                    </RowMainTitle>
-                    <RowSubTitle>
-                      {formatTimeLabel(dailyBriefSettings.scheduleDailyBriefTime || "08:30")} • {getScheduleAdvanceDaysLabel(dailyBriefSettings.advanceDays)}
-                    </RowSubTitle>
-                  </TextContentWrapper>
-
-                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                    <Switch
-                      checked={dailyBriefSettings.scheduleAlertEnabled}
-                      onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
-                    />
-                  </RowRightAction>
-                </GroupRow>
-              </GroupCard>
-            )}
-          </SectionWrapper>
-
-          {/* 2. 내 루틴 (맞춤 루틴 목록) */}
-          <SectionWrapper>
-            <SectionTitleRow>
-              <SectionTitle>내 루틴</SectionTitle>
-              <CountBadge>{reminders.length}</CountBadge>
-            </SectionTitleRow>
-
-            {isInitialLoading ? (
-              <GroupCard>
-                <GroupRow>
-                  <Skeleton variant="text" width="60%" height={22} />
-                </GroupRow>
-              </GroupCard>
-            ) : reminders.length === 0 ? (
-              <EmptyRoutineCard onClick={() => setActiveTab("recommend")}>
-                <Ripple color="rgba(0, 0, 0, 0.04)" />
-                <EmptyRoutineTitle>아직 저장된 맞춤 루틴이 없어요</EmptyRoutineTitle>
-                <EmptyRoutineSubTitle>추천 탭에서 유용한 템플릿을 둘러보거나 새 루틴을 만들어 보세요</EmptyRoutineSubTitle>
-              </EmptyRoutineCard>
-            ) : (
-              <GroupCard>
-                {reminders.map((reminder, idx) => {
-                  const { iconId, bg } = getReminderIconAndBg(reminder);
-                  return (
-                    <React.Fragment key={reminder.id}>
-                      {idx > 0 && <CardDivider />}
-                      <GroupRow
-                        onClick={() =>
-                          navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
-                        }
-                      >
-                        <Ripple color="rgba(0, 0, 0, 0.05)" />
-                        <IconCircle $bgColor={bg}>
-                          {renderRoutineIcon(iconId, 20, "#ffffff")}
-                        </IconCircle>
-
-                        <TextContentWrapper>
-                          <RowMainTitle $disabled={!reminder.enabled}>
-                            {reminder.title}
-                          </RowMainTitle>
-                        </TextContentWrapper>
-
-                        <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                          <Switch
-                            checked={reminder.enabled}
-                            onCheckedChange={() =>
-                              handleToggle(reminder.id, reminder.enabled)
-                            }
-                          />
-                        </RowRightAction>
-                      </GroupRow>
-                    </React.Fragment>
-                  );
-                })}
-              </GroupCard>
-            )}
-          </SectionWrapper>
-        </>
-      ) : (
-        <>
-          {/* 1. 이동할 때 유용한 섹션 */}
-          <SectionWrapper>
-            <SectionTitleRow>
-              <SectionTitle>이동할 때 유용한</SectionTitle>
-              <ChevronRight size={18} color="#9ca3af" />
-            </SectionTitleRow>
-
-            <GroupCard>
-              {transitPresets.map((preset, idx) => (
-                <React.Fragment key={preset.id}>
-                  {idx > 0 && <CardDivider />}
-                  <GroupRow
-                    onClick={() =>
-                      navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
-                    }
-                  >
+              {isInitialLoading ? (
+                <GroupCard>
+                  <GroupRow>
+                    <Skeleton variant="text" width="60%" height={22} />
+                  </GroupRow>
+                </GroupCard>
+              ) : (
+                <GroupCard>
+                  {/* 1. 오늘 강의 시간표 알림 */}
+                  <GroupRow onClick={handleOpenTimetableBriefModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor={preset.iconBg}>
-                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                    <IconCircle $bgColor="#a855f7">
+                      <Calendar size={20} color="#ffffff" />
                     </IconCircle>
 
                     <TextContentWrapper>
-                      <RowMainTitle>{preset.title}</RowMainTitle>
-                      <RowSubTitle>{preset.description}</RowSubTitle>
+                      <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
+                        오늘 강의 시간표 알림
+                      </RowMainTitle>
+                      <RowSubTitle>
+                        {formatTimeLabel(dailyBriefSettings.timetableDailyBriefTime || "08:00")} 발송
+                      </RowSubTitle>
                     </TextContentWrapper>
 
-                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                    <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                      <Switch
+                        checked={dailyBriefSettings.timetableDailyBriefEnabled}
+                        onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
+                      />
+                    </RowRightAction>
                   </GroupRow>
-                </React.Fragment>
-              ))}
-            </GroupCard>
-          </SectionWrapper>
 
-          {/* 2. 특정 시간이나 장소에서 유용한 섹션 */}
-          <SectionWrapper>
-            <SectionTitleRow>
-              <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
-              <ChevronRight size={18} color="#9ca3af" />
-            </SectionTitleRow>
+                  <CardDivider />
 
-            <GroupCard>
-              {timePlacePresets.map((preset, idx) => (
-                <React.Fragment key={preset.id}>
-                  {idx > 0 && <CardDivider />}
-                  <GroupRow
-                    onClick={() =>
-                      navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
-                    }
-                  >
+                  {/* 2. 수업 시작 전 알림 (Now Bar 또는 일반 푸시 통합) */}
+                  <GroupRow onClick={handleOpenPreClassModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor={preset.iconBg}>
-                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                    <IconCircle $bgColor="#0055D4">
+                      <Clock size={20} color="#ffffff" />
                     </IconCircle>
 
                     <TextContentWrapper>
-                      <RowMainTitle>{preset.title}</RowMainTitle>
-                      <RowSubTitle>{preset.description}</RowSubTitle>
+                      <RowMainTitle $disabled={!isPreClassAlertEnabled}>
+                        수업 시작 전 알림
+                      </RowMainTitle>
+                      <RowSubTitle>
+                        {isNowBarEnabled
+                          ? `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`
+                          : dailyBriefSettings.timetablePreAlertEnabled
+                          ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`
+                          : `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`}
+                      </RowSubTitle>
                     </TextContentWrapper>
 
-                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                    <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                      <Switch
+                        checked={isPreClassAlertEnabled}
+                        onCheckedChange={() => handleTogglePreClass({ stopPropagation: () => {} } as any)}
+                      />
+                    </RowRightAction>
                   </GroupRow>
-                </React.Fragment>
-              ))}
-            </GroupCard>
-          </SectionWrapper>
 
-          {/* 3. 수업 및 캠퍼스 생활 섹션 */}
-          <SectionWrapper>
-            <SectionTitleRow>
-              <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
-              <ChevronRight size={18} color="#9ca3af" />
-            </SectionTitleRow>
+                  <CardDivider />
 
-            <GroupCard>
-              {studyPresets.map((preset, idx) => (
-                <React.Fragment key={preset.id}>
-                  {idx > 0 && <CardDivider />}
-                  <GroupRow
-                    onClick={() => {
-                      if (preset.id === "preset-timetable-brief") {
-                        handleOpenTimetableBriefModal();
-                      } else if (preset.id === "preset-timetable-pre" || preset.id === "preset-timetable-nowbar") {
-                        handleOpenPreClassModal();
-                      } else if (preset.id === "preset-schedule") {
-                        handleOpenScheduleModal();
-                      } else {
-                        navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id));
+                  {/* 3. 주요 학사일정 알림 */}
+                  <GroupRow onClick={handleOpenScheduleModal}>
+                    <Ripple color="rgba(0, 0, 0, 0.05)" />
+                    <IconCircle $bgColor="#3b82f6">
+                      <GraduationCap size={20} color="#ffffff" />
+                    </IconCircle>
+
+                    <TextContentWrapper>
+                      <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
+                        주요 학사일정 알림
+                      </RowMainTitle>
+                      <RowSubTitle>
+                        {formatTimeLabel(dailyBriefSettings.scheduleDailyBriefTime || "08:30")} • {getScheduleAdvanceDaysLabel(dailyBriefSettings.advanceDays)}
+                      </RowSubTitle>
+                    </TextContentWrapper>
+
+                    <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                      <Switch
+                        checked={dailyBriefSettings.scheduleAlertEnabled}
+                        onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
+                      />
+                    </RowRightAction>
+                  </GroupRow>
+                </GroupCard>
+              )}
+            </SectionWrapper>
+
+            {/* 2. 내 루틴 (맞춤 루틴 목록) */}
+            <SectionWrapper>
+              <SectionTitleRow>
+                <SectionTitle>내 루틴</SectionTitle>
+                <CountBadge>{reminders.length}</CountBadge>
+              </SectionTitleRow>
+
+              {isInitialLoading ? (
+                <GroupCard>
+                  <GroupRow>
+                    <Skeleton variant="text" width="60%" height={22} />
+                  </GroupRow>
+                </GroupCard>
+              ) : reminders.length === 0 ? (
+                <EmptyRoutineCard onClick={() => handleTabClick("recommend")}>
+                  <Ripple color="rgba(0, 0, 0, 0.04)" />
+                  <EmptyRoutineTitle>아직 저장된 맞춤 루틴이 없어요</EmptyRoutineTitle>
+                  <EmptyRoutineSubTitle>추천 탭에서 유용한 템플릿을 둘러보거나 새 루틴을 만들어 보세요</EmptyRoutineSubTitle>
+                </EmptyRoutineCard>
+              ) : (
+                <GroupCard>
+                  {reminders.map((reminder, idx) => {
+                    const { iconId, bg } = getReminderIconAndBg(reminder);
+                    return (
+                      <React.Fragment key={reminder.id}>
+                        {idx > 0 && <CardDivider />}
+                        <GroupRow
+                          onClick={() =>
+                            navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
+                          }
+                        >
+                          <Ripple color="rgba(0, 0, 0, 0.05)" />
+                          <IconCircle $bgColor={bg}>
+                            {renderRoutineIcon(iconId, 20, "#ffffff")}
+                          </IconCircle>
+
+                          <TextContentWrapper>
+                            <RowMainTitle $disabled={!reminder.enabled}>
+                              {reminder.title}
+                            </RowMainTitle>
+                          </TextContentWrapper>
+
+                          <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                            <Switch
+                              checked={reminder.enabled}
+                              onCheckedChange={() =>
+                                handleToggle(reminder.id, reminder.enabled)
+                              }
+                            />
+                          </RowRightAction>
+                        </GroupRow>
+                      </React.Fragment>
+                    );
+                  })}
+                </GroupCard>
+              )}
+            </SectionWrapper>
+          </TabSlideContent>
+        </SwiperSlide>
+
+        {/* 슬라이드 1: 추천 */}
+        <SwiperSlide style={{ height: "auto" }}>
+          <TabSlideContent>
+            {/* 1. 이동할 때 유용한 섹션 */}
+            <SectionWrapper>
+              <SectionTitleRow>
+                <SectionTitle>이동할 때 유용한</SectionTitle>
+                <ChevronRight size={18} color="#9ca3af" />
+              </SectionTitleRow>
+
+              <GroupCard>
+                {transitPresets.map((preset, idx) => (
+                  <React.Fragment key={preset.id}>
+                    {idx > 0 && <CardDivider />}
+                    <GroupRow
+                      onClick={() =>
+                        navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
                       }
-                    }}
-                  >
-                    <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor={preset.iconBg}>
-                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
-                    </IconCircle>
+                    >
+                      <Ripple color="rgba(0, 0, 0, 0.05)" />
+                      <IconCircle $bgColor={preset.iconBg}>
+                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                      </IconCircle>
 
-                    <TextContentWrapper>
-                      <RowMainTitle>{preset.title}</RowMainTitle>
-                      <RowSubTitle>{preset.description}</RowSubTitle>
-                    </TextContentWrapper>
+                      <TextContentWrapper>
+                        <RowMainTitle>{preset.title}</RowMainTitle>
+                        <RowSubTitle>{preset.description}</RowSubTitle>
+                      </TextContentWrapper>
 
-                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
-                  </GroupRow>
-                </React.Fragment>
-              ))}
-            </GroupCard>
-          </SectionWrapper>
-        </>
-      )}
+                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                    </GroupRow>
+                  </React.Fragment>
+                ))}
+              </GroupCard>
+            </SectionWrapper>
+
+            {/* 2. 특정 시간이나 장소에서 유용한 섹션 */}
+            <SectionWrapper>
+              <SectionTitleRow>
+                <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
+                <ChevronRight size={18} color="#9ca3af" />
+              </SectionTitleRow>
+
+              <GroupCard>
+                {timePlacePresets.map((preset, idx) => (
+                  <React.Fragment key={preset.id}>
+                    {idx > 0 && <CardDivider />}
+                    <GroupRow
+                      onClick={() =>
+                        navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
+                      }
+                    >
+                      <Ripple color="rgba(0, 0, 0, 0.05)" />
+                      <IconCircle $bgColor={preset.iconBg}>
+                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                      </IconCircle>
+
+                      <TextContentWrapper>
+                        <RowMainTitle>{preset.title}</RowMainTitle>
+                        <RowSubTitle>{preset.description}</RowSubTitle>
+                      </TextContentWrapper>
+
+                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                    </GroupRow>
+                  </React.Fragment>
+                ))}
+              </GroupCard>
+            </SectionWrapper>
+
+            {/* 3. 수업 및 캠퍼스 생활 섹션 */}
+            <SectionWrapper>
+              <SectionTitleRow>
+                <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
+                <ChevronRight size={18} color="#9ca3af" />
+              </SectionTitleRow>
+
+              <GroupCard>
+                {studyPresets.map((preset, idx) => (
+                  <React.Fragment key={preset.id}>
+                    {idx > 0 && <CardDivider />}
+                    <GroupRow
+                      onClick={() => {
+                        if (preset.id === "preset-timetable-brief") {
+                          handleOpenTimetableBriefModal();
+                        } else if (preset.id === "preset-timetable-pre" || preset.id === "preset-timetable-nowbar") {
+                          handleOpenPreClassModal();
+                        } else if (preset.id === "preset-schedule") {
+                          handleOpenScheduleModal();
+                        } else {
+                          navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id));
+                        }
+                      }}
+                    >
+                      <Ripple color="rgba(0, 0, 0, 0.05)" />
+                      <IconCircle $bgColor={preset.iconBg}>
+                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                      </IconCircle>
+
+                      <TextContentWrapper>
+                        <RowMainTitle>{preset.title}</RowMainTitle>
+                        <RowSubTitle>{preset.description}</RowSubTitle>
+                      </TextContentWrapper>
+
+                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                    </GroupRow>
+                  </React.Fragment>
+                ))}
+              </GroupCard>
+            </SectionWrapper>
+          </TabSlideContent>
+        </SwiperSlide>
+      </Swiper>
 
       {/* 플로팅 바텀 네비게이션 바 (Material 3 Style) */}
       <FloatingNavPill role="tablist" aria-label="루틴 네비게이션">
         <NavTabButton
           $active={activeTab === "my"}
-          onClick={() => setActiveTab("my")}
+          onClick={() => handleTabClick("my")}
           type="button"
           role="tab"
           aria-selected={activeTab === "my"}
@@ -999,7 +1081,7 @@ export default function MobileAgentReminderSetting() {
 
         <NavTabButton
           $active={activeTab === "recommend"}
-          onClick={() => setActiveTab("recommend")}
+          onClick={() => handleTabClick("recommend")}
           type="button"
           role="tab"
           aria-selected={activeTab === "recommend"}
@@ -1529,6 +1611,14 @@ const NavTabButton = styled.button<{ $active: boolean }>`
     position: relative;
     z-index: 1;
   }
+`;
+
+const TabSlideContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const TimePickerModalContent = styled.div`
