@@ -1143,8 +1143,8 @@ export default function MobileRoutineDetailPage() {
 
   const headerTitle = useMemo(() => {
     if (isNew) return "새 루틴 만들기";
-    if (isEditing) return isSystemRoutine ? "기본 루틴 설정" : "루틴 편집";
-    return isSystemRoutine ? "기본 루틴" : "루틴 설정";
+    if (isEditing) return isSystemRoutine ? "시스템 루틴 설정" : "루틴 편집";
+    return isSystemRoutine ? "시스템 루틴" : "루틴 설정";
   }, [isNew, isEditing, isSystemRoutine]);
 
   useHeader({
@@ -1959,7 +1959,7 @@ export default function MobileRoutineDetailPage() {
           const preTrig = triggers.find((t) => t.type === "BEFORE_CLASS");
           const lead = preTrig?.beforeClassParams?.minutes || 15;
           await setTimetableNowBarSettings({ leadTimeMinutes: lead, enabled: true });
-          alert("실시간 시간표 & Now Bar 설정을 저장했어요!");
+          alert("실시간 시간표 Now Bar 설정을 저장했어요!");
         } else if (systemType === "schedule") {
           const timeTrig = triggers.find((t) => t.type === "TIME");
           const schedAct = actions.find((a) => a.type === "SCHEDULE");
@@ -2499,7 +2499,7 @@ export default function MobileRoutineDetailPage() {
                   <CardBlueText>{trig.subtitle}</CardBlueText>
                 </CardContent>
 
-                {isEditing && (
+                {isEditing && !isSystemRoutine && (
                   <MinusButton
                     data-no-ripple="true"
                     type="button"
@@ -2513,7 +2513,7 @@ export default function MobileRoutineDetailPage() {
             ))
           )}
 
-          {isEditing && (
+          {isEditing && !isSystemRoutine && (
             <AddConditionCard onClick={() => setIsTriggerSelectModalOpen(true)}>
               <Ripple color="rgba(16, 185, 129, 0.12)" />
               <Plus size={18} color="#10b981" strokeWidth={2.5} />
@@ -2565,7 +2565,7 @@ export default function MobileRoutineDetailPage() {
                   <CardBlueText>{act.subtitle}</CardBlueText>
                 </CardContent>
 
-                {isEditing && (
+                {isEditing && !isSystemRoutine && (
                   <MinusButton
                     data-no-ripple="true"
                     type="button"
@@ -2579,7 +2579,7 @@ export default function MobileRoutineDetailPage() {
             ))
           )}
 
-          {isEditing && (
+          {isEditing && !isSystemRoutine && (
             <AddConditionCard
               onClick={() => {
                 if (triggers.length === 0) {
