@@ -52,8 +52,8 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   {
     id: "preset-timetable-brief",
     category: "study",
-    title: "당일 시간표 & 강의실 브리핑",
-    description: "매일 아침 오늘 수강하는 수업 목록과 첫 강의실 위치를 브리핑받아요.",
+    title: "오늘 강의 시간표 알림",
+    description: "오늘 수강하는 수업과 강의실 위치를 알림으로 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["TIMETABLE"],
@@ -73,7 +73,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
         {
           id: "act-time-1",
           type: "TIMETABLE",
-          title: "당일 시간표 & 강의실 브리핑",
+          title: "오늘 강의 시간표 알림",
           subtitle: "오늘 수업 시간표 및 강의실 위치",
           iconBg: "#a855f7",
         },
@@ -81,7 +81,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     },
     iconType: "timetable",
     iconBg: "#a855f7",
-    whenTitle: "매일 아침",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "오늘 수업 시간표 및 강의실 위치",
   },
@@ -89,7 +89,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     id: "preset-timetable-pre",
     category: "study",
     title: "강의 시작 전 알림",
-    description: "각 수업 시작 10분 전에 다음 수업과 이동할 강의실 위치를 안내받아요.",
+    description: "수업 시작 전 다음 강의실 위치를 알림으로 받아요.",
     targetTime: "08:50",
     repeatType: "WEEKDAYS",
     targetTools: ["TIMETABLE"],
@@ -109,7 +109,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
         {
           id: "act-time-1",
           type: "TIMETABLE",
-          title: "당일 시간표 & 강의실 브리핑",
+          title: "강의 시작 전 알림",
           subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
           iconBg: "#8b5cf6",
         },
@@ -124,8 +124,8 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   {
     id: "preset-timetable-nowbar",
     category: "study",
-    title: "실시간 시간표 & Now Bar (Dynamic Island)",
-    description: "수업 시작 전부터 끝날 때까지 잠금화면과 상태바에 실시간 강의실과 남은 시간 타이머를 띄워줘요.",
+    title: "실시간 시간표 Now Bar",
+    description: "수업 중 잠금화면과 상태바에서 강의실과 남은 시간을 확인해요.",
     targetTime: "08:45",
     repeatType: "WEEKDAYS",
     targetTools: ["TIMETABLE_NOWBAR"],
@@ -145,7 +145,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
         {
           id: "act-nowbar-1",
           type: "TIMETABLE_NOWBAR",
-          title: "실시간 시간표 Now Bar & Dynamic Island 띄우기",
+          title: "실시간 시간표 Now Bar",
           subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
           iconBg: "#0055D4",
           timetableNowBarParams: { leadTimeMinutes: 15 },
@@ -156,13 +156,13 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     iconBg: "#0055D4",
     whenTitle: "수업 시작 전부터",
     whenSubtitle: "수업 시작 15분 전 ~ 수업 종료 시",
-    whatTitle: "실시간 Now Bar & Dynamic Island 카드 띄우기",
+    whatTitle: "실시간 Now Bar 카드 띄우기",
   },
   {
     id: "preset-schedule",
     category: "study",
-    title: "학사일정 브리핑",
-    description: "수강신청, 시험 기간 등 주요 학교 및 학과 학사일정을 사전에 확인해요.",
+    title: "주요 학사일정 알림",
+    description: "다가오는 주요 학사일정을 알림으로 받아요.",
     targetTime: "08:30",
     repeatType: "WEEKDAYS",
     targetTools: ["SCHEDULE"],
@@ -182,7 +182,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
         {
           id: "act-sched-1",
           type: "SCHEDULE",
-          title: "학사일정 브리핑",
+          title: "주요 학사일정 알림",
           subtitle: "학교 및 학과 전체 • 1일 전 사전 안내",
           iconBg: "#3b82f6",
           scheduleParams: { scope: "ALL", advanceDays: 1 },
@@ -191,7 +191,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     },
     iconType: "graduation",
     iconBg: "#3b82f6",
-    whenTitle: "매일 아침",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:30\n평일 (월~금)",
     whatTitle: "주요 학사일정 사전 안내",
   },
@@ -200,30 +200,30 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   {
     id: "preset-bus-inip",
     category: "transit",
-    title: "등교 버스 도착 정보 안내",
-    description: "출근 및 등교 시간에 맞춰 인천대입구역 버스 도착 정보를 안내해요.",
+    title: "등교 버스 도착 알림",
+    description: "인천대입구역 버스 도착 정보를 알림으로 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
     toolParams: { stopName: "인천대입구역 1번출구", iconType: "bus", iconBg: "#ff7a00" },
     iconType: "bus",
     iconBg: "#ff7a00",
-    whenTitle: "등교 시간",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "인천대입구역 1번출구 버스 도착 정보",
   },
   {
     id: "preset-bus-leaving",
     category: "transit",
-    title: "하교길 버스 도착 정보 안내",
-    description: "수업 후 귀가할 때 정문 정류소 버스 도착 정보를 안내해요.",
+    title: "하교 버스 도착 알림",
+    description: "인천대 정문 버스 도착 정보를 알림으로 받아요.",
     targetTime: "17:30",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
     toolParams: { stopName: "인천대 정문", iconType: "bus", iconBg: "#ff7a00" },
     iconType: "bus",
     iconBg: "#ff7a00",
-    whenTitle: "하교 시간",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오후 05:30\n평일 (월~금)",
     whatTitle: "인천대 정문 정류소 버스 도착 정보",
   },
@@ -232,32 +232,60 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   {
     id: "preset-now-brief",
     category: "time_place",
-    title: "Daily Brief 아침 요약",
-    description: "일어나는 시간에 오늘 캠퍼스 날씨와 첫 수업 시간표를 확인해요.",
+    title: "오늘의 캠퍼스 브리핑 알림",
+    description: "오늘 캠퍼스 날씨와 수업 시간표를 알림으로 받아요.",
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["WEATHER", "TIMETABLE"],
-    toolParams: { iconType: "sun", iconBg: "#5c9cf8" },
+    toolParams: {
+      iconType: "sun",
+      iconBg: "#5c9cf8",
+      triggers: [
+        {
+          id: "trig-now-1",
+          type: "TIME",
+          title: "평일 (월~금)",
+          subtitle: "오전 08:00",
+          timeParams: { ampm: "AM", hour: "08", minute: "00", selectedDays: ["MON", "TUE", "WED", "THU", "FRI"], repeatType: "WEEKDAYS" },
+        },
+      ],
+      actions: [
+        {
+          id: "act-weather-1",
+          type: "WEATHER",
+          title: "캠퍼스 날씨 알림",
+          subtitle: "송도 캠퍼스 오늘 날씨 예보",
+          iconBg: "#5c9cf8",
+        },
+        {
+          id: "act-time-1",
+          type: "TIMETABLE",
+          title: "오늘 강의 시간표 알림",
+          subtitle: "오늘 수업 시간표 및 강의실 위치",
+          iconBg: "#a855f7",
+        },
+      ],
+    },
     iconType: "sun",
     iconBg: "#5c9cf8",
-    whenTitle: "기상 시간",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
-    whatTitle: "Daily Brief 아침 요약",
+    whatTitle: "캠퍼스 날씨 및 수업 시간표",
   },
   {
     id: "preset-lunch",
     category: "time_place",
-    title: "오늘의 점심 학식 식단",
-    description: "점심시간 전에 학생식당과 기숙사 식당 메뉴를 확인해요.",
+    title: "오늘의 학식 식단 알림",
+    description: "학생식당과 교내 식당 점심 메뉴를 알림으로 받아요.",
     targetTime: "11:30",
     repeatType: "WEEKDAYS",
     targetTools: ["CAFETERIA"],
     toolParams: { cafeteria: "전체", mealType: "LUNCH", iconType: "cafeteria", iconBg: "#22c55e" },
     iconType: "cafeteria",
     iconBg: "#22c55e",
-    whenTitle: "점심시간",
+    whenTitle: "지정한 시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
-    whatTitle: "학생식당 & 기숙사 식당 오늘 점심 메뉴",
+    whatTitle: "학생식당 & 교내 식당 점심 메뉴",
   },
 ];
 
@@ -267,7 +295,6 @@ export default function MobileAgentReminderSetting() {
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
-  const [nowBarLeadMinutes, setNowBarLeadMinutes] = useState<number>(15);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const isFirstMountRef = React.useRef(true);
 
@@ -290,7 +317,6 @@ export default function MobileAgentReminderSetting() {
       }
       if (nowBarRes) {
         setIsNowBarEnabled(nowBarRes.enabled);
-        setNowBarLeadMinutes(nowBarRes.leadTimeMinutes || 15);
       }
     } catch (error) {
       console.error("루틴 데이터 로드 실패:", error);
@@ -404,54 +430,6 @@ export default function MobileAgentReminderSetting() {
     return getDefaultIconAndBgForTools(reminder.targetTool);
   };
 
-  const getToolsDescription = (reminder: AgentReminder) => {
-    if (reminder.toolParamsJson) {
-      try {
-        const parsed = JSON.parse(reminder.toolParamsJson);
-        if (parsed.actions && Array.isArray(parsed.actions) && parsed.actions.length > 0) {
-          return parsed.actions.map((a: any) => a.title).join(" • ");
-        }
-      } catch (ignored) {}
-    }
-    const toolsStr = reminder.targetTool;
-    if (!toolsStr) return "캠퍼스 맞춤 알림";
-    const parts = toolsStr.split(",").map((s) => s.trim().toUpperCase());
-    const names = parts.map((p) => {
-      if (p.includes("DEPT_NOTICE")) return "학과 공지";
-      if (p.includes("NOTICE") || p.includes("SCHOOL_NOTICE")) return "학교 공지";
-      if (p.includes("TIMETABLE")) return "시간표/강의실";
-      if (p.includes("SCHEDULE")) return "학사일정";
-      if (p.includes("WEATHER")) return "캠퍼스 날씨";
-      if (p.includes("BUS")) return "버스 도착 알림";
-      if (p.includes("CAFETERIA")) return "학식 식단";
-      return p;
-    });
-    return names.join(" • ");
-  };
-
-  const getSchedulesSummary = (reminder: AgentReminder) => {
-    if (reminder.toolParamsJson) {
-      try {
-        const parsed = JSON.parse(reminder.toolParamsJson);
-        if (parsed.triggers && Array.isArray(parsed.triggers) && parsed.triggers.length > 0) {
-          if (parsed.triggers.length > 1) {
-            return `${parsed.triggers.length}개 조건 설정됨`;
-          }
-          return `${parsed.triggers[0].title} (${parsed.triggers[0].subtitle})`;
-        }
-      } catch (ignored) {}
-    }
-    if (reminder.schedulesJson) {
-      try {
-        const parsed = JSON.parse(reminder.schedulesJson);
-        if (Array.isArray(parsed) && parsed.length > 1) {
-          return `${parsed.length}개 시간 조건 설정됨`;
-        }
-      } catch (ignored) {}
-    }
-    return `${reminder.repeatTypeDesc} ${reminder.targetTime}`;
-  };
-
   const transitPresets = useMemo(
     () => ROUTINE_PRESETS.filter((p) => p.category === "transit"),
     [],
@@ -552,7 +530,7 @@ export default function MobileAgentReminderSetting() {
       <SectionWrapper>
         <SectionTitleRow>
           <SectionTitle>내 루틴</SectionTitle>
-          <CountBadge>{6 + reminders.length}</CountBadge>
+          <CountBadge>{4 + reminders.length}</CountBadge>
         </SectionTitleRow>
 
         {isInitialLoading ? (
@@ -563,7 +541,7 @@ export default function MobileAgentReminderSetting() {
           </GroupCard>
         ) : (
           <GroupCard>
-            {/* 1. 당일 강의 & 시간표 브리핑 */}
+            {/* 1. 오늘 강의 시간표 알림 */}
             <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
               <Ripple color="rgba(0, 0, 0, 0.05)" />
               <IconCircle $bgColor="#a855f7">
@@ -572,13 +550,8 @@ export default function MobileAgentReminderSetting() {
 
               <TextContentWrapper>
                 <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
-                  당일 강의 & 시간표 브리핑
+                  오늘 강의 시간표 알림
                 </RowMainTitle>
-                <RowSubTitle>
-                  {dailyBriefSettings.timetableDailyBriefEnabled
-                    ? `매일 아침 ${dailyBriefSettings.timetableDailyBriefTime || "08:00"} 브리핑`
-                    : "동작 꺼짐"}
-                </RowSubTitle>
               </TextContentWrapper>
 
               <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
@@ -602,11 +575,6 @@ export default function MobileAgentReminderSetting() {
                 <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
                   강의 시작 전 알림
                 </RowMainTitle>
-                <RowSubTitle>
-                  {dailyBriefSettings.timetablePreAlertEnabled
-                    ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes || 10}분 전 알림`
-                    : "동작 꺼짐"}
-                </RowSubTitle>
               </TextContentWrapper>
 
               <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
@@ -619,7 +587,7 @@ export default function MobileAgentReminderSetting() {
 
             <CardDivider />
 
-            {/* 3. 실시간 시간표 & Now Bar (Dynamic Island) */}
+            {/* 3. 실시간 시간표 Now Bar */}
             <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-nowbar"))}>
               <Ripple color="rgba(0, 0, 0, 0.05)" />
               <IconCircle $bgColor="#0055D4">
@@ -628,13 +596,8 @@ export default function MobileAgentReminderSetting() {
 
               <TextContentWrapper>
                 <RowMainTitle $disabled={!isNowBarEnabled}>
-                  실시간 시간표 & Now Bar (Dynamic Island)
+                  실시간 시간표 Now Bar
                 </RowMainTitle>
-                <RowSubTitle>
-                  {isNowBarEnabled
-                    ? `수업 시작 ${nowBarLeadMinutes}분 전 ~ 수업 종료 시 실시간 카드 표시`
-                    : "동작 꺼짐"}
-                </RowSubTitle>
               </TextContentWrapper>
 
               <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
@@ -647,7 +610,7 @@ export default function MobileAgentReminderSetting() {
 
             <CardDivider />
 
-            {/* 4. 학사일정 알림 */}
+            {/* 4. 주요 학사일정 알림 */}
             <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
               <Ripple color="rgba(0, 0, 0, 0.05)" />
               <IconCircle $bgColor="#3b82f6">
@@ -656,13 +619,8 @@ export default function MobileAgentReminderSetting() {
 
               <TextContentWrapper>
                 <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
-                  학사일정 알림
+                  주요 학사일정 알림
                 </RowMainTitle>
-                <RowSubTitle>
-                  {dailyBriefSettings.scheduleAlertEnabled
-                    ? `아침 ${dailyBriefSettings.scheduleDailyBriefTime || "08:30"} 브리핑 • ${(dailyBriefSettings.advanceDays ?? 1) === 0 ? "당일 알림" : `${dailyBriefSettings.advanceDays ?? 1}일 전 알림`}`
-                    : "알림 꺼짐"}
-                </RowSubTitle>
               </TextContentWrapper>
 
               <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
@@ -693,10 +651,6 @@ export default function MobileAgentReminderSetting() {
                       <RowMainTitle $disabled={!reminder.enabled}>
                         {reminder.title}
                       </RowMainTitle>
-                      <RowSubTitle>
-                        {getSchedulesSummary(reminder)} •{" "}
-                        {getToolsDescription(reminder)}
-                      </RowSubTitle>
                     </TextContentWrapper>
 
                     <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
@@ -794,7 +748,13 @@ export default function MobileAgentReminderSetting() {
               {idx > 0 && <CardDivider />}
               <GroupRow
                 onClick={() =>
-                  navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
+                  navigate(
+                    ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(
+                      preset.id === "preset-timetable-nowbar"
+                        ? "system-timetable-nowbar"
+                        : preset.id
+                    )
+                  )
                 }
               >
                 <Ripple color="rgba(0, 0, 0, 0.05)" />
