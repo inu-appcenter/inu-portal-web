@@ -9,6 +9,8 @@ import {
   Clock,
   Calendar,
   GraduationCap,
+  SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import {
   getAgentReminders,
@@ -289,9 +291,12 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   },
 ];
 
+export type RoutineMainTab = "my" | "recommend";
+
 export default function MobileAgentReminderSetting() {
   const navigate = useNavigate();
 
+  const [activeTab, setActiveTab] = useState<RoutineMainTab>("my");
   const [reminders, setReminders] = useState<AgentReminder[]>([]);
   const [dailyBriefSettings, setDailyBriefSettings] = useState<DailyBriefSettings>(getLocalDailyBriefSettings);
   const [isNowBarEnabled, setIsNowBarEnabled] = useState<boolean>(true);
@@ -526,253 +531,324 @@ export default function MobileAgentReminderSetting() {
         </HeaderBannerIllustration>
       </HeaderBannerCard>
 
-      {/* 1. 내 루틴 (기본 루틴 + 맞춤 루틴 통합 목록) */}
-      <SectionWrapper>
-        <SectionTitleRow>
-          <SectionTitle>내 루틴</SectionTitle>
-          <CountBadge>{4 + reminders.length}</CountBadge>
-        </SectionTitleRow>
+      {activeTab === "my" ? (
+        <>
+          {/* 1. 내 루틴 (맞춤 루틴 목록) */}
+          <SectionWrapper>
+            <SectionTitleRow>
+              <SectionTitle>내 루틴</SectionTitle>
+              <CountBadge>{reminders.length}</CountBadge>
+            </SectionTitleRow>
 
-        {isInitialLoading ? (
-          <GroupCard>
-            <GroupRow>
-              <Skeleton variant="text" width="60%" height={22} />
-            </GroupRow>
-          </GroupCard>
-        ) : (
-          <GroupCard>
-            {/* 1. 오늘 강의 시간표 알림 */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#a855f7">
-                <Calendar size={20} color="#ffffff" />
-              </IconCircle>
+            {isInitialLoading ? (
+              <GroupCard>
+                <GroupRow>
+                  <Skeleton variant="text" width="60%" height={22} />
+                </GroupRow>
+              </GroupCard>
+            ) : reminders.length === 0 ? (
+              <EmptyRoutineCard onClick={() => setActiveTab("recommend")}>
+                <Ripple color="rgba(0, 0, 0, 0.04)" />
+                <EmptyRoutineTitle>아직 저장된 맞춤 루틴이 없어요</EmptyRoutineTitle>
+                <EmptyRoutineSubTitle>추천 탭에서 유용한 템플릿을 둘러보거나 새 루틴을 만들어 보세요</EmptyRoutineSubTitle>
+              </EmptyRoutineCard>
+            ) : (
+              <GroupCard>
+                {reminders.map((reminder, idx) => {
+                  const { iconId, bg } = getReminderIconAndBg(reminder);
+                  return (
+                    <React.Fragment key={reminder.id}>
+                      {idx > 0 && <CardDivider />}
+                      <GroupRow
+                        onClick={() =>
+                          navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
+                        }
+                      >
+                        <Ripple color="rgba(0, 0, 0, 0.05)" />
+                        <IconCircle $bgColor={bg}>
+                          {renderRoutineIcon(iconId, 20, "#ffffff")}
+                        </IconCircle>
 
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
-                  오늘 강의 시간표 알림
-                </RowMainTitle>
-              </TextContentWrapper>
+                        <TextContentWrapper>
+                          <RowMainTitle $disabled={!reminder.enabled}>
+                            {reminder.title}
+                          </RowMainTitle>
+                        </TextContentWrapper>
 
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={dailyBriefSettings.timetableDailyBriefEnabled}
-                  onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
+                        <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                          <Switch
+                            checked={reminder.enabled}
+                            onCheckedChange={() =>
+                              handleToggle(reminder.id, reminder.enabled)
+                            }
+                          />
+                        </RowRightAction>
+                      </GroupRow>
+                    </React.Fragment>
+                  );
+                })}
+              </GroupCard>
+            )}
+          </SectionWrapper>
 
-            <CardDivider />
+          {/* 2. 시스템 제공 섹션 */}
+          <SectionWrapper>
+            <SectionTitleRow>
+              <SectionTitle>시스템 제공</SectionTitle>
+              <CountBadge>4</CountBadge>
+            </SectionTitleRow>
 
-            {/* 2. 강의 시작 전 알림 */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-pre"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#8b5cf6">
-                <Clock size={20} color="#ffffff" />
-              </IconCircle>
+            {isInitialLoading ? (
+              <GroupCard>
+                <GroupRow>
+                  <Skeleton variant="text" width="60%" height={22} />
+                </GroupRow>
+              </GroupCard>
+            ) : (
+              <GroupCard>
+                {/* 1. 오늘 강의 시간표 알림 */}
+                <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-brief"))}>
+                  <Ripple color="rgba(0, 0, 0, 0.05)" />
+                  <IconCircle $bgColor="#a855f7">
+                    <Calendar size={20} color="#ffffff" />
+                  </IconCircle>
 
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
-                  강의 시작 전 알림
-                </RowMainTitle>
-              </TextContentWrapper>
+                  <TextContentWrapper>
+                    <RowMainTitle $disabled={!dailyBriefSettings.timetableDailyBriefEnabled}>
+                      오늘 강의 시간표 알림
+                    </RowMainTitle>
+                  </TextContentWrapper>
 
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={dailyBriefSettings.timetablePreAlertEnabled}
-                  onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
+                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={dailyBriefSettings.timetableDailyBriefEnabled}
+                      onCheckedChange={() => handleToggleTimetableBrief({ stopPropagation: () => {} } as any)}
+                    />
+                  </RowRightAction>
+                </GroupRow>
 
-            <CardDivider />
+                <CardDivider />
 
-            {/* 3. 실시간 시간표 Now Bar */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-nowbar"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#0055D4">
-                <GraduationCap size={20} color="#ffffff" />
-              </IconCircle>
+                {/* 2. 강의 시작 전 알림 */}
+                <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-pre"))}>
+                  <Ripple color="rgba(0, 0, 0, 0.05)" />
+                  <IconCircle $bgColor="#8b5cf6">
+                    <Clock size={20} color="#ffffff" />
+                  </IconCircle>
 
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!isNowBarEnabled}>
-                  실시간 시간표 Now Bar
-                </RowMainTitle>
-              </TextContentWrapper>
+                  <TextContentWrapper>
+                    <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
+                      강의 시작 전 알림
+                    </RowMainTitle>
+                  </TextContentWrapper>
 
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={isNowBarEnabled}
-                  onCheckedChange={() => handleToggleTimetableNowBar({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
+                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={dailyBriefSettings.timetablePreAlertEnabled}
+                      onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
+                    />
+                  </RowRightAction>
+                </GroupRow>
 
-            <CardDivider />
+                <CardDivider />
 
-            {/* 4. 주요 학사일정 알림 */}
-            <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
-              <Ripple color="rgba(0, 0, 0, 0.05)" />
-              <IconCircle $bgColor="#3b82f6">
-                <GraduationCap size={20} color="#ffffff" />
-              </IconCircle>
+                {/* 3. 실시간 시간표 Now Bar */}
+                <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-timetable-nowbar"))}>
+                  <Ripple color="rgba(0, 0, 0, 0.05)" />
+                  <IconCircle $bgColor="#0055D4">
+                    <GraduationCap size={20} color="#ffffff" />
+                  </IconCircle>
 
-              <TextContentWrapper>
-                <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
-                  주요 학사일정 알림
-                </RowMainTitle>
-              </TextContentWrapper>
+                  <TextContentWrapper>
+                    <RowMainTitle $disabled={!isNowBarEnabled}>
+                      실시간 시간표 Now Bar
+                    </RowMainTitle>
+                  </TextContentWrapper>
 
-              <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={dailyBriefSettings.scheduleAlertEnabled}
-                  onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
-                />
-              </RowRightAction>
-            </GroupRow>
+                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={isNowBarEnabled}
+                      onCheckedChange={() => handleToggleTimetableNowBar({ stopPropagation: () => {} } as any)}
+                    />
+                  </RowRightAction>
+                </GroupRow>
 
-            {/* 맞춤 루틴 목록 */}
-            {reminders.map((reminder) => {
-              const { iconId, bg } = getReminderIconAndBg(reminder);
-              return (
-                <React.Fragment key={reminder.id}>
-                  <CardDivider />
+                <CardDivider />
+
+                {/* 4. 주요 학사일정 알림 */}
+                <GroupRow onClick={() => navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL("system-schedule"))}>
+                  <Ripple color="rgba(0, 0, 0, 0.05)" />
+                  <IconCircle $bgColor="#3b82f6">
+                    <GraduationCap size={20} color="#ffffff" />
+                  </IconCircle>
+
+                  <TextContentWrapper>
+                    <RowMainTitle $disabled={!dailyBriefSettings.scheduleAlertEnabled}>
+                      주요 학사일정 알림
+                    </RowMainTitle>
+                  </TextContentWrapper>
+
+                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
+                    <Switch
+                      checked={dailyBriefSettings.scheduleAlertEnabled}
+                      onCheckedChange={() => handleToggleSchedule({ stopPropagation: () => {} } as any)}
+                    />
+                  </RowRightAction>
+                </GroupRow>
+              </GroupCard>
+            )}
+          </SectionWrapper>
+        </>
+      ) : (
+        <>
+          {/* 추천 탭 인트로 배너 */}
+          <RecommendBannerCard>
+            <RecommendBannerLeft>
+              <RecommendBannerTitle>캠퍼스 추천 루틴</RecommendBannerTitle>
+              <RecommendBannerSub>
+                원하는 템플릿을 선택해 바로 내 루틴으로 켜보세요.
+              </RecommendBannerSub>
+            </RecommendBannerLeft>
+            <RecommendBannerIconCircle>
+              <Sparkles size={24} color="#2563eb" />
+            </RecommendBannerIconCircle>
+          </RecommendBannerCard>
+
+          {/* 1. 이동할 때 유용한 섹션 */}
+          <SectionWrapper>
+            <SectionTitleRow>
+              <SectionTitle>이동할 때 유용한</SectionTitle>
+              <ChevronRight size={18} color="#9ca3af" />
+            </SectionTitleRow>
+
+            <GroupCard>
+              {transitPresets.map((preset, idx) => (
+                <React.Fragment key={preset.id}>
+                  {idx > 0 && <CardDivider />}
                   <GroupRow
                     onClick={() =>
-                      navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(reminder.id))
+                      navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
                     }
                   >
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor={bg}>
-                      {renderRoutineIcon(iconId, 20, "#ffffff")}
+                    <IconCircle $bgColor={preset.iconBg}>
+                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
                     </IconCircle>
 
                     <TextContentWrapper>
-                      <RowMainTitle $disabled={!reminder.enabled}>
-                        {reminder.title}
-                      </RowMainTitle>
+                      <RowMainTitle>{preset.title}</RowMainTitle>
+                      <RowSubTitle>{preset.description}</RowSubTitle>
                     </TextContentWrapper>
 
-                    <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                      <Switch
-                        checked={reminder.enabled}
-                        onCheckedChange={() =>
-                          handleToggle(reminder.id, reminder.enabled)
-                        }
-                      />
-                    </RowRightAction>
+                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
                   </GroupRow>
                 </React.Fragment>
-              );
-            })}
-          </GroupCard>
-        )}
-      </SectionWrapper>
+              ))}
+            </GroupCard>
+          </SectionWrapper>
 
-      {/* 3. 이동할 때 유용한 섹션 */}
-      <SectionWrapper>
-        <SectionTitleRow>
-          <SectionTitle>이동할 때 유용한</SectionTitle>
-          <ChevronRight size={18} color="#9ca3af" />
-        </SectionTitleRow>
+          {/* 2. 특정 시간이나 장소에서 유용한 섹션 */}
+          <SectionWrapper>
+            <SectionTitleRow>
+              <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
+              <ChevronRight size={18} color="#9ca3af" />
+            </SectionTitleRow>
 
-        <GroupCard>
-          {transitPresets.map((preset, idx) => (
-            <React.Fragment key={preset.id}>
-              {idx > 0 && <CardDivider />}
-              <GroupRow
-                onClick={() =>
-                  navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
-                }
-              >
-                <Ripple color="rgba(0, 0, 0, 0.05)" />
-                <IconCircle $bgColor={preset.iconBg}>
-                  {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
-                </IconCircle>
+            <GroupCard>
+              {timePlacePresets.map((preset, idx) => (
+                <React.Fragment key={preset.id}>
+                  {idx > 0 && <CardDivider />}
+                  <GroupRow
+                    onClick={() =>
+                      navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
+                    }
+                  >
+                    <Ripple color="rgba(0, 0, 0, 0.05)" />
+                    <IconCircle $bgColor={preset.iconBg}>
+                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                    </IconCircle>
 
-                <TextContentWrapper>
-                  <RowMainTitle>{preset.title}</RowMainTitle>
-                  <RowSubTitle>{preset.description}</RowSubTitle>
-                </TextContentWrapper>
+                    <TextContentWrapper>
+                      <RowMainTitle>{preset.title}</RowMainTitle>
+                      <RowSubTitle>{preset.description}</RowSubTitle>
+                    </TextContentWrapper>
 
-                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
-              </GroupRow>
-            </React.Fragment>
-          ))}
-        </GroupCard>
-      </SectionWrapper>
+                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                  </GroupRow>
+                </React.Fragment>
+              ))}
+            </GroupCard>
+          </SectionWrapper>
 
-      {/* 4. 특정 시간이나 장소에서 유용한 섹션 */}
-      <SectionWrapper>
-        <SectionTitleRow>
-          <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
-          <ChevronRight size={18} color="#9ca3af" />
-        </SectionTitleRow>
+          {/* 3. 수업 및 캠퍼스 생활 섹션 */}
+          <SectionWrapper>
+            <SectionTitleRow>
+              <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
+              <ChevronRight size={18} color="#9ca3af" />
+            </SectionTitleRow>
 
-        <GroupCard>
-          {timePlacePresets.map((preset, idx) => (
-            <React.Fragment key={preset.id}>
-              {idx > 0 && <CardDivider />}
-              <GroupRow
-                onClick={() =>
-                  navigate(ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(preset.id))
-                }
-              >
-                <Ripple color="rgba(0, 0, 0, 0.05)" />
-                <IconCircle $bgColor={preset.iconBg}>
-                  {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
-                </IconCircle>
+            <GroupCard>
+              {studyPresets.map((preset, idx) => (
+                <React.Fragment key={preset.id}>
+                  {idx > 0 && <CardDivider />}
+                  <GroupRow
+                    onClick={() =>
+                      navigate(
+                        ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(
+                          preset.id === "preset-timetable-nowbar"
+                            ? "system-timetable-nowbar"
+                            : preset.id
+                        )
+                      )
+                    }
+                  >
+                    <Ripple color="rgba(0, 0, 0, 0.05)" />
+                    <IconCircle $bgColor={preset.iconBg}>
+                      {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                    </IconCircle>
 
-                <TextContentWrapper>
-                  <RowMainTitle>{preset.title}</RowMainTitle>
-                  <RowSubTitle>{preset.description}</RowSubTitle>
-                </TextContentWrapper>
+                    <TextContentWrapper>
+                      <RowMainTitle>{preset.title}</RowMainTitle>
+                      <RowSubTitle>{preset.description}</RowSubTitle>
+                    </TextContentWrapper>
 
-                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
-              </GroupRow>
-            </React.Fragment>
-          ))}
-        </GroupCard>
-      </SectionWrapper>
+                    <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                  </GroupRow>
+                </React.Fragment>
+              ))}
+            </GroupCard>
+          </SectionWrapper>
+        </>
+      )}
 
-      {/* 5. 수업 및 캠퍼스 생활 섹션 */}
-      <SectionWrapper>
-        <SectionTitleRow>
-          <SectionTitle>수업 및 캠퍼스 생활</SectionTitle>
-          <ChevronRight size={18} color="#9ca3af" />
-        </SectionTitleRow>
+      {/* 플로팅 바텀 네비게이션 바 (Material 3 Style) */}
+      <FloatingNavPill role="tablist" aria-label="루틴 네비게이션">
+        <NavTabButton
+          $active={activeTab === "my"}
+          onClick={() => setActiveTab("my")}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "my"}
+          aria-label="내 루틴 탭"
+        >
+          <Ripple color={activeTab === "my" ? "rgba(37, 99, 235, 0.15)" : "rgba(0, 0, 0, 0.08)"} />
+          <SlidersHorizontal size={17} strokeWidth={activeTab === "my" ? 2.5 : 2} />
+          <span>내 루틴</span>
+        </NavTabButton>
 
-        <GroupCard>
-          {studyPresets.map((preset, idx) => (
-            <React.Fragment key={preset.id}>
-              {idx > 0 && <CardDivider />}
-              <GroupRow
-                onClick={() =>
-                  navigate(
-                    ROUTES.DAILY_BRIEF.ROUTINE_DETAIL(
-                      preset.id === "preset-timetable-nowbar"
-                        ? "system-timetable-nowbar"
-                        : preset.id
-                    )
-                  )
-                }
-              >
-                <Ripple color="rgba(0, 0, 0, 0.05)" />
-                <IconCircle $bgColor={preset.iconBg}>
-                  {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
-                </IconCircle>
-
-                <TextContentWrapper>
-                  <RowMainTitle>{preset.title}</RowMainTitle>
-                  <RowSubTitle>{preset.description}</RowSubTitle>
-                </TextContentWrapper>
-
-                <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
-              </GroupRow>
-            </React.Fragment>
-          ))}
-        </GroupCard>
-      </SectionWrapper>
+        <NavTabButton
+          $active={activeTab === "recommend"}
+          onClick={() => setActiveTab("recommend")}
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "recommend"}
+          aria-label="추천 탭"
+        >
+          <Ripple color={activeTab === "recommend" ? "rgba(37, 99, 235, 0.15)" : "rgba(0, 0, 0, 0.08)"} />
+          <Sparkles size={17} strokeWidth={activeTab === "recommend" ? 2.5 : 2} />
+          <span>추천</span>
+        </NavTabButton>
+      </FloatingNavPill>
     </RoutinePageWrapper>
   );
 }
@@ -789,6 +865,52 @@ const RoutinePageWrapper = styled.div`
   gap: 24px;
   background-color: transparent;
   padding-bottom: 120px;
+`;
+
+const RecommendBannerCard = styled.div`
+  background-color: #f7f8fa;
+  border-radius: 24px;
+  padding: 20px 20px 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #edf0f5;
+`;
+
+const RecommendBannerLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+`;
+
+const RecommendBannerTitle = styled.h1`
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.35;
+  margin: 0;
+  letter-spacing: -0.4px;
+`;
+
+const RecommendBannerSub = styled.p`
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+`;
+
+const RecommendBannerIconCircle = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 `;
 
 const HeaderBannerCard = styled.div`
@@ -892,6 +1014,34 @@ const GroupCard = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 `;
 
+const EmptyRoutineCard = styled.div`
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
+  border-radius: 22px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+  cursor: pointer;
+`;
+
+const EmptyRoutineTitle = styled.div`
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #475569;
+`;
+
+const EmptyRoutineSubTitle = styled.div`
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.4;
+`;
+
 const GroupRow = styled.div`
   position: relative;
   overflow: hidden;
@@ -957,4 +1107,49 @@ const RowRightAction = styled.div`
   display: flex;
   align-items: center;
   flex-shrink: 0;
+`;
+
+const FloatingNavPill = styled.nav`
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.04);
+  border-radius: 9999px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 100;
+`;
+
+const NavTabButton = styled.button<{ $active: boolean }>`
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: ${({ $active }) => ($active ? "#eff6ff" : "transparent")};
+  color: ${({ $active }) => ($active ? "#1d4ed8" : "#64748b")};
+  padding: 9px 20px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: ${({ $active }) => ($active ? 700 : 500)};
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  span, svg {
+    position: relative;
+    z-index: 1;
+  }
 `;

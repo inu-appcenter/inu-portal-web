@@ -994,7 +994,7 @@ export default function MobileRoutineDetailPage() {
           const h = isPm ? (rawH === 12 ? 12 : rawH - 12) : (rawH === 0 ? 12 : rawH);
           const min = parts[1] || "00";
 
-          setTitle("당일 시간표 & 강의실 브리핑");
+          setTitle("오늘 강의 시간표 알림");
           setSelectedIcon("timetable");
           setSelectedColor("#a855f7");
           setTriggers([
@@ -1016,7 +1016,7 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-timetable",
               type: "TIMETABLE",
-              title: "당일 시간표 & 강의실 브리핑",
+              title: "오늘 강의 시간표 알림",
               subtitle: "오늘 수업 시간표 및 강의실 위치",
               iconBg: "#a855f7",
             },
@@ -1039,7 +1039,7 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-pre",
               type: "TIMETABLE",
-              title: "당일 시간표 & 강의실 브리핑",
+              title: "강의 시작 전 알림",
               subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
               iconBg: "#8b5cf6",
             },
@@ -1049,7 +1049,7 @@ export default function MobileRoutineDetailPage() {
           const lead = nowBarRes?.leadTimeMinutes || 15;
           setIsNowBarEnabled(nowBarRes?.enabled ?? true);
           setNowBarLeadMinutes(lead);
-          setTitle("실시간 시간표 & Now Bar (Dynamic Island)");
+          setTitle("실시간 시간표 Now Bar");
           setSelectedIcon("graduation");
           setSelectedColor("#0055D4");
           setTriggers([
@@ -1065,8 +1065,8 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-nowbar",
               type: "TIMETABLE_NOWBAR",
-              title: "실시간 시간표 Now Bar & Dynamic Island 띄우기",
-              subtitle: "잠금화면 및 상태바에 실시간 강의실 및 카운트다운 카드 렌더링",
+              title: "실시간 시간표 Now Bar",
+              subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
               iconBg: "#0055D4",
               timetableNowBarParams: { leadTimeMinutes: lead },
             },
@@ -1084,7 +1084,7 @@ export default function MobileRoutineDetailPage() {
           const h = isPm ? (rawH === 12 ? 12 : rawH - 12) : (rawH === 0 ? 12 : rawH);
           const min = parts[1] || "30";
 
-          setTitle("학사일정 브리핑");
+          setTitle("주요 학사일정 알림");
           setSelectedIcon("graduation");
           setSelectedColor("#3b82f6");
           setTriggers([
@@ -1106,7 +1106,7 @@ export default function MobileRoutineDetailPage() {
             {
               id: "sys-act-schedule",
               type: "SCHEDULE",
-              title: "학사일정 브리핑",
+              title: "주요 학사일정 알림",
               subtitle: `${scopeText} • ${advText} 사전 안내`,
               iconBg: "#3b82f6",
               scheduleParams: { scope, advanceDays: adv },
@@ -2631,13 +2631,7 @@ export default function MobileRoutineDetailPage() {
             <span>{isTesting ? "발송 중" : "테스트"}</span>
           </PillActionButton>
 
-          {isSystemRoutine ? (
-            <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
-              <Ripple color="rgba(239, 68, 68, 0.12)" />
-              <Trash2 size={20} color="#ef4444" />
-              <span style={{ color: "#ef4444" }}>삭제</span>
-            </PillActionButton>
-          ) : reminder ? (
+          {isSystemRoutine ? null : reminder ? (
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
               <Ripple color="rgba(239, 68, 68, 0.12)" />
               <Trash2 size={20} color="#ef4444" />
