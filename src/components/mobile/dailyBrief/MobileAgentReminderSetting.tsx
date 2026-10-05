@@ -139,53 +139,17 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
   {
     id: "preset-timetable-pre",
     category: "study",
-    title: "강의 시작 전 알림",
-    description: "수업 시작 전 다음 강의실 위치를 알림으로 받아요.",
-    targetTime: "08:50",
-    repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE"],
-    toolParams: {
-      iconType: "timetable",
-      iconBg: "#8b5cf6",
-      triggers: [
-        {
-          id: "trig-pre-1",
-          type: "BEFORE_CLASS",
-          title: "각 수업 시작 전",
-          subtitle: "수업 시작 10분 전",
-          beforeClassParams: { minutes: 10 },
-        },
-      ],
-      actions: [
-        {
-          id: "act-time-1",
-          type: "TIMETABLE",
-          title: "강의 시작 전 알림",
-          subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
-          iconBg: "#8b5cf6",
-        },
-      ],
-    },
-    iconType: "timetable",
-    iconBg: "#8b5cf6",
-    whenTitle: "수업 시작 전",
-    whenSubtitle: "수업 시작 10분 전",
-    whatTitle: "다음 수업 시간표 및 강의실 위치",
-  },
-  {
-    id: "preset-timetable-nowbar",
-    category: "study",
-    title: "실시간 시간표 Now Bar",
-    description: "수업 중 잠금화면과 상태바에서 강의실과 남은 시간을 확인해요.",
+    title: "수업 시작 전 알림",
+    description: "수업 시작 전 강의실을 실시간 Now Bar 카드 또는 일반 푸시로 안내받아요.",
     targetTime: "08:45",
     repeatType: "WEEKDAYS",
-    targetTools: ["TIMETABLE_NOWBAR"],
+    targetTools: ["TIMETABLE_NOWBAR", "TIMETABLE"],
     toolParams: {
       iconType: "graduation",
       iconBg: "#0055D4",
       triggers: [
         {
-          id: "trig-nowbar-1",
+          id: "trig-pre-1",
           type: "BEFORE_CLASS",
           title: "수업 시작 15분 전",
           subtitle: "수업 시작 15분 전부터 종료 시까지",
@@ -196,8 +160,8 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
         {
           id: "act-nowbar-1",
           type: "TIMETABLE_NOWBAR",
-          title: "실시간 시간표 Now Bar",
-          subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
+          title: "수업 시작 전 알림",
+          subtitle: "잠금화면 실시간 Now Bar 카드 또는 1회성 푸시",
           iconBg: "#0055D4",
           timetableNowBarParams: { leadTimeMinutes: 15 },
         },
@@ -205,9 +169,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     },
     iconType: "graduation",
     iconBg: "#0055D4",
-    whenTitle: "수업 시작 전부터",
+    whenTitle: "수업 시작 전",
     whenSubtitle: "수업 시작 15분 전 ~ 수업 종료 시",
-    whatTitle: "실시간 Now Bar 카드 띄우기",
+    whatTitle: "실시간 강의실 및 시간표 안내",
   },
   {
     id: "preset-schedule",
@@ -355,8 +319,7 @@ export default function MobileAgentReminderSetting() {
 
   // 시스템 루틴 모달 열림 상태
   const [isTimetableBriefModalOpen, setIsTimetableBriefModalOpen] = useState(false);
-  const [isPreAlertModalOpen, setIsPreAlertModalOpen] = useState(false);
-  const [isNowBarModalOpen, setIsNowBarModalOpen] = useState(false);
+  const [isPreClassModalOpen, setIsPreClassModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
   // 시스템 루틴 모달 내부 임시 상태
@@ -364,8 +327,9 @@ export default function MobileAgentReminderSetting() {
   const [tempBriefHour, setTempBriefHour] = useState("08");
   const [tempBriefMinute, setTempBriefMinute] = useState("00");
 
-  const [tempPreAlertMinutes, setTempPreAlertMinutes] = useState<number>(10);
-  const [tempNowBarLeadMinutes, setTempNowBarLeadMinutes] = useState<number>(15);
+  // 수업 시작 전 알림 통합 임시 상태
+  const [tempPreClassMinutes, setTempPreClassMinutes] = useState<number>(15);
+  const [tempPreClassMethod, setTempPreClassMethod] = useState<"NOW_BAR" | "PUSH">("NOW_BAR");
 
   const [tempScheduleAmpm, setTempScheduleAmpm] = useState<"AM" | "PM">("AM");
   const [tempScheduleHour, setTempScheduleHour] = useState("08");
@@ -430,31 +394,43 @@ export default function MobileAgentReminderSetting() {
     }
   };
 
-  const handleToggleTimetablePre = async (e: React.MouseEvent) => {
+  // 수업 시작 전 알림 통합 토글
+  const isPreClassAlertEnabled = isNowBarEnabled || dailyBriefSettings.timetablePreAlertEnabled;
+  const handleTogglePreClass = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const next = !dailyBriefSettings.timetablePreAlertEnabled;
-    setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: next }));
-    try {
-      await updateDailyBriefSettings({ timetablePreAlertEnabled: next });
-      trackEvent("[Daily Brief] 시스템 강의 시작 전 알림 토글", { enabled: next });
-      notifyRoutineUpdated();
-    } catch {
-      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: !next }));
-      alert("설정을 변경하지 못했어요.");
-    }
-  };
-
-  const handleToggleTimetableNowBar = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const next = !isNowBarEnabled;
-    setIsNowBarEnabled(next);
-    try {
-      await setTimetableNowBarSettings({ enabled: next, leadTimeMinutes: nowBarLeadMinutes });
-      trackEvent("[Daily Brief] 실시간 시간표 Now Bar 토글", { enabled: next });
-      notifyRoutineUpdated();
-    } catch {
-      setIsNowBarEnabled(!next);
-      alert("설정을 변경하지 못했어요.");
+    const next = !isPreClassAlertEnabled;
+    if (next) {
+      // 켤 때: 실시간 Now Bar 우선 활성화
+      setIsNowBarEnabled(true);
+      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: true }));
+      try {
+        await Promise.all([
+          setTimetableNowBarSettings({ enabled: true, leadTimeMinutes: nowBarLeadMinutes }),
+          updateDailyBriefSettings({ timetablePreAlertEnabled: true }),
+        ]);
+        trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: true });
+        notifyRoutineUpdated();
+      } catch {
+        setIsNowBarEnabled(false);
+        setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: false }));
+        alert("설정을 변경하지 못했어요.");
+      }
+    } else {
+      // 끌 때: 둘 다 비활성화
+      setIsNowBarEnabled(false);
+      setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: false }));
+      try {
+        await Promise.all([
+          setTimetableNowBarSettings({ enabled: false, leadTimeMinutes: nowBarLeadMinutes }),
+          updateDailyBriefSettings({ timetablePreAlertEnabled: false }),
+        ]);
+        trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: false });
+        notifyRoutineUpdated();
+      } catch {
+        setIsNowBarEnabled(true);
+        setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertEnabled: true }));
+        alert("설정을 변경하지 못했어요.");
+      }
     }
   };
 
@@ -503,40 +479,55 @@ export default function MobileAgentReminderSetting() {
     }
   };
 
-  // 2. 강의 시작 전 알림 모달 핸들러
-  const handleOpenPreAlertModal = () => {
-    setTempPreAlertMinutes(dailyBriefSettings.timetablePreAlertMinutes ?? 10);
-    setIsPreAlertModalOpen(true);
-  };
-
-  const handleSavePreAlertModal = async () => {
-    setDailyBriefSettings((prev) => ({ ...prev, timetablePreAlertMinutes: tempPreAlertMinutes }));
-    setIsPreAlertModalOpen(false);
-    try {
-      await updateDailyBriefSettings({ timetablePreAlertMinutes: tempPreAlertMinutes });
-      trackEvent("[Daily Brief] 강의 시작 전 알림 시간 변경", { minutes: tempPreAlertMinutes });
-      notifyRoutineUpdated();
-    } catch (e) {
-      console.error(e);
-      alert("설정을 저장하지 못했어요.");
+  // 2. 수업 시작 전 알림 통합 모달 핸들러
+  const handleOpenPreClassModal = () => {
+    if (isNowBarEnabled) {
+      setTempPreClassMethod("NOW_BAR");
+      setTempPreClassMinutes(nowBarLeadMinutes || 15);
+    } else {
+      setTempPreClassMethod("PUSH");
+      setTempPreClassMinutes(dailyBriefSettings.timetablePreAlertMinutes ?? 10);
     }
+    setIsPreClassModalOpen(true);
   };
 
-  // 3. 실시간 시간표 Now Bar 모달 핸들러
-  const handleOpenNowBarModal = () => {
-    setTempNowBarLeadMinutes(nowBarLeadMinutes);
-    setIsNowBarModalOpen(true);
-  };
-
-  const handleSaveNowBarModal = async () => {
-    setNowBarLeadMinutes(tempNowBarLeadMinutes);
-    setIsNowBarModalOpen(false);
+  const handleSavePreClassModal = async () => {
+    setIsPreClassModalOpen(false);
     try {
-      await setTimetableNowBarSettings({
-        enabled: isNowBarEnabled,
-        leadTimeMinutes: tempNowBarLeadMinutes,
+      if (tempPreClassMethod === "NOW_BAR") {
+        setIsNowBarEnabled(true);
+        setNowBarLeadMinutes(tempPreClassMinutes);
+        setDailyBriefSettings((prev) => ({
+          ...prev,
+          timetablePreAlertEnabled: true,
+          timetablePreAlertMinutes: tempPreClassMinutes,
+        }));
+        await Promise.all([
+          setTimetableNowBarSettings({ enabled: true, leadTimeMinutes: tempPreClassMinutes }),
+          updateDailyBriefSettings({
+            timetablePreAlertEnabled: true,
+            timetablePreAlertMinutes: tempPreClassMinutes,
+          }),
+        ]);
+      } else {
+        setIsNowBarEnabled(false);
+        setDailyBriefSettings((prev) => ({
+          ...prev,
+          timetablePreAlertEnabled: true,
+          timetablePreAlertMinutes: tempPreClassMinutes,
+        }));
+        await Promise.all([
+          setTimetableNowBarSettings({ enabled: false, leadTimeMinutes: tempPreClassMinutes }),
+          updateDailyBriefSettings({
+            timetablePreAlertEnabled: true,
+            timetablePreAlertMinutes: tempPreClassMinutes,
+          }),
+        ]);
+      }
+      trackEvent("[Daily Brief] 수업 시작 전 알림 설정 변경", {
+        method: tempPreClassMethod,
+        minutes: tempPreClassMinutes,
       });
-      trackEvent("[Daily Brief] Now Bar 시작 시간 변경", { leadTimeMinutes: tempNowBarLeadMinutes });
       notifyRoutineUpdated();
     } catch (e) {
       console.error(e);
@@ -728,7 +719,7 @@ export default function MobileAgentReminderSetting() {
           <SectionWrapper>
             <SectionTitleRow>
               <SectionTitle>시스템 제공</SectionTitle>
-              <CountBadge>4</CountBadge>
+              <CountBadge>3</CountBadge>
             </SectionTitleRow>
 
             {isInitialLoading ? (
@@ -765,59 +756,37 @@ export default function MobileAgentReminderSetting() {
 
                 <CardDivider />
 
-                {/* 2. 강의 시작 전 알림 */}
-                <GroupRow onClick={handleOpenPreAlertModal}>
+                {/* 2. 수업 시작 전 알림 (Now Bar 또는 일반 푸시 통합) */}
+                <GroupRow onClick={handleOpenPreClassModal}>
                   <Ripple color="rgba(0, 0, 0, 0.05)" />
-                  <IconCircle $bgColor="#8b5cf6">
+                  <IconCircle $bgColor="#0055D4">
                     <Clock size={20} color="#ffffff" />
                   </IconCircle>
 
                   <TextContentWrapper>
-                    <RowMainTitle $disabled={!dailyBriefSettings.timetablePreAlertEnabled}>
-                      강의 시작 전 알림
+                    <RowMainTitle $disabled={!isPreClassAlertEnabled}>
+                      수업 시작 전 알림
                     </RowMainTitle>
                     <RowSubTitle>
-                      수업 시작 {dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 알림
+                      {isNowBarEnabled
+                        ? `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`
+                        : dailyBriefSettings.timetablePreAlertEnabled
+                        ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`
+                        : `수업 시작 ${nowBarLeadMinutes}분 전 • 실시간 카드 (Now Bar)`}
                     </RowSubTitle>
                   </TextContentWrapper>
 
                   <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
                     <Switch
-                      checked={dailyBriefSettings.timetablePreAlertEnabled}
-                      onCheckedChange={() => handleToggleTimetablePre({ stopPropagation: () => {} } as any)}
+                      checked={isPreClassAlertEnabled}
+                      onCheckedChange={() => handleTogglePreClass({ stopPropagation: () => {} } as any)}
                     />
                   </RowRightAction>
                 </GroupRow>
 
                 <CardDivider />
 
-                {/* 3. 실시간 시간표 Now Bar */}
-                <GroupRow onClick={handleOpenNowBarModal}>
-                  <Ripple color="rgba(0, 0, 0, 0.05)" />
-                  <IconCircle $bgColor="#0055D4">
-                    <GraduationCap size={20} color="#ffffff" />
-                  </IconCircle>
-
-                  <TextContentWrapper>
-                    <RowMainTitle $disabled={!isNowBarEnabled}>
-                      실시간 시간표 Now Bar
-                    </RowMainTitle>
-                    <RowSubTitle>
-                      수업 시작 {nowBarLeadMinutes}분 전부터 잠금화면 표시
-                    </RowSubTitle>
-                  </TextContentWrapper>
-
-                  <RowRightAction data-no-ripple="true" onClick={(e) => e.stopPropagation()}>
-                    <Switch
-                      checked={isNowBarEnabled}
-                      onCheckedChange={() => handleToggleTimetableNowBar({ stopPropagation: () => {} } as any)}
-                    />
-                  </RowRightAction>
-                </GroupRow>
-
-                <CardDivider />
-
-                {/* 4. 주요 학사일정 알림 */}
+                {/* 3. 주요 학사일정 알림 */}
                 <GroupRow onClick={handleOpenScheduleModal}>
                   <Ripple color="rgba(0, 0, 0, 0.05)" />
                   <IconCircle $bgColor="#3b82f6">
@@ -985,10 +954,8 @@ export default function MobileAgentReminderSetting() {
                     onClick={() => {
                       if (preset.id === "preset-timetable-brief") {
                         handleOpenTimetableBriefModal();
-                      } else if (preset.id === "preset-timetable-pre") {
-                        handleOpenPreAlertModal();
-                      } else if (preset.id === "preset-timetable-nowbar") {
-                        handleOpenNowBarModal();
+                      } else if (preset.id === "preset-timetable-pre" || preset.id === "preset-timetable-nowbar") {
+                        handleOpenPreClassModal();
                       } else if (preset.id === "preset-schedule") {
                         handleOpenScheduleModal();
                       } else {
@@ -1121,81 +1088,88 @@ export default function MobileAgentReminderSetting() {
         </TimePickerModalContent>
       </Modal>
 
-      {/* 2. 강의 시작 전 알림 모달 */}
+      {/* 2. 수업 시작 전 알림 모달 (Now Bar vs 일반 푸시 선택) */}
       <Modal
-        isOpen={isPreAlertModalOpen}
-        onClose={() => setIsPreAlertModalOpen(false)}
-        title="강의 시작 전 알림 기준"
-        description="각 수업 시작 몇 분 전에 다음 강의실과 위치 알림을 받을지 선택해 주세요."
+        isOpen={isPreClassModalOpen}
+        onClose={() => setIsPreClassModalOpen(false)}
+        title="수업 시작 전 알림 설정"
+        description="수업 시작 전 안내 시점과 알림 표시 방식을 선택해 주세요."
         secondaryButton={{
           text: "취소",
-          onClick: () => setIsPreAlertModalOpen(false),
+          onClick: () => setIsPreClassModalOpen(false),
         }}
         primaryButton={{
           text: "완료",
           variant: "primary",
-          onClick: handleSavePreAlertModal,
+          onClick: handleSavePreClassModal,
         }}
       >
-        <ModalGroupScrollContainer>
-          <ModalGroupCard>
-            {PRE_ALERT_OPTIONS.map((opt, idx) => (
-              <React.Fragment key={opt.value}>
-                {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                <ModalGroupRow
-                  $selected={tempPreAlertMinutes === opt.value}
-                  onClick={() => setTempPreAlertMinutes(opt.value)}
-                >
-                  <Ripple color="rgba(0, 0, 0, 0.04)" />
-                  <ModalOptionText $selected={tempPreAlertMinutes === opt.value}>
-                    {opt.label}
-                  </ModalOptionText>
-                  {tempPreAlertMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                </ModalGroupRow>
-              </React.Fragment>
-            ))}
-          </ModalGroupCard>
-        </ModalGroupScrollContainer>
-      </Modal>
+        <ModalFormSection>
+          <ModalSectionLabel>알림 수신 시점</ModalSectionLabel>
+          <ModalGroupScrollContainer style={{ maxHeight: "180px" }}>
+            <ModalGroupCard>
+              {PRE_ALERT_OPTIONS.map((opt, idx) => (
+                <React.Fragment key={opt.value}>
+                  {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
+                  <ModalGroupRow
+                    $selected={tempPreClassMinutes === opt.value}
+                    onClick={() => setTempPreClassMinutes(opt.value)}
+                  >
+                    <Ripple color="rgba(0, 0, 0, 0.04)" />
+                    <ModalOptionText $selected={tempPreClassMinutes === opt.value}>
+                      {opt.label}
+                    </ModalOptionText>
+                    {tempPreClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  </ModalGroupRow>
+                </React.Fragment>
+              ))}
+            </ModalGroupCard>
+          </ModalGroupScrollContainer>
 
-      {/* 3. 실시간 시간표 Now Bar 모달 */}
-      <Modal
-        isOpen={isNowBarModalOpen}
-        onClose={() => setIsNowBarModalOpen(false)}
-        title="Now Bar 잠금화면 표시 시점"
-        description="수업 시작 몇 분 전부터 잠금화면과 알림창에 실시간 강의실 카드를 표시할지 선택해 주세요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setIsNowBarModalOpen(false),
-        }}
-        primaryButton={{
-          text: "완료",
-          variant: "primary",
-          onClick: handleSaveNowBarModal,
-        }}
-      >
-        <ModalGroupScrollContainer>
-          <ModalGroupCard>
-            {NOWBAR_LEAD_OPTIONS.map((opt, idx) => (
-              <React.Fragment key={opt.value}>
-                {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                <ModalGroupRow
-                  $selected={tempNowBarLeadMinutes === opt.value}
-                  onClick={() => setTempNowBarLeadMinutes(opt.value)}
-                >
-                  <Ripple color="rgba(0, 0, 0, 0.04)" />
-                  <ModalOptionText $selected={tempNowBarLeadMinutes === opt.value}>
-                    {opt.label}
-                  </ModalOptionText>
-                  {tempNowBarLeadMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                </ModalGroupRow>
-              </React.Fragment>
-            ))}
-          </ModalGroupCard>
-          <ModalNoticeTip style={{ marginTop: "12px" }}>
-            💡 수업 시작 시점부터 실시간 진행 카운트다운으로 전환되며, 수업 종료 시 자동으로 닫힙니다.
-          </ModalNoticeTip>
-        </ModalGroupScrollContainer>
+          <ModalSectionLabel style={{ marginTop: "14px" }}>알림 표시 방식</ModalSectionLabel>
+          <MethodSelectionContainer>
+            <MethodCard
+              $selected={tempPreClassMethod === "NOW_BAR"}
+              onClick={() => setTempPreClassMethod("NOW_BAR")}
+            >
+              <Ripple color="rgba(37, 99, 235, 0.08)" />
+              <MethodCardHeader>
+                <MethodRadioDot $selected={tempPreClassMethod === "NOW_BAR"}>
+                  {tempPreClassMethod === "NOW_BAR" && <InnerRadioCircle />}
+                </MethodRadioDot>
+                <MethodTitleWrapper>
+                  <MethodTitle $selected={tempPreClassMethod === "NOW_BAR"}>
+                    실시간 카드 (Now Bar)
+                  </MethodTitle>
+                  <RecommendTag>권장</RecommendTag>
+                </MethodTitleWrapper>
+              </MethodCardHeader>
+              <MethodDescription>
+                수업 전부터 종료 시까지 잠금화면과 상단바에 강의실 위치와 실시간 카운트다운을 표시해요.
+              </MethodDescription>
+            </MethodCard>
+
+            <MethodCard
+              $selected={tempPreClassMethod === "PUSH"}
+              onClick={() => setTempPreClassMethod("PUSH")}
+            >
+              <Ripple color="rgba(37, 99, 235, 0.08)" />
+              <MethodCardHeader>
+                <MethodRadioDot $selected={tempPreClassMethod === "PUSH"}>
+                  {tempPreClassMethod === "PUSH" && <InnerRadioCircle />}
+                </MethodRadioDot>
+                <MethodTitleWrapper>
+                  <MethodTitle $selected={tempPreClassMethod === "PUSH"}>
+                    일반 푸시 알림
+                  </MethodTitle>
+                </MethodTitleWrapper>
+              </MethodCardHeader>
+              <MethodDescription>
+                수업 시작 전 스마트폰 상단 알림창에 1회성 텍스트 알림으로 확인해요.
+              </MethodDescription>
+            </MethodCard>
+          </MethodSelectionContainer>
+        </ModalFormSection>
       </Modal>
 
       {/* 4. 주요 학사일정 알림 모달 */}
@@ -1705,4 +1679,76 @@ const ModalNoticeTip = styled.div`
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid #edf0f5;
+`;
+
+const MethodSelectionContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const MethodCard = styled.div<{ $selected: boolean }>`
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background-color: ${({ $selected }) => ($selected ? "#eff6ff" : "#f8fafc")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "#2563eb" : "#e2e8f0")};
+  cursor: pointer;
+  transition: all 0.15s ease;
+`;
+
+const MethodCardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const MethodRadioDot = styled.div<{ $selected: boolean }>`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid ${({ $selected }) => ($selected ? "#2563eb" : "#94a3b8")};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const InnerRadioCircle = styled.div`
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #2563eb;
+`;
+
+const MethodTitleWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const MethodTitle = styled.div<{ $selected: boolean }>`
+  font-size: 14.5px;
+  font-weight: 700;
+  color: ${({ $selected }) => ($selected ? "#1e40af" : "#1e293b")};
+`;
+
+const RecommendTag = styled.span`
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  background-color: #dbeafe;
+  padding: 1px 6px;
+  border-radius: 6px;
+`;
+
+const MethodDescription = styled.div`
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.45;
+  padding-left: 28px;
 `;
