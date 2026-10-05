@@ -1106,25 +1106,23 @@ export default function MobileAgentReminderSetting() {
       >
         <ModalFormSection>
           <ModalSectionLabel>알림 수신 시점</ModalSectionLabel>
-          <ModalGroupScrollContainer style={{ maxHeight: "180px" }}>
-            <ModalGroupCard>
-              {PRE_ALERT_OPTIONS.map((opt, idx) => (
-                <React.Fragment key={opt.value}>
-                  {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                  <ModalGroupRow
-                    $selected={tempPreClassMinutes === opt.value}
-                    onClick={() => setTempPreClassMinutes(opt.value)}
-                  >
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <ModalOptionText $selected={tempPreClassMinutes === opt.value}>
-                      {opt.label}
-                    </ModalOptionText>
-                    {tempPreClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                  </ModalGroupRow>
-                </React.Fragment>
-              ))}
-            </ModalGroupCard>
-          </ModalGroupScrollContainer>
+          <ModalGroupCard>
+            {PRE_ALERT_OPTIONS.map((opt, idx) => (
+              <React.Fragment key={opt.value}>
+                {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
+                <ModalGroupRow
+                  $selected={tempPreClassMinutes === opt.value}
+                  onClick={() => setTempPreClassMinutes(opt.value)}
+                >
+                  <Ripple color="rgba(0, 0, 0, 0.04)" />
+                  <ModalOptionText $selected={tempPreClassMinutes === opt.value}>
+                    {opt.label}
+                  </ModalOptionText>
+                  {tempPreClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                </ModalGroupRow>
+              </React.Fragment>
+            ))}
+          </ModalGroupCard>
 
           <ModalSectionLabel style={{ marginTop: "14px" }}>알림 표시 방식</ModalSectionLabel>
           <MethodSelectionContainer>
@@ -1255,25 +1253,23 @@ export default function MobileAgentReminderSetting() {
           </InlineSelect>
 
           <ModalSectionLabel style={{ marginTop: "16px" }}>사전 안내 기준</ModalSectionLabel>
-          <ModalGroupScrollContainer>
-            <ModalGroupCard>
-              {ADVANCE_DAYS_OPTIONS.map((opt, idx) => (
-                <React.Fragment key={opt.value}>
-                  {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
-                  <ModalGroupRow
-                    $selected={tempScheduleAdvanceDays === opt.value}
-                    onClick={() => setTempScheduleAdvanceDays(opt.value)}
-                  >
-                    <Ripple color="rgba(0, 0, 0, 0.04)" />
-                    <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>
-                      {opt.label}
-                    </ModalOptionText>
-                    {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
-                  </ModalGroupRow>
-                </React.Fragment>
-              ))}
-            </ModalGroupCard>
-          </ModalGroupScrollContainer>
+          <ModalGroupCard>
+            {ADVANCE_DAYS_OPTIONS.map((opt, idx) => (
+              <React.Fragment key={opt.value}>
+                {idx > 0 && <ModalDivider style={{ marginLeft: "18px" }} />}
+                <ModalGroupRow
+                  $selected={tempScheduleAdvanceDays === opt.value}
+                  onClick={() => setTempScheduleAdvanceDays(opt.value)}
+                >
+                  <Ripple color="rgba(0, 0, 0, 0.04)" />
+                  <ModalOptionText $selected={tempScheduleAdvanceDays === opt.value}>
+                    {opt.label}
+                  </ModalOptionText>
+                  {tempScheduleAdvanceDays === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                </ModalGroupRow>
+              </React.Fragment>
+            ))}
+          </ModalGroupCard>
         </ModalFormSection>
       </Modal>
     </RoutinePageWrapper>
@@ -1601,20 +1597,13 @@ const TimeColon = styled.span`
   color: #64748b;
 `;
 
-const ModalGroupScrollContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 280px;
-  overflow-y: auto;
-  padding: 2px 0;
-`;
-
 const ModalGroupCard = styled.div`
+  width: 100%;
   background: #f8fafc;
   border-radius: 16px;
   border: 1px solid #edf0f5;
   overflow: hidden;
+  box-sizing: border-box;
 `;
 
 const ModalGroupRow = styled.div<{ $selected?: boolean }>`
@@ -1623,14 +1612,14 @@ const ModalGroupRow = styled.div<{ $selected?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 16px;
   cursor: pointer;
   background-color: ${({ $selected }) => ($selected ? "#eff6ff" : "transparent")};
   transition: background-color 0.15s;
 `;
 
 const ModalOptionText = styled.span<{ $selected?: boolean }>`
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
   color: ${({ $selected }) => ($selected ? "#2563eb" : "#1e293b")};
 `;
@@ -1641,10 +1630,12 @@ const ModalDivider = styled.div`
 `;
 
 const ModalFormSection = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 4px 0;
+  gap: 10px;
+  padding: 2px 0;
+  box-sizing: border-box;
 `;
 
 const ModalSectionLabel = styled.label`
