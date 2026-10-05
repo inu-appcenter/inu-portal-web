@@ -26,11 +26,32 @@ export const DAILY_BRIEF_TABS = [
   { label: "맞춤 루틴", value: "agent" },
 ];
 
+const DAILY_BRIEF_TAB_STORAGE_KEY = "daily_brief_setting_tab";
+
 export default function MobileDailyBriefSettingPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const currentTab = params.get("tab") || "cards";
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const currentTab = useMemo(() => {
+    const tabParam = params.get("tab");
+    if (tabParam === "cards" || tabParam === "agent") {
+      try {
+        sessionStorage.setItem(DAILY_BRIEF_TAB_STORAGE_KEY, tabParam);
+      } catch {
+        // ignore
+      }
+      return tabParam;
+    }
+    try {
+      const saved = sessionStorage.getItem(DAILY_BRIEF_TAB_STORAGE_KEY);
+      if (saved === "cards" || saved === "agent") {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return "cards";
+  }, [params]);
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [hasSwiped, setHasSwiped] = useState(() => {
@@ -90,6 +111,14 @@ export default function MobileDailyBriefSettingPage() {
     }
 
     resetScrollToTop();
+
+    if (nextTab) {
+      try {
+        sessionStorage.setItem(DAILY_BRIEF_TAB_STORAGE_KEY, nextTab);
+      } catch {
+        // ignore
+      }
+    }
 
     if (nextTab && nextTab !== currentTab) {
       const nextParams = new URLSearchParams(location.search);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";
@@ -182,36 +182,89 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
 
 export type RoutineMainTab = "my" | "recommend";
 
+const ROUTINE_TAB_STORAGE_KEY = "routine_active_tab";
+
 export default function MobileAgentReminderSetting() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<RoutineMainTab>("my");
-  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const tabList = useMemo<RoutineMainTab[]>(() => ["my", "recommend"], []);
+
+  const [activeTab, setActiveTab] = useState<RoutineMainTab>(() => {
+    try {
+      const urlTab = searchParams.get("routineTab");
+      if (urlTab === "my" || urlTab === "recommend") {
+        return urlTab;
+      }
+      const saved = sessionStorage.getItem(ROUTINE_TAB_STORAGE_KEY);
+      if (saved === "my" || saved === "recommend") {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return "my";
+  });
+
+  const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const currentIndex = useMemo(() => {
     const idx = tabList.indexOf(activeTab);
     return idx === -1 ? 0 : idx;
   }, [activeTab, tabList]);
 
+  const updateTab = useCallback(
+    (nextTab: RoutineMainTab) => {
+      setActiveTab(nextTab);
+      try {
+        sessionStorage.setItem(ROUTINE_TAB_STORAGE_KEY, nextTab);
+      } catch {
+        // ignore
+      }
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (next.get("routineTab") !== nextTab) {
+            next.set("routineTab", nextTab);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
+  useEffect(() => {
+    const urlTab = searchParams.get("routineTab");
+    if ((urlTab === "my" || urlTab === "recommend") && urlTab !== activeTab) {
+      setActiveTab(urlTab);
+      try {
+        sessionStorage.setItem(ROUTINE_TAB_STORAGE_KEY, urlTab);
+      } catch {
+        // ignore
+      }
+    }
+  }, [searchParams, activeTab]);
+
   const handleSlideChange = useCallback(
     (swiper: SwiperClass) => {
       const nextTab = tabList[swiper.activeIndex];
       if (nextTab && nextTab !== activeTab) {
-        setActiveTab(nextTab);
+        updateTab(nextTab);
       }
     },
-    [tabList, activeTab],
+    [tabList, activeTab, updateTab],
   );
 
   const handleTabClick = useCallback(
     (tab: RoutineMainTab) => {
-      setActiveTab(tab);
+      updateTab(tab);
       const idx = tabList.indexOf(tab);
       if (swiperRef && swiperRef.activeIndex !== idx) {
         swiperRef.slideTo(idx);
       }
     },
-    [tabList, swiperRef],
+    [tabList, swiperRef, updateTab],
   );
 
   useEffect(() => {
