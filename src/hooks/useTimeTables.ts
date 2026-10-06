@@ -20,6 +20,7 @@ import {
   deleteTimeTableItem,
 } from "@/apis/timetables";
 import { syncTimetableToNative } from "@/apis/timetableNowBarBridge";
+import { useSemesters } from "@/hooks/useSemesters";
 import {
   getCurrentMemberId,
   TIMETABLES_QUERY_KEY,
@@ -149,7 +150,25 @@ export const useTimeTableDetail = (
   const updateTimetableEvents = useTimetableStore(
     (state) => state.updateTimetableEvents,
   );
+  const timetables = useTimetableStore((state) => state.timetables);
+  const { semesters } = useSemesters();
   const enabled = options?.enabled ?? true;
+
+  const currentOpenSemester = useMemo(
+    () => semesters.find((s) => s.status === "OPEN"),
+    [semesters],
+  );
+
+  const primaryTimeTable = useMemo(
+    () =>
+      timetables.find(
+        (t) =>
+          (t.isRepresentative || (t as any).isPrimary) &&
+          currentOpenSemester &&
+          t.semesterId === currentOpenSemester.id,
+      ),
+    [timetables, currentOpenSemester],
+  );
 
   const queryKey = useMemo(
     () =>
@@ -174,10 +193,12 @@ export const useTimeTableDetail = (
         query.data.id,
         mapDetailItemsToClassItems(query.data.items),
       );
-      // 모바일 앱 환경인 경우 네이티브 Now Bar / 잠금화면 Ongoing Activity로 자동 동기화
-      void syncTimetableToNative(query.data.items);
+      // 오직 현재 학기(OPEN)의 대표 시간표(isPrimary)일 때만 모바일 앱 Now Bar로 동기화
+      if (primaryTimeTable && query.data.id === primaryTimeTable.id) {
+        void syncTimetableToNative(query.data.items);
+      }
     }
-  }, [query.data, updateTimetableEvents]);
+  }, [query.data, primaryTimeTable, updateTimetableEvents]);
 
   return {
     ...query,
