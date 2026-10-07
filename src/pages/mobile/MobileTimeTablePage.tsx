@@ -14,7 +14,7 @@ import {
   Bell,
   Palette,
   Trash2,
-  ScanLine,
+  Download,
   MoreVertical,
   School,
 } from "lucide-react";
@@ -332,24 +332,13 @@ const MobileTimeTablePage = () => {
     return [
       {
         label: "시간표 및 성적 가져오기",
-        icon: <School size={20} color="#0061ff" />,
+        icon: <Download size={20} />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked(
             "시간표 및 성적 가져오기",
             "헤더 메뉴",
           );
           navigate(`${ROUTES.TIMETABLE.IMPORT_HUB}?id=${activeTimetable.id}`);
-        },
-      },
-      {
-        label: "시간표 이미지로 등록",
-        icon: <ScanLine size={20} />,
-        onClick: () => {
-          mixpanelTrack.timetableFeatureClicked(
-            "시간표 이미지로 등록",
-            "헤더 메뉴",
-          );
-          navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
         },
       },
       {
@@ -377,7 +366,7 @@ const MobileTimeTablePage = () => {
         icon: <Bell size={20} />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("강의 알림 설정", "헤더 메뉴");
-          navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=timetable`);
+          navigate(ROUTES.LABS.ROUTINE);
         },
       },
       {
