@@ -233,6 +233,7 @@ const PortalDormitoryLabPage = () => {
       <TitleContentArea
         title="사생정보조회(학생)"
         description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리) 사생정보 및 7개 탭 내역을 조회합니다."
+        style={{ alignItems: "stretch", width: "100%" }}
       >
         {!isMobileAppEnvironment() && (
           <WebFallbackCard>
@@ -362,57 +363,59 @@ const PortalDormitoryLabPage = () => {
 
         {/* 2. 하단 7개 탭 네비게이션 */}
         <SectionBlock>
-          <TabsScrollContainer>
-            <TabChip
-              active={activeTab === "address"}
-              onClick={() => setActiveTab("address")}
-            >
-              <MapPin size={13} />
-              주소사항 ({addressList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "reward"}
-              onClick={() => setActiveTab("reward")}
-            >
-              <Award size={13} />
-              상벌점이력 ({rewardList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "inout"}
-              onClick={() => setActiveTab("inout")}
-            >
-              <LogIn size={13} />
-              입퇴사이력 ({inOutList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "apply"}
-              onClick={() => setActiveTab("apply")}
-            >
-              <ClipboardList size={13} />
-              신청이력 ({applyList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "payment"}
-              onClick={() => setActiveTab("payment")}
-            >
-              <CreditCard size={13} />
-              등록/환불 ({paymentList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "utility"}
-              onClick={() => setActiveTab("utility")}
-            >
-              <Zap size={13} />
-              공공요금 ({utilityList.length})
-            </TabChip>
-            <TabChip
-              active={activeTab === "pledge"}
-              onClick={() => setActiveTab("pledge")}
-            >
-              <FileCheck size={13} />
-              서약서 {pledge ? "(1)" : "(0)"}
-            </TabChip>
-          </TabsScrollContainer>
+          <TabsWrapper>
+            <TabsScrollContainer>
+              <TabChip
+                active={activeTab === "address"}
+                onClick={() => setActiveTab("address")}
+              >
+                <MapPin size={13} />
+                주소사항 ({addressList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "reward"}
+                onClick={() => setActiveTab("reward")}
+              >
+                <Award size={13} />
+                상벌점이력 ({rewardList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "inout"}
+                onClick={() => setActiveTab("inout")}
+              >
+                <LogIn size={13} />
+                입퇴사이력 ({inOutList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "apply"}
+                onClick={() => setActiveTab("apply")}
+              >
+                <ClipboardList size={13} />
+                신청이력 ({applyList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "payment"}
+                onClick={() => setActiveTab("payment")}
+              >
+                <CreditCard size={13} />
+                등록/환불 ({paymentList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "utility"}
+                onClick={() => setActiveTab("utility")}
+              >
+                <Zap size={13} />
+                공공요금 ({utilityList.length})
+              </TabChip>
+              <TabChip
+                active={activeTab === "pledge"}
+                onClick={() => setActiveTab("pledge")}
+              >
+                <FileCheck size={13} />
+                서약서 {pledge ? "(1)" : "(0)"}
+              </TabChip>
+            </TabsScrollContainer>
+          </TabsWrapper>
 
           {/* 3. 탭별 상세 카드 목록 */}
           <TabBody>
@@ -745,12 +748,16 @@ const PortalDormitoryLabPage = () => {
 export default PortalDormitoryLabPage;
 
 const Container = styled.div`
-  padding: 12px 16px 32px;
+  padding: 12px 16px 36px;
   max-width: 600px;
+  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: hidden;
 `;
 
 const Breadcrumb = styled.div`
@@ -760,6 +767,8 @@ const Breadcrumb = styled.div`
   font-size: 11px;
   color: #8c95a0;
   padding: 4px 6px;
+  width: 100%;
+  box-sizing: border-box;
 
   .current {
     color: #0055b8;
@@ -779,6 +788,8 @@ const WebFallbackCard = styled.div`
   gap: 8px;
   color: #64748b;
   margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
 
   .title {
     font-size: 15px;
@@ -797,6 +808,8 @@ const ActionBar = styled.div`
   flex-direction: column;
   gap: 6px;
   margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
 
   .spin {
     animation: spin 1s linear infinite;
@@ -815,6 +828,8 @@ const UpdatedTimeText = styled.div`
   gap: 4px;
   font-size: 11px;
   color: #94a3b8;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const SectionBlock = styled.div`
@@ -822,12 +837,18 @@ const SectionBlock = styled.div`
   flex-direction: column;
   gap: 10px;
   margin-top: 4px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 
   .title {
     font-size: 15px;
@@ -846,6 +867,9 @@ const SectionHeader = styled.div`
 `;
 
 const CardContainer = styled.div`
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
@@ -860,6 +884,8 @@ const ProfileTopArea = styled.div`
   padding: 16px;
   background-color: #ffffff;
   border-bottom: 1px solid #f1f5f9;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const AvatarWrapper = styled.div`
@@ -946,10 +972,12 @@ const IdentityWrapper = styled.div`
 const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding: 8px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
   gap: 10px 14px;
 
-  @media (max-width: 400px) {
+  @media (max-width: 380px) {
     grid-template-columns: 1fr;
     gap: 8px;
   }
@@ -960,6 +988,7 @@ const InfoCell = styled.div<{ fullWidth?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
 
   .label {
     font-size: 11px;
@@ -977,6 +1006,8 @@ const InfoCell = styled.div<{ fullWidth?: boolean }>`
 const PointBar = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  box-sizing: border-box;
   gap: 8px;
   padding: 10px 14px 14px;
   background-color: #f8fafc;
@@ -991,6 +1022,7 @@ const PointChip = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 6px 4px;
+  min-width: 0;
 
   .title {
     font-size: 10px;
@@ -1007,11 +1039,23 @@ const PointChip = styled.div`
   }
 `;
 
+const TabsWrapper = styled.div`
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+`;
+
 const TabsScrollContainer = styled.div`
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding: 4px 0;
+  overflow-y: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 4px 0 6px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
@@ -1038,12 +1082,20 @@ const TabBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const CardsList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const DetailCard = styled.div`
@@ -1054,6 +1106,10 @@ const DetailCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const DetailCardHeader = styled.div`
@@ -1061,6 +1117,8 @@ const DetailCardHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2px;
+  width: 100%;
+  box-sizing: border-box;
 
   .status-pill {
     font-size: 11px;
@@ -1098,6 +1156,9 @@ const DetailRow = styled.div`
   justify-content: space-between;
   align-items: baseline;
   font-size: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
 
   .k {
     color: #64748b;
@@ -1126,6 +1187,8 @@ const PledgeContentBox = styled.div`
   white-space: pre-wrap;
   max-height: 160px;
   overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const EmptyNotice = styled.div`
@@ -1139,6 +1202,8 @@ const EmptyNotice = styled.div`
   gap: 6px;
   color: #94a3b8;
   font-size: 12px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const DebugSection = styled.div`
@@ -1147,6 +1212,10 @@ const DebugSection = styled.div`
   border-radius: 8px;
   background-color: #ffffff;
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 `;
 
 const DebugHeader = styled.div`
@@ -1157,6 +1226,8 @@ const DebugHeader = styled.div`
   background-color: #f8fafc;
   cursor: pointer;
   user-select: none;
+  width: 100%;
+  box-sizing: border-box;
 
   .title {
     display: flex;
@@ -1176,10 +1247,14 @@ const DebugHeader = styled.div`
 const DebugBody = styled.div`
   padding: 10px;
   overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 `;
 
 const MiniTable = styled.table`
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 11px;
 
@@ -1199,11 +1274,13 @@ const MiniTable = styled.table`
 
   .key {
     color: #2563eb;
-    width: 40%;
+    width: 35%;
+    word-break: break-all;
   }
 
   .val {
     color: #1e293b;
+    width: 65%;
     word-break: break-all;
   }
 
