@@ -222,6 +222,80 @@ export function parseRows(responseBody: string, datasetName: string): Record<str
   return rows;
 }
 
+/**
+ * SSV 문자열 전체에서 모든 Dataset을 파싱하여 { [datasetName]: rows[] } 맵으로 반환
+ */
+export function parseNexacroDatasets(responseBody: string): Record<string, Record<string, string>[]> {
+  const result: Record<string, Record<string, string>[]> = {};
+  if (!responseBody) return result;
+
+  const records = responseBody.split(RECORD_SEPARATOR);
+  let currentDataset: string | null = null;
+  let columnNames: string[] | null = null;
+  let hasRowTypeColumn = false;
+
+  for (let i = 0; i < records.length; i++) {
+    const record = records[i];
+    if (!record) continue;
+
+    if (record.startsWith("Dataset:")) {
+      currentDataset = record.substring("Dataset:".length).trim();
+      result[currentDataset] = [];
+      columnNames = null;
+      hasRowTypeColumn = false;
+      continue;
+    }
+
+    if (!currentDataset) continue;
+
+    if (
+      record.startsWith("ErrorCode") ||
+      record.startsWith("ErrorMsg") ||
+      record.startsWith("_Const_") ||
+      record.startsWith("ConstColumnInfo")
+    ) {
+      continue;
+    }
+
+    if (columnNames === null) {
+      const parts = record.split(UNIT_SEPARATOR);
+      const parsedCols: string[] = [];
+      for (const part of parts) {
+        if (!part) continue;
+        const colName = part.split(":")[0];
+        parsedCols.push(colName);
+      }
+
+      if (parsedCols.length > 0) {
+        hasRowTypeColumn = parsedCols[0] === ROW_TYPE;
+        columnNames = hasRowTypeColumn ? parsedCols.slice(1) : parsedCols;
+        continue;
+      }
+    }
+
+    if (!columnNames) continue;
+    const tokens = record.split(UNIT_SEPARATOR);
+    const startIndex = hasRowTypeColumn || tokens.length === columnNames.length + 1 ? 1 : 0;
+
+    if (tokens.length >= columnNames.length + startIndex) {
+      const row: Record<string, string> = {};
+      row[ROW_TYPE] = tokens[0];
+
+      for (let c = 0; c < columnNames.length; c++) {
+        const rawVal = tokens[c + startIndex];
+        if (rawVal === NULL_MARKER || rawVal === "" || rawVal === undefined) {
+          row[columnNames[c]] = "";
+        } else {
+          row[columnNames[c]] = rawVal;
+        }
+      }
+      result[currentDataset].push(row);
+    }
+  }
+
+  return result;
+}
+
 export function parseAcademicBasicInfo(responseBody: string): AcademicBasicInfo {
   let commonCodes = "";
   let departments: Record<string, string> = {};
@@ -933,5 +1007,189 @@ export function parseFullAcademicReport(payload: any): FullAcademicReport {
     timetable,
   };
 }
+
+// ---------------------------------------------------------------------------
+// 8. 생활원 사생정보조회 (Dormitory Student Info)
+// ---------------------------------------------------------------------------
+
+export interface DormitoryPointItem {
+  date: string;
+  type: "MERIT" | "DEMERIT";
+  typeName: string;
+  points: number;
+  reason: string;
+}
+
+export interface DormitoryStudentInfo {
+  studentId: string;
+  studentName: string;
+  dormitoryBuilding: string;
+  roomNumber: string;
+  bedNumber: string;
+  roomType: string;
+  checkInDate: string;
+  checkOutDate: string;
+  status: string;
+  mealType: string;
+  meritPoints: number;
+  demeritPoints: number;
+  totalPoints: number;
+  pointsList: DormitoryPointItem[];
+  appliedYear?: string;
+  appliedSemester?: string;
+  rawFields: Record<string, string>;
+}
+
+/**
+ * 생활원 사생정보조회(학생) SSV 패킷 파서
+ */
+export function parseDormitoryStudentInfo(payload: string | { dormInfoSsv?: string; pointListSsv?: string; dormPointSsv?: string; [key: string]: any }): DormitoryStudentInfo {
+  let combinedSsv = "";
+  if (typeof payload === "string") {
+    combinedSsv = payload;
+  } else if (payload && typeof payload === "object") {
+    combinedSsv = [
+      payload.dormInfoSsv || "",
+      payload.pointListSsv || payload.dormPointSsv || "",
+      payload.rawSsv || payload.ssv || "",
+    ].filter(Boolean).join("\x1e");
+  }
+
+  const datasets = parseNexacroDatasets(combinedSsv);
+
+  // 1. 주요 사생 정보 행 찾기 (DS_DMSD_INFO, DS_DORM, DS_DMSD, DS_INFO, DS_MAIN 등)
+  let mainRow: Record<string, string> = {};
+  for (const dsName of Object.keys(datasets)) {
+    const rows = datasets[dsName];
+    if (rows && rows.length > 0) {
+      const candidate = rows[0];
+      if (
+        candidate["stuno"] ||
+        candidate["korNm"] ||
+        candidate["roomNo"] ||
+        candidate["domNm"] ||
+        candidate["dmtyNm"] ||
+        candidate["dormRoomNo"]
+      ) {
+        mainRow = candidate;
+        break;
+      }
+    }
+  }
+
+  // 만약 특정 필드로 못 찾았으면 행이 있는 첫 번째 데이터셋의 첫 행 사용
+  if (Object.keys(mainRow).length === 0) {
+    for (const dsName of Object.keys(datasets)) {
+      if (datasets[dsName].length > 0) {
+        mainRow = datasets[dsName][0];
+        break;
+      }
+    }
+  }
+
+  // 2. 상벌점 내역 탐색 (DS_POINT_LIST, DS_POINT, DS_REWD, DS_PNLT 등)
+  const pointsList: DormitoryPointItem[] = [];
+  let meritPoints = 0;
+  let demeritPoints = 0;
+
+  for (const dsName of Object.keys(datasets)) {
+    if (dsName === "DS_DMSD_INFO" || dsName === "DS_DORM_INFO") continue; // 메인 정보 데이터셋은 제외
+    const rows = datasets[dsName];
+    for (const r of rows) {
+      const pntVal = parseInt(r["pointVal"] || r["pnt"] || r["point"] || r["score"] || "0", 10);
+      const typeStr = (r["pointGbnNm"] || r["pntNm"] || "").trim();
+      const isMerit =
+        r["pntGbn"] === "1" ||
+        r["rewdGbn"] === "1" ||
+        typeStr.includes("상점") ||
+        pntVal > 0;
+      const isDemerit =
+        r["pntGbn"] === "2" ||
+        r["rewdGbn"] === "2" ||
+        typeStr.includes("벌점") ||
+        pntVal < 0;
+
+      if (r["resn"] || r["rsn"] || r["pntResn"] || r["pointDt"] || r["pntDt"] || (pntVal !== 0 && (isMerit || isDemerit))) {
+        const absPoint = Math.abs(pntVal);
+        const itemType = isDemerit ? "DEMERIT" : "MERIT";
+        if (itemType === "MERIT") meritPoints += absPoint;
+        else demeritPoints += absPoint;
+
+        pointsList.push({
+          date: formatNexacroDate(r["pointDt"] || r["pntDt"] || r["regDt"] || r["dt"] || "") || "",
+          type: itemType,
+          typeName: itemType === "MERIT" ? "상점" : "벌점",
+          points: absPoint,
+          reason: (r["rsn"] || r["resn"] || r["pntResn"] || r["ctnt"] || "").trim() || "기타",
+        });
+      }
+    }
+  }
+
+  // 메인 행에서 누적 상벌점이 직접 명시된 경우 우선 반영
+  if (mainRow["rwrdScore"] || mainRow["totRewdPnt"] || mainRow["meritPnt"]) {
+    meritPoints = parseInt(mainRow["rwrdScore"] || mainRow["totRewdPnt"] || mainRow["meritPnt"] || "0", 10) || meritPoints;
+  }
+  if (mainRow["pnshScore"] || mainRow["totPnltPnt"] || mainRow["demeritPnt"]) {
+    demeritPoints = parseInt(mainRow["pnshScore"] || mainRow["totPnltPnt"] || mainRow["demeritPnt"] || "0", 10) || demeritPoints;
+  }
+
+  const calculatedTotal = meritPoints - demeritPoints;
+  const totalScoreVal = mainRow["scoreSum"] ? parseInt(mainRow["scoreSum"], 10) : calculatedTotal;
+
+  return {
+    studentId: (mainRow["stuno"] || mainRow["studNo"] || "").trim(),
+    studentName: (mainRow["korNm"] || mainRow["studNm"] || "").trim(),
+    dormitoryBuilding: (
+      mainRow["dmtyNm"] ||
+      mainRow["domNm"] ||
+      mainRow["bldNm"] ||
+      mainRow["domGbnNm"] ||
+      mainRow["dormNm"] ||
+      ""
+    ).trim(),
+    roomNumber: (
+      mainRow["roomNo"] ||
+      mainRow["dormRoomNo"] ||
+      mainRow["rmNo"] ||
+      ""
+    ).trim(),
+    bedNumber: (
+      mainRow["bedNo"] ||
+      mainRow["dormBedNo"] ||
+      ""
+    ).trim(),
+    roomType: (
+      mainRow["roomTypeNm"] ||
+      mainRow["roomType"] ||
+      mainRow["roomGbnNm"] ||
+      mainRow["rmGbnNm"] ||
+      ""
+    ).trim(),
+    checkInDate: formatNexacroDate(mainRow["entyDt"] || mainRow["entrDt"] || mainRow["inDt"] || mainRow["entDt"] || "") || "",
+    checkOutDate: formatNexacroDate(mainRow["leavDt"] || mainRow["levDt"] || mainRow["outDt"] || mainRow["retDt"] || "") || "",
+    status: (
+      mainRow["statNm"] ||
+      mainRow["domStatNm"] ||
+      mainRow["status"] ||
+      "거주"
+    ).trim(),
+    mealType: (
+      mainRow["mealTypeNm"] ||
+      mainRow["mealGbnNm"] ||
+      mainRow["mealType"] ||
+      mainRow["foodGbnNm"] ||
+      ""
+    ).trim(),
+    meritPoints,
+    demeritPoints,
+    totalPoints: totalScoreVal,
+    pointsList,
+    appliedYear: (mainRow["yy"] || "").trim(),
+    appliedSemester: (mainRow["tmGbnNm"] || mainRow["tmGbn"] || "").trim(),
+    rawFields: mainRow,
+  };
+}
+
 
 

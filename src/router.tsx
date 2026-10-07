@@ -85,6 +85,7 @@ import LabsPage from "@/pages/mobile/Labs/LabsPage";
 import LabsRoutinePage from "@/pages/mobile/Labs/LabsRoutinePage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import PortalTimetableLabPage from "@/pages/mobile/Labs/PortalTimetableLabPage";
+import PortalDormitoryLabPage from "@/pages/mobile/Labs/PortalDormitoryLabPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
@@ -227,6 +228,11 @@ export const router = createBrowserRouter([
                 /* 실제 경로: /labs/portal/timetable */
                 path: "portal/timetable",
                 element: <PortalTimetableLabPage />,
+              },
+              {
+                /* 실제 경로: /labs/portal/dormitory */
+                path: "portal/dormitory",
+                element: <PortalDormitoryLabPage />,
               },
             ],
           },

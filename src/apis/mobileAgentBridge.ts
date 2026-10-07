@@ -3,8 +3,10 @@ import {
   parseTimetableList,
   parseTlsnTimetableList,
   parseFullAcademicReport,
+  parseDormitoryStudentInfo,
   TimetableCourseItem,
   FullAcademicReport,
+  DormitoryStudentInfo,
 } from "@/utils/ssvParser";
 
 export interface AcademicInfoData {
@@ -284,6 +286,89 @@ export async function fetchStudentTimetableFromApp(params?: {
     };
   }
 }
+
+/**
+ * 모바일 앱 백그라운드 브릿지를 통해 포털 ERP에서 생활원 사생정보조회(학생) 및 파싱
+ * (부속행정 > 생활원 > 사생관리 > 사생정보조회)
+ */
+export async function fetchDormitoryStudentInfoFromApp(params?: {
+  yy?: string;
+  tmGbn?: string;
+}): Promise<AgentActionResult<DormitoryStudentInfo>> {
+  const instruction = {
+    actionId: "PORTAL_GET_DORMITORY_STUDENT_INFO",
+    authDomain: "PORTAL",
+    request: {
+      url: "https://erp.inu.ac.kr:8443/aff/dmty/DmsdCtr/findDmsdInfoOne.do",
+      method: "POST",
+      datasetName: "DS_COND",
+      params: {
+        menuId: "M004010",
+        pgmId: "P003180",
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+      },
+      data: {
+        ...(params?.yy ? { yy: params.yy } : {}),
+        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+      },
+      batchRequests: [
+        {
+          key: "dormInfoSsv",
+          url: "/aff/dmty/DmsdCtr/findDmsdInfoOne.do",
+          menuId: "M004010",
+          pgmId: "P003180",
+        },
+        {
+          key: "dormPointSsv",
+          url: "/aff/dmty/DmsdCtr/findDmsdPointList.do",
+          menuId: "M004010",
+          pgmId: "P003180",
+        },
+      ],
+    },
+  };
+
+  const res = await sendBridgeAction<any>("executeAgentAction", { instruction }, 45000);
+  if (!res.success) {
+    return {
+      success: false,
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage,
+    };
+  }
+
+  try {
+    let rawPayload = res.data;
+    let ssvText = "";
+    if (typeof rawPayload === "object" && rawPayload !== null) {
+      ssvText =
+        rawPayload.dormInfoSsv ||
+        rawPayload.ssv ||
+        rawPayload.rawSsv ||
+        rawPayload.data ||
+        "";
+      if (rawPayload.dormPointSsv) {
+        ssvText += "\n" + rawPayload.dormPointSsv;
+      }
+    } else if (typeof rawPayload === "string") {
+      ssvText = rawPayload;
+    }
+
+    const parsed = parseDormitoryStudentInfo(ssvText);
+    return {
+      success: true,
+      data: parsed,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      errorCode: "PARSE_ERROR",
+      errorMessage: err?.message || "생활원 사생정보 데이터 파싱 실패",
+    };
+  }
+}
+
 
 /**
  * 모바일 앱 백그라운드 SSO를 통해 개인학적조회(M002043) 종합 데이터(시간표, 학기별성적, 과목별성적, 이수학점, 장학금 등) 조회

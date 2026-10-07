@@ -5,6 +5,7 @@ import {
   parseTimeInfo,
   parseTlsnTimetableList,
   parseFullAcademicReport,
+  parseDormitoryStudentInfo,
 } from "../ssvParser";
 
 describe("Academic SSV Parser (Web Centralized)", () => {
@@ -219,6 +220,72 @@ describe("Academic SSV Parser (Web Centralized)", () => {
     expect(report.scholarships[0].scholarshipName).toBe("학업우수(우수)");
     expect(report.scholarships[0].amount).toBe(1544000);
     expect(report.totalScholarshipAmount).toBe(1544000);
+  });
+
+  describe("Dormitory SSV Parser", () => {
+    it("사생 배정 기본정보(DS_DMSD_INFO) 및 상벌점(DS_POINT_LIST)을 정상 파싱해야 한다", () => {
+      const dormInfoSsv = [
+        "ErrorCode:int=0",
+        "ErrorMsg:String=SUCCESS",
+        "Dataset:DS_DMSD_INFO",
+        `_RowType_\u001fyy\u001ftmGbnNm\u001fkorNm\u001fstuno\u001fdmtyNm\u001froomNo\u001fbedNo\u001froomTypeNm\u001fentyDt\u001fleavDt\u001fmealTypeNm\u001fmealAplyCnt\u001frwrdScore\u001fpnshScore\u001fscoreSum`,
+        `N\u001f2025\u001f2학기\u001f홍길동\u001f202001518\u001f제1기숙사\u001f305\u001fA\u001f2인실\u001f2025-08-25\u001f2025-12-20\u001f주7일식(조/석식)\u001f120\u001f3\u001f1\u001f2`,
+      ].join("\u001e");
+
+      const pointSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_POINT_LIST",
+        `_RowType_\u001fpointDt\u001fpointGbnNm\u001fpointVal\u001frsn\u001fyy\u001ftmGbnNm`,
+        `N\u001f2025-09-10\u001f상점\u001f2\u001f호실 청소 우수\u001f2025\u001f2학기`,
+        `N\u001f2025-10-01\u001f벌점\u001f-1\u001f점호 불참\u001f2025\u001f2학기`,
+        `N\u001f2025-10-15\u001f상점\u001f1\u001f기숙사 행사 도우미\u001f2025\u001f2학기`,
+      ].join("\u001e");
+
+      const result = parseDormitoryStudentInfo({
+        dormInfoSsv,
+        pointListSsv: pointSsv,
+      });
+
+      expect(result.appliedYear).toBe("2025");
+      expect(result.appliedSemester).toBe("2학기");
+      expect(result.dormitoryBuilding).toBe("제1기숙사");
+      expect(result.roomNumber).toBe("305");
+      expect(result.bedNumber).toBe("A");
+      expect(result.roomType).toBe("2인실");
+      expect(result.checkInDate).toBe("2025-08-25");
+      expect(result.checkOutDate).toBe("2025-12-20");
+      expect(result.mealType).toBe("주7일식(조/석식)");
+      expect(result.meritPoints).toBe(3);
+      expect(result.demeritPoints).toBe(1);
+      expect(result.totalPoints).toBe(2);
+
+      expect(result.pointsList).toHaveLength(3);
+      expect(result.pointsList[0].date).toBe("2025-09-10");
+      expect(result.pointsList[0].typeName).toBe("상점");
+      expect(result.pointsList[0].points).toBe(2);
+      expect(result.pointsList[0].reason).toBe("호실 청소 우수");
+
+      expect(result.pointsList[1].typeName).toBe("벌점");
+      expect(result.pointsList[1].points).toBe(1);
+    });
+
+    it("점수 필드가 비어있거나 단일 SSV만 제공된 경우에도 안전하게 파싱해야 한다", () => {
+      const dormInfoSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMSD_INFO",
+        `_RowType_\u001fdmtyNm\u001froomNo\u001fbedNo`,
+        `N\u001f제2기숙사\u001f512\u001fB`,
+      ].join("\u001e");
+
+      const result = parseDormitoryStudentInfo({ dormInfoSsv });
+      expect(result.dormitoryBuilding).toBe("제2기숙사");
+      expect(result.roomNumber).toBe("512");
+      expect(result.bedNumber).toBe("B");
+      expect(result.meritPoints).toBe(0);
+      expect(result.demeritPoints).toBe(0);
+      expect(result.totalPoints).toBe(0);
+      expect(result.pointsList).toEqual([]);
+    });
   });
 });
 

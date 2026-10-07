@@ -67,6 +67,7 @@ export const ROUTES = {
     PORTAL: {
       BASIC_INFO: "/labs/portal/basic-info",
       TIMETABLE: "/labs/portal/timetable",
+      DORMITORY: "/labs/portal/dormitory",
     },
   },
 

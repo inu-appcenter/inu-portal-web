@@ -188,6 +188,26 @@ const LabsPage = () => {
                     }
                   }}
                 />
+                <Divider margin="0" />
+                <AppItem
+                  title={"생활원 사생정보 조회"}
+                  description={
+                    "포털 생활원 시스템에서 배정 호실, 침대, 입·퇴사일, 상벌점 내역 및 식수 현황을 가져와요."
+                  }
+                  onClick={() => {
+                    if (!tokenInfo.accessToken) {
+                      if (
+                        window.confirm(
+                          "INTIP 로그인이 필요해요. 로그인 페이지로 이동할까요?",
+                        )
+                      ) {
+                        navigate(ROUTES.LOGIN);
+                      }
+                    } else {
+                      navigate(ROUTES.LABS.PORTAL.DORMITORY);
+                    }
+                  }}
+                />
               </div>
             </Box>
           </TitleContentArea>
