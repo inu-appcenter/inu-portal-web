@@ -69,6 +69,81 @@ function toImageSrc(base64?: string): string | null {
   return `data:image/bmp;base64,${clean}`;
 }
 
+/**
+ * 생활원 기숙사 구분 코드 매핑
+ * 01: 제1기숙사, 02: 제2기숙사(직영), 03: 제2기숙사(BTL), 04: 제3기숙사, 05: 제3기숙사(BTL)
+ */
+function mapDormitoryType(code?: string): string {
+  if (!code) return "";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "01":
+      return "제1기숙사";
+    case "02":
+      return "제2기숙사";
+    case "03":
+      return "제2기숙사(BTL)";
+    case "04":
+      return "제3기숙사";
+    case "05":
+      return "제3기숙사(BTL)";
+    default:
+      return trimmed;
+  }
+}
+
+/**
+ * 학년 구분 매핑 (예: "4" -> "4학년")
+ */
+function mapGrade(val?: string): string {
+  if (!val) return "";
+  const trimmed = val.trim();
+  if (trimmed.endsWith("학년")) return trimmed;
+  if (/^\d+$/.test(trimmed)) return `${trimmed}학년`;
+  return `${trimmed}학년`;
+}
+
+/**
+ * 성별 코드 매핑 (M -> 남성, F -> 여성)
+ */
+function mapGender(code?: string): string {
+  if (!code) return "";
+  const trimmed = code.trim().toUpperCase();
+  if (trimmed === "M") return "남성";
+  if (trimmed === "F") return "여성";
+  return trimmed;
+}
+
+/**
+ * 국적 코드 매핑 (KR -> 대한민국)
+ */
+function mapNationality(code?: string): string {
+  if (!code) return "";
+  const trimmed = code.trim().toUpperCase();
+  if (trimmed === "KR") return "대한민국";
+  return trimmed;
+}
+
+/**
+ * 학기 코드 매핑 (10 -> 1, 20 -> 2, 30 -> 여름, 40 -> 겨울)
+ */
+function mapSemester(term?: string): string {
+  if (!term) return "";
+  const trimmed = term.trim();
+  switch (trimmed) {
+    case "10":
+      return "1";
+    case "20":
+      return "2";
+    case "30":
+      return "여름";
+    case "40":
+      return "겨울";
+    default:
+      return trimmed.replace(/학기$/, "");
+  }
+}
+
 const PortalDormitoryLabPage = () => {
   const navigate = useNavigate();
   const { enabled: isLabsEnabled, isFetched: isLabsFlagFetched } = useFeatureFlag(
@@ -427,19 +502,21 @@ const PortalDormitoryLabPage = () => {
     fallbackAcademic?.rawFields?.stuno ||
     "";
 
-  const gender =
+  const rawGender =
     profile?.gender ||
     dormInfo?.rawFields?.genGbn ||
     fallbackAcademic?.gender ||
     fallbackAcademic?.rawFields?.genGbn ||
     "";
+  const gender = mapGender(rawGender);
 
-  const nationality =
+  const rawNationality =
     profile?.nationality ||
     dormInfo?.rawFields?.natGbn ||
     fallbackAcademic?.nationality ||
     fallbackAcademic?.rawFields?.natGbn ||
     "";
+  const nationality = mapNationality(rawNationality);
 
   const department =
     profile?.department ||
@@ -450,14 +527,19 @@ const PortalDormitoryLabPage = () => {
     fallbackAcademic?.rawFields?.hgNm ||
     "";
 
-  const grade =
+  const rawGrade =
     profile?.grade ||
-    (dormInfo?.rawFields?.hySeqGbn ? `${dormInfo.rawFields.hySeqGbn}학년` : "") ||
-    (fallbackAcademic?.grade ? `${fallbackAcademic.grade}학년` : "") ||
-    (fallbackAcademic?.rawFields?.hySeqGbn ? `${fallbackAcademic.rawFields.hySeqGbn}학년` : "") ||
+    dormInfo?.rawFields?.hySeqGbn ||
+    fallbackAcademic?.grade ||
+    fallbackAcademic?.rawFields?.hySeqGbn ||
     "";
+  const grade = mapGrade(rawGrade);
 
-  const dormitoryType = profile?.dormitoryType || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormGbn || "";
+  const rawDormGbn = dormInfo?.rawFields?.dormGbn || profile?.dormitoryType || "";
+  const mappedDormName = mapDormitoryType(rawDormGbn);
+  const dormitoryType = mappedDormName
+    ? (rawDormGbn && !mappedDormName.includes(rawDormGbn) ? `${mappedDormName} (${rawDormGbn})` : mappedDormName)
+    : (dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || "-");
   const dormitoryBuilding = profile?.dormitoryBuilding || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || dormInfo?.rawFields?.dormBdCd || "";
   const studentDormNo = profile?.studentDormNo || dormInfo?.rawFields?.domstuNo || dormInfo?.rawFields?.domStuNo || "";
 
@@ -621,7 +703,7 @@ const PortalDormitoryLabPage = () => {
           <SectionHeader>
             <span className="title">사생정보</span>
             {year && term ? (
-              <span className="term-badge">{year}년 {term}학기</span>
+              <span className="term-badge">{year}년 {mapSemester(term)}학기</span>
             ) : null}
           </SectionHeader>
 
@@ -1448,20 +1530,35 @@ const PortalDormitoryLabPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {rawEntries.map(([k, v]) => (
-                    <tr key={k}>
-                      <td className="key">{k}</td>
-                      <td className="val">
-                        {v === "" ? (
-                          <span className="empty-val">(빈값)</span>
-                        ) : k === "phtFile2" || k === "phtFile" ? (
-                          <span className="photo-val">[이미지 Base64: {v.length}자]</span>
-                        ) : (
-                          String(v)
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {rawEntries.map(([k, v]) => {
+                    const isPhoto =
+                      k === "phtFile2" ||
+                      k === "phtFile" ||
+                      k.toLowerCase().includes("photo") ||
+                      (typeof v === "string" &&
+                        v.length > 80 &&
+                        (v.startsWith("data:image") ||
+                          v.startsWith("/9j/") ||
+                          v.startsWith("iVBOR") ||
+                          v.startsWith("Qk")));
+
+                    return (
+                      <tr key={k}>
+                        <td className="key">{k}</td>
+                        <td className="val">
+                          {v === "" ? (
+                            <span className="empty-val">(빈값)</span>
+                          ) : isPhoto ? (
+                            <span className="photo-val" title={`전체 데이터: ${v.length}자`}>
+                              {String(v).slice(0, 45)}...
+                            </span>
+                          ) : (
+                            String(v)
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </MiniTable>
             </DebugBody>
