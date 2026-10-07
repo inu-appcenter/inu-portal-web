@@ -11,23 +11,35 @@ import {
   fetchDormitoryStudentInfoFromApp,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
-import { DormitoryStudentInfo } from "@/utils/ssvParser";
+import {
+  DormitoryStudentInfo,
+  DormitoryAddressItem,
+  DormitoryRewardItem,
+  DormitoryInOutItem,
+  DormitoryApplyItem,
+  DormitoryPaymentItem,
+  DormitoryUtilityItem,
+} from "@/utils/ssvParser";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
 import {
   Home,
-  Bed,
-  Calendar,
-  Utensils,
-  Award,
-  User,
   Clock,
   Smartphone,
   Code,
-  CheckCircle2,
+  MapPin,
+  Award,
+  LogIn,
+  ClipboardList,
+  CreditCard,
+  Zap,
+  FileCheck,
+  ChevronRight,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
+
+type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility" | "pledge";
 
 const PortalDormitoryLabPage = () => {
   const navigate = useNavigate();
@@ -42,9 +54,10 @@ const PortalDormitoryLabPage = () => {
   const [isFetched, setIsFetched] = useState(false);
   const [isPortalAccountModalOpen, setIsPortalAccountModalOpen] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("address");
 
   useHeader({
-    title: "생활원 사생정보 (실험실)",
+    title: "사생정보조회(학생)",
   });
 
   useEffect(() => {
@@ -61,7 +74,7 @@ const PortalDormitoryLabPage = () => {
 
     try {
       setIsLoading(true);
-      setLoadingMessage("기숙사 사생 정보를 포털 ERP에서 안전하게 조회하고 있습니다...");
+      setLoadingMessage("생활원 사생 정보 및 7개 탭 데이터를 ERP에서 안전하게 조회하고 있습니다...");
 
       const isLinked = await checkPortalAccountLinked();
       if (!isLinked) {
@@ -90,11 +103,23 @@ const PortalDormitoryLabPage = () => {
     loadDormitoryInfo();
   }, [loadDormitoryInfo]);
 
+  const profile = dormInfo?.profile;
+
   return (
     <Container>
+      <Breadcrumb>
+        <span>부속행정</span>
+        <ChevronRight size={12} />
+        <span>생활원</span>
+        <ChevronRight size={12} />
+        <span>사생관리</span>
+        <ChevronRight size={12} />
+        <span className="current">사생정보조회(학생)</span>
+      </Breadcrumb>
+
       <TitleContentArea
-        title="생활원 사생정보 조회 (실험실)"
-        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리)에서 학생 본인의 배정 호실, 침대, 입퇴사 일정, 상벌점 내역 및 식수 신청 현황을 안전하게 실시간 조회합니다."
+        title="사생정보조회(학생)"
+        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리 > 사생정보조회) 화면의 기본 사생정보 및 7개 탭(주소사항, 상벌점이력, 입퇴사이력, 신청이력, 등록/환불이력, 공공요금, 입사서약서) 정보를 조회합니다."
       >
         <NoticeBox>
           <div className="icon">
@@ -104,7 +129,7 @@ const PortalDormitoryLabPage = () => {
             <strong>로컬 보안 브릿지 조회 안내</strong>
             <p>
               사생 정보는 외부 서버에 절대 전송되지 않으며, 사용자 기기 내부의 포털 ERP 세션을 통해
-              직접 로컬 브라우저로 가져옵니다.
+              직접 로컬 브라우저로 가져옵니다. 실제 등록된 내역만 정확하게 표시됩니다.
             </p>
           </div>
         </NoticeBox>
@@ -114,7 +139,7 @@ const PortalDormitoryLabPage = () => {
             <Smartphone size={32} />
             <div className="title">인팁 모바일 앱 전용 기능입니다</div>
             <div className="desc">
-              포털 ERP 생활원 스크래핑은 모바일 앱의 안전한 백그라운드 SSO 세션을 통해 작동합니다.
+              포털 ERP 사생정보조회는 모바일 앱의 안전한 백그라운드 SSO 세션을 통해 작동합니다.
             </div>
             <ActionButton
               as="button"
@@ -145,96 +170,410 @@ const PortalDormitoryLabPage = () => {
 
         {dormInfo && (
           <ContentSection>
-            {/* 1. 핵심 배정 카드 */}
-            <SectionTitle>
-              <Bed size={18} /> 기숙사 배정 및 거주 현황
-            </SectionTitle>
-            <CardGrid>
-              <StatCard>
-                <div className="label">생활원 / 건물</div>
-                <div className="value highlight">
-                  {dormInfo.dormitoryBuilding || "생활원"}
-                </div>
-              </StatCard>
-              <StatCard>
-                <div className="label">배정 호실 / 침대</div>
-                <div className="value primary">
-                  {dormInfo.roomNumber ? `${dormInfo.roomNumber}호` : "미배정"}
-                  {dormInfo.bedNumber ? ` (${dormInfo.bedNumber}번 침대)` : ""}
-                </div>
-              </StatCard>
-              <StatCard>
-                <div className="label">룸 타입</div>
-                <div className="value">{dormInfo.roomType || "2인실"}</div>
-              </StatCard>
-              <StatCard>
-                <div className="label">거주 상태</div>
-                <div className="value status">
-                  <CheckCircle2 size={16} />
-                  {dormInfo.status || "거주중"}
-                </div>
-              </StatCard>
-            </CardGrid>
-
-            {/* 2. 일정 및 식수 카드 */}
-            <SectionTitle>
-              <Calendar size={18} /> 입·퇴사 및 식수 정보
-            </SectionTitle>
-            <InfoCard>
-              <InfoRow>
-                <span className="key"><Calendar size={14} /> 입사일자</span>
-                <span className="val">{dormInfo.checkInDate || "-"}</span>
-              </InfoRow>
-              <InfoRow>
-                <span className="key"><Calendar size={14} /> 퇴사(예정)일자</span>
-                <span className="val">{dormInfo.checkOutDate || "-"}</span>
-              </InfoRow>
-              <InfoRow>
-                <span className="key"><Utensils size={14} /> 신청 식수 유형</span>
-                <span className="val">{dormInfo.mealType || "미신청 또는 의무식"}</span>
-              </InfoRow>
-              {dormInfo.studentName && (
-                <InfoRow>
-                  <span className="key"><User size={14} /> 사생 성명 (학번)</span>
-                  <span className="val">{dormInfo.studentName} ({dormInfo.studentId})</span>
-                </InfoRow>
+            {/* 1. 상단 사생정보 카드 */}
+            <SectionHeader>
+              <div className="title">사생정보</div>
+              {profile?.year && profile?.term && (
+                <div className="badge">{profile.year}년 {profile.term}학기</div>
               )}
-            </InfoCard>
+            </SectionHeader>
 
-            {/* 3. 상벌점 관리 */}
-            <SectionTitle>
-              <Award size={18} /> 상벌점 현황
-            </SectionTitle>
-            <PointSummaryBox>
-              <PointStat type="merit">
-                <div className="title">누적 상점</div>
-                <div className="score">+{dormInfo.meritPoints}점</div>
-              </PointStat>
-              <PointStat type="demerit">
-                <div className="title">누적 벌점</div>
-                <div className="score">-{dormInfo.demeritPoints}점</div>
-              </PointStat>
-              <PointStat type="total">
-                <div className="title">총 점수</div>
-                <div className="score">{dormInfo.totalPoints}점</div>
-              </PointStat>
-            </PointSummaryBox>
+            {profile ? (
+              <ProfileCard>
+                <TableGrid>
+                  <TableRow>
+                    <TableCol>
+                      <span className="th">성명</span>
+                      <span className="td">{profile.name || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">성명(영문)</span>
+                      <span className="td">{profile.englishName || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">성별</span>
+                      <span className="td">{profile.gender || "-"}</span>
+                    </TableCol>
+                  </TableRow>
 
-            {dormInfo.pointsList && dormInfo.pointsList.length > 0 ? (
-              <PointList>
-                {dormInfo.pointsList.map((pt, idx) => (
-                  <PointItem key={idx} isDemerit={pt.type === "DEMERIT"}>
-                    <div className="header">
-                      <span className="type">{pt.typeName} {pt.points}점</span>
-                      <span className="date">{pt.date}</span>
-                    </div>
-                    <div className="reason">{pt.reason}</div>
-                  </PointItem>
-                ))}
-              </PointList>
+                  <TableRow>
+                    <TableCol>
+                      <span className="th">국적</span>
+                      <span className="td">{profile.nationality || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">학부(과)/부서</span>
+                      <span className="td">{profile.department || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">학년구분</span>
+                      <span className="td">{profile.grade || "-"}</span>
+                    </TableCol>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCol>
+                      <span className="th">기숙사구분</span>
+                      <span className="td">{profile.dormitoryType || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">기숙사건물구분</span>
+                      <span className="td">{profile.dormitoryBuilding || "-"}</span>
+                    </TableCol>
+                    <TableCol>
+                      <span className="th">사생번호</span>
+                      <span className="td">{profile.studentDormNo || "-"}</span>
+                    </TableCol>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCol>
+                      <span className="th">휴대전화번호</span>
+                      <span className="td">{profile.phoneNumber || "-"}</span>
+                    </TableCol>
+                    <TableCol span={2}>
+                      <span className="th">이메일</span>
+                      <span className="td">{profile.email || "-"}</span>
+                    </TableCol>
+                  </TableRow>
+
+                  <TableRow>
+                    <TableCol span={3}>
+                      <span className="th">거주지</span>
+                      <span className="td">
+                        {profile.zipCode ? `[${profile.zipCode}] ` : ""}
+                        {profile.address || ""} {profile.detailedAddress || ""}
+                        {!profile.zipCode && !profile.address && !profile.detailedAddress && "-"}
+                      </span>
+                    </TableCol>
+                  </TableRow>
+                </TableGrid>
+
+                {/* 상벌점 요약 바 */}
+                <PointBadgeRow>
+                  <PointBox>
+                    <span className="label">상점</span>
+                    <span className="val merit">{profile.meritPoints || "0"}</span>
+                  </PointBox>
+                  <PointBox>
+                    <span className="label">일반벌점</span>
+                    <span className="val demerit">{profile.demeritPoints || "0"}</span>
+                  </PointBox>
+                  <PointBox>
+                    <span className="label">상쇄불가벌점</span>
+                    <span className="val fixed-demerit">{profile.nonOffsetDemeritPoints || "0"}</span>
+                  </PointBox>
+                </PointBadgeRow>
+              </ProfileCard>
             ) : (
-              <EmptyBox>상벌점 부여 내역이 없습니다.</EmptyBox>
+              <EmptyBox>기본 사생정보 데이터가 존재하지 않습니다.</EmptyBox>
             )}
+
+            {/* 2. 하단 7개 탭 네비게이션 */}
+            <TabHeader>
+              <TabButton
+                active={activeTab === "address"}
+                onClick={() => setActiveTab("address")}
+              >
+                <MapPin size={14} />
+                주소사항 ({dormInfo.addressList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "reward"}
+                onClick={() => setActiveTab("reward")}
+              >
+                <Award size={14} />
+                상벌점이력 ({dormInfo.rewardList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "inout"}
+                onClick={() => setActiveTab("inout")}
+              >
+                <LogIn size={14} />
+                입퇴사이력 ({dormInfo.inOutList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "apply"}
+                onClick={() => setActiveTab("apply")}
+              >
+                <ClipboardList size={14} />
+                신청이력 ({dormInfo.applyList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "payment"}
+                onClick={() => setActiveTab("payment")}
+              >
+                <CreditCard size={14} />
+                등록/환불이력 ({dormInfo.paymentList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "utility"}
+                onClick={() => setActiveTab("utility")}
+              >
+                <Zap size={14} />
+                공공요금 ({dormInfo.utilityList.length})
+              </TabButton>
+              <TabButton
+                active={activeTab === "pledge"}
+                onClick={() => setActiveTab("pledge")}
+              >
+                <FileCheck size={14} />
+                입사서약서 {dormInfo.pledge ? "(1)" : "(0)"}
+              </TabButton>
+            </TabHeader>
+
+            {/* 3. 탭별 상세 내용 */}
+            <TabContentContainer>
+              {/* 탭 1: 주소사항 */}
+              {activeTab === "address" && (
+                <div>
+                  {dormInfo.addressList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.addressList.map((addr: DormitoryAddressItem, idx: number) => (
+                        <ItemCard key={idx}>
+                          <ItemRow>
+                            <span className="label">우편번호</span>
+                            <span className="value">{addr.zipCode || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">기본주소</span>
+                            <span className="value">{addr.address || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">상세주소</span>
+                            <span className="value">{addr.detailedAddress || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">보호자 연락처</span>
+                            <span className="value">{addr.guardianPhone || "-"}</span>
+                          </ItemRow>
+                        </ItemCard>
+                      ))}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>등록된 주소사항 내역이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 2: 상벌점이력 */}
+              {activeTab === "reward" && (
+                <div>
+                  {dormInfo.rewardList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.rewardList.map((rw: DormitoryRewardItem, idx: number) => {
+                        const isDemerit = rw.type.includes("벌점") || parseInt(rw.score, 10) < 0;
+                        return (
+                          <ItemCard key={idx}>
+                            <ItemHeader>
+                              <span className={`badge ${isDemerit ? "demerit" : "merit"}`}>
+                                {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
+                              </span>
+                              <span className="date">{rw.imposedDate}</span>
+                            </ItemHeader>
+                            <ItemRow>
+                              <span className="label">상벌점명</span>
+                              <span className="value font-medium">{rw.name || "-"}</span>
+                            </ItemRow>
+                            <ItemRow>
+                              <span className="label">사유</span>
+                              <span className="value">{rw.reason || "-"}</span>
+                            </ItemRow>
+                            {rw.offsetPossible && (
+                              <ItemRow>
+                                <span className="label">상쇄가능구분</span>
+                                <span className="value">{rw.offsetPossible}</span>
+                              </ItemRow>
+                            )}
+                          </ItemCard>
+                        );
+                      })}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>상벌점 부여 내역이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 3: 입퇴사이력 */}
+              {activeTab === "inout" && (
+                <div>
+                  {dormInfo.inOutList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.inOutList.map((io: DormitoryInOutItem, idx: number) => (
+                        <ItemCard key={idx}>
+                          <ItemHeader>
+                            <span className="badge inout">
+                              {io.year}년 {io.term}학기 ({io.dormitoryType || "기숙사"})
+                            </span>
+                            <span className="status">{io.status || "입퇴사이력"}</span>
+                          </ItemHeader>
+                          <ItemRow>
+                            <span className="label">사생번호</span>
+                            <span className="value">{io.studentDormNo || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">입사일자</span>
+                            <span className="value">{io.checkInDate || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">퇴사일자</span>
+                            <span className="value">{io.checkOutDate || "-"}</span>
+                          </ItemRow>
+                        </ItemCard>
+                      ))}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>입퇴사 이력이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 4: 신청이력 */}
+              {activeTab === "apply" && (
+                <div>
+                  {dormInfo.applyList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.applyList.map((ap: DormitoryApplyItem, idx: number) => (
+                        <ItemCard key={idx}>
+                          <ItemHeader>
+                            <span className="badge inout">
+                              {ap.year}년 {ap.term}학기
+                            </span>
+                            <span className="status">{ap.passStatus || ap.applyType || "신청"}</span>
+                          </ItemHeader>
+                          <ItemRow>
+                            <span className="label">신청구분</span>
+                            <span className="value">{ap.applyType || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">신청일자</span>
+                            <span className="value">{ap.applyDate || "-"}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">거주기간</span>
+                            <span className="value">
+                              {ap.periodStart || "-"} ~ {ap.periodEnd || "-"}
+                            </span>
+                          </ItemRow>
+                        </ItemCard>
+                      ))}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>기숙사 신청 이력이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 5: 등록/환불이력 */}
+              {activeTab === "payment" && (
+                <div>
+                  {dormInfo.paymentList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.paymentList.map((pm: DormitoryPaymentItem, idx: number) => (
+                        <ItemCard key={idx}>
+                          <ItemHeader>
+                            <span className={`badge ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
+                              {pm.type || "등록/환불"}
+                            </span>
+                            <span className="date">{pm.date}</span>
+                          </ItemHeader>
+                          <ItemRow>
+                            <span className="label">학기</span>
+                            <span className="value">{pm.year}년 {pm.term}학기</span>
+                          </ItemRow>
+                          {pm.dormitoryType && (
+                            <ItemRow>
+                              <span className="label">기숙사구분</span>
+                              <span className="value">{pm.dormitoryType}</span>
+                            </ItemRow>
+                          )}
+                          <ItemRow>
+                            <span className="label">금액</span>
+                            <span className="value font-medium">
+                              {Number(pm.amount).toLocaleString()}원
+                            </span>
+                          </ItemRow>
+                        </ItemCard>
+                      ))}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>등록금 및 환불 처리 내역이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 6: 공공요금 부과내역 */}
+              {activeTab === "utility" && (
+                <div>
+                  {dormInfo.utilityList.length > 0 ? (
+                    <ItemList>
+                      {dormInfo.utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
+                        <ItemCard key={idx}>
+                          <ItemHeader>
+                            <span className="badge inout">사용월: {ut.useMonth}</span>
+                            <span className="font-medium">총 {Number(ut.totalFee).toLocaleString()}원</span>
+                          </ItemHeader>
+                          <ItemRow>
+                            <span className="label">전기 (사용량 / 요금)</span>
+                            <span className="value">{ut.electricUsage} / {Number(ut.electricFee).toLocaleString()}원</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">수도 (사용량 / 요금)</span>
+                            <span className="value">{ut.waterUsage} / {Number(ut.waterFee).toLocaleString()}원</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">온수 / 난방 사용량</span>
+                            <span className="value">{ut.hotWaterUsage} / {ut.heatingUsage}</span>
+                          </ItemRow>
+                          <ItemRow>
+                            <span className="label">소계 / 시설분담금</span>
+                            <span className="value">
+                              {Number(ut.subtotalFee).toLocaleString()}원 / {Number(ut.facilityFee).toLocaleString()}원
+                            </span>
+                          </ItemRow>
+                        </ItemCard>
+                      ))}
+                    </ItemList>
+                  ) : (
+                    <EmptyBox>공공요금 부과 내역이 없습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+
+              {/* 탭 7: 입사서약서 */}
+              {activeTab === "pledge" && (
+                <div>
+                  {dormInfo.pledge ? (
+                    <ItemCard>
+                      <ItemHeader>
+                        <span className="badge merit">입사서약서</span>
+                        {dormInfo.pledge.consentDate && (
+                          <span className="date">동의일: {dormInfo.pledge.consentDate}</span>
+                        )}
+                      </ItemHeader>
+                      <ItemRow>
+                        <span className="label">동의여부</span>
+                        <span className="value font-medium">{dormInfo.pledge.consentStatus || "동의"}</span>
+                      </ItemRow>
+                      {dormInfo.pledge.studentInfo && (
+                        <ItemRow>
+                          <span className="label">학생정보</span>
+                          <span className="value">{dormInfo.pledge.studentInfo}</span>
+                        </ItemRow>
+                      )}
+                      {dormInfo.pledge.documentContent && (
+                        <PledgeTextBox>
+                          {dormInfo.pledge.documentContent}
+                        </PledgeTextBox>
+                      )}
+                    </ItemCard>
+                  ) : (
+                    <EmptyBox>입사서약서 정보가 존재하지 않습니다.</EmptyBox>
+                  )}
+                </div>
+              )}
+            </TabContentContainer>
 
             {/* 4. 디버그 원시 데이터 토글 */}
             <DebugArea>
@@ -283,6 +622,22 @@ const Container = styled.div`
   gap: 16px;
 `;
 
+const Breadcrumb = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #718096;
+  padding: 4px 8px;
+  background-color: #f7fafc;
+  border-radius: 6px;
+
+  .current {
+    color: #2b6cb0;
+    font-weight: 600;
+  }
+`;
+
 const NoticeBox = styled.div`
   display: flex;
   gap: 12px;
@@ -299,33 +654,25 @@ const NoticeBox = styled.div`
     margin-top: 2px;
   }
 
-  strong {
-    display: block;
-    margin-bottom: 2px;
-    font-weight: 600;
-  }
-
   p {
-    margin: 0;
-    opacity: 0.9;
+    margin: 4px 0 0 0;
+    color: #3b82f6;
+    font-size: 12px;
   }
 `;
 
 const WebFallbackCard = styled.div`
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 32px 20px;
-  background-color: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
   gap: 12px;
+  color: #64748b;
   margin-top: 16px;
-
-  svg {
-    color: #0066cc;
-  }
 
   .title {
     font-size: 16px;
@@ -335,8 +682,6 @@ const WebFallbackCard = styled.div`
 
   .desc {
     font-size: 13px;
-    color: #64748b;
-    max-width: 320px;
     line-height: 1.5;
     margin-bottom: 8px;
   }
@@ -355,178 +700,256 @@ const LastUpdatedText = styled.div`
   justify-content: flex-end;
   gap: 4px;
   font-size: 12px;
-  color: #94a3b8;
+  color: #8c95a0;
 `;
 
 const ContentSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 20px;
+  gap: 16px;
+  margin-top: 16px;
 `;
 
-const SectionTitle = styled.h3`
+const SectionHeader = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-`;
+  justify-content: space-between;
 
-const CardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-`;
-
-const StatCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  .label {
-    font-size: 12px;
-    color: #64748b;
-  }
-
-  .value {
+  .title {
     font-size: 16px;
     font-weight: 700;
-    color: #1e293b;
+    color: #1a202c;
+  }
 
-    &.primary {
-      color: #0066cc;
-    }
-
-    &.highlight {
-      color: #0284c7;
-    }
-
-    &.status {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      color: #10b981;
-      font-size: 14px;
-    }
+  .badge {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #ebf8ff;
+    color: #2b6cb0;
+    font-weight: 600;
   }
 `;
 
-const InfoCard = styled.div`
-  background: #ffffff;
+const ProfileCard = styled.div`
+  background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  border-radius: 12px;
+  overflow: hidden;
 `;
 
-const InfoRow = styled.div`
+const TableGrid = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
+  flex-direction: column;
+`;
 
-  .key {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #64748b;
+const TableRow = styled.div`
+  display: flex;
+  border-bottom: 1px solid #edf2f7;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const TableCol = styled.div<{ span?: number }>`
+  flex: ${({ span }) => span || 1};
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-right: 1px solid #edf2f7;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  .th {
+    font-size: 11px;
+    color: #718096;
+    margin-bottom: 3px;
+  }
+
+  .td {
+    font-size: 13px;
+    font-weight: 500;
+    color: #2d3748;
+    word-break: break-all;
+  }
+`;
+
+const PointBadgeRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background-color: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const PointBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+  padding: 8px 4px;
+
+  .label {
+    font-size: 11px;
+    color: #718096;
+    margin-bottom: 2px;
   }
 
   .val {
-    font-weight: 600;
-    color: #1e293b;
+    font-size: 16px;
+    font-weight: 700;
+
+    &.merit {
+      color: #3182ce;
+    }
+    &.demerit {
+      color: #e53e3e;
+    }
+    &.fixed-demerit {
+      color: #dd6b20;
+    }
   }
 `;
 
-const PointSummaryBox = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+const TabHeader = styled.div`
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const TabButton = styled.button<{ active?: boolean }>`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: ${({ active }) => (active ? "600" : "400")};
+  color: ${({ active }) => (active ? "#2b6cb0" : "#718096")};
+  background-color: ${({ active }) => (active ? "#ebf8ff" : "#ffffff")};
+  border: 1px solid ${({ active }) => (active ? "#bee3f8" : "#e2e8f0")};
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+`;
+
+const TabContentContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 `;
 
-const PointStat = styled.div<{ type: "merit" | "demerit" | "total" }>`
-  background: #ffffff;
+const ItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const ItemCard = styled.div`
+  background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 10px;
-  text-align: center;
-
-  .title {
-    font-size: 12px;
-    color: #64748b;
-    margin-bottom: 4px;
-  }
-
-  .score {
-    font-size: 18px;
-    font-weight: 800;
-    color: ${({ type }) =>
-      type === "merit"
-        ? "#10b981"
-        : type === "demerit"
-        ? "#ef4444"
-        : "#0f172a"};
-  }
-`;
-
-const PointList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PointItem = styled.div<{ isDemerit: boolean }>`
-  background: ${({ isDemerit }) => (isDemerit ? "#fff1f2" : "#f0fdf4")};
-  border: 1px solid ${({ isDemerit }) => (isDemerit ? "#fecdd3" : "#bbf7d0")};
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+`;
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    font-weight: 700;
-    color: ${({ isDemerit }) => (isDemerit ? "#e11d48" : "#16a34a")};
+const ItemHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
 
-    .date {
-      color: #64748b;
-      font-weight: normal;
+  .badge {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-weight: 600;
+
+    &.merit {
+      background-color: #ebf8ff;
+      color: #2b6cb0;
+    }
+    &.demerit {
+      background-color: #fff5f5;
+      color: #e53e3e;
+    }
+    &.inout {
+      background-color: #f7fafc;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
     }
   }
 
-  .reason {
-    font-size: 13px;
-    color: #1e293b;
+  .date {
+    font-size: 11px;
+    color: #a0aec0;
+  }
+
+  .status {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4a5568;
   }
 `;
 
+const ItemRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+
+  .label {
+    color: #718096;
+  }
+
+  .value {
+    color: #2d3748;
+    text-align: right;
+  }
+
+  .font-medium {
+    font-weight: 600;
+  }
+`;
+
+const PledgeTextBox = styled.div`
+  margin-top: 8px;
+  padding: 10px;
+  background-color: #f7fafc;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4a5568;
+  white-space: pre-wrap;
+  max-height: 180px;
+  overflow-y: auto;
+`;
+
 const EmptyBox = styled.div`
-  padding: 28px;
+  padding: 24px;
+  background-color: #f8fafc;
+  border-radius: 10px;
+  border: 1px dashed #e2e8f0;
   text-align: center;
   font-size: 13px;
   color: #94a3b8;
-  background: #ffffff;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
 `;
 
 const DebugArea = styled.div`
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 8px;
 
   .toggle-btn {
     display: flex;
@@ -534,25 +957,24 @@ const DebugArea = styled.div`
     gap: 6px;
     background: none;
     border: none;
-    color: #64748b;
     font-size: 12px;
+    color: #94a3b8;
     cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 4px 0;
+
     &:hover {
-      background: #f1f5f9;
+      color: #64748b;
     }
   }
 
   .json-dump {
-    width: 100%;
     margin-top: 8px;
     padding: 12px;
-    background: #0f172a;
-    color: #38bdf8;
+    background-color: #1e293b;
+    color: #f1f5f9;
     border-radius: 8px;
     font-size: 11px;
-    overflow-x: auto;
-    font-family: monospace;
+    max-height: 250px;
+    overflow-y: auto;
   }
 `;

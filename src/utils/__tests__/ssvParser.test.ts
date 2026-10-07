@@ -269,22 +269,134 @@ describe("Academic SSV Parser (Web Centralized)", () => {
       expect(result.pointsList[1].points).toBe(1);
     });
 
-    it("점수 필드가 비어있거나 단일 SSV만 제공된 경우에도 안전하게 파싱해야 한다", () => {
-      const dormInfoSsv = [
-        "ErrorCode:int=0",
-        "Dataset:DS_DMSD_INFO",
-        `_RowType_\u001fdmtyNm\u001froomNo\u001fbedNo`,
-        `N\u001f제2기숙사\u001f512\u001fB`,
-      ].join("\u001e");
+    it("실제 사생정보조회(학생 - dmsm0120)의 상단 기본정보 및 7개 탭 데이터를 완벽히 파싱해야 한다", () => {
+      const RECORD_SEP = "\x1e";
+      const UNIT_SEP = "\x1f";
 
-      const result = parseDormitoryStudentInfo({ dormInfoSsv });
-      expect(result.dormitoryBuilding).toBe("제2기숙사");
-      expect(result.roomNumber).toBe("512");
-      expect(result.bedNumber).toBe("B");
-      expect(result.meritPoints).toBe(0);
-      expect(result.demeritPoints).toBe(0);
-      expect(result.totalPoints).toBe(0);
-      expect(result.pointsList).toEqual([]);
+      const mainInfoSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209",
+        `_RowType_${UNIT_SEP}nm${UNIT_SEP}engNm${UNIT_SEP}genGbn${UNIT_SEP}natGbn${UNIT_SEP}deptNm${UNIT_SEP}hySeqGbn${UNIT_SEP}dormGbn${UNIT_SEP}dormBdNm${UNIT_SEP}domstuNo${UNIT_SEP}handpNo${UNIT_SEP}email${UNIT_SEP}zipNo${UNIT_SEP}addr${UNIT_SEP}detaAddr${UNIT_SEP}ardScr1${UNIT_SEP}ardScr2${UNIT_SEP}ardScr3${UNIT_SEP}persNo${UNIT_SEP}yy${UNIT_SEP}tmGbn`,
+        `N${UNIT_SEP}배현준${UNIT_SEP}BAE HYUNJUN${UNIT_SEP}남${UNIT_SEP}대한민국${UNIT_SEP}컴퓨터공학부${UNIT_SEP}4학년${UNIT_SEP}생활원${UNIT_SEP}제1기숙사${UNIT_SEP}20251001${UNIT_SEP}010-1234-5678${UNIT_SEP}test@inu.ac.kr${UNIT_SEP}22012${UNIT_SEP}인천광역시 연수구${UNIT_SEP}아카데미로 119${UNIT_SEP}2${UNIT_SEP}1${UNIT_SEP}0${UNIT_SEP}202001518${UNIT_SEP}2025${UNIT_SEP}20`,
+      ].join(RECORD_SEP);
+
+      const tab01AddrSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB01",
+        `_RowType_${UNIT_SEP}zipNo${UNIT_SEP}addr${UNIT_SEP}detaAddr${UNIT_SEP}guardPsnHandpNo`,
+        `N${UNIT_SEP}22012${UNIT_SEP}인천광역시 연수구${UNIT_SEP}아카데미로 119${UNIT_SEP}010-9876-5432`,
+      ].join(RECORD_SEP);
+
+      const tab02RewardSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB02",
+        `_RowType_${UNIT_SEP}dormArdGbn${UNIT_SEP}ardNm${UNIT_SEP}ardResn${UNIT_SEP}ardScr${UNIT_SEP}impsDttm`,
+        `N${UNIT_SEP}상점${UNIT_SEP}청소우수${UNIT_SEP}호실 정리정돈 우수${UNIT_SEP}2${UNIT_SEP}2025-09-15 10:00`,
+      ].join(RECORD_SEP);
+
+      const tab03InOutSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB03",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormGbn${UNIT_SEP}domstuNo${UNIT_SEP}joinCoDt${UNIT_SEP}dormLeavdormDt${UNIT_SEP}dormLeavdormGbn`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}생활원${UNIT_SEP}20251001${UNIT_SEP}2025-08-25${UNIT_SEP}2025-12-20${UNIT_SEP}정규입사`,
+      ].join(RECORD_SEP);
+
+      const tab04ApplySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB04",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormJoinGbn${UNIT_SEP}dormPassGbn${UNIT_SEP}aplyDt${UNIT_SEP}frDttm${UNIT_SEP}toDttm`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}정규입사${UNIT_SEP}합격${UNIT_SEP}2025-07-10${UNIT_SEP}2025-08-25${UNIT_SEP}2025-12-20`,
+      ].join(RECORD_SEP);
+
+      const tab05PaySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB05",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormGbn${UNIT_SEP}gbn${UNIT_SEP}totAmt${UNIT_SEP}dormDt`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}제1기숙사${UNIT_SEP}등록${UNIT_SEP}980000${UNIT_SEP}2025-07-25`,
+      ].join(RECORD_SEP);
+
+      const tab07UtilitySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB07",
+        `_RowType_${UNIT_SEP}useMm${UNIT_SEP}elQty${UNIT_SEP}elFee${UNIT_SEP}wtrwkQty${UNIT_SEP}wtrwkFee${UNIT_SEP}hotwatQty${UNIT_SEP}heatQty${UNIT_SEP}subTotFee${UNIT_SEP}totFee${UNIT_SEP}instRepartFee`,
+        `N${UNIT_SEP}2025-09${UNIT_SEP}120${UNIT_SEP}15000${UNIT_SEP}15${UNIT_SEP}8000${UNIT_SEP}5${UNIT_SEP}0${UNIT_SEP}23000${UNIT_SEP}28000${UNIT_SEP}5000`,
+      ].join(RECORD_SEP);
+
+      const tab07PledgeSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DATA",
+        `_RowType_${UNIT_SEP}stuInfo${UNIT_SEP}consntYn${UNIT_SEP}consntDt${UNIT_SEP}docCtnt`,
+        `N${UNIT_SEP}202001518 배현준${UNIT_SEP}동의${UNIT_SEP}2025-08-25${UNIT_SEP}생활원 수칙을 준수합니다.`,
+      ].join(RECORD_SEP);
+
+      const result = parseDormitoryStudentInfo({
+        mainInfo: mainInfoSsv,
+        tab01Addr: tab01AddrSsv,
+        tab02Reward: tab02RewardSsv,
+        tab03InOut: tab03InOutSsv,
+        tab04Apply: tab04ApplySsv,
+        tab05Pay: tab05PaySsv,
+        tab07Utility: tab07UtilitySsv,
+        tab07Pledge: tab07PledgeSsv,
+      });
+
+      // 1. 프로필 검증
+      expect(result.profile).not.toBeNull();
+      expect(result.profile?.name).toBe("배현준");
+      expect(result.profile?.englishName).toBe("BAE HYUNJUN");
+      expect(result.profile?.gender).toBe("남");
+      expect(result.profile?.department).toBe("컴퓨터공학부");
+      expect(result.profile?.dormitoryBuilding).toBe("제1기숙사");
+      expect(result.profile?.meritPoints).toBe("2");
+      expect(result.profile?.demeritPoints).toBe("1");
+      expect(result.profile?.nonOffsetDemeritPoints).toBe("0");
+
+      // 2. 7개 탭 검증
+      expect(result.addressList).toHaveLength(1);
+      expect(result.addressList[0].guardianPhone).toBe("010-9876-5432");
+
+      expect(result.rewardList).toHaveLength(1);
+      expect(result.rewardList[0].name).toBe("청소우수");
+      expect(result.rewardList[0].score).toBe("2");
+
+      expect(result.inOutList).toHaveLength(1);
+      expect(result.inOutList[0].checkInDate).toBe("2025-08-25");
+
+      expect(result.applyList).toHaveLength(1);
+      expect(result.applyList[0].passStatus).toBe("합격");
+
+      expect(result.paymentList).toHaveLength(1);
+      expect(result.paymentList[0].amount).toBe("980000");
+
+      expect(result.utilityList).toHaveLength(1);
+      expect(result.utilityList[0].totalFee).toBe("28000");
+
+      expect(result.pledge).not.toBeNull();
+      expect(result.pledge?.consentStatus).toBe("동의");
+      expect(result.hasData).toBe(true);
+    });
+
+    it("데이터가 존재하지 않을 때 가짜 더미 데이터(구라핑)를 채우지 않고 빈 상태를 반환해야 한다", () => {
+      const emptySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209",
+        "_RowType_\x1fnm\x1fpersNo",
+        "Dataset:DS_DMTY209_TAB01",
+        "_RowType_\x1fzipNo",
+        "Dataset:DS_DMTY209_TAB02",
+        "_RowType_\x1fardNm",
+      ].join("\x1e");
+
+      const result = parseDormitoryStudentInfo(emptySsv);
+      expect(result.profile).toBeNull();
+      expect(result.addressList).toHaveLength(0);
+      expect(result.rewardList).toHaveLength(0);
+      expect(result.inOutList).toHaveLength(0);
+      expect(result.applyList).toHaveLength(0);
+      expect(result.paymentList).toHaveLength(0);
+      expect(result.utilityList).toHaveLength(0);
+      expect(result.pledge).toBeNull();
+      expect(result.hasData).toBe(false);
     });
   });
 });

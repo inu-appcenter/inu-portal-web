@@ -1020,176 +1020,384 @@ export interface DormitoryPointItem {
   reason: string;
 }
 
-export interface DormitoryStudentInfo {
-  studentId: string;
-  studentName: string;
-  dormitoryBuilding: string;
-  roomNumber: string;
-  bedNumber: string;
-  roomType: string;
-  checkInDate: string;
-  checkOutDate: string;
-  status: string;
-  mealType: string;
-  meritPoints: number;
-  demeritPoints: number;
-  totalPoints: number;
-  pointsList: DormitoryPointItem[];
-  appliedYear?: string;
-  appliedSemester?: string;
+export interface DormitoryStudentProfile {
+  name: string; // 성명 (nm)
+  englishName: string; // 성명(영문) (engNm)
+  gender: string; // 성별 (genGbn)
+  nationality: string; // 국적 (natGbn)
+  department: string; // 학부(과)/부서 (deptNm)
+  grade: string; // 학년구분 (hySeqGbn)
+  dormitoryType: string; // 기숙사구분 (dormGbn)
+  dormitoryBuilding: string; // 기숙사건물구분 (dormBdNm || dormBdCd)
+  studentDormNo: string; // 사생번호 (domstuNo)
+  phoneNumber: string; // 휴대전화번호 (handpNo)
+  email: string; // 이메일 (email)
+  zipCode: string; // 우편번호 (zipNo)
+  address: string; // 거주지 기본주소 (addr)
+  detailedAddress: string; // 거주지 상세주소 (detaAddr)
+  meritPoints: string; // 상점 (ardScr1)
+  demeritPoints: string; // 일반벌점 (ardScr2)
+  nonOffsetDemeritPoints: string; // 상세불가/상쇄불가벌점 (ardScr3)
+  year: string; // 연도 (yy)
+  term: string; // 학기 (tmGbn)
+  studentId: string; // 학번 (persNo)
   rawFields: Record<string, string>;
 }
 
+export interface DormitoryAddressItem {
+  zipCode: string;
+  address: string;
+  detailedAddress: string;
+  guardianPhone: string;
+  year?: string;
+  term?: string;
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryRewardItem {
+  type: string; // 구분 (dormArdGbn)
+  name: string; // 상벌점명 (ardNm)
+  reason: string; // 사유 (ardResn)
+  score: string; // 점수 (ardScr)
+  imposedDate: string; // 일자 (impsDttm)
+  offsetPossible?: string;
+  isFixed?: string;
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryInOutItem {
+  year: string;
+  term: string;
+  dormitoryType: string;
+  studentDormNo: string;
+  checkInDate: string;
+  checkOutDate: string;
+  status: string; // 입퇴사구분 (dormLeavdormGbn)
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryApplyItem {
+  year: string;
+  term: string;
+  applyType: string;
+  passStatus?: string;
+  applyDate: string;
+  periodStart: string;
+  periodEnd: string;
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryPaymentItem {
+  year: string;
+  term: string;
+  dormitoryType?: string;
+  type: string; // 등록/환불구분 (gbn)
+  amount: string; // 금액 (totAmt)
+  date: string; // 처리일자 (dormDt)
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryUtilityItem {
+  useMonth: string; // 사용월 (useMm)
+  electricUsage: string; // elQty
+  electricFee: string; // elFee
+  waterUsage: string; // wtrwkQty
+  waterFee: string; // wtrwkFee
+  hotWaterUsage: string; // hotwatQty
+  heatingUsage: string; // heatQty
+  subtotalFee: string; // subTotFee
+  totalFee: string; // totFee
+  facilityFee: string; // instRepartFee
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryPledgeItem {
+  studentInfo: string;
+  consentStatus: string;
+  consentDate?: string;
+  documentContent?: string;
+  rawFields: Record<string, string>;
+}
+
+export interface DormitoryStudentInfo {
+  profile: DormitoryStudentProfile | null;
+  addressList: DormitoryAddressItem[];
+  rewardList: DormitoryRewardItem[];
+  inOutList: DormitoryInOutItem[];
+  applyList: DormitoryApplyItem[];
+  paymentList: DormitoryPaymentItem[];
+  utilityList: DormitoryUtilityItem[];
+  pledge: DormitoryPledgeItem | null;
+  hasData: boolean;
+  rawDatasets: Record<string, Record<string, string>[]>;
+
+  // 하위 호환용 레거시 필드
+  studentId?: string;
+  studentName?: string;
+  dormitoryBuilding?: string;
+  roomNumber?: string;
+  bedNumber?: string;
+  roomType?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  status?: string;
+  mealType?: string;
+  meritPoints?: number;
+  demeritPoints?: number;
+  totalPoints?: number;
+  pointsList?: DormitoryPointItem[];
+  appliedYear?: string;
+  appliedSemester?: string;
+  rawFields?: Record<string, string>;
+}
+
 /**
- * 생활원 사생정보조회(학생) SSV 패킷 파서
+ * 생활원 사생정보조회(학생) SSV 패킷 및 7개 탭 데이터 파서
+ * 데이터가 없을 때는 임의의 가짜 값(구라핑)을 채우지 않고 null 또는 빈 배열을 반환합니다.
  */
-export function parseDormitoryStudentInfo(payload: string | { dormInfoSsv?: string; pointListSsv?: string; dormPointSsv?: string; [key: string]: any }): DormitoryStudentInfo {
+export function parseDormitoryStudentInfo(
+  payload: string | Record<string, any>
+): DormitoryStudentInfo {
   let combinedSsv = "";
   if (typeof payload === "string") {
     combinedSsv = payload;
   } else if (payload && typeof payload === "object") {
-    combinedSsv = [
-      payload.dormInfoSsv || "",
-      payload.pointListSsv || payload.dormPointSsv || "",
-      payload.rawSsv || payload.ssv || "",
-    ].filter(Boolean).join("\x1e");
+    // 배치 응답 또는 각 키별 ssv 취합
+    const parts: string[] = [];
+    for (const key of Object.keys(payload)) {
+      const val = payload[key];
+      if (typeof val === "string" && val.includes("Dataset:")) {
+        parts.push(val);
+      }
+    }
+    combinedSsv = parts.join("\x1e");
   }
 
   const datasets = parseNexacroDatasets(combinedSsv);
 
-  // 1. 주요 사생 정보 행 찾기 (DS_DMSD_INFO, DS_DORM, DS_DMSD, DS_INFO, DS_MAIN 등)
-  let mainRow: Record<string, string> = {};
-  for (const dsName of Object.keys(datasets)) {
-    const rows = datasets[dsName];
-    if (rows && rows.length > 0) {
-      const candidate = rows[0];
-      if (
-        candidate["stuno"] ||
-        candidate["korNm"] ||
-        candidate["roomNo"] ||
-        candidate["domNm"] ||
-        candidate["dmtyNm"] ||
-        candidate["dormRoomNo"]
-      ) {
-        mainRow = candidate;
-        break;
-      }
+  // 1. 상단 기본 사생정보 (DS_DMTY209 및 레거시 DS_DMSD_INFO fallback)
+  const mainRows =
+    datasets["DS_DMTY209"] ||
+    datasets["DS_DMSD_INFO"] ||
+    datasets["DS_DORM_INFO"] ||
+    datasets["DS_INFO"] ||
+    [];
+  let profile: DormitoryStudentProfile | null = null;
+  let legacyRoomNo = "";
+  let legacyBedNo = "";
+  let legacyRoomType = "";
+  let legacyMealType = "";
+  let legacyCheckInDt = "";
+  let legacyCheckOutDt = "";
+
+  if (mainRows.length > 0) {
+    const row = mainRows[0];
+    legacyRoomNo = (row["roomNo"] || row["dormRoomNo"] || "").trim();
+    legacyBedNo = (row["bedNo"] || row["dormBedNo"] || "").trim();
+    legacyRoomType = (row["roomTypeNm"] || row["roomType"] || "").trim();
+    legacyMealType = (row["mealTypeNm"] || row["mealType"] || "").trim();
+    legacyCheckInDt = (row["entyDt"] || row["inDt"] || "").trim();
+    legacyCheckOutDt = (row["leavDt"] || row["outDt"] || "").trim();
+
+    // 유효한 행인지 확인 (성명, 학번, 또는 건물코드 등이 하나라도 존재하는지)
+    if (
+      row["nm"] ||
+      row["korNm"] ||
+      row["persNo"] ||
+      row["stuno"] ||
+      row["domstuNo"] ||
+      row["deptNm"] ||
+      row["dmtyNm"] ||
+      row["dormBdNm"]
+    ) {
+      profile = {
+        name: (row["nm"] || row["korNm"] || "").trim(),
+        englishName: (row["engNm"] || "").trim(),
+        gender: (row["genGbn"] || "").trim(),
+        nationality: (row["natGbn"] || "").trim(),
+        department: (row["deptNm"] || "").trim(),
+        grade: (row["hySeqGbn"] || "").trim(),
+        dormitoryType: (row["dormGbn"] || "").trim(),
+        dormitoryBuilding: (row["dormBdNm"] || row["dormBdCd"] || row["dmtyNm"] || "").trim(),
+        studentDormNo: (row["domstuNo"] || "").trim(),
+        phoneNumber: (row["handpNo"] || "").trim(),
+        email: (row["email"] || "").trim(),
+        zipCode: (row["zipNo"] || "").trim(),
+        address: (row["addr"] || "").trim(),
+        detailedAddress: (row["detaAddr"] || "").trim(),
+        meritPoints: (row["ardScr1"] || row["rwrdScore"] || "0").trim(),
+        demeritPoints: (row["ardScr2"] || row["pnshScore"] || "0").trim(),
+        nonOffsetDemeritPoints: (row["ardScr3"] || "0").trim(),
+        year: (row["yy"] || "").trim(),
+        term: (row["tmGbnNm"] || row["tmGbn"] || "").trim(),
+        studentId: (row["persNo"] || row["stuno"] || "").trim(),
+        rawFields: row,
+      };
     }
   }
 
-  // 만약 특정 필드로 못 찾았으면 행이 있는 첫 번째 데이터셋의 첫 행 사용
-  if (Object.keys(mainRow).length === 0) {
-    for (const dsName of Object.keys(datasets)) {
-      if (datasets[dsName].length > 0) {
-        mainRow = datasets[dsName][0];
-        break;
-      }
+  // 2. 탭 1 (주소사항: DS_DMTY209_TAB01)
+  const tab01Rows = datasets["DS_DMTY209_TAB01"] || [];
+  const addressList: DormitoryAddressItem[] = tab01Rows
+    .filter((r) => r["addr"] || r["zipNo"] || r["guardPsnHandpNo"])
+    .map((r) => ({
+      zipCode: (r["zipNo"] || "").trim(),
+      address: (r["addr"] || "").trim(),
+      detailedAddress: (r["detaAddr"] || "").trim(),
+      guardianPhone: (r["guardPsnHandpNo"] || "").trim(),
+      year: (r["yy"] || "").trim(),
+      term: (r["tmGbn"] || "").trim(),
+      rawFields: r,
+    }));
+
+  // 3. 탭 2 (상벌점이력: DS_DMTY209_TAB02 및 레거시 DS_POINT_LIST)
+  const tab02Rows = datasets["DS_DMTY209_TAB02"] || datasets["DS_POINT_LIST"] || [];
+  const rewardList: DormitoryRewardItem[] = tab02Rows
+    .filter((r) => r["ardNm"] || r["ardScr"] || r["impsDttm"] || r["pointGbnNm"] || r["pointVal"])
+    .map((r) => ({
+      type: (r["dormArdGbn"] || r["pointGbnNm"] || "").trim(),
+      name: (r["ardNm"] || r["pointGbnNm"] || "").trim(),
+      reason: (r["ardResn"] || r["rsn"] || "").trim(),
+      score: (r["ardScr"] || r["pointVal"] || "0").trim(),
+      imposedDate: (r["impsDttm"] || r["pointDt"] || "").trim(),
+      offsetPossible: (r["dormOffstPosbGbn"] || "").trim(),
+      isFixed: (r["fxdYn"] || "").trim(),
+      rawFields: r,
+    }));
+
+  // 4. 탭 3 (입퇴사이력: DS_DMTY209_TAB03)
+  const tab03Rows = datasets["DS_DMTY209_TAB03"] || [];
+  const inOutList: DormitoryInOutItem[] = tab03Rows
+    .filter((r) => r["joinCoDt"] || r["dormLeavdormDt"] || r["domstuNo"])
+    .map((r) => ({
+      year: (r["yy"] || "").trim(),
+      term: (r["tmGbn"] || "").trim(),
+      dormitoryType: (r["dormGbn"] || "").trim(),
+      studentDormNo: (r["domstuNo"] || "").trim(),
+      checkInDate: (r["joinCoDt"] || "").trim(),
+      checkOutDate: (r["dormLeavdormDt"] || "").trim(),
+      status: (r["dormLeavdormGbn"] || "").trim(),
+      rawFields: r,
+    }));
+
+  // 5. 탭 4 (신청이력: DS_DMTY209_TAB04)
+  const tab04Rows = datasets["DS_DMTY209_TAB04"] || [];
+  const applyList: DormitoryApplyItem[] = tab04Rows
+    .filter((r) => r["aplyDt"] || r["dormJoinGbn"] || r["frDttm"])
+    .map((r) => ({
+      year: (r["yy"] || "").trim(),
+      term: (r["tmGbn"] || "").trim(),
+      applyType: (r["dormJoinGbn"] || "").trim(),
+      passStatus: (r["dormPassGbn"] || "").trim(),
+      applyDate: (r["aplyDt"] || "").trim(),
+      periodStart: (r["frDttm"] || "").trim(),
+      periodEnd: (r["toDttm"] || "").trim(),
+      rawFields: r,
+    }));
+
+  // 6. 탭 5 (등록/환불이력: DS_DMTY209_TAB05)
+  const tab05Rows = datasets["DS_DMTY209_TAB05"] || [];
+  const paymentList: DormitoryPaymentItem[] = tab05Rows
+    .filter((r) => r["totAmt"] || r["dormDt"] || r["gbn"])
+    .map((r) => ({
+      year: (r["yy"] || "").trim(),
+      term: (r["tmGbn"] || "").trim(),
+      dormitoryType: (r["dormGbn"] || "").trim(),
+      type: (r["gbn"] || "").trim(),
+      amount: (r["totAmt"] || "0").trim(),
+      date: (r["dormDt"] || "").trim(),
+      rawFields: r,
+    }));
+
+  // 7. 탭 6 (공공요금 부과내역: DS_DMTY209_TAB07)
+  const tab07Rows = datasets["DS_DMTY209_TAB07"] || [];
+  const utilityList: DormitoryUtilityItem[] = tab07Rows
+    .filter((r) => r["useMm"] || r["totFee"] || r["subTotFee"])
+    .map((r) => ({
+      useMonth: (r["useMm"] || "").trim(),
+      electricUsage: (r["elQty"] || "0").trim(),
+      electricFee: (r["elFee"] || "0").trim(),
+      waterUsage: (r["wtrwkQty"] || "0").trim(),
+      waterFee: (r["wtrwkFee"] || "0").trim(),
+      hotWaterUsage: (r["hotwatQty"] || "0").trim(),
+      heatingUsage: (r["heatQty"] || "0").trim(),
+      subtotalFee: (r["subTotFee"] || "0").trim(),
+      totalFee: (r["totFee"] || "0").trim(),
+      facilityFee: (r["instRepartFee"] || "0").trim(),
+      rawFields: r,
+    }));
+
+  // 8. 탭 7 (입사서약서: DS_DATA)
+  const pledgeRows = datasets["DS_DATA"] || [];
+  let pledge: DormitoryPledgeItem | null = null;
+  if (pledgeRows.length > 0) {
+    const pr = pledgeRows[0];
+    if (pr["stuInfo"] || pr["consntYn"] || pr["docCtnt"]) {
+      pledge = {
+        studentInfo: (pr["stuInfo"] || "").trim(),
+        consentStatus: (pr["consntYn"] || "").trim(),
+        consentDate: (pr["consntDt"] || "").trim(),
+        documentContent: (pr["docCtnt"] || "").trim(),
+        rawFields: pr,
+      };
     }
   }
 
-  // 2. 상벌점 내역 탐색 (DS_POINT_LIST, DS_POINT, DS_REWD, DS_PNLT 등)
-  const pointsList: DormitoryPointItem[] = [];
-  let meritPoints = 0;
-  let demeritPoints = 0;
+  // 레거시 상벌점 목록 호환
+  const pointsList: DormitoryPointItem[] = rewardList.map((rw) => ({
+    date: rw.imposedDate,
+    type: rw.type.includes("벌점") || parseInt(rw.score, 10) < 0 ? "DEMERIT" : "MERIT",
+    typeName: rw.type || "상벌점",
+    points: Math.abs(parseInt(rw.score, 10) || 0),
+    reason: rw.reason || rw.name || "상벌점",
+  }));
 
-  for (const dsName of Object.keys(datasets)) {
-    if (dsName === "DS_DMSD_INFO" || dsName === "DS_DORM_INFO") continue; // 메인 정보 데이터셋은 제외
-    const rows = datasets[dsName];
-    for (const r of rows) {
-      const pntVal = parseInt(r["pointVal"] || r["pnt"] || r["point"] || r["score"] || "0", 10);
-      const typeStr = (r["pointGbnNm"] || r["pntNm"] || "").trim();
-      const isMerit =
-        r["pntGbn"] === "1" ||
-        r["rewdGbn"] === "1" ||
-        typeStr.includes("상점") ||
-        pntVal > 0;
-      const isDemerit =
-        r["pntGbn"] === "2" ||
-        r["rewdGbn"] === "2" ||
-        typeStr.includes("벌점") ||
-        pntVal < 0;
-
-      if (r["resn"] || r["rsn"] || r["pntResn"] || r["pointDt"] || r["pntDt"] || (pntVal !== 0 && (isMerit || isDemerit))) {
-        const absPoint = Math.abs(pntVal);
-        const itemType = isDemerit ? "DEMERIT" : "MERIT";
-        if (itemType === "MERIT") meritPoints += absPoint;
-        else demeritPoints += absPoint;
-
-        pointsList.push({
-          date: formatNexacroDate(r["pointDt"] || r["pntDt"] || r["regDt"] || r["dt"] || "") || "",
-          type: itemType,
-          typeName: itemType === "MERIT" ? "상점" : "벌점",
-          points: absPoint,
-          reason: (r["rsn"] || r["resn"] || r["pntResn"] || r["ctnt"] || "").trim() || "기타",
-        });
-      }
-    }
-  }
-
-  // 메인 행에서 누적 상벌점이 직접 명시된 경우 우선 반영
-  if (mainRow["rwrdScore"] || mainRow["totRewdPnt"] || mainRow["meritPnt"]) {
-    meritPoints = parseInt(mainRow["rwrdScore"] || mainRow["totRewdPnt"] || mainRow["meritPnt"] || "0", 10) || meritPoints;
-  }
-  if (mainRow["pnshScore"] || mainRow["totPnltPnt"] || mainRow["demeritPnt"]) {
-    demeritPoints = parseInt(mainRow["pnshScore"] || mainRow["totPnltPnt"] || mainRow["demeritPnt"] || "0", 10) || demeritPoints;
-  }
-
-  const calculatedTotal = meritPoints - demeritPoints;
-  const totalScoreVal = mainRow["scoreSum"] ? parseInt(mainRow["scoreSum"], 10) : calculatedTotal;
+  const mPts = profile ? parseInt(profile.meritPoints, 10) || 0 : 0;
+  const dmPts = profile ? parseInt(profile.demeritPoints, 10) || 0 : 0;
+  const hasData = Boolean(
+    profile !== null ||
+    addressList.length > 0 ||
+    rewardList.length > 0 ||
+    inOutList.length > 0 ||
+    applyList.length > 0 ||
+    paymentList.length > 0 ||
+    utilityList.length > 0 ||
+    pledge !== null
+  );
 
   return {
-    studentId: (mainRow["stuno"] || mainRow["studNo"] || "").trim(),
-    studentName: (mainRow["korNm"] || mainRow["studNm"] || "").trim(),
-    dormitoryBuilding: (
-      mainRow["dmtyNm"] ||
-      mainRow["domNm"] ||
-      mainRow["bldNm"] ||
-      mainRow["domGbnNm"] ||
-      mainRow["dormNm"] ||
-      ""
-    ).trim(),
-    roomNumber: (
-      mainRow["roomNo"] ||
-      mainRow["dormRoomNo"] ||
-      mainRow["rmNo"] ||
-      ""
-    ).trim(),
-    bedNumber: (
-      mainRow["bedNo"] ||
-      mainRow["dormBedNo"] ||
-      ""
-    ).trim(),
-    roomType: (
-      mainRow["roomTypeNm"] ||
-      mainRow["roomType"] ||
-      mainRow["roomGbnNm"] ||
-      mainRow["rmGbnNm"] ||
-      ""
-    ).trim(),
-    checkInDate: formatNexacroDate(mainRow["entyDt"] || mainRow["entrDt"] || mainRow["inDt"] || mainRow["entDt"] || "") || "",
-    checkOutDate: formatNexacroDate(mainRow["leavDt"] || mainRow["levDt"] || mainRow["outDt"] || mainRow["retDt"] || "") || "",
-    status: (
-      mainRow["statNm"] ||
-      mainRow["domStatNm"] ||
-      mainRow["status"] ||
-      "거주"
-    ).trim(),
-    mealType: (
-      mainRow["mealTypeNm"] ||
-      mainRow["mealGbnNm"] ||
-      mainRow["mealType"] ||
-      mainRow["foodGbnNm"] ||
-      ""
-    ).trim(),
-    meritPoints,
-    demeritPoints,
-    totalPoints: totalScoreVal,
+    profile,
+    addressList,
+    rewardList,
+    inOutList,
+    applyList,
+    paymentList,
+    utilityList,
+    pledge,
+    hasData,
+    rawDatasets: datasets,
+
+    // 하위 호환 필드
+    studentId: profile?.studentId || "",
+    studentName: profile?.name || "",
+    dormitoryBuilding: profile?.dormitoryBuilding || "",
+    roomNumber: legacyRoomNo,
+    bedNumber: legacyBedNo,
+    roomType: legacyRoomType,
+    checkInDate: legacyCheckInDt || inOutList[0]?.checkInDate || "",
+    checkOutDate: legacyCheckOutDt || inOutList[0]?.checkOutDate || "",
+    status: inOutList[0]?.status || (profile ? "사생" : ""),
+    mealType: legacyMealType,
+    meritPoints: mPts,
+    demeritPoints: dmPts,
+    totalPoints: mPts - dmPts,
     pointsList,
-    appliedYear: (mainRow["yy"] || "").trim(),
-    appliedSemester: (mainRow["tmGbnNm"] || mainRow["tmGbn"] || "").trim(),
-    rawFields: mainRow,
+    appliedYear: profile?.year || "",
+    appliedSemester: profile?.term || "",
+    rawFields: profile?.rawFields || {},
   };
 }
+
 
 
 

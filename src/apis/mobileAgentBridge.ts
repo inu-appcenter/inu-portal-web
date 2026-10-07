@@ -299,12 +299,12 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
     actionId: "PORTAL_GET_DORMITORY_STUDENT_INFO",
     authDomain: "PORTAL",
     request: {
-      url: "https://erp.inu.ac.kr:8443/aff/dmty/DmsdCtr/findDmsdInfoOne.do",
+      url: "https://erp.inu.ac.kr:8443/aff/dmty/Dmsm0120Ctr/findDmty209List.do?menuId=M001035&pgmId=P000886",
       method: "POST",
       datasetName: "DS_COND",
       params: {
-        menuId: "M004010",
-        pgmId: "P003180",
+        menuId: "M001035",
+        pgmId: "P000886",
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
       },
@@ -314,22 +314,58 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
       },
       batchRequests: [
         {
-          key: "dormInfoSsv",
-          url: "/aff/dmty/DmsdCtr/findDmsdInfoOne.do",
-          menuId: "M004010",
-          pgmId: "P003180",
+          key: "mainInfo",
+          url: "/aff/dmty/Dmsm0120Ctr/findDmty209List.do",
+          menuId: "M001035",
+          pgmId: "P000886",
         },
         {
-          key: "dormPointSsv",
-          url: "/aff/dmty/DmsdCtr/findDmsdPointList.do",
-          menuId: "M004010",
-          pgmId: "P003180",
+          key: "tab01Addr",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab01.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab02Reward",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab02.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab03InOut",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab03.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab04Apply",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab04.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab05Pay",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab05.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab07Utility",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+        },
+        {
+          key: "tab07Pledge",
+          url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
+          menuId: "M001035",
+          pgmId: "P000886",
         },
       ],
     },
   };
 
-  const res = await sendBridgeAction<any>("executeAgentAction", { instruction }, 45000);
+  const res = await sendBridgeAction<any>("executeAgentAction", { instruction }, 50000);
   if (!res.success) {
     return {
       success: false,
@@ -339,23 +375,8 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
   }
 
   try {
-    let rawPayload = res.data;
-    let ssvText = "";
-    if (typeof rawPayload === "object" && rawPayload !== null) {
-      ssvText =
-        rawPayload.dormInfoSsv ||
-        rawPayload.ssv ||
-        rawPayload.rawSsv ||
-        rawPayload.data ||
-        "";
-      if (rawPayload.dormPointSsv) {
-        ssvText += "\n" + rawPayload.dormPointSsv;
-      }
-    } else if (typeof rawPayload === "string") {
-      ssvText = rawPayload;
-    }
-
-    const parsed = parseDormitoryStudentInfo(ssvText);
+    const rawPayload = res.data;
+    const parsed = parseDormitoryStudentInfo(rawPayload);
     return {
       success: true,
       data: parsed,
