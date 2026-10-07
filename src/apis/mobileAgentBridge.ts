@@ -296,7 +296,7 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
   tmGbn?: string;
 }): Promise<AgentActionResult<DormitoryStudentInfo>> {
   const instruction = {
-    actionId: "PORTAL_GET_DORMITORY_STUDENT_INFO",
+    actionId: "PORTAL_GET_FULL_ACADEMIC_RECORD",
     authDomain: "PORTAL",
     request: {
       url: "https://erp.inu.ac.kr:8443/aff/dmty/Dmsm0120Ctr/findDmty209List.do?menuId=M001035&pgmId=P000886",

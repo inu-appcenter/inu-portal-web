@@ -90,21 +90,37 @@ const PortalDormitoryLabPage = () => {
     try {
       const cached = localStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
       const cachedTime = localStorage.getItem(STORAGE_KEY_DORMITORY_UPDATED);
+      const academicCached = localStorage.getItem("portal_student_info");
+      let academicParsed: any = null;
+      if (academicCached) {
+        try {
+          academicParsed = parseDormitoryStudentInfo(JSON.parse(academicCached));
+        } catch {}
+      }
 
       if (cached) {
         const parsedJson = JSON.parse(cached);
         const restored = parseDormitoryStudentInfo(parsedJson);
-        setDormInfo(restored);
+
+        // 만약 복원된 dormInfo의 studentName이나 rawFields가 비어있고 학적 캐시가 있으면 보강
+        const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
+        if ((!restored.studentName || !hasValidRf) && academicParsed) {
+          setDormInfo({
+            ...academicParsed,
+            ...restored,
+            studentName: restored.studentName || academicParsed.studentName,
+            studentId: restored.studentId || academicParsed.studentId,
+            profile: restored.profile || academicParsed.profile,
+            rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
+          });
+        } else {
+          setDormInfo(restored);
+        }
         if (cachedTime) {
           setLastUpdated(cachedTime);
         }
-      } else {
-        const academicCached = localStorage.getItem("portal_student_info");
-        if (academicCached) {
-          const parsedAc = JSON.parse(academicCached);
-          const restoredAc = parseDormitoryStudentInfo(parsedAc);
-          setDormInfo(restoredAc);
-        }
+      } else if (academicParsed) {
+        setDormInfo(academicParsed);
       }
     } catch (e) {
       console.warn("Dormitory cache load error:", e);
@@ -152,21 +168,96 @@ const PortalDormitoryLabPage = () => {
     }
   }, []);
 
+  // 학적 캐시 fallback (기숙사 데이터셋에 인적사항 필드가 누락되었을 때 대비)
+  const fallbackAcademic = useMemo(() => {
+    try {
+      const saved = localStorage.getItem("portal_student_info");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const profile = dormInfo?.profile;
 
   // 모든 데이터 소스로부터 필드 매핑
-  const studentName = profile?.name || dormInfo?.studentName || dormInfo?.rawFields?.korNm || dormInfo?.rawFields?.nm || "";
-  const englishName = profile?.englishName || dormInfo?.rawFields?.engNm || "";
-  const studentId = profile?.studentId || dormInfo?.studentId || dormInfo?.rawFields?.persNo || dormInfo?.rawFields?.stuno || "";
-  const gender = profile?.gender || dormInfo?.rawFields?.genGbn || "";
-  const nationality = profile?.nationality || dormInfo?.rawFields?.natGbn || "";
-  const department = profile?.department || dormInfo?.rawFields?.deptNm || dormInfo?.rawFields?.hgNm || "";
-  const grade = profile?.grade || (dormInfo?.rawFields?.hySeqGbn ? `${dormInfo.rawFields.hySeqGbn}학년` : "");
+  const studentName =
+    profile?.name ||
+    dormInfo?.studentName ||
+    dormInfo?.rawFields?.korNm ||
+    dormInfo?.rawFields?.nm ||
+    fallbackAcademic?.name ||
+    fallbackAcademic?.korNm ||
+    fallbackAcademic?.rawFields?.korNm ||
+    fallbackAcademic?.rawFields?.nm ||
+    "";
+
+  const englishName =
+    profile?.englishName ||
+    dormInfo?.rawFields?.engNm ||
+    fallbackAcademic?.englishName ||
+    fallbackAcademic?.rawFields?.engNm ||
+    "";
+
+  const studentId =
+    profile?.studentId ||
+    dormInfo?.studentId ||
+    dormInfo?.rawFields?.persNo ||
+    dormInfo?.rawFields?.stuno ||
+    fallbackAcademic?.studentId ||
+    fallbackAcademic?.stuno ||
+    fallbackAcademic?.rawFields?.persNo ||
+    fallbackAcademic?.rawFields?.stuno ||
+    "";
+
+  const gender =
+    profile?.gender ||
+    dormInfo?.rawFields?.genGbn ||
+    fallbackAcademic?.gender ||
+    fallbackAcademic?.rawFields?.genGbn ||
+    "";
+
+  const nationality =
+    profile?.nationality ||
+    dormInfo?.rawFields?.natGbn ||
+    fallbackAcademic?.nationality ||
+    fallbackAcademic?.rawFields?.natGbn ||
+    "";
+
+  const department =
+    profile?.department ||
+    dormInfo?.rawFields?.deptNm ||
+    dormInfo?.rawFields?.hgNm ||
+    fallbackAcademic?.department ||
+    fallbackAcademic?.rawFields?.deptNm ||
+    fallbackAcademic?.rawFields?.hgNm ||
+    "";
+
+  const grade =
+    profile?.grade ||
+    (dormInfo?.rawFields?.hySeqGbn ? `${dormInfo.rawFields.hySeqGbn}학년` : "") ||
+    (fallbackAcademic?.grade ? `${fallbackAcademic.grade}학년` : "") ||
+    (fallbackAcademic?.rawFields?.hySeqGbn ? `${fallbackAcademic.rawFields.hySeqGbn}학년` : "") ||
+    "";
+
   const dormitoryType = profile?.dormitoryType || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormGbn || "";
   const dormitoryBuilding = profile?.dormitoryBuilding || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || dormInfo?.rawFields?.dormBdCd || "";
   const studentDormNo = profile?.studentDormNo || dormInfo?.rawFields?.domstuNo || dormInfo?.rawFields?.domStuNo || "";
-  const phoneNumber = profile?.phoneNumber || dormInfo?.rawFields?.handpNo || "";
-  const email = profile?.email || dormInfo?.rawFields?.email || "";
+
+  const phoneNumber =
+    profile?.phoneNumber ||
+    dormInfo?.rawFields?.handpNo ||
+    fallbackAcademic?.phoneNumber ||
+    fallbackAcademic?.rawFields?.handpNo ||
+    "";
+
+  const email =
+    profile?.email ||
+    dormInfo?.rawFields?.email ||
+    fallbackAcademic?.email ||
+    fallbackAcademic?.rawFields?.email ||
+    "";
+
   const zipCode = profile?.zipCode || dormInfo?.rawFields?.zipNo || "";
   const address = profile?.address || dormInfo?.rawFields?.addr || "";
   const detailedAddress = profile?.detailedAddress || dormInfo?.rawFields?.detaAddr || "";
@@ -184,31 +275,27 @@ const PortalDormitoryLabPage = () => {
       profile?.rawFields?.phtFile2 ||
       profile?.rawFields?.phtFile ||
       dormInfo?.rawFields?.phtFile2 ||
-      dormInfo?.rawFields?.phtFile;
+      dormInfo?.rawFields?.phtFile ||
+      fallbackAcademic?.rawFields?.phtFile2 ||
+      fallbackAcademic?.rawFields?.phtFile;
 
     if (rawPhoto) {
       return toImageSrc(rawPhoto);
     }
-
-    try {
-      const academicCached = localStorage.getItem("portal_student_info");
-      if (academicCached) {
-        const parsed = JSON.parse(academicCached);
-        const fallbackPic = parsed?.rawFields?.phtFile2 || parsed?.rawFields?.phtFile;
-        if (fallbackPic) {
-          return toImageSrc(fallbackPic);
-        }
-      }
-    } catch {}
-
     return null;
-  }, [profile, dormInfo]);
+  }, [profile, dormInfo, fallbackAcademic]);
 
-  // 원시 필드 목록
+  // 원시 필드 목록 (profile, dormInfo, fallbackAcademic 종합)
   const rawEntries = useMemo(() => {
-    const rf = profile?.rawFields || dormInfo?.rawFields || {};
+    let rf = profile?.rawFields || dormInfo?.rawFields;
+    if (!rf || Object.keys(rf).length === 0) {
+      if (fallbackAcademic?.rawFields && Object.keys(fallbackAcademic.rawFields).length > 0) {
+        rf = fallbackAcademic.rawFields;
+      }
+    }
+    rf = rf || {};
     return Object.entries(rf).sort(([a], [b]) => a.localeCompare(b));
-  }, [profile, dormInfo]);
+  }, [profile, dormInfo, fallbackAcademic]);
 
   const addressList = dormInfo?.addressList || [];
   const rewardList = dormInfo?.rewardList || [];

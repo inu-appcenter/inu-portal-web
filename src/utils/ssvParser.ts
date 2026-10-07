@@ -1242,13 +1242,48 @@ export function parseDormitoryStudentInfo(
 
   const datasets = parseNexacroDatasets(combinedSsv);
 
-  // 1. 상단 기본 사생정보 (DS_DMTY209 및 레거시 DS_DMSD_INFO fallback)
-  const mainRows =
+  // 1. 상단 기본 사생정보 (DS_DMTY209, DS_DMSD_INFO, DS_BASE_SCHREG_INFO 등 포괄)
+  let mainRows =
     datasets["DS_DMTY209"] ||
     datasets["DS_DMSD_INFO"] ||
     datasets["DS_DORM_INFO"] ||
     datasets["DS_INFO"] ||
+    datasets["DS_BASE_SCHREG_INFO"] ||
+    datasets["DS_SCHREG"] ||
+    datasets["DS_MAIN"] ||
     [];
+
+  // 만약 지정된 키로 못 찾았으면 stuno/korNm/nm/persNo가 있는 데이터셋 탐색
+  if (mainRows.length === 0) {
+    for (const dsName of Object.keys(datasets)) {
+      const rows = datasets[dsName];
+      if (rows && rows.length > 0) {
+        const candidate = rows[0];
+        if (
+          candidate["stuno"] ||
+          candidate["korNm"] ||
+          candidate["nm"] ||
+          candidate["persNo"] ||
+          candidate["roomNo"] ||
+          candidate["dormRoomNo"]
+        ) {
+          mainRows = rows;
+          break;
+        }
+      }
+    }
+  }
+
+  // 그래도 없으면 데이터가 있는 첫 데이터셋 사용
+  if (mainRows.length === 0) {
+    for (const dsName of Object.keys(datasets)) {
+      if (datasets[dsName].length > 0) {
+        mainRows = datasets[dsName];
+        break;
+      }
+    }
+  }
+
   let profile: DormitoryStudentProfile | null = null;
   let legacyRoomNo = "";
   let legacyBedNo = "";
@@ -1263,7 +1298,7 @@ export function parseDormitoryStudentInfo(
     legacyBedNo = (row["bedNo"] || row["dormBedNo"] || "").trim();
     legacyRoomType = (row["roomTypeNm"] || row["roomType"] || "").trim();
     legacyMealType = (row["mealTypeNm"] || row["mealType"] || "").trim();
-    legacyCheckInDt = (row["entyDt"] || row["inDt"] || "").trim();
+    legacyCheckInDt = (row["entyDt"] || row["inDt"] || row["entrDt"] || "").trim();
     legacyCheckOutDt = (row["leavDt"] || row["outDt"] || "").trim();
 
     const rawPhoto =
@@ -1283,30 +1318,31 @@ export function parseDormitoryStudentInfo(
       row["stuno"] ||
       row["domstuNo"] ||
       row["deptNm"] ||
+      row["hgNm"] ||
       row["dmtyNm"] ||
       row["dormBdNm"]
     ) {
       profile = {
-        name: (row["nm"] || row["korNm"] || "").trim(),
+        name: (row["nm"] || row["korNm"] || row["studNm"] || "").trim(),
         englishName: (row["engNm"] || "").trim(),
         gender: (row["genGbn"] || "").trim(),
         nationality: (row["natGbn"] || "").trim(),
-        department: (row["deptNm"] || "").trim(),
+        department: (row["deptNm"] || row["hgNm"] || "").trim(),
         grade: (row["hySeqGbn"] || "").trim(),
         dormitoryType: (row["dormGbn"] || "").trim(),
-        dormitoryBuilding: (row["dormBdNm"] || row["dormBdCd"] || row["dmtyNm"] || "").trim(),
-        studentDormNo: (row["domstuNo"] || "").trim(),
-        phoneNumber: (row["handpNo"] || "").trim(),
+        dormitoryBuilding: (row["dormBdNm"] || row["dormBdCd"] || row["dmtyNm"] || row["domNm"] || "").trim(),
+        studentDormNo: (row["domstuNo"] || row["domStuNo"] || "").trim(),
+        phoneNumber: (row["handpNo"] || row["hpNo"] || "").trim(),
         email: (row["email"] || "").trim(),
         zipCode: (row["zipNo"] || "").trim(),
         address: (row["addr"] || "").trim(),
         detailedAddress: (row["detaAddr"] || "").trim(),
-        meritPoints: (row["ardScr1"] || row["rwrdScore"] || "0").trim(),
-        demeritPoints: (row["ardScr2"] || row["pnshScore"] || "0").trim(),
+        meritPoints: (row["ardScr1"] || row["rwrdScore"] || row["meritPnt"] || "0").trim(),
+        demeritPoints: (row["ardScr2"] || row["pnshScore"] || row["demeritPnt"] || "0").trim(),
         nonOffsetDemeritPoints: (row["ardScr3"] || "0").trim(),
         year: (row["yy"] || "").trim(),
         term: (row["tmGbnNm"] || row["tmGbn"] || "").trim(),
-        studentId: (row["persNo"] || row["stuno"] || "").trim(),
+        studentId: (row["persNo"] || row["stuno"] || row["studNo"] || "").trim(),
         photoBase64: rawPhoto || undefined,
         rawFields: row,
       };
@@ -1455,24 +1491,24 @@ export function parseDormitoryStudentInfo(
     rawDatasets: datasets,
 
     // 하위 호환 필드
-    studentId: profile?.studentId || "",
-    studentName: profile?.name || "",
-    dormitoryBuilding: profile?.dormitoryBuilding || "",
+    studentId: profile?.studentId || (mainRows[0]?.["stuno"] || mainRows[0]?.["persNo"] || "").trim(),
+    studentName: profile?.name || (mainRows[0]?.["korNm"] || mainRows[0]?.["nm"] || "").trim(),
+    dormitoryBuilding: profile?.dormitoryBuilding || (mainRows[0]?.["dormBdNm"] || mainRows[0]?.["dmtyNm"] || "").trim(),
     roomNumber: legacyRoomNo,
     bedNumber: legacyBedNo,
     roomType: legacyRoomType,
-    checkInDate: legacyCheckInDt || inOutList[0]?.checkInDate || "",
+    checkInDate: legacyCheckInDt || inOutList[0]?.checkInDate || (mainRows[0]?.["entrDt"] || "").trim(),
     checkOutDate: legacyCheckOutDt || inOutList[0]?.checkOutDate || "",
-    status: inOutList[0]?.status || (profile ? "사생" : ""),
+    status: inOutList[0]?.status || (profile?.dormitoryBuilding ? "사생" : "거주"),
     mealType: legacyMealType,
     meritPoints: mPts,
     demeritPoints: dmPts,
     totalPoints: mPts - dmPts,
     pointsList,
-    appliedYear: profile?.year || "",
-    appliedSemester: profile?.term || "",
-    photoBase64: profile?.photoBase64 || undefined,
-    rawFields: profile?.rawFields || {},
+    appliedYear: profile?.year || (mainRows[0]?.["yy"] || "").trim(),
+    appliedSemester: profile?.term || (mainRows[0]?.["tmGbn"] || "").trim(),
+    photoBase64: profile?.photoBase64 || (mainRows[0]?.["phtFile2"] || mainRows[0]?.["phtFile"] || undefined),
+    rawFields: profile?.rawFields || mainRows[0] || {},
   };
 }
 
