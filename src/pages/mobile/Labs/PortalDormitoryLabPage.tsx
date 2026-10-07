@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -41,6 +41,10 @@ import {
   RefreshCw,
   Inbox,
   GraduationCap,
+  Terminal,
+  Copy,
+  Check,
+  AlertTriangle,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 
@@ -76,6 +80,83 @@ const PortalDormitoryLabPage = () => {
   const [isPortalAccountModalOpen, setIsPortalAccountModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("address");
   const [showRawFields, setShowRawFields] = useState(false);
+
+  // 진행 진단 로그 상태 및 타임스탬프 관리
+  const [logs, setLogs] = useState<Array<{
+    id: string;
+    timestamp: string;
+    stage: string;
+    level: "info" | "success" | "warn" | "error";
+    message: string;
+    detail?: string;
+    elapsedMs?: number;
+  }>>([]);
+  const [showLogs, setShowLogs] = useState(false);
+  const [isCopiedLogs, setIsCopiedLogs] = useState(false);
+  const startTimeRef = useRef<number>(0);
+
+  const addLog = useCallback(
+    (
+      stage: string,
+      message: string,
+      level: "info" | "success" | "warn" | "error" = "info",
+      detail?: string
+    ) => {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(
+        now.getMinutes()
+      ).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}.${String(
+        now.getMilliseconds()
+      ).padStart(3, "0")}`;
+      const elapsedMs = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+      setLogs((prev) => [
+        ...prev,
+        {
+          id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          timestamp: timeStr,
+          stage,
+          level,
+          message,
+          detail,
+          elapsedMs,
+        },
+      ]);
+    },
+    []
+  );
+
+  const handleCopyLogs = useCallback(() => {
+    if (logs.length === 0) return;
+    const header =
+      `[INTIP 기숙사 조회 진단 로그]\n` +
+      `- 생성시각: ${new Date().toLocaleString()}\n` +
+      `- 접속환경: ${isMobileAppEnvironment() ? "모바일 앱 (ReactNativeWebView)" : "일반 웹 브라우저"}\n` +
+      `- 기록수: ${logs.length}건\n` +
+      `--------------------------------------------------\n`;
+    const body = logs
+      .map((l) => {
+        let line = `[${l.timestamp}] [${l.stage}] [${l.level.toUpperCase()}] ${l.message} (+${l.elapsedMs}ms)`;
+        if (l.detail) line += `\n  - 상세: ${l.detail}`;
+        return line;
+      })
+      .join("\n");
+    const footer = `\n--------------------------------------------------`;
+    const fullText = header + body + footer;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(fullText)
+        .then(() => {
+          setIsCopiedLogs(true);
+          setTimeout(() => setIsCopiedLogs(false), 2000);
+        })
+        .catch(() => {
+          prompt("아래 진단 로그를 복사하세요:", fullText);
+        });
+    } else {
+      prompt("아래 진단 로그를 복사하세요:", fullText);
+    }
+  }, [logs]);
 
   useHeader({
     title: "사생정보조회(학생)",
@@ -129,26 +210,50 @@ const PortalDormitoryLabPage = () => {
     }
   }, []);
 
-  // 새로고침 버튼을 눌렀을 때만 ERP 직접 조회
+  // 새로고침 버튼을 눌렀을 때만 ERP 직접 조회 (진행 단계별 로깅)
   const loadDormitoryInfo = useCallback(async () => {
+    startTimeRef.current = Date.now();
+    setLogs([]);
+    addLog("INIT", "사생정보 조회 프로세스 시작", "info");
+
     if (!isMobileAppEnvironment()) {
+      addLog("ENV_CHECK", "모바일 앱 환경이 아닙니다. (웹 환경 감지)", "warn");
       setIsPortalAccountModalOpen(true);
       return;
     }
+    addLog("ENV_CHECK", "모바일 앱 브릿지 환경 확인 완료 (ReactNativeWebView)", "info");
 
     try {
       setIsLoading(true);
       setLoadingMessage("사생 정보와 탭 데이터를 조회하고 있습니다...");
 
+      addLog("AUTH_CHECK", "기기 보안 저장소 내 포털 계정(학번/비밀번호) 등록 여부 확인 중...", "info");
       const isLinked = await checkPortalAccountLinked();
       if (!isLinked) {
+        addLog("AUTH_CHECK", "포털 계정이 등록되지 않았습니다. 계정 입력창 호출", "warn");
         setIsPortalAccountModalOpen(true);
         setIsLoading(false);
         return;
       }
+      addLog("AUTH_CHECK", "포털 계정 연동 확인 완료 (linked: true)", "success");
 
+      addLog(
+        "DISPATCH",
+        "모바일 앱 브릿지로 사생정보 Fast-Path(핵심 7개 묶음) 요청 전송 (최대 타임아웃 50초 설정)",
+        "info"
+      );
       const res = await fetchDormitoryStudentInfoFromApp();
+
       if (res.success && res.data) {
+        const studentNm = res.data.profile?.name || res.data.studentName || "(이름 없음)";
+        const rawCount = Object.keys(res.data.rawFields || {}).length;
+        addLog(
+          "PARSE_SUCCESS",
+          `사생정보 수신 및 파싱 완료 (사생: ${studentNm}, 원시 필드: ${rawCount}개)`,
+          "success",
+          `사생번호: ${res.data.profile?.studentDormNo || "-"}, 건물: ${res.data.profile?.dormitoryBuilding || "-"}`
+        );
+
         setDormInfo(res.data);
         const nowIso = new Date().toISOString();
         setLastUpdated(nowIso);
@@ -156,52 +261,94 @@ const PortalDormitoryLabPage = () => {
         try {
           localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(res.data));
           localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
+          addLog("CACHE_SAVED", "로컬 스토리지에 최신 사생정보 캐싱 완료", "info");
         } catch (storageErr) {
           console.warn("Dormitory cache save error:", storageErr);
+          addLog("CACHE_WARN", "로컬 스토리지 캐시 저장 실패", "warn", String(storageErr));
         }
       } else {
-        alert(res.errorMessage || "사생 정보 조회 중 오류가 발생했습니다.");
+        const errMsg = res.errorMessage || "사생 정보 조회 중 오류가 발생했습니다.";
+        addLog(
+          "FAILED",
+          `조회 실패: ${errMsg}`,
+          "error",
+          `ErrorCode: ${res.errorCode || "UNKNOWN"}`
+        );
+        setShowLogs(true); // 실패 시 로그를 즉시 확인/복사할 수 있도록 자동 펼침
+        alert(errMsg);
       }
     } catch (e: any) {
-      alert(e?.message || "사생 정보 조회 실패");
+      const errMsg = e?.message || "사생 정보 조회 실패";
+      addLog("EXCEPTION", `예외 발생: ${errMsg}`, "error", String(e));
+      setShowLogs(true);
+      alert(errMsg);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
+      addLog("FINISH", `프로세스 종료 (총 소요시간: ${Date.now() - startTimeRef.current}ms)`, "info");
     }
-  }, []);
+  }, [addLog]);
 
-  // 특정 탭(공공요금 또는 서약서) 단독 온디맨드 조회
+  // 특정 탭(공공요금 또는 서약서) 단독 온디맨드 조회 (상세 로깅)
   const [tabLoading, setTabLoading] = useState<string | null>(null);
-  const handleFetchTabSpecific = useCallback(async (tabType: "utility" | "pledge") => {
-    if (!isMobileAppEnvironment()) {
-      setIsPortalAccountModalOpen(true);
-      return;
-    }
-    setTabLoading(tabType);
-    try {
-      const res = await fetchDormitoryTabSpecificFromApp(tabType);
-      if (res.success && res.data) {
-        setDormInfo((prev) => {
-          if (!prev) return res.data as DormitoryStudentInfo;
-          const updated: DormitoryStudentInfo = {
-            ...prev,
-            ...(tabType === "utility" && res.data?.utilityList ? { utilityList: res.data.utilityList } : {}),
-            ...(tabType === "pledge" && res.data?.pledge ? { pledge: res.data.pledge } : {}),
-          };
-          try {
-            localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
-          } catch {}
-          return updated;
-        });
-      } else {
-        alert(res.errorMessage || "상세 내역을 불러오는 중 오류가 발생했습니다.");
+  const handleFetchTabSpecific = useCallback(
+    async (tabType: "utility" | "pledge") => {
+      const tabName = tabType === "utility" ? "공공요금" : "입사서약서";
+      startTimeRef.current = Date.now();
+      addLog("TAB_INIT", `[${tabName}] 단독 상세 탭 조회 시작`, "info");
+
+      if (!isMobileAppEnvironment()) {
+        addLog("ENV_CHECK", "모바일 앱 환경이 아닙니다.", "warn");
+        setIsPortalAccountModalOpen(true);
+        return;
       }
-    } catch (e: any) {
-      alert(e?.message || "상세 내역 조회 실패");
-    } finally {
-      setTabLoading(null);
-    }
-  }, []);
+
+      setTabLoading(tabType);
+      try {
+        addLog("TAB_DISPATCH", `[${tabName}] 모바일 앱 브릿지로 단건 요청 전송 (타임아웃 45초)`, "info");
+        const res = await fetchDormitoryTabSpecificFromApp(tabType);
+        if (res.success && res.data) {
+          addLog("TAB_SUCCESS", `[${tabName}] 데이터 수신 및 파싱 성공`, "success");
+          setDormInfo((prev) => {
+            if (!prev) return res.data as DormitoryStudentInfo;
+            const updated: DormitoryStudentInfo = {
+              ...prev,
+              ...(tabType === "utility" && res.data?.utilityList
+                ? { utilityList: res.data.utilityList }
+                : {}),
+              ...(tabType === "pledge" && res.data?.pledge
+                ? { pledge: res.data.pledge }
+                : {}),
+            };
+            try {
+              localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
+              addLog("TAB_CACHE", `[${tabName}] 기존 사생정보에 병합 캐싱 완료`, "info");
+            } catch {}
+            return updated;
+          });
+        } else {
+          const errMsg = res.errorMessage || "상세 내역을 불러오는 중 오류가 발생했습니다.";
+          addLog(
+            "TAB_FAILED",
+            `[${tabName}] 조회 실패: ${errMsg}`,
+            "error",
+            `ErrorCode: ${res.errorCode || "UNKNOWN"}`
+          );
+          setShowLogs(true);
+          alert(errMsg);
+        }
+      } catch (e: any) {
+        const errMsg = e?.message || "상세 내역 조회 실패";
+        addLog("TAB_EXCEPTION", `[${tabName}] 예외 발생: ${errMsg}`, "error", String(e));
+        setShowLogs(true);
+        alert(errMsg);
+      } finally {
+        setTabLoading(null);
+        addLog("TAB_FINISH", `[${tabName}] 조회 종료 (소요시간: ${Date.now() - startTimeRef.current}ms)`, "info");
+      }
+    },
+    [addLog]
+  );
 
   // 학적 캐시 fallback (기숙사 데이터셋에 인적사항 필드가 누락되었을 때 대비)
   const fallbackAcademic = useMemo(() => {
@@ -1171,7 +1318,82 @@ const PortalDormitoryLabPage = () => {
           </TabBody>
         </SectionBlock>
 
-        {/* 4. 원시 파싱 데이터 토글 (정리된 디버그 뷰어) */}
+        {/* 4. 진행 진단 로그 콘솔 (타임스탬프 및 복사 기능) */}
+        <DebugSection>
+          <DebugHeader onClick={() => setShowLogs(!showLogs)}>
+            <div className="title">
+              <Terminal size={13} />
+              <span>진행 진단 로그 ({logs.length}건 기록)</span>
+              {logs.some((l) => l.level === "error") && (
+                <span className="log-badge error">
+                  <AlertTriangle size={10} /> 오류 감지
+                </span>
+              )}
+              {isLoading && (
+                <span className="log-badge running">
+                  <RefreshCw size={10} className="spin" /> 진행 중
+                </span>
+              )}
+            </div>
+            <span className="toggle-hint">{showLogs ? "접기" : "펼치기"}</span>
+          </DebugHeader>
+
+          {showLogs && (
+            <LogConsoleBody>
+              <LogToolbar>
+                <span className="log-meta">
+                  총 {logs.length}개 로그 | 단계별 추적
+                </span>
+                <div className="log-actions">
+                  <LogActionButton
+                    onClick={handleCopyLogs}
+                    disabled={logs.length === 0}
+                  >
+                    {isCopiedLogs ? (
+                      <>
+                        <Check size={12} color="#10b981" />
+                        <span style={{ color: "#10b981" }}>복사 완료!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>로그 복사</span>
+                      </>
+                    )}
+                  </LogActionButton>
+                  {logs.length > 0 && (
+                    <LogActionButton onClick={() => setLogs([])}>
+                      지우기
+                    </LogActionButton>
+                  )}
+                </div>
+              </LogToolbar>
+
+              {logs.length === 0 ? (
+                <LogEmptyNotice>
+                  기록된 진행 로그가 없습니다. [정보 새로고침]을 누르면 단계별 로그가 기록됩니다.
+                </LogEmptyNotice>
+              ) : (
+                <LogStream>
+                  {logs.map((log) => (
+                    <LogLine key={log.id} level={log.level}>
+                      <span className="time">{log.timestamp}</span>
+                      <span className="stage">[{log.stage}]</span>
+                      <span className="level">[{log.level.toUpperCase()}]</span>
+                      <span className="msg">{log.message}</span>
+                      {log.elapsedMs !== undefined && (
+                        <span className="elapsed">+{log.elapsedMs}ms</span>
+                      )}
+                      {log.detail && <div className="detail">↳ {log.detail}</div>}
+                    </LogLine>
+                  ))}
+                </LogStream>
+              )}
+            </LogConsoleBody>
+          )}
+        </DebugSection>
+
+        {/* 5. 원시 파싱 데이터 토글 (정리된 디버그 뷰어) */}
         <DebugSection>
           <DebugHeader onClick={() => setShowRawFields(!showRawFields)}>
             <div className="title">
@@ -1763,9 +1985,150 @@ const DebugHeader = styled.div`
     font-weight: 500;
   }
 
+  .log-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+
+    &.error {
+      background-color: #fee2e2;
+      color: #ef4444;
+    }
+
+    &.running {
+      background-color: #e0f2fe;
+      color: #0284c7;
+    }
+  }
+
   .toggle-hint {
     font-size: 11px;
     color: #94a3b8;
+  }
+`;
+
+const LogConsoleBody = styled.div`
+  background-color: #0f172a;
+  padding: 10px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+`;
+
+const LogToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+  font-size: 11px;
+
+  .log-meta {
+    color: #64748b;
+    font-size: 10px;
+  }
+
+  .log-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+`;
+
+const LogActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  font-size: 11px;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #334155;
+    color: #ffffff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const LogEmptyNotice = styled.div`
+  padding: 16px;
+  text-align: center;
+  color: #475569;
+  font-size: 11px;
+`;
+
+const LogStream = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+`;
+
+const LogLine = styled.div<{ level: string }>`
+  font-size: 11px;
+  line-height: 1.4;
+  word-break: break-all;
+
+  .time {
+    color: #64748b;
+    margin-right: 6px;
+    font-size: 10px;
+  }
+
+  .stage {
+    color: #38bdf8;
+    margin-right: 4px;
+    font-weight: 600;
+  }
+
+  .level {
+    margin-right: 6px;
+    font-weight: 700;
+    color: ${({ level }) =>
+      level === "error"
+        ? "#f87171"
+        : level === "warn"
+        ? "#fbbf24"
+        : level === "success"
+        ? "#34d399"
+        : "#94a3b8"};
+  }
+
+  .msg {
+    color: #f1f5f9;
+  }
+
+  .elapsed {
+    color: #64748b;
+    margin-left: 6px;
+    font-size: 10px;
+  }
+
+  .detail {
+    margin-top: 2px;
+    margin-left: 12px;
+    color: #cbd5e1;
+    background-color: rgba(30, 41, 59, 0.7);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
   }
 `;
 
