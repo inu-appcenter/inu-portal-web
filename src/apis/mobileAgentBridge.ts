@@ -246,7 +246,9 @@ export async function fetchAcademicInfoFromApp(forceRefresh = false): Promise<Ag
 export async function fetchStudentTimetableFromApp(params?: {
   yy?: string;
   tmGbn?: string;
+  stuno?: string;
 }): Promise<AgentActionResult<TimetableCourseItem[]>> {
+  const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
   const instruction = {
     actionId: 'PORTAL_GET_STUDENT_TIMETABLE',
     authDomain: 'PORTAL',
@@ -259,10 +261,12 @@ export async function fetchStudentTimetableFromApp(params?: {
         pgmId: 'P001878',
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        ...(targetStuno ? { stuno: targetStuno } : {}),
       },
       data: {
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        ...(targetStuno ? { stuno: targetStuno } : {}),
       },
     },
   };
@@ -346,14 +350,18 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
   const currentTmGbn = params?.tmGbn || defaultTm;
   const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
 
+  if (!targetStuno) {
+    return {
+      success: false,
+      errorCode: "MISSING_STUDENT_ID",
+      errorMessage: "학번 정보가 확인되지 않아 조회를 안전하게 중단했습니다. 학적 정보를 먼저 조회해주세요.",
+    };
+  }
+
   const RS = String.fromCharCode(30);
   const US = String.fromCharCode(31);
-  const dormCondBody = targetStuno
-    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`
-    : `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
-  const academicCondBody = targetStuno
-    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}${targetStuno}${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`
-    : `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}""${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`;
+  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`;
+  const academicCondBody = `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}${targetStuno}${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`;
 
   const coreBatchRequests = [
     {
@@ -495,11 +503,17 @@ export async function fetchDormitoryTabSpecificFromApp(
   const currentTmGbn = params?.tmGbn || defaultTm;
   const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
 
+  if (!targetStuno) {
+    return {
+      success: false,
+      errorCode: "MISSING_STUDENT_ID",
+      errorMessage: "학번 정보가 확인되지 않아 조회를 안전하게 중단했습니다. 학적 정보를 먼저 조회해주세요.",
+    };
+  }
+
   const RS = String.fromCharCode(30);
   const US = String.fromCharCode(31);
-  const dormCondBody = targetStuno
-    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`
-    : `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
+  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`;
 
   const targetRequest =
     tabType === "utility"
@@ -574,7 +588,9 @@ export async function fetchDormitoryTabSpecificFromApp(
 export async function fetchFullAcademicReportFromApp(params?: {
   yy?: string;
   tmGbn?: string;
+  stuno?: string;
 }): Promise<AgentActionResult<FullAcademicReport>> {
+  const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
   const instruction = {
     actionId: 'PORTAL_GET_FULL_ACADEMIC_RECORD',
     authDomain: 'PORTAL',
@@ -586,10 +602,12 @@ export async function fetchFullAcademicReportFromApp(params?: {
         pgmId: 'P001878',
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        ...(targetStuno ? { stuno: targetStuno } : {}),
       },
       data: {
         ...(params?.yy ? { yy: params.yy } : {}),
         ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        ...(targetStuno ? { stuno: targetStuno } : {}),
       },
     },
   };
