@@ -1,3 +1,4 @@
+import useUserStore from "@/stores/useUserStore";
 import {
   parseAcademicBasicInfo,
   parseTimetableList,
@@ -8,6 +9,35 @@ import {
   FullAcademicReport,
   DormitoryStudentInfo,
 } from "@/utils/ssvParser";
+
+/**
+ * 로그인 세션 또는 로컬 스토리지에서 현재 사용자 학번을 안전하게 추출
+ */
+export function resolveCurrentStudentId(): string {
+  try {
+    const userStoreState = useUserStore.getState();
+    if (userStoreState?.userInfo?.studentId) {
+      return String(userStoreState.userInfo.studentId).trim();
+    }
+  } catch {}
+  try {
+    const portalSaved = localStorage.getItem("portal_student_info");
+    if (portalSaved) {
+      const parsed = JSON.parse(portalSaved);
+      const sid = parsed.studentId || parsed.stuno || "";
+      if (sid) return String(sid).trim();
+    }
+  } catch {}
+  try {
+    const dormSaved = localStorage.getItem("portal_dormitory_student_info");
+    if (dormSaved) {
+      const parsed = JSON.parse(dormSaved);
+      const sid = parsed.studentId || parsed.profile?.studentId || "";
+      if (sid) return String(sid).trim();
+    }
+  } catch {}
+  return "";
+}
 
 export interface AcademicInfoData {
   studentId: string;
@@ -299,6 +329,7 @@ export async function fetchStudentTimetableFromApp(params?: {
 export async function fetchDormitoryStudentInfoFromApp(params?: {
   yy?: string;
   tmGbn?: string;
+  stuno?: string;
   includeHeavyTabs?: boolean;
 }): Promise<AgentActionResult<DormitoryStudentInfo>> {
   const now = new Date();
@@ -313,11 +344,16 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
       ? "30"
       : "40";
   const currentTmGbn = params?.tmGbn || defaultTm;
+  const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
 
   const RS = String.fromCharCode(30);
   const US = String.fromCharCode(31);
-  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
-  const academicCondBody = `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}""${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`;
+  const dormCondBody = targetStuno
+    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`
+    : `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
+  const academicCondBody = targetStuno
+    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}${targetStuno}${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`
+    : `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}""${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`;
 
   const coreBatchRequests = [
     {
@@ -402,10 +438,12 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
         pgmId: "P000886",
         yy: currentYy,
         tmGbn: currentTmGbn,
+        ...(targetStuno ? { stuno: targetStuno, persNo: targetStuno } : {}),
       },
       data: {
         yy: currentYy,
         tmGbn: currentTmGbn,
+        ...(targetStuno ? { stuno: targetStuno, persNo: targetStuno } : {}),
       },
       batchRequests: coreBatchRequests,
     },
@@ -441,7 +479,7 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
  */
 export async function fetchDormitoryTabSpecificFromApp(
   tabType: "utility" | "pledge",
-  params?: { yy?: string; tmGbn?: string }
+  params?: { yy?: string; tmGbn?: string; stuno?: string }
 ): Promise<AgentActionResult<Partial<DormitoryStudentInfo>>> {
   const now = new Date();
   const currentYy = params?.yy || String(now.getFullYear());
@@ -455,10 +493,13 @@ export async function fetchDormitoryTabSpecificFromApp(
       ? "30"
       : "40";
   const currentTmGbn = params?.tmGbn || defaultTm;
+  const targetStuno = (params?.stuno || resolveCurrentStudentId()).trim();
 
   const RS = String.fromCharCode(30);
   const US = String.fromCharCode(31);
-  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
+  const dormCondBody = targetStuno
+    ? `Dataset:DS_COND${RS}_RowType_${US}stuno${US}persNo${US}yy${US}tmGbn${RS}N${US}${targetStuno}${US}${targetStuno}${US}${currentYy}${US}${currentTmGbn}${RS}`
+    : `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
 
   const targetRequest =
     tabType === "utility"
@@ -489,10 +530,12 @@ export async function fetchDormitoryTabSpecificFromApp(
         pgmId: "P000886",
         yy: currentYy,
         tmGbn: currentTmGbn,
+        ...(targetStuno ? { stuno: targetStuno, persNo: targetStuno } : {}),
       },
       data: {
         yy: currentYy,
         tmGbn: currentTmGbn,
+        ...(targetStuno ? { stuno: targetStuno, persNo: targetStuno } : {}),
       },
       batchRequests: [targetRequest],
     },

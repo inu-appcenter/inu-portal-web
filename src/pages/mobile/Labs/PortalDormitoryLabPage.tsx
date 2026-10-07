@@ -8,8 +8,10 @@ import { ROUTES } from "@/constants/routes";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import {
   checkPortalAccountLinked,
+  fetchAcademicInfoFromApp,
   fetchDormitoryStudentInfoFromApp,
   fetchDormitoryTabSpecificFromApp,
+  resolveCurrentStudentId,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import {
@@ -237,19 +239,47 @@ const PortalDormitoryLabPage = () => {
       }
       addLog("AUTH_CHECK", "포털 계정 연동 확인 완료 (linked: true)", "success");
 
+      // 본인 학번 확인 및 사전 확보
+      let myStudentId = resolveCurrentStudentId();
+      if (!myStudentId) {
+        addLog("ID_RESOLVE", "로컬에 학번 정보가 없어 학적 조회를 통해 본인 학번을 먼저 확인합니다...", "info");
+        try {
+          const academicRes = await fetchAcademicInfoFromApp(false);
+          if (academicRes.success && academicRes.data?.studentId) {
+            myStudentId = academicRes.data.studentId.trim();
+            addLog("ID_RESOLVE", `본인 학번 확인 완료 (${myStudentId})`, "success");
+          }
+        } catch {
+          addLog("ID_RESOLVE", "학적 사전 확인 실패, 세션 기반으로 진행합니다.", "warn");
+        }
+      } else {
+        addLog("ID_RESOLVE", `확인된 본인 학번: ${myStudentId}`, "info");
+      }
+
       addLog(
         "DISPATCH",
-        "모바일 앱 브릿지로 사생정보 Fast-Path(핵심 7개 묶음) 요청 전송 (최대 타임아웃 50초 설정)",
+        `모바일 앱 브릿지로 사생정보 Fast-Path(핵심 7개 묶음) 요청 전송 (학번: ${myStudentId || "세션"}, 타임아웃 50초)`,
         "info"
       );
-      const res = await fetchDormitoryStudentInfoFromApp();
+      const res = await fetchDormitoryStudentInfoFromApp({ stuno: myStudentId });
 
       if (res.success && res.data) {
+        const returnedId = res.data.profile?.studentId || res.data.studentId || "";
+
+        // 타인 데이터 노출 방지 안전장치 (Sanity Check)
+        if (myStudentId && returnedId && returnedId !== myStudentId) {
+          const warnMsg = `조회된 사생 학번(${returnedId})이 본인 학번(${myStudentId})과 일치하지 않습니다.`;
+          addLog("SECURITY_ALERT", warnMsg, "error", "타인 정보 노출 방지를 위해 데이터를 거부했습니다.");
+          setShowLogs(true);
+          alert("학적 정보 불일치가 감지되어 조회를 중단했습니다. 마이페이지에서 포털 계정을 다시 확인해 주세요.");
+          return;
+        }
+
         const studentNm = res.data.profile?.name || res.data.studentName || "(이름 없음)";
         const rawCount = Object.keys(res.data.rawFields || {}).length;
         addLog(
           "PARSE_SUCCESS",
-          `사생정보 수신 및 파싱 완료 (사생: ${studentNm}, 원시 필드: ${rawCount}개)`,
+          `사생정보 수신 및 파싱 완료 (사생: ${studentNm}, 학번: ${returnedId || "-"}, 원시 필드: ${rawCount}개)`,
           "success",
           `사생번호: ${res.data.profile?.studentDormNo || "-"}, 건물: ${res.data.profile?.dormitoryBuilding || "-"}`
         );
@@ -305,8 +335,13 @@ const PortalDormitoryLabPage = () => {
 
       setTabLoading(tabType);
       try {
-        addLog("TAB_DISPATCH", `[${tabName}] 모바일 앱 브릿지로 단건 요청 전송 (타임아웃 45초)`, "info");
-        const res = await fetchDormitoryTabSpecificFromApp(tabType);
+        const myStudentId = resolveCurrentStudentId();
+        addLog(
+          "TAB_DISPATCH",
+          `[${tabName}] 모바일 앱 브릿지로 단건 요청 전송 (학번: ${myStudentId || "세션"}, 타임아웃 45초)`,
+          "info"
+        );
+        const res = await fetchDormitoryTabSpecificFromApp(tabType, { stuno: myStudentId });
         if (res.success && res.data) {
           addLog("TAB_SUCCESS", `[${tabName}] 데이터 수신 및 파싱 성공`, "success");
           setDormInfo((prev) => {
