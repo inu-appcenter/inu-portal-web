@@ -53,7 +53,7 @@ type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility
  */
 function toImageSrc(base64?: string): string | null {
   if (!base64 || typeof base64 !== "string") return null;
-  const clean = base64.trim();
+  const clean = base64.replace(/\s/g, "");
   if (!clean) return null;
   if (clean.startsWith("data:")) return clean;
   if (clean.startsWith("Qk")) return `data:image/bmp;base64,${clean}`;
