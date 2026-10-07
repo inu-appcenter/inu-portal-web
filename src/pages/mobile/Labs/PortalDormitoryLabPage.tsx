@@ -585,10 +585,30 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>등록된 주소사항 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>조회된 주소 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailRow>
+                        <span className="k">우편번호</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">기본주소</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">상세주소</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">보호자 연락처</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -627,10 +647,34 @@ const PortalDormitoryLabPage = () => {
                     })}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>부여된 상벌점 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>부여된 상벌점 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">구분 (상점/벌점)</span>
+                        <span className="sub-text">부여일자 (-)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">상벌점명</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">부여 점수</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">사유</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">상쇄가능여부</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -664,10 +708,34 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>입퇴사 이력이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>입퇴사 이력이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">연도/학기 (기숙사구분)</span>
+                        <span className="sub-text">상태 (입사/퇴사)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">사생번호</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">호실정보</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">입사일자</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">퇴사일자</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -703,10 +771,30 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>기숙사 신청 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>기숙사 신청 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">연도/학기</span>
+                        <span className="sub-text">선발상태 (합격/불합격)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">신청구분</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">신청일자</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">거주기간</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -768,10 +856,46 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>등록금 납부 및 환불 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>등록금 납부 및 환불 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">구분 (등록/환불)</span>
+                        <span className="sub-text">일자 (-)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">학기</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">기숙사구분</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">총 납부금액</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">기숙사비(관리비)</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">식비</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">보증금</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">환불/입금계좌</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -835,10 +959,50 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>공공요금 부과 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>공공요금 부과 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">사용월 (-)</span>
+                        <span className="sub-text">총 청구금액 (-)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">전기 (사용량 / 요금)</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">전기 지침 (전월 / 당월)</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">수도 (사용량 / 요금)</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">수도 지침 (전월 / 당월)</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">온수 / 난방 사용량</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">소계 / 시설분담금</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">납부상태 / 납부기한</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">납부 가상계좌</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -869,10 +1033,30 @@ const PortalDormitoryLabPage = () => {
                     ) : null}
                   </DetailCard>
                 ) : (
-                  <EmptyNotice>
-                    <Inbox size={20} strokeWidth={1.5} />
-                    <span>입사서약서 체결 내역이 없습니다.</span>
-                  </EmptyNotice>
+                  <CardsList>
+                    <EmptyBanner>
+                      <Inbox size={15} />
+                      <span>입사서약서 체결 내역이 없습니다. (항목 안내 틀)</span>
+                    </EmptyBanner>
+                    <DetailCard style={{ opacity: 0.85 }}>
+                      <DetailCardHeader>
+                        <span className="status-pill neutral">서약서 서식</span>
+                        <span className="sub-text">동의일자 (-)</span>
+                      </DetailCardHeader>
+                      <DetailRow>
+                        <span className="k">동의여부</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">학생정보</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                      <DetailRow>
+                        <span className="k">서약서 내용</span>
+                        <span className="v text-muted">-</span>
+                      </DetailRow>
+                    </DetailCard>
+                  </CardsList>
                 )}
               </div>
             )}
@@ -1416,6 +1600,30 @@ const DetailRow = styled.div`
     &.font-bold {
       font-weight: 600;
     }
+
+    &.text-muted {
+      color: #94a3b8;
+    }
+  }
+`;
+
+const EmptyBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
+
+  svg {
+    color: #94a3b8;
+    flex-shrink: 0;
   }
 `;
 
@@ -1430,21 +1638,6 @@ const PledgeContentBox = styled.div`
   white-space: pre-wrap;
   max-height: 160px;
   overflow-y: auto;
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-const EmptyNotice = styled.div`
-  padding: 24px 16px;
-  background-color: #f8fafc;
-  border-radius: 10px;
-  border: 1px dashed #cbd5e1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: #94a3b8;
-  font-size: 12px;
   width: 100%;
   box-sizing: border-box;
 `;
