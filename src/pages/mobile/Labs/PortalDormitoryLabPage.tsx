@@ -39,6 +39,7 @@ import {
   User,
   Database,
   RefreshCw,
+  Info,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 
@@ -98,6 +99,14 @@ const PortalDormitoryLabPage = () => {
         if (cachedTime) {
           setLastUpdated(cachedTime);
         }
+      } else {
+        // 혹시 기존 학적 캐시가 있으면 기초 프로필로 활용
+        const academicCached = localStorage.getItem("portal_student_info");
+        if (academicCached) {
+          const parsedAc = JSON.parse(academicCached);
+          const restoredAc = parseDormitoryStudentInfo(parsedAc);
+          setDormInfo(restoredAc);
+        }
       }
     } catch (e) {
       console.warn("Dormitory cache read error:", e);
@@ -148,6 +157,27 @@ const PortalDormitoryLabPage = () => {
 
   const profile = dormInfo?.profile;
 
+  // 모든 소스(profile, dormInfo 최상위, rawFields)로부터 종합 매핑
+  const studentName = profile?.name || dormInfo?.studentName || dormInfo?.rawFields?.korNm || dormInfo?.rawFields?.nm || "";
+  const englishName = profile?.englishName || dormInfo?.rawFields?.engNm || "";
+  const gender = profile?.gender || dormInfo?.rawFields?.genGbn || "";
+  const nationality = profile?.nationality || dormInfo?.rawFields?.natGbn || "";
+  const department = profile?.department || dormInfo?.rawFields?.deptNm || dormInfo?.rawFields?.hgNm || "";
+  const grade = profile?.grade || (dormInfo?.rawFields?.hySeqGbn ? `${dormInfo.rawFields.hySeqGbn}학년` : "");
+  const dormitoryType = profile?.dormitoryType || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormGbn || "";
+  const dormitoryBuilding = profile?.dormitoryBuilding || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || dormInfo?.rawFields?.dormBdCd || "";
+  const studentDormNo = profile?.studentDormNo || dormInfo?.rawFields?.domstuNo || dormInfo?.rawFields?.domStuNo || "";
+  const phoneNumber = profile?.phoneNumber || dormInfo?.rawFields?.handpNo || "";
+  const email = profile?.email || dormInfo?.rawFields?.email || "";
+  const zipCode = profile?.zipCode || dormInfo?.rawFields?.zipNo || "";
+  const address = profile?.address || dormInfo?.rawFields?.addr || "";
+  const detailedAddress = profile?.detailedAddress || dormInfo?.rawFields?.detaAddr || "";
+  const meritPoints = profile?.meritPoints ?? dormInfo?.meritPoints ?? dormInfo?.rawFields?.ardScr1 ?? "0";
+  const demeritPoints = profile?.demeritPoints ?? dormInfo?.demeritPoints ?? dormInfo?.rawFields?.ardScr2 ?? "0";
+  const nonOffsetDemeritPoints = profile?.nonOffsetDemeritPoints ?? dormInfo?.rawFields?.ardScr3 ?? "0";
+  const year = profile?.year || dormInfo?.appliedYear || dormInfo?.rawFields?.yy || "";
+  const term = profile?.term || dormInfo?.appliedSemester || dormInfo?.rawFields?.tmGbn || "";
+
   // 프로필 이미지 URL 계산 (phtFile, phtFile2 또는 학적 캐시 fallback)
   const profilePhotoSrc = useMemo(() => {
     const rawPhoto =
@@ -162,7 +192,6 @@ const PortalDormitoryLabPage = () => {
       return toImageSrc(rawPhoto);
     }
 
-    // fallback: 혹시 학적 기본정보 캐시에 저장된 사진이 있으면 활용
     try {
       const academicCached = localStorage.getItem("portal_student_info");
       if (academicCached) {
@@ -182,6 +211,14 @@ const PortalDormitoryLabPage = () => {
     const rf = profile?.rawFields || dormInfo?.rawFields || {};
     return Object.entries(rf).sort(([a], [b]) => a.localeCompare(b));
   }, [profile, dormInfo]);
+
+  const addressList = dormInfo?.addressList || [];
+  const rewardList = dormInfo?.rewardList || [];
+  const inOutList = dormInfo?.inOutList || [];
+  const applyList = dormInfo?.applyList || [];
+  const paymentList = dormInfo?.paymentList || [];
+  const utilityList = dormInfo?.utilityList || [];
+  const pledge = dormInfo?.pledge || null;
 
   return (
     <Container>
@@ -204,9 +241,9 @@ const PortalDormitoryLabPage = () => {
             <Home size={18} />
           </div>
           <div className="text">
-            <strong>로컬 보안 캐싱 및 데이터 안내</strong>
+            <strong>로컬 보안 캐싱 및 투명 데이터 안내</strong>
             <p>
-              사생 정보는 외부 서버에 절대 전송되지 않으며, 기기 내 안전한 로컬 저장소에 캐싱됩니다.
+              사생 정보는 외부 서버에 절대 전송되지 않으며, 기기 내 로컬 저장소에 안전하게 보관됩니다.
               없는 데이터는 임의의 기본값으로 속이지 않고 빈 상태 그대로 표기됩니다.
             </p>
           </div>
@@ -249,448 +286,471 @@ const PortalDormitoryLabPage = () => {
           )}
         </ActionArea>
 
-        {dormInfo ? (
-          <ContentSection>
-            {/* 1. 상단 사생정보 카드 (프로필 사진 + 테이블 그리드) */}
-            <SectionHeader>
-              <div className="title">사생정보</div>
-              <div className="badge-row">
-                {profile?.year && profile?.term ? (
-                  <div className="badge">{profile.year}년 {profile.term}학기</div>
+        {/* UI 레이아웃 자체는 데이터 유무와 상관없이 항상 온전히 표시 */}
+        <ContentSection>
+          {/* 1. 상단 사생정보 카드 (증명사진 + 필드 그리드) */}
+          <SectionHeader>
+            <div className="title">사생정보</div>
+            <div className="badge-row">
+              {year && term ? (
+                <div className="badge">{year}년 {term}학기</div>
+              ) : (
+                <div className="badge gray">학기 정보 없음</div>
+              )}
+            </div>
+          </SectionHeader>
+
+          <ProfileLayoutCard>
+            {/* 좌측 증명사진 영역 */}
+            <PhotoSection>
+              <PhotoContainer>
+                {profilePhotoSrc ? (
+                  <img src={profilePhotoSrc} alt="사생 증명사진" className="avatar-img" />
                 ) : (
-                  <div className="badge gray">학기 정보 없음</div>
+                  <div className="no-avatar">
+                    <User size={40} strokeWidth={1.5} />
+                    <span>사진 미등록</span>
+                  </div>
+                )}
+              </PhotoContainer>
+              <div className="photo-label">사생 사진</div>
+            </PhotoSection>
+
+            {/* 우측 사생정보 그리드 테이블 */}
+            <TableGridArea>
+              <TableGrid>
+                <TableRow>
+                  <TableCol>
+                    <span className="th">성명</span>
+                    <span className="td">{studentName || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">성명(영문)</span>
+                    <span className="td">{englishName || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">성별</span>
+                    <span className="td">{gender || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                </TableRow>
+
+                <TableRow>
+                  <TableCol>
+                    <span className="th">국적</span>
+                    <span className="td">{nationality || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">학부(과)/부서</span>
+                    <span className="td">{department || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">학년구분</span>
+                    <span className="td">{grade || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                </TableRow>
+
+                <TableRow>
+                  <TableCol>
+                    <span className="th">기숙사구분</span>
+                    <span className="td">{dormitoryType || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">기숙사건물구분</span>
+                    <span className="td">{dormitoryBuilding || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol>
+                    <span className="th">사생번호</span>
+                    <span className="td">{studentDormNo || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                </TableRow>
+
+                <TableRow>
+                  <TableCol>
+                    <span className="th">휴대전화번호</span>
+                    <span className="td">{phoneNumber || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                  <TableCol span={2}>
+                    <span className="th">이메일</span>
+                    <span className="td">{email || <EmptyText>(없음)</EmptyText>}</span>
+                  </TableCol>
+                </TableRow>
+
+                <TableRow>
+                  <TableCol span={3}>
+                    <span className="th">거주지</span>
+                    <span className="td">
+                      {zipCode ? `[${zipCode}] ` : ""}
+                      {address || ""} {detailedAddress || ""}
+                      {!zipCode && !address && !detailedAddress && (
+                        <EmptyText>(등록된 주소 없음)</EmptyText>
+                      )}
+                    </span>
+                  </TableCol>
+                </TableRow>
+              </TableGrid>
+
+              {/* 상벌점 배지 바 */}
+              <PointBadgeRow>
+                <PointBox>
+                  <span className="label">상점</span>
+                  <span className="val merit">{meritPoints}</span>
+                </PointBox>
+                <PointBox>
+                  <span className="label">일반벌점</span>
+                  <span className="val demerit">{demeritPoints}</span>
+                </PointBox>
+                <PointBox>
+                  <span className="label">상쇄불가벌점</span>
+                  <span className="val fixed-demerit">{nonOffsetDemeritPoints}</span>
+                </PointBox>
+              </PointBadgeRow>
+            </TableGridArea>
+          </ProfileLayoutCard>
+
+          {/* 2. 하단 7개 탭 네비게이션 */}
+          <TabHeader>
+            <TabButton
+              active={activeTab === "address"}
+              onClick={() => setActiveTab("address")}
+            >
+              <MapPin size={14} />
+              주소사항 ({addressList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "reward"}
+              onClick={() => setActiveTab("reward")}
+            >
+              <Award size={14} />
+              상벌점이력 ({rewardList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "inout"}
+              onClick={() => setActiveTab("inout")}
+            >
+              <LogIn size={14} />
+              입퇴사이력 ({inOutList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "apply"}
+              onClick={() => setActiveTab("apply")}
+            >
+              <ClipboardList size={14} />
+              신청이력 ({applyList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "payment"}
+              onClick={() => setActiveTab("payment")}
+            >
+              <CreditCard size={14} />
+              등록/환불이력 ({paymentList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "utility"}
+              onClick={() => setActiveTab("utility")}
+            >
+              <Zap size={14} />
+              공공요금 ({utilityList.length})
+            </TabButton>
+            <TabButton
+              active={activeTab === "pledge"}
+              onClick={() => setActiveTab("pledge")}
+            >
+              <FileCheck size={14} />
+              입사서약서 {pledge ? "(1)" : "(0)"}
+            </TabButton>
+          </TabHeader>
+
+          {/* 3. 탭별 상세 내용 (테이블 형식으로 구조화) */}
+          <TabContentContainer>
+            {/* 탭 1: 주소사항 */}
+            {activeTab === "address" && (
+              <div>
+                {addressList.length > 0 ? (
+                  <ItemList>
+                    {addressList.map((addr: DormitoryAddressItem, idx: number) => (
+                      <ItemCard key={idx}>
+                        <ItemRow>
+                          <span className="label">우편번호</span>
+                          <span className="value">{addr.zipCode || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">기본주소</span>
+                          <span className="value">{addr.address || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">상세주소</span>
+                          <span className="value">{addr.detailedAddress || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">보호자 연락처</span>
+                          <span className="value">{addr.guardianPhone || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                      </ItemCard>
+                    ))}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 주소사항(우편번호, 주소, 보호자연락처) 내역이 없습니다.</span>
+                  </EmptyStructureBox>
                 )}
               </div>
-            </SectionHeader>
+            )}
 
-            <ProfileLayoutCard>
-              {/* 좌측 증명사진 영역 */}
-              <PhotoSection>
-                <PhotoContainer>
-                  {profilePhotoSrc ? (
-                    <img src={profilePhotoSrc} alt="사생 증명사진" className="avatar-img" />
-                  ) : (
-                    <div className="no-avatar">
-                      <User size={42} strokeWidth={1.5} />
-                      <span>사진 없음</span>
-                    </div>
-                  )}
-                </PhotoContainer>
-              </PhotoSection>
-
-              {/* 우측 사생정보 그리드 테이블 */}
-              <TableGridArea>
-                <TableGrid>
-                  <TableRow>
-                    <TableCol>
-                      <span className="th">성명</span>
-                      <span className="td">{profile?.name || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">성명(영문)</span>
-                      <span className="td">{profile?.englishName || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">성별</span>
-                      <span className="td">{profile?.gender || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                  </TableRow>
-
-                  <TableRow>
-                    <TableCol>
-                      <span className="th">국적</span>
-                      <span className="td">{profile?.nationality || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">학부(과)/부서</span>
-                      <span className="td">{profile?.department || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">학년구분</span>
-                      <span className="td">{profile?.grade || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                  </TableRow>
-
-                  <TableRow>
-                    <TableCol>
-                      <span className="th">기숙사구분</span>
-                      <span className="td">{profile?.dormitoryType || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">기숙사건물구분</span>
-                      <span className="td">{profile?.dormitoryBuilding || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol>
-                      <span className="th">사생번호</span>
-                      <span className="td">{profile?.studentDormNo || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                  </TableRow>
-
-                  <TableRow>
-                    <TableCol>
-                      <span className="th">휴대전화번호</span>
-                      <span className="td">{profile?.phoneNumber || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                    <TableCol span={2}>
-                      <span className="th">이메일</span>
-                      <span className="td">{profile?.email || <EmptyText>(없음)</EmptyText>}</span>
-                    </TableCol>
-                  </TableRow>
-
-                  <TableRow>
-                    <TableCol span={3}>
-                      <span className="th">거주지</span>
-                      <span className="td">
-                        {profile?.zipCode ? `[${profile.zipCode}] ` : ""}
-                        {profile?.address || ""} {profile?.detailedAddress || ""}
-                        {!profile?.zipCode && !profile?.address && !profile?.detailedAddress && (
-                          <EmptyText>(등록된 주소 없음)</EmptyText>
-                        )}
-                      </span>
-                    </TableCol>
-                  </TableRow>
-                </TableGrid>
-
-                {/* 상벌점 배지 바 */}
-                <PointBadgeRow>
-                  <PointBox>
-                    <span className="label">상점</span>
-                    <span className="val merit">{profile?.meritPoints ?? "0"}</span>
-                  </PointBox>
-                  <PointBox>
-                    <span className="label">일반벌점</span>
-                    <span className="val demerit">{profile?.demeritPoints ?? "0"}</span>
-                  </PointBox>
-                  <PointBox>
-                    <span className="label">상쇄불가벌점</span>
-                    <span className="val fixed-demerit">{profile?.nonOffsetDemeritPoints ?? "0"}</span>
-                  </PointBox>
-                </PointBadgeRow>
-              </TableGridArea>
-            </ProfileLayoutCard>
-
-            {/* 2. 하단 7개 탭 네비게이션 */}
-            <TabHeader>
-              <TabButton
-                active={activeTab === "address"}
-                onClick={() => setActiveTab("address")}
-              >
-                <MapPin size={14} />
-                주소사항 ({dormInfo.addressList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "reward"}
-                onClick={() => setActiveTab("reward")}
-              >
-                <Award size={14} />
-                상벌점이력 ({dormInfo.rewardList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "inout"}
-                onClick={() => setActiveTab("inout")}
-              >
-                <LogIn size={14} />
-                입퇴사이력 ({dormInfo.inOutList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "apply"}
-                onClick={() => setActiveTab("apply")}
-              >
-                <ClipboardList size={14} />
-                신청이력 ({dormInfo.applyList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "payment"}
-                onClick={() => setActiveTab("payment")}
-              >
-                <CreditCard size={14} />
-                등록/환불이력 ({dormInfo.paymentList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "utility"}
-                onClick={() => setActiveTab("utility")}
-              >
-                <Zap size={14} />
-                공공요금 ({dormInfo.utilityList.length})
-              </TabButton>
-              <TabButton
-                active={activeTab === "pledge"}
-                onClick={() => setActiveTab("pledge")}
-              >
-                <FileCheck size={14} />
-                입사서약서 {dormInfo.pledge ? "(1)" : "(0)"}
-              </TabButton>
-            </TabHeader>
-
-            {/* 3. 탭별 상세 내용 */}
-            <TabContentContainer>
-              {/* 탭 1: 주소사항 */}
-              {activeTab === "address" && (
-                <div>
-                  {dormInfo.addressList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.addressList.map((addr: DormitoryAddressItem, idx: number) => (
-                        <ItemCard key={idx}>
-                          <ItemRow>
-                            <span className="label">우편번호</span>
-                            <span className="value">{addr.zipCode || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">기본주소</span>
-                            <span className="value">{addr.address || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">상세주소</span>
-                            <span className="value">{addr.detailedAddress || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">보호자 연락처</span>
-                            <span className="value">{addr.guardianPhone || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                        </ItemCard>
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>주소사항 데이터가 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-
-              {/* 탭 2: 상벌점이력 */}
-              {activeTab === "reward" && (
-                <div>
-                  {dormInfo.rewardList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.rewardList.map((rw: DormitoryRewardItem, idx: number) => {
-                        const isDemerit = rw.type.includes("벌점") || parseInt(rw.score, 10) < 0;
-                        return (
-                          <ItemCard key={idx}>
-                            <ItemHeader>
-                              <span className={`badge ${isDemerit ? "demerit" : "merit"}`}>
-                                {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
-                              </span>
-                              <span className="date">{rw.imposedDate || "(일자 미기재)"}</span>
-                            </ItemHeader>
-                            <ItemRow>
-                              <span className="label">상벌점명</span>
-                              <span className="value font-medium">{rw.name || <EmptyText>(빈값)</EmptyText>}</span>
-                            </ItemRow>
-                            <ItemRow>
-                              <span className="label">사유</span>
-                              <span className="value">{rw.reason || <EmptyText>(빈값)</EmptyText>}</span>
-                            </ItemRow>
-                            {rw.offsetPossible && (
-                              <ItemRow>
-                                <span className="label">상쇄가능구분</span>
-                                <span className="value">{rw.offsetPossible}</span>
-                              </ItemRow>
-                            )}
-                          </ItemCard>
-                        );
-                      })}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>상벌점 부여 내역이 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-
-              {/* 탭 3: 입퇴사이력 */}
-              {activeTab === "inout" && (
-                <div>
-                  {dormInfo.inOutList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.inOutList.map((io: DormitoryInOutItem, idx: number) => (
+            {/* 탭 2: 상벌점이력 */}
+            {activeTab === "reward" && (
+              <div>
+                {rewardList.length > 0 ? (
+                  <ItemList>
+                    {rewardList.map((rw: DormitoryRewardItem, idx: number) => {
+                      const isDemerit = rw.type.includes("벌점") || parseInt(rw.score, 10) < 0;
+                      return (
                         <ItemCard key={idx}>
                           <ItemHeader>
-                            <span className="badge inout">
-                              {io.year ? `${io.year}년 ` : ""}{io.term ? `${io.term}학기 ` : ""}({io.dormitoryType || "기숙사"})
+                            <span className={`badge ${isDemerit ? "demerit" : "merit"}`}>
+                              {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
                             </span>
-                            <span className="status">{io.status || "입퇴사"}</span>
+                            <span className="date">{rw.imposedDate || "(일자 미기재)"}</span>
                           </ItemHeader>
                           <ItemRow>
-                            <span className="label">사생번호</span>
-                            <span className="value">{io.studentDormNo || <EmptyText>(빈값)</EmptyText>}</span>
+                            <span className="label">상벌점명</span>
+                            <span className="value font-medium">{rw.name || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
-                            <span className="label">입사일자</span>
-                            <span className="value">{io.checkInDate || <EmptyText>(빈값)</EmptyText>}</span>
+                            <span className="label">사유</span>
+                            <span className="value">{rw.reason || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
-                          <ItemRow>
-                            <span className="label">퇴사일자</span>
-                            <span className="value">{io.checkOutDate || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                        </ItemCard>
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>입퇴사 이력이 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-
-              {/* 탭 4: 신청이력 */}
-              {activeTab === "apply" && (
-                <div>
-                  {dormInfo.applyList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.applyList.map((ap: DormitoryApplyItem, idx: number) => (
-                        <ItemCard key={idx}>
-                          <ItemHeader>
-                            <span className="badge inout">
-                              {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${ap.term}학기` : ""}
-                            </span>
-                            <span className="status">{ap.passStatus || ap.applyType || "신청"}</span>
-                          </ItemHeader>
-                          <ItemRow>
-                            <span className="label">신청구분</span>
-                            <span className="value">{ap.applyType || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">신청일자</span>
-                            <span className="value">{ap.applyDate || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">거주기간</span>
-                            <span className="value">
-                              {ap.periodStart || "(시작 미기재)"} ~ {ap.periodEnd || "(종료 미기재)"}
-                            </span>
-                          </ItemRow>
-                        </ItemCard>
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>기숙사 신청 이력이 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-
-              {/* 탭 5: 등록/환불이력 */}
-              {activeTab === "payment" && (
-                <div>
-                  {dormInfo.paymentList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.paymentList.map((pm: DormitoryPaymentItem, idx: number) => (
-                        <ItemCard key={idx}>
-                          <ItemHeader>
-                            <span className={`badge ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
-                              {pm.type || "등록/환불"}
-                            </span>
-                            <span className="date">{pm.date || "(일자 미기재)"}</span>
-                          </ItemHeader>
-                          <ItemRow>
-                            <span className="label">학기</span>
-                            <span className="value">{pm.year}년 {pm.term}학기</span>
-                          </ItemRow>
-                          {pm.dormitoryType && (
+                          {rw.offsetPossible && (
                             <ItemRow>
-                              <span className="label">기숙사구분</span>
-                              <span className="value">{pm.dormitoryType}</span>
+                              <span className="label">상쇄가능구분</span>
+                              <span className="value">{rw.offsetPossible}</span>
                             </ItemRow>
                           )}
-                          <ItemRow>
-                            <span className="label">금액</span>
-                            <span className="value font-medium">
-                              {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : <EmptyText>(0원)</EmptyText>}
-                            </span>
-                          </ItemRow>
                         </ItemCard>
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>등록금 및 환불 내역이 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
+                      );
+                    })}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 상벌점(구분, 상벌점명, 사유, 점수, 부과일자) 부여 내역이 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
 
-              {/* 탭 6: 공공요금 부과내역 */}
-              {activeTab === "utility" && (
-                <div>
-                  {dormInfo.utilityList.length > 0 ? (
-                    <ItemList>
-                      {dormInfo.utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
-                        <ItemCard key={idx}>
-                          <ItemHeader>
-                            <span className="badge inout">사용월: {ut.useMonth || "(미기재)"}</span>
-                            <span className="font-medium">
-                              총 {ut.totalFee ? `${Number(ut.totalFee).toLocaleString()}원` : "0원"}
-                            </span>
-                          </ItemHeader>
-                          <ItemRow>
-                            <span className="label">전기 (사용량 / 요금)</span>
-                            <span className="value">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">수도 (사용량 / 요금)</span>
-                            <span className="value">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">온수 / 난방 사용량</span>
-                            <span className="value">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">소계 / 시설분담금</span>
-                            <span className="value">
-                              {Number(ut.subtotalFee || "0").toLocaleString()}원 / {Number(ut.facilityFee || "0").toLocaleString()}원
-                            </span>
-                          </ItemRow>
-                        </ItemCard>
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <EmptyBox>공공요금 부과 내역이 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-
-              {/* 탭 7: 입사서약서 */}
-              {activeTab === "pledge" && (
-                <div>
-                  {dormInfo.pledge ? (
-                    <ItemCard>
-                      <ItemHeader>
-                        <span className="badge merit">입사서약서</span>
-                        {dormInfo.pledge.consentDate && (
-                          <span className="date">동의일: {dormInfo.pledge.consentDate}</span>
-                        )}
-                      </ItemHeader>
-                      <ItemRow>
-                        <span className="label">동의여부</span>
-                        <span className="value font-medium">{dormInfo.pledge.consentStatus || <EmptyText>(미기재)</EmptyText>}</span>
-                      </ItemRow>
-                      {dormInfo.pledge.studentInfo && (
+            {/* 탭 3: 입퇴사이력 */}
+            {activeTab === "inout" && (
+              <div>
+                {inOutList.length > 0 ? (
+                  <ItemList>
+                    {inOutList.map((io: DormitoryInOutItem, idx: number) => (
+                      <ItemCard key={idx}>
+                        <ItemHeader>
+                          <span className="badge inout">
+                            {io.year ? `${io.year}년 ` : ""}{io.term ? `${io.term}학기 ` : ""}({io.dormitoryType || "기숙사"})
+                          </span>
+                          <span className="status">{io.status || "입퇴사"}</span>
+                        </ItemHeader>
                         <ItemRow>
-                          <span className="label">학생정보</span>
-                          <span className="value">{dormInfo.pledge.studentInfo}</span>
+                          <span className="label">사생번호</span>
+                          <span className="value">{io.studentDormNo || <EmptyText>(빈값)</EmptyText>}</span>
                         </ItemRow>
-                      )}
-                      {dormInfo.pledge.documentContent && (
-                        <PledgeTextBox>
-                          {dormInfo.pledge.documentContent}
-                        </PledgeTextBox>
-                      )}
-                    </ItemCard>
-                  ) : (
-                    <EmptyBox>입사서약서 정보가 없습니다.</EmptyBox>
-                  )}
-                </div>
-              )}
-            </TabContentContainer>
+                        <ItemRow>
+                          <span className="label">입사일자</span>
+                          <span className="value">{io.checkInDate || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">퇴사일자</span>
+                          <span className="value">{io.checkOutDate || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                      </ItemCard>
+                    ))}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 입퇴사이력(연도, 학기, 기숙사, 입사일자, 퇴사일자) 내역이 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
 
-            {/* 4. 원시 파싱 데이터 투명 노출 (Raw Fields Viewer) */}
-            <RawSection>
-              <RawSectionHeader onClick={() => setShowRawFields(!showRawFields)}>
-                <div className="title-left">
-                  <Database size={15} />
-                  <span>원시 파싱 데이터 (Raw Fields: {rawEntries.length}개 필드)</span>
-                </div>
-                <div className="btn-toggle">
-                  {showRawFields ? "접기 ▲" : "전체 펼쳐보기 ▼"}
-                </div>
-              </RawSectionHeader>
+            {/* 탭 4: 신청이력 */}
+            {activeTab === "apply" && (
+              <div>
+                {applyList.length > 0 ? (
+                  <ItemList>
+                    {applyList.map((ap: DormitoryApplyItem, idx: number) => (
+                      <ItemCard key={idx}>
+                        <ItemHeader>
+                          <span className="badge inout">
+                            {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${ap.term}학기` : ""}
+                          </span>
+                          <span className="status">{ap.passStatus || ap.applyType || "신청"}</span>
+                        </ItemHeader>
+                        <ItemRow>
+                          <span className="label">신청구분</span>
+                          <span className="value">{ap.applyType || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">신청일자</span>
+                          <span className="value">{ap.applyDate || <EmptyText>(빈값)</EmptyText>}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">거주기간</span>
+                          <span className="value">
+                            {ap.periodStart || "(시작 미기재)"} ~ {ap.periodEnd || "(종료 미기재)"}
+                          </span>
+                        </ItemRow>
+                      </ItemCard>
+                    ))}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 기숙사 신청이력(신청구분, 신청일자, 거주기간, 합격여부) 내역이 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
 
-              {showRawFields && (
-                <RawFieldsBody>
+            {/* 탭 5: 등록/환불이력 */}
+            {activeTab === "payment" && (
+              <div>
+                {paymentList.length > 0 ? (
+                  <ItemList>
+                    {paymentList.map((pm: DormitoryPaymentItem, idx: number) => (
+                      <ItemCard key={idx}>
+                        <ItemHeader>
+                          <span className={`badge ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
+                            {pm.type || "등록/환불"}
+                          </span>
+                          <span className="date">{pm.date || "(일자 미기재)"}</span>
+                        </ItemHeader>
+                        <ItemRow>
+                          <span className="label">학기</span>
+                          <span className="value">{pm.year}년 {pm.term}학기</span>
+                        </ItemRow>
+                        {pm.dormitoryType && (
+                          <ItemRow>
+                            <span className="label">기숙사구분</span>
+                            <span className="value">{pm.dormitoryType}</span>
+                          </ItemRow>
+                        )}
+                        <ItemRow>
+                          <span className="label">금액</span>
+                          <span className="value font-medium">
+                            {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : <EmptyText>(0원)</EmptyText>}
+                          </span>
+                        </ItemRow>
+                      </ItemCard>
+                    ))}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 등록금 납부 및 환불 처리 내역이 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
+
+            {/* 탭 6: 공공요금 부과내역 */}
+            {activeTab === "utility" && (
+              <div>
+                {utilityList.length > 0 ? (
+                  <ItemList>
+                    {utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
+                      <ItemCard key={idx}>
+                        <ItemHeader>
+                          <span className="badge inout">사용월: {ut.useMonth || "(미기재)"}</span>
+                          <span className="font-medium">
+                            총 {ut.totalFee ? `${Number(ut.totalFee).toLocaleString()}원` : "0원"}
+                          </span>
+                        </ItemHeader>
+                        <ItemRow>
+                          <span className="label">전기 (사용량 / 요금)</span>
+                          <span className="value">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">수도 (사용량 / 요금)</span>
+                          <span className="value">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">온수 / 난방 사용량</span>
+                          <span className="value">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
+                        </ItemRow>
+                        <ItemRow>
+                          <span className="label">소계 / 시설분담금</span>
+                          <span className="value">
+                            {Number(ut.subtotalFee || "0").toLocaleString()}원 / {Number(ut.facilityFee || "0").toLocaleString()}원
+                          </span>
+                        </ItemRow>
+                      </ItemCard>
+                    ))}
+                  </ItemList>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>조회된 공공요금 부과내역(전기, 수도, 온수, 난방, 시설분담금)이 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
+
+            {/* 탭 7: 입사서약서 */}
+            {activeTab === "pledge" && (
+              <div>
+                {pledge ? (
+                  <ItemCard>
+                    <ItemHeader>
+                      <span className="badge merit">입사서약서</span>
+                      {pledge.consentDate && (
+                        <span className="date">동의일: {pledge.consentDate}</span>
+                      )}
+                    </ItemHeader>
+                    <ItemRow>
+                      <span className="label">동의여부</span>
+                      <span className="value font-medium">{pledge.consentStatus || <EmptyText>(미기재)</EmptyText>}</span>
+                    </ItemRow>
+                    {pledge.studentInfo && (
+                      <ItemRow>
+                        <span className="label">학생정보</span>
+                        <span className="value">{pledge.studentInfo}</span>
+                      </ItemRow>
+                    )}
+                    {pledge.documentContent && (
+                      <PledgeTextBox>
+                        {pledge.documentContent}
+                      </PledgeTextBox>
+                    )}
+                  </ItemCard>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>체결된 입사서약서 정보가 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
+              </div>
+            )}
+          </TabContentContainer>
+
+          {/* 4. 원시 파싱 데이터 투명 노출 (Raw Fields Viewer) */}
+          <RawSection>
+            <RawSectionHeader onClick={() => setShowRawFields(!showRawFields)}>
+              <div className="title-left">
+                <Database size={15} />
+                <span>원시 파싱 데이터 (Raw Fields: {rawEntries.length}개 필드)</span>
+              </div>
+              <div className="btn-toggle">
+                {showRawFields ? "접기 ▲" : "전체 펼쳐보기 ▼"}
+              </div>
+            </RawSectionHeader>
+
+            {showRawFields && (
+              <RawFieldsBody>
+                {rawEntries.length > 0 ? (
                   <RawTable>
                     <thead>
                       <tr>
@@ -715,27 +775,25 @@ const PortalDormitoryLabPage = () => {
                       ))}
                     </tbody>
                   </RawTable>
+                ) : (
+                  <EmptyStructureBox>
+                    <Info size={16} />
+                    <span>현재 로드된 원시 필드 데이터가 없습니다.</span>
+                  </EmptyStructureBox>
+                )}
 
+                {dormInfo && (
                   <JsonDumpContainer>
                     <div className="dump-label">전체 객체 JSON Dump:</div>
                     <pre className="json-dump">
                       {JSON.stringify(dormInfo, null, 2)}
                     </pre>
                   </JsonDumpContainer>
-                </RawFieldsBody>
-              )}
-            </RawSection>
-          </ContentSection>
-        ) : (
-          <EmptyInitialCard>
-            <Database size={36} color="#94a3b8" />
-            <div className="title">저장된 생활원 사생 정보가 없습니다</div>
-            <div className="desc">
-              상단의 <strong>[사생 정보 가져오기]</strong> 버튼을 누르면 포털 ERP 세션을 통해
-              기본 사생정보 및 7개 탭 데이터를 가져와 기기에 안전하게 보관합니다.
-            </div>
-          </EmptyInitialCard>
-        )}
+                )}
+              </RawFieldsBody>
+            )}
+          </RawSection>
+        </ContentSection>
       </TitleContentArea>
 
       <PortalAccountModal
@@ -915,6 +973,12 @@ const PhotoSection = styled.div`
   padding: 14px;
   background-color: #f8fafc;
   border-right: 1px solid #edf2f7;
+
+  .photo-label {
+    font-size: 11px;
+    color: #718096;
+    margin-top: 8px;
+  }
 
   @media (max-width: 520px) {
     width: 100%;
@@ -1166,41 +1230,18 @@ const PledgeTextBox = styled.div`
   overflow-y: auto;
 `;
 
-const EmptyBox = styled.div`
+const EmptyStructureBox = styled.div`
   padding: 24px;
   background-color: #f8fafc;
   border-radius: 10px;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-align: center;
   font-size: 13px;
-  color: #94a3b8;
-`;
-
-const EmptyInitialCard = styled.div`
-  background-color: #ffffff;
-  border: 1px dashed #cbd5e1;
-  border-radius: 16px;
-  padding: 32px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
   color: #64748b;
-  margin-top: 16px;
-
-  .title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #334155;
-  }
-
-  .desc {
-    font-size: 13px;
-    line-height: 1.5;
-    max-width: 440px;
-    color: #64748b;
-  }
 `;
 
 const RawSection = styled.div`
