@@ -1041,6 +1041,7 @@ export interface DormitoryStudentProfile {
   year: string; // 연도 (yy)
   term: string; // 학기 (tmGbn)
   studentId: string; // 학번 (persNo)
+  photoBase64?: string; // 프로필 사진 (phtFile, phtFile2)
   rawFields: Record<string, string>;
 }
 
@@ -1148,6 +1149,7 @@ export interface DormitoryStudentInfo {
   pointsList?: DormitoryPointItem[];
   appliedYear?: string;
   appliedSemester?: string;
+  photoBase64?: string;
   rawFields?: Record<string, string>;
 }
 
@@ -1171,6 +1173,71 @@ export function parseDormitoryStudentInfo(
       }
     }
     combinedSsv = parts.join("\x1e");
+  }
+
+  // payload가 이미 파싱된 객체 형태({ studentId, rawFields: ... })인 경우 fallback
+  if (
+    payload &&
+    typeof payload === "object" &&
+    !combinedSsv &&
+    (payload.rawFields || payload.studentId || payload.studentName)
+  ) {
+    const rf = payload.rawFields || {};
+    const photo = rf["phtFile2"] || rf["phtFile"] || payload.photoBase64 || "";
+    const prof: DormitoryStudentProfile = {
+      name: payload.studentName || rf["korNm"] || rf["nm"] || "",
+      englishName: rf["engNm"] || "",
+      gender: rf["genGbn"] || "",
+      nationality: rf["natGbn"] || "",
+      department: payload.departmentName || rf["deptNm"] || "",
+      grade: rf["hySeqGbn"] || "",
+      dormitoryType: payload.dormitoryBuilding || rf["dormGbn"] || "",
+      dormitoryBuilding: payload.dormitoryBuilding || rf["dormBdNm"] || "",
+      studentDormNo: rf["domstuNo"] || "",
+      phoneNumber: rf["handpNo"] || "",
+      email: rf["email"] || "",
+      zipCode: rf["zipNo"] || "",
+      address: rf["addr"] || "",
+      detailedAddress: rf["detaAddr"] || "",
+      meritPoints: String(payload.meritPoints ?? rf["ardScr1"] ?? "0"),
+      demeritPoints: String(payload.demeritPoints ?? rf["ardScr2"] ?? "0"),
+      nonOffsetDemeritPoints: rf["ardScr3"] || "0",
+      year: payload.appliedYear || rf["yy"] || "",
+      term: payload.appliedSemester || rf["tmGbn"] || "",
+      studentId: payload.studentId || rf["persNo"] || rf["stuno"] || "",
+      photoBase64: photo || undefined,
+      rawFields: rf,
+    };
+    return {
+      profile: prof,
+      addressList: payload.addressList || [],
+      rewardList: payload.rewardList || [],
+      inOutList: payload.inOutList || [],
+      applyList: payload.applyList || [],
+      paymentList: payload.paymentList || [],
+      utilityList: payload.utilityList || [],
+      pledge: payload.pledge || null,
+      hasData: true,
+      rawDatasets: {},
+      studentId: prof.studentId,
+      studentName: prof.name,
+      dormitoryBuilding: prof.dormitoryBuilding,
+      roomNumber: payload.roomNumber || "",
+      bedNumber: payload.bedNumber || "",
+      roomType: payload.roomType || "",
+      checkInDate: payload.checkInDate || "",
+      checkOutDate: payload.checkOutDate || "",
+      status: payload.status || "",
+      mealType: payload.mealType || "",
+      meritPoints: Number(prof.meritPoints) || 0,
+      demeritPoints: Number(prof.demeritPoints) || 0,
+      totalPoints: (Number(prof.meritPoints) || 0) - (Number(prof.demeritPoints) || 0),
+      pointsList: payload.pointsList || [],
+      appliedYear: prof.year,
+      appliedSemester: prof.term,
+      photoBase64: photo || undefined,
+      rawFields: rf,
+    };
   }
 
   const datasets = parseNexacroDatasets(combinedSsv);
@@ -1198,6 +1265,15 @@ export function parseDormitoryStudentInfo(
     legacyMealType = (row["mealTypeNm"] || row["mealType"] || "").trim();
     legacyCheckInDt = (row["entyDt"] || row["inDt"] || "").trim();
     legacyCheckOutDt = (row["leavDt"] || row["outDt"] || "").trim();
+
+    const rawPhoto =
+      row["phtFile"] ||
+      row["phtFile2"] ||
+      row["photo"] ||
+      row["pic"] ||
+      datasets["DS_PIC"]?.[0]?.["phtFile"] ||
+      datasets["DS_DMTY206"]?.[0]?.["phtFile"] ||
+      "";
 
     // 유효한 행인지 확인 (성명, 학번, 또는 건물코드 등이 하나라도 존재하는지)
     if (
@@ -1231,6 +1307,7 @@ export function parseDormitoryStudentInfo(
         year: (row["yy"] || "").trim(),
         term: (row["tmGbnNm"] || row["tmGbn"] || "").trim(),
         studentId: (row["persNo"] || row["stuno"] || "").trim(),
+        photoBase64: rawPhoto || undefined,
         rawFields: row,
       };
     }
@@ -1394,6 +1471,7 @@ export function parseDormitoryStudentInfo(
     pointsList,
     appliedYear: profile?.year || "",
     appliedSemester: profile?.term || "",
+    photoBase64: profile?.photoBase64 || undefined,
     rawFields: profile?.rawFields || {},
   };
 }

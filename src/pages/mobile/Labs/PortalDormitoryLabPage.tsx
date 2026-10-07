@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -19,6 +19,7 @@ import {
   DormitoryApplyItem,
   DormitoryPaymentItem,
   DormitoryUtilityItem,
+  parseDormitoryStudentInfo,
 } from "@/utils/ssvParser";
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
@@ -27,7 +28,6 @@ import {
   Home,
   Clock,
   Smartphone,
-  Code,
   MapPin,
   Award,
   LogIn,
@@ -36,10 +36,30 @@ import {
   Zap,
   FileCheck,
   ChevronRight,
+  User,
+  Database,
+  RefreshCw,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 
+const STORAGE_KEY_DORMITORY_DATA = "portal_dormitory_student_info";
+const STORAGE_KEY_DORMITORY_UPDATED = "portal_dormitory_last_updated";
+
 type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility" | "pledge";
+
+/**
+ * Base64 이미지를 안전한 Data URL로 변환 (BMP, JPEG, PNG 자동 감지)
+ */
+function toImageSrc(base64?: string): string | null {
+  if (!base64 || typeof base64 !== "string") return null;
+  const clean = base64.trim();
+  if (!clean) return null;
+  if (clean.startsWith("data:")) return clean;
+  if (clean.startsWith("Qk")) return `data:image/bmp;base64,${clean}`;
+  if (clean.startsWith("/9j/")) return `data:image/jpeg;base64,${clean}`;
+  if (clean.startsWith("iVBOR")) return `data:image/png;base64,${clean}`;
+  return `data:image/bmp;base64,${clean}`;
+}
 
 const PortalDormitoryLabPage = () => {
   const navigate = useNavigate();
@@ -51,10 +71,9 @@ const PortalDormitoryLabPage = () => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [isFetched, setIsFetched] = useState(false);
   const [isPortalAccountModalOpen, setIsPortalAccountModalOpen] = useState(false);
-  const [showRawJson, setShowRawJson] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("address");
+  const [showRawFields, setShowRawFields] = useState(false);
 
   useHeader({
     title: "사생정보조회(학생)",
@@ -66,6 +85,26 @@ const PortalDormitoryLabPage = () => {
     }
   }, [isLabsFlagFetched, isLabsEnabled, navigate]);
 
+  // 마운트 시: 자동 네트워크 호출 없이 캐시된 로컬스토리지 데이터를 먼저 복원
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
+      const cachedTime = localStorage.getItem(STORAGE_KEY_DORMITORY_UPDATED);
+
+      if (cached) {
+        const parsedJson = JSON.parse(cached);
+        const restored = parseDormitoryStudentInfo(parsedJson);
+        setDormInfo(restored);
+        if (cachedTime) {
+          setLastUpdated(cachedTime);
+        }
+      }
+    } catch (e) {
+      console.warn("Dormitory cache read error:", e);
+    }
+  }, []);
+
+  // 사용자가 명시적으로 '가져오기 / 새로고침' 버튼을 눌렀을 때만 호출
   const loadDormitoryInfo = useCallback(async () => {
     if (!isMobileAppEnvironment()) {
       setIsPortalAccountModalOpen(true);
@@ -86,8 +125,16 @@ const PortalDormitoryLabPage = () => {
       const res = await fetchDormitoryStudentInfoFromApp();
       if (res.success && res.data) {
         setDormInfo(res.data);
-        setLastUpdated(new Date().toISOString());
-        setIsFetched(true);
+        const nowIso = new Date().toISOString();
+        setLastUpdated(nowIso);
+
+        // 캐싱 저장: 다음에 접속했을 때 즉시 보여주기 위함
+        try {
+          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(res.data));
+          localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
+        } catch (storageErr) {
+          console.warn("Dormitory cache save error:", storageErr);
+        }
       } else {
         alert(res.errorMessage || "생활원 사생 정보 조회 중 오류가 발생했습니다.");
       }
@@ -99,11 +146,42 @@ const PortalDormitoryLabPage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    loadDormitoryInfo();
-  }, [loadDormitoryInfo]);
-
   const profile = dormInfo?.profile;
+
+  // 프로필 이미지 URL 계산 (phtFile, phtFile2 또는 학적 캐시 fallback)
+  const profilePhotoSrc = useMemo(() => {
+    const rawPhoto =
+      profile?.photoBase64 ||
+      dormInfo?.photoBase64 ||
+      profile?.rawFields?.phtFile2 ||
+      profile?.rawFields?.phtFile ||
+      dormInfo?.rawFields?.phtFile2 ||
+      dormInfo?.rawFields?.phtFile;
+
+    if (rawPhoto) {
+      return toImageSrc(rawPhoto);
+    }
+
+    // fallback: 혹시 학적 기본정보 캐시에 저장된 사진이 있으면 활용
+    try {
+      const academicCached = localStorage.getItem("portal_student_info");
+      if (academicCached) {
+        const parsed = JSON.parse(academicCached);
+        const fallbackPic = parsed?.rawFields?.phtFile2 || parsed?.rawFields?.phtFile;
+        if (fallbackPic) {
+          return toImageSrc(fallbackPic);
+        }
+      }
+    } catch {}
+
+    return null;
+  }, [profile, dormInfo]);
+
+  // 원시 필드 목록 (키-값 쌍 정렬)
+  const rawEntries = useMemo(() => {
+    const rf = profile?.rawFields || dormInfo?.rawFields || {};
+    return Object.entries(rf).sort(([a], [b]) => a.localeCompare(b));
+  }, [profile, dormInfo]);
 
   return (
     <Container>
@@ -119,17 +197,17 @@ const PortalDormitoryLabPage = () => {
 
       <TitleContentArea
         title="사생정보조회(학생)"
-        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리 > 사생정보조회) 화면의 기본 사생정보 및 7개 탭(주소사항, 상벌점이력, 입퇴사이력, 신청이력, 등록/환불이력, 공공요금, 입사서약서) 정보를 조회합니다."
+        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리 > 사생정보조회) 화면의 기본 사생정보 및 7개 탭 정보를 조회합니다. 조회된 데이터는 기기에 안전하게 캐싱되어 다음 접속 시 즉시 표시됩니다."
       >
         <NoticeBox>
           <div className="icon">
             <Home size={18} />
           </div>
           <div className="text">
-            <strong>로컬 보안 브릿지 조회 안내</strong>
+            <strong>로컬 보안 캐싱 및 데이터 안내</strong>
             <p>
-              사생 정보는 외부 서버에 절대 전송되지 않으며, 사용자 기기 내부의 포털 ERP 세션을 통해
-              직접 로컬 브라우저로 가져옵니다. 실제 등록된 내역만 정확하게 표시됩니다.
+              사생 정보는 외부 서버에 절대 전송되지 않으며, 기기 내 안전한 로컬 저장소에 캐싱됩니다.
+              없는 데이터는 임의의 기본값으로 속이지 않고 빈 상태 그대로 표기됩니다.
             </p>
           </div>
         </NoticeBox>
@@ -150,90 +228,112 @@ const PortalDormitoryLabPage = () => {
           </WebFallbackCard>
         )}
 
-        {isMobileAppEnvironment() && (
-          <ActionArea>
-            <ActionButton
-              as="button"
-              disabled={isLoading}
-              onClick={loadDormitoryInfo}
-            >
-              {isLoading ? loadingMessage || "조회 중..." : "사생 정보 새로고침"}
-            </ActionButton>
-            {lastUpdated && (
-              <LastUpdatedText>
-                <Clock size={13} />
-                최근 갱신: {formatKoreanDateTime(lastUpdated)}
-              </LastUpdatedText>
-            )}
-          </ActionArea>
-        )}
+        <ActionArea>
+          <ActionButton
+            as="button"
+            disabled={isLoading}
+            onClick={loadDormitoryInfo}
+          >
+            <RefreshCw size={15} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
+            {isLoading
+              ? loadingMessage || "조회 중..."
+              : dormInfo
+                ? "사생 정보 새로고침 (ERP 갱신)"
+                : "사생 정보 가져오기"}
+          </ActionButton>
+          {lastUpdated && (
+            <LastUpdatedText>
+              <Clock size={13} />
+              최근 갱신: {formatKoreanDateTime(lastUpdated)} (캐시 보관됨)
+            </LastUpdatedText>
+          )}
+        </ActionArea>
 
-        {dormInfo && (
+        {dormInfo ? (
           <ContentSection>
-            {/* 1. 상단 사생정보 카드 */}
+            {/* 1. 상단 사생정보 카드 (프로필 사진 + 테이블 그리드) */}
             <SectionHeader>
               <div className="title">사생정보</div>
-              {profile?.year && profile?.term && (
-                <div className="badge">{profile.year}년 {profile.term}학기</div>
-              )}
+              <div className="badge-row">
+                {profile?.year && profile?.term ? (
+                  <div className="badge">{profile.year}년 {profile.term}학기</div>
+                ) : (
+                  <div className="badge gray">학기 정보 없음</div>
+                )}
+              </div>
             </SectionHeader>
 
-            {profile ? (
-              <ProfileCard>
+            <ProfileLayoutCard>
+              {/* 좌측 증명사진 영역 */}
+              <PhotoSection>
+                <PhotoContainer>
+                  {profilePhotoSrc ? (
+                    <img src={profilePhotoSrc} alt="사생 증명사진" className="avatar-img" />
+                  ) : (
+                    <div className="no-avatar">
+                      <User size={42} strokeWidth={1.5} />
+                      <span>사진 없음</span>
+                    </div>
+                  )}
+                </PhotoContainer>
+              </PhotoSection>
+
+              {/* 우측 사생정보 그리드 테이블 */}
+              <TableGridArea>
                 <TableGrid>
                   <TableRow>
                     <TableCol>
                       <span className="th">성명</span>
-                      <span className="td">{profile.name || "-"}</span>
+                      <span className="td">{profile?.name || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">성명(영문)</span>
-                      <span className="td">{profile.englishName || "-"}</span>
+                      <span className="td">{profile?.englishName || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">성별</span>
-                      <span className="td">{profile.gender || "-"}</span>
+                      <span className="td">{profile?.gender || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                   </TableRow>
 
                   <TableRow>
                     <TableCol>
                       <span className="th">국적</span>
-                      <span className="td">{profile.nationality || "-"}</span>
+                      <span className="td">{profile?.nationality || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">학부(과)/부서</span>
-                      <span className="td">{profile.department || "-"}</span>
+                      <span className="td">{profile?.department || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">학년구분</span>
-                      <span className="td">{profile.grade || "-"}</span>
+                      <span className="td">{profile?.grade || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                   </TableRow>
 
                   <TableRow>
                     <TableCol>
                       <span className="th">기숙사구분</span>
-                      <span className="td">{profile.dormitoryType || "-"}</span>
+                      <span className="td">{profile?.dormitoryType || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">기숙사건물구분</span>
-                      <span className="td">{profile.dormitoryBuilding || "-"}</span>
+                      <span className="td">{profile?.dormitoryBuilding || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol>
                       <span className="th">사생번호</span>
-                      <span className="td">{profile.studentDormNo || "-"}</span>
+                      <span className="td">{profile?.studentDormNo || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                   </TableRow>
 
                   <TableRow>
                     <TableCol>
                       <span className="th">휴대전화번호</span>
-                      <span className="td">{profile.phoneNumber || "-"}</span>
+                      <span className="td">{profile?.phoneNumber || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                     <TableCol span={2}>
                       <span className="th">이메일</span>
-                      <span className="td">{profile.email || "-"}</span>
+                      <span className="td">{profile?.email || <EmptyText>(없음)</EmptyText>}</span>
                     </TableCol>
                   </TableRow>
 
@@ -241,33 +341,33 @@ const PortalDormitoryLabPage = () => {
                     <TableCol span={3}>
                       <span className="th">거주지</span>
                       <span className="td">
-                        {profile.zipCode ? `[${profile.zipCode}] ` : ""}
-                        {profile.address || ""} {profile.detailedAddress || ""}
-                        {!profile.zipCode && !profile.address && !profile.detailedAddress && "-"}
+                        {profile?.zipCode ? `[${profile.zipCode}] ` : ""}
+                        {profile?.address || ""} {profile?.detailedAddress || ""}
+                        {!profile?.zipCode && !profile?.address && !profile?.detailedAddress && (
+                          <EmptyText>(등록된 주소 없음)</EmptyText>
+                        )}
                       </span>
                     </TableCol>
                   </TableRow>
                 </TableGrid>
 
-                {/* 상벌점 요약 바 */}
+                {/* 상벌점 배지 바 */}
                 <PointBadgeRow>
                   <PointBox>
                     <span className="label">상점</span>
-                    <span className="val merit">{profile.meritPoints || "0"}</span>
+                    <span className="val merit">{profile?.meritPoints ?? "0"}</span>
                   </PointBox>
                   <PointBox>
                     <span className="label">일반벌점</span>
-                    <span className="val demerit">{profile.demeritPoints || "0"}</span>
+                    <span className="val demerit">{profile?.demeritPoints ?? "0"}</span>
                   </PointBox>
                   <PointBox>
                     <span className="label">상쇄불가벌점</span>
-                    <span className="val fixed-demerit">{profile.nonOffsetDemeritPoints || "0"}</span>
+                    <span className="val fixed-demerit">{profile?.nonOffsetDemeritPoints ?? "0"}</span>
                   </PointBox>
                 </PointBadgeRow>
-              </ProfileCard>
-            ) : (
-              <EmptyBox>기본 사생정보 데이터가 존재하지 않습니다.</EmptyBox>
-            )}
+              </TableGridArea>
+            </ProfileLayoutCard>
 
             {/* 2. 하단 7개 탭 네비게이션 */}
             <TabHeader>
@@ -333,25 +433,25 @@ const PortalDormitoryLabPage = () => {
                         <ItemCard key={idx}>
                           <ItemRow>
                             <span className="label">우편번호</span>
-                            <span className="value">{addr.zipCode || "-"}</span>
+                            <span className="value">{addr.zipCode || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">기본주소</span>
-                            <span className="value">{addr.address || "-"}</span>
+                            <span className="value">{addr.address || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">상세주소</span>
-                            <span className="value">{addr.detailedAddress || "-"}</span>
+                            <span className="value">{addr.detailedAddress || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">보호자 연락처</span>
-                            <span className="value">{addr.guardianPhone || "-"}</span>
+                            <span className="value">{addr.guardianPhone || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                         </ItemCard>
                       ))}
                     </ItemList>
                   ) : (
-                    <EmptyBox>등록된 주소사항 내역이 없습니다.</EmptyBox>
+                    <EmptyBox>주소사항 데이터가 없습니다.</EmptyBox>
                   )}
                 </div>
               )}
@@ -369,15 +469,15 @@ const PortalDormitoryLabPage = () => {
                               <span className={`badge ${isDemerit ? "demerit" : "merit"}`}>
                                 {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
                               </span>
-                              <span className="date">{rw.imposedDate}</span>
+                              <span className="date">{rw.imposedDate || "(일자 미기재)"}</span>
                             </ItemHeader>
                             <ItemRow>
                               <span className="label">상벌점명</span>
-                              <span className="value font-medium">{rw.name || "-"}</span>
+                              <span className="value font-medium">{rw.name || <EmptyText>(빈값)</EmptyText>}</span>
                             </ItemRow>
                             <ItemRow>
                               <span className="label">사유</span>
-                              <span className="value">{rw.reason || "-"}</span>
+                              <span className="value">{rw.reason || <EmptyText>(빈값)</EmptyText>}</span>
                             </ItemRow>
                             {rw.offsetPossible && (
                               <ItemRow>
@@ -404,21 +504,21 @@ const PortalDormitoryLabPage = () => {
                         <ItemCard key={idx}>
                           <ItemHeader>
                             <span className="badge inout">
-                              {io.year}년 {io.term}학기 ({io.dormitoryType || "기숙사"})
+                              {io.year ? `${io.year}년 ` : ""}{io.term ? `${io.term}학기 ` : ""}({io.dormitoryType || "기숙사"})
                             </span>
-                            <span className="status">{io.status || "입퇴사이력"}</span>
+                            <span className="status">{io.status || "입퇴사"}</span>
                           </ItemHeader>
                           <ItemRow>
                             <span className="label">사생번호</span>
-                            <span className="value">{io.studentDormNo || "-"}</span>
+                            <span className="value">{io.studentDormNo || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">입사일자</span>
-                            <span className="value">{io.checkInDate || "-"}</span>
+                            <span className="value">{io.checkInDate || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">퇴사일자</span>
-                            <span className="value">{io.checkOutDate || "-"}</span>
+                            <span className="value">{io.checkOutDate || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                         </ItemCard>
                       ))}
@@ -438,22 +538,22 @@ const PortalDormitoryLabPage = () => {
                         <ItemCard key={idx}>
                           <ItemHeader>
                             <span className="badge inout">
-                              {ap.year}년 {ap.term}학기
+                              {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${ap.term}학기` : ""}
                             </span>
                             <span className="status">{ap.passStatus || ap.applyType || "신청"}</span>
                           </ItemHeader>
                           <ItemRow>
                             <span className="label">신청구분</span>
-                            <span className="value">{ap.applyType || "-"}</span>
+                            <span className="value">{ap.applyType || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">신청일자</span>
-                            <span className="value">{ap.applyDate || "-"}</span>
+                            <span className="value">{ap.applyDate || <EmptyText>(빈값)</EmptyText>}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">거주기간</span>
                             <span className="value">
-                              {ap.periodStart || "-"} ~ {ap.periodEnd || "-"}
+                              {ap.periodStart || "(시작 미기재)"} ~ {ap.periodEnd || "(종료 미기재)"}
                             </span>
                           </ItemRow>
                         </ItemCard>
@@ -476,7 +576,7 @@ const PortalDormitoryLabPage = () => {
                             <span className={`badge ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
                               {pm.type || "등록/환불"}
                             </span>
-                            <span className="date">{pm.date}</span>
+                            <span className="date">{pm.date || "(일자 미기재)"}</span>
                           </ItemHeader>
                           <ItemRow>
                             <span className="label">학기</span>
@@ -491,14 +591,14 @@ const PortalDormitoryLabPage = () => {
                           <ItemRow>
                             <span className="label">금액</span>
                             <span className="value font-medium">
-                              {Number(pm.amount).toLocaleString()}원
+                              {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : <EmptyText>(0원)</EmptyText>}
                             </span>
                           </ItemRow>
                         </ItemCard>
                       ))}
                     </ItemList>
                   ) : (
-                    <EmptyBox>등록금 및 환불 처리 내역이 없습니다.</EmptyBox>
+                    <EmptyBox>등록금 및 환불 내역이 없습니다.</EmptyBox>
                   )}
                 </div>
               )}
@@ -511,25 +611,27 @@ const PortalDormitoryLabPage = () => {
                       {dormInfo.utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
                         <ItemCard key={idx}>
                           <ItemHeader>
-                            <span className="badge inout">사용월: {ut.useMonth}</span>
-                            <span className="font-medium">총 {Number(ut.totalFee).toLocaleString()}원</span>
+                            <span className="badge inout">사용월: {ut.useMonth || "(미기재)"}</span>
+                            <span className="font-medium">
+                              총 {ut.totalFee ? `${Number(ut.totalFee).toLocaleString()}원` : "0원"}
+                            </span>
                           </ItemHeader>
                           <ItemRow>
                             <span className="label">전기 (사용량 / 요금)</span>
-                            <span className="value">{ut.electricUsage} / {Number(ut.electricFee).toLocaleString()}원</span>
+                            <span className="value">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">수도 (사용량 / 요금)</span>
-                            <span className="value">{ut.waterUsage} / {Number(ut.waterFee).toLocaleString()}원</span>
+                            <span className="value">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">온수 / 난방 사용량</span>
-                            <span className="value">{ut.hotWaterUsage} / {ut.heatingUsage}</span>
+                            <span className="value">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
                           </ItemRow>
                           <ItemRow>
                             <span className="label">소계 / 시설분담금</span>
                             <span className="value">
-                              {Number(ut.subtotalFee).toLocaleString()}원 / {Number(ut.facilityFee).toLocaleString()}원
+                              {Number(ut.subtotalFee || "0").toLocaleString()}원 / {Number(ut.facilityFee || "0").toLocaleString()}원
                             </span>
                           </ItemRow>
                         </ItemCard>
@@ -554,7 +656,7 @@ const PortalDormitoryLabPage = () => {
                       </ItemHeader>
                       <ItemRow>
                         <span className="label">동의여부</span>
-                        <span className="value font-medium">{dormInfo.pledge.consentStatus || "동의"}</span>
+                        <span className="value font-medium">{dormInfo.pledge.consentStatus || <EmptyText>(미기재)</EmptyText>}</span>
                       </ItemRow>
                       {dormInfo.pledge.studentInfo && (
                         <ItemRow>
@@ -569,33 +671,70 @@ const PortalDormitoryLabPage = () => {
                       )}
                     </ItemCard>
                   ) : (
-                    <EmptyBox>입사서약서 정보가 존재하지 않습니다.</EmptyBox>
+                    <EmptyBox>입사서약서 정보가 없습니다.</EmptyBox>
                   )}
                 </div>
               )}
             </TabContentContainer>
 
-            {/* 4. 디버그 원시 데이터 토글 */}
-            <DebugArea>
-              <button
-                type="button"
-                className="toggle-btn"
-                onClick={() => setShowRawJson(!showRawJson)}
-              >
-                <Code size={14} />
-                {showRawJson ? "원시 파싱 데이터 닫기" : "원시 파싱 데이터 보기"}
-              </button>
-              {showRawJson && (
-                <pre className="json-dump">
-                  {JSON.stringify(dormInfo, null, 2)}
-                </pre>
-              )}
-            </DebugArea>
-          </ContentSection>
-        )}
+            {/* 4. 원시 파싱 데이터 투명 노출 (Raw Fields Viewer) */}
+            <RawSection>
+              <RawSectionHeader onClick={() => setShowRawFields(!showRawFields)}>
+                <div className="title-left">
+                  <Database size={15} />
+                  <span>원시 파싱 데이터 (Raw Fields: {rawEntries.length}개 필드)</span>
+                </div>
+                <div className="btn-toggle">
+                  {showRawFields ? "접기 ▲" : "전체 펼쳐보기 ▼"}
+                </div>
+              </RawSectionHeader>
 
-        {isFetched && !dormInfo && !isLoading && (
-          <EmptyBox>생활원 사생 정보가 존재하지 않거나 입사 이력이 없습니다.</EmptyBox>
+              {showRawFields && (
+                <RawFieldsBody>
+                  <RawTable>
+                    <thead>
+                      <tr>
+                        <th>필드명 (Key)</th>
+                        <th>파싱 값 (Value)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rawEntries.map(([key, val]) => (
+                        <tr key={key}>
+                          <td className="key-cell">{key}</td>
+                          <td className="val-cell">
+                            {val === "" ? (
+                              <EmptyText>"" (빈값)</EmptyText>
+                            ) : key === "phtFile2" || key === "phtFile" ? (
+                              <span className="photo-tag">[Base64 이미지 데이터: {val.length}자]</span>
+                            ) : (
+                              String(val)
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </RawTable>
+
+                  <JsonDumpContainer>
+                    <div className="dump-label">전체 객체 JSON Dump:</div>
+                    <pre className="json-dump">
+                      {JSON.stringify(dormInfo, null, 2)}
+                    </pre>
+                  </JsonDumpContainer>
+                </RawFieldsBody>
+              )}
+            </RawSection>
+          </ContentSection>
+        ) : (
+          <EmptyInitialCard>
+            <Database size={36} color="#94a3b8" />
+            <div className="title">저장된 생활원 사생 정보가 없습니다</div>
+            <div className="desc">
+              상단의 <strong>[사생 정보 가져오기]</strong> 버튼을 누르면 포털 ERP 세션을 통해
+              기본 사생정보 및 7개 탭 데이터를 가져와 기기에 안전하게 보관합니다.
+            </div>
+          </EmptyInitialCard>
         )}
       </TitleContentArea>
 
@@ -692,6 +831,19 @@ const ActionArea = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-top: 16px;
+
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 const LastUpdatedText = styled.div`
@@ -721,6 +873,11 @@ const SectionHeader = styled.div`
     color: #1a202c;
   }
 
+  .badge-row {
+    display: flex;
+    gap: 6px;
+  }
+
   .badge {
     font-size: 12px;
     padding: 3px 8px;
@@ -728,14 +885,78 @@ const SectionHeader = styled.div`
     background-color: #ebf8ff;
     color: #2b6cb0;
     font-weight: 600;
+
+    &.gray {
+      background-color: #edf2f7;
+      color: #718096;
+    }
   }
 `;
 
-const ProfileCard = styled.div`
+const ProfileLayoutCard = styled.div`
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
+  display: flex;
+
+  @media (max-width: 520px) {
+    flex-direction: column;
+  }
+`;
+
+const PhotoSection = styled.div`
+  width: 130px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background-color: #f8fafc;
+  border-right: 1px solid #edf2f7;
+
+  @media (max-width: 520px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #edf2f7;
+    padding: 16px;
+  }
+`;
+
+const PhotoContainer = styled.div`
+  width: 100px;
+  height: 128px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .no-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 11px;
+  }
+`;
+
+const TableGridArea = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 `;
 
 const TableGrid = styled.div`
@@ -756,7 +977,7 @@ const TableCol = styled.div<{ span?: number }>`
   flex: ${({ span }) => span || 1};
   display: flex;
   flex-direction: column;
-  padding: 10px 12px;
+  padding: 9px 11px;
   border-right: 1px solid #edf2f7;
 
   &:last-child {
@@ -766,7 +987,7 @@ const TableCol = styled.div<{ span?: number }>`
   .th {
     font-size: 11px;
     color: #718096;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
   }
 
   .td {
@@ -777,11 +998,18 @@ const TableCol = styled.div<{ span?: number }>`
   }
 `;
 
+const EmptyText = styled.span`
+  color: #a0aec0;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 12px;
+`;
+
 const PointBadgeRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   background-color: #f7fafc;
   border-top: 1px solid #e2e8f0;
 `;
@@ -793,7 +1021,7 @@ const PointBox = styled.div`
   background-color: #ffffff;
   border: 1px solid #edf2f7;
   border-radius: 8px;
-  padding: 8px 4px;
+  padding: 6px 4px;
 
   .label {
     font-size: 11px;
@@ -802,7 +1030,7 @@ const PointBox = styled.div`
   }
 
   .val {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
 
     &.merit {
@@ -948,33 +1176,133 @@ const EmptyBox = styled.div`
   color: #94a3b8;
 `;
 
-const DebugArea = styled.div`
-  margin-top: 8px;
+const EmptyInitialCard = styled.div`
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  color: #64748b;
+  margin-top: 16px;
 
-  .toggle-btn {
+  .title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .desc {
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 440px;
+    color: #64748b;
+  }
+`;
+
+const RawSection = styled.div`
+  margin-top: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  overflow: hidden;
+`;
+
+const RawSectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background-color: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+
+  .title-left {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: none;
-    border: none;
-    font-size: 12px;
-    color: #94a3b8;
-    cursor: pointer;
-    padding: 4px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+  }
 
-    &:hover {
-      color: #64748b;
-    }
+  .btn-toggle {
+    font-size: 12px;
+    color: #2563eb;
+    font-weight: 500;
+  }
+`;
+
+const RawFieldsBody = styled.div`
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const RawTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  th {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 6px 10px;
+    text-align: left;
+    border-bottom: 1px solid #cbd5e1;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+  }
+
+  .key-cell {
+    font-family: monospace;
+    color: #2563eb;
+    font-weight: 600;
+    width: 35%;
+    word-break: break-all;
+  }
+
+  .val-cell {
+    font-family: monospace;
+    color: #1e293b;
+    word-break: break-all;
+  }
+
+  .photo-tag {
+    color: #059669;
+    font-weight: 600;
+  }
+`;
+
+const JsonDumpContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .dump-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
   }
 
   .json-dump {
-    margin-top: 8px;
     padding: 12px;
-    background-color: #1e293b;
-    color: #f1f5f9;
+    background-color: #0f172a;
+    color: #38bdf8;
     border-radius: 8px;
     font-size: 11px;
+    font-family: monospace;
     max-height: 250px;
     overflow-y: auto;
+    margin: 0;
   }
 `;
