@@ -25,7 +25,6 @@ import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
 import {
-  Home,
   Clock,
   Smartphone,
   MapPin,
@@ -39,7 +38,7 @@ import {
   User,
   Database,
   RefreshCw,
-  Info,
+  Inbox,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 
@@ -49,7 +48,7 @@ const STORAGE_KEY_DORMITORY_UPDATED = "portal_dormitory_last_updated";
 type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility" | "pledge";
 
 /**
- * Base64 이미지를 안전한 Data URL로 변환 (BMP, JPEG, PNG 자동 감지)
+ * Base64 이미지를 안전한 Data URL로 변환 (공백 제거 및 포맷 감지)
  */
 function toImageSrc(base64?: string): string | null {
   if (!base64 || typeof base64 !== "string") return null;
@@ -86,7 +85,7 @@ const PortalDormitoryLabPage = () => {
     }
   }, [isLabsFlagFetched, isLabsEnabled, navigate]);
 
-  // 마운트 시: 자동 네트워크 호출 없이 캐시된 로컬스토리지 데이터를 먼저 복원
+  // 마운트 시 캐시된 로컬 데이터를 먼저 복원
   useEffect(() => {
     try {
       const cached = localStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
@@ -100,7 +99,6 @@ const PortalDormitoryLabPage = () => {
           setLastUpdated(cachedTime);
         }
       } else {
-        // 혹시 기존 학적 캐시가 있으면 기초 프로필로 활용
         const academicCached = localStorage.getItem("portal_student_info");
         if (academicCached) {
           const parsedAc = JSON.parse(academicCached);
@@ -109,11 +107,11 @@ const PortalDormitoryLabPage = () => {
         }
       }
     } catch (e) {
-      console.warn("Dormitory cache read error:", e);
+      console.warn("Dormitory cache load error:", e);
     }
   }, []);
 
-  // 사용자가 명시적으로 '가져오기 / 새로고침' 버튼을 눌렀을 때만 호출
+  // 새로고침 버튼을 눌렀을 때만 ERP 직접 조회
   const loadDormitoryInfo = useCallback(async () => {
     if (!isMobileAppEnvironment()) {
       setIsPortalAccountModalOpen(true);
@@ -122,7 +120,7 @@ const PortalDormitoryLabPage = () => {
 
     try {
       setIsLoading(true);
-      setLoadingMessage("생활원 사생 정보 및 7개 탭 데이터를 ERP에서 안전하게 조회하고 있습니다...");
+      setLoadingMessage("사생 정보와 탭 데이터를 조회하고 있습니다...");
 
       const isLinked = await checkPortalAccountLinked();
       if (!isLinked) {
@@ -137,7 +135,6 @@ const PortalDormitoryLabPage = () => {
         const nowIso = new Date().toISOString();
         setLastUpdated(nowIso);
 
-        // 캐싱 저장: 다음에 접속했을 때 즉시 보여주기 위함
         try {
           localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(res.data));
           localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
@@ -145,10 +142,10 @@ const PortalDormitoryLabPage = () => {
           console.warn("Dormitory cache save error:", storageErr);
         }
       } else {
-        alert(res.errorMessage || "생활원 사생 정보 조회 중 오류가 발생했습니다.");
+        alert(res.errorMessage || "사생 정보 조회 중 오류가 발생했습니다.");
       }
     } catch (e: any) {
-      alert(e?.message || "생활원 사생 정보 조회 실패");
+      alert(e?.message || "사생 정보 조회 실패");
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -157,9 +154,10 @@ const PortalDormitoryLabPage = () => {
 
   const profile = dormInfo?.profile;
 
-  // 모든 소스(profile, dormInfo 최상위, rawFields)로부터 종합 매핑
+  // 모든 데이터 소스로부터 필드 매핑
   const studentName = profile?.name || dormInfo?.studentName || dormInfo?.rawFields?.korNm || dormInfo?.rawFields?.nm || "";
   const englishName = profile?.englishName || dormInfo?.rawFields?.engNm || "";
+  const studentId = profile?.studentId || dormInfo?.studentId || dormInfo?.rawFields?.persNo || dormInfo?.rawFields?.stuno || "";
   const gender = profile?.gender || dormInfo?.rawFields?.genGbn || "";
   const nationality = profile?.nationality || dormInfo?.rawFields?.natGbn || "";
   const department = profile?.department || dormInfo?.rawFields?.deptNm || dormInfo?.rawFields?.hgNm || "";
@@ -178,7 +176,7 @@ const PortalDormitoryLabPage = () => {
   const year = profile?.year || dormInfo?.appliedYear || dormInfo?.rawFields?.yy || "";
   const term = profile?.term || dormInfo?.appliedSemester || dormInfo?.rawFields?.tmGbn || "";
 
-  // 프로필 이미지 URL 계산 (phtFile, phtFile2 또는 학적 캐시 fallback)
+  // 프로필 이미지 소스 계산
   const profilePhotoSrc = useMemo(() => {
     const rawPhoto =
       profile?.photoBase64 ||
@@ -206,7 +204,7 @@ const PortalDormitoryLabPage = () => {
     return null;
   }, [profile, dormInfo]);
 
-  // 원시 필드 목록 (키-값 쌍 정렬)
+  // 원시 필드 목록
   const rawEntries = useMemo(() => {
     const rf = profile?.rawFields || dormInfo?.rawFields || {};
     return Object.entries(rf).sort(([a], [b]) => a.localeCompare(b));
@@ -224,275 +222,231 @@ const PortalDormitoryLabPage = () => {
     <Container>
       <Breadcrumb>
         <span>부속행정</span>
-        <ChevronRight size={12} />
+        <ChevronRight size={11} />
         <span>생활원</span>
-        <ChevronRight size={12} />
+        <ChevronRight size={11} />
         <span>사생관리</span>
-        <ChevronRight size={12} />
+        <ChevronRight size={11} />
         <span className="current">사생정보조회(학생)</span>
       </Breadcrumb>
 
       <TitleContentArea
         title="사생정보조회(학생)"
-        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리 > 사생정보조회) 화면의 기본 사생정보 및 7개 탭 정보를 조회합니다. 조회된 데이터는 기기에 안전하게 캐싱되어 다음 접속 시 즉시 표시됩니다."
+        description="포털 종합정보시스템(부속행정 > 생활원 > 사생관리) 사생정보 및 7개 탭 내역을 조회합니다."
       >
-        <NoticeBox>
-          <div className="icon">
-            <Home size={18} />
-          </div>
-          <div className="text">
-            <strong>로컬 보안 캐싱 및 투명 데이터 안내</strong>
-            <p>
-              사생 정보는 외부 서버에 절대 전송되지 않으며, 기기 내 로컬 저장소에 안전하게 보관됩니다.
-              없는 데이터는 임의의 기본값으로 속이지 않고 빈 상태 그대로 표기됩니다.
-            </p>
-          </div>
-        </NoticeBox>
-
         {!isMobileAppEnvironment() && (
           <WebFallbackCard>
-            <Smartphone size={32} />
-            <div className="title">인팁 모바일 앱 전용 기능입니다</div>
+            <Smartphone size={28} />
+            <div className="title">모바일 앱 전용 기능</div>
             <div className="desc">
-              포털 ERP 사생정보조회는 모바일 앱의 안전한 백그라운드 SSO 세션을 통해 작동합니다.
+              학교 포털 ERP 연동은 INTIP 앱 내부의 보안 세션을 통해 안전하게 조회됩니다.
             </div>
             <ActionButton
               as="button"
               onClick={() => openIntipAppOrStore(ROUTES.LABS.PORTAL.DORMITORY)}
             >
-              인팁 앱 열기 / 설치
+              앱 열기
             </ActionButton>
           </WebFallbackCard>
         )}
 
-        <ActionArea>
+        <ActionBar>
           <ActionButton
             as="button"
             disabled={isLoading}
             onClick={loadDormitoryInfo}
           >
-            <RefreshCw size={15} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
-            {isLoading
-              ? loadingMessage || "조회 중..."
-              : dormInfo
-                ? "사생 정보 새로고침 (ERP 갱신)"
-                : "사생 정보 가져오기"}
+            <RefreshCw size={14} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
+            {isLoading ? loadingMessage || "조회 중..." : "정보 새로고침"}
           </ActionButton>
           {lastUpdated && (
-            <LastUpdatedText>
-              <Clock size={13} />
-              최근 갱신: {formatKoreanDateTime(lastUpdated)} (캐시 보관됨)
-            </LastUpdatedText>
+            <UpdatedTimeText>
+              <Clock size={12} />
+              {formatKoreanDateTime(lastUpdated)} 기준
+            </UpdatedTimeText>
           )}
-        </ActionArea>
+        </ActionBar>
 
-        {/* UI 레이아웃 자체는 데이터 유무와 상관없이 항상 온전히 표시 */}
-        <ContentSection>
-          {/* 1. 상단 사생정보 카드 (증명사진 + 필드 그리드) */}
+        {/* 1. 상단 사생정보 카드 */}
+        <SectionBlock>
           <SectionHeader>
-            <div className="title">사생정보</div>
-            <div className="badge-row">
-              {year && term ? (
-                <div className="badge">{year}년 {term}학기</div>
-              ) : (
-                <div className="badge gray">학기 정보 없음</div>
-              )}
-            </div>
+            <span className="title">사생정보</span>
+            {year && term ? (
+              <span className="term-badge">{year}년 {term}학기</span>
+            ) : null}
           </SectionHeader>
 
-          <ProfileLayoutCard>
-            {/* 좌측 증명사진 영역 */}
-            <PhotoSection>
-              <PhotoContainer>
+          <CardContainer>
+            {/* 상단 프로필 헤더: 사진 + 핵심 신원 */}
+            <ProfileTopArea>
+              <AvatarWrapper>
                 {profilePhotoSrc ? (
                   <img src={profilePhotoSrc} alt="사생 증명사진" className="avatar-img" />
                 ) : (
-                  <div className="no-avatar">
-                    <User size={40} strokeWidth={1.5} />
-                    <span>사진 미등록</span>
+                  <div className="avatar-placeholder">
+                    <User size={32} strokeWidth={1.5} />
+                    <span>미등록</span>
                   </div>
                 )}
-              </PhotoContainer>
-              <div className="photo-label">사생 사진</div>
-            </PhotoSection>
+              </AvatarWrapper>
 
-            {/* 우측 사생정보 그리드 테이블 */}
-            <TableGridArea>
-              <TableGrid>
-                <TableRow>
-                  <TableCol>
-                    <span className="th">성명</span>
-                    <span className="td">{studentName || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">성명(영문)</span>
-                    <span className="td">{englishName || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">성별</span>
-                    <span className="td">{gender || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                </TableRow>
+              <IdentityWrapper>
+                <div className="name-row">
+                  <span className="name">{studentName || "(이름 없음)"}</span>
+                  {englishName ? <span className="eng-name">{englishName}</span> : null}
+                </div>
+                {studentId ? <div className="student-id">학번: {studentId}</div> : null}
+                <div className="tags-row">
+                  {department ? <span className="tag">{department}</span> : null}
+                  {grade ? <span className="tag">{grade}</span> : null}
+                  {dormitoryBuilding ? <span className="tag highlight">{dormitoryBuilding}</span> : null}
+                </div>
+              </IdentityWrapper>
+            </ProfileTopArea>
 
-                <TableRow>
-                  <TableCol>
-                    <span className="th">국적</span>
-                    <span className="td">{nationality || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">학부(과)/부서</span>
-                    <span className="td">{department || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">학년구분</span>
-                    <span className="td">{grade || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                </TableRow>
+            {/* 상세 항목 리스트 (모바일 친화적인 키-값 그리드) */}
+            <InfoGrid>
+              <InfoCell>
+                <span className="label">기숙사구분</span>
+                <span className="value">{dormitoryType || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">건물구분</span>
+                <span className="value">{dormitoryBuilding || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">사생번호</span>
+                <span className="value">{studentDormNo || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">성별 / 국적</span>
+                <span className="value">
+                  {gender || "-"}{nationality ? ` / ${nationality}` : ""}
+                </span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">휴대전화번호</span>
+                <span className="value">{phoneNumber || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">이메일</span>
+                <span className="value">{email || "-"}</span>
+              </InfoCell>
+              <InfoCell fullWidth>
+                <span className="label">거주지 주소</span>
+                <span className="value">
+                  {zipCode ? `[${zipCode}] ` : ""}
+                  {address || ""} {detailedAddress || ""}
+                  {!zipCode && !address && !detailedAddress ? "-" : ""}
+                </span>
+              </InfoCell>
+            </InfoGrid>
 
-                <TableRow>
-                  <TableCol>
-                    <span className="th">기숙사구분</span>
-                    <span className="td">{dormitoryType || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">기숙사건물구분</span>
-                    <span className="td">{dormitoryBuilding || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol>
-                    <span className="th">사생번호</span>
-                    <span className="td">{studentDormNo || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                </TableRow>
+            {/* 상벌점 배지 영역 */}
+            <PointBar>
+              <PointChip>
+                <span className="title">상점</span>
+                <span className="score merit">{meritPoints}</span>
+              </PointChip>
+              <PointChip>
+                <span className="title">일반벌점</span>
+                <span className="score demerit">{demeritPoints}</span>
+              </PointChip>
+              <PointChip>
+                <span className="title">상쇄불가벌점</span>
+                <span className="score fixed">{nonOffsetDemeritPoints}</span>
+              </PointChip>
+            </PointBar>
+          </CardContainer>
+        </SectionBlock>
 
-                <TableRow>
-                  <TableCol>
-                    <span className="th">휴대전화번호</span>
-                    <span className="td">{phoneNumber || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                  <TableCol span={2}>
-                    <span className="th">이메일</span>
-                    <span className="td">{email || <EmptyText>(없음)</EmptyText>}</span>
-                  </TableCol>
-                </TableRow>
-
-                <TableRow>
-                  <TableCol span={3}>
-                    <span className="th">거주지</span>
-                    <span className="td">
-                      {zipCode ? `[${zipCode}] ` : ""}
-                      {address || ""} {detailedAddress || ""}
-                      {!zipCode && !address && !detailedAddress && (
-                        <EmptyText>(등록된 주소 없음)</EmptyText>
-                      )}
-                    </span>
-                  </TableCol>
-                </TableRow>
-              </TableGrid>
-
-              {/* 상벌점 배지 바 */}
-              <PointBadgeRow>
-                <PointBox>
-                  <span className="label">상점</span>
-                  <span className="val merit">{meritPoints}</span>
-                </PointBox>
-                <PointBox>
-                  <span className="label">일반벌점</span>
-                  <span className="val demerit">{demeritPoints}</span>
-                </PointBox>
-                <PointBox>
-                  <span className="label">상쇄불가벌점</span>
-                  <span className="val fixed-demerit">{nonOffsetDemeritPoints}</span>
-                </PointBox>
-              </PointBadgeRow>
-            </TableGridArea>
-          </ProfileLayoutCard>
-
-          {/* 2. 하단 7개 탭 네비게이션 */}
-          <TabHeader>
-            <TabButton
+        {/* 2. 하단 7개 탭 네비게이션 */}
+        <SectionBlock>
+          <TabsScrollContainer>
+            <TabChip
               active={activeTab === "address"}
               onClick={() => setActiveTab("address")}
             >
-              <MapPin size={14} />
+              <MapPin size={13} />
               주소사항 ({addressList.length})
-            </TabButton>
-            <TabButton
+            </TabChip>
+            <TabChip
               active={activeTab === "reward"}
               onClick={() => setActiveTab("reward")}
             >
-              <Award size={14} />
+              <Award size={13} />
               상벌점이력 ({rewardList.length})
-            </TabButton>
-            <TabButton
+            </TabChip>
+            <TabChip
               active={activeTab === "inout"}
               onClick={() => setActiveTab("inout")}
             >
-              <LogIn size={14} />
+              <LogIn size={13} />
               입퇴사이력 ({inOutList.length})
-            </TabButton>
-            <TabButton
+            </TabChip>
+            <TabChip
               active={activeTab === "apply"}
               onClick={() => setActiveTab("apply")}
             >
-              <ClipboardList size={14} />
+              <ClipboardList size={13} />
               신청이력 ({applyList.length})
-            </TabButton>
-            <TabButton
+            </TabChip>
+            <TabChip
               active={activeTab === "payment"}
               onClick={() => setActiveTab("payment")}
             >
-              <CreditCard size={14} />
-              등록/환불이력 ({paymentList.length})
-            </TabButton>
-            <TabButton
+              <CreditCard size={13} />
+              등록/환불 ({paymentList.length})
+            </TabChip>
+            <TabChip
               active={activeTab === "utility"}
               onClick={() => setActiveTab("utility")}
             >
-              <Zap size={14} />
+              <Zap size={13} />
               공공요금 ({utilityList.length})
-            </TabButton>
-            <TabButton
+            </TabChip>
+            <TabChip
               active={activeTab === "pledge"}
               onClick={() => setActiveTab("pledge")}
             >
-              <FileCheck size={14} />
-              입사서약서 {pledge ? "(1)" : "(0)"}
-            </TabButton>
-          </TabHeader>
+              <FileCheck size={13} />
+              서약서 {pledge ? "(1)" : "(0)"}
+            </TabChip>
+          </TabsScrollContainer>
 
-          {/* 3. 탭별 상세 내용 (테이블 형식으로 구조화) */}
-          <TabContentContainer>
+          {/* 3. 탭별 상세 카드 목록 */}
+          <TabBody>
             {/* 탭 1: 주소사항 */}
             {activeTab === "address" && (
               <div>
                 {addressList.length > 0 ? (
-                  <ItemList>
-                    {addressList.map((addr: DormitoryAddressItem, idx: number) => (
-                      <ItemCard key={idx}>
-                        <ItemRow>
-                          <span className="label">우편번호</span>
-                          <span className="value">{addr.zipCode || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">기본주소</span>
-                          <span className="value">{addr.address || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">상세주소</span>
-                          <span className="value">{addr.detailedAddress || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">보호자 연락처</span>
-                          <span className="value">{addr.guardianPhone || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                      </ItemCard>
+                  <CardsList>
+                    {addressList.map((item: DormitoryAddressItem, idx: number) => (
+                      <DetailCard key={idx}>
+                        <DetailRow>
+                          <span className="k">우편번호</span>
+                          <span className="v">{item.zipCode || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">기본주소</span>
+                          <span className="v">{item.address || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">상세주소</span>
+                          <span className="v">{item.detailedAddress || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">보호자 연락처</span>
+                          <span className="v">{item.guardianPhone || "-"}</span>
+                        </DetailRow>
+                      </DetailCard>
                     ))}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 주소사항(우편번호, 주소, 보호자연락처) 내역이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>등록된 주소사항 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -501,40 +455,40 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "reward" && (
               <div>
                 {rewardList.length > 0 ? (
-                  <ItemList>
+                  <CardsList>
                     {rewardList.map((rw: DormitoryRewardItem, idx: number) => {
                       const isDemerit = rw.type.includes("벌점") || parseInt(rw.score, 10) < 0;
                       return (
-                        <ItemCard key={idx}>
-                          <ItemHeader>
-                            <span className={`badge ${isDemerit ? "demerit" : "merit"}`}>
+                        <DetailCard key={idx}>
+                          <DetailCardHeader>
+                            <span className={`status-pill ${isDemerit ? "demerit" : "merit"}`}>
                               {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
                             </span>
-                            <span className="date">{rw.imposedDate || "(일자 미기재)"}</span>
-                          </ItemHeader>
-                          <ItemRow>
-                            <span className="label">상벌점명</span>
-                            <span className="value font-medium">{rw.name || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          <ItemRow>
-                            <span className="label">사유</span>
-                            <span className="value">{rw.reason || <EmptyText>(빈값)</EmptyText>}</span>
-                          </ItemRow>
-                          {rw.offsetPossible && (
-                            <ItemRow>
-                              <span className="label">상쇄가능구분</span>
-                              <span className="value">{rw.offsetPossible}</span>
-                            </ItemRow>
-                          )}
-                        </ItemCard>
+                            <span className="sub-text">{rw.imposedDate || "-"}</span>
+                          </DetailCardHeader>
+                          <DetailRow>
+                            <span className="k">상벌점명</span>
+                            <span className="v font-bold">{rw.name || "-"}</span>
+                          </DetailRow>
+                          <DetailRow>
+                            <span className="k">사유</span>
+                            <span className="v">{rw.reason || "-"}</span>
+                          </DetailRow>
+                          {rw.offsetPossible ? (
+                            <DetailRow>
+                              <span className="k">상쇄가능여부</span>
+                              <span className="v">{rw.offsetPossible}</span>
+                            </DetailRow>
+                          ) : null}
+                        </DetailCard>
                       );
                     })}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 상벌점(구분, 상벌점명, 사유, 점수, 부과일자) 부여 내역이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>부여된 상벌점 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -543,35 +497,35 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "inout" && (
               <div>
                 {inOutList.length > 0 ? (
-                  <ItemList>
+                  <CardsList>
                     {inOutList.map((io: DormitoryInOutItem, idx: number) => (
-                      <ItemCard key={idx}>
-                        <ItemHeader>
-                          <span className="badge inout">
+                      <DetailCard key={idx}>
+                        <DetailCardHeader>
+                          <span className="status-pill neutral">
                             {io.year ? `${io.year}년 ` : ""}{io.term ? `${io.term}학기 ` : ""}({io.dormitoryType || "기숙사"})
                           </span>
-                          <span className="status">{io.status || "입퇴사"}</span>
-                        </ItemHeader>
-                        <ItemRow>
-                          <span className="label">사생번호</span>
-                          <span className="value">{io.studentDormNo || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">입사일자</span>
-                          <span className="value">{io.checkInDate || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">퇴사일자</span>
-                          <span className="value">{io.checkOutDate || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                      </ItemCard>
+                          <span className="sub-text font-bold">{io.status || "입퇴사"}</span>
+                        </DetailCardHeader>
+                        <DetailRow>
+                          <span className="k">사생번호</span>
+                          <span className="v">{io.studentDormNo || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">입사일자</span>
+                          <span className="v">{io.checkInDate || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">퇴사일자</span>
+                          <span className="v">{io.checkOutDate || "-"}</span>
+                        </DetailRow>
+                      </DetailCard>
                     ))}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 입퇴사이력(연도, 학기, 기숙사, 입사일자, 퇴사일자) 내역이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>입퇴사 이력이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -580,37 +534,37 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "apply" && (
               <div>
                 {applyList.length > 0 ? (
-                  <ItemList>
+                  <CardsList>
                     {applyList.map((ap: DormitoryApplyItem, idx: number) => (
-                      <ItemCard key={idx}>
-                        <ItemHeader>
-                          <span className="badge inout">
+                      <DetailCard key={idx}>
+                        <DetailCardHeader>
+                          <span className="status-pill neutral">
                             {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${ap.term}학기` : ""}
                           </span>
-                          <span className="status">{ap.passStatus || ap.applyType || "신청"}</span>
-                        </ItemHeader>
-                        <ItemRow>
-                          <span className="label">신청구분</span>
-                          <span className="value">{ap.applyType || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">신청일자</span>
-                          <span className="value">{ap.applyDate || <EmptyText>(빈값)</EmptyText>}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">거주기간</span>
-                          <span className="value">
-                            {ap.periodStart || "(시작 미기재)"} ~ {ap.periodEnd || "(종료 미기재)"}
+                          <span className="sub-text font-bold">{ap.passStatus || ap.applyType || "신청"}</span>
+                        </DetailCardHeader>
+                        <DetailRow>
+                          <span className="k">신청구분</span>
+                          <span className="v">{ap.applyType || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">신청일자</span>
+                          <span className="v">{ap.applyDate || "-"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">거주기간</span>
+                          <span className="v">
+                            {ap.periodStart || "-"} ~ {ap.periodEnd || "-"}
                           </span>
-                        </ItemRow>
-                      </ItemCard>
+                        </DetailRow>
+                      </DetailCard>
                     ))}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 기숙사 신청이력(신청구분, 신청일자, 거주기간, 합격여부) 내역이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>기숙사 신청 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -619,39 +573,39 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "payment" && (
               <div>
                 {paymentList.length > 0 ? (
-                  <ItemList>
+                  <CardsList>
                     {paymentList.map((pm: DormitoryPaymentItem, idx: number) => (
-                      <ItemCard key={idx}>
-                        <ItemHeader>
-                          <span className={`badge ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
+                      <DetailCard key={idx}>
+                        <DetailCardHeader>
+                          <span className={`status-pill ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
                             {pm.type || "등록/환불"}
                           </span>
-                          <span className="date">{pm.date || "(일자 미기재)"}</span>
-                        </ItemHeader>
-                        <ItemRow>
-                          <span className="label">학기</span>
-                          <span className="value">{pm.year}년 {pm.term}학기</span>
-                        </ItemRow>
-                        {pm.dormitoryType && (
-                          <ItemRow>
-                            <span className="label">기숙사구분</span>
-                            <span className="value">{pm.dormitoryType}</span>
-                          </ItemRow>
-                        )}
-                        <ItemRow>
-                          <span className="label">금액</span>
-                          <span className="value font-medium">
-                            {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : <EmptyText>(0원)</EmptyText>}
+                          <span className="sub-text">{pm.date || "-"}</span>
+                        </DetailCardHeader>
+                        <DetailRow>
+                          <span className="k">학기</span>
+                          <span className="v">{pm.year}년 {pm.term}학기</span>
+                        </DetailRow>
+                        {pm.dormitoryType ? (
+                          <DetailRow>
+                            <span className="k">기숙사구분</span>
+                            <span className="v">{pm.dormitoryType}</span>
+                          </DetailRow>
+                        ) : null}
+                        <DetailRow>
+                          <span className="k">금액</span>
+                          <span className="v font-bold">
+                            {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : "0원"}
                           </span>
-                        </ItemRow>
-                      </ItemCard>
+                        </DetailRow>
+                      </DetailCard>
                     ))}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 등록금 납부 및 환불 처리 내역이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>등록금 납부 및 환불 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -660,41 +614,41 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "utility" && (
               <div>
                 {utilityList.length > 0 ? (
-                  <ItemList>
+                  <CardsList>
                     {utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
-                      <ItemCard key={idx}>
-                        <ItemHeader>
-                          <span className="badge inout">사용월: {ut.useMonth || "(미기재)"}</span>
-                          <span className="font-medium">
+                      <DetailCard key={idx}>
+                        <DetailCardHeader>
+                          <span className="status-pill neutral">사용월: {ut.useMonth || "-"}</span>
+                          <span className="sub-text font-bold">
                             총 {ut.totalFee ? `${Number(ut.totalFee).toLocaleString()}원` : "0원"}
                           </span>
-                        </ItemHeader>
-                        <ItemRow>
-                          <span className="label">전기 (사용량 / 요금)</span>
-                          <span className="value">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">수도 (사용량 / 요금)</span>
-                          <span className="value">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">온수 / 난방 사용량</span>
-                          <span className="value">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
-                        </ItemRow>
-                        <ItemRow>
-                          <span className="label">소계 / 시설분담금</span>
-                          <span className="value">
+                        </DetailCardHeader>
+                        <DetailRow>
+                          <span className="k">전기 (사용량 / 요금)</span>
+                          <span className="v">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">수도 (사용량 / 요금)</span>
+                          <span className="v">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">온수 / 난방 사용량</span>
+                          <span className="v">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
+                        </DetailRow>
+                        <DetailRow>
+                          <span className="k">소계 / 시설분담금</span>
+                          <span className="v">
                             {Number(ut.subtotalFee || "0").toLocaleString()}원 / {Number(ut.facilityFee || "0").toLocaleString()}원
                           </span>
-                        </ItemRow>
-                      </ItemCard>
+                        </DetailRow>
+                      </DetailCard>
                     ))}
-                  </ItemList>
+                  </CardsList>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>조회된 공공요금 부과내역(전기, 수도, 온수, 난방, 시설분담금)이 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>공공요금 부과 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
@@ -703,97 +657,77 @@ const PortalDormitoryLabPage = () => {
             {activeTab === "pledge" && (
               <div>
                 {pledge ? (
-                  <ItemCard>
-                    <ItemHeader>
-                      <span className="badge merit">입사서약서</span>
-                      {pledge.consentDate && (
-                        <span className="date">동의일: {pledge.consentDate}</span>
-                      )}
-                    </ItemHeader>
-                    <ItemRow>
-                      <span className="label">동의여부</span>
-                      <span className="value font-medium">{pledge.consentStatus || <EmptyText>(미기재)</EmptyText>}</span>
-                    </ItemRow>
-                    {pledge.studentInfo && (
-                      <ItemRow>
-                        <span className="label">학생정보</span>
-                        <span className="value">{pledge.studentInfo}</span>
-                      </ItemRow>
-                    )}
-                    {pledge.documentContent && (
-                      <PledgeTextBox>
+                  <DetailCard>
+                    <DetailCardHeader>
+                      <span className="status-pill merit">입사서약서</span>
+                      <span className="sub-text">{pledge.consentDate ? `동의일자: ${pledge.consentDate}` : ""}</span>
+                    </DetailCardHeader>
+                    <DetailRow>
+                      <span className="k">동의여부</span>
+                      <span className="v font-bold">{pledge.consentStatus || "-"}</span>
+                    </DetailRow>
+                    {pledge.studentInfo ? (
+                      <DetailRow>
+                        <span className="k">학생정보</span>
+                        <span className="v">{pledge.studentInfo}</span>
+                      </DetailRow>
+                    ) : null}
+                    {pledge.documentContent ? (
+                      <PledgeContentBox>
                         {pledge.documentContent}
-                      </PledgeTextBox>
-                    )}
-                  </ItemCard>
+                      </PledgeContentBox>
+                    ) : null}
+                  </DetailCard>
                 ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>체결된 입사서약서 정보가 없습니다.</span>
-                  </EmptyStructureBox>
+                  <EmptyNotice>
+                    <Inbox size={20} strokeWidth={1.5} />
+                    <span>입사서약서 체결 내역이 없습니다.</span>
+                  </EmptyNotice>
                 )}
               </div>
             )}
-          </TabContentContainer>
+          </TabBody>
+        </SectionBlock>
 
-          {/* 4. 원시 파싱 데이터 투명 노출 (Raw Fields Viewer) */}
-          <RawSection>
-            <RawSectionHeader onClick={() => setShowRawFields(!showRawFields)}>
-              <div className="title-left">
-                <Database size={15} />
-                <span>원시 파싱 데이터 (Raw Fields: {rawEntries.length}개 필드)</span>
-              </div>
-              <div className="btn-toggle">
-                {showRawFields ? "접기 ▲" : "전체 펼쳐보기 ▼"}
-              </div>
-            </RawSectionHeader>
+        {/* 4. 원시 파싱 데이터 토글 (정리된 디버그 뷰어) */}
+        <DebugSection>
+          <DebugHeader onClick={() => setShowRawFields(!showRawFields)}>
+            <div className="title">
+              <Database size={13} />
+              <span>원시 데이터 확인 ({rawEntries.length}개 필드)</span>
+            </div>
+            <span className="toggle-hint">{showRawFields ? "접기" : "펼치기"}</span>
+          </DebugHeader>
 
-            {showRawFields && (
-              <RawFieldsBody>
-                {rawEntries.length > 0 ? (
-                  <RawTable>
-                    <thead>
-                      <tr>
-                        <th>필드명 (Key)</th>
-                        <th>파싱 값 (Value)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rawEntries.map(([key, val]) => (
-                        <tr key={key}>
-                          <td className="key-cell">{key}</td>
-                          <td className="val-cell">
-                            {val === "" ? (
-                              <EmptyText>"" (빈값)</EmptyText>
-                            ) : key === "phtFile2" || key === "phtFile" ? (
-                              <span className="photo-tag">[Base64 이미지 데이터: {val.length}자]</span>
-                            ) : (
-                              String(val)
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </RawTable>
-                ) : (
-                  <EmptyStructureBox>
-                    <Info size={16} />
-                    <span>현재 로드된 원시 필드 데이터가 없습니다.</span>
-                  </EmptyStructureBox>
-                )}
-
-                {dormInfo && (
-                  <JsonDumpContainer>
-                    <div className="dump-label">전체 객체 JSON Dump:</div>
-                    <pre className="json-dump">
-                      {JSON.stringify(dormInfo, null, 2)}
-                    </pre>
-                  </JsonDumpContainer>
-                )}
-              </RawFieldsBody>
-            )}
-          </RawSection>
-        </ContentSection>
+          {showRawFields && (
+            <DebugBody>
+              <MiniTable>
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rawEntries.map(([k, v]) => (
+                    <tr key={k}>
+                      <td className="key">{k}</td>
+                      <td className="val">
+                        {v === "" ? (
+                          <span className="empty-val">(빈값)</span>
+                        ) : k === "phtFile2" || k === "phtFile" ? (
+                          <span className="photo-val">[이미지 Base64: {v.length}자]</span>
+                        ) : (
+                          String(v)
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </MiniTable>
+            </DebugBody>
+          )}
+        </DebugSection>
       </TitleContentArea>
 
       <PortalAccountModal
@@ -811,113 +745,83 @@ const PortalDormitoryLabPage = () => {
 export default PortalDormitoryLabPage;
 
 const Container = styled.div`
-  padding: 16px;
-  max-width: 680px;
+  padding: 12px 16px 32px;
+  max-width: 600px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 `;
 
 const Breadcrumb = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #718096;
-  padding: 4px 8px;
-  background-color: #f7fafc;
-  border-radius: 6px;
+  gap: 4px;
+  font-size: 11px;
+  color: #8c95a0;
+  padding: 4px 6px;
 
   .current {
-    color: #2b6cb0;
+    color: #0055b8;
     font-weight: 600;
-  }
-`;
-
-const NoticeBox = styled.div`
-  display: flex;
-  gap: 12px;
-  background-color: #f0f7ff;
-  padding: 14px 16px;
-  border-radius: 12px;
-  color: #0055b8;
-  font-size: 13px;
-  line-height: 1.5;
-  margin-top: 12px;
-
-  .icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  p {
-    margin: 4px 0 0 0;
-    color: #3b82f6;
-    font-size: 12px;
   }
 `;
 
 const WebFallbackCard = styled.div`
   background-color: #ffffff;
   border: 1px dashed #cbd5e1;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: 8px;
   color: #64748b;
-  margin-top: 16px;
+  margin-top: 12px;
 
   .title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: #1e293b;
   }
 
   .desc {
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
   }
 `;
 
-const ActionArea = styled.div`
+const ActionBar = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 10px;
 
   .spin {
     animation: spin 1s linear infinite;
   }
 
   @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 `;
 
-const LastUpdatedText = styled.div`
+const UpdatedTimeText = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  font-size: 12px;
-  color: #8c95a0;
+  font-size: 11px;
+  color: #94a3b8;
 `;
 
-const ContentSection = styled.div`
+const SectionBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 4px;
 `;
 
 const SectionHeader = styled.div`
@@ -926,79 +830,49 @@ const SectionHeader = styled.div`
   justify-content: space-between;
 
   .title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    color: #1a202c;
+    color: #1e293b;
   }
 
-  .badge-row {
-    display: flex;
-    gap: 6px;
-  }
-
-  .badge {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    background-color: #ebf8ff;
-    color: #2b6cb0;
-    font-weight: 600;
-
-    &.gray {
-      background-color: #edf2f7;
-      color: #718096;
-    }
+  .term-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 500;
   }
 `;
 
-const ProfileLayoutCard = styled.div`
+const CardContainer = styled.div`
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  display: flex;
-
-  @media (max-width: 520px) {
-    flex-direction: column;
-  }
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 `;
 
-const PhotoSection = styled.div`
-  width: 130px;
-  flex-shrink: 0;
+const ProfileTopArea = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 14px;
-  background-color: #f8fafc;
-  border-right: 1px solid #edf2f7;
-
-  .photo-label {
-    font-size: 11px;
-    color: #718096;
-    margin-top: 8px;
-  }
-
-  @media (max-width: 520px) {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #edf2f7;
-    padding: 16px;
-  }
-`;
-
-const PhotoContainer = styled.div`
-  width: 100px;
-  height: 128px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  gap: 14px;
+  padding: 16px;
   background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+`;
+
+const AvatarWrapper = styled.div`
+  width: 76px;
+  height: 98px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   .avatar-img {
     width: 100%;
@@ -1006,150 +880,173 @@ const PhotoContainer = styled.div`
     object-fit: cover;
   }
 
-  .no-avatar {
+  .avatar-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     color: #94a3b8;
-    font-size: 11px;
+    font-size: 10px;
   }
 `;
 
-const TableGridArea = styled.div`
+const IdentityWrapper = styled.div`
   flex: 1;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
-`;
-
-const TableGrid = styled.div`
   display: flex;
   flex-direction: column;
-`;
+  gap: 4px;
 
-const TableRow = styled.div`
-  display: flex;
-  border-bottom: 1px solid #edf2f7;
+  .name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
 
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+    .name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f172a;
+    }
 
-const TableCol = styled.div<{ span?: number }>`
-  flex: ${({ span }) => span || 1};
-  display: flex;
-  flex-direction: column;
-  padding: 9px 11px;
-  border-right: 1px solid #edf2f7;
-
-  &:last-child {
-    border-right: none;
+    .eng-name {
+      font-size: 12px;
+      color: #64748b;
+    }
   }
 
-  .th {
-    font-size: 11px;
-    color: #718096;
-    margin-bottom: 2px;
-  }
-
-  .td {
-    font-size: 13px;
+  .student-id {
+    font-size: 12px;
+    color: #475569;
     font-weight: 500;
-    color: #2d3748;
+  }
+
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+
+    .tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: #f1f5f9;
+      color: #334155;
+
+      &.highlight {
+        background-color: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 600;
+      }
+    }
+  }
+`;
+
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 8px 14px;
+  gap: 10px 14px;
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+`;
+
+const InfoCell = styled.div<{ fullWidth?: boolean }>`
+  grid-column: ${({ fullWidth }) => (fullWidth ? "1 / -1" : "auto")};
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  .label {
+    font-size: 11px;
+    color: #8c95a0;
+  }
+
+  .value {
+    font-size: 13px;
+    color: #1e293b;
+    font-weight: 500;
     word-break: break-all;
   }
 `;
 
-const EmptyText = styled.span`
-  color: #a0aec0;
-  font-weight: 400;
-  font-style: italic;
-  font-size: 12px;
-`;
-
-const PointBadgeRow = styled.div`
+const PointBar = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 10px 12px;
-  background-color: #f7fafc;
-  border-top: 1px solid #e2e8f0;
+  padding: 10px 14px 14px;
+  background-color: #f8fafc;
+  border-top: 1px solid #f1f5f9;
 `;
 
-const PointBox = styled.div`
+const PointChip = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;
-  border: 1px solid #edf2f7;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 6px 4px;
 
-  .label {
-    font-size: 11px;
-    color: #718096;
-    margin-bottom: 2px;
+  .title {
+    font-size: 10px;
+    color: #64748b;
   }
 
-  .val {
+  .score {
     font-size: 15px;
     font-weight: 700;
 
-    &.merit {
-      color: #3182ce;
-    }
-    &.demerit {
-      color: #e53e3e;
-    }
-    &.fixed-demerit {
-      color: #dd6b20;
-    }
+    &.merit { color: #2563eb; }
+    &.demerit { color: #dc2626; }
+    &.fixed { color: #d97706; }
   }
 `;
 
-const TabHeader = styled.div`
+const TabsScrollContainer = styled.div`
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
 `;
 
-const TabButton = styled.button<{ active?: boolean }>`
+const TabChip = styled.button<{ active?: boolean }>`
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   font-size: 12px;
   font-weight: ${({ active }) => (active ? "600" : "400")};
-  color: ${({ active }) => (active ? "#2b6cb0" : "#718096")};
-  background-color: ${({ active }) => (active ? "#ebf8ff" : "#ffffff")};
-  border: 1px solid ${({ active }) => (active ? "#bee3f8" : "#e2e8f0")};
-  border-radius: 20px;
+  color: ${({ active }) => (active ? "#0055b8" : "#64748b")};
+  background-color: ${({ active }) => (active ? "#eef6ff" : "#ffffff")};
+  border: 1px solid ${({ active }) => (active ? "#bfdbfe" : "#e2e8f0")};
+  border-radius: 18px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.15s ease;
 `;
 
-const TabContentContainer = styled.div`
+const TabBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 `;
 
-const ItemList = styled.div`
+const CardsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 `;
 
-const ItemCard = styled.div`
+const DetailCard = styled.div`
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
@@ -1159,191 +1056,162 @@ const ItemCard = styled.div`
   gap: 6px;
 `;
 
-const ItemHeader = styled.div`
+const DetailCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 
-  .badge {
+  .status-pill {
     font-size: 11px;
-    padding: 2px 7px;
-    border-radius: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-weight: 600;
 
     &.merit {
-      background-color: #ebf8ff;
-      color: #2b6cb0;
+      background-color: #eff6ff;
+      color: #1d4ed8;
     }
     &.demerit {
-      background-color: #fff5f5;
-      color: #e53e3e;
+      background-color: #fef2f2;
+      color: #dc2626;
     }
-    &.inout {
-      background-color: #f7fafc;
-      color: #4a5568;
-      border: 1px solid #e2e8f0;
+    &.neutral {
+      background-color: #f1f5f9;
+      color: #334155;
     }
   }
 
-  .date {
+  .sub-text {
     font-size: 11px;
-    color: #a0aec0;
-  }
+    color: #64748b;
 
-  .status {
-    font-size: 12px;
-    font-weight: 600;
-    color: #4a5568;
+    &.font-bold {
+      font-weight: 600;
+      color: #1e293b;
+    }
   }
 `;
 
-const ItemRow = styled.div`
+const DetailRow = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   font-size: 12px;
 
-  .label {
-    color: #718096;
+  .k {
+    color: #64748b;
+    flex-shrink: 0;
   }
 
-  .value {
-    color: #2d3748;
+  .v {
+    color: #1e293b;
     text-align: right;
-  }
+    word-break: break-all;
 
-  .font-medium {
-    font-weight: 600;
+    &.font-bold {
+      font-weight: 600;
+    }
   }
 `;
 
-const PledgeTextBox = styled.div`
-  margin-top: 8px;
+const PledgeContentBox = styled.div`
+  margin-top: 6px;
   padding: 10px;
-  background-color: #f7fafc;
+  background-color: #f8fafc;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
-  color: #4a5568;
+  color: #475569;
   white-space: pre-wrap;
-  max-height: 180px;
+  max-height: 160px;
   overflow-y: auto;
 `;
 
-const EmptyStructureBox = styled.div`
-  padding: 24px;
+const EmptyNotice = styled.div`
+  padding: 24px 16px;
   background-color: #f8fafc;
   border-radius: 10px;
   border: 1px dashed #cbd5e1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-align: center;
-  font-size: 13px;
-  color: #64748b;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 12px;
 `;
 
-const RawSection = styled.div`
-  margin-top: 10px;
+const DebugSection = styled.div`
+  margin-top: 12px;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 8px;
   background-color: #ffffff;
   overflow: hidden;
 `;
 
-const RawSectionHeader = styled.div`
+const DebugHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 10px 12px;
   background-color: #f8fafc;
   cursor: pointer;
   user-select: none;
 
-  .title-left {
+  .title {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-  }
-
-  .btn-toggle {
     font-size: 12px;
-    color: #2563eb;
+    color: #64748b;
     font-weight: 500;
   }
+
+  .toggle-hint {
+    font-size: 11px;
+    color: #94a3b8;
+  }
 `;
 
-const RawFieldsBody = styled.div`
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+const DebugBody = styled.div`
+  padding: 10px;
+  overflow-x: auto;
 `;
 
-const RawTable = styled.table`
+const MiniTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
 
   th {
     background-color: #f1f5f9;
     color: #475569;
-    padding: 6px 10px;
+    padding: 4px 8px;
     text-align: left;
     border-bottom: 1px solid #cbd5e1;
-    font-weight: 600;
   }
 
   td {
-    padding: 6px 10px;
+    padding: 4px 8px;
     border-bottom: 1px solid #f1f5f9;
-    vertical-align: top;
+    font-family: monospace;
   }
 
-  .key-cell {
-    font-family: monospace;
+  .key {
     color: #2563eb;
-    font-weight: 600;
-    width: 35%;
-    word-break: break-all;
+    width: 40%;
   }
 
-  .val-cell {
-    font-family: monospace;
+  .val {
     color: #1e293b;
     word-break: break-all;
   }
 
-  .photo-tag {
+  .empty-val {
+    color: #94a3b8;
+  }
+
+  .photo-val {
     color: #059669;
-    font-weight: 600;
-  }
-`;
-
-const JsonDumpContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  .dump-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #64748b;
-  }
-
-  .json-dump {
-    padding: 12px;
-    background-color: #0f172a;
-    color: #38bdf8;
-    border-radius: 8px;
-    font-size: 11px;
-    font-family: monospace;
-    max-height: 250px;
-    overflow-y: auto;
-    margin: 0;
   }
 `;
