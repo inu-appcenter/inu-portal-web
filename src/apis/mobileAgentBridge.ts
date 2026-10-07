@@ -290,11 +290,106 @@ export async function fetchStudentTimetableFromApp(params?: {
 /**
  * 모바일 앱 백그라운드 브릿지를 통해 포털 ERP에서 생활원 사생정보조회(학생) 및 파싱
  * (부속행정 > 생활원 > 사생관리 > 사생정보조회)
+ *
+ * 타임아웃 방지 최적화:
+ * - 35초 네이티브 제한을 초과하지 않도록 핵심 탭(메인, 주소, 상벌점, 입퇴사, 신청, 등록금, 학적)을 기본 고속 조회(Fast-Path)
+ * - 각 요청마다 Dataset:DS_COND를 명시하여 서버 풀스캔(Slow Query) 방지
+ * - 무거운 서약서/공공요금은 includeHeavyTabs=true 또는 개별 조회 함수로 분리
  */
 export async function fetchDormitoryStudentInfoFromApp(params?: {
   yy?: string;
   tmGbn?: string;
+  includeHeavyTabs?: boolean;
 }): Promise<AgentActionResult<DormitoryStudentInfo>> {
+  const now = new Date();
+  const currentYy = params?.yy || String(now.getFullYear());
+  const currentMonth = now.getMonth() + 1;
+  const defaultTm =
+    currentMonth >= 2 && currentMonth <= 6
+      ? "10"
+      : currentMonth >= 8 && currentMonth <= 12
+      ? "20"
+      : currentMonth === 7
+      ? "30"
+      : "40";
+  const currentTmGbn = params?.tmGbn || defaultTm;
+
+  const RS = String.fromCharCode(30);
+  const US = String.fromCharCode(31);
+  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
+  const academicCondBody = `Dataset:DS_COND${RS}_RowType_${US}stuno${US}korNm${US}gbn${US}colgGrscCd${US}colgCd${US}earnMintStom${RS}U${US}""${US}\x03${US}\x03${US}\x03${US}\x03${US}1${RS}`;
+
+  const coreBatchRequests = [
+    {
+      key: "mainInfo",
+      url: "/aff/dmty/Dmsm0120Ctr/findDmty209List.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "academicInfo",
+      url: "/uni/sreg/TsimCtr/findBaseSchregInfoOne.do",
+      menuId: "M002043",
+      pgmId: "P001878",
+      body: academicCondBody,
+    },
+    {
+      key: "tab01Addr",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab01.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "tab02Reward",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab02.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "tab03InOut",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab03.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "tab04Apply",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab04.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "tab05Pay",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab05.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+  ];
+
+  if (params?.includeHeavyTabs) {
+    coreBatchRequests.push(
+      {
+        key: "tab07Utility",
+        url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
+        menuId: "M001035",
+        pgmId: "P000886",
+        body: dormCondBody,
+      },
+      {
+        key: "tab07Pledge",
+        url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
+        menuId: "M001035",
+        pgmId: "P000886",
+        body: dormCondBody,
+      }
+    );
+  }
+
   const instruction = {
     actionId: "PORTAL_GET_FULL_ACADEMIC_RECORD",
     authDomain: "PORTAL",
@@ -305,69 +400,14 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
       params: {
         menuId: "M001035",
         pgmId: "P000886",
-        ...(params?.yy ? { yy: params.yy } : {}),
-        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        yy: currentYy,
+        tmGbn: currentTmGbn,
       },
       data: {
-        ...(params?.yy ? { yy: params.yy } : {}),
-        ...(params?.tmGbn ? { tmGbn: params.tmGbn } : {}),
+        yy: currentYy,
+        tmGbn: currentTmGbn,
       },
-      batchRequests: [
-        {
-          key: "mainInfo",
-          url: "/aff/dmty/Dmsm0120Ctr/findDmty209List.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab01Addr",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab01.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab02Reward",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab02.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab03InOut",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab03.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab04Apply",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab04.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab05Pay",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab05.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab07Utility",
-          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "tab07Pledge",
-          url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
-          menuId: "M001035",
-          pgmId: "P000886",
-        },
-        {
-          key: "academicInfo",
-          url: "/uni/sreg/TsimCtr/findBaseSchregInfoOne.do",
-          menuId: "M002043",
-          pgmId: "P001878",
-        },
-      ],
+      batchRequests: coreBatchRequests,
     },
   };
 
@@ -392,6 +432,93 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
       success: false,
       errorCode: "PARSE_ERROR",
       errorMessage: err?.message || "생활원 사생정보 데이터 파싱 실패",
+    };
+  }
+}
+
+/**
+ * 특정 무거운 탭(공공요금 또는 서약서)을 단독으로 안전하게 조회하는 온디맨드 함수
+ */
+export async function fetchDormitoryTabSpecificFromApp(
+  tabType: "utility" | "pledge",
+  params?: { yy?: string; tmGbn?: string }
+): Promise<AgentActionResult<Partial<DormitoryStudentInfo>>> {
+  const now = new Date();
+  const currentYy = params?.yy || String(now.getFullYear());
+  const currentMonth = now.getMonth() + 1;
+  const defaultTm =
+    currentMonth >= 2 && currentMonth <= 6
+      ? "10"
+      : currentMonth >= 8 && currentMonth <= 12
+      ? "20"
+      : currentMonth === 7
+      ? "30"
+      : "40";
+  const currentTmGbn = params?.tmGbn || defaultTm;
+
+  const RS = String.fromCharCode(30);
+  const US = String.fromCharCode(31);
+  const dormCondBody = `Dataset:DS_COND${RS}_RowType_${US}yy${US}tmGbn${RS}N${US}${currentYy}${US}${currentTmGbn}${RS}`;
+
+  const targetRequest =
+    tabType === "utility"
+      ? {
+          key: "tab07Utility",
+          url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+          body: dormCondBody,
+        }
+      : {
+          key: "tab07Pledge",
+          url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
+          menuId: "M001035",
+          pgmId: "P000886",
+          body: dormCondBody,
+        };
+
+  const instruction = {
+    actionId: "PORTAL_GET_FULL_ACADEMIC_RECORD",
+    authDomain: "PORTAL",
+    request: {
+      url: `https://erp.inu.ac.kr:8443${targetRequest.url}?menuId=M001035&pgmId=P000886`,
+      method: "POST",
+      datasetName: "DS_COND",
+      params: {
+        menuId: "M001035",
+        pgmId: "P000886",
+        yy: currentYy,
+        tmGbn: currentTmGbn,
+      },
+      data: {
+        yy: currentYy,
+        tmGbn: currentTmGbn,
+      },
+      batchRequests: [targetRequest],
+    },
+  };
+
+  const res = await sendBridgeAction<any>("executeAgentAction", { instruction }, 45000);
+  if (!res.success) {
+    return {
+      success: false,
+      errorCode: res.errorCode,
+      errorMessage: res.errorMessage,
+    };
+  }
+
+  try {
+    const rawPayload = res.data;
+    const parsed = parseDormitoryStudentInfo(rawPayload);
+    return {
+      success: true,
+      data: parsed,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      errorCode: "PARSE_ERROR",
+      errorMessage: err?.message || "단일 탭 데이터 파싱 실패",
     };
   }
 }

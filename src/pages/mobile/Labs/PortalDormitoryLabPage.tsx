@@ -9,6 +9,7 @@ import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import {
   checkPortalAccountLinked,
   fetchDormitoryStudentInfoFromApp,
+  fetchDormitoryTabSpecificFromApp,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import {
@@ -166,6 +167,39 @@ const PortalDormitoryLabPage = () => {
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
+    }
+  }, []);
+
+  // 특정 탭(공공요금 또는 서약서) 단독 온디맨드 조회
+  const [tabLoading, setTabLoading] = useState<string | null>(null);
+  const handleFetchTabSpecific = useCallback(async (tabType: "utility" | "pledge") => {
+    if (!isMobileAppEnvironment()) {
+      setIsPortalAccountModalOpen(true);
+      return;
+    }
+    setTabLoading(tabType);
+    try {
+      const res = await fetchDormitoryTabSpecificFromApp(tabType);
+      if (res.success && res.data) {
+        setDormInfo((prev) => {
+          if (!prev) return res.data as DormitoryStudentInfo;
+          const updated: DormitoryStudentInfo = {
+            ...prev,
+            ...(tabType === "utility" && res.data?.utilityList ? { utilityList: res.data.utilityList } : {}),
+            ...(tabType === "pledge" && res.data?.pledge ? { pledge: res.data.pledge } : {}),
+          };
+          try {
+            localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
+          } catch {}
+          return updated;
+        });
+      } else {
+        alert(res.errorMessage || "상세 내역을 불러오는 중 오류가 발생했습니다.");
+      }
+    } catch (e: any) {
+      alert(e?.message || "상세 내역 조회 실패");
+    } finally {
+      setTabLoading(null);
     }
   }, []);
 
@@ -961,8 +995,17 @@ const PortalDormitoryLabPage = () => {
                 ) : (
                   <CardsList>
                     <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>공공요금 부과 내역이 없습니다. (항목 안내 틀)</span>
+                      <div className="left-area">
+                        <Inbox size={15} />
+                        <span>공공요금 부과 내역이 없습니다. (항목 안내 틀)</span>
+                      </div>
+                      <FetchInlineButton
+                        disabled={tabLoading === "utility"}
+                        onClick={() => handleFetchTabSpecific("utility")}
+                      >
+                        <RefreshCw size={11} className={tabLoading === "utility" ? "spin" : ""} />
+                        {tabLoading === "utility" ? "조회 중..." : "상세 내역 불러오기"}
+                      </FetchInlineButton>
                     </EmptyBanner>
                     <DetailCard style={{ opacity: 0.85 }}>
                       <DetailCardHeader>
@@ -1035,8 +1078,17 @@ const PortalDormitoryLabPage = () => {
                 ) : (
                   <CardsList>
                     <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>입사서약서 체결 내역이 없습니다. (항목 안내 틀)</span>
+                      <div className="left-area">
+                        <Inbox size={15} />
+                        <span>입사서약서 체결 내역이 없습니다. (항목 안내 틀)</span>
+                      </div>
+                      <FetchInlineButton
+                        disabled={tabLoading === "pledge"}
+                        onClick={() => handleFetchTabSpecific("pledge")}
+                      >
+                        <RefreshCw size={11} className={tabLoading === "pledge" ? "spin" : ""} />
+                        {tabLoading === "pledge" ? "조회 중..." : "서약서 내역 불러오기"}
+                      </FetchInlineButton>
                     </EmptyBanner>
                     <DetailCard style={{ opacity: 0.85 }}>
                       <DetailCardHeader>
@@ -1610,7 +1662,8 @@ const DetailRow = styled.div`
 const EmptyBanner = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
   padding: 8px 12px;
   background-color: #f8fafc;
   border-radius: 8px;
@@ -1621,9 +1674,45 @@ const EmptyBanner = styled.div`
   width: 100%;
   box-sizing: border-box;
 
+  .left-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   svg {
     color: #94a3b8;
     flex-shrink: 0;
+  }
+`;
+
+const FetchInlineButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #ffffff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  color: #0055b8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #eef6ff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .spin {
+    animation: spin 1s linear infinite;
   }
 `;
 
