@@ -413,26 +413,21 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
       pgmId: "P000886",
       body: dormCondBody,
     },
+    {
+      key: "tab07Utility",
+      url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
+    {
+      key: "tab07Pledge",
+      url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
+      menuId: "M001035",
+      pgmId: "P000886",
+      body: dormCondBody,
+    },
   ];
-
-  if (params?.includeHeavyTabs) {
-    coreBatchRequests.push(
-      {
-        key: "tab07Utility",
-        url: "/aff/dmty/Dmsm0010Ctr/findDmty209ListTab07.do",
-        menuId: "M001035",
-        pgmId: "P000886",
-        body: dormCondBody,
-      },
-      {
-        key: "tab07Pledge",
-        url: "/aff/dmty/Dmsm0120Ctr/findJoinPledgeData.do",
-        menuId: "M001035",
-        pgmId: "P000886",
-        body: dormCondBody,
-      }
-    );
-  }
 
   const instruction = {
     actionId: "PORTAL_GET_FULL_ACADEMIC_RECORD",

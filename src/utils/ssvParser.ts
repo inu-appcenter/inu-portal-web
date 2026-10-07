@@ -393,7 +393,7 @@ export function parseAcademicBasicInfo(responseBody: string): AcademicBasicInfo 
     gradeAverage: (row["mrksAvg"] || "0.0").trim(),
     advisorProfessorName: firstValue(row, ["profNm", "profName", "profKorNm", "advProfNm", "advisorNm", "tutProfNm"]) || "",
     rawFields: Object.fromEntries(
-      Object.entries(row).filter(([key]) => !["_RowType_", "_Column_", "phtFile1", "phtFile2"].includes(key))
+      Object.entries(row).filter(([key]) => !["_RowType_", "_Column_"].includes(key))
     ),
   };
 
@@ -1181,78 +1181,93 @@ export function parseDormitoryStudentInfo(
   payload: string | Record<string, any>
 ): DormitoryStudentInfo {
   let combinedSsv = "";
+  let resolvedObj: Record<string, any> | null = null;
   if (typeof payload === "string") {
-    combinedSsv = payload;
+    const trimmed = payload.trim();
+    if (trimmed.startsWith("{")) {
+      try {
+        resolvedObj = JSON.parse(trimmed);
+      } catch {
+        combinedSsv = payload;
+      }
+    } else {
+      combinedSsv = payload;
+    }
   } else if (payload && typeof payload === "object") {
+    resolvedObj = payload;
+  }
+
+  if (resolvedObj) {
     // 배치 응답 또는 각 키별 ssv 취합
     const parts: string[] = [];
-    for (const key of Object.keys(payload)) {
-      const val = payload[key];
+    for (const key of Object.keys(resolvedObj)) {
+      const val = resolvedObj[key];
       if (typeof val === "string" && val.includes("Dataset:")) {
         parts.push(val);
       }
     }
-    combinedSsv = parts.join("\x1e");
+    if (parts.length > 0) {
+      combinedSsv = parts.join("\x1e");
+    }
   }
 
   // payload가 이미 파싱된 객체 형태({ studentId, rawFields: ... })인 경우 fallback
   if (
-    payload &&
-    typeof payload === "object" &&
+    resolvedObj &&
     !combinedSsv &&
-    (payload.rawFields || payload.studentId || payload.studentName)
+    (resolvedObj.rawFields || resolvedObj.studentId || resolvedObj.studentName)
   ) {
-    const rf = payload.rawFields || {};
-    const photo = rf["phtFile2"] || rf["phtFile"] || payload.photoBase64 || "";
+    const rf = resolvedObj.rawFields || {};
+    const photo = rf["phtFile2"] || rf["phtFile1"] || rf["phtFile"] || resolvedObj.photoBase64 || "";
     const prof: DormitoryStudentProfile = {
-      name: payload.studentName || rf["korNm"] || rf["nm"] || "",
+      name: resolvedObj.studentName || rf["korNm"] || rf["nm"] || "",
       englishName: rf["engNm"] || "",
       gender: rf["genGbn"] || "",
       nationality: rf["natGbn"] || "",
-      department: payload.departmentName || rf["deptNm"] || "",
+      department: resolvedObj.departmentName || rf["deptNm"] || "",
       grade: rf["hySeqGbn"] || "",
-      dormitoryType: payload.dormitoryBuilding || rf["dormGbn"] || "",
-      dormitoryBuilding: payload.dormitoryBuilding || rf["dormBdNm"] || "",
+      dormitoryType: resolvedObj.dormitoryBuilding || rf["dormGbn"] || "",
+      dormitoryBuilding: resolvedObj.dormitoryBuilding || rf["dormBdNm"] || "",
       studentDormNo: rf["domstuNo"] || "",
       phoneNumber: rf["handpNo"] || "",
       email: rf["email"] || "",
       zipCode: rf["zipNo"] || "",
       address: rf["addr"] || "",
       detailedAddress: rf["detaAddr"] || "",
-      meritPoints: String(payload.meritPoints ?? rf["ardScr1"] ?? "0"),
-      demeritPoints: String(payload.demeritPoints ?? rf["ardScr2"] ?? "0"),
+      meritPoints: String(resolvedObj.meritPoints ?? rf["ardScr1"] ?? "0"),
+      demeritPoints: String(resolvedObj.demeritPoints ?? rf["ardScr2"] ?? "0"),
       nonOffsetDemeritPoints: rf["ardScr3"] || "0",
-      year: payload.appliedYear || rf["yy"] || "",
-      term: payload.appliedSemester || rf["tmGbn"] || "",
-      studentId: payload.studentId || rf["persNo"] || rf["stuno"] || "",
+      year: resolvedObj.appliedYear || rf["yy"] || "",
+      term: resolvedObj.appliedSemester || rf["tmGbn"] || "",
+      studentId: resolvedObj.studentId || rf["persNo"] || rf["stuno"] || "",
       photoBase64: photo || undefined,
       rawFields: rf,
     };
     return {
       profile: prof,
-      addressList: payload.addressList || [],
-      rewardList: payload.rewardList || [],
-      inOutList: payload.inOutList || [],
-      applyList: payload.applyList || [],
-      paymentList: payload.paymentList || [],
-      utilityList: payload.utilityList || [],
-      pledge: payload.pledge || null,
+      addressList: resolvedObj.addressList || [],
+      rewardList: resolvedObj.rewardList || [],
+      inOutList: resolvedObj.inOutList || [],
+      applyList: resolvedObj.applyList || [],
+      paymentList: resolvedObj.paymentList || [],
+      utilityList: resolvedObj.utilityList || [],
+      pledge: resolvedObj.pledge || null,
       hasData: true,
       rawDatasets: {},
       studentId: prof.studentId,
       studentName: prof.name,
       dormitoryBuilding: prof.dormitoryBuilding,
-      roomNumber: payload.roomNumber || "",
-      bedNumber: payload.bedNumber || "",
-      roomType: payload.roomType || "",
-      checkInDate: payload.checkInDate || "",
-      checkOutDate: payload.checkOutDate || "",
-      status: payload.status || "",
-      mealType: payload.mealType || "",
+      roomNumber: resolvedObj.roomNumber || "",
+      bedNumber: resolvedObj.bedNumber || "",
+      roomType: resolvedObj.roomType || "",
+      checkInDate: resolvedObj.checkInDate || "",
+      checkOutDate: resolvedObj.checkOutDate || "",
+      status: resolvedObj.status || "",
+      mealType: resolvedObj.mealType || "",
       meritPoints: Number(prof.meritPoints) || 0,
       demeritPoints: Number(prof.demeritPoints) || 0,
       totalPoints: (Number(prof.meritPoints) || 0) - (Number(prof.demeritPoints) || 0),
-      pointsList: payload.pointsList || [],
+      pointsList: resolvedObj.pointsList || [],
       appliedYear: prof.year,
       appliedSemester: prof.term,
       photoBase64: photo || undefined,
@@ -1322,11 +1337,16 @@ export function parseDormitoryStudentInfo(
     legacyCheckOutDt = (row["leavDt"] || row["outDt"] || "").trim();
 
     const rawPhoto =
-      row["phtFile"] ||
       row["phtFile2"] ||
+      row["phtFile1"] ||
+      row["phtFile"] ||
       row["photo"] ||
       row["pic"] ||
+      datasets["DS_PIC"]?.[0]?.["phtFile2"] ||
+      datasets["DS_PIC"]?.[0]?.["phtFile1"] ||
       datasets["DS_PIC"]?.[0]?.["phtFile"] ||
+      datasets["DS_DMTY206"]?.[0]?.["phtFile2"] ||
+      datasets["DS_DMTY206"]?.[0]?.["phtFile1"] ||
       datasets["DS_DMTY206"]?.[0]?.["phtFile"] ||
       "";
 
@@ -1369,7 +1389,7 @@ export function parseDormitoryStudentInfo(
         year: (row["yy"] || schregRow["yy"] || "").trim(),
         term: (row["tmGbnNm"] || row["tmGbn"] || schregRow["tmGbn"] || "").trim(),
         studentId: (row["persNo"] || row["stuno"] || row["studNo"] || schregRow["stuno"] || "").trim(),
-        photoBase64: rawPhoto || schregRow["phtFile2"] || schregRow["phtFile"] || undefined,
+        photoBase64: rawPhoto || schregRow["phtFile2"] || schregRow["phtFile1"] || schregRow["phtFile"] || undefined,
         professorName: (row["profNm"] || schregRow["profNm"] || "").trim(),
         averageScore: (row["mrksAvg"] || schregRow["mrksAvg"] || "").trim(),
         completedCredits: (row["cptnTmNm"] || schregRow["cptnTmNm"] || "").trim(),

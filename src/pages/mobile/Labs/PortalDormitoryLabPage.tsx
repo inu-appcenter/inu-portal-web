@@ -354,22 +354,73 @@ const PortalDormitoryLabPage = () => {
         const rawCount = Object.keys(res.data.rawFields || {}).length;
         addLog(
           "PARSE_SUCCESS",
-          `사생정보 수신 및 파싱 완료 (사생: ${studentNm}, 학번: ${returnedId || "-"}, 원시 필드: ${rawCount}개)`,
+          `사생정보 전체 탭 수신 및 파싱 완료 (사생: ${studentNm}, 학번: ${returnedId || "-"}, 원시 필드: ${rawCount}개)`,
           "success",
           `사생번호: ${res.data.profile?.studentDormNo || "-"}, 건물: ${res.data.profile?.dormitoryBuilding || "-"}`
         );
 
-        setDormInfo(res.data);
+        let finalDormData = res.data;
+        // 로컬에 기존 학적 사진이 있으면 병합
+        try {
+          const academicCached = localStorage.getItem("portal_student_info");
+          if (academicCached) {
+            const parsedAc = JSON.parse(academicCached);
+            const acRf = parsedAc.rawFields || {};
+            const photo = parsedAc.photoBase64 || acRf.phtFile2 || acRf.phtFile1 || acRf.phtFile;
+            if (photo && !finalDormData.photoBase64 && !finalDormData.profile?.photoBase64) {
+              finalDormData = {
+                ...finalDormData,
+                photoBase64: photo,
+                profile: finalDormData.profile ? { ...finalDormData.profile, photoBase64: photo } : finalDormData.profile,
+                rawFields: { ...acRf, ...(finalDormData.rawFields || {}) },
+              };
+            }
+          }
+        } catch {}
+
+        setDormInfo(finalDormData);
         const nowIso = new Date().toISOString();
         setLastUpdated(nowIso);
 
         try {
-          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(res.data));
+          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(finalDormData));
           localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
           addLog("CACHE_SAVED", "로컬 스토리지에 최신 사생정보 캐싱 완료", "info");
         } catch (storageErr) {
           console.warn("Dormitory cache save error:", storageErr);
           addLog("CACHE_WARN", "로컬 스토리지 캐시 저장 실패", "warn", String(storageErr));
+        }
+
+        // 학적 사진이 아직 없으면 백그라운드에서 학적 정보를 함께 조회하여 증명사진 동기화
+        if (!finalDormData.photoBase64 && !finalDormData.profile?.photoBase64) {
+          addLog("ACADEMIC_SYNC", "학적 증명사진 및 추가 정보를 확인하는 중...", "info");
+          fetchAcademicInfoFromApp(false)
+            .then((acRes) => {
+              if (acRes.success && acRes.data) {
+                const rf = acRes.data.rawFields || {};
+                const photo = (acRes.data as any).photoBase64 || rf.phtFile2 || rf.phtFile1 || rf.phtFile;
+                try {
+                  localStorage.setItem("portal_student_info", JSON.stringify(acRes.data));
+                } catch {}
+                if (photo) {
+                  setDormInfo((prev) => {
+                    if (!prev) return prev;
+                    const updated = {
+                      ...prev,
+                      photoBase64: photo,
+                      profile: prev.profile ? { ...prev.profile, photoBase64: photo } : prev.profile,
+                      rawFields: { ...rf, ...(prev.rawFields || {}) },
+                    };
+                    try {
+                      localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
+                    } catch {}
+                    return updated;
+                  });
+                  addLog("ACADEMIC_SYNC", "학적 증명사진 동기화 완료", "success");
+                }
+              }
+            })
+            .catch(() => {});
         }
       } else {
         const errMsg = res.errorMessage || "사생 정보 조회 중 오류가 발생했습니다.";
@@ -616,10 +667,13 @@ const PortalDormitoryLabPage = () => {
       profile?.photoBase64 ||
       dormInfo?.photoBase64 ||
       profile?.rawFields?.phtFile2 ||
+      profile?.rawFields?.phtFile1 ||
       profile?.rawFields?.phtFile ||
       dormInfo?.rawFields?.phtFile2 ||
+      dormInfo?.rawFields?.phtFile1 ||
       dormInfo?.rawFields?.phtFile ||
       fallbackAcademic?.rawFields?.phtFile2 ||
+      fallbackAcademic?.rawFields?.phtFile1 ||
       fallbackAcademic?.rawFields?.phtFile;
 
     if (rawPhoto) {
