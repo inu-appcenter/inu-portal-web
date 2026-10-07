@@ -39,13 +39,14 @@ import {
   Database,
   RefreshCw,
   Inbox,
+  GraduationCap,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 
 const STORAGE_KEY_DORMITORY_DATA = "portal_dormitory_student_info";
 const STORAGE_KEY_DORMITORY_UPDATED = "portal_dormitory_last_updated";
 
-type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility" | "pledge";
+type ActiveTab = "address" | "reward" | "inout" | "apply" | "payment" | "utility" | "pledge" | "academic";
 
 /**
  * Base64 이미지를 안전한 Data URL로 변환 (공백 제거 및 포맷 감지)
@@ -266,6 +267,50 @@ const PortalDormitoryLabPage = () => {
   const nonOffsetDemeritPoints = profile?.nonOffsetDemeritPoints ?? dormInfo?.rawFields?.ardScr3 ?? "0";
   const year = profile?.year || dormInfo?.appliedYear || dormInfo?.rawFields?.yy || "";
   const term = profile?.term || dormInfo?.appliedSemester || dormInfo?.rawFields?.tmGbn || "";
+
+  // 확장 학적/신원 필드
+  const professorName =
+    profile?.professorName ||
+    dormInfo?.rawFields?.profNm ||
+    fallbackAcademic?.profNm ||
+    fallbackAcademic?.rawFields?.profNm ||
+    "";
+  const averageScore =
+    profile?.averageScore ||
+    dormInfo?.rawFields?.mrksAvg ||
+    fallbackAcademic?.mrksAvg ||
+    fallbackAcademic?.rawFields?.mrksAvg ||
+    "";
+  const completedCredits =
+    profile?.completedCredits ||
+    dormInfo?.rawFields?.cptnTmNm ||
+    fallbackAcademic?.cptnTmNm ||
+    fallbackAcademic?.rawFields?.cptnTmNm ||
+    "";
+  const entranceDate =
+    profile?.entranceDate ||
+    dormInfo?.rawFields?.entrDt ||
+    fallbackAcademic?.entrDt ||
+    fallbackAcademic?.rawFields?.entrDt ||
+    "";
+  const academicStatus =
+    profile?.academicStatus ||
+    dormInfo?.rawFields?.schregStGbn ||
+    fallbackAcademic?.schregStGbn ||
+    fallbackAcademic?.rawFields?.schregStGbn ||
+    "";
+  const expectedGraduation =
+    profile?.expectedGraduation ||
+    dormInfo?.rawFields?.grdtExpcYn ||
+    fallbackAcademic?.grdtExpcYn ||
+    fallbackAcademic?.rawFields?.grdtExpcYn ||
+    "";
+  const maskedRrn =
+    profile?.maskedRrn ||
+    dormInfo?.rawFields?.rrn ||
+    fallbackAcademic?.rrn ||
+    fallbackAcademic?.rawFields?.rrn ||
+    "";
 
   // 프로필 이미지 소스 계산
   const profilePhotoSrc = useMemo(() => {
@@ -501,6 +546,13 @@ const PortalDormitoryLabPage = () => {
                 <FileCheck size={13} />
                 서약서 {pledge ? "(1)" : "(0)"}
               </TabChip>
+              <TabChip
+                active={activeTab === "academic"}
+                onClick={() => setActiveTab("academic")}
+              >
+                <GraduationCap size={13} />
+                학적/학생정보
+              </TabChip>
             </TabsScrollContainer>
           </TabsWrapper>
 
@@ -688,6 +740,30 @@ const PortalDormitoryLabPage = () => {
                             {pm.amount ? `${Number(pm.amount).toLocaleString()}원` : "0원"}
                           </span>
                         </DetailRow>
+                        {pm.dormFee ? (
+                          <DetailRow>
+                            <span className="k">기숙사비(관리비)</span>
+                            <span className="v">{Number(pm.dormFee).toLocaleString()}원</span>
+                          </DetailRow>
+                        ) : null}
+                        {pm.mealFee ? (
+                          <DetailRow>
+                            <span className="k">식비</span>
+                            <span className="v">{Number(pm.mealFee).toLocaleString()}원</span>
+                          </DetailRow>
+                        ) : null}
+                        {pm.depositFee ? (
+                          <DetailRow>
+                            <span className="k">보증금</span>
+                            <span className="v">{Number(pm.depositFee).toLocaleString()}원</span>
+                          </DetailRow>
+                        ) : null}
+                        {pm.bankName || pm.accountNumber ? (
+                          <DetailRow>
+                            <span className="k">환불/입금계좌</span>
+                            <span className="v">{pm.bankName || ""} {pm.accountNumber || ""}</span>
+                          </DetailRow>
+                        ) : null}
                       </DetailCard>
                     ))}
                   </CardsList>
@@ -717,10 +793,22 @@ const PortalDormitoryLabPage = () => {
                           <span className="k">전기 (사용량 / 요금)</span>
                           <span className="v">{ut.electricUsage || "0"} / {Number(ut.electricFee || "0").toLocaleString()}원</span>
                         </DetailRow>
+                        {ut.prevElectricIndex || ut.currElectricIndex ? (
+                          <DetailRow>
+                            <span className="k">전기 지침 (전월 / 당월)</span>
+                            <span className="v">{ut.prevElectricIndex || "-"} / {ut.currElectricIndex || "-"}</span>
+                          </DetailRow>
+                        ) : null}
                         <DetailRow>
                           <span className="k">수도 (사용량 / 요금)</span>
                           <span className="v">{ut.waterUsage || "0"} / {Number(ut.waterFee || "0").toLocaleString()}원</span>
                         </DetailRow>
+                        {ut.prevWaterIndex || ut.currWaterIndex ? (
+                          <DetailRow>
+                            <span className="k">수도 지침 (전월 / 당월)</span>
+                            <span className="v">{ut.prevWaterIndex || "-"} / {ut.currWaterIndex || "-"}</span>
+                          </DetailRow>
+                        ) : null}
                         <DetailRow>
                           <span className="k">온수 / 난방 사용량</span>
                           <span className="v">{ut.hotWaterUsage || "0"} / {ut.heatingUsage || "0"}</span>
@@ -731,6 +819,18 @@ const PortalDormitoryLabPage = () => {
                             {Number(ut.subtotalFee || "0").toLocaleString()}원 / {Number(ut.facilityFee || "0").toLocaleString()}원
                           </span>
                         </DetailRow>
+                        {ut.paymentDueDate || ut.paymentStatus ? (
+                          <DetailRow>
+                            <span className="k">납부상태 / 납부기한</span>
+                            <span className="v font-bold">{ut.paymentStatus || "-"} {ut.paymentDueDate ? `(~${ut.paymentDueDate})` : ""}</span>
+                          </DetailRow>
+                        ) : null}
+                        {ut.virtualAccount ? (
+                          <DetailRow>
+                            <span className="k">납부 가상계좌</span>
+                            <span className="v">{ut.virtualAccount}</span>
+                          </DetailRow>
+                        ) : null}
                       </DetailCard>
                     ))}
                   </CardsList>
@@ -774,6 +874,62 @@ const PortalDormitoryLabPage = () => {
                     <span>입사서약서 체결 내역이 없습니다.</span>
                   </EmptyNotice>
                 )}
+              </div>
+            )}
+
+            {/* 탭 8: 학적/학생정보 */}
+            {activeTab === "academic" && (
+              <div>
+                <DetailCard>
+                  <DetailCardHeader>
+                    <span className="status-pill merit">
+                      {academicStatus || "학적정보"}
+                    </span>
+                    <span className="sub-text font-bold">
+                      {studentId || "-"}
+                    </span>
+                  </DetailCardHeader>
+                  <DetailRow>
+                    <span className="k">성명 / 영문</span>
+                    <span className="v font-bold">{studentName || "-"} {englishName ? `(${englishName})` : ""}</span>
+                  </DetailRow>
+                  <DetailRow>
+                    <span className="k">학과 / 학년</span>
+                    <span className="v">{department || "-"} {grade ? `(${grade})` : ""}</span>
+                  </DetailRow>
+                  <DetailRow>
+                    <span className="k">지도교수</span>
+                    <span className="v font-bold">{professorName || "-"}</span>
+                  </DetailRow>
+                  <DetailRow>
+                    <span className="k">누적 평점평균</span>
+                    <span className="v font-bold">{averageScore || "-"}</span>
+                  </DetailRow>
+                  <DetailRow>
+                    <span className="k">총 이수학점 / 학기</span>
+                    <span className="v">{completedCredits || "-"}</span>
+                  </DetailRow>
+                  <DetailRow>
+                    <span className="k">입학일자</span>
+                    <span className="v">{entranceDate || "-"}</span>
+                  </DetailRow>
+                  {expectedGraduation ? (
+                    <DetailRow>
+                      <span className="k">졸업예정여부</span>
+                      <span className="v">{expectedGraduation === "1" ? "졸업예정" : "해당없음"}</span>
+                    </DetailRow>
+                  ) : null}
+                  {maskedRrn ? (
+                    <DetailRow>
+                      <span className="k">주민등록번호</span>
+                      <span className="v">{maskedRrn}</span>
+                    </DetailRow>
+                  ) : null}
+                  <DetailRow>
+                    <span className="k">국적 / 성별</span>
+                    <span className="v">{nationality || "-"}{gender ? ` / ${gender}` : ""}</span>
+                  </DetailRow>
+                </DetailCard>
               </div>
             )}
           </TabBody>

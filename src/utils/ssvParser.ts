@@ -1042,6 +1042,14 @@ export interface DormitoryStudentProfile {
   term: string; // 학기 (tmGbn)
   studentId: string; // 학번 (persNo)
   photoBase64?: string; // 프로필 사진 (phtFile, phtFile2)
+  // 확장 학적 및 인적사항 필드
+  professorName?: string; // 지도교수 (profNm)
+  averageScore?: string; // 평점평균 (mrksAvg)
+  completedCredits?: string; // 총 이수학점 / 이수학기 (cptnTmNm)
+  entranceDate?: string; // 입학일자 (entrDt)
+  academicStatus?: string; // 학적상태 (schregStGbn)
+  expectedGraduation?: string; // 졸업예정여부 (grdtExpcYn)
+  maskedRrn?: string; // 주민등록번호 마스킹 (rrn)
   rawFields: Record<string, string>;
 }
 
@@ -1095,6 +1103,11 @@ export interface DormitoryPaymentItem {
   type: string; // 등록/환불구분 (gbn)
   amount: string; // 금액 (totAmt)
   date: string; // 처리일자 (dormDt)
+  dormFee?: string; // 관리비/기숙사비 (dormFee)
+  mealFee?: string; // 식비 (mealFee)
+  depositFee?: string; // 보증금 (dpsFee)
+  bankName?: string; // 은행명 (bankNm)
+  accountNumber?: string; // 계좌번호 (acctNo)
   rawFields: Record<string, string>;
 }
 
@@ -1109,6 +1122,13 @@ export interface DormitoryUtilityItem {
   subtotalFee: string; // subTotFee
   totalFee: string; // totFee
   facilityFee: string; // instRepartFee
+  prevElectricIndex?: string; // 전월 전기 지침 (prvmmElIndc)
+  currElectricIndex?: string; // 당월 전기 지침 (thmmElIndc)
+  prevWaterIndex?: string; // 전월 수도 지침 (prvmmWtrwkIndc)
+  currWaterIndex?: string; // 당월 수도 지침 (thmmWtrwkIndc)
+  virtualAccount?: string; // 가상계좌 (virAcctNo)
+  paymentDueDate?: string; // 납부기한 (payDd)
+  paymentStatus?: string; // 납부여부 (payYn)
   rawFields: Record<string, string>;
 }
 
@@ -1310,6 +1330,10 @@ export function parseDormitoryStudentInfo(
       datasets["DS_DMTY206"]?.[0]?.["phtFile"] ||
       "";
 
+    // 학적 데이터셋(DS_BASE_SCHREG_INFO)이 함께 수신된 경우 인적사항 보완
+    const schregRows = datasets["DS_BASE_SCHREG_INFO"] || datasets["DS_SCHREG"] || [];
+    const schregRow = schregRows[0] || {};
+
     // 유효한 행인지 확인 (성명, 학번, 또는 건물코드 등이 하나라도 존재하는지)
     if (
       row["nm"] ||
@@ -1320,31 +1344,40 @@ export function parseDormitoryStudentInfo(
       row["deptNm"] ||
       row["hgNm"] ||
       row["dmtyNm"] ||
-      row["dormBdNm"]
+      row["dormBdNm"] ||
+      schregRow["korNm"] ||
+      schregRow["stuno"]
     ) {
       profile = {
-        name: (row["nm"] || row["korNm"] || row["studNm"] || "").trim(),
-        englishName: (row["engNm"] || "").trim(),
-        gender: (row["genGbn"] || "").trim(),
-        nationality: (row["natGbn"] || "").trim(),
-        department: (row["deptNm"] || row["hgNm"] || "").trim(),
-        grade: (row["hySeqGbn"] || "").trim(),
+        name: (row["nm"] || row["korNm"] || row["studNm"] || schregRow["korNm"] || "").trim(),
+        englishName: (row["engNm"] || schregRow["engNm"] || "").trim(),
+        gender: (row["genGbn"] || schregRow["genGbn"] || "").trim(),
+        nationality: (row["natGbn"] || schregRow["natGbn"] || "").trim(),
+        department: (row["deptNm"] || row["hgNm"] || schregRow["deptNm"] || schregRow["hgNm"] || "").trim(),
+        grade: (row["hySeqGbn"] || schregRow["hySeqGbn"] || "").trim(),
         dormitoryType: (row["dormGbn"] || "").trim(),
         dormitoryBuilding: (row["dormBdNm"] || row["dormBdCd"] || row["dmtyNm"] || row["domNm"] || "").trim(),
         studentDormNo: (row["domstuNo"] || row["domStuNo"] || "").trim(),
-        phoneNumber: (row["handpNo"] || row["hpNo"] || "").trim(),
-        email: (row["email"] || "").trim(),
-        zipCode: (row["zipNo"] || "").trim(),
-        address: (row["addr"] || "").trim(),
-        detailedAddress: (row["detaAddr"] || "").trim(),
+        phoneNumber: (row["handpNo"] || row["hpNo"] || schregRow["handpNo"] || "").trim(),
+        email: (row["email"] || schregRow["email"] || "").trim(),
+        zipCode: (row["zipNo"] || schregRow["zipNo"] || "").trim(),
+        address: (row["addr"] || schregRow["addr"] || "").trim(),
+        detailedAddress: (row["detaAddr"] || schregRow["detaAddr"] || "").trim(),
         meritPoints: (row["ardScr1"] || row["rwrdScore"] || row["meritPnt"] || "0").trim(),
         demeritPoints: (row["ardScr2"] || row["pnshScore"] || row["demeritPnt"] || "0").trim(),
         nonOffsetDemeritPoints: (row["ardScr3"] || "0").trim(),
-        year: (row["yy"] || "").trim(),
-        term: (row["tmGbnNm"] || row["tmGbn"] || "").trim(),
-        studentId: (row["persNo"] || row["stuno"] || row["studNo"] || "").trim(),
-        photoBase64: rawPhoto || undefined,
-        rawFields: row,
+        year: (row["yy"] || schregRow["yy"] || "").trim(),
+        term: (row["tmGbnNm"] || row["tmGbn"] || schregRow["tmGbn"] || "").trim(),
+        studentId: (row["persNo"] || row["stuno"] || row["studNo"] || schregRow["stuno"] || "").trim(),
+        photoBase64: rawPhoto || schregRow["phtFile2"] || schregRow["phtFile"] || undefined,
+        professorName: (row["profNm"] || schregRow["profNm"] || "").trim(),
+        averageScore: (row["mrksAvg"] || schregRow["mrksAvg"] || "").trim(),
+        completedCredits: (row["cptnTmNm"] || schregRow["cptnTmNm"] || "").trim(),
+        entranceDate: (row["entrDt"] || schregRow["entrDt"] || "").trim(),
+        academicStatus: (row["schregStGbn"] || schregRow["schregStGbn"] || "").trim(),
+        expectedGraduation: (row["grdtExpcYn"] || schregRow["grdtExpcYn"] || "").trim(),
+        maskedRrn: (row["rrn"] || schregRow["rrn"] || "").trim(),
+        rawFields: Object.assign({}, schregRow, row),
       };
     }
   }
@@ -1419,6 +1452,11 @@ export function parseDormitoryStudentInfo(
       type: (r["gbn"] || "").trim(),
       amount: (r["totAmt"] || "0").trim(),
       date: (r["dormDt"] || "").trim(),
+      dormFee: (r["dormFee"] || "").trim(),
+      mealFee: (r["mealFee"] || "").trim(),
+      depositFee: (r["dpsFee"] || "").trim(),
+      bankName: (r["bankNm"] || "").trim(),
+      accountNumber: (r["acctNo"] || "").trim(),
       rawFields: r,
     }));
 
@@ -1437,6 +1475,13 @@ export function parseDormitoryStudentInfo(
       subtotalFee: (r["subTotFee"] || "0").trim(),
       totalFee: (r["totFee"] || "0").trim(),
       facilityFee: (r["instRepartFee"] || "0").trim(),
+      prevElectricIndex: (r["prvmmElIndc"] || "").trim(),
+      currElectricIndex: (r["thmmElIndc"] || "").trim(),
+      prevWaterIndex: (r["prvmmWtrwkIndc"] || "").trim(),
+      currWaterIndex: (r["thmmWtrwkIndc"] || "").trim(),
+      virtualAccount: (r["virAcctNo"] || "").trim(),
+      paymentDueDate: (r["payDd"] || "").trim(),
+      paymentStatus: (r["payYn"] || "").trim(),
       rawFields: r,
     }));
 

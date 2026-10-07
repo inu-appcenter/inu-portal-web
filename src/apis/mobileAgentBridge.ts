@@ -361,6 +361,12 @@ export async function fetchDormitoryStudentInfoFromApp(params?: {
           menuId: "M001035",
           pgmId: "P000886",
         },
+        {
+          key: "academicInfo",
+          url: "/uni/sreg/TsimCtr/findBaseSchregInfoOne.do",
+          menuId: "M002043",
+          pgmId: "P001878",
+        },
       ],
     },
   };
