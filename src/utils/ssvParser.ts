@@ -1524,8 +1524,8 @@ export function parseDormitoryStudentInfo(
   // 레거시 상벌점 목록 호환
   const pointsList: DormitoryPointItem[] = rewardList.map((rw) => ({
     date: rw.imposedDate,
-    type: rw.type.includes("벌점") || parseInt(rw.score, 10) < 0 ? "DEMERIT" : "MERIT",
-    typeName: rw.type || "상벌점",
+    type: rw.type === "02" || rw.type.includes("벌점") || parseInt(rw.score, 10) < 0 ? "DEMERIT" : "MERIT",
+    typeName: rw.type === "02" ? "벌점" : rw.type === "01" ? "상점" : (rw.type || "상벌점"),
     points: Math.abs(parseInt(rw.score, 10) || 0),
     reason: rw.reason || rw.name || "상벌점",
   }));

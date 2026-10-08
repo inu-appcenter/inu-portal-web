@@ -144,6 +144,186 @@ function mapSemester(term?: string): string {
   }
 }
 
+/**
+ * 상벌점 구분 매핑 (01: 상점, 02: 벌점)
+ */
+function mapRewardType(code?: string, score?: string): string {
+  const trimmed = code?.trim();
+  if (trimmed === "01") return "상점";
+  if (trimmed === "02") return "벌점";
+  if (trimmed?.includes("벌점")) return "벌점";
+  if (trimmed?.includes("상점")) return "상점";
+  const num = Number(score);
+  if (!isNaN(num) && score !== undefined && score !== "") {
+    return num < 0 ? "벌점" : "상점";
+  }
+  return trimmed || "상벌점";
+}
+
+/**
+ * 입퇴사 상태 코드 매핑 (01: 정규입사, 02: 정규퇴사, 03: 중도퇴사)
+ */
+function mapInOutStatus(code?: string): string {
+  if (!code) return "입퇴사";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "01":
+      return "정규입사";
+    case "02":
+      return "정규퇴사";
+    case "03":
+      return "중도퇴사";
+    default:
+      return trimmed;
+  }
+}
+
+/**
+ * 기숙사 신청구분 매핑 (01: 정규선발, 02: 추가선발, 03: 방학/계절학기, 04: 잔류신청)
+ */
+function mapApplyType(code?: string): string {
+  if (!code) return "-";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "01":
+      return "정규선발";
+    case "02":
+      return "추가선발";
+    case "03":
+      return "방학/계절학기";
+    case "04":
+      return "잔류신청";
+    default:
+      return trimmed;
+  }
+}
+
+/**
+ * 선발 결과 매핑 (01: 접수완료, 02: 1차합격, 03: 불합격, 04: 예비후보, 05: 최종합격, 06: 입사포기)
+ */
+function mapPassStatus(code?: string): string {
+  if (!code) return "";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "01":
+      return "접수완료";
+    case "02":
+      return "1차합격";
+    case "03":
+      return "불합격";
+    case "04":
+      return "예비후보";
+    case "05":
+      return "최종합격";
+    case "06":
+      return "입사포기";
+    default:
+      return trimmed;
+  }
+}
+
+/**
+ * 수납 구분 매핑 (1: 등록, 2: 환불)
+ */
+function mapPaymentType(code?: string): string {
+  if (!code) return "등록/환불";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "1":
+    case "01":
+      return "등록";
+    case "2":
+    case "02":
+      return "환불";
+    default:
+      return trimmed;
+  }
+}
+
+/**
+ * 서약서 동의여부 매핑 (1/Y: 동의완료, 0/N: 미동의)
+ */
+function mapConsentStatus(status?: string): string {
+  if (!status) return "-";
+  const trimmed = status.trim();
+  if (trimmed === "1" || trimmed === "Y" || trimmed === "동의") return "동의완료";
+  if (trimmed === "0" || trimmed === "N" || trimmed === "미동의") return "미동의";
+  return trimmed;
+}
+
+/**
+ * 공공요금 납부상태 매핑 (1/Y: 납부완료, 0/N: 미납)
+ */
+function mapPaymentStatus(status?: string): string {
+  if (!status) return "-";
+  const trimmed = status.trim();
+  if (trimmed === "1" || trimmed === "Y" || trimmed === "납부") return "납부완료";
+  if (trimmed === "0" || trimmed === "N" || trimmed === "미납") return "미납";
+  return trimmed;
+}
+
+/**
+ * YYYYMMDD 또는 YYYYMMDDHHmmss00 등의 원시 날짜를 'YYYY.MM.DD' 형식으로 정돈
+ */
+function formatPortalDate(raw?: string | null): string {
+  if (!raw) return "-";
+  const str = String(raw).trim();
+  if (!str || str === "-") return "-";
+  const digits = str.replace(/\D/g, "");
+  if (digits.length >= 8) {
+    const y = digits.substring(0, 4);
+    const m = digits.substring(4, 6);
+    const d = digits.substring(6, 8);
+    return `${y}.${m}.${d}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    return str.substring(0, 10).replace(/-/g, ".");
+  }
+  return str;
+}
+
+/**
+ * YYYYMMDDHHmmss00 등의 일시 값을 'YYYY.MM.DD HH:mm' (시간이 00:00이면 'YYYY.MM.DD') 형식으로 정돈
+ */
+function formatPortalTimestamp(raw?: string | null): string {
+  if (!raw) return "-";
+  const str = String(raw).trim();
+  if (!str || str === "-") return "-";
+  const digits = str.replace(/\D/g, "");
+  if (digits.length >= 12) {
+    const y = digits.substring(0, 4);
+    const m = digits.substring(4, 6);
+    const d = digits.substring(6, 8);
+    const hh = digits.substring(8, 10);
+    const mm = digits.substring(10, 12);
+    if (hh === "00" && mm === "00") {
+      return `${y}.${m}.${d}`;
+    }
+    return `${y}.${m}.${d} ${hh}:${mm}`;
+  }
+  return formatPortalDate(str);
+}
+
+/**
+ * YYYYMM 또는 YYYY-MM 등의 사용월을 'YYYY년 M월' 형식으로 정돈
+ */
+function formatPortalMonth(raw?: string | null): string {
+  if (!raw) return "-";
+  const str = String(raw).trim();
+  if (!str || str === "-") return "-";
+  const digits = str.replace(/\D/g, "");
+  if (digits.length === 6) {
+    return `${digits.substring(0, 4)}년 ${parseInt(digits.substring(4, 6), 10)}월`;
+  }
+  if (str.includes("-")) {
+    const parts = str.split("-");
+    if (parts.length === 2) {
+      return `${parts[0]}년 ${parseInt(parts[1], 10)}월`;
+    }
+  }
+  return str;
+}
+
 const PortalDormitoryLabPage = () => {
   const navigate = useNavigate();
   const { enabled: isLabsEnabled, isFetched: isLabsFlagFetched } = useFeatureFlag(
@@ -588,9 +768,7 @@ const PortalDormitoryLabPage = () => {
 
   const rawDormGbn = dormInfo?.rawFields?.dormGbn || profile?.dormitoryType || "";
   const mappedDormName = mapDormitoryType(rawDormGbn);
-  const dormitoryType = mappedDormName
-    ? (rawDormGbn && !mappedDormName.includes(rawDormGbn) ? `${mappedDormName} (${rawDormGbn})` : mappedDormName)
-    : (dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || "-");
+  const dormitoryType = mappedDormName || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || "-";
   const dormitoryBuilding = profile?.dormitoryBuilding || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || dormInfo?.rawFields?.dormBdCd || "";
   const studentDormNo = profile?.studentDormNo || dormInfo?.rawFields?.domstuNo || dormInfo?.rawFields?.domStuNo || "";
 
@@ -971,14 +1149,15 @@ const PortalDormitoryLabPage = () => {
                 {rewardList.length > 0 ? (
                   <CardsList>
                     {rewardList.map((rw: DormitoryRewardItem, idx: number) => {
-                      const isDemerit = rw.type.includes("벌점") || parseInt(rw.score, 10) < 0;
+                      const typeName = mapRewardType(rw.type, rw.score);
+                      const isDemerit = typeName === "벌점" || rw.type === "02" || parseInt(rw.score, 10) < 0;
                       return (
                         <DetailCard key={idx}>
                           <DetailCardHeader>
                             <span className={`status-pill ${isDemerit ? "demerit" : "merit"}`}>
-                              {rw.type || (isDemerit ? "벌점" : "상점")} {rw.score}점
+                              {typeName} {Math.abs(Number(rw.score) || 0)}점
                             </span>
-                            <span className="sub-text">{rw.imposedDate || "-"}</span>
+                            <span className="sub-text">{formatPortalTimestamp(rw.imposedDate)}</span>
                           </DetailCardHeader>
                           <DetailRow>
                             <span className="k">상벌점명</span>
@@ -988,12 +1167,6 @@ const PortalDormitoryLabPage = () => {
                             <span className="k">사유</span>
                             <span className="v">{rw.reason || "-"}</span>
                           </DetailRow>
-                          {rw.offsetPossible ? (
-                            <DetailRow>
-                              <span className="k">상쇄가능여부</span>
-                              <span className="v">{rw.offsetPossible}</span>
-                            </DetailRow>
-                          ) : null}
                         </DetailCard>
                       );
                     })}
@@ -1021,10 +1194,6 @@ const PortalDormitoryLabPage = () => {
                         <span className="k">사유</span>
                         <span className="v text-muted">-</span>
                       </DetailRow>
-                      <DetailRow>
-                        <span className="k">상쇄가능여부</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
                     </DetailCard>
                   </CardsList>
                 )}
@@ -1040,9 +1209,9 @@ const PortalDormitoryLabPage = () => {
                       <DetailCard key={idx}>
                         <DetailCardHeader>
                           <span className="status-pill neutral">
-                            {io.year ? `${io.year}년 ` : ""}{io.term ? `${io.term}학기 ` : ""}({io.dormitoryType || "기숙사"})
+                            {io.year ? `${io.year}년 ` : ""}{io.term ? `${mapSemester(io.term)}학기 ` : ""}({mapDormitoryType(io.dormitoryType) || "기숙사"})
                           </span>
-                          <span className="sub-text font-bold">{io.status || "입퇴사"}</span>
+                          <span className="sub-text font-bold">{mapInOutStatus(io.status)}</span>
                         </DetailCardHeader>
                         <DetailRow>
                           <span className="k">사생번호</span>
@@ -1050,11 +1219,11 @@ const PortalDormitoryLabPage = () => {
                         </DetailRow>
                         <DetailRow>
                           <span className="k">입사일자</span>
-                          <span className="v">{io.checkInDate || "-"}</span>
+                          <span className="v">{formatPortalDate(io.checkInDate)}</span>
                         </DetailRow>
                         <DetailRow>
                           <span className="k">퇴사일자</span>
-                          <span className="v">{io.checkOutDate || "-"}</span>
+                          <span className="v">{formatPortalDate(io.checkOutDate)}</span>
                         </DetailRow>
                       </DetailCard>
                     ))}
@@ -1101,22 +1270,24 @@ const PortalDormitoryLabPage = () => {
                       <DetailCard key={idx}>
                         <DetailCardHeader>
                           <span className="status-pill neutral">
-                            {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${ap.term}학기` : ""}
+                            {ap.year ? `${ap.year}년 ` : ""}{ap.term ? `${mapSemester(ap.term)}학기` : ""}
                           </span>
-                          <span className="sub-text font-bold">{ap.passStatus || ap.applyType || "신청"}</span>
+                          <span className="sub-text font-bold">
+                            {mapPassStatus(ap.passStatus) || mapApplyType(ap.applyType) || "신청"}
+                          </span>
                         </DetailCardHeader>
                         <DetailRow>
                           <span className="k">신청구분</span>
-                          <span className="v">{ap.applyType || "-"}</span>
+                          <span className="v">{mapApplyType(ap.applyType)}</span>
                         </DetailRow>
                         <DetailRow>
                           <span className="k">신청일자</span>
-                          <span className="v">{ap.applyDate || "-"}</span>
+                          <span className="v">{formatPortalDate(ap.applyDate)}</span>
                         </DetailRow>
                         <DetailRow>
                           <span className="k">거주기간</span>
                           <span className="v">
-                            {ap.periodStart || "-"} ~ {ap.periodEnd || "-"}
+                            {formatPortalDate(ap.periodStart)} ~ {formatPortalDate(ap.periodEnd)}
                           </span>
                         </DetailRow>
                       </DetailCard>
@@ -1159,19 +1330,19 @@ const PortalDormitoryLabPage = () => {
                     {paymentList.map((pm: DormitoryPaymentItem, idx: number) => (
                       <DetailCard key={idx}>
                         <DetailCardHeader>
-                          <span className={`status-pill ${pm.type.includes("환불") ? "demerit" : "merit"}`}>
-                            {pm.type || "등록/환불"}
+                          <span className={`status-pill ${pm.type.includes("환불") || pm.type === "2" || pm.type === "02" ? "demerit" : "merit"}`}>
+                            {mapPaymentType(pm.type)}
                           </span>
-                          <span className="sub-text">{pm.date || "-"}</span>
+                          <span className="sub-text">{formatPortalDate(pm.date)}</span>
                         </DetailCardHeader>
                         <DetailRow>
                           <span className="k">학기</span>
-                          <span className="v">{pm.year}년 {pm.term}학기</span>
+                          <span className="v">{pm.year}년 {mapSemester(pm.term)}학기</span>
                         </DetailRow>
                         {pm.dormitoryType ? (
                           <DetailRow>
                             <span className="k">기숙사구분</span>
-                            <span className="v">{pm.dormitoryType}</span>
+                            <span className="v">{mapDormitoryType(pm.dormitoryType)}</span>
                           </DetailRow>
                         ) : null}
                         <DetailRow>
@@ -1260,7 +1431,7 @@ const PortalDormitoryLabPage = () => {
                     {utilityList.map((ut: DormitoryUtilityItem, idx: number) => (
                       <DetailCard key={idx}>
                         <DetailCardHeader>
-                          <span className="status-pill neutral">사용월: {ut.useMonth || "-"}</span>
+                          <span className="status-pill neutral">사용월: {formatPortalMonth(ut.useMonth)}</span>
                           <span className="sub-text font-bold">
                             총 {ut.totalFee ? `${Number(ut.totalFee).toLocaleString()}원` : "0원"}
                           </span>
@@ -1298,7 +1469,7 @@ const PortalDormitoryLabPage = () => {
                         {ut.paymentDueDate || ut.paymentStatus ? (
                           <DetailRow>
                             <span className="k">납부상태 / 납부기한</span>
-                            <span className="v font-bold">{ut.paymentStatus || "-"} {ut.paymentDueDate ? `(~${ut.paymentDueDate})` : ""}</span>
+                            <span className="v font-bold">{mapPaymentStatus(ut.paymentStatus)} {ut.paymentDueDate ? `(~${formatPortalDate(ut.paymentDueDate)})` : ""}</span>
                           </DetailRow>
                         ) : null}
                         {ut.virtualAccount ? (
@@ -1375,11 +1546,11 @@ const PortalDormitoryLabPage = () => {
                   <DetailCard>
                     <DetailCardHeader>
                       <span className="status-pill merit">입사서약서</span>
-                      <span className="sub-text">{pledge.consentDate ? `동의일자: ${pledge.consentDate}` : ""}</span>
+                      <span className="sub-text">{pledge.consentDate ? `동의일자: ${formatPortalTimestamp(pledge.consentDate)}` : ""}</span>
                     </DetailCardHeader>
                     <DetailRow>
                       <span className="k">동의여부</span>
-                      <span className="v font-bold">{pledge.consentStatus || "-"}</span>
+                      <span className="v font-bold">{mapConsentStatus(pledge.consentStatus)}</span>
                     </DetailRow>
                     {pledge.studentInfo ? (
                       <DetailRow>
@@ -1465,7 +1636,7 @@ const PortalDormitoryLabPage = () => {
                   </DetailRow>
                   <DetailRow>
                     <span className="k">입학일자</span>
-                    <span className="v">{entranceDate || "-"}</span>
+                    <span className="v">{formatPortalDate(entranceDate)}</span>
                   </DetailRow>
                   {expectedGraduation ? (
                     <DetailRow>
