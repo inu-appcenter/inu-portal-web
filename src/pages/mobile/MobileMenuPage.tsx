@@ -19,6 +19,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 import FoodRouletteFab from "@/components/mobile/cafeteria/FoodRouletteFab";
 import FoodRouletteModal from "@/components/mobile/cafeteria/FoodRouletteModal";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 interface CafeteriaListContentProps {
   cafeteria: string;
@@ -110,9 +111,9 @@ export default function MobileMenuPage() {
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
   const [isRouletteOpen, setIsRouletteOpen] = useState(false);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const currentIndex = useMemo(() => {
     const idx = cafeteriaCategories.indexOf(selectedCafeteria);
@@ -144,7 +145,7 @@ export default function MobileMenuPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     resetScrollToTop();

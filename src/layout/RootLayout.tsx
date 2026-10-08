@@ -22,6 +22,8 @@ import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 import FeatureTourSheet from "@/components/common/FeatureTourSheet";
+import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
+import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
@@ -198,6 +200,14 @@ export default function RootLayout() {
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
+      {/* 앱 3.0.14+ 에서만, 최초 1회. 버전·확인 여부는 컴포넌트 안에서 판단하고
+          여러 시트가 겹치지 않도록 프로모션 큐가 한 번에 하나만 띄운다. */}
+      <LiveActivitySheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
+      <PortalAutoSyncSheet
         enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
       />
     </HeaderProvider>

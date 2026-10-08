@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -13,7 +14,6 @@ import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-ho
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
-const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
@@ -155,9 +155,8 @@ export default function ClassDetailBottomSheet({
       alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
       return;
     }
-    if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
+    if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
       alert(LECTURE_REVIEW_NOTICE_MESSAGE);
-      localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
     }
     window.open(lectureReviewUrl, "_blank", "noopener,noreferrer");
   };

@@ -30,7 +30,7 @@ const HIGHLIGHTS = [
 
 /**
  * 학점계산기에 처음 들어왔을 때 한 번만 뜨는 기능 소개 시트.
- * 다시 보여줄지 여부는 `@/utils/gradeCalculatorIntro`의 플래그가 관리한다.
+ * 다시 보여줄지 여부는 `promotionSeenStorage`의 `GRADE_CALCULATOR_INTRO`가 관리한다.
  */
 export default function GradeCalculatorIntroSheet({
   open,

@@ -34,10 +34,7 @@ import {
 import { findDepartmentCodeByName } from "@/utils/departmentOptions";
 import { loadRequiredMajorCourses } from "@/utils/requiredMajorCourses";
 import type { RequiredMajorCourse } from "@/types/graduation";
-import {
-  hasSeenGradeCalculatorIntro,
-  markGradeCalculatorIntroSeen,
-} from "@/utils/gradeCalculatorIntro";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import type { ResolvedGradeRow } from "@/types/gradeImport";
 import type { Term } from "@/types/timetables";
 import {
@@ -1223,9 +1220,9 @@ export default function MobileGradeCalculatorPage() {
 
   // --- 기능 소개 시트 (최초 1회) ---
   useEffect(() => {
-    if (hasSeenGradeCalculatorIntro()) return;
-
-    markGradeCalculatorIntroSeen();
+    if (!promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.GRADE_CALCULATOR_INTRO)) {
+      return;
+    }
     setShowIntroSheet(true);
   }, []);
 

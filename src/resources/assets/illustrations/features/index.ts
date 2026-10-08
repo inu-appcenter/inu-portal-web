@@ -10,3 +10,5 @@ export { default as lostHowToFind } from "./lost-how-to-find.png";
 export { default as gradeImportInuAppMain } from "./grade-import-inu-app-main.jpg";
 export { default as labsBanner } from "./labs-banner.webp";
 export { default as festivalPaintTheUnionBanner } from "./festival-paint-the-union-banner.webp";
+export { default as liveActivityIslandOngoing } from "./live-activity-island-ongoing.webp";
+export { default as liveActivityNowbarOngoing } from "./live-activity-nowbar-ongoing.webp";

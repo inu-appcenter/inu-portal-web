@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import styled from "styled-components";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
@@ -67,7 +68,6 @@ const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
-const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
@@ -83,9 +83,8 @@ const openLectureReview = (professor: string) => {
     return;
   }
 
-  if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
+  if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
     alert(LECTURE_REVIEW_NOTICE_MESSAGE);
-    localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
   }
 
   const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;

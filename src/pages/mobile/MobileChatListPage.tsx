@@ -34,6 +34,7 @@ import OpenChatPreviewModal from "@/components/mobile/chat/OpenChatPreviewModal"
 import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
@@ -358,9 +359,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
 
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const handleCategoryChange = (nextCategory: string) => {
     const nextParams = new URLSearchParams(location.search);
@@ -376,7 +377,7 @@ const MobileChatListPage = memo(function MobileChatListPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     if (nextCategory && nextCategory !== selectedCategory) {
