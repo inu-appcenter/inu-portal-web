@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset } from "./tokens";
 import { typography } from "@/styles/typography";
 
 interface WizardDashedButtonProps {
@@ -29,17 +29,17 @@ const Button = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 20px;
-  border: 1px dashed ${WIZARD_PRIMARY};
-  background: var(--bg-base, #ffffff);
-  color: var(--text-brand, #0061ff);
+  border: 1px dashed var(--border-brand);
+  background: var(--bg-base);
+  color: var(--text-brand);
   ${typography.heading2}
 
   &:active:not(:disabled) {
-    background: var(--bg-brand, #eff6ff);
+    background: var(--bg-brand);
   }
 
   &:disabled {
-    border-color: var(--border-default, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    border-color: var(--border-default);
+    color: var(--text-disabled);
   }
 `;

@@ -22,7 +22,7 @@ const SubContentWrapper = styled.div`
   box-sizing: border-box;
   div {
     width: 100%;
-    background-color: #f3f7fe;
+    background-color: var(--bg-brand);
     border-radius: 10px;
     padding: 10px 5px;
     text-align: left;

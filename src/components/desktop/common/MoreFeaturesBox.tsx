@@ -42,7 +42,7 @@ const Container = styled.div<{ $isClickable: boolean }>`
 const Title = styled.p`
   font-size: 17px;
   font-weight: 500;
-  color: #242529;
+  color: var(--text-primary);
   margin: 0 0 12px 0;
 `;
 

@@ -502,7 +502,7 @@ const SelectedStopBubble = styled.div`
   padding: 9px 12px;
   border-radius: 999px;
   background: rgba(20, 36, 66, 0.92);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;

@@ -313,7 +313,7 @@ const GuideSheet = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 24px 24px 0 0;
   max-height: 92vh;
   z-index: 2101;
@@ -342,7 +342,7 @@ const SheetHeader = styled.div`
   .drag-handle {
     width: 36px;
     height: 4px;
-    background-color: var(--border-default, #e5e8eb);
+    background-color: var(--border-default);
     border-radius: 2px;
     margin-bottom: 12px;
   }
@@ -358,7 +358,7 @@ const SheetHeader = styled.div`
   .title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -370,7 +370,7 @@ const CloseButton = styled.button`
   padding: 0;
   display: flex;
   align-items: center;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
   outline: none;
 `;
@@ -393,7 +393,7 @@ const SheetBody = styled.div`
 const StepBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   letter-spacing: 0.2px;
 `;
 
@@ -401,7 +401,7 @@ const StepTitle = styled.h4`
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   text-align: center;
 `;
 
@@ -409,7 +409,7 @@ const StepDesc = styled.p`
   margin: 0 0 8px;
   font-size: 12px;
   line-height: 17px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   max-width: 280px;
 `;
@@ -437,14 +437,14 @@ const Dot = styled.button<{ $active: boolean }>`
   padding: 0;
   cursor: pointer;
   background-color: ${({ $active }) =>
-    $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+    $active ? "var(--border-brand)" : "var(--border-default)"};
   transition: all 0.2s ease;
 `;
 
 const DummyNotice = styled.p`
   margin: 6px 0 0;
   font-size: 11px;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
   text-align: center;
 `;
 
@@ -453,7 +453,7 @@ const SheetFooter = styled.div`
   display: flex;
   gap: 8px;
   padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 // fullWidth(width:100%)를 형제 버튼과 같은 flex 행에 두면 폭 계산이 100%+100%로
@@ -478,7 +478,7 @@ const PhoneFrame = styled.div`
   border-radius: 34px;
   overflow: hidden;
   position: relative;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
@@ -487,14 +487,14 @@ const PhoneFrame = styled.div`
 const StatusBar = styled.div`
   height: 20px;
   flex-shrink: 0;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
 
   &::before {
     content: "9:09";
     display: block;
     font-size: 9px;
     font-weight: 600;
-    color: #111;
+    color: var(--text-primary);
     padding: 4px 0 0 12px;
   }
 `;
@@ -535,7 +535,7 @@ const HighlightRing = styled.div`
   width: 16%;
   height: 16%;
   border-radius: 16px;
-  border: 2px solid #0061ff;
+  border: 2px solid var(--border-brand);
   animation: ${pulseRing} 1.6s ease-out infinite;
   pointer-events: none;
 `;
@@ -547,11 +547,11 @@ const ImageCaption = styled.div`
   justify-content: center;
   font-size: 11px;
   font-weight: 500;
-  color: #333d4b;
+  color: var(--text-secondary);
   text-align: center;
 
   b {
-    color: #0061ff;
+    color: var(--text-brand);
     margin-right: 2px;
   }
 `;
@@ -561,7 +561,7 @@ const NavyBar = styled.div`
   height: 30px;
   flex-shrink: 0;
   background-color: #14336b;
-  color: #ffffff;
+  color: var(--text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -590,13 +590,13 @@ const Tab = styled.div<{ $active?: boolean }>`
   padding: 6px 0;
   font-size: 10px;
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#6b7684")};
-  background-color: ${({ $active }) => ($active ? "#14336b" : "#e9ebee")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
+  background-color: ${({ $active }) => ($active ? "#14336b" : "var(--gray-200)")};
 `;
 
 const SectionBar = styled.div<{ $peek?: boolean }>`
-  background-color: #ececec;
-  color: #55606b;
+  background-color: var(--gray-200);
+  color: var(--gray-700);
   font-size: 10px;
   font-weight: 600;
   text-align: center;
@@ -608,14 +608,14 @@ const SectionBar = styled.div<{ $peek?: boolean }>`
 const SummaryRow = styled.div`
   display: flex;
   flex-shrink: 0;
-  border-bottom: 1px solid #eef0f2;
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const SummaryCell = styled.div`
   flex: 1;
   text-align: center;
   padding: 6px 0;
-  border-right: 1px solid #eef0f2;
+  border-right: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -626,24 +626,24 @@ const SummaryCell = styled.div`
 
   b {
     font-size: 12px;
-    color: #333d4b;
+    color: var(--text-secondary);
   }
   span {
     font-size: 8px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 `;
 
 const SemTableHeaderRow = styled.div`
   display: flex;
   flex-shrink: 0;
-  background-color: #f5f6f7;
+  background-color: var(--bg-subtle);
   padding: 4px 10px;
 
   span {
     flex: 1;
     font-size: 8px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
     text-align: center;
   }
 `;
@@ -652,12 +652,12 @@ const SemTableRow = styled.div`
   display: flex;
   flex-shrink: 0;
   padding: 5px 10px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--border-default);
 
   span {
     flex: 1;
     font-size: 9px;
-    color: #333d4b;
+    color: var(--text-secondary);
     text-align: center;
   }
 `;
@@ -679,7 +679,7 @@ const BottomBounceChevron = styled.div`
   right: 0;
   display: flex;
   justify-content: center;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   animation: ${bounce} 1.1s ease-in-out infinite;
 `;
 
@@ -692,12 +692,12 @@ const CourseTableWrap = styled.div`
 
 const CourseHeaderRow = styled.div`
   display: flex;
-  background-color: #f5f6f7;
+  background-color: var(--bg-subtle);
   padding: 4px 8px;
 
   span {
     font-size: 8px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
     text-align: center;
     flex: 1;
   }
@@ -711,12 +711,12 @@ const CourseRow = styled.div<{ $selected?: boolean }>`
   display: flex;
   align-items: center;
   padding: 5px 8px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--border-default);
   background-color: ${({ $selected }) => ($selected ? "rgba(0, 97, 255, 0.12)" : "transparent")};
 
   span {
     font-size: 8.5px;
-    color: #333d4b;
+    color: var(--text-secondary);
     text-align: center;
     flex: 1;
   }
@@ -736,7 +736,7 @@ const DragHandleDot = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #0061ff;
+  background-color: var(--interactive-primary);
   z-index: 2;
 
   &::after {
@@ -746,7 +746,7 @@ const DragHandleDot = styled.div`
     left: 3px;
     width: 2px;
     height: 130px;
-    background-color: #0061ff;
+    background-color: var(--interactive-primary);
     opacity: 0.5;
   }
 `;
@@ -760,7 +760,7 @@ const ContextMenuBubble = styled.div`
   align-items: center;
   gap: 4px;
   background-color: #3a3a3c;
-  color: #ffffff;
+  color: var(--text-inverse);
   border-radius: 8px;
   padding: 5px 6px;
   font-size: 7.5px;
@@ -788,7 +788,7 @@ const DragFingerHint = styled.div`
   height: 16px;
   border-radius: 50%;
   background-color: rgba(0, 97, 255, 0.5);
-  border: 2px solid #ffffff;
+  border: 2px solid var(--bg-base);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   animation: ${dragMove} 1.4s ease-in-out infinite alternate;
   z-index: 4;
@@ -803,12 +803,12 @@ const LightHeaderRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--border-default);
 
   span {
     font-size: 11px;
     font-weight: 600;
-    color: #333d4b;
+    color: var(--text-secondary);
   }
 `;
 
@@ -819,21 +819,21 @@ const PasteHint = styled.div`
   margin: 8px 10px 4px;
   padding: 6px 8px;
   border-radius: 8px;
-  background-color: #f8f9fb;
+  background-color: var(--bg-subtle);
   font-size: 8.5px;
-  color: #6b7684;
+  color: var(--gray-600);
   flex-shrink: 0;
 `;
 
 const PastePreviewBox = styled.div`
   margin: 0 10px;
   padding: 6px 8px;
-  border: 1px solid #0061ff;
+  border: 1px solid var(--border-brand);
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   font-size: 7px;
   line-height: 11px;
-  color: #333d4b;
+  color: var(--text-secondary);
   flex: 1;
   overflow: hidden;
   font-family: "SFMono-Regular", Consolas, monospace;
@@ -843,8 +843,8 @@ const ImportButtonMock = styled.div`
   margin: 8px 10px 0;
   padding: 7px 0;
   border-radius: 999px;
-  background-color: #0061ff;
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   text-align: center;
   font-size: 10px;
   font-weight: 700;

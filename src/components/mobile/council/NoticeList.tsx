@@ -91,7 +91,7 @@ const BookCard = styled.div`
   display: flex;
   border: 1px solid rgba(122, 167, 229, 1);
   border-radius: 8px;
-  background-color: white;
+  background-color: var(--bg-base);
   margin-bottom: 12px;
   position: relative;
   height: 96px;
@@ -117,14 +117,14 @@ const BookCard = styled.div`
     font-weight: 500;
     font-size: 14px;
     margin: 0;
-    color: rgba(34, 17, 18, 1);
+    color: var(--text-primary);
     max-width: 240px;
     overflow-x: hidden;
   }
 
   p {
     font-size: 14px;
-    color: #555;
+    color: var(--gray-700);
     margin: 0;
   }
 

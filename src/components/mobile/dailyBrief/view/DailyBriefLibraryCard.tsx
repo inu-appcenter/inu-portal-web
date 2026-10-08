@@ -205,7 +205,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -243,7 +243,7 @@ const BookIconCircle = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background: #eff6ff;
+  background: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +253,7 @@ const BookIconCircle = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
@@ -264,7 +264,7 @@ const HeaderRightBadge = styled.div`
   gap: 2px;
   font-size: 13px;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--text-brand);
 `;
 
 const CardContent = styled.div`
@@ -282,10 +282,10 @@ const RoomItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg-base);
 `;
 
 const RoomHeaderRow = styled.div`
@@ -297,7 +297,7 @@ const RoomHeaderRow = styled.div`
 const RoomName = styled.span`
   font-size: 14.5px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 `;
 
@@ -310,13 +310,13 @@ const RoomSeatCount = styled.div`
 const AvailableHighlight = styled.span`
   font-size: 15px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
 
 const TotalText = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const StatusBadge = styled.span<{ $color: string; $bg: string }>`
@@ -332,7 +332,7 @@ const ProgressBarTrack = styled.div`
   width: 100%;
   height: 6px;
   border-radius: 3px;
-  background-color: #e2e8f0;
+  background-color: var(--gray-200);
   overflow: hidden;
 `;
 
@@ -356,7 +356,7 @@ const LoadingPulse = styled.div`
   width: 12px;
   height: 12px;
   border-radius: 6px;
-  background-color: #3b82f6;
+  background-color: var(--interactive-primary);
   animation: pulse 1.2s infinite ease-in-out;
 
   @keyframes pulse {
@@ -375,7 +375,7 @@ const LoadingPulse = styled.div`
 const LoadingText = styled.span`
   font-size: 13.5px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const EmptyWrapper = styled.div`
@@ -387,6 +387,6 @@ const EmptyWrapper = styled.div`
 
 const EmptyText = styled.p`
   font-size: 14px;
-  color: #64748b;
+  color: var(--gray-600);
   margin: 0;
 `;

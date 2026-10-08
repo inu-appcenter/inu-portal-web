@@ -158,15 +158,15 @@ const AccordionWrapper = styled.div`
   width: 100%;
   max-width: 100%;
   margin-bottom: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   transition: border-color 0.2s;
 
   &:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-strong);
   }
 `;
 
@@ -202,8 +202,8 @@ const IconBox = styled.div<{ $isStreaming: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${(props) => (props.$isStreaming ? "#eff6ff" : "#e2e8f0")};
-  color: ${(props) => (props.$isStreaming ? "#0061ff" : "#475569")};
+  background: ${(props) => (props.$isStreaming ? "var(--bg-brand)" : "var(--gray-200)")};
+  color: ${(props) => (props.$isStreaming ? "var(--text-brand)" : "var(--gray-700)")};
   flex-shrink: 0;
 `;
 
@@ -221,7 +221,7 @@ const HeaderTextGroup = styled.div`
 const HeaderTitle = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -230,9 +230,9 @@ const HeaderTitle = styled.div`
 const HopBadge = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #0061ff;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: var(--text-brand);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 1px 6px;
   border-radius: 9999px;
 `;
@@ -249,7 +249,7 @@ const CompletedBadge = styled.span`
 
 const ActiveThoughtPreview = styled.div`
   font-size: 11px;
-  color: #64748b;
+  color: var(--gray-600);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -260,7 +260,7 @@ const HeaderRight = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #64748b;
+  color: var(--gray-600);
   flex-shrink: 0;
 `;
 
@@ -271,7 +271,7 @@ const ToggleText = styled.span`
 
 const ThoughtTimeline = styled.div`
   padding: 8px 12px 12px 12px;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed var(--border-default);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -304,14 +304,14 @@ const DotPulse = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #0061ff;
+  background: var(--interactive-primary);
   animation: ${pulse} 1.2s infinite ease-in-out;
 `;
 
 const StepLine = styled.div`
   width: 1.5px;
   flex: 1;
-  background: #cbd5e1;
+  background: var(--gray-300);
   margin-top: 4px;
   margin-bottom: -4px;
 `;
@@ -333,7 +333,7 @@ const StepHeader = styled.div`
 const StepHopLabel = styled.div`
   font-size: 11px;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -349,7 +349,7 @@ const ToolTag = styled.span`
   font-size: 10px;
   font-weight: 600;
   color: #0369a1;
-  background: #e0f2fe;
+  background: var(--bg-brand);
   padding: 1px 6px;
   border-radius: 4px;
   display: flex;
@@ -360,6 +360,6 @@ const ToolTag = styled.span`
 const StepThoughtText = styled.div`
   font-size: 12px;
   line-height: 1.45;
-  color: #475569;
+  color: var(--gray-700);
   word-break: break-word;
 `;

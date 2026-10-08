@@ -58,7 +58,7 @@ const ReservationListWrapper = styled.div`
 const EmptyMessage = styled.p`
   text-align: center;
   margin-top: 2rem;
-  color: #777;
+  color: var(--gray-600);
   font-size: 1.1rem;
 `;
 

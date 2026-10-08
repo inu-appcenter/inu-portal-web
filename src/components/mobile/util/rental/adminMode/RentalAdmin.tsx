@@ -34,14 +34,14 @@ const Wrapper = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const Header = styled.h1`
   text-align: center;
-  color: #343a40;
+  color: var(--text-secondary);
   font-size: 24px;
   margin-bottom: 30px;
 `;
@@ -53,8 +53,8 @@ const ButtonGroup = styled.div`
 `;
 
 const Button = styled.button`
-  background-color: #007bff;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   padding: 12px 20px;
   font-size: 16px;
   border: none;
@@ -63,7 +63,7 @@ const Button = styled.button`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: var(--interactive-primary-hover);
   }
 
   &:active {

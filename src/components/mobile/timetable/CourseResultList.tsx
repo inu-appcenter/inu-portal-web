@@ -188,7 +188,7 @@ const CourseResultList = ({
       ) : courses.length === 0 ? (
         <EmptyContainer>
           <SearchIconBox>
-            <SearchX size={32} color="var(--gray-400, #b0b8c1)" />
+            <SearchX size={32} color="var(--gray-400)" />
           </SearchIconBox>
           <EmptyTitle>{emptyTitle}</EmptyTitle>
           <EmptyDescription>{emptyDescription}</EmptyDescription>
@@ -352,7 +352,7 @@ const SearchIconBox = styled.div`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--bg-muted, #f1f3f5);
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,7 +363,7 @@ const EmptyTitle = styled.h3`
   font-family: Pretendard, sans-serif;
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0 0 6px 0;
 `;
 
@@ -371,13 +371,13 @@ const EmptyDescription = styled.p`
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
 const SkeletonCard = styled.div`
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -403,10 +403,10 @@ const SkeletonCard = styled.div`
 
 const CourseItem = styled.div`
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   transition: background-color 0.2s;
 
   /* The sheet's per-frame drag-driven scrollPaddingBottom (see
@@ -437,7 +437,7 @@ const MainInfo = styled.div`
 `;
 
 const CourseName = styled.h3`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 
   font-size: 16px;
   font-style: normal;
@@ -458,9 +458,9 @@ const EnrolledBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  border: 1px solid var(--border-brand-subtle);
+  background: var(--bg-brand);
+  color: var(--text-brand);
 
   font-size: 12px;
   font-style: normal;
@@ -474,9 +474,9 @@ const SavedBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  border: 1px solid var(--border-brand-subtle);
+  background: var(--bg-brand);
+  color: var(--text-brand);
 
   font-family: Pretendard, sans-serif;
   font-size: 12px;
@@ -491,9 +491,9 @@ const MatchBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand, #0061ff);
-  background: var(--interactive-primary, #3b82f6);
-  color: var(--text-inverse, #fff);
+  border: 1px solid var(--border-brand);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
 
   font-family: Pretendard, sans-serif;
   font-size: 12px;
@@ -513,8 +513,8 @@ const CourseAttributes = styled.div`
 const AttributeItem = styled.span<{ $primary?: boolean }>`
   color: ${({ $primary }) =>
     $primary
-      ? "var(--text-secondary, #333d4b)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--text-secondary)"
+      : "var(--text-tertiary)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -524,7 +524,7 @@ const AttributeItem = styled.span<{ $primary?: boolean }>`
 const CourseAdditionalInfo = styled.div`
   display: flex;
   flex-direction: column;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -558,7 +558,7 @@ const ExpandedArea = styled.div`
 `;
 
 const RemarkText = styled.div`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   font-size: 14px;
   font-style: normal;
@@ -599,26 +599,26 @@ const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
   border-radius: 999px;
   background: ${({ $isAdded }) =>
     $isAdded
-      ? "var(--bg-subtle-dark, #e5e8eb)"
-      : "var(--interactive-primary, #3b82f6)"};
+      ? "var(--bg-disabled)"
+      : "var(--interactive-primary)"};
 
   color: ${({ $isAdded }) =>
-    $isAdded ? "var(--text-tertiary, #8b95a1)" : "#fff"};
+    $isAdded ? "var(--text-tertiary)" : "var(--text-inverse)"};
 
   ${({ $isAdded }) =>
     $isAdded &&
     `
-    background-color: var(--bg-neutral-subtle, #f2f4f6) !important;
-    color: var(--text-tertiary, #8b95a1) !important;
-    border: 1px solid var(--border-default, #e5e8eb);
+    background-color: var(--bg-muted) !important;
+    color: var(--text-tertiary) !important;
+    border: 1px solid var(--border-default);
     cursor: not-allowed;
     opacity: 0.8;
   `}
 `;
 
 const SecondaryActionButton = styled(ActionButton)`
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
 
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;

@@ -17,7 +17,7 @@ const StyledEmptyState = styled.div<{ $padding: string }>`
   width: 100%;
   padding: ${({ $padding }) => $padding};
   text-align: center;
-  color: #969696;
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 500;
   display: flex;

@@ -87,7 +87,7 @@ const CollapseButton = styled.button`
   border: none;
   cursor: pointer;
   padding: 6px;
-  color: #666;
+  color: var(--gray-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -172,11 +172,11 @@ const RoomItem = styled.div<{ $isActive: boolean }>`
   font-size: 14px;
   font-weight: ${(props) => (props.$isActive ? "600" : "500")};
   color: ${(props) => (props.$isActive ? COLORS.inuBlue : COLORS.textMuted)};
-  background-color: ${(props) => (props.$isActive ? "#f0f4fa" : "transparent")};
+  background-color: ${(props) => (props.$isActive ? "var(--bg-brand)" : "transparent")};
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #f0f4fa;
+    background-color: var(--bg-brand);
     .room-actions {
       opacity: 1;
     }
@@ -218,7 +218,7 @@ const IconButton = styled.button`
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: #999;
+  color: var(--text-tertiary);
   display: flex;
   align-items: center;
   border-radius: 6px;
@@ -237,9 +237,9 @@ const ServiceLogoCircle = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background-color: #eff6ff;
-  color: #0061ff;
-  border: 1.5px solid #bfdbfe;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
+  border: 1.5px solid var(--border-brand-subtle);
 `;
 
 const SidebarFooter = styled.div`
@@ -254,14 +254,14 @@ const ClearButton = styled.button`
   padding: 12px;
   background: none;
   border: none;
-  color: #ff4d4f;
+  color: var(--text-error);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   border-radius: 12px;
   transition: background-color 0.2s ease;
   &:hover {
-    background-color: #fff1f0;
+    background-color: var(--bg-error);
   }
 `;
 

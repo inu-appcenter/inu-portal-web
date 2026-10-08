@@ -937,7 +937,7 @@ const ScoreArea = styled.div`
   gap: 12px;
 
   .type1 {
-    color: #6b7280;
+    color: var(--gray-600);
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -989,7 +989,7 @@ const HeaderMainTitle = styled.span`
   font-size: 20px;
   line-height: 28px;
   letter-spacing: -0.2px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const HeaderTermWrapper = styled.div`
@@ -1006,7 +1006,7 @@ const HeaderTermText = styled.span`
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -1019,8 +1019,8 @@ const NoTimetableContainer = styled.div`
   width: 100%;
   height: 540px;
   border-radius: 20px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   box-sizing: border-box;
   padding: 24px 20px;
 `;
@@ -1032,9 +1032,9 @@ const ImageImportPrompt = styled.div`
   gap: 12px;
   margin-bottom: 12px;
   padding: 16px;
-  border: 1px solid #d7e6ff;
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 16px;
-  background: #f5f9ff;
+  background: var(--bg-brand);
 `;
 
 const ImageImportPromptText = styled.div`
@@ -1042,12 +1042,12 @@ const ImageImportPromptText = styled.div`
   min-width: 0;
   flex-direction: column;
   gap: 4px;
-  color: #333d4b;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 20px;
 
   span {
-    color: #6b7684;
+    color: var(--gray-600);
     font-size: 13px;
     word-break: keep-all;
   }
@@ -1060,8 +1060,8 @@ const PortalImportButton = styled.button`
   padding: 8px 14px;
   border: 0;
   border-radius: 10px;
-  background: #0061ff;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1092,14 +1092,14 @@ const EmptyActionButton = styled(CapsuleButton)`
 `;
 
 const PortalImportActionButton = styled(EmptyActionButton)`
-  background: #0061ff;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
 `;
 
 /* 보조 CTA는 brand 팔레트(연한 파랑 배경 + 파란 글자)에 테두리를 더한 형태다.
    CapsuleButton의 brand variant에는 테두리가 없어 여기서만 얹는다. */
 const ImageImportActionButton = styled(EmptyActionButton)`
-  border-color: var(--border-brand-subtle, #d3e5ff);
+  border-color: var(--border-brand-subtle);
 `;
 
 const NoTimetableContent = styled.div`
@@ -1128,7 +1128,7 @@ const NoTimetableTitle = styled.h3`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
@@ -1138,7 +1138,7 @@ const NoTimetableDescription = styled.p`
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
@@ -1166,7 +1166,7 @@ const SimulatorCard = styled.button`
   width: 100%;
   border: none;
   border-radius: 20px;
-  background: var(--interactive-primary, #0061ff);
+  background: var(--interactive-primary);
   padding: 12px 8px 12px 12px;
   box-sizing: border-box;
   cursor: pointer;
@@ -1191,7 +1191,7 @@ const SimulatorCardTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-inverse, #ffffff);
+  color: var(--text-inverse);
 `;
 
 const SimulatorCardDescription = styled.span`
@@ -1199,12 +1199,12 @@ const SimulatorCardDescription = styled.span`
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-inverse, #ffffff);
+  color: var(--text-inverse);
 `;
 
 const MenuCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 12px;
   display: flex;
@@ -1217,7 +1217,7 @@ const MenuCard = styled.div`
   box-sizing: border-box;
 
   &:hover {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:active {
@@ -1238,7 +1238,7 @@ const MenuCardTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1258,7 +1258,7 @@ const MenuCardDescription = styled.p`
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin: 0;
   width: 100%;
   word-break: keep-all;

@@ -488,7 +488,7 @@ const BubbleWrapper = styled(motion.div)`
   max-width: none;
   max-height: min(480px, calc(100dvh - ${BOTTOM_NAV_SAFE_HEIGHT} - 190px));
   min-height: 120px;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px 20px 6px 20px;
   box-shadow:
     0 16px 36px -8px rgba(0, 0, 0, 0.18),
@@ -519,7 +519,7 @@ const BubbleTail = styled.div`
   right: 28px;
   width: 14px;
   height: 14px;
-  background: #ffffff;
+  background: var(--bg-base);
   border-right: 1px solid rgba(0, 0, 0, 0.07);
   border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   transform: rotate(45deg);
@@ -557,7 +557,7 @@ const TorchAvatar = styled.div`
 const TorchName = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
 `;
 
 const CloseButton = styled.button`
@@ -570,13 +570,13 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   transition: all 0.15s;
   padding: 0;
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: #1c1c1e;
+    color: var(--text-primary);
   }
 `;
 
@@ -586,14 +586,14 @@ const BubbleBody = styled.div`
   padding: 4px 16px 16px 16px;
   font-size: 13.5px;
   line-height: 1.6;
-  color: #2c2c2e;
+  color: var(--text-primary);
   word-break: break-word;
 
   &::-webkit-scrollbar {
     width: 3px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #e5e5ea;
+    background: var(--gray-200);
     border-radius: 3px;
   }
 `;
@@ -634,13 +634,13 @@ const ScanningRadar = styled.div`
 const LoadingTitle = styled.h4`
   font-size: 14px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const LoadingDesc = styled.p`
   font-size: 11.5px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   margin: 0 0 12px 0;
   line-height: 1.4;
 `;
@@ -681,7 +681,7 @@ const ErrorMessage = styled.p`
 
 const RetryButton = styled.button`
   background: #ff3b30;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   padding: 6px 14px;
   border-radius: 10px;
@@ -704,11 +704,11 @@ const HorizontalDivider = styled.div`
 
 const BoldText = styled.strong`
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 `;
 
 const HighlightBadge = styled.span`
-  background: #fff3eb;
+  background: var(--bg-error);
   color: #ea580c;
   font-weight: 700;
   font-size: 12.5px;
@@ -803,7 +803,7 @@ const AiDisclaimerBadge = styled.div`
   width: 100%;
   margin-top: 10px;
   font-size: 10.5px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
 
   svg {
     width: 28px;
@@ -820,7 +820,7 @@ const AiDisclaimerText = styled.span`
 
   strong {
     font-weight: 600;
-    color: #636366;
+    color: var(--gray-700);
   }
 `;
 
@@ -829,7 +829,7 @@ const ActionButton = styled.button<{ $disabled?: boolean }>`
   border: none;
   padding: 4px 6px;
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
-  color: ${({ $disabled }) => ($disabled ? "#c7c7cc" : "#8e8e93")};
+  color: ${({ $disabled }) => ($disabled ? "var(--text-disabled)" : "var(--text-tertiary)")};
   display: flex;
   align-items: center;
   gap: 4px;
@@ -840,7 +840,7 @@ const ActionButton = styled.button<{ $disabled?: boolean }>`
   opacity: ${({ $disabled }) => ($disabled ? 0.6 : 1)};
 
   &:hover {
-    color: ${({ $disabled }) => ($disabled ? "#c7c7cc" : "#1c1c1e")};
+    color: ${({ $disabled }) => ($disabled ? "var(--text-disabled)" : "var(--text-primary)")};
     background-color: ${({ $disabled }) =>
       $disabled ? "transparent" : "rgba(0, 0, 0, 0.05)"};
   }
@@ -859,7 +859,7 @@ const EmptyStateContainer = styled.div`
 
   p {
     font-size: 12.5px;
-    color: #8e8e93;
+    color: var(--text-tertiary);
     margin-bottom: 12px;
   }
 `;
@@ -869,7 +869,7 @@ const StartButton = styled.button`
   align-items: center;
   gap: 5px;
   background: linear-gradient(135deg, #ff5f15 0%, #ff3b30 100%);
-  color: white;
+  color: var(--text-inverse);
   border: none;
   padding: 8px 16px;
   border-radius: 12px;

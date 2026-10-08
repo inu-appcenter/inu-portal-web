@@ -304,7 +304,7 @@ const MarkdownContainer = styled.div`
   line-height: 1.55;
   word-break: break-word;
   overflow-wrap: break-word;
-  color: #1c1c1e;
+  color: var(--text-primary);
 
   p {
     margin: 0 0 6px 0;
@@ -370,7 +370,7 @@ const MarkdownContainer = styled.div`
 
   strong {
     font-weight: 700;
-    color: #111111;
+    color: var(--text-primary);
   }
 
   code {
@@ -382,8 +382,8 @@ const MarkdownContainer = styled.div`
   }
 
   pre {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     padding: 8px 12px;
     overflow-x: auto;
@@ -400,10 +400,10 @@ const MarkdownContainer = styled.div`
   blockquote {
     margin: 6px 0;
     padding: 5px 10px;
-    border-left: 3.5px solid #5e92f0;
-    background-color: rgba(94, 146, 240, 0.06);
+    border-left: 3.5px solid var(--interactive-primary);
+    background-color: rgba(59, 130, 246, 0.06);
     border-radius: 0 6px 6px 0;
-    color: #4a5568;
+    color: var(--gray-700);
 
     p {
       margin: 0;
@@ -412,7 +412,7 @@ const MarkdownContainer = styled.div`
 
   hr {
     border: none;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-default);
     margin: 12px 0;
   }
 
@@ -425,16 +425,16 @@ const MarkdownContainer = styled.div`
   }
 
   th {
-    background-color: rgba(94, 146, 240, 0.08);
-    color: #1c1c1e;
+    background-color: rgba(59, 130, 246, 0.08);
+    color: var(--text-primary);
     font-weight: 600;
     padding: 6px 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-default);
   }
 
   td {
     padding: 6px 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-default);
   }
 
   tr:nth-child(even) td {

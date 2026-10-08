@@ -671,9 +671,9 @@ const ReminderManageButton = styled.button`
   gap: 5px;
   margin-top: 8px;
   padding: 6px 12px;
-  background-color: #f1f5f9;
-  color: #0061ff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-muted);
+  color: var(--text-brand);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   font-size: 12.5px;
   font-weight: 600;
@@ -681,7 +681,7 @@ const ReminderManageButton = styled.button`
   width: fit-content;
 
   &:hover {
-    background-color: #e2e8f0;
+    background-color: var(--gray-200);
   }
 `;
 
@@ -807,8 +807,8 @@ const WidgetCardWrapper = styled.div`
 
 const CardContainer = styled.div`
   margin-top: 10px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
@@ -822,17 +822,17 @@ const CardFooterButton = styled.button`
   justify-content: space-between;
   width: 100%;
   padding: 10px 14px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-subtle);
   border: none;
-  border-top: 1px solid #edf0f2;
+  border-top: 1px solid var(--border-default);
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: #0061ff;
+  color: var(--text-brand);
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f1f4f8;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -846,12 +846,12 @@ const CardHeader = styled.div`
 const CardTitle = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const EmptyMessage = styled.p`
   font-size: 13px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   padding: 10px 0;
   margin: 0;
   text-align: center;
@@ -894,7 +894,7 @@ const WeatherDetails = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  color: #ffffff;
+  color: var(--text-inverse);
 `;
 
 const WeatherDegreeRow = styled.div`
@@ -969,7 +969,7 @@ const DirectoryItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  background-color: #f8f9fa;
+  background-color: var(--bg-subtle);
   border-radius: 10px;
 `;
 
@@ -981,12 +981,12 @@ const DirectoryMeta = styled.div`
 const DeptName = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const CollegeName = styled.span`
   font-size: 11px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const CallButton = styled.a`
@@ -994,15 +994,15 @@ const CallButton = styled.a`
   align-items: center;
   gap: 4px;
   padding: 6px 10px;
-  background-color: #eff6ff;
-  color: #0061ff;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
   border-radius: 8px;
   text-decoration: none;
   font-size: 12px;
   font-weight: 600;
 
   &:hover {
-    background-color: #dbeafe;
+    background-color: var(--blue-100);
   }
 `;
 
@@ -1018,15 +1018,15 @@ const EmailButton = styled.a`
   align-items: center;
   gap: 4px;
   padding: 6px 10px;
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--bg-muted);
+  color: var(--gray-700);
   border-radius: 8px;
   text-decoration: none;
   font-size: 12px;
   font-weight: 600;
 
   &:hover {
-    background-color: #e2e8f0;
+    background-color: var(--gray-200);
   }
 `;
 
@@ -1042,7 +1042,7 @@ const AuthBox = styled.div`
 
 const AuthMessage = styled.p`
   font-size: 13px;
-  color: #4e5968;
+  color: var(--gray-700);
   margin: 0;
   line-height: 1.4;
 `;
@@ -1052,8 +1052,8 @@ const LoginActionBtn = styled.button`
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background-color: #0061ff;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 10px;
   font-size: 13px;
@@ -1103,7 +1103,7 @@ const CarouselDot = styled.span<{ $active: boolean }>`
   width: ${({ $active }) => ($active ? "16px" : "6px")};
   height: 6px;
   border-radius: 3px;
-  background-color: ${({ $active }) => ($active ? "#0061ff" : "#d1d5db")};
+  background-color: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--gray-300)")};
   transition: all 0.2s ease;
 `;
 
@@ -1131,8 +1131,8 @@ const KeywordBadgeRow = styled.div`
 const KeywordChip = styled.span<{ $excluded?: boolean }>`
   font-size: 14px;
   font-weight: 700;
-  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "#0061ff")};
-  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "#eff6ff")};
+  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "var(--text-brand)")};
+  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "var(--bg-brand)")};
   padding: 4px 10px;
   border-radius: 12px;
 `;
@@ -1140,8 +1140,8 @@ const KeywordChip = styled.span<{ $excluded?: boolean }>`
 const TargetTag = styled.span`
   font-size: 12px;
   font-weight: 500;
-  color: #4e5968;
-  background-color: #f2f4f6;
+  color: var(--gray-700);
+  background-color: var(--bg-muted);
   padding: 3px 8px;
   border-radius: 8px;
 `;
@@ -1150,7 +1150,7 @@ const ActionDescription = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 18px;
-  color: #4e5968;
+  color: var(--gray-700);
   word-break: keep-all;
 `;
 
@@ -1160,8 +1160,8 @@ const SettingBadge = styled.span<{ $enabled: boolean }>`
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 10px;
-  color: ${({ $enabled }) => ($enabled ? "#0061ff" : "#6b7684")};
-  background-color: ${({ $enabled }) => ($enabled ? "#eff6ff" : "#f2f4f6")};
+  color: ${({ $enabled }) => ($enabled ? "var(--text-brand)" : "var(--gray-600)")};
+  background-color: ${({ $enabled }) => ($enabled ? "var(--bg-brand)" : "var(--bg-muted)")};
 `;
 
 const SettingsList = styled.div`
@@ -1178,12 +1178,12 @@ const SettingItemRow = styled.div`
 `;
 
 const SettingLabel = styled.span`
-  color: #333d4b;
+  color: var(--text-secondary);
   font-weight: 600;
 `;
 
 const SettingSubText = styled.span`
-  color: #0061ff;
+  color: var(--text-brand);
   font-weight: 600;
   font-size: 12px;
 `;
@@ -1198,8 +1198,8 @@ const KeywordsChipsContainer = styled.div`
 const MiniKeywordChip = styled.span<{ $excluded?: boolean }>`
   font-size: 11px;
   font-weight: 600;
-  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "#333d4b")};
-  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "#f2f4f6")};
+  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "var(--text-secondary)")};
+  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "var(--bg-muted)")};
   padding: 2px 7px;
   border-radius: 8px;
 `;
@@ -1224,7 +1224,7 @@ const TodayHeaderLeft = styled.div`
 `;
 
 const TodayTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 700;
 `;
@@ -1236,7 +1236,7 @@ const TimetableEmptyState = styled.div`
 
 const TimetableEmptyText = styled.p`
   margin: 0;
-  color: #b0b8c1;
+  color: var(--text-disabled);
   font-size: 13.5px;
 `;
 
@@ -1325,7 +1325,7 @@ const TimeTableGapCard: React.FC<{ data: any }> = ({ data }) => {
                   </GapTimeRow>
                   <GapBetweenText>
                     <span>{gap.beforeLecture}</span>
-                    <span style={{ color: "#8b95a1" }}> ➔ </span>
+                    <span style={{ color: "var(--text-tertiary)" }}> ➔ </span>
                     <span>{gap.afterLecture}</span>
                   </GapBetweenText>
                 </GapItemCard>
@@ -1348,9 +1348,9 @@ const GapStatusBadge = styled.span<{ $isDayOff?: boolean; $hasBigGap?: boolean }
   padding: 3px 9px;
   border-radius: 12px;
   color: ${({ $isDayOff, $hasBigGap }) =>
-    $isDayOff ? "#d97706" : $hasBigGap ? "#7c3aed" : "#0061ff"};
+    $isDayOff ? "#d97706" : $hasBigGap ? "#7c3aed" : "var(--text-brand)"};
   background-color: ${({ $isDayOff, $hasBigGap }) =>
-    $isDayOff ? "#fef3c7" : $hasBigGap ? "#f3e8ff" : "#eff6ff"};
+    $isDayOff ? "var(--yellow-100)" : $hasBigGap ? "#f3e8ff" : "var(--bg-brand)"};
 `;
 
 const DayOffBanner = styled.div`
@@ -1359,9 +1359,9 @@ const DayOffBanner = styled.div`
   align-items: center;
   text-align: center;
   padding: 24px 16px;
-  background-color: #fffbeb;
+  background-color: var(--bg-warn);
   border-radius: 12px;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--border-warn);
   gap: 6px;
 `;
 
@@ -1383,7 +1383,7 @@ const DayOffSub = styled.div`
 const GapSummaryStats = styled.div`
   display: flex;
   gap: 8px;
-  background-color: #f9fafb;
+  background-color: var(--bg-subtle);
   padding: 10px 12px;
   border-radius: 12px;
   margin-bottom: 12px;
@@ -1400,13 +1400,13 @@ const StatBox = styled.div`
 const StatLabel = styled.span`
   font-size: 11px;
   font-weight: 500;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const StatValue = styled.span<{ $highlight?: boolean }>`
   font-size: 12.5px;
   font-weight: 700;
-  color: ${({ $highlight }) => ($highlight ? "#7c3aed" : "#191f28")};
+  color: ${({ $highlight }) => ($highlight ? "#7c3aed" : "var(--text-primary)")};
 `;
 
 const GapListSection = styled.div`
@@ -1418,7 +1418,7 @@ const GapListSection = styled.div`
 const GapSectionTitle = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
   margin-bottom: 2px;
 `;
 
@@ -1427,8 +1427,8 @@ const GapItemCard = styled.div`
   flex-direction: column;
   gap: 4px;
   padding: 10px 12px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
 `;
 
@@ -1444,7 +1444,7 @@ const GapTimeSlot = styled.span`
   gap: 4px;
   font-size: 13px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const GapTypeTag = styled.span<{ $isBig?: boolean }>`
@@ -1452,13 +1452,13 @@ const GapTypeTag = styled.span<{ $isBig?: boolean }>`
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 6px;
-  color: ${({ $isBig }) => ($isBig ? "#7c3aed" : "#0061ff")};
-  background-color: ${({ $isBig }) => ($isBig ? "#f3e8ff" : "#eff6ff")};
+  color: ${({ $isBig }) => ($isBig ? "#7c3aed" : "var(--text-brand)")};
+  background-color: ${({ $isBig }) => ($isBig ? "#f3e8ff" : "var(--bg-brand)")};
 `;
 
 const GapBetweenText = styled.div`
   font-size: 11.5px;
-  color: #4e5968;
+  color: var(--gray-700);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1468,13 +1468,13 @@ const NoGapNotice = styled.div`
   text-align: center;
   padding: 16px;
   font-size: 13px;
-  color: #6b7684;
-  background-color: #f9fafb;
+  color: var(--gray-600);
+  background-color: var(--bg-subtle);
   border-radius: 10px;
 `;
 
 const BusHistoryBox = styled.div`
-  background-color: var(--surface-primary, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -1487,8 +1487,8 @@ const BusAvgBadge = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #eff6ff;
-  color: #0061ff;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 12.5px;
@@ -1499,7 +1499,7 @@ const BusAvgBadge = styled.div`
 
 const BusHistoryDateText = styled.div`
   font-size: 11.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   font-weight: 500;
 `;
 
@@ -1514,27 +1514,27 @@ const BusRecordItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  background-color: #f9fafb;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   font-size: 12.5px;
 `;
 
 const BusRouteBadge = styled.span`
   font-weight: 700;
-  color: #191f28;
-  background-color: #e5e8eb;
+  color: var(--text-primary);
+  background-color: var(--gray-200);
   padding: 2px 6px;
   border-radius: 4px;
 `;
 
 const BusPlateText = styled.span`
-  color: #8b95a1;
+  color: var(--text-tertiary);
   font-size: 11.5px;
 `;
 
 const BusTimeText = styled.span`
   font-weight: 600;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const CardFooterLink = styled.div`
@@ -1543,12 +1543,12 @@ const CardFooterLink = styled.div`
   justify-content: flex-end;
   gap: 4px;
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin-top: 4px;
 `;
 
 const DynamicBox = styled.div<{ $clickable?: boolean }>`
-  background-color: var(--surface-primary, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -1561,8 +1561,8 @@ const DynamicBox = styled.div<{ $clickable?: boolean }>`
 const DynamicCountBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #0061ff;
-  background-color: #eff6ff;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
   padding: 2px 8px;
   border-radius: 10px;
   margin-left: auto;
@@ -1579,7 +1579,7 @@ const DynamicItemRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 9px 12px;
-  background-color: #f9fafb;
+  background-color: var(--bg-subtle);
   border-radius: 10px;
   gap: 8px;
 `;
@@ -1602,8 +1602,8 @@ const DynamicItemTitleRow = styled.div`
 const DynamicCatTag = styled.span`
   font-size: 10.5px;
   font-weight: 600;
-  color: #4e5968;
-  background-color: #e5e8eb;
+  color: var(--gray-700);
+  background-color: var(--gray-200);
   padding: 1px 6px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -1612,7 +1612,7 @@ const DynamicCatTag = styled.span`
 const DynamicItemTitle = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1620,7 +1620,7 @@ const DynamicItemTitle = styled.span`
 
 const DynamicItemSub = styled.span`
   font-size: 11.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1628,7 +1628,7 @@ const DynamicItemSub = styled.span`
 
 const DynamicItemDate = styled.span`
   font-size: 11px;
-  color: #b0b8c1;
+  color: var(--text-disabled);
   flex-shrink: 0;
 `;
 
@@ -1771,7 +1771,7 @@ const AcademicFetchFailedCard: React.FC<{ data?: any }> = ({ data }) => {
 
   return (
     <PortalAuthContainer>
-      <PortalAuthIconWrap style={{ background: "#fff4e5" }}>
+      <PortalAuthIconWrap style={{ background: "var(--bg-warn)" }}>
         <KeyRound size={22} color="#f59e0b" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
@@ -1779,18 +1779,18 @@ const AcademicFetchFailedCard: React.FC<{ data?: any }> = ({ data }) => {
         <PortalAuthDesc>
           계정 연동은 유지되어 있습니다. 잠시 후 같은 질문을 다시 보내주세요. 계속되면 포털 로그인 상태 또는 학교 ERP 시스템을 확인해 주세요.
         </PortalAuthDesc>
-        <PortalAuthDesc style={{ color: "#8b95a1" }}>{detail}</PortalAuthDesc>
+        <PortalAuthDesc style={{ color: "var(--text-tertiary)" }}>{detail}</PortalAuthDesc>
       </PortalAuthTextWrap>
     </PortalAuthContainer>
   );
 };
 
 const AcademicCardContainer = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f2f4f6;
+  border: 1px solid var(--bg-base);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -1806,7 +1806,7 @@ const AcademicIconWrap = styled.div`
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #e8f3ff;
+  background: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1823,12 +1823,12 @@ const AcademicTitleWrap = styled.div`
 const AcademicTitle = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const AcademicSubtitle = styled.span`
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1840,16 +1840,16 @@ const StatusBadge = styled.span<{ $status?: string }>`
   padding: 3px 8px;
   border-radius: 6px;
   background: ${({ $status }) =>
-    $status === "휴학" ? "#fee8e8" : "#e8f8f0"};
+    $status === "휴학" ? "var(--bg-error)" : "#e8f8f0"};
   color: ${({ $status }) =>
-    $status === "휴학" ? "#f04452" : "#00a651"};
+    $status === "휴학" ? "var(--text-error)" : "#00a651"};
   flex-shrink: 0;
 `;
 
 const AcademicStatGrid = styled.div`
   display: flex;
   align-items: center;
-  background: #f9fafb;
+  background: var(--bg-subtle);
   border-radius: 12px;
   padding: 12px 14px;
   justify-content: space-around;
@@ -1864,19 +1864,19 @@ const AcademicStatItem = styled.div`
 
 const AcademicStatLabel = styled.span`
   font-size: 11.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const AcademicStatValue = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #333d4b;
+  color: var(--text-secondary);
 `;
 
 const StatDivider = styled.div`
   width: 1px;
   height: 24px;
-  background: #e5e8eb;
+  background: var(--gray-200);
 `;
 
 const AdvisorInfoRow = styled.div`
@@ -1884,12 +1884,12 @@ const AdvisorInfoRow = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 11.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   padding-left: 2px;
 `;
 
 const PortalAuthContainer = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 16px;
   padding: 16px;
   border: 1px solid #fee8e8;
@@ -1904,7 +1904,7 @@ const PortalAuthIconWrap = styled.div`
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #fde8e9;
+  background: var(--bg-error);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1919,20 +1919,20 @@ const PortalAuthTextWrap = styled.div`
 const PortalAuthTitle = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const PortalAuthDesc = styled.span`
   font-size: 12px;
-  color: #6b7684;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
 const PortalAuthActionBtn = styled.button`
   width: 100%;
   padding: 10px 0;
-  background: #3182f6;
-  color: #fff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 10px;
   font-size: 13.5px;
@@ -1997,7 +1997,7 @@ const LibraryRoomsCard: React.FC<{
                 <LibRoomHeader>
                   <LibRoomName>
                     {room.name}
-                    <span style={{ fontSize: "11px", fontWeight: 400, color: "#64748b", marginLeft: "6px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 400, color: "var(--gray-600)", marginLeft: "6px" }}>
                       터치 시 좌석 선택
                     </span>
                   </LibRoomName>
@@ -2310,7 +2310,7 @@ const LibrarySeatConfirmCard: React.FC<{
             style={{
               padding: "12px",
               borderRadius: "8px",
-              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "#fef2f2",
+              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "var(--bg-error)",
               border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
               color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
               fontSize: "13px",
@@ -2359,7 +2359,7 @@ const LibrarySeatConfirmCard: React.FC<{
         <div>
           {/* 존재하지 않는 좌석 번호 경고 배너 */}
           {isSeatNotFound && targetSeatNo && (
-            <StudyNoticeBox style={{ background: "#fffbeb", borderLeft: "3px solid #f59e0b", margin: "8px 0" }}>
+            <StudyNoticeBox style={{ background: "var(--bg-warn)", borderLeft: "3px solid #f59e0b", margin: "8px 0" }}>
               <span style={{ color: "#b45309", fontWeight: 600 }}>
                 ⚠️ 입력하신 <strong>'{targetSeatNo}'번 좌석</strong>은 [{currentRoomObj.name}]에 존재하지 않는 번호입니다.
               </span>
@@ -2374,26 +2374,26 @@ const LibrarySeatConfirmCard: React.FC<{
             <div>
               {selectedSeat.isOccupied ? (
                 <div>
-                  <StudyNoticeBox style={{ background: "#fff1f2", borderLeft: "3px solid #f43f5e", margin: "8px 0" }}>
+                  <StudyNoticeBox style={{ background: "var(--bg-error)", borderLeft: "3px solid #f43f5e", margin: "8px 0" }}>
                     <span style={{ color: "#9f1239" }}>
                       🚨 <strong>[{currentRoomObj.name}] {selectedSeat.code}번 좌석</strong>은 현재 다른 학생이 이용 중입니다.
                     </span>
                   </StudyNoticeBox>
-                  <p style={{ fontSize: "12px", color: "#475569", margin: "8px 0 12px", lineHeight: "1.4" }}>
+                  <p style={{ fontSize: "12px", color: "var(--gray-700)", margin: "8px 0 12px", lineHeight: "1.4" }}>
                     💡 이 좌석이 반납되거나 비는 순간 즉시 푸시 알림을 받으시겠습니까?
                   </p>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <StudyBookButton
                       type="button"
                       disabled={busy}
-                      style={{ flex: 1, background: "#0061ff" }}
+                      style={{ flex: 1, background: "var(--interactive-primary)" }}
                       onClick={() => handleWatchRegister(selectedSeat)}
                     >
                       {busy ? "알림 등록 중..." : "🎯 빈자리 알림 받기"}
                     </StudyBookButton>
                     <StudyBookButton
                       type="button"
-                      style={{ flex: 1, background: "#f1f5f9", color: "#334155" }}
+                      style={{ flex: 1, background: "var(--bg-muted)", color: "var(--text-secondary)" }}
                       onClick={() => setShowSeatGrid(true)}
                     >
                       다른 좌석 선택
@@ -2402,16 +2402,16 @@ const LibrarySeatConfirmCard: React.FC<{
                 </div>
               ) : (
                 <div>
-                  <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", margin: "8px 0 12px", border: "1px solid #e2e8f0" }}>
+                  <div style={{ background: "var(--bg-subtle)", padding: "12px", borderRadius: "8px", margin: "8px 0 12px", border: "1px solid var(--border-default)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                      <div style={{ fontSize: "14.5px", fontWeight: 700, color: "#1e293b" }}>
+                      <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                         📍 {currentRoomObj.name} {selectedSeat.code}번 좌석
                       </div>
                       <span style={{ fontSize: "11.5px", fontWeight: 600, color: "#16a34a", background: "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
                         배정 가능
                       </span>
                     </div>
-                    <div style={{ fontSize: "11.5px", color: "#64748b", lineHeight: "1.45" }}>
+                    <div style={{ fontSize: "11.5px", color: "var(--gray-600)", lineHeight: "1.45" }}>
                       • 배정 즉시 20분간 <strong>임시 배정</strong> 상태가 됩니다.<br />
                       • 20분 내 도서관 1층 게이트를 통과하거나 키오스크에서 입실 확인을 완료해 주세요.<br />
                       • 미입실 시 예약이 자동 취소되며 패널티가 부과될 수 있습니다.
@@ -2422,14 +2422,14 @@ const LibrarySeatConfirmCard: React.FC<{
                     <StudyBookButton
                       type="button"
                       disabled={busy}
-                      style={{ flex: 1.4, background: "#3182f6", padding: "10px 0", fontSize: "13px" }}
+                      style={{ flex: 1.4, background: "var(--interactive-primary)", padding: "10px 0", fontSize: "13px" }}
                       onClick={() => handleAssign(selectedSeat)}
                     >
                       {busy ? "배정 진행 중..." : "확인 및 배정 신청하기"}
                     </StudyBookButton>
                     <StudyBookButton
                       type="button"
-                      style={{ flex: 1, background: "#f1f5f9", color: "#475569", padding: "10px 0", fontSize: "12.5px" }}
+                      style={{ flex: 1, background: "var(--bg-muted)", color: "var(--gray-700)", padding: "10px 0", fontSize: "12.5px" }}
                       onClick={() => setShowSeatGrid(true)}
                     >
                       다른 좌석 선택
@@ -2442,14 +2442,14 @@ const LibrarySeatConfirmCard: React.FC<{
             /* 좌석 선택 그리드 화면 */
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "8px 0 6px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 600, color: "#334155" }}>
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)" }}>
                   💡 좌석을 터치하여 배정 신청을 진행하세요 (잔여 {availableSeatsCount}석)
                 </span>
                 <button
                   type="button"
                   style={{
                     fontSize: "11px",
-                    color: "#3182f6",
+                    color: "var(--interactive-primary)",
                     background: "none",
                     border: "none",
                     cursor: "pointer",
@@ -2736,7 +2736,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
             style={{
               padding: "12px",
               borderRadius: "8px",
-              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "#fef2f2",
+              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "var(--bg-error)",
               border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
               color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
               fontSize: "13px",
@@ -2770,26 +2770,26 @@ const LibraryStudyRoomConfirmCard: React.FC<{
         </div>
       ) : (
         <div>
-          <div style={{ background: "#f8fafc", padding: "12px", borderRadius: "8px", margin: "8px 0 10px", border: "1px solid #e2e8f0" }}>
+          <div style={{ background: "var(--bg-subtle)", padding: "12px", borderRadius: "8px", margin: "8px 0 10px", border: "1px solid var(--border-default)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <div style={{ fontSize: "14.5px", fontWeight: 700, color: "#1e293b" }}>
+              <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                 🏢 {currentRoomObj.name} ({currentRoomObj.quota || "2~4인실"})
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "#dc2626" : "#16a34a", background: isCurrentOccupied ? "#fee2e2" : "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "#16a34a", background: isCurrentOccupied ? "var(--bg-error)" : "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
                 {isCurrentOccupied ? "이용 중" : "지금 이용 가능"}
               </span>
             </div>
 
-            <div style={{ fontSize: "12.5px", color: "#334155", display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ fontSize: "12.5px", color: "var(--text-secondary)", display: "flex", flexDirection: "column", gap: "4px" }}>
               <div>📅 <strong>이용 일자:</strong> {date}</div>
               <div>⏰ <strong>이용 시간:</strong> {beginTime} ~ {endTime}</div>
               <div>🎯 <strong>이용 목적:</strong> {purpose}</div>
             </div>
 
             {/* 실시간 시간대별 점유 현황 요약 */}
-            <div style={{ marginTop: "8px", paddingTop: "6px", borderTop: "1px dashed #cbd5e1", fontSize: "11.5px" }}>
+            <div style={{ marginTop: "8px", paddingTop: "6px", borderTop: "1px dashed var(--border-strong)", fontSize: "11.5px" }}>
               {isLoadingTimeline ? (
-                <span style={{ color: "#64748b" }}>⏳ 실시간 타임라인 점유 현황 확인 중...</span>
+                <span style={{ color: "var(--gray-600)" }}>⏳ 실시간 타임라인 점유 현황 확인 중...</span>
               ) : occupiedRanges.length > 0 ? (
                 <div style={{ color: "#b91c1c", fontWeight: 600 }}>
                   ⚠️ 예약된 시간대: {occupiedRanges.join(", ")}
@@ -2802,7 +2802,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
             </div>
 
             {hasTimeConflict && (
-              <div style={{ marginTop: "6px", padding: "6px 8px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", color: "#dc2626", fontSize: "11.5px", fontWeight: 600 }}>
+              <div style={{ marginTop: "6px", padding: "6px 8px", background: "var(--bg-error)", border: "1px solid var(--border-error-subtle)", borderRadius: "6px", color: "var(--text-error)", fontSize: "11.5px", fontWeight: 600 }}>
                 🚨 선택하신 시간({beginTime} ~ {endTime})은 이미 점유되어 있습니다. 아래 타임라인에서 비어있는 시간을 선택해주세요.
               </div>
             )}
@@ -2818,14 +2818,14 @@ const LibraryStudyRoomConfirmCard: React.FC<{
                   alignItems: "center",
                   fontSize: "11.5px",
                   fontWeight: 600,
-                  color: "#0061ff",
+                  color: "var(--text-brand)",
                   cursor: "pointer",
                   padding: "4px 0",
                 }}
                 onClick={() => setShowTimelineGrid((prev) => !prev)}
               >
                 <span>📊 시간대별 10분 단위 점유 현황 {showTimelineGrid ? "접기 ▲" : "펼쳐보기 ▼"}</span>
-                <span style={{ fontSize: "10px", color: "#64748b" }}>
+                <span style={{ fontSize: "10px", color: "var(--gray-600)" }}>
                   {showTimelineGrid ? "클릭 시 시작시간 변경" : "타임라인 확인"}
                 </span>
               </div>
@@ -2834,7 +2834,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
                 <StudyTimelineBox>
                   <StudyTimelineHeader>
                     <span>09:00 ~ 22:00 시간표</span>
-                    <div style={{ display: "flex", gap: "6px", fontSize: "10px", fontWeight: 500, color: "#64748b" }}>
+                    <div style={{ display: "flex", gap: "6px", fontSize: "10px", fontWeight: 500, color: "var(--gray-600)" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
                         <span style={{ width: 8, height: 8, background: "#93c5fd", borderRadius: 2, display: "inline-block" }} /> 가능
                       </span>
@@ -2881,7 +2881,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               disabled={busy || hasTimeConflict}
               style={{
                 flex: 1.4,
-                background: hasTimeConflict ? "#94a3b8" : "#0061ff",
+                background: hasTimeConflict ? "#94a3b8" : "var(--interactive-primary)",
                 padding: "10px 0",
                 fontSize: "13px",
               }}
@@ -2891,7 +2891,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
             </StudyBookButton>
             <StudyBookButton
               type="button"
-              style={{ flex: 1, background: "#f1f5f9", color: "#475569", padding: "10px 0", fontSize: "12.5px" }}
+              style={{ flex: 1, background: "var(--bg-muted)", color: "var(--gray-700)", padding: "10px 0", fontSize: "12.5px" }}
               onClick={() => {
                 if (onNavigate) onNavigate();
                 navigate(`${ROUTES.SERVICES.LIBRARY}?tab=study&roomId=${selectedRoomId}`);
@@ -2915,7 +2915,7 @@ const LibraryAuthRequiredCard: React.FC<{
 }> = () => {
   return (
     <PortalAuthContainer>
-      <PortalAuthIconWrap style={{ background: '#e8f3ff' }}>
+      <PortalAuthIconWrap style={{ background: 'var(--bg-brand)' }}>
         <BookOpen size={22} color="#3182f6" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
@@ -2981,15 +2981,15 @@ const LocalWatchActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = 
 
 const LibraryCardBox = styled.div`
   padding: 16px;
-  background: #ffffff;
+  background: var(--bg-base);
 `;
 
 const LibCountBadge = styled.span`
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
-  color: #3182f6;
-  background: #e8f3ff;
+  color: var(--interactive-primary);
+  background: var(--bg-brand);
   padding: 2px 8px;
   border-radius: 6px;
 `;
@@ -3016,23 +3016,23 @@ const LibRoomHeader = styled.div`
 const LibRoomName = styled.span`
   font-size: 13.5px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const LibRoomSeats = styled.span`
   font-size: 12.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const LibAvailable = styled.strong`
-  color: #3182f6;
+  color: var(--interactive-primary);
   font-weight: 700;
 `;
 
 const LibProgressBarTrack = styled.div`
   width: 100%;
   height: 6px;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border-radius: 3px;
   overflow: hidden;
 `;
@@ -3040,7 +3040,7 @@ const LibProgressBarTrack = styled.div`
 const LibProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
   height: 100%;
   width: ${({ $percent }) => Math.min(100, Math.max(0, $percent))}%;
-  background: ${({ $warning }) => ($warning ? "#f04452" : "#3182f6")};
+  background: ${({ $warning }) => ($warning ? "#f04452" : "var(--interactive-primary)")};
   border-radius: 3px;
   transition: width 0.3s ease;
 `;
@@ -3049,8 +3049,8 @@ const StudyRoomCountBadge = styled.span`
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
-  color: #0061ff;
-  background: #eff6ff;
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 2px 8px;
   border-radius: 6px;
 `;
@@ -3058,10 +3058,10 @@ const StudyRoomCountBadge = styled.span`
 const StudyNoticeBox = styled.div`
   margin-top: 8px;
   padding: 8px 12px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-radius: 8px;
   font-size: 11.5px;
-  color: #475569;
+  color: var(--gray-700);
   line-height: 1.4;
 `;
 
@@ -3077,8 +3077,8 @@ const StudyRoomItem = styled.div`
   flex-direction: column;
   gap: 6px;
   padding: 10px 12px;
-  background: #ffffff;
-  border: 1px solid #f1f5f9;
+  background: var(--bg-base);
+  border: 1px solid var(--bg-base);
   border-radius: 10px;
 `;
 
@@ -3091,12 +3091,12 @@ const StudyRoomTop = styled.div`
 const StudyRoomName = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const StudyRoomLocation = styled.div`
   font-size: 11.5px;
-  color: #64748b;
+  color: var(--gray-600);
   margin-top: 2px;
 `;
 
@@ -3104,8 +3104,8 @@ const StudyBookButton = styled.button`
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #ffffff;
-  background: #0061ff;
+  color: var(--text-inverse);
+  background: var(--interactive-primary);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -3119,7 +3119,7 @@ const StudyAvailSlotBadge = styled.div`
   font-size: 11px;
   font-weight: 600;
   color: #0284c7;
-  background: #f0f9ff;
+  background: var(--bg-brand);
   padding: 3px 6px;
   border-radius: 4px;
   width: fit-content;
@@ -3134,8 +3134,8 @@ const StudyTagRow = styled.div`
 
 const StudyTag = styled.span`
   font-size: 10.5px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--gray-600);
+  background: var(--bg-muted);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -3157,9 +3157,9 @@ const RoomTabPill = styled.button<{ $active: boolean }>`
   border-radius: 20px;
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#475569")};
-  background: ${({ $active }) => ($active ? "#3182f6" : "#f1f5f9")};
-  border: 1px solid ${({ $active }) => ($active ? "#3182f6" : "#e2e8f0")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
+  border: 1px solid ${({ $active }) => ($active ? "#3182f6" : "var(--border-default)")};
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3172,9 +3172,9 @@ const SeatGridContainer = styled.div`
   max-height: 180px;
   overflow-y: auto;
   padding: 6px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
 `;
 
 const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean }>`
@@ -3192,24 +3192,24 @@ const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean
   ${({ $isOccupied, $isSelected }) => {
     if ($isSelected) {
       return `
-        background: #3182f6;
-        color: #ffffff;
-        border: 2px solid #1d4ed8;
+        background: var(--interactive-primary);
+        color: var(--text-inverse);
+        border: 2px solid var(--border-brand);
       `;
     }
     if ($isOccupied) {
       return `
-        background: #fef2f2;
-        color: #dc2626;
+        background: var(--bg-error);
+        color: var(--text-error);
         border: 1px solid #fca5a5;
       `;
     }
     return `
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: var(--bg-brand);
+      color: var(--text-brand);
       border: 1px solid #93c5fd;
       &:hover {
-        background: #dbeafe;
+        background: var(--blue-100);
       }
     `;
   }}
@@ -3219,12 +3219,12 @@ const EmptyBox = styled.div`
   padding: 24px 0;
   text-align: center;
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 `;
 
 const StudyTimelineBox = styled.div`
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 10px;
   margin-top: 6px;
@@ -3236,7 +3236,7 @@ const StudyTimelineHeader = styled.div`
   justify-content: space-between;
   font-size: 11.5px;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
   margin-bottom: 6px;
 `;
 
@@ -3259,7 +3259,7 @@ const MiniHourLabel = styled.span`
   width: 28px;
   font-size: 10.5px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const MiniMinuteBars = styled.div`
@@ -3273,7 +3273,7 @@ const MiniMinuteBars = styled.div`
 const MiniMinuteBar = styled.div<{ $type: "avail" | "occ" | "past" }>`
   border-radius: 2px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "#e2e8f0"};
+    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "var(--gray-200)"};
   transition: all 0.15s ease;
 `;
 
@@ -3388,7 +3388,7 @@ const LmsItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: #f8f9fa;
+  background: var(--bg-subtle);
   border-radius: 10px;
   gap: 10px;
 `;
@@ -3403,7 +3403,7 @@ const LmsItemMain = styled.div`
 
 const LmsItemCourse = styled.span`
   font-size: 11px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3412,7 +3412,7 @@ const LmsItemCourse = styled.span`
 const LmsItemTitle = styled.span`
   font-size: 13.5px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3423,8 +3423,8 @@ const LmsItemDue = styled.span<{ $urgent?: boolean }>`
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $urgent }) => ($urgent ? "#fee8e8" : "#eefaf3")};
-  color: ${({ $urgent }) => ($urgent ? "#f04452" : "#00a651")};
+  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "#eefaf3")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#00a651")};
   flex-shrink: 0;
 `;
 
@@ -3517,7 +3517,7 @@ const CampusWatchListCard: React.FC<{
 
 const WatchCardBox = styled.div`
   padding: 16px;
-  background: #ffffff;
+  background: var(--bg-base);
 `;
 
 const WatchLiveBadge = styled.span`
@@ -3534,8 +3534,8 @@ const WatchCountBadge = styled.span`
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
-  color: #0061ff;
-  background: #eff6ff;
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 2px 8px;
   border-radius: 6px;
 `;
@@ -3550,12 +3550,12 @@ const WatchBody = styled.div`
 const WatchTargetTitle = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
 
 const WatchDesc = styled.div`
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
@@ -3575,21 +3575,21 @@ const WatchManageBtn = styled.button`
   padding: 10px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #0061ff;
-  background: #eff6ff;
+  color: var(--text-brand);
+  background: var(--bg-brand);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   text-align: center;
   &:hover {
-    background: #dbeafe;
+    background: var(--blue-100);
   }
 `;
 
 const WatchEmptyText = styled.div`
   padding: 16px 0;
   font-size: 12.5px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   text-align: center;
 `;
 
@@ -3605,19 +3605,19 @@ const WatchMiniItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 10px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-radius: 8px;
 `;
 
 const WatchMiniName = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const WatchMiniSub = styled.div`
   font-size: 11px;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const WatchMiniTime = styled.div`

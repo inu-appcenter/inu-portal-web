@@ -134,16 +134,16 @@ export default WizardDetailScreen;
 
 // 앱 전역 시간표 색감과 같은 --time-table-color-* 팔레트
 const BLOCK_COLORS = [
-  "var(--time-table-color-pink, #fab5cd)",
-  "var(--time-table-color-skyblue, #94cdfa)",
-  "var(--time-table-color-teal, #79dddf)",
-  "var(--time-table-color-orange, #ffcb94)",
-  "var(--time-table-color-violet, #c1acfc)",
-  "var(--time-table-color-yellow, #ffe589)",
-  "var(--time-table-color-lightgreen, #8ce99a)",
-  "var(--time-table-color-lilac, #acbcfd)",
-  "var(--time-table-color-purple, #e9adf7)",
-  "var(--time-table-color-red, #ffa6a6)",
+  "var(--time-table-color-pink)",
+  "var(--time-table-color-skyblue)",
+  "var(--time-table-color-teal)",
+  "var(--time-table-color-orange)",
+  "var(--time-table-color-violet)",
+  "var(--time-table-color-yellow)",
+  "var(--time-table-color-lightgreen)",
+  "var(--time-table-color-lilac)",
+  "var(--time-table-color-purple)",
+  "var(--time-table-color-red)",
 ];
 
 const Body = styled.div`
@@ -171,7 +171,7 @@ const CourseListCard = styled(WizardCard)`
 
 const CardTitle = styled.h2`
   margin: 0;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   ${typography.heading2}
 `;
 
@@ -195,7 +195,7 @@ const ReasonIcon = styled.span<{ $met: boolean }>`
   align-items: center;
   justify-content: center;
   color: ${({ $met }) =>
-    $met ? "var(--interactive-brand, #0061ff)" : "var(--text-warn, #b58000)"};
+    $met ? "var(--text-brand)" : "var(--text-warn)"};
 `;
 
 const ReasonText = styled.div`
@@ -209,12 +209,12 @@ const ReasonText = styled.div`
 
 const ReasonHeadline = styled.span<{ $met: boolean }>`
   color: ${({ $met }) =>
-    $met ? "var(--text-secondary, #333d4b)" : "var(--text-warn, #b58000)"};
+    $met ? "var(--text-secondary)" : "var(--text-warn)"};
   ${typography.label2}
 `;
 
 const ReasonDetail = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;
 

@@ -51,19 +51,19 @@ const ButtonRow = styled(Row).attrs({ as: "button" })`
   -webkit-tap-highlight-color: transparent;
 
   &:active {
-    background: var(--bg-subtle, #f8f9fb);
+    background: var(--bg-subtle);
   }
 `;
 
 const Title = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
 `;
 
 const Meta = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.caption1}
   line-height: 18px;
 `;

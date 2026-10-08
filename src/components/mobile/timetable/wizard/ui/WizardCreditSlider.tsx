@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { WIZARD_PRIMARY } from "./tokens";
 import { typography } from "@/styles/typography";
 
 interface WizardCreditSliderProps {
@@ -64,8 +63,8 @@ const thumb = `
   height: 20px;
   box-sizing: border-box;
   border-radius: 50%;
-  border: 3px solid var(--interactive-brand, #0061ff);
-  background: #ffffff;
+  border: 3px solid var(--border-brand);
+  background: var(--bg-base);
   cursor: grab;
 `;
 
@@ -83,8 +82,8 @@ const Range = styled.input`
     border-radius: 3px;
     background: linear-gradient(
       to right,
-      ${WIZARD_PRIMARY} var(--fill),
-      var(--border-default, #e5e8eb) var(--fill)
+      var(--interactive-primary) var(--fill),
+      var(--border-default) var(--fill)
     );
   }
   &::-webkit-slider-thumb {
@@ -97,12 +96,12 @@ const Range = styled.input`
   &::-moz-range-track {
     height: 6px;
     border-radius: 3px;
-    background: var(--border-default, #e5e8eb);
+    background: var(--border-default);
   }
   &::-moz-range-progress {
     height: 6px;
     border-radius: 3px;
-    background: ${WIZARD_PRIMARY};
+    background: var(--interactive-primary);
   }
   &::-moz-range-thumb {
     ${thumb}
@@ -112,13 +111,13 @@ const Range = styled.input`
     outline: none;
   }
   &:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px var(--bg-brand, #eff6ff);
+    box-shadow: 0 0 0 4px var(--bg-brand);
   }
 `;
 
 const Scale = styled.div`
   display: flex;
   justify-content: space-between;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.body2}
 `;

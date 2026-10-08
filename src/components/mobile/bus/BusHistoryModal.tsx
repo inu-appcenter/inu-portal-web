@@ -1018,7 +1018,7 @@ const ModalContainer = styled(Dialog.Content)`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 18px;
   width: calc(100% - 24px);
   max-width: 440px;
@@ -1038,7 +1038,7 @@ const NavHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const BackButton = styled.button`
@@ -1049,14 +1049,14 @@ const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const NavTitle = styled.h2`
   margin: 0;
   font-size: 17px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
 
 const StopInfoSection = styled.div`
@@ -1071,14 +1071,14 @@ const StopName = styled.h3`
   margin: 0;
   font-size: 19px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 `;
 
 const StopMeta = styled.p`
   margin: 4px 0 0 0;
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const RouteSelectorContainer = styled.div`
@@ -1089,14 +1089,14 @@ const RouteSelectWrapper = styled.div`
   display: flex;
   align-items: center;
   padding: 8px 14px;
-  background-color: #ffffff;
-  border: 1.5px solid #e2e8f0;
+  background-color: var(--bg-base);
+  border: 1.5px solid var(--border-default);
   border-radius: 10px;
   position: relative;
   transition: all 0.2s;
 
   &:focus-within {
-    border-color: #2563eb;
+    border-color: var(--border-brand);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 `;
@@ -1110,9 +1110,9 @@ const RouteBadge = styled.span<{ tone?: string }>`
     if (tone === "all") return "#475569";
     if (tone === "green") return "#16a34a";
     if (tone === "red") return "#dc2626";
-    return "#2563eb";
+    return "var(--interactive-primary)";
   }};
-  color: #ffffff;
+  color: var(--text-inverse);
   margin-right: 10px;
   flex-shrink: 0;
 `;
@@ -1123,7 +1123,7 @@ const RouteSelect = styled.select`
   background: transparent;
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -1140,8 +1140,8 @@ const SelectArrow = styled.div`
 
 const DayTabBar = styled.div`
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-base);
 `;
 
 const DayTabItem = styled.button<{ active: boolean }>`
@@ -1149,7 +1149,7 @@ const DayTabItem = styled.button<{ active: boolean }>`
   padding: 12px 0;
   font-size: 14px;
   font-weight: ${({ active }) => (active ? "800" : "500")};
-  color: ${({ active }) => (active ? "#0f172a" : "#94a3b8")};
+  color: ${({ active }) => (active ? "var(--text-primary)" : "var(--text-tertiary)")};
   background: transparent;
   border: none;
   border-bottom: 2.5px solid
@@ -1158,7 +1158,7 @@ const DayTabItem = styled.button<{ active: boolean }>`
   transition: all 0.15s;
 
   &:hover {
-    color: #0f172a;
+    color: var(--text-primary);
   }
 `;
 
@@ -1169,8 +1169,8 @@ const HourFilterBar = styled.div`
   padding: 10px 16px;
   overflow-x: auto;
   flex-shrink: 0;
-  border-bottom: 1px solid #f1f5f9;
-  background-color: #f8fafc;
+  border-bottom: 1px solid var(--bg-base);
+  background-color: var(--bg-subtle);
   -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     display: none;
@@ -1187,21 +1187,21 @@ const HourChip = styled.button<{ active: boolean }>`
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
-  border: 1px solid ${({ active }) => (active ? "#2563eb" : "#e2e8f0")};
-  background-color: ${({ active }) => (active ? "#dbeafe" : "#ffffff")};
-  color: ${({ active }) => (active ? "#2563eb" : "#64748b")};
+  border: 1px solid ${({ active }) => (active ? "var(--border-brand)" : "var(--border-default)")};
+  background-color: ${({ active }) => (active ? "var(--blue-100)" : "var(--bg-base)")};
+  color: ${({ active }) => (active ? "var(--text-brand)" : "var(--gray-600)")};
   cursor: pointer;
   transition: all 0.15s;
 
   &:hover {
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const TableViewport = styled.div`
   flex: 1;
   overflow-y: auto;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   position: relative;
 `;
 
@@ -1211,12 +1211,12 @@ const TimelineContainer = styled.div`
 `;
 
 const TimelineHeaderNotice = styled.div`
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 16px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
   text-align: center;
 `;
 
@@ -1242,7 +1242,7 @@ const TimelineTimeColumn = styled.div<{ $isTarget?: boolean }>`
   flex-shrink: 0;
   font-size: 14px;
   font-weight: ${({ $isTarget }) => ($isTarget ? "800" : "600")};
-  color: ${({ $isTarget }) => ($isTarget ? "#2563eb" : "#334155")};
+  color: ${({ $isTarget }) => ($isTarget ? "var(--text-brand)" : "var(--text-secondary)")};
 `;
 
 const TimeText = styled.span`
@@ -1266,7 +1266,7 @@ const TimelineNode = styled.div<{ $tone?: string; $isTarget?: boolean }>`
   background-color: ${({ $tone }) => {
     if ($tone === "green") return "#16a34a";
     if ($tone === "red") return "#dc2626";
-    return "#2563eb";
+    return "var(--interactive-primary)";
   }};
   z-index: 2;
   box-shadow: ${({ $isTarget }) =>
@@ -1278,7 +1278,7 @@ const TimelineLine = styled.div`
   top: 0;
   bottom: 0;
   width: 1.5px;
-  background-color: #e2e8f0;
+  background-color: var(--gray-200);
   z-index: 1;
 `;
 
@@ -1303,31 +1303,31 @@ const BusBadge = styled.span<{ tone?: string }>`
   color: ${({ tone }) => {
     if (tone === "green") return "#15803d";
     if (tone === "red") return "#b91c1c";
-    return "#1d4ed8";
+    return "var(--text-brand)";
   }};
 `;
 
 const PlateBadge = styled.span`
   font-size: 10.5px;
   font-weight: 600;
-  color: #64748b;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  color: var(--gray-600);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-default);
   padding: 1.5px 5px;
   border-radius: 4px;
 `;
 
 const NextStopText = styled.span`
   font-size: 11.5px;
-  color: #64748b;
+  color: var(--gray-600);
   margin-left: 2px;
 `;
 
 const TargetTag = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #2563eb;
-  background-color: #dbeafe;
+  color: var(--text-brand);
+  background-color: var(--blue-100);
   padding: 2px 6px;
   border-radius: 6px;
   margin-left: auto;
@@ -1343,16 +1343,16 @@ const MatrixTable = styled.table`
     position: sticky;
     top: 0;
     z-index: 10;
-    background-color: #f8fafc;
+    background-color: var(--bg-subtle);
   }
 `;
 
 const TableHeaderCell = styled.th<{ $isToday?: boolean; $colCount: number }>`
   padding: 12px 4px;
-  border-bottom: 1px solid #e2e8f0;
-  border-right: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-default);
+  border-right: 1px solid var(--bg-base);
   width: ${({ $colCount }) => `${100 / $colCount}%`};
-  background-color: ${({ $isToday }) => ($isToday ? "#eff6ff" : "inherit")};
+  background-color: ${({ $isToday }) => ($isToday ? "var(--bg-brand)" : "inherit")};
 
   &:last-child {
     border-right: none;
@@ -1361,23 +1361,23 @@ const TableHeaderCell = styled.th<{ $isToday?: boolean; $colCount: number }>`
   .title {
     font-size: 13px;
     font-weight: 700;
-    color: ${({ $isToday }) => ($isToday ? "#2563eb" : "#1e293b")};
+    color: ${({ $isToday }) => ($isToday ? "var(--text-brand)" : "var(--text-primary)")};
   }
 
   .date {
     font-size: 11px;
     font-weight: 500;
-    color: ${({ $isToday }) => ($isToday ? "#3b82f6" : "#64748b")};
+    color: ${({ $isToday }) => ($isToday ? "var(--interactive-primary)" : "var(--gray-600)")};
     margin-top: 2px;
   }
 `;
 
 const MatrixTableRow = styled.tr<{ isTarget?: boolean }>`
-  background-color: ${({ isTarget }) => (isTarget ? "#eff6ff" : "#ffffff")};
+  background-color: ${({ isTarget }) => (isTarget ? "var(--bg-brand)" : "var(--bg-base)")};
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: ${({ isTarget }) => (isTarget ? "#e0eeff" : "#f8fafc")};
+    background-color: ${({ isTarget }) => (isTarget ? "var(--blue-100)" : "var(--bg-subtle)")};
   }
 `;
 
@@ -1387,11 +1387,11 @@ const MatrixTableCell = styled.td<{ isTarget?: boolean; $isToday?: boolean }>`
   font-weight: ${({ isTarget, $isToday }) =>
     isTarget ? "800" : $isToday ? "700" : "600"};
   color: ${({ isTarget, $isToday }) =>
-    isTarget ? "#2563eb" : $isToday ? "#1d4ed8" : "#1e293b"};
+    isTarget ? "var(--text-brand)" : $isToday ? "var(--text-brand)" : "var(--text-primary)"};
   border-bottom: 1px solid
-    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+    ${({ isTarget }) => (isTarget ? "var(--border-brand-subtle)" : "var(--bg-base)")};
   border-right: 1px solid
-    ${({ isTarget }) => (isTarget ? "#bfdbfe" : "#f1f5f9")};
+    ${({ isTarget }) => (isTarget ? "var(--border-brand-subtle)" : "var(--bg-base)")};
   background-color: ${({ isTarget, $isToday }) =>
     isTarget ? "inherit" : $isToday ? "rgba(239, 246, 255, 0.4)" : "inherit"};
 
@@ -1415,8 +1415,8 @@ const CellContent = styled.div`
   .plate {
     font-size: 10px;
     font-weight: 500;
-    color: #94a3b8;
-    background-color: #f8fafc;
+    color: var(--text-tertiary);
+    background-color: var(--bg-subtle);
     border-radius: 3px;
     padding: 0 3px;
   }
@@ -1445,7 +1445,7 @@ const LoadingBox = styled.div`
 
 const LoadingText = styled.div`
   font-size: 13px;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const EmptyBox = styled.div`
@@ -1461,12 +1461,12 @@ const EmptyBox = styled.div`
 const EmptyTitle = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const EmptyDesc = styled.div`
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   max-width: 280px;
   line-height: 1.4;
 `;

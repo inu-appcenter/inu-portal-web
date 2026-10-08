@@ -76,7 +76,7 @@ const AiContents = styled.div`
   margin-top: 16px;
 
   h2 {
-    color: white;
+    color: var(--text-inverse);
   }
 `;
 
@@ -87,7 +87,7 @@ const Info = styled.div`
   align-items: center;
   justify-content: center;
   background: #6d4dc7;
-  color: white;
+  color: var(--text-inverse);
   font-weight: 600;
   font-size: 16px;
   border-radius: 25px / 50%; // 양쪽 끝만 둥글게
@@ -132,7 +132,7 @@ const Modal = styled.div`
   .close {
     display: flex;
     gap: 8px;
-    background-color: white;
+    background-color: var(--bg-base);
     width: 64px;
     height: 32px;
     border-radius: 6px;

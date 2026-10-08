@@ -55,7 +55,7 @@ export default function MobileTitleHeader({
 const MobileTitleHeaderWrapper = styled.div`
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #d9d9d9;
+  border-bottom: 1px solid var(--border-strong);
   padding: 15px 1rem;
   gap: 8px;
   width: 100%;

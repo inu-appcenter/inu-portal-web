@@ -382,7 +382,7 @@ const GroupWizardCourseSearchSheet = () => {
                 ) : rows.length === 0 ? (
                   <EmptyContainer>
                     <SearchIconBox>
-                      <SearchX size={32} color="var(--gray-400, #b0b8c1)" />
+                      <SearchX size={32} color="var(--gray-400)" />
                     </SearchIconBox>
                     <EmptyTitle>조회된 강의가 없습니다</EmptyTitle>
                     <EmptyDescription>검색어나 필터 조건을 변경해 보세요</EmptyDescription>
@@ -636,13 +636,13 @@ const CourseSheetContainer = styled(Sheet.Container)`
   max-height: 90dvh !important;
   margin: 0 auto;
   overflow: hidden;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
   border-top-left-radius: 32px !important;
   border-top-right-radius: 32px !important;
   border-bottom-right-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
-  background: var(--bg-base, #ffffff);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25) !important;
+  background: var(--bg-base);
+  box-shadow: var(--bottom-sheet-shadow) !important;
 `;
 
 const CourseSheetHeader = styled(Sheet.Header)`
@@ -658,7 +658,7 @@ const CourseSheetHeader = styled(Sheet.Header)`
     width: 40px !important;
     height: 4px !important;
     border-radius: 2px !important;
-    background: var(--border-default, #e5e8eb) !important;
+    background: var(--border-default) !important;
   }
 
   .react-modal-sheet-drag-indicator {
@@ -677,7 +677,7 @@ const TitleBar = styled.div`
 
 const SheetTitle = styled.h2`
   margin: 0;
-  color: var(--gray-900, #191f28);
+  color: var(--gray-900);
   font-size: 17px;
   font-weight: 700;
   line-height: 24px;
@@ -692,8 +692,8 @@ const CloseButton = styled.button`
   flex-shrink: 0;
   border: none;
   border-radius: 999px;
-  background: var(--bg-neutral-subtle, #f2f4f6);
-  color: var(--text-tertiary, #8b95a1);
+  background: var(--bg-muted);
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
 `;
@@ -754,18 +754,18 @@ const FilterButton = styled.button<{
 
   border: ${({ $isZeroCount }) =>
     $isZeroCount
-      ? "1px solid var(--border-default, #E5E8EB)"
-      : "1px solid var(--border-brand, #0061ff)"};
+      ? "1px solid var(--border-default)"
+      : "1px solid var(--border-brand)"};
   background: ${({ $isZeroCount }) =>
-    $isZeroCount ? "rgba(255, 255, 255, 0.50)" : "var(--interactive-primary, #3b82f6)"};
+    $isZeroCount ? "rgba(255, 255, 255, 0.50)" : "var(--interactive-primary)"};
   box-shadow: ${({ $isZeroCount }) =>
     $isZeroCount
-      ? "0 4px 12px 0 rgba(0, 0, 0, 0.08)"
+      ? "var(--elevation-1-shadow)"
       : "0 4px 12px rgba(59, 130, 246, 0.3)"};
   backdrop-filter: ${({ $isZeroCount }) => ($isZeroCount ? "blur(8px)" : "none")};
 
   color: ${({ $isZeroCount }) =>
-    $isZeroCount ? "var(--text-secondary, #333d4b)" : "var(--text-inverse, #fff)"};
+    $isZeroCount ? "var(--text-secondary)" : "var(--text-inverse)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -832,7 +832,7 @@ const SearchIconBox = styled.div`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: var(--bg-muted, #f1f3f5);
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -842,20 +842,20 @@ const SearchIconBox = styled.div`
 const EmptyTitle = styled.h3`
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0 0 6px 0;
 `;
 
 const EmptyDescription = styled.p`
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
 const SkeletonCard = styled.div`
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -881,10 +881,10 @@ const SkeletonCard = styled.div`
 
 const CourseItem = styled.div`
   padding: 12px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   transition: background-color 0.2s;
 
   content-visibility: auto;
@@ -903,7 +903,7 @@ const MainInfo = styled.div`
 `;
 
 const CourseName = styled.h3`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -923,9 +923,9 @@ const EnrolledBadge = styled.span`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  border: 1px solid var(--border-brand-subtle);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
@@ -941,7 +941,7 @@ const CourseAttributes = styled.div`
 
 const AttributeItem = styled.span<{ $primary?: boolean }>`
   color: ${({ $primary }) =>
-    $primary ? "var(--text-secondary, #333d4b)" : "var(--text-tertiary, #8b95a1)"};
+    $primary ? "var(--text-secondary)" : "var(--text-tertiary)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -951,7 +951,7 @@ const AttributeItem = styled.span<{ $primary?: boolean }>`
 const CourseAdditionalInfo = styled.div`
   display: flex;
   flex-direction: column;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -984,7 +984,7 @@ const ExpandedArea = styled.div`
 `;
 
 const RemarkText = styled.div`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
@@ -1026,24 +1026,24 @@ const PrimaryActionButton = styled(ActionButton)<{
 }>`
   border-radius: 999px;
   background: ${({ $exclusion }) =>
-    $exclusion ? "var(--text-error, #ef4444)" : "var(--interactive-primary, #3b82f6)"};
-  color: #fff;
+    $exclusion ? "var(--text-error)" : "var(--interactive-primary)"};
+  color: var(--text-inverse);
 
   ${({ $isAdded }) =>
     $isAdded &&
     `
-    background-color: var(--bg-neutral-subtle, #f2f4f6) !important;
-    color: var(--text-tertiary, #8b95a1) !important;
-    border: 1px solid var(--border-default, #e5e8eb);
+    background-color: var(--bg-muted) !important;
+    color: var(--text-tertiary) !important;
+    border: 1px solid var(--border-default);
     cursor: not-allowed;
     opacity: 0.8;
   `}
 `;
 
 const SecondaryActionButton = styled(ActionButton)`
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
 `;
 
 const FilterOverlay = styled.div`
@@ -1052,7 +1052,7 @@ const FilterOverlay = styled.div`
   z-index: 5;
   display: flex;
   flex-direction: column;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   overflow: hidden;
@@ -1065,8 +1065,8 @@ const OverlayHeader = styled.div`
   height: 56px;
   padding: 0 12px;
   flex-shrink: 0;
-  background: var(--bg-base, #ffffff);
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const OverlayBackButton = styled.button`
@@ -1077,7 +1077,7 @@ const OverlayBackButton = styled.button`
   height: 36px;
   border: none;
   background: transparent;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
 `;
@@ -1085,7 +1085,7 @@ const OverlayBackButton = styled.button`
 const OverlayTitle = styled.span`
   flex: 1;
   text-align: center;
-  color: var(--gray-900, #191f28);
+  color: var(--gray-900);
   font-size: 17px;
   font-weight: 600;
 `;
@@ -1100,8 +1100,8 @@ const OverlayActions = styled.div`
   gap: 12px;
   padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   flex-shrink: 0;
-  background: var(--bg-base, #ffffff);
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-default);
 `;
 
 const ApplyButton = styled(CapsuleButton)`

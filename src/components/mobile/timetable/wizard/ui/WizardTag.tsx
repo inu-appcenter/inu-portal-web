@@ -31,9 +31,9 @@ export default WizardTag;
 
 const TONE_STYLES: Record<WizardTagTone, ReturnType<typeof css>> = {
   brand: css`
-    background: var(--bg-brand, #eff6ff);
-    border-color: var(--border-brand-subtle, #d3e5ff);
-    color: var(--text-brand, #0061ff);
+    background: var(--bg-brand);
+    border-color: var(--border-brand-subtle);
+    color: var(--text-brand);
   `,
   success: css`
     background: ${WIZARD_SUCCESS.bg};
@@ -41,15 +41,15 @@ const TONE_STYLES: Record<WizardTagTone, ReturnType<typeof css>> = {
     color: ${WIZARD_SUCCESS.text};
   `,
   warn: css`
-    background: var(--bg-warn, #fffaeb);
+    background: var(--bg-warn);
     /* 시안이 테두리에 bg/warn-subtle을 쓴다(border 토큰 아님) */
-    border-color: var(--border-warn-subtle, #fef3c7);
-    color: var(--text-warn, #b58000);
+    border-color: var(--border-warn-subtle);
+    color: var(--text-warn);
   `,
   error: css`
-    background: var(--bg-error, #fff0f0);
-    border-color: var(--border-error-subtle, #ffd8d8);
-    color: var(--text-error, #ef4444);
+    background: var(--bg-error);
+    border-color: var(--border-error-subtle);
+    color: var(--text-error);
   `,
 };
 

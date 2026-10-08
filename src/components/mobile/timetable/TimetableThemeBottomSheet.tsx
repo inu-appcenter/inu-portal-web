@@ -5,57 +5,25 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore, TimetableTheme } from "@/stores/useTimetableStore";
 import Icon from "@/components/common/Icon";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { timetableThemes, type TimetableThemeKey } from "@/styles/tokens";
 
-export const THEME_PALETTES = {
-  default: [
-    "#ffa6a6",
-    "#ffcb94",
-    "#ffe589",
-    "#8ce99a",
-    "#79dddf",
-    "#94cdfa",
-    "#acbcfd",
-    "#c1acfc",
-    "#e9adf7",
-    "#8fa8d9",
-  ],
-  pastelWarm: [
-    "#ffd9d9",
-    "#ffe6cc",
-    "#fff4cc",
-    "#f0ebcf",
-    "#f5dcc9",
-    "#f2d9d0",
-    "#f5dce0",
-    "#f2d9ee",
-    "#ebdce6",
-    "#e4e0d8",
-  ],
-  pastelCool: [
-    "#d6e4fa",
-    "#d0e7f7",
-    "#ccecf2",
-    "#ccf0ea",
-    "#cff0e0",
-    "#d5f0d5",
-    "#ddd9f5",
-    "#d9def7",
-    "#e0dcf2",
-    "#e8e4f5",
-  ],
-  monotone: [
-    "#2e2e2e",
-    "#454545",
-    "#5c5c5c",
-    "#737373",
-    "#7a7a7a",
-    "#a1a1a1",
-    "#b8b8b8",
-    "#cfcfcf",
-    "#e0e0e0",
-    "#ededed",
-  ],
-};
+// 테마별 팔레트는 Figma 토큰(tokens/Timetable Theme/*)에서 생성된 값을 그대로 쓴다.
+export const THEME_PALETTES = Object.fromEntries(
+  Object.entries(timetableThemes).map(([key, colors]) => [
+    key,
+    colors.map((color) => color.bg),
+  ]),
+) as Record<TimetableThemeKey, string[]>;
+
+const TEXT_COLOR_BY_BG = new Map(
+  Object.values(timetableThemes).flatMap((colors) =>
+    colors.map((color) => [color.bg.toLowerCase(), color.text] as const),
+  ),
+);
+
+// 팔레트 배경 위에 올릴 글자색(모노톤의 어두운 칸은 흰 글자). 팔레트 밖 색이면 undefined.
+export const getTimetableTextColor = (bgColor: string) =>
+  TEXT_COLOR_BY_BG.get(bgColor.toLowerCase());
 
 interface TimetableThemeBottomSheetProps {
   open: boolean;
@@ -293,7 +261,7 @@ const SheetContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: 8px 0px 0px 0px;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   box-sizing: border-box;
   width: 100%;
   gap: 16px;
@@ -306,7 +274,7 @@ const Section = styled.div`
 `;
 
 const SectionTitle = styled.h3`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 
   font-family: Pretendard;
   font-size: 16px;
@@ -368,12 +336,12 @@ const SwatchGrid = styled.div<{ $isSelected: boolean }>`
   grid-template-rows: repeat(3, 1fr);
   gap: 2px;
   padding: 2px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border: 2px solid
     ${({ $isSelected }) =>
       $isSelected
-        ? "var(--interactive-primary-pressed, #0061ff)"
-        : "var(--border-default, #e5e8eb)"};
+        ? "var(--border-brand)"
+        : "var(--border-default)"};
   border-radius: 20px;
   box-sizing: border-box;
   overflow: hidden;
@@ -397,8 +365,8 @@ const ThemeLabel = styled.span<{ $isSelected: boolean }>`
   line-height: 20px; /* 142.857% */
   color: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--text-brand, #0061FF)"
-      : "var(--text-secondary, #333d4b)"};
+      ? "var(--text-brand)"
+      : "var(--text-secondary)"};
   transition: color 0.2s ease;
 `;
 
@@ -411,7 +379,7 @@ const Row = styled.div`
 
 const SegmentedControl = styled.div`
   display: flex;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   padding: 2px;
   gap: 2px;
@@ -425,14 +393,14 @@ const SegmentButton = styled.button<{ $isSelected: boolean }>`
   padding: 6px 14px;
   border: ${({ $isSelected }) =>
     $isSelected
-      ? "1px solid var(--border-default, #e5e8eb)"
+      ? "1px solid var(--border-default)"
       : "1px solid transparent"};
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "#ffffff" : "transparent"};
+    $isSelected ? "var(--bg-base)" : "transparent"};
   color: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--text-brand, #0061FF)"
-      : "var(--text-secondary, #333D4B)"};
+      ? "var(--text-brand)"
+      : "var(--text-secondary)"};
   border-radius: 6px;
   cursor: pointer;
   outline: none;
@@ -469,13 +437,13 @@ const SelectionControl = styled.div<{ $selected: boolean }>`
   box-sizing: border-box;
   transition: all 0.2s ease;
   background-color: ${({ $selected }) =>
-    $selected ? "var(--interactive-primary-pressed, #0061ff)" : "transparent"};
+    $selected ? "var(--interactive-primary)" : "transparent"};
   border: ${({ $selected }) =>
-    $selected ? "none" : "1.5px solid var(--border-strong, #d1d6db)"};
+    $selected ? "none" : "1.5px solid var(--border-strong)"};
 `;
 
 const CheckboxText = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-family: "Noto Sans KR";
   font-size: 13px;
   font-style: normal;
@@ -488,7 +456,7 @@ const BottomCta = styled.div`
   width: 100%;
   position: sticky;
   bottom: 0;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   padding: 12px 0px 0px 0px;
   box-sizing: border-box;
   z-index: 10;

@@ -242,7 +242,7 @@ export default function CommentListMobile({
 }
 
 const CommentSectionWrapper = styled.div`
-  background: var(--bg-base, #ffffff);
+  background: var(--bg-base);
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   box-shadow: 0px -2px 8px 0px rgba(0, 0, 0, 0.04);
@@ -314,7 +314,7 @@ const WriterName = styled.span`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const TimeText = styled.span`
@@ -322,7 +322,7 @@ const TimeText = styled.span`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const CommentText = styled.div`
@@ -330,7 +330,7 @@ const CommentText = styled.div`
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   word-break: break-word;
   white-space: pre-wrap;
 `;
@@ -347,14 +347,14 @@ const ReplyActionBtn = styled.button`
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   background: transparent;
   border: none;
   padding: 0;
   cursor: pointer;
 
   &:hover {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -381,8 +381,8 @@ const DropdownMenu = styled.div`
   position: absolute;
   top: 24px;
   right: 0;
-  background: white;
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   display: flex;
@@ -396,12 +396,12 @@ const DropdownItem = styled.div<{ $danger?: boolean }>`
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   color: ${({ $danger }) =>
-    $danger ? "var(--text-error, #ef4444)" : "var(--text-secondary, #333d4b)"};
+    $danger ? "var(--text-error)" : "var(--text-secondary)"};
   cursor: pointer;
   white-space: nowrap;
 
   &:hover {
-    background-color: #f8f9fb;
+    background-color: var(--bg-subtle);
   }
 `;
 
@@ -414,7 +414,7 @@ const MenuBackdrop = styled.div`
 const EmptyCommentMsg = styled.div`
   font-family: Pretendard, sans-serif;
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   padding: 20px 16px;
 `;

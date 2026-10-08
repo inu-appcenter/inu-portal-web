@@ -218,7 +218,7 @@ const TooltipContainer = styled.div<{
   width: ${({ $width }) => $width};
   ${({ $minWidth }) => $minWidth && `min-width: ${$minWidth};`}
   padding: 10px 22px;
-  color: #fff;
+  color: var(--text-inverse);
   font-size: 12px;
   text-align: center;
   cursor: pointer;
@@ -296,6 +296,6 @@ const CloseButton = styled.button`
   transition: color 0.2s ease;
 
   &:hover {
-    color: #fff;
+    color: var(--text-inverse);
   }
 `;

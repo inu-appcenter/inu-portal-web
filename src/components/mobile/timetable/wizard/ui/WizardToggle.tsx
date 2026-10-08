@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset } from "./tokens";
 
 interface WizardToggleProps {
   checked: boolean;
@@ -43,7 +43,7 @@ const Track = styled.button<{ $checked: boolean }>`
   height: 30px;
   border-radius: 15px;
   background: ${({ $checked }) =>
-    $checked ? WIZARD_PRIMARY : "var(--border-default, #e5e8eb)"};
+    $checked ? "var(--interactive-primary)" : "var(--border-default)"};
   transition: background-color 0.2s ease;
 
   &:disabled {
@@ -58,7 +58,7 @@ const Knob = styled.span<{ $checked: boolean }>`
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--bg-base);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transform: translateX(${({ $checked }) => ($checked ? "18px" : "0")});
   transition: transform 0.2s ease;

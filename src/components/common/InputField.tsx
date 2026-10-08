@@ -116,15 +116,15 @@ const Container = styled.div<{ $hasError: boolean; $isFocused: boolean }>`
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius-lg);
   border: 1px solid
     ${({ $hasError, $isFocused }) => {
-      if ($hasError) return "var(--border-error, #ef4444)";
-      if ($isFocused) return "var(--border-brand, #0061ff)";
-      return "var(--border-default, #e5e8eb)";
+      if ($hasError) return "var(--border-error)";
+      if ($isFocused) return "var(--border-brand)";
+      return "var(--border-default)";
     }};
   background-color: ${({ $hasError }) =>
-    $hasError ? "var(--bg-error, #fff0f0)" : "var(--bg-subtle, #fff)"};
+    $hasError ? "var(--bg-error)" : "var(--bg-subtle)"};
   padding: 8px 12px;
   min-height: 56px;
   transition: all 0.2s ease;
@@ -134,14 +134,14 @@ const Container = styled.div<{ $hasError: boolean; $isFocused: boolean }>`
   &:focus-within {
     border-color: ${({ $hasError }) =>
       $hasError
-        ? "var(--border-error, #ef4444)"
-        : "var(--border-brand, #0061ff)"};
+        ? "var(--border-error)"
+        : "var(--border-brand)"};
   }
 `;
 
 const Label = styled.span<{ $hasError: boolean }>`
   color: ${({ $hasError }) =>
-    $hasError ? "var(--text-error, #ef4444)" : "var(--text-tertiary, #8b95a1)"};
+    $hasError ? "var(--text-error)" : "var(--text-tertiary)"};
   margin-bottom: 4px;
   pointer-events: none;
   text-align: left;
@@ -156,7 +156,7 @@ const Label = styled.span<{ $hasError: boolean }>`
 `;
 
 const RequiredAsterisk = styled.span`
-  color: var(--text-error, #ef4444);
+  color: var(--text-error);
   font-weight: 600;
   margin-left: 2px;
 `;
@@ -170,7 +170,7 @@ const StyledInput = styled.input`
   box-sizing: border-box;
 
   overflow: hidden;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   text-overflow: ellipsis;
 
   font-size: 16px;
@@ -179,7 +179,7 @@ const StyledInput = styled.input`
   line-height: 24px;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;
 
@@ -189,7 +189,7 @@ const StyledTextArea = styled.textarea`
   outline: none;
   font-size: 15px;
   font-weight: 500;
-  color: var(--gray-800, #333d4b);
+  color: var(--gray-800);
   padding: 0;
   width: 100%;
   resize: none;
@@ -197,12 +197,12 @@ const StyledTextArea = styled.textarea`
   box-sizing: border-box;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;
 
 const ErrorMessage = styled.span`
-  color: var(--text-error, #ef4444);
+  color: var(--text-error);
   font-size: 11px;
   margin-top: 4px;
   text-align: left;

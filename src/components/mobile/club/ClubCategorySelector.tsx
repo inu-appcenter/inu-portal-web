@@ -78,7 +78,7 @@ const Dropdown = styled.div`
 `;
 
 const DropdownImg = styled(FontelloIcon)`
-  color: #9fa3a6;
+  color: var(--text-tertiary);
 `;
 
 const DropdownOptions = styled.div`

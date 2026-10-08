@@ -145,7 +145,7 @@ const Track = styled.div`
     height: 6px;
     transform: translateY(-50%);
     border-radius: 999px;
-    background: var(--border-default, #e5e8eb);
+    background: var(--border-default);
   }
 `;
 
@@ -155,7 +155,7 @@ const TrackActive = styled.div`
   height: 6px;
   transform: translateY(-50%);
   border-radius: 999px;
-  background: var(--interactive-primary, #3b82f6);
+  background: var(--interactive-primary);
 `;
 
 const Handle = styled.div`
@@ -165,8 +165,8 @@ const Handle = styled.div`
   height: 24px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: var(--bg-base, #ffffff);
-  border: 2px solid var(--interactive-primary, #3b82f6);
+  background: var(--bg-base);
+  border: 2px solid var(--interactive-primary);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: grab;
   touch-action: none;
@@ -180,7 +180,7 @@ const ScaleRow = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;

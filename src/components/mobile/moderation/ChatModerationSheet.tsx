@@ -143,7 +143,7 @@ const scaleUp = keyframes`
 const ModalOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
+  background-color: var(--bg-dim);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   z-index: 19999;
@@ -155,7 +155,7 @@ const ModalContainer = styled(Dialog.Content)`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 32px;
   width: calc(100% - 32px);
   max-width: 328px;
@@ -174,7 +174,7 @@ const ReactionsBar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   box-sizing: border-box;
   width: 100%;
 `;
@@ -201,7 +201,7 @@ const ReactionButton = styled.button`
   }
 
   &:hover {
-    background-color: var(--bg-subtle, #f8f9fb);
+    background-color: var(--bg-subtle);
   }
 
   &:active {
@@ -216,7 +216,7 @@ const ActionGroup = styled.div<{ $hasBorder?: boolean; $isBottom?: boolean }>`
   padding-top: 8px;
   padding-bottom: ${({ $isBottom }) => ($isBottom ? "12px" : "8px")};
   border-bottom: ${({ $hasBorder }) =>
-    $hasBorder ? "1px solid var(--border-default, #e5e8eb)" : "none"};
+    $hasBorder ? "1px solid var(--border-default)" : "none"};
   box-sizing: border-box;
 `;
 
@@ -236,15 +236,15 @@ const ActionItem = styled.button<{ $danger?: boolean }>`
   font-weight: 500;
   line-height: 1.4;
   color: ${({ $danger }) =>
-    $danger ? "var(--text-danger, #ef4444)" : "var(--text-secondary, #333d4b)"};
+    $danger ? "var(--text-error)" : "var(--text-secondary)"};
   white-space: nowrap;
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: var(--bg-subtle, #f8f9fb);
+    background-color: var(--bg-subtle);
   }
 
   &:active {
-    background-color: var(--bg-subtle, #f8f9fb);
+    background-color: var(--bg-subtle);
   }
 `;

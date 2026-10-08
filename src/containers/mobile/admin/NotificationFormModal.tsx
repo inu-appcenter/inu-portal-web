@@ -358,13 +358,13 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 0.875rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const Input = styled.input`
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 0.95rem;
 
   &:focus {
@@ -377,7 +377,7 @@ const Input = styled.input`
 const TextArea = styled.textarea`
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 0.95rem;
   resize: vertical;
 
@@ -395,9 +395,9 @@ const DepartmentList = styled.div`
   max-height: 150px;
   overflow-y: auto;
   padding: 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg-base);
 `;
 
 const DepartmentChip = styled.button<{ $active: boolean }>`
@@ -406,19 +406,19 @@ const DepartmentChip = styled.button<{ $active: boolean }>`
   font-size: 0.8125rem;
   font-weight: 600;
   transition: all 0.2s;
-  background-color: ${(props) => (props.$active ? "#0f766e" : "#ffffff")};
-  color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
-  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "#e2e8f0")};
+  background-color: ${(props) => (props.$active ? "#0f766e" : "var(--bg-base)")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
+  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "var(--border-default)")};
 
   &:hover {
     border-color: #0f766e;
-    color: ${(props) => (props.$active ? "#ffffff" : "#0f766e")};
+    color: ${(props) => (props.$active ? "var(--text-inverse)" : "#0f766e")};
   }
 `;
 
 const Divider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   margin: 4px 0;
 `;
 
@@ -434,15 +434,15 @@ const ModeButton = styled.button<{ $active: boolean }>`
   font-size: 0.875rem;
   font-weight: 700;
   transition: all 0.2s;
-  background-color: ${(props) => (props.$active ? "#0f766e" : "#f8fafc")};
-  color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
-  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "#e2e8f0")};
+  background-color: ${(props) => (props.$active ? "#0f766e" : "var(--bg-subtle)")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
+  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "var(--border-default)")};
 `;
 
 const HintText = styled.p`
   font-size: 0.75rem;
   color: #b45309;
-  background-color: #fffbeb;
+  background-color: var(--bg-warn);
   padding: 8px 10px;
   border-radius: 8px;
   margin: 0;
@@ -462,8 +462,8 @@ const CancelButton = styled.button`
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
-  color: #64748b;
-  &:hover { background-color: #f1f5f9; }
+  color: var(--gray-600);
+  &:hover { background-color: var(--bg-muted); }
 `;
 
 const SubmitButton = styled.button`
@@ -473,7 +473,7 @@ const SubmitButton = styled.button`
   padding: 10px 24px;
   border-radius: 10px;
   background-color: #0f766e;
-  color: #ffffff;
+  color: var(--text-inverse);
   font-weight: 700;
   transition: all 0.2s;
 

@@ -92,8 +92,8 @@ const ReservationItem = ({
 const ReservationItemWrapper = styled.div`
   width: 90%;
   max-width: 400px;
-  background: #f9f9f9;
-  border: 1px solid #ddd;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-strong);
   border-radius: 12px;
   padding: 16px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
@@ -112,12 +112,12 @@ const InfoContainer = styled.div`
 
 const Info = styled.div`
   font-size: 14px;
-  color: #333;
+  color: var(--text-secondary);
 `;
 
 const CancelButton = styled.button`
   background: #ff4d4f;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
@@ -132,7 +132,7 @@ const CancelButton = styled.button`
   }
 
   &:disabled {
-    background: #ccc;
+    background: var(--gray-300);
     cursor: not-allowed;
   }
 `;

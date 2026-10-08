@@ -444,13 +444,13 @@ const CourseSheetContainer = styled(Sheet.Container)`
   max-height: 90dvh !important;
   margin: 0 auto;
   overflow: hidden;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
   border-top-left-radius: 32px !important;
   border-top-right-radius: 32px !important;
   border-bottom-right-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
-  background: var(--bg-base, #ffffff);
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.25) !important;
+  background: var(--bg-base);
+  box-shadow: var(--bottom-sheet-shadow) !important;
 `;
 
 const CourseSheetHeader = styled(Sheet.Header)`
@@ -466,7 +466,7 @@ const CourseSheetHeader = styled(Sheet.Header)`
     width: 40px !important;
     height: 4px !important;
     border-radius: 2px !important;
-    background: var(--border-default, #e5e8eb) !important;
+    background: var(--border-default) !important;
   }
 
   .react-modal-sheet-drag-indicator {
@@ -530,23 +530,23 @@ const FilterButton = styled.button<{
 
   border: ${({ $isZeroCount }) =>
     $isZeroCount
-      ? "1px solid var(--border-default, #E5E8EB)"
-      : "1px solid var(--border-brand, #0061ff)"};
+      ? "1px solid var(--border-default)"
+      : "1px solid var(--border-brand)"};
   background: ${({ $isZeroCount }) =>
     $isZeroCount
       ? "rgba(255, 255, 255, 0.50)"
-      : "var(--interactive-primary, #3b82f6)"};
+      : "var(--interactive-primary)"};
   box-shadow: ${({ $isZeroCount }) =>
     $isZeroCount
-      ? "0 4px 12px 0 rgba(0, 0, 0, 0.08)"
+      ? "var(--elevation-1-shadow)"
       : "0 4px 12px rgba(59, 130, 246, 0.3)"};
   backdrop-filter: ${({ $isZeroCount }) =>
     $isZeroCount ? "blur(8px)" : "none"};
 
   color: ${({ $isZeroCount }) =>
     $isZeroCount
-      ? "var(--text-secondary, #333d4b)"
-      : "var(--text-inverse, #fff)"};
+      ? "var(--text-secondary)"
+      : "var(--text-inverse)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

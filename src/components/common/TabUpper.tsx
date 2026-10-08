@@ -33,10 +33,10 @@ const TabTrack = styled.div`
   min-width: 0;
   overflow: clip;
   padding: 4px;
-  background: var(--bg-blur, rgba(255, 255, 255, 0.6));
+  background: var(--bg-blur);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
   position: relative;
@@ -65,7 +65,7 @@ const TabButton = styled.button<{ $isActive: boolean }>`
   font-weight: 500;
   line-height: 24px;
   color: ${({ $isActive }) =>
-    $isActive ? "var(--text-primary, #333d4b)" : "var(--text-tertiary, #8b95a1)"};
+    $isActive ? "var(--text-primary)" : "var(--text-tertiary)"};
 
   &:focus {
     outline: none;
@@ -78,8 +78,8 @@ const ActivePill = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   z-index: -1;
   box-sizing: border-box;

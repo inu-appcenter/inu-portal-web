@@ -223,7 +223,7 @@ export default function TodayTimetableWidget({
 }
 
 const TodayTimetableCard = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   padding: 16px;
   box-shadow: 0px 4px 24px 0px #3b82f63d;
@@ -248,7 +248,7 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -260,7 +260,7 @@ const WidgetTitle = styled.span`
 `;
 
 const WidgetSubTitle = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -283,13 +283,13 @@ const ClassItem = styled.div<{ $current: boolean }>`
     $current &&
     css`
       background-color: var(--bg-brand);
-      border-left: 4px solid var(--interactive-primary, #3b82f6);
+      border-left: 4px solid var(--interactive-primary);
       padding-left: 12px;
     `}
 `;
 
 const ClassName = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 16px;
   font-style: normal;
   font-weight: 600;
@@ -311,13 +311,13 @@ const ClassInfo = styled.div`
 `;
 
 const ClassDetail = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   opacity: 0.5;
   white-space: nowrap;
 `;
 
 const ClassRoom = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -344,7 +344,7 @@ const CreateTimetableButton = styled(CapsuleButton)`
 const TimetableEmptyText = styled.p`
   margin: 0;
   width: 100%;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
@@ -354,7 +354,7 @@ const TimetableEmptyText = styled.p`
 
 const EmptyClassItem = styled.div`
   padding: 8px 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

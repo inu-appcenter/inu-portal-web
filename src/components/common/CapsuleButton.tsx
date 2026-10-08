@@ -38,8 +38,8 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
   switch (variant) {
     case "brand":
       return css`
-        background: var(--bg-brand-subtle, #eff6ff);
-        color: var(--text-brand, #0061ff);
+        background: var(--bg-brand);
+        color: var(--text-brand);
 
         &:hover:not(:disabled) {
           background: rgba(0, 97, 255, 0.12);
@@ -51,8 +51,8 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
       `;
     case "danger":
       return css`
-        background: var(--bg-error, #fff0f0);
-        color: var(--text-error, #ef4444);
+        background: var(--bg-error);
+        color: var(--text-error);
 
         &:hover:not(:disabled) {
           background: rgba(239, 68, 68, 0.12);
@@ -64,29 +64,29 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
       `;
     case "primary":
       return css`
-        background: var(--interactive-primary, #0061ff);
-        color: #fff;
+        background: var(--interactive-primary);
+        color: var(--text-inverse);
 
         &:hover:not(:disabled) {
-          background: var(--interactive-primary-hover, #60a5fa);
+          background: var(--interactive-primary-hover);
         }
         &:active:not(:disabled) {
-          background: var(--interactive-primary-pressed, #0061ff);
+          background: var(--interactive-primary-pressed);
           transform: scale(0.97);
         }
       `;
     case "secondary":
     default:
       return css`
-        border: 1px solid var(--border-default, #e5e8eb);
-        background: var(--bg-muted, #f1f3f5);
-        color: var(--text-secondary, #333d4b);
+        border: 1px solid var(--border-default);
+        background: var(--bg-muted);
+        color: var(--text-secondary);
 
         &:hover:not(:disabled) {
-          background: var(--bg-disabled, #e5e8eb);
+          background: var(--bg-disabled);
         }
         &:active:not(:disabled) {
-          background: var(--border-strong, #d1d6db);
+          background: var(--border-strong);
           transform: scale(0.97);
         }
       `;
@@ -96,14 +96,14 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
 const getSpinnerColor = (variant: CapsuleButtonVariant) => {
   switch (variant) {
     case "brand":
-      return "var(--text-brand, #0061FF)";
+      return "var(--text-brand)";
     case "danger":
-      return "var(--text-error, #EF4444)";
+      return "var(--text-error)";
     case "primary":
-      return "var(--text-inverse, #FFF)";
+      return "var(--text-inverse)";
     case "secondary":
     default:
-      return "var(--text-secondary, #333D4B)";
+      return "var(--text-secondary)";
   }
 };
 
@@ -124,7 +124,7 @@ const StyledButton = styled.button<{
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  box-shadow: var(--elevation-1-shadow);
 
   font-family: Pretendard;
   text-align: center;
@@ -136,9 +136,9 @@ const StyledButton = styled.button<{
   ${({ $variant }) => getVariantStyles($variant)}
 
   &:disabled {
-    border-color: var(--border-default, #e5e8eb);
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    border-color: var(--border-default);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
     box-shadow: none;
   }

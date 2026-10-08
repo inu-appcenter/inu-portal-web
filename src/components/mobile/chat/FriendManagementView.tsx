@@ -679,7 +679,7 @@ export default function FriendManagementView({
                 <Icon
                   name="chevron-right"
                   size={20}
-                  color="var(--text-tertiary, #8b95a1)"
+                  color="var(--text-tertiary)"
                 />
               </MyProfileRow>
             </FriendListContainer>
@@ -843,7 +843,7 @@ const TotalCountText = styled.span`
   font-weight: 500;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const SortIndicator = styled.div`
@@ -857,7 +857,7 @@ const SortIndicator = styled.div`
   font-weight: 500;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
 `;
 
@@ -866,13 +866,13 @@ const SectionHeader = styled.div`
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin: 8px 0 8px 4px;
 `;
 
 const FriendListContainer = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -908,7 +908,7 @@ const MyProfileName = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 22px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;
 
 const MyProfileDepartment = styled.div`
@@ -916,7 +916,7 @@ const MyProfileDepartment = styled.div`
   font-weight: 400;
   font-size: 13px;
   line-height: 18px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const FriendRowWrapper = styled.div<{ $expanded: boolean; $isSelected?: boolean }>`
@@ -926,9 +926,9 @@ const FriendRowWrapper = styled.div<{ $expanded: boolean; $isSelected?: boolean 
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "var(--bg-brand, #eff6ff)" : "transparent"};
+    $isSelected ? "var(--bg-brand)" : "transparent"};
   user-select: none;
   -webkit-user-select: none;
   transition: background-color 0.15s ease-in-out;
@@ -981,7 +981,7 @@ const ProfileImage = styled.img`
   height: 40px;
   border-radius: 999px;
   object-fit: cover;
-  background-color: var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--border-brand-subtle);
 `;
 
 const SelectionCheckbox = styled.div<{ $selected: boolean }>`
@@ -989,10 +989,10 @@ const SelectionCheckbox = styled.div<{ $selected: boolean }>`
   height: 24px;
   border-radius: 8px;
   background-color: ${({ $selected }) =>
-    $selected ? "var(--interactive-primary, #0061ff)" : "var(--bg-subtle, #f8f9fb)"};
+    $selected ? "var(--interactive-primary)" : "var(--bg-subtle)"};
   border: 1px solid
     ${({ $selected }) =>
-      $selected ? "var(--interactive-primary, #0061ff)" : "var(--border-strong, #d1d6db)"};
+      $selected ? "var(--interactive-primary)" : "var(--border-strong)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1007,7 +1007,7 @@ const NameRow = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   min-height: 40px;
@@ -1048,7 +1048,7 @@ const StudentInfoRow = styled.div`
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 12px;
 `;
 
@@ -1066,8 +1066,8 @@ const CircleActionButton = styled.button`
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background-color: var(--bg-brand, #eff6ff);
+  border: 1px solid var(--border-brand-subtle);
+  background-color: var(--bg-brand);
   cursor: pointer;
   outline: none;
   box-sizing: border-box;
@@ -1075,16 +1075,16 @@ const CircleActionButton = styled.button`
 
   &:active {
     transform: scale(0.95);
-    background-color: var(--border-brand-subtle, #d3e5ff);
+    background-color: var(--border-brand-subtle);
   }
 
   &.warn,
   &.fav {
-    border: 1px solid var(--border-warn, #fee588);
-    background-color: var(--bg-warn, #fffaeb);
+    border: 1px solid var(--border-warn);
+    background-color: var(--bg-warn);
 
     &:active {
-      background-color: var(--border-warn, #fee588);
+      background-color: var(--border-warn);
     }
   }
 `;
@@ -1104,7 +1104,7 @@ const EmptyTitle = styled.h3`
   font-weight: 600;
   font-size: 18px;
   line-height: 28px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin: 16px 0 6px 0;
   text-align: center;
 `;
@@ -1114,7 +1114,7 @@ const EmptyDescription = styled.p`
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
   white-space: pre-line;

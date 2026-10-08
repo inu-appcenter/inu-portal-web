@@ -128,7 +128,7 @@ const CardWrapper = styled.div`
   color: #0e4d9d;
 
   span {
-    color: #969696;
+    color: var(--text-tertiary);
   }
 
   p {
@@ -137,7 +137,7 @@ const CardWrapper = styled.div`
 `;
 
 const TipsCardListWrapper = styled.div`
-  background-color: #f6f9ff;
+  background-color: var(--bg-subtle);
   min-height: calc(100svh - 72px - 49px - 18px - 64px - 78px);
   height: 100%;
   padding-top: 24px;
@@ -156,7 +156,7 @@ const TipsCardWrapper = styled.div`
   padding: 16px;
   box-sizing: border-box;
 
-  background-color: white;
+  background-color: var(--bg-base);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -175,13 +175,13 @@ const XButton = styled(Icon)`
 const Date = styled.div`
   font-size: 12px;
   font-weight: 400;
-  color: #757575;
+  color: var(--gray-600);
 `;
 
 const Content = styled.div`
   font-size: 14px;
   font-weight: 400;
-  color: #000000;
+  color: var(--text-primary);
   height: 40px;
 `;
 
@@ -190,7 +190,7 @@ const LikeWrapper = styled.div`
   gap: 6px;
   font-size: 12px;
   font-weight: 400;
-  color: #757575;
+  color: var(--gray-600);
   height: 10px;
   align-items: center;
 
@@ -211,8 +211,8 @@ const Title = styled.div`
   height: fit-content;
   font-size: 12px;
   font-weight: 600;
-  color: #000000;
-  background-color: #f3f3f3;
+  color: var(--text-primary);
+  background-color: var(--bg-muted);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -243,7 +243,7 @@ const ModalWrapper = styled.div`
 `;
 
 const ModalTop = styled.div`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 10px;
   width: 100%;
   height: 96px;
@@ -255,12 +255,12 @@ const ModalTop = styled.div`
   span {
     height: 1px;
     width: 100%;
-    background-color: #d9d9d9;
+    background-color: var(--gray-300);
   }
 `;
 
 const Description = styled.div`
-  color: #757575;
+  color: var(--gray-600);
   font-size: 12px;
   font-weight: 600;
 `;
@@ -274,7 +274,7 @@ const DeleteButton = styled.div`
 `;
 
 const ModalBottom = styled.div`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 10px;
   width: 100%;
   height: 48px;

@@ -39,7 +39,7 @@ const AiTitleWrapper = styled.div`
     }
   }
   button {
-    color: white;
+    color: var(--text-inverse);
     border: none;
     background-color: transparent;
     font-size: 18px;
@@ -62,7 +62,7 @@ const AiTitleWrapper = styled.div`
 // `;
 
 const AiTitle1 = styled.span`
-  color: white; /* 기본 텍스트 색상 */
+  color: var(--text-inverse); /* 기본 텍스트 색상 */
 `;
 
 const AiTitle2 = styled.span`

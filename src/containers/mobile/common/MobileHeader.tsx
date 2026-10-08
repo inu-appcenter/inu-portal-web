@@ -265,7 +265,7 @@ const MainHeaderWrapper = styled.div<{
   background: ${({ $isScrolled, $hasTitle, $noBlur }) =>
     $noBlur || $isScrolled || !$hasTitle
       ? "transparent"
-      : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
+      : "var(--bg-blur)"};
   backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
     $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
   -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
@@ -350,7 +350,7 @@ const IconBackgroundWrapper = styled.div<{
     $isScrolled
       ? `
         background: rgba(255, 255, 255, 0.5);
-        border: 1px solid var(--border-default, #e5e8eb);
+        border: 1px solid var(--border-default);
         box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -424,7 +424,7 @@ const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
   font-weight: ${({ $hasBack }) => ($hasBack ? "600" : "700")};
   line-height: 28px;
   letter-spacing: ${({ $hasBack }) => ($hasBack ? "0px" : "-0.2px")};
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const FloatingWrapper = styled.div`

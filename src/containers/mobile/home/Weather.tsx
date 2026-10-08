@@ -185,8 +185,8 @@ const Info = styled.div`
     min-width: 0;
     margin: 0;
     padding: 0 0 4px;
-    border-bottom: 2px solid #fff;
-    color: white;
+    border-bottom: 2px solid var(--bg-base);
+    color: var(--text-inverse);
     line-height: 1;
     white-space: nowrap;
   }
@@ -209,7 +209,7 @@ const Info = styled.div`
     align-items: center;
     gap: 6px;
     margin: 0;
-    color: white;
+    color: var(--text-inverse);
     font-size: clamp(12px, 2.1vw, 16px);
     font-weight: 400;
     line-height: 1.25;
@@ -224,7 +224,7 @@ const Info = styled.div`
 
   .location {
     margin: 0;
-    color: white;
+    color: var(--text-inverse);
     font-size: clamp(20px, 3.2vw, 26px);
     font-weight: 400;
     line-height: 1.15;

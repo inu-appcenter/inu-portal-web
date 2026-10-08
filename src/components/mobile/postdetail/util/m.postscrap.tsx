@@ -108,6 +108,6 @@ const ScrapContainer = styled.div`
     font-size: 14px;
     font-weight: 400;
     line-height: 1.6;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;

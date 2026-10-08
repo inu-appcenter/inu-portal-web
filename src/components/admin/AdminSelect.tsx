@@ -93,7 +93,7 @@ const Label = styled.label`
   display: block;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
   margin-bottom: 6px;
 `;
 
@@ -107,10 +107,10 @@ const ListboxButton = styled(Listbox.Button)`
   width: 100%;
   cursor: pointer;
   border-radius: 12px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   padding: 12px 40px 12px 16px;
   text-align: left;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   transition: all 0.2s;
 
   &:focus {
@@ -126,7 +126,7 @@ const SelectedText = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--text-primary);
   font-weight: 500;
 `;
 
@@ -138,7 +138,7 @@ const IconWrapper = styled.span`
   display: flex;
   align-items: center;
   padding-right: 12px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   height: 100%;
 `;
 
@@ -150,11 +150,11 @@ const OptionsList = styled(Listbox.Options)`
   width: 100%;
   overflow: auto;
   border-radius: 14px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   padding: 4px;
   font-size: 1rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg-base);
 
   &:focus {
     outline: none;
@@ -189,13 +189,13 @@ const OptionLabel = styled.span<{ $selected: boolean }>`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: ${({ $selected }) => ($selected ? "700" : "500")};
-  color: ${({ $selected }) => ($selected ? "#0d9488" : "#1e293b")};
+  color: ${({ $selected }) => ($selected ? "#0d9488" : "var(--text-primary)")};
   font-size: 0.95rem;
 `;
 
 const OptionDesc = styled.span`
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--gray-600);
   margin-top: 2px;
 `;
 

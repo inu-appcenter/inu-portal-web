@@ -18,7 +18,7 @@ export default function BusCircle({
 }
 
 const Circle = styled.div<{ $tone: BusCircleTone }>`
-  //background-color: #ffffff;
+  //background-color: var(--bg-base);
   //box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.15);
   color: ${({ $tone }) => BUS_TONE_COLOR[$tone]};
   width: fit-content;

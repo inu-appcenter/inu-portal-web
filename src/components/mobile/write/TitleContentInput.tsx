@@ -49,11 +49,11 @@ const TitleInput = styled.input`
   outline: none;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   background: transparent;
 
   &::placeholder {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     font-weight: 600;
   }
 `;
@@ -61,7 +61,7 @@ const TitleInput = styled.input`
 const TitleDivider = styled.div`
   width: 100%;
   height: 1px;
-  background-color: var(--border-default, #e5e8eb);
+  background-color: var(--border-default);
   margin-bottom: 16px;
 `;
 
@@ -75,10 +75,10 @@ const ContentTextarea = styled.textarea`
   font-size: 15px;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   background: transparent;
 
   &::placeholder {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;

@@ -344,7 +344,7 @@ const SwiperContainer = styled(Swiper)`
 `;
 
 const SlideContent = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -398,7 +398,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   border-radius: 50%;
   background-color: ${(props) =>
     props.$active
-      ? "var(--text-brand, #0061ff)"
+      ? "var(--text-brand)"
       : "rgba(0, 0, 0, 0.15)"};
   transition:
     transform 0.2s ease,
@@ -419,7 +419,7 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -430,7 +430,7 @@ const WidgetTitle = styled.span`
 `;
 
 const WidgetSubTitle = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -462,7 +462,7 @@ const MenuInfoRow = styled.div`
 `;
 
 const MenuCorner = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -475,7 +475,7 @@ const MenuCorner = styled.span`
 
 const MenuName = styled.span<{ $isEmpty: boolean }>`
   color: ${({ $isEmpty }) =>
-    $isEmpty ? "var(--text-disabled, #b0b8c1)" : "var(--text-secondary, #333d4b)"};
+    $isEmpty ? "var(--text-disabled)" : "var(--text-secondary)"};
   font-size: 16px;
   font-style: normal;
   font-weight: 600;

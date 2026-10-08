@@ -409,7 +409,7 @@ const PageWrapper = styled.div`
   width: 100%;
   min-height: 100svh;
   box-sizing: border-box;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
 
   @media ${DESKTOP_MEDIA} {
@@ -431,8 +431,8 @@ const ToastBanner = styled.div`
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  background: #191f28;
-  color: #ffffff;
+  background: var(--gray-900);
+  color: var(--text-inverse);
   padding: 12px 20px;
   border-radius: 999px;
   font-size: 13.5px;
@@ -446,8 +446,8 @@ const ToastBanner = styled.div`
 `;
 
 const StatusCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 20px;
   display: flex;
@@ -480,7 +480,7 @@ const SecurityTag = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 11.5px;
   font-weight: 500;
 `;
@@ -496,14 +496,14 @@ const StudentTitle = styled.h3`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const StudentDetailRow = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  background: var(--bg-muted, #f8fafc);
+  background: var(--bg-muted);
   border-radius: 12px;
   padding: 12px 14px;
 `;
@@ -516,12 +516,12 @@ const DetailItem = styled.div`
   .label {
     font-size: 11px;
     font-weight: 600;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
   .value {
     font-size: 14px;
     font-weight: 700;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
 `;
 
@@ -538,9 +538,9 @@ const SubActionBtn = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: var(--bg-muted, #f2f4f6);
-  color: var(--text-secondary, #4e5968);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 10px 0;
   font-size: 13.5px;
@@ -549,7 +549,7 @@ const SubActionBtn = styled.button`
   transition: all 0.15s ease;
 
   &:active {
-    background: var(--border-default, #e5e8eb);
+    background: var(--border-default);
     transform: scale(0.98);
   }
 `;
@@ -560,8 +560,8 @@ const DangerActionBtn = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #fff0f0;
-  color: #ef4444;
+  background: var(--bg-error);
+  color: var(--text-error);
   border: 1px solid #fee2e2;
   border-radius: 12px;
   padding: 10px 0;
@@ -571,7 +571,7 @@ const DangerActionBtn = styled.button`
   transition: all 0.15s ease;
 
   &:active {
-    background: #fee2e2;
+    background: var(--bg-error);
     transform: scale(0.98);
   }
 `;
@@ -580,12 +580,12 @@ const SectionTitle = styled.h4`
   margin: 8px 0 0 4px;
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
 `;
 
 const ServiceListCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 8px 16px;
   display: flex;
@@ -629,31 +629,31 @@ const ServiceText = styled.div`
   strong {
     font-size: 14px;
     font-weight: 700;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
   span {
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
 const ServiceDivider = styled.div`
   height: 1px;
-  background: var(--border-default, #e5e8eb);
+  background: var(--border-default);
   width: 100%;
 `;
 
 const FootnoteText = styled.p`
   margin: 14px 4px 0;
   font-size: 12.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.4;
 `;
 
 const NotAppCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 32px 20px 24px;
   display: flex;
@@ -667,20 +667,20 @@ const NotAppTitle = styled.h3`
   margin: 4px 0 0;
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const NotAppDesc = styled.p`
   margin: 0 0 8px;
   font-size: 13.5px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.5;
   max-width: 320px;
 `;
 
 const HeroCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 24px 20px 20px;
   display: flex;
@@ -692,20 +692,20 @@ const HeroTitle = styled.h2`
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 `;
 
 const HeroSubtitle = styled.p`
   margin: 0;
   font-size: 13.5px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.5;
 `;
 
 const UsageGuideBox = styled.div`
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;
@@ -717,7 +717,7 @@ const UsageGuideBox = styled.div`
 const UsageGuideTitle = styled.div`
   font-size: 12.5px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const UsageGuideList = styled.ul`
@@ -729,14 +729,14 @@ const UsageGuideList = styled.ul`
 
   li {
     font-size: 12px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
     line-height: 1.4;
   }
 `;
 
 const FormCard = styled.form`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 20px;
   display: flex;
@@ -754,14 +754,14 @@ const InputGroup = styled.div`
 const InputLabel = styled.label`
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
 `;
 
 const InputWrap = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--bg-muted, #f2f4f6);
+  background: var(--bg-muted);
   border-radius: 12px;
   padding: 0 14px;
   height: 48px;
@@ -772,11 +772,11 @@ const StyledInput = styled.input`
   background: transparent;
   width: 100%;
   font-size: 15px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;
 
@@ -785,8 +785,8 @@ const ErrorBox = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 12.5px;
-  color: #ef4444;
-  background: #fff0f0;
+  color: var(--text-error);
+  background: var(--bg-error);
   padding: 8px 12px;
   border-radius: 8px;
 `;
@@ -801,13 +801,13 @@ const ButtonGroupWrapper = styled.div`
 const CancelTextBtn = styled.button`
   background: none;
   border: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   padding: 8px 0;
 
   &:hover {
-    color: var(--text-secondary, #4e5968);
+    color: var(--text-secondary);
   }
 `;

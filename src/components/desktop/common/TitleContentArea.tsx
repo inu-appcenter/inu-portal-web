@@ -63,7 +63,7 @@ const HeaderWrapper = styled.div`
 
 const DescriptionText = styled.p`
   font-size: 14px;
-  color: #666;
+  color: var(--gray-600);
   margin: 0;
   text-align: start;
   width: 100%;

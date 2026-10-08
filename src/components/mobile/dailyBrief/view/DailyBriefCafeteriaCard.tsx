@@ -252,7 +252,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -284,7 +284,7 @@ const CardHeader = styled.div`
 const CardBrandTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
   margin: 0;
 `;
@@ -320,17 +320,17 @@ const CafeteriaChip = styled.button<{
   white-space: nowrap;
   cursor: pointer;
   border: 1px solid
-    ${({ $selected }) => ($selected ? "#111827" : "#E5E7EB")};
+    ${({ $selected }) => ($selected ? "#111827" : "var(--border-default)")};
   background-color: ${({ $selected }) =>
-    $selected ? "#111827" : "#F9FAFB"};
+    $selected ? "var(--gray-900)" : "var(--bg-subtle)"};
   color: ${({ $selected, $isClosed }) =>
-    $selected ? "#FFFFFF" : $isClosed ? "#9CA3AF" : "#374151"};
+    $selected ? "var(--text-inverse)" : $isClosed ? "var(--text-tertiary)" : "var(--text-secondary)"};
   transition: all 0.15s ease;
   flex-shrink: 0;
 
   &:hover {
     background-color: ${({ $selected }) =>
-      $selected ? "#111827" : "#F3F4F6"};
+      $selected ? "var(--gray-900)" : "var(--bg-muted)"};
   }
 `;
 
@@ -338,7 +338,7 @@ const ClosedDot = styled.span`
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background-color: #d1d5db;
+  background-color: var(--gray-300);
 `;
 
 const MediaContentRow = styled.div`
@@ -391,7 +391,7 @@ const MenuMetaCol = styled.div`
 const MenuTitle = styled.h3<{ $isClosed?: boolean }>`
   font-size: 17px;
   font-weight: 800;
-  color: ${({ $isClosed }) => ($isClosed ? "#6b7280" : "#111827")};
+  color: ${({ $isClosed }) => ($isClosed ? "var(--gray-600)" : "var(--text-primary)")};
   letter-spacing: -0.4px;
   line-height: 1.35;
   margin: 0;
@@ -404,7 +404,7 @@ const MenuTitle = styled.h3<{ $isClosed?: boolean }>`
 const MenuSubtitle = styled.span`
   font-size: 13.5px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gray-600);
   line-height: 1.35;
 `;
 
@@ -416,7 +416,7 @@ const BlackActionButton = styled.button`
   border: none;
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-inverse);
   letter-spacing: -0.2px;
   display: flex;
   align-items: center;
@@ -425,6 +425,6 @@ const BlackActionButton = styled.button`
   transition: all 0.15s ease;
 
   &:active {
-    background: #27272a;
+    background: var(--gray-900);
   }
 `;

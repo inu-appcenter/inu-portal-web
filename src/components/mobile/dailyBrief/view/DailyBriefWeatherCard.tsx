@@ -167,7 +167,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -181,7 +181,7 @@ const WeatherCardWrapper = styled.div<{ $gradient: string }>`
   box-shadow:
     0 10px 25px rgba(0, 0, 0, 0.08),
     0 2px 6px rgba(0, 0, 0, 0.04);
-  color: #ffffff;
+  color: var(--text-inverse);
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -223,7 +223,7 @@ const HeaderLeft = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-inverse);
   letter-spacing: -0.4px;
   margin: 0;
 `;
@@ -293,13 +293,13 @@ const CurrentTemp = styled.span`
   font-weight: 800;
   line-height: 1;
   letter-spacing: -1.5px;
-  color: #ffffff;
+  color: var(--text-inverse);
 `;
 
 const SkyStatusBadge = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-inverse);
   background: rgba(255, 255, 255, 0.2);
   padding: 3px 9px;
   border-radius: 10px;
@@ -361,7 +361,7 @@ const GradeBadge = styled.span<{ $grade: string }>`
     if ($grade === "매우나쁨") return "rgba(239, 68, 68, 0.9)";
     return "rgba(59, 130, 246, 0.9)";
   }};
-  color: #ffffff;
+  color: var(--text-inverse);
 `;
 
 const ValueText = styled.span`

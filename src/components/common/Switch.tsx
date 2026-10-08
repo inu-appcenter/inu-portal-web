@@ -24,7 +24,7 @@ const SwitchHandle = styled.span<{ checked: boolean }>`
   height: 16px;
   width: 16px;
   border-radius: 9999px;
-  background-color: white;
+  background-color: var(--bg-base);
   transform: ${({ checked }) =>
     checked ? "translateX(24px)" : "translateX(4px)"};
   transition: transform 0.2s ease-in-out;

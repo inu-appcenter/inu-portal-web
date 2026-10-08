@@ -210,7 +210,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -248,7 +248,7 @@ const SparkleIconCircle = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background: #f1f5f9;
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -258,7 +258,7 @@ const SparkleIconCircle = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
@@ -268,21 +268,21 @@ const FortuneBody = styled.div`
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px;
-  background-color: #fafaf9;
+  background-color: var(--bg-subtle);
   border-radius: 18px;
-  border: 1px solid #f5f5f4;
+  border: 1px solid var(--bg-base);
 `;
 
 const KeywordTag = styled.span`
   font-size: 14px;
   font-weight: 800;
-  color: #2563eb;
+  color: var(--text-brand);
 `;
 
 const FortuneMessage = styled.p`
   font-size: 14.5px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
   line-height: 1.5;
   margin: 0;
   letter-spacing: -0.2px;
@@ -294,15 +294,15 @@ const LuckyItemRow = styled.div`
   gap: 6px;
   font-size: 13px;
   padding-top: 6px;
-  border-top: 1px dashed #e7e5e4;
+  border-top: 1px dashed var(--border-default);
 `;
 
 const LuckyItemLabel = styled.span`
   font-weight: 600;
-  color: #78716c;
+  color: var(--gray-600);
 `;
 
 const LuckyItemValue = styled.span`
   font-weight: 700;
-  color: #1c1917;
+  color: var(--text-primary);
 `;

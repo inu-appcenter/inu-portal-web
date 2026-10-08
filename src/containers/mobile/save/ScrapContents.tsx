@@ -453,7 +453,7 @@ const ScrapHeader = styled.div`
     gap: 8px;
 
     .AllScraps {
-      color: #969696;
+      color: var(--text-tertiary);
     }
 
     .total {
@@ -557,7 +557,7 @@ const CheckBox = styled.div<{ checked: boolean }>`
   height: 16px;
   border: 1px solid #4071b9;
   border-radius: 50%;
-  background-color: #fff;
+  background-color: var(--bg-base);
   z-index: 1;
 
   ${({ checked }) =>

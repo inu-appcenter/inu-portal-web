@@ -99,7 +99,7 @@ const SchoolNoticeList = ({
         committedQuery ? (
           <EmptySearchContainer>
             <EmptyIconCircle>
-              <Icon name="search" size={32} color="var(--text-tertiary, #8b95a1)" />
+              <Icon name="search" size={32} color="var(--text-tertiary)" />
             </EmptyIconCircle>
             <EmptyTextGroup>
               <EmptyTitleRow>
@@ -324,7 +324,7 @@ const MobileSchoolNoticePage = () => {
 
       <FloatingActionButton
         text="공지 알리미 설정"
-        icon={<Icon name="bell" size={20} color="var(--text-secondary, #333d4b)" />}
+        icon={<Icon name="bell" size={20} color="var(--text-secondary)" />}
         onClick={() => {
           if (!tokenInfo.accessToken) {
             if (
@@ -398,7 +398,7 @@ const TipsCardWrapper = styled.div`
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
-  color: #888;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;
 
@@ -415,7 +415,7 @@ const EmptySearchContainer = styled.div`
 `;
 
 const EmptyIconCircle = styled.div`
-  background: var(--bg-disabled, #e5e8eb);
+  background: var(--bg-disabled);
   border-radius: 999px;
   display: flex;
   align-items: center;
@@ -446,11 +446,11 @@ const EmptyTitleRow = styled.div`
 `;
 
 const EmptyQueryHighlight = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const EmptyTitleText = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const EmptyDescription = styled.p`
@@ -458,7 +458,7 @@ const EmptyDescription = styled.p`
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 

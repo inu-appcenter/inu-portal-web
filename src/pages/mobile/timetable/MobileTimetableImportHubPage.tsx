@@ -23,7 +23,7 @@ export default function MobileTimetableImportHubPage() {
   useHeader({
     title: "시간표 및 성적 가져오기",
     hasback: true,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   return (
@@ -112,7 +112,7 @@ const PageWrapper = styled.div`
   height: calc(100vh - var(--header-height, 56px));
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
 `;
 
 const ScrollContainer = styled.div`
@@ -135,22 +135,22 @@ const HeadlineGroup = styled.div`
 const MainTitle = styled.h1`
   font-size: 22px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.35;
 `;
 
 const MainSubtitle = styled.p`
   font-size: 14px;
-  color: #6b7684;
+  color: var(--gray-600);
   margin: 0;
   line-height: 1.45;
 `;
 
 const MethodCard = styled.button<{ $highlight?: boolean }>`
   width: 100%;
-  background: #ffffff;
-  border: 1.5px solid ${(props) => (props.$highlight ? "#0061ff" : "#e5e8eb")};
+  background: var(--bg-base);
+  border: 1.5px solid ${(props) => (props.$highlight ? "var(--border-brand)" : "var(--border-default)")};
   border-radius: 20px;
   padding: 22px 20px;
   display: flex;
@@ -179,7 +179,7 @@ const CardIconBox = styled.div<{ $highlight?: boolean }>`
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: ${(props) => (props.$highlight ? "#e8f3ff" : "#f2f4f6")};
+  background: ${(props) => (props.$highlight ? "var(--bg-brand)" : "var(--bg-muted)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,8 +194,8 @@ const BadgeRow = styled.div`
 const RecommendBadge = styled.span`
   padding: 3px 8px;
   border-radius: 6px;
-  background: #0061ff;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 11px;
   font-weight: 700;
 `;
@@ -203,8 +203,8 @@ const RecommendBadge = styled.span`
 const FeatureBadge = styled.span`
   padding: 3px 8px;
   border-radius: 6px;
-  background: #e8f3ff;
-  color: #0061ff;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 600;
 `;
@@ -212,8 +212,8 @@ const FeatureBadge = styled.span`
 const NormalBadge = styled.span`
   padding: 3px 8px;
   border-radius: 6px;
-  background: #f2f4f6;
-  color: #4e5968;
+  background: var(--bg-muted);
+  color: var(--gray-700);
   font-size: 11px;
   font-weight: 600;
 `;
@@ -227,18 +227,18 @@ const CardTitleGroup = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const CardDesc = styled.p`
   font-size: 13.5px;
-  color: #4e5968;
+  color: var(--gray-700);
   margin: 0;
   line-height: 1.5;
 
   strong {
-    color: #191f28;
+    color: var(--text-primary);
     font-weight: 600;
   }
 `;
@@ -248,8 +248,8 @@ const CardActionRow = styled.div<{ $highlight?: boolean }>`
   align-items: center;
   justify-content: space-between;
   padding-top: 4px;
-  border-top: 1px solid #f2f4f6;
+  border-top: 1px solid var(--bg-base);
   font-size: 14px;
   font-weight: 600;
-  color: ${(props) => (props.$highlight ? "#0061ff" : "#4e5968")};
+  color: ${(props) => (props.$highlight ? "var(--text-brand)" : "var(--gray-700)")};
 `;

@@ -209,17 +209,17 @@ const DateSelector = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff;
+  background: var(--bg-base);
   padding: 10px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  border: 1px solid var(--border-default);
+  color: var(--gray-600);
 
   input {
     border: none;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     outline: none;
     cursor: pointer;
     background: transparent;
@@ -270,7 +270,7 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const SearchSpacer = styled.div`
@@ -293,9 +293,9 @@ const FloatingSearchBarContainer = styled.div`
 
 
 const TableContainer = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   overflow-x: auto;
   box-shadow: ${SOFT_CARD_SHADOW};
 `;
@@ -306,14 +306,14 @@ const Table = styled.table`
   text-align: left;
 
   thead {
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-default);
     
     th {
       padding: 12px 8px;
       font-size: 0.75rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--gray-600);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       
@@ -326,16 +326,16 @@ const Table = styled.table`
 
   tbody {
     tr {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--bg-base);
       transition: background 0.2s;
-      &:hover { background-color: #f8fafc; }
+      &:hover { background-color: var(--bg-subtle); }
       &:last-child { border-bottom: none; }
     }
 
     td {
       padding: 12px 8px;
       font-size: 0.875rem;
-      color: #334155;
+      color: var(--text-secondary);
 
       @media ${DESKTOP_MEDIA} {
         padding: 16px 24px;
@@ -343,12 +343,12 @@ const Table = styled.table`
       }
     }
 
-    .rank { font-weight: 700; color: #94a3b8; white-space: nowrap; text-align: center; }
-    .uri { font-family: monospace; font-weight: 500; color: #0f172a; }
+    .rank { font-weight: 700; color: var(--text-tertiary); white-space: nowrap; text-align: center; }
+    .uri { font-family: monospace; font-weight: 500; color: var(--text-primary); }
     .count { font-weight: 800; color: #0f766e; text-align: right; 
-      small { font-weight: 500; color: #94a3b8; font-size: 0.75rem; }
+      small { font-weight: 500; color: var(--text-tertiary); font-size: 0.75rem; }
     }
-    .loading, .empty { text-align: center; padding: 60px; color: #94a3b8; }
+    .loading, .empty { text-align: center; padding: 60px; color: var(--text-tertiary); }
   }
 `;
 
@@ -365,8 +365,8 @@ const MethodBadge = styled.span<{ $method: string }>`
 `;
 
 const ErrorBox = styled.div`
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;

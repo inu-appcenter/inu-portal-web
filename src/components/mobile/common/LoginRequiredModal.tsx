@@ -71,7 +71,7 @@ const Overlay = styled(motion.div)`
 `;
 
 const ModalContainer = styled(motion.div)`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   padding: 32px 24px;
   width: 100%;
@@ -97,13 +97,13 @@ const IconWrapper = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
 `;
 
 const Description = styled.p`
   font-size: 15px;
-  color: #666;
+  color: var(--gray-600);
   line-height: 1.6;
   margin: 0 0 28px 0;
   word-break: keep-all;
@@ -120,7 +120,7 @@ const LoginButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: #7a6dd0;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 16px;

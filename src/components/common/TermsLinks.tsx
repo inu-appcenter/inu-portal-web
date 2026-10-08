@@ -37,10 +37,10 @@ const Sentence = styled.p`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const PolicyLink = styled.a`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   text-decoration: none;
 `;

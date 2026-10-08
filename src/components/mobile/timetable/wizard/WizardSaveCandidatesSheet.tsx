@@ -174,12 +174,12 @@ const Header = styled.div`
 
 const Title = styled.h2`
   margin: 0;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   ${typography.heading1}
 `;
 
 const Description = styled.p`
   margin: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.body2}
 `;

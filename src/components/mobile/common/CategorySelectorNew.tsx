@@ -168,8 +168,8 @@ const FillItem = styled.div<{ $selected: boolean }>`
   padding: 12px 16px;
   font-size: 14px;
   font-weight: ${({ $selected }) => ($selected ? "600" : "500")};
-  background: ${({ $selected }) => ($selected ? "var(--interactive-brand)" : "transparent")};
-  color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
+  background: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "transparent")};
+  color: ${({ $selected }) => ($selected ? "var(--text-inverse)" : "var(--gray-600)")};
   cursor: pointer;
   white-space: nowrap;
   box-sizing: border-box;
@@ -179,6 +179,6 @@ const Count = styled.span<{ $selected: boolean }>`
   margin-left: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: ${({ $selected }) => ($selected ? "#ffffff" : "#5E92F0")};
+  color: ${({ $selected }) => ($selected ? "var(--text-inverse)" : "var(--interactive-primary)")};
   opacity: ${({ $selected }) => ($selected ? 0.9 : 1)};
 `;

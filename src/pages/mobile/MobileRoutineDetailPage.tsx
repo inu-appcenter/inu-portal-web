@@ -320,8 +320,8 @@ export const getDefaultIconAndBgForTools = (toolsStr?: string) => {
   if (upper.includes("CAFETERIA")) return { iconId: "cafeteria", bg: "#22c55e" };
   if (upper.includes("TIMETABLE")) return { iconId: "timetable", bg: "#a855f7" };
   if (upper.includes("DEPT_NOTICE")) return { iconId: "dept", bg: "#ff7a00" };
-  if (upper.includes("NOTICE")) return { iconId: "notice", bg: "#3b82f6" };
-  if (upper.includes("SCHEDULE")) return { iconId: "graduation", bg: "#3b82f6" };
+  if (upper.includes("NOTICE")) return { iconId: "notice", bg: "var(--interactive-primary)" };
+  if (upper.includes("SCHEDULE")) return { iconId: "graduation", bg: "var(--interactive-primary)" };
   if (upper.includes("WEATHER")) return { iconId: "sun", bg: "#5c9cf8" };
   return { iconId: "sparkles", bg: "#5c9cf8" };
 };
@@ -2479,7 +2479,7 @@ export default function MobileRoutineDetailPage() {
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
               <Ripple color="rgba(239, 68, 68, 0.12)" />
               <Trash2 size={20} color="#ef4444" />
-              <span style={{ color: "#ef4444" }}>삭제</span>
+              <span style={{ color: "var(--text-error)" }}>삭제</span>
             </PillActionButton>
           ) : preset ? (
             <PillActionButton onClick={handleSavePresetDirect}>
@@ -2865,7 +2865,7 @@ export default function MobileRoutineDetailPage() {
       >
         <ModalGroupScrollContainer>
           {filteredAvailableActions.length === 0 ? (
-            <div style={{ padding: "24px 16px", textAlign: "center", color: "#64748b", fontSize: "14px", lineHeight: "1.5" }}>
+            <div style={{ padding: "24px 16px", textAlign: "center", color: "var(--gray-600)", fontSize: "14px", lineHeight: "1.5" }}>
               현재 설정된 조건과 호환되는 추가 동작이 없습니다.
             </div>
           ) : (
@@ -2877,7 +2877,7 @@ export default function MobileRoutineDetailPage() {
                     <Ripple color="rgba(0, 0, 0, 0.04)" />
                     <OptionIconTextRow>
                       <ModalOptionIconCircle>
-                        {React.cloneElement(action.icon, { size: 20, color: "#475569" })}
+                        {React.cloneElement(action.icon, { size: 20, color: "var(--gray-700)" })}
                       </ModalOptionIconCircle>
                       <ModalOptionTextGroup>
                         <ModalOptionTitle>{action.title}</ModalOptionTitle>
@@ -3372,7 +3372,7 @@ export default function MobileRoutineDetailPage() {
 
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: var(--bg-subtle);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -3434,8 +3434,8 @@ const IconEditBadge = styled.div`
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background-color: #111827;
-  border: 2px solid #ffffff;
+  background-color: var(--gray-900);
+  border: 2px solid var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3445,9 +3445,9 @@ const IconEditBadge = styled.div`
 const DetailHeroCard = styled.div`
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 26px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-default);
   padding: 46px 20px 24px 20px;
   display: flex;
   flex-direction: column;
@@ -3460,14 +3460,14 @@ const DetailHeroCard = styled.div`
 const DetailHeroTitle = styled.h2`
   font-size: 21px;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.4px;
 `;
 
 const DetailHeroDescription = styled.p`
   font-size: 13.5px;
-  color: #666666;
+  color: var(--gray-600);
   margin: 0;
   line-height: 1.45;
 `;
@@ -3492,14 +3492,14 @@ const UnderlineInput = styled.input`
   padding: 8px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   text-align: left;
   outline: none;
   background: transparent;
   box-sizing: border-box;
 
   &::placeholder {
-    color: #9ca3af;
+    color: var(--text-tertiary);
     font-weight: 500;
   }
 `;
@@ -3513,15 +3513,15 @@ const DetailSection = styled.div`
 const DetailSectionHeader = styled.h3`
   font-size: 18px;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-primary);
   margin: 0 0 0 4px;
   letter-spacing: -0.3px;
 `;
 
 const OneUiCard = styled.div<{ $isInteractive?: boolean }>`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 24px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-default);
   padding: 18px 20px;
   display: flex;
   align-items: center;
@@ -3555,7 +3555,7 @@ const CardContent = styled.div`
 const CardMainText = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: #000000;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 `;
 
@@ -3583,9 +3583,9 @@ const MinusButton = styled.button`
 `;
 
 const AddConditionCard = styled.button`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1.5px dashed #cbd5e1;
+  border: 1.5px dashed var(--border-strong);
   padding: 14px 20px;
   display: flex;
   align-items: center;
@@ -3601,15 +3601,15 @@ const AddConditionCard = styled.button`
   box-sizing: border-box;
 
   &:hover {
-    border-color: #10b981;
+    border-color: var(--border-success);
     background: #f0fdf4;
   }
 `;
 
 const EmptyGuideCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 22px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--border-strong);
   padding: 24px 20px;
   display: flex;
   align-items: center;
@@ -3620,7 +3620,7 @@ const EmptyGuideIconCircle = styled.div`
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3636,22 +3636,22 @@ const EmptyGuideText = styled.div`
 const EmptyGuideTitle = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
 `;
 
 const EmptyGuideSub = styled.div`
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 `;
 
 const InlineSelect = styled.select`
   padding: 8px 12px;
   border-radius: 12px;
-  border: 1px solid #d1d5db;
-  background-color: #f9fafb;
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-subtle);
   font-size: 13.5px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   width: 100%;
@@ -3659,15 +3659,15 @@ const InlineSelect = styled.select`
 
   &:focus {
     border-color: #3b82f6;
-    background-color: #ffffff;
+    background-color: var(--bg-base);
   }
 `;
 
 // Keywords & Categories Card
 const KeywordSectionCard = styled.div`
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-radius: 18px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -3683,7 +3683,7 @@ const KeywordHeaderRow = styled.div`
 
 const KeywordTabGroup = styled.div`
   display: flex;
-  background: #e2e8f0;
+  background: var(--gray-200);
   border-radius: 12px;
   padding: 3px;
   gap: 3px;
@@ -3691,8 +3691,8 @@ const KeywordTabGroup = styled.div`
 
 const KeywordTabBtn = styled.button<{ $active: boolean }>`
   border: none;
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  color: ${({ $active }) => ($active ? "#1e293b" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-primary)" : "var(--gray-600)")};
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
   font-size: 12px;
   padding: 5px 10px;
@@ -3722,11 +3722,11 @@ const KeywordChip = styled.div<{ $isExclude?: boolean }>`
   gap: 6px;
   padding: 6px 12px;
   border-radius: 10px;
-  background: ${({ $isExclude }) => ($isExclude ? "#fef2f2" : "#ffffff")};
-  border: 1px solid ${({ $isExclude }) => ($isExclude ? "#fecaca" : "#e2e8f0")};
+  background: ${({ $isExclude }) => ($isExclude ? "var(--bg-error)" : "var(--bg-base)")};
+  border: 1px solid ${({ $isExclude }) => ($isExclude ? "var(--border-error-subtle)" : "var(--border-default)")};
   font-size: 13px;
   font-weight: 600;
-  color: ${({ $isExclude }) => ($isExclude ? "#dc2626" : "#334155")};
+  color: ${({ $isExclude }) => ($isExclude ? "var(--text-error)" : "var(--text-secondary)")};
 `;
 
 const ChipDeleteBtn = styled.button`
@@ -3745,8 +3745,8 @@ const FloatingActionPill = styled.div`
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
-  border: 1px solid #e9ecef;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
   border-radius: 9999px;
   padding: 6px 10px;
@@ -3767,7 +3767,7 @@ const PillActionButton = styled.button`
   gap: 4px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   white-space: nowrap;
   cursor: pointer;
   border-radius: 16px;
@@ -3786,8 +3786,8 @@ const EditFloatingPill = styled.div`
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
-  border: 1px solid #e9ecef;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   border-radius: 9999px;
   padding: 6px 8px;
@@ -3798,7 +3798,7 @@ const EditFloatingPill = styled.div`
 
 const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
   background: none;
-  color: ${({ $isPrimary }) => ($isPrimary ? "#2563eb" : "#4b5563")};
+  color: ${({ $isPrimary }) => ($isPrimary ? "var(--text-brand)" : "var(--gray-700)")};
   border: none;
   padding: 9px 24px;
   font-size: 14.5px;
@@ -3817,7 +3817,7 @@ const EditPillButton = styled.button<{ $isPrimary?: boolean }>`
 const EditPillDivider = styled.div`
   width: 1px;
   height: 20px;
-  background-color: #e5e7eb;
+  background-color: var(--bg-disabled);
   margin: 0 4px;
 `;
 
@@ -3835,15 +3835,15 @@ const ModalGroupScrollContainer = styled.div`
     width: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--gray-300);
     border-radius: 4px;
   }
 `;
 
 const ModalGroupCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 22px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   width: 100%;
@@ -3859,19 +3859,19 @@ const ModalGroupRow = styled.div<{ $selected?: boolean }>`
   gap: 14px;
   padding: 16px 18px;
   cursor: pointer;
-  background-color: ${({ $selected }) => ($selected ? "#f1f5f9" : "#ffffff")};
+  background-color: ${({ $selected }) => ($selected ? "var(--bg-muted)" : "var(--bg-base)")};
   transition: background-color 0.15s ease;
   box-sizing: border-box;
   width: 100%;
 
   &:active {
-    background-color: #f8fafc;
+    background-color: var(--bg-subtle);
   }
 `;
 
 const ModalDivider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   margin-left: 56px;
 `;
 
@@ -3890,7 +3890,7 @@ const ModalOptionIconCircle = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const ModalOptionTextGroup = styled.div`
@@ -3904,7 +3904,7 @@ const ModalOptionTextGroup = styled.div`
 const ModalOptionText = styled.span<{ $selected?: boolean }>`
   font-size: 15px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 600)};
-  color: ${({ $selected }) => ($selected ? "#1d4ed8" : "#111827")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-primary)")};
   letter-spacing: -0.2px;
   line-height: 1.35;
 `;
@@ -3912,7 +3912,7 @@ const ModalOptionText = styled.span<{ $selected?: boolean }>`
 const ModalOptionTitle = styled.div<{ $selected?: boolean }>`
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
   line-height: 1.35;
   word-break: keep-all;
@@ -3921,7 +3921,7 @@ const ModalOptionTitle = styled.div<{ $selected?: boolean }>`
 const ModalOptionDesc = styled.div`
   font-size: 12.5px;
   font-weight: 400;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
   word-break: keep-all;
 `;
@@ -3935,7 +3935,7 @@ const ModalFormSection = styled.div`
 const ModalSectionLabel = styled.div`
   font-size: 13.5px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const CategoryModalWrapper = styled.div`
@@ -3957,8 +3957,8 @@ const CheckboxCard = styled.div<{ $checked?: boolean }>`
   gap: 10px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: ${({ $checked }) => ($checked ? "#eff6ff" : "#f8fafc")};
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#2563eb" : "#e2e8f0")};
+  background: ${({ $checked }) => ($checked ? "var(--bg-brand)" : "var(--bg-subtle)")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--border-brand)" : "var(--border-default)")};
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -3968,7 +3968,7 @@ const CustomCheckCircle = styled.div<{ $checked?: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: ${({ $checked }) => ($checked ? "#2563eb" : "#cbd5e1")};
+  background: ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--gray-300)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3979,7 +3979,7 @@ const CustomCheckCircle = styled.div<{ $checked?: boolean }>`
 const CheckboxLabel = styled.span<{ $checked?: boolean }>`
   font-size: 13.5px;
   font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
-  color: ${({ $checked }) => ($checked ? "#1e40af" : "#334155")};
+  color: ${({ $checked }) => ($checked ? "#1e40af" : "var(--text-secondary)")};
 `;
 
 const DeptModalWrapper = styled.div`
@@ -3992,7 +3992,7 @@ const SearchInputWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f1f5f9;
+  background: var(--bg-muted);
   border-radius: 14px;
   padding: 10px 14px;
 `;
@@ -4002,11 +4002,11 @@ const SearchInput = styled.input`
   background: transparent;
   outline: none;
   font-size: 14px;
-  color: #1e293b;
+  color: var(--text-primary);
   width: 100%;
 
   &::placeholder {
-    color: #94a3b8;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -4024,8 +4024,8 @@ const DeptListItem = styled.div<{ $checked?: boolean }>`
   gap: 12px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: ${({ $checked }) => ($checked ? "#eff6ff" : "#f8fafc")};
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#2563eb" : "#e2e8f0")};
+  background: ${({ $checked }) => ($checked ? "var(--bg-brand)" : "var(--bg-subtle)")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--border-brand)" : "var(--border-default)")};
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -4034,7 +4034,7 @@ const DeptListItem = styled.div<{ $checked?: boolean }>`
 const DeptNameText = styled.span<{ $checked?: boolean }>`
   font-size: 14px;
   font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
-  color: ${({ $checked }) => ($checked ? "#1e40af" : "#1e293b")};
+  color: ${({ $checked }) => ($checked ? "#1e40af" : "var(--text-primary)")};
   display: flex;
   align-items: center;
   gap: 6px;
@@ -4044,7 +4044,7 @@ const MyMajorBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
   color: #ff7a00;
-  background: #fff7ed;
+  background: var(--bg-warn);
   border: 1px solid #ffedd5;
   padding: 2px 6px;
   border-radius: 6px;
@@ -4053,9 +4053,9 @@ const MyMajorBadge = styled.span`
 const SelectedBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
+  color: var(--text-brand);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 2px 6px;
   border-radius: 6px;
 `;
@@ -4064,14 +4064,14 @@ const KeywordModalInput = styled.input`
   width: 100%;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1.5px solid #d1d5db;
+  border: 1.5px solid var(--border-strong);
   font-size: 14px;
-  color: #111827;
+  color: var(--text-primary);
   outline: none;
   box-sizing: border-box;
 
   &:focus {
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
@@ -4087,7 +4087,7 @@ const IconPickerModalContent = styled.div`
 const PickerSectionTitle = styled.div`
   font-size: 13px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const ColorPickerRow = styled.div`
@@ -4133,8 +4133,8 @@ const IconGrid = styled.div`
 `;
 
 const IconGridItem = styled.button<{ $selected: boolean; $bgColor: string }>`
-  background: ${({ $selected }) => ($selected ? "#f1f5f9" : "transparent")};
-  border: 1px solid ${({ $selected }) => ($selected ? "#cbd5e1" : "transparent")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-muted)" : "transparent")};
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--border-strong)" : "transparent")};
   border-radius: 14px;
   padding: 8px 4px;
   display: flex;
@@ -4159,7 +4159,7 @@ const IconCirclePreview = styled.div<{ $selected: boolean; $bgColor: string }>`
 const IconGridLabel = styled.span<{ $selected: boolean }>`
   font-size: 11px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
-  color: ${({ $selected }) => ($selected ? "#1e293b" : "#64748b")};
+  color: ${({ $selected }) => ($selected ? "var(--text-primary)" : "var(--gray-600)")};
 `;
 
 const TimePickerModalContent = styled.div`
@@ -4177,7 +4177,7 @@ const PickerRow = styled.div`
 
 const AmPmToggle = styled.div`
   display: flex;
-  background: #f1f5f9;
+  background: var(--bg-muted);
   border-radius: 12px;
   padding: 3px;
   gap: 3px;
@@ -4185,8 +4185,8 @@ const AmPmToggle = styled.div`
 
 const AmPmButton = styled.button<{ $active: boolean }>`
   border: none;
-  background: ${({ $active }) => ($active ? "#2563eb" : "transparent")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
   font-weight: 700;
   font-size: 13.5px;
   padding: 8px 14px;
@@ -4207,18 +4207,18 @@ const TimeSelect = styled.select`
   flex: 1;
   padding: 8px 10px;
   border-radius: 12px;
-  border: 1.5px solid #d1d5db;
-  background: #f8fafc;
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-subtle);
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   outline: none;
 `;
 
 const TimeColon = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const DayCircleRow = styled.div`
@@ -4232,8 +4232,8 @@ const DayCircleButton = styled.button<{ $active: boolean }>`
   aspect-ratio: 1;
   border-radius: 50%;
   border: none;
-  background: ${({ $active }) => ($active ? "#2563eb" : "#f1f5f9")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;

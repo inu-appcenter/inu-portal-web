@@ -142,7 +142,7 @@ export default function BottomSheet({
 const StyledOverlay = styled(Drawer.Overlay)<{ $zIndex?: number }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-dim);
   backdrop-filter: blur(4px);
   z-index: ${({ $zIndex }) => $zIndex ?? 999};
 `;
@@ -175,10 +175,10 @@ const StyledContent = styled(Drawer.Content)<{
 const SheetInner = styled.div`
   position: relative;
   border-radius: 32px 32px 0 0;
-  background: var(--bg-base, #ffffff);
+  background: var(--bg-base);
   ${effects.bottomSheet}
   width: 100%;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
   overflow: hidden;
   padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
 
@@ -204,7 +204,7 @@ const HandleBar = styled.div<{ $compact: boolean }>`
   width: ${({ $compact }) => ($compact ? "40px" : "36px")};
   height: ${({ $compact }) => ($compact ? "4px" : "5px")};
   border-radius: ${({ $compact }) => ($compact ? "2px" : "999px")};
-  background: var(--border-default, #e5e8eb);
+  background: var(--border-default);
 `;
 
 const CloseButton = styled.button`
@@ -218,15 +218,15 @@ const CloseButton = styled.button`
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--bg-subtle, #f2f4f6);
-  color: var(--text-secondary, #4e5968);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
   border: none;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background: var(--border-default, #e5e8eb);
+    background: var(--border-default);
   }
 
   &:active {

@@ -2,7 +2,10 @@ import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import ClassDetailBottomSheet from "./ClassDetailBottomSheet";
 import { TimetableTheme } from "@/stores/useTimetableStore";
-import { THEME_PALETTES } from "./TimetableThemeBottomSheet";
+import {
+  THEME_PALETTES,
+  getTimetableTextColor,
+} from "./TimetableThemeBottomSheet";
 
 // --- 타입 정의 ---
 export interface ClassItem {
@@ -384,7 +387,8 @@ const TimetableGrid = ({
         ? "rgba(0, 123, 255, 0.5)" // 반투명 파란색
         : isCompareMode && item.ownerName && ownerColorMap?.get(item.ownerName)
           ? ownerColorMap.get(item.ownerName)!
-          : colorMap.get(item.name) || "#FFFFFF";
+          : colorMap.get(item.name) || "var(--bg-base)";
+    const textColor = getTimetableTextColor(bgColor);
 
     const isShared =
       isCompareMode && sharedBlockKeys.has(`${item.ownerName ?? ""}-${item.id}`);
@@ -417,12 +421,18 @@ const TimetableGrid = ({
         <ItemContent>
           {!isCompareMode && (
             <>
-              <ClassName $fontSize={theme?.fontSize}>{item.name}</ClassName>
+              <ClassName $fontSize={theme?.fontSize} $textColor={textColor}>
+                {item.name}
+              </ClassName>
               {(theme?.showRoom ?? true) && item.room && (
-                <ClassRoom $fontSize={theme?.fontSize}>{formatRoom(item.room)}</ClassRoom>
+                <ClassRoom $fontSize={theme?.fontSize} $textColor={textColor}>
+                  {formatRoom(item.room)}
+                </ClassRoom>
               )}
               {theme?.showProfessor && item.professor && (
-                <ClassProfessor $fontSize={theme?.fontSize}>{item.professor}</ClassProfessor>
+                <ClassProfessor $fontSize={theme?.fontSize} $textColor={textColor}>
+                  {item.professor}
+                </ClassProfessor>
               )}
             </>
           )}
@@ -579,14 +589,14 @@ const CellBase = styled.div`
 `;
 
 const HeaderCell = styled(CellBase)`
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-default);
+  border-right: 1px solid var(--border-default);
   background-color: var(--bg-base)
   &:last-child {
     border-right: none;
   }
 
-  color: var(--text-tertiary, #8B95A1);
+  color: var(--text-tertiary);
   text-align: center;
   
   font-size: 12px;
@@ -600,11 +610,11 @@ const TimeCell = styled(CellBase)`
   justify-content: flex-start;
   padding-top: 4px;
 
-  border-right: 1px solid #eee;
-  border-bottom: 1px solid #f0f0f0;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
   background-color: var(--bg-base);
 
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   font-size: 12px;
   font-style: normal;
@@ -613,14 +623,14 @@ const TimeCell = styled(CellBase)`
 `;
 
 const GridBackgroundCell = styled.div<{ $isSelectionMode?: boolean; $isSelected?: boolean; $isLastDay?: boolean }>`
-  border-bottom: 1px solid #f0f0f0;
-  border-right: ${({ $isLastDay }) => $isLastDay ? "none" : "1px solid #f0f0f0"};
+  border-bottom: 1px solid var(--border-default);
+  border-right: ${({ $isLastDay }) => $isLastDay ? "none" : "1px solid var(--border-default)"};
 
   ${({ $isSelectionMode, $isSelected }) =>
     $isSelectionMode &&
     `
     cursor: pointer;
-    background-color: ${$isSelected ? "rgba(0, 97, 255, 0.4)" : "#ffffff"};
+    background-color: ${$isSelected ? "rgba(0, 97, 255, 0.4)" : "var(--bg-base)"};
     transition: background-color 0.1s ease;
     user-select: none;
     -webkit-user-drag: none;
@@ -652,7 +662,7 @@ const ClassItemBlock = styled.div<{
   ${({ $isShared }) =>
     $isShared &&
     `
-    border: 2px solid var(--text-brand, #0061ff);
+    border: 2px solid var(--text-brand);
   `}
   pointer-events: ${({ $isPreview, $isFreeMode, $isSelectionMode }) =>
     $isPreview || $isFreeMode || $isSelectionMode
@@ -689,8 +699,11 @@ const ItemContent = styled.div`
   flex-direction: column;
 `;
 
-const ClassName = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
-  color: var(--text-secondary, #333d4b);
+const ClassName = styled.span<{
+  $fontSize?: "small" | "medium" | "large";
+  $textColor?: string;
+}>`
+  color: ${({ $textColor }) => $textColor ?? "var(--text-secondary)"};
   font-size: ${({ $fontSize }) => 
     $fontSize === "small" ? "10px" : $fontSize === "large" ? "14px" : "12px"};
   font-style: normal;
@@ -706,8 +719,11 @@ const ClassName = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
   word-break: break-all;
 `;
 
-const ClassRoom = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
-  color: var(--text-secondary, #333d4b);
+const ClassRoom = styled.span<{
+  $fontSize?: "small" | "medium" | "large";
+  $textColor?: string;
+}>`
+  color: ${({ $textColor }) => $textColor ?? "var(--text-secondary)"};
   font-size: ${({ $fontSize }) => 
     $fontSize === "small" ? "9px" : $fontSize === "large" ? "11px" : "10px"};
   font-style: normal;
@@ -716,8 +732,12 @@ const ClassRoom = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
   white-space: nowrap;
 `;
 
-const ClassProfessor = styled.span<{ $fontSize?: "small" | "medium" | "large" }>`
-  color: var(--text-tertiary, #8b95a1);
+const ClassProfessor = styled.span<{
+  $fontSize?: "small" | "medium" | "large";
+  $textColor?: string;
+}>`
+  color: ${({ $textColor }) => $textColor ?? "var(--text-tertiary)"};
+  opacity: ${({ $textColor }) => ($textColor ? 0.72 : 1)};
   font-size: ${({ $fontSize }) => 
     $fontSize === "small" ? "9px" : $fontSize === "large" ? "11px" : "10px"};
   font-style: normal;
@@ -728,11 +748,8 @@ const ClassProfessor = styled.span<{ $fontSize?: "small" | "medium" | "large" }>
 `;
 
 const HighlightedBlock = styled.div`
-  background: var(
-    --timeTable-color-available-time-selected,
-    rgba(59, 130, 246, 0.5)
-  );
-  border: 1px solid var(--border-brand, #0061ff);
+  background: rgba(59, 130, 246, 0.5);
+  border: 1px solid var(--border-brand);
   margin: 1px;
   border-radius: 4px;
   z-index: 50;
@@ -760,7 +777,7 @@ const UntimedCourseList = styled.div`
   display: flex;
   flex-direction: column;
   background: var(--bg-base);
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const UntimedCourseItem = styled.button`
@@ -770,7 +787,7 @@ const UntimedCourseItem = styled.button`
   
   padding: 4px 16px;
   border: 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -785,7 +802,7 @@ const UntimedCourseItem = styled.button`
 `;
 
 const UntimedCourseName = styled.span`
-  color: var(--text-tertiary, #6b7280);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-style: normal;
   font-weight: 600;

@@ -178,8 +178,8 @@ const NavContainer = styled.div`
   height: ${BOTTOM_NAV_SAFE_HEIGHT};
   z-index: 1000;
   pointer-events: auto;
-  background: var(--bg-base, #ffffff);
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-default);
   border-radius: 24px 24px 0 0;
 
   @media ${DESKTOP_MEDIA} {
@@ -223,7 +223,7 @@ const ActivePillIndicator = styled(motion.div)`
   width: 62px;
   height: 50px;
   border-radius: 999px;
-  background: var(--bg-brand, #eff6ff);
+  background: var(--bg-brand);
   z-index: 1;
   pointer-events: none;
 `;
@@ -236,7 +236,7 @@ const IconWrapper = styled.div<{ $isActive: boolean }>`
   width: 26px;
   height: 26px;
   z-index: 2;
-  color: ${({ $isActive }) => ($isActive ? "#3B82F6" : "#B0B8C1")};
+  color: ${({ $isActive }) => ($isActive ? "var(--interactive-primary)" : "var(--text-disabled)")};
   transition: color 0.2s ease;
 `;
 
@@ -245,7 +245,7 @@ const Badge = styled.div`
   top: -4px;
   right: -6px;
   background-color: #ff3b30;
-  color: white;
+  color: var(--text-inverse);
   font-size: 10px;
   font-weight: 700;
   padding: 1px 4px;
@@ -255,7 +255,7 @@ const Badge = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid white;
+  border: 1.5px solid var(--bg-base);
   z-index: 3;
 `;
 
@@ -263,7 +263,7 @@ const LabelText = styled.span<{ $isActive: boolean }>`
   position: relative;
   z-index: 2;
   color: ${({ $isActive }) =>
-    $isActive ? "#3B82F6" : "var(--text-disabled, #B0B8C1)"};
+    $isActive ? "var(--interactive-primary)" : "var(--text-disabled)"};
   text-align: center;
   font-family: "Pretendard", sans-serif;
   font-size: 11px;

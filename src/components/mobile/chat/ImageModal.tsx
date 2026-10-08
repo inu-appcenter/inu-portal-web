@@ -321,12 +321,12 @@ const SenderInfo = styled.button<{ $isClickable: boolean }>`
 const SenderName = styled.span`
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-inverse);
 `;
 
 const SenderTime = styled.span`
   font-size: 11px;
-  color: #ffffff;
+  color: var(--text-inverse);
   white-space: nowrap;
 `;
 

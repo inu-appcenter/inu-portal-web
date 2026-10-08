@@ -94,7 +94,7 @@ const ContentText = styled.div`
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const SingleImageWrapper = styled.div`

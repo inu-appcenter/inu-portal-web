@@ -51,7 +51,7 @@ const GroupWizardStep3Exclusion = () => {
           disabled={semester === null}
           onClick={() => openCourseSearch({ kind: "exclusion" })}
         >
-          <Icon name="search" size={16} color="var(--text-tertiary, #8b95a1)" />
+          <Icon name="search" size={16} color="var(--text-tertiary)" />
           <span>교과목명, 교수명 검색</span>
         </SearchFieldButton>
         {excludedCourses.length > 0 && (
@@ -86,8 +86,8 @@ const ScrollContent = styled.div`
 `;
 
 const Card = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 18px 16px;
   display: flex;
@@ -105,14 +105,14 @@ const CardHead = styled.div`
 `;
 
 const CardTitle = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   line-height: 23px;
 `;
 
 const CardSubtitle = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 18px;
 `;
@@ -121,7 +121,7 @@ const Legend = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
 `;
 
@@ -140,13 +140,13 @@ const SearchFieldButton = styled.button`
   height: 48px;
   padding: 0 16px;
   border-radius: 14px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
   cursor: pointer;
   text-align: left;
 
   span {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     font-size: 14px;
   }
 
@@ -168,11 +168,11 @@ const Chip = styled.div`
   gap: 4px;
   padding: 8px 8px 8px 14px;
   border-radius: 999px;
-  background: var(--bg-error, #fff0f0);
+  background: var(--bg-error);
   border: 1px solid rgba(239, 68, 68, 0.2);
 
   span {
-    color: var(--text-error, #ef4444);
+    color: var(--text-error);
     font-size: 14px;
     font-weight: 500;
   }
@@ -186,7 +186,7 @@ const ChipRemove = styled.button`
   border-radius: 999px;
   border: none;
   background: transparent;
-  color: var(--text-error, #ef4444);
+  color: var(--text-error);
   cursor: pointer;
 `;
 

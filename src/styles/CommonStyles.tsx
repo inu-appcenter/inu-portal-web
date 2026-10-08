@@ -18,7 +18,7 @@ const CommonStyles = createGlobalStyle`
     margin: 0;
     cursor: url('/pointers/cursor.svg'), auto;
     line-height: 1.5; /* Pretendard에 적합한 줄간격 */
-    background-color: #f1f1f3;
+    background-color: var(--bg-muted);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

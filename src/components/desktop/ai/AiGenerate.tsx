@@ -243,7 +243,7 @@ export default function AiGenerate() {
 
 const AiGenerateWrapper = styled.div`
   flex: 1;
-  color: white;
+  color: var(--text-inverse);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -252,7 +252,7 @@ const AiGenerateWrapper = styled.div`
 const MainContainer = styled.div`
   width: 300px;
   height: 300px;
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
   border-radius: 12px;
   margin: 20px 0;
   display: flex;
@@ -267,19 +267,19 @@ const MainImage = styled.img`
 `;
 
 const Placeholder = styled.div`
-  color: #333;
+  color: var(--text-secondary);
   font-size: 16px;
   text-align: center;
 `;
 
 const LoadingText = styled.div`
-  color: #333;
+  color: var(--text-secondary);
   font-size: 16px;
   text-align: center;
 `;
 
 const EtaText = styled.div`
-  color: #333;
+  color: var(--text-secondary);
   font-size: 16px;
   text-align: center;
 `;
@@ -288,7 +288,7 @@ const RefreshButton = styled.button`
   padding: 10px 20px;
   font-size: 16px;
   background-color: #6d4dc7;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
 `;
@@ -304,14 +304,14 @@ const InputField = styled.input`
   width: 200px;
   height: 44px;
   padding: 0 12px;
-  border: 1px solid white;
+  border: 1px solid var(--bg-base);
   border-radius: 12px;
   background: transparent;
-  color: white;
+  color: var(--text-inverse);
   font-size: 16px;
 
   ::placeholder {
-    color: white;
+    color: var(--text-inverse);
   }
 
   :focus {
@@ -325,7 +325,7 @@ const GenerateButton = styled.button`
   border-radius: 12px;
   border: none;
   background: #6d4dc7;
-  color: white;
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;
 `;
@@ -337,7 +337,7 @@ const MobileLoginButton = styled.button`
   border-radius: 12px;
   border: none;
   background: #6d4dc7;
-  color: white;
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;
   text-decoration: none;
@@ -357,7 +357,7 @@ const DesktopLoginButton = styled.a`
   border-radius: 12px;
   border: none;
   background: #6d4dc7;
-  color: white;
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;
   text-decoration: none;

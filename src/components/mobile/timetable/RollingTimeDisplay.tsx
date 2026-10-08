@@ -43,7 +43,7 @@ const DisplayRow = styled.span`
   font-size: 16px;
   font-weight: 600;
   line-height: ${DIGIT_HEIGHT}px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   /* 자릿수가 바뀌어도 폭이 흔들리지 않게 */
   font-variant-numeric: tabular-nums;
 `;

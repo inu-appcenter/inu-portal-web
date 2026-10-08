@@ -484,7 +484,7 @@ const SettingContainer = styled.div`
 const ModeSelectTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0 0 12px 0;
   letter-spacing: -0.3px;
 `;
@@ -503,8 +503,8 @@ const ModeOptionCard = styled.div<{ $selected: boolean }>`
   gap: 14px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#3b82f6" : "#e2e8f0")};
-  background-color: ${({ $selected }) => ($selected ? "#f0f7ff" : "#ffffff")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-default)")};
+  background-color: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
   cursor: pointer;
   transition: all 0.2s ease;
 `;
@@ -513,8 +513,8 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "#cbd5e1")};
-  background-color: ${({ $selected }) => ($selected ? "#3b82f6" : "#ffffff")};
+  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-strong)")};
+  background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
   flex-shrink: 0;
   margin-top: 2px;
   transition: all 0.2s ease;
@@ -531,7 +531,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background-color: #ffffff;
+      background-color: var(--bg-base);
       transform: translate(-50%, -50%);
     }
   `}
@@ -547,14 +547,14 @@ const ModeTextCol = styled.div`
 const ModeName = styled.span`
   font-size: 14.5px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 `;
 
 const ModeDesc = styled.span`
   font-size: 12.5px;
   font-weight: 400;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
   letter-spacing: -0.2px;
 `;
@@ -577,14 +577,14 @@ const SectionTitleTextCol = styled.div`
 const SectionMainTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 `;
 
 const SectionSubTitle = styled.span`
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
   letter-spacing: -0.2px;
 `;
 
@@ -599,7 +599,7 @@ const ResetIconButton = styled.button`
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
   position: relative;
   overflow: hidden;
 
@@ -612,14 +612,14 @@ const AddRuleButton = styled.button`
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 6px 10px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 12.5px;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--text-brand);
   position: relative;
   overflow: hidden;
 `;
@@ -640,7 +640,7 @@ const CardRow = styled.div<{ $disabled: boolean }>`
   box-sizing: border-box;
   gap: 14px;
   padding: 16px 20px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
   transition: opacity 0.15s ease;
 `;
@@ -655,8 +655,8 @@ const OrderControlCol = styled.div`
 const OrderButton = styled.button`
   position: relative;
   overflow: hidden;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   width: 24px;
   height: 20px;
   border-radius: 5px;
@@ -672,13 +672,13 @@ const OrderButton = styled.button`
   }
 
   &:hover:not(:disabled) {
-    background: #e2e8f0;
+    background: var(--bg-disabled);
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.35;
-    border-color: #f1f5f9;
+    border-color: var(--bg-base);
   }
 `;
 
@@ -699,22 +699,22 @@ const CardNameRow = styled.div`
 const CardName = styled.span<{ $disabled?: boolean }>`
   font-size: 15px;
   font-weight: 600;
-  color: ${({ $disabled }) => ($disabled ? "#94a3b8" : "#1e293b")};
+  color: ${({ $disabled }) => ($disabled ? "var(--text-tertiary)" : "var(--text-primary)")};
   letter-spacing: -0.2px;
 `;
 
 const OrderBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #3b82f6;
-  background-color: #eff6ff;
+  color: var(--interactive-primary);
+  background-color: var(--bg-brand);
   padding: 1px 5px;
   border-radius: 4px;
 `;
 
 const CardDesc = styled.span`
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--gray-600);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -735,16 +735,16 @@ const DetailConfigButton = styled.button`
   gap: 3px;
   padding: 5px 8px;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
-  color: #475569;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
+  color: var(--gray-700);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background-color: #f1f5f9;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -772,13 +772,13 @@ const EmptyRuleIcon = styled.span`
 const EmptyRuleTitle = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-secondary);
   margin-bottom: 2px;
 `;
 
 const EmptyRuleDesc = styled.span`
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 `;
 
 const RuleItemWrapper = styled.div`
@@ -792,7 +792,7 @@ const RuleRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
 `;
 
 const RuleInfoCol = styled.div`
@@ -804,8 +804,8 @@ const RuleInfoCol = styled.div`
 const RuleTimeTag = styled.span`
   font-size: 12px;
   font-weight: 700;
-  color: #2563eb;
-  background: #eff6ff;
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 2px 6px;
   border-radius: 4px;
   width: fit-content;
@@ -813,7 +813,7 @@ const RuleTimeTag = styled.span`
 
 const RuleTitle = styled.span`
   font-size: 13.5px;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const DeleteRuleButton = styled.button`
@@ -829,7 +829,7 @@ const DeleteRuleButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background: #fef2f2;
+    background: var(--bg-error);
   }
 `;
 
@@ -855,16 +855,16 @@ const FormRow = styled.div`
 const FormLabel = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const SelectDropdown = styled.select`
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   font-size: 14px;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--bg-base);
+  color: var(--text-primary);
   outline: none;
 
   &:focus {
@@ -875,10 +875,10 @@ const SelectDropdown = styled.select`
 const TimeInput = styled.input`
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   font-size: 14px;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--bg-base);
+  color: var(--text-primary);
   outline: none;
 
   &:focus {
@@ -889,6 +889,6 @@ const TimeInput = styled.input`
 const TimeDivider = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   margin-top: 20px;
 `;

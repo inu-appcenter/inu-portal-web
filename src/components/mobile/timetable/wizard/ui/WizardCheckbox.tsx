@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
-import { WIZARD_PRIMARY } from "./tokens";
 
 interface WizardCheckboxProps {
   checked: boolean;
@@ -29,9 +28,9 @@ const Box = styled.span<{ $checked: boolean }>`
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: var(--text-inverse, #ffffff);
+  color: var(--text-inverse);
   background: ${({ $checked }) =>
-    $checked ? WIZARD_PRIMARY : "var(--bg-subtle, #f8f9fb)"};
+    $checked ? "var(--interactive-primary)" : "var(--bg-subtle)"};
   border: ${({ $checked }) =>
-    $checked ? "none" : "1px solid var(--border-strong, #d1d6db)"};
+    $checked ? "none" : "1px solid var(--border-strong)"};
 `;

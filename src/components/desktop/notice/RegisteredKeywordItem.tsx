@@ -16,7 +16,7 @@ const RegisteredKeywordItem = ({
     <RegisteredKeywordItemWrapper>
       <KeywordRow>
         {isExcluded && <ExcludeBadge>제외</ExcludeBadge>}
-        <span className="keyword" style={{ color: isExcluded ? "#b91c1c" : "#444" }}>
+        <span className="keyword" style={{ color: isExcluded ? "#b91c1c" : "var(--text-secondary)" }}>
           {keyword}
         </span>
       </KeywordRow>
@@ -60,8 +60,8 @@ const ExcludeBadge = styled.span`
   align-items: center;
   justify-content: center;
   padding: 2px 7px;
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   border: 1px solid #fca5a5;
   border-radius: 9999px;
   font-size: 11.5px;

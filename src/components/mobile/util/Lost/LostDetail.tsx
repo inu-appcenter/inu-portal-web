@@ -151,8 +151,8 @@ const ButtonWrapper = styled.div`
   }
 
   button:first-child {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--interactive-primary);
+    color: var(--text-inverse);
   }
 
   button:nth-child(2) {
@@ -160,7 +160,7 @@ const ButtonWrapper = styled.div`
   }
 
   button:last-child {
-    background-color: #dc3545;
-    color: white;
+    background-color: var(--red-500);
+    color: var(--text-inverse);
   }
 `;

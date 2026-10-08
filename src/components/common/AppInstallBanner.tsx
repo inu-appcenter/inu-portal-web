@@ -109,8 +109,8 @@ const Banner = styled.div`
   height: calc(env(safe-area-inset-top, 0px) + ${INSTALL_BANNER_HEIGHT}px);
   padding: env(safe-area-inset-top, 0px) 12px 0;
   box-sizing: border-box;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e9f0;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const DismissButton = styled.button`
@@ -120,7 +120,7 @@ const DismissButton = styled.button`
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const AppIcon = styled.img`
@@ -146,7 +146,7 @@ const Title = styled.span`
 
 const Subtitle = styled.span`
   font-size: 12px;
-  color: #6b7684;
+  color: var(--gray-600);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -157,8 +157,8 @@ const OpenButton = styled.button`
   flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 999px;
-  background: #2563eb;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 14px;
   font-weight: 600;
 `;

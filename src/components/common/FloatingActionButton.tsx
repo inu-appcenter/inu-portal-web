@@ -45,15 +45,15 @@ const Button = styled.button`
   pointer-events: auto;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  background: var(--bg-blur, rgba(255, 255, 255, 0.6));
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-blur);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   padding: 8px 12px;
   font-family: "Pretendard", sans-serif;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;

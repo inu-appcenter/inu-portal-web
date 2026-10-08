@@ -378,8 +378,8 @@ const IconWrapper = styled.div`
   width: 52px;
   height: 52px;
   border-radius: 999px;
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,7 +398,7 @@ const Title = styled.h2`
   font-family: Pretendard;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   text-align: center;
 `;
 
@@ -407,7 +407,7 @@ const Description = styled.p`
   font-family: Pretendard;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
 `;
 
@@ -418,18 +418,18 @@ const ConsentList = styled.ul`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   border-radius: 16px;
 
   li {
     font-family: Pretendard;
     font-size: 13px;
     line-height: 19px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
   }
 
   strong {
-    color: var(--text-primary, #333d4b);
+    color: var(--text-primary);
     font-weight: 600;
   }
 `;
@@ -439,8 +439,8 @@ const PrimaryButton = styled.button`
   height: 52px;
   border: none;
   border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
@@ -453,7 +453,7 @@ const PrimaryButton = styled.button`
   gap: 8px;
 
   &:active {
-    background-color: var(--interactive-primary-pressed, #2563eb);
+    background-color: var(--interactive-primary-pressed);
     transform: scale(0.98);
   }
 `;
@@ -482,8 +482,8 @@ const CountdownBadge = styled.span`
   font-family: Pretendard;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
-  background: var(--bg-subtle, #f8f9fb);
+  color: var(--text-tertiary);
+  background: var(--bg-subtle);
   padding: 3px 8px;
   border-radius: 999px;
 `;
@@ -504,14 +504,14 @@ const RefreshButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #6b7684);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   cursor: pointer;
   outline: none;
 
   &:active {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:disabled {
@@ -543,7 +543,7 @@ const EmptyResultWrapper = styled.div`
 
 const EmptyResult = styled.div`
   text-align: center;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-family: Pretendard;
   font-size: 14px;
 `;
@@ -560,9 +560,9 @@ const NoticeBanner = styled.div`
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   border-radius: 14px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   font-family: Pretendard;
   font-size: 13px;
   line-height: 18px;
@@ -574,7 +574,7 @@ const NoticeIconWrapper = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const NoticeText = styled.span`

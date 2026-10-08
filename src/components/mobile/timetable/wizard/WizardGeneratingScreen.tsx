@@ -76,14 +76,14 @@ const Copy = styled.div`
 
 const Title = styled.p`
   margin: 0;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   ${typography.title2}
 `;
 
 /* body/1 — Regular 16/1.6 */
 const Subtitle = styled.p`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.6;
 `;

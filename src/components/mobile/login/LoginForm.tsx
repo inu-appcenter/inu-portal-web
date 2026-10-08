@@ -167,7 +167,7 @@ const Guide = styled.p`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const ButtonSection = styled.div`
@@ -206,9 +206,9 @@ const LoginButton = styled.button`
   padding: 12px 24px;
   box-sizing: border-box;
   border: none;
-  border-radius: var(--radius-full, 999px);
-  background: var(--blue-800, #003a99);
-  color: var(--text-inverse, #ffffff);
+  border-radius: var(--radius-full);
+  background: var(--blue-800);
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
@@ -217,8 +217,8 @@ const LoginButton = styled.button`
   transition: background 0.2s ease;
 
   &:disabled {
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
   }
 `;

@@ -717,7 +717,7 @@ export default function MobileTimeTableComparePage() {
       day: slot.day,
       startTime: slot.startTime,
       endTime: slot.endTime,
-      color: "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))",
+      color: "var(--time-table-color-available-time)",
     }));
   }, [freeSlotsList]);
 
@@ -1278,9 +1278,9 @@ const AddFriendButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-subtle, #f8f9fb);
-  color: var(--text-secondary, #333d4b);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s ease-in-out;
@@ -1308,9 +1308,9 @@ const TimetableNotice = styled.div<{ $kind: string }>`
   border-radius: 12px;
   background: ${({ $kind }) =>
     $kind === "protected"
-      ? "var(--bg-warn, #fff8e1)"
-      : "var(--bg-muted, #f1f3f5)"};
-  color: var(--text-secondary, #333d4b);
+      ? "var(--bg-warn)"
+      : "var(--bg-muted)"};
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -1327,16 +1327,16 @@ const TimeGroup = styled.div`
 const GroupTitle = styled.h3`
   font-size: 16px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--gray-600);
   margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   gap: 4px;
 
   &.good {
-    color: var(--text-warn, #7a5400);
+    color: var(--text-warn);
     .star {
-      color: var(--border-warn, #ffc72c);
+      color: var(--border-warn);
     }
   }
 `;
@@ -1355,10 +1355,10 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   padding: 4px 16px;
   border: 1px solid
     ${({ $isSelected }) =>
-      $isSelected ? "var(--border-brand, #0061FF)" : "transparent"};
+      $isSelected ? "var(--border-brand)" : "transparent"};
   background: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
+      ? "var(--time-table-color-available-time)"
       : "transparent"};
 
   border-radius: 12px;
@@ -1374,8 +1374,8 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   &.good {
     background: ${({ $isSelected }) =>
       $isSelected
-        ? "var(--timeTable-color-available-time, rgba(59, 130, 246, 0.20))"
-        : "var(--bg-warn, #FFFAEB)"};
+        ? "var(--time-table-color-available-time)"
+        : "var(--bg-warn)"};
   }
 `;
 
@@ -1386,7 +1386,7 @@ const SlotLeft = styled.div`
 `;
 
 const DayText = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 
   font-size: 14px;
   font-style: normal;
@@ -1396,14 +1396,14 @@ const DayText = styled.span`
 `;
 
 const TimeText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
   &.good {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -1416,13 +1416,13 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
   border-radius: 8px;
   background: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
-      : "var(--bg-disabled, #e5e8eb)"};
+      ? "rgba(59, 130, 246, 0.50)"
+      : "var(--bg-disabled)"};
 
   color: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--text-secondary, #333D4B)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--text-secondary)"
+      : "var(--text-tertiary)"};
   font-size: 12px;
   font-style: normal;
   font-weight: 500;
@@ -1431,9 +1431,9 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
   &.good {
     background: ${({ $isSelected }) =>
       $isSelected
-        ? "var(--timeTable-color-available-time-selected, rgba(59, 130, 246, 0.50))"
+        ? "rgba(59, 130, 246, 0.50)"
         : "rgba(255, 212, 59, 0.20)"};
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     font-size: 12px;
     font-style: normal;
     font-weight: 500;
@@ -1444,7 +1444,7 @@ const Badge = styled.div<{ $isSelected?: boolean }>`
 const EmptyStateText = styled.div`
   padding: 32px 0;
   text-align: center;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 500;
 `;
@@ -1452,7 +1452,7 @@ const EmptyStateText = styled.div`
 // const SectionTitleBottomSheet = styled.h2`
 //   font-size: 20px;
 //   font-weight: 700;
-//   color: var(--gray-900, #191f28);
+//   color: var(--gray-900);
 //   margin: 0;
 //   margin-bottom: 16px;
 // `;
@@ -1490,8 +1490,8 @@ const FloatingShareButton = styled.button`
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   display: flex;
   align-items: center;

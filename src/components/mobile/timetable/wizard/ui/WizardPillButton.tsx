@@ -43,17 +43,17 @@ const Button = styled.button`
   justify-content: center;
   gap: 4px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   white-space: nowrap;
   ${typography.label2}
 
   &:active:not(:disabled) {
-    background: var(--bg-muted, #f1f3f5);
+    background: var(--bg-muted);
   }
 
   &:disabled {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;

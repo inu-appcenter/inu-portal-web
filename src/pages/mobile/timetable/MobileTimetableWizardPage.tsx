@@ -285,7 +285,7 @@ export default function MobileTimetableWizardPage() {
   useHeader({
     hasback: true,
     showAlarm: false,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
     // 헤더 우측 영역이 기본 원형(아이콘 전용) 폭으로 제한되어 긴 텍스트가 줄바꿈되는 문제 방지
     rightAreaNotCircle: true,
     onBack: handleBack,
@@ -549,7 +549,7 @@ const PageWrapper = styled.div`
   min-height: calc(100vh - var(--header-height));
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
 `;
 
 const Body = styled.div<{ $gap: number }>`
@@ -569,7 +569,7 @@ const Section = styled.section<{ $gap?: number }>`
 
 const SliderArea = styled.div`
   padding: 16px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const OffDaysCard = styled(WizardCard)`
@@ -584,12 +584,12 @@ const CardText = styled.div`
 `;
 
 const CardTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
 const CardDescription = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
@@ -611,7 +611,7 @@ const HeaderTextButton = styled.button`
   padding: 8px 4px;
   border: none;
   background: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   white-space: nowrap;
   cursor: pointer;
   ${typography.label1}
@@ -619,7 +619,7 @@ const HeaderTextButton = styled.button`
 
 const HeaderSummary = styled.span`
   padding: 8px 4px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
   ${typography.label1}
 `;

@@ -185,7 +185,7 @@ export default function MobilePortalTimetableImportPage() {
   useHeader({
     title: "포털에서 가져오기",
     hasback: !isLoading,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
     onBack: () => {
       if (isLoading) return;
       if (step === "SELECT_MODE") {
@@ -1004,7 +1004,7 @@ const PageWrapper = styled.div`
   height: calc(100vh - var(--header-height, 56px));
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
 `;
 
 const ScrollContainer = styled.div`
@@ -1077,15 +1077,15 @@ const SelectedSemesterSummaryCard = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px;
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
 `;
 
 const SummaryLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
 `;
 
 const SummarySemesterChips = styled.div`
@@ -1099,8 +1099,8 @@ const SemesterChip = styled.span`
   align-items: center;
   padding: 5px 12px;
   border-radius: 8px;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 13px;
   font-weight: 600;
 `;
@@ -1126,12 +1126,12 @@ const SemesterHeaderRow = styled.div`
 const Label = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: #333d4b;
+  color: var(--text-secondary);
 `;
 
 const SelectAllButton = styled.button`
   font-size: 12.5px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-weight: 600;
   background: none;
   border: none;
@@ -1150,8 +1150,8 @@ const SemesterCheckCard = styled.div<{ $selected: boolean }>`
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: ${(props) => (props.$selected ? "#f0f6ff" : "#ffffff")};
-  border: 1.5px solid ${(props) => (props.$selected ? "#0061ff" : "#f2f4f6")};
+  background: ${(props) => (props.$selected ? "var(--bg-brand)" : "var(--bg-base)")};
+  border: 1.5px solid ${(props) => (props.$selected ? "var(--border-brand)" : "var(--bg-base)")};
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1163,17 +1163,17 @@ const Checkbox = styled.div<{ $checked: boolean; $disabled?: boolean }>`
   border-radius: 6px;
   background: ${(props) =>
     props.$disabled
-      ? "#e5e8eb"
+      ? "var(--bg-disabled)"
       : props.$checked
-        ? "#0061ff"
-        : "#ffffff"};
+        ? "var(--interactive-primary)"
+        : "var(--bg-base)"};
   border: 1.5px solid
     ${(props) =>
       props.$disabled
-        ? "#e5e8eb"
+        ? "var(--border-default)"
         : props.$checked
-          ? "#0061ff"
-          : "#d1d6db"};
+          ? "var(--border-brand)"
+          : "var(--border-strong)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1183,7 +1183,7 @@ const Checkbox = styled.div<{ $checked: boolean; $disabled?: boolean }>`
 const SemesterLabelText = styled.span`
   font-size: 14.5px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const OptionCard = styled.div<{ $selected: boolean; $disabled?: boolean }>`
@@ -1193,17 +1193,17 @@ const OptionCard = styled.div<{ $selected: boolean; $disabled?: boolean }>`
   padding: 14px 16px;
   background: ${(props) =>
     props.$disabled
-      ? "#f8f9fa"
+      ? "var(--bg-subtle)"
       : props.$selected
-        ? "#f0f6ff"
-        : "#ffffff"};
+        ? "var(--bg-brand)"
+        : "var(--bg-base)"};
   border: 1.5px solid
     ${(props) =>
       props.$disabled
-        ? "#e5e8eb"
+        ? "var(--border-default)"
         : props.$selected
-          ? "#0061ff"
-          : "#f2f4f6"};
+          ? "var(--border-brand)"
+          : "var(--bg-base)"};
   border-radius: 14px;
   cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
   opacity: ${(props) => (props.$disabled ? 0.72 : 1)};
@@ -1217,11 +1217,11 @@ const RadioCircle = styled.div<{ $selected: boolean; $disabled?: boolean }>`
   border: 2px solid
     ${(props) =>
       props.$disabled
-        ? "#d1d6db"
+        ? "var(--border-strong)"
         : props.$selected
-          ? "#0061ff"
-          : "#d1d6db"};
-  background: ${(props) => (props.$disabled ? "#f2f4f6" : "transparent")};
+          ? "var(--border-brand)"
+          : "var(--border-strong)"};
+  background: ${(props) => (props.$disabled ? "var(--bg-muted)" : "transparent")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1232,7 +1232,7 @@ const RadioDot = styled.div`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #0061ff;
+  background: var(--interactive-primary);
 `;
 
 const OptionInfo = styled.div`
@@ -1252,14 +1252,14 @@ const OptionTitleRow = styled.div`
 const OptionTitle = styled.div<{ $disabled?: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: ${(props) => (props.$disabled ? "#8b95a1" : "#191f28")};
+  color: ${(props) => (props.$disabled ? "var(--text-tertiary)" : "var(--text-primary)")};
 `;
 
 const DisabledBadge = styled.span`
   padding: 2px 6px;
   border-radius: 4px;
-  background: #f2f4f6;
-  color: #8b95a1;
+  background: var(--bg-muted);
+  color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 600;
 `;
@@ -1267,15 +1267,15 @@ const DisabledBadge = styled.span`
 const AutoSelectedBadge = styled.span`
   padding: 2px 6px;
   border-radius: 4px;
-  background: #e8f3ff;
-  color: #0061ff;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 600;
 `;
 
 const OptionDesc = styled.div<{ $disabled?: boolean }>`
   font-size: 12px;
-  color: ${(props) => (props.$disabled ? "#8b95a1" : "#6b7684")};
+  color: ${(props) => (props.$disabled ? "var(--text-tertiary)" : "var(--gray-600)")};
   line-height: 1.35;
 `;
 
@@ -1284,10 +1284,10 @@ const ErrorBox = styled.div`
   align-items: center;
   gap: 8px;
   padding: 12px 14px;
-  background: #fef0f0;
+  background: var(--bg-error);
   border-radius: 10px;
   font-size: 13px;
-  color: #f04452;
+  color: var(--text-error);
 `;
 
 const LoadingContainer = styled.div`
@@ -1304,7 +1304,7 @@ const Spinner = styled.div`
   width: 40px;
   height: 40px;
   border: 3px solid #e8f3ff;
-  border-top-color: #0061ff;
+  border-top-color: var(--border-brand);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 
@@ -1318,18 +1318,18 @@ const Spinner = styled.div`
 const LoadingTitle = styled.div`
   font-size: 17px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const LoadingDesc = styled.div`
   font-size: 13.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const LoadingWarning = styled.div`
   font-size: 12px;
-  color: #8b95a1;
-  background: #f2f4f6;
+  color: var(--text-tertiary);
+  background: var(--bg-muted);
   padding: 6px 12px;
   border-radius: 8px;
   margin-top: 6px;
@@ -1354,18 +1354,18 @@ const ExcludedNoticeBox = styled.div`
   gap: 8px;
   width: 100%;
   padding: 10px 14px;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border-radius: 10px;
   font-size: 13px;
-  color: #4e5968;
+  color: var(--gray-700);
 `;
 
 const SummaryText = styled.div`
   font-size: 15px;
-  color: #333d4b;
+  color: var(--text-secondary);
 
   strong {
-    color: #0061ff;
+    color: var(--text-brand);
     font-weight: 700;
   }
 `;
@@ -1377,9 +1377,9 @@ const SemesterGroupsWrapper = styled.div`
 `;
 
 const GroupCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 16px;
-  border: 1px solid #f2f4f6;
+  border: 1px solid var(--bg-base);
   overflow: hidden;
 `;
 
@@ -1388,7 +1388,7 @@ const GroupHeaderRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: #f9fafb;
+  background: var(--bg-subtle);
   cursor: pointer;
 `;
 
@@ -1406,14 +1406,14 @@ const GroupCheckboxSlot = styled.div`
 const GroupTitle = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const GroupCountBadge = styled.span`
   padding: 2px 7px;
   border-radius: 10px;
-  background: #e8f3ff;
-  color: #0061ff;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 600;
 `;
@@ -1436,10 +1436,10 @@ const CourseItemCard = styled.div<{ $selected: boolean; $disabled?: boolean }>`
   gap: 12px;
   padding: 12px 14px;
   background: ${(props) =>
-    props.$disabled ? "#fafafa" : props.$selected ? "#f0f6ff" : "#ffffff"};
+    props.$disabled ? "var(--bg-subtle)" : props.$selected ? "var(--bg-brand)" : "var(--bg-base)"};
   border: 1px solid
     ${(props) =>
-      props.$disabled ? "#f2f4f6" : props.$selected ? "#0061ff" : "#f2f4f6"};
+      props.$disabled ? "var(--bg-base)" : props.$selected ? "var(--border-brand)" : "var(--bg-base)"};
   border-radius: 12px;
   cursor: ${(props) => (props.$disabled ? "default" : "pointer")};
   opacity: ${(props) => (props.$disabled ? 0.6 : 1)};
@@ -1471,8 +1471,8 @@ const CourseBadgeGroup = styled.div`
 const CourseTypeBadge = styled.span`
   padding: 2px 6px;
   border-radius: 4px;
-  background: #f2f4f6;
-  color: #4e5968;
+  background: var(--bg-muted);
+  color: var(--gray-700);
   font-size: 11px;
   font-weight: 600;
 `;
@@ -1480,29 +1480,29 @@ const CourseTypeBadge = styled.span`
 const AlreadyAddedBadge = styled.span`
   padding: 2px 6px;
   border-radius: 4px;
-  background: #e5e8eb;
-  color: #6b7684;
+  background: var(--gray-200);
+  color: var(--gray-600);
   font-size: 11px;
 `;
 
 const UnmatchedBadge = styled.span`
   padding: 2px 6px;
   border-radius: 4px;
-  background: #fef0f0;
-  color: #f04452;
+  background: var(--bg-error);
+  color: var(--text-error);
   font-size: 11px;
 `;
 
 const CreditsText = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const CourseTitle = styled.div`
   font-size: 14.5px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const CourseMetaRow = styled.div`
@@ -1510,7 +1510,7 @@ const CourseMetaRow = styled.div`
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const MetaItem = styled.div`
@@ -1524,7 +1524,7 @@ const MatchSuccessNotice = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 11.5px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-weight: 600;
   margin-top: 2px;
 `;
@@ -1544,8 +1544,8 @@ const TimetableSuccessSummaryCard = styled.div`
   gap: 12px;
   width: 100%;
   padding: 16px;
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   text-align: left;
@@ -1555,7 +1555,7 @@ const TimetableSuccessIconBox = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #f0f6ff;
+  background: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1573,12 +1573,12 @@ const TimetableSuccessTextBox = styled.div`
 const TimetableSuccessTitle = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const TimetableSuccessDesc = styled.div`
   font-size: 13px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const PromptBadge = styled.div`
@@ -1586,24 +1586,24 @@ const PromptBadge = styled.div`
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background-color: #e8f3ff;
+  background-color: var(--bg-brand);
   border-radius: 20px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const PromptTitle = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.35;
 `;
 
 const PromptDesc = styled.p`
   font-size: 14px;
-  color: #6b7684;
+  color: var(--gray-600);
   margin: 0;
   line-height: 1.5;
   word-break: keep-all;
@@ -1615,8 +1615,8 @@ const PromptFeatureCard = styled.div`
   gap: 14px;
   width: 100%;
   padding: 18px 16px;
-  background-color: #ffffff;
-  border: 1px solid #f2f4f6;
+  background-color: var(--bg-base);
+  border: 1px solid var(--bg-base);
   border-radius: 16px;
   text-align: left;
 `;
@@ -1634,7 +1634,7 @@ const FeatureIconBox = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background-color: #e8f3ff;
+  background-color: var(--bg-brand);
   flex-shrink: 0;
 `;
 
@@ -1647,12 +1647,12 @@ const FeatureTextBox = styled.div`
 const FeatureTextTitle = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #333d4b;
+  color: var(--text-secondary);
 `;
 
 const FeatureTextDesc = styled.div`
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   line-height: 1.4;
 `;
 
@@ -1672,24 +1672,24 @@ const SuccessIconCircle = styled.div`
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background-color: #e8f3ff;
+  background-color: var(--bg-brand);
 `;
 
 const SuccessTitle = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const SuccessDesc = styled.p`
   font-size: 14.5px;
-  color: #4e5968;
+  color: var(--gray-700);
   margin: 0;
   line-height: 1.5;
   word-break: keep-all;
 
   strong {
-    color: #0061ff;
+    color: var(--text-brand);
   }
 `;

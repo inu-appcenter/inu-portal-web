@@ -82,12 +82,12 @@ const ItemRow = styled.div`
   transition: background-color 0.15s ease-in-out;
 
   &:active {
-    background-color: var(--bg-subtle, #f8f9fb);
+    background-color: var(--bg-subtle);
   }
 `;
 
 const CategoryName = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -95,7 +95,7 @@ const CategoryName = styled.span`
 `;
 
 const Dash = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
   flex-shrink: 0;
 `;
@@ -103,8 +103,8 @@ const Dash = styled.span`
 const PostTitle = styled.span<{ $hasPost: boolean }>`
   color: ${(props) =>
     props.$hasPost
-      ? "var(--text-primary, #333d4b)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--text-primary)"
+      : "var(--text-tertiary)"};
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -118,7 +118,7 @@ const PostTitle = styled.span<{ $hasPost: boolean }>`
 const ItemDivider = styled.div`
   width: 100%;
   height: 1px;
-  background-color: var(--border-default, #e5e8eb);
+  background-color: var(--border-default);
 `;
 
 const EmptyContainer = styled.div`
@@ -132,7 +132,7 @@ const EmptyContainer = styled.div`
 
 const EmptyText = styled.span`
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const SkeletonRow = styled.div`

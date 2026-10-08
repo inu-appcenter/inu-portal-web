@@ -40,17 +40,17 @@ const Title = styled.h2`
   margin: 0;
   display: flex;
   gap: 4px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
   ${typography.title2}
 `;
 
 const Required = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const Trailing = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   white-space: nowrap;
   ${typography.label1}
 `;

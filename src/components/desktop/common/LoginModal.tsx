@@ -88,7 +88,7 @@ const ModalContentWrapper = styled.div`
   font-weight: 700;
   line-height: 24px;
   box-sizing: border-box;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   position: relative;
 `;
@@ -113,7 +113,7 @@ const ModalLoginBtn = styled.button`
   line-height: 20px;
   background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
   border: none;
-  color: white;
+  color: var(--text-inverse);
   border-radius: 8px;
   padding: 12px 20px;
 `;

@@ -38,7 +38,7 @@ const UserInfoWrapper = styled.div<{ $clickable: boolean }>`
   justify-content: space-between;
   width: 100%;
   max-width: 320px;
-  background: white;
+  background: var(--bg-base);
   padding: 20px;
   border-radius: 20px;
   /* 그림자를 조금 더 선명하게 조정 */
@@ -76,7 +76,7 @@ const ImageWrapper = styled.div`
   height: 64px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #f1f3f5;
+  border: 2px solid var(--border-default);
   flex-shrink: 0;
 
   img {
@@ -96,12 +96,12 @@ const TextSection = styled.div`
 const Nickname = styled.div`
   font-size: 20px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
 `;
 
 const Department = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: #868e96;
+  color: var(--text-tertiary);
 `;
 

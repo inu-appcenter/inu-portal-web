@@ -1867,7 +1867,7 @@ export default function MobileLibraryHubPage() {
             {/* 사용 목적 */}
             <FormGroup>
               <FormLabel>
-                사용 목적 <span style={{ color: "#ef4444" }}>*필수</span>
+                사용 목적 <span style={{ color: "var(--text-error)" }}>*필수</span>
               </FormLabel>
               <FormInput
                 type="text"
@@ -1889,7 +1889,7 @@ export default function MobileLibraryHubPage() {
                     <div>
                       <CompanionTitle>동반 이용자 등록</CompanionTitle>
                       {minCompanions > 0 && (
-                        <span style={{ fontSize: "11px", color: "var(--text-secondary, #6b7684)", marginLeft: "6px" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-secondary)", marginLeft: "6px" }}>
                           (본인 포함 {minQuota}~{studyRoomDetail?.maxQuota || selectedStudyRoom?.maxQuota || 10}인실)
                         </span>
                       )}
@@ -1902,7 +1902,7 @@ export default function MobileLibraryHubPage() {
                   </CompanionHeader>
 
                   {minCompanions > 0 && !isSatisfied && (
-                    <span style={{ fontSize: "11.5px", color: "#ef4444" }}>
+                    <span style={{ fontSize: "11.5px", color: "var(--text-error)" }}>
                       ※ 동반 이용자를 최소 {minCompanions}명 이상 등록해야 예약이 가능합니다.
                     </span>
                   )}
@@ -1975,7 +1975,7 @@ export default function MobileLibraryHubPage() {
                   {isPrivacyAgreed && <Check size={11} color="#fff" strokeWidth={3} />}
                 </CustomCheckbox>
                 <span>
-                  동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "#ef4444" }}>*필수</span>
+                  동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "var(--text-error)" }}>*필수</span>
                 </span>
               </PrivacyAgreeLabel>
               <PrivacyNoticeText>
@@ -2071,14 +2071,14 @@ const Container = styled.div`
 const FootnoteText = styled.p`
   margin: 20px 0 0;
   font-size: 12.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.4;
 `;
 
 const TabBar = styled.div`
   display: flex;
-  background: var(--bg-muted, #f2f4f6);
+  background: var(--bg-muted);
   padding: 4px;
   border-radius: 14px;
   margin-bottom: 16px;
@@ -2093,8 +2093,8 @@ const TabItem = styled.button<{ $active: boolean }>`
   padding: 10px 0;
   font-size: 13px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #6b7684)")};
-  background: ${({ $active }) => ($active ? "var(--bg-base, #ffffff)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
+  background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
   border-radius: 10px;
   border: none;
   cursor: pointer;
@@ -2110,15 +2110,15 @@ const BadgeDot = styled.div`
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--text-brand, #0061ff);
+  background: var(--interactive-primary);
 `;
 
 const BannerCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 16px;
@@ -2127,7 +2127,7 @@ const BannerCard = styled.div`
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-muted, #f8fafc);
+    background: var(--bg-muted);
   }
 `;
 
@@ -2142,11 +2142,11 @@ const BannerText = styled.div`
   flex-direction: column;
   strong {
     font-size: 14px;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
   span {
     font-size: 12px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
     margin-top: 2px;
   }
 `;
@@ -2181,14 +2181,14 @@ const SectionHeader = styled.div`
 const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const SubTitle = styled.h4`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
   margin: 0 0 6px 4px;
 `;
 
@@ -2199,13 +2199,13 @@ const RefreshButton = styled.button`
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   cursor: pointer;
 `;
 
 const NoticeBanner = styled.div`
-  background: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid #dbeafe;
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   color: #1e40af;
   padding: 10px 14px;
   border-radius: 10px;
@@ -2259,7 +2259,7 @@ const RoomHeader = styled.div`
 const RoomName = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   flex: 1;
 `;
 
@@ -2269,14 +2269,14 @@ const SeatBadge = styled.span<{ $isFull: boolean }>`
   padding: 3px 8px;
   border-radius: 6px;
   flex-shrink: 0;
-  background: ${({ $isFull }) => ($isFull ? "var(--bg-error, #fef2f2)" : "var(--bg-brand-subtle, #eff6ff)")};
-  color: ${({ $isFull }) => ($isFull ? "var(--text-error, #ef4444)" : "var(--text-brand, #0061ff)")};
+  background: ${({ $isFull }) => ($isFull ? "var(--bg-error)" : "var(--bg-brand)")};
+  color: ${({ $isFull }) => ($isFull ? "var(--text-error)" : "var(--text-brand)")};
 `;
 
 const ProgressBarContainer = styled.div`
   width: 100%;
   height: 6px;
-  background: var(--bg-muted, #f1f3f5);
+  background: var(--bg-muted);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -2285,7 +2285,7 @@ const ProgressBarContainer = styled.div`
 const ProgressBarFill = styled.div<{ $rate: number; $isFull: boolean }>`
   width: ${({ $rate }) => Math.min(100, Math.max(0, $rate))}%;
   height: 100%;
-  background: ${({ $isFull }) => ($isFull ? "var(--text-error, #ef4444)" : "var(--interactive-primary, #0061ff)")};
+  background: ${({ $isFull }) => ($isFull ? "var(--text-error)" : "var(--interactive-primary)")};
   border-radius: 999px;
   transition: width 0.3s ease;
 `;
@@ -2294,7 +2294,7 @@ const SeatStatRow = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   margin-bottom: 4px;
 `;
 
@@ -2314,8 +2314,8 @@ const PrimaryActionBtn = styled.button`
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
-  background: var(--interactive-primary, #0061ff);
+  color: var(--text-inverse);
+  background: var(--interactive-primary);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -2334,9 +2334,9 @@ const SecondaryActionBtn = styled.button`
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary, #4e5968);
-  background: var(--bg-muted, #f2f4f6);
-  border: 1px solid var(--border-default, #e5e8eb);
+  color: var(--text-secondary);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   cursor: pointer;
   transition: transform 0.12s ease;
@@ -2354,8 +2354,8 @@ const DangerActionBtn = styled.button`
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-error, #ef4444);
-  background: var(--bg-error, #fef2f2);
+  color: var(--text-error);
+  background: var(--bg-error);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -2379,8 +2379,8 @@ const SearchBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 9px 12px;
   width: 100%;
@@ -2388,7 +2388,7 @@ const SearchBox = styled.div`
   transition: border-color 0.15s ease;
 
   &:focus-within {
-    border-color: var(--interactive-primary, #0061ff);
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -2397,12 +2397,12 @@ const SearchInput = styled.input`
   border: none;
   background: transparent;
   font-size: 13.5px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-placeholder, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -2413,12 +2413,12 @@ const ClearBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   cursor: pointer;
   border-radius: 50%;
 
   &:hover {
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
 `;
 
@@ -2445,9 +2445,9 @@ const FilterChip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   font-size: 12.5px;
   font-weight: ${({ $active }) => ($active ? "600" : "500")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
-  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -2464,11 +2464,11 @@ const EmptyBox = styled.div`
   align-items: center;
   justify-content: center;
   padding: 36px 16px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px dashed var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px dashed var(--border-default);
   border-radius: 14px;
   font-size: 13px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   text-align: center;
   gap: 6px;
   width: 100%;
@@ -2478,13 +2478,13 @@ const EmptyBox = styled.div`
 const EmptyTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin-top: 4px;
 `;
 
 const EmptyDesc = styled.div`
   font-size: 12px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   line-height: 1.5;
 `;
 
@@ -2503,7 +2503,7 @@ const FavHeader = styled.div`
 const FavTitle = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const FavGrid = styled.div`
@@ -2518,8 +2518,8 @@ const FavGrid = styled.div`
 `;
 
 const FavCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -2536,7 +2536,7 @@ const FavCardTop = styled.div`
 const FavName = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2547,8 +2547,8 @@ const FavBadge = styled.span<{ $isAvail: boolean }>`
   font-weight: 600;
   padding: 2px 5px;
   border-radius: 4px;
-  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "#fee2e2")};
-  color: ${({ $isAvail }) => ($isAvail ? "#15803d" : "#dc2626")};
+  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "var(--bg-error)")};
+  color: ${({ $isAvail }) => ($isAvail ? "#15803d" : "var(--text-error)")};
 `;
 
 const FavBtnRow = styled.div`
@@ -2566,8 +2566,8 @@ const FavActionBtn = styled.button`
   padding: 6px 8px;
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
-  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand);
+  background: var(--bg-brand);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -2578,8 +2578,8 @@ const FavDeleteBtn = styled.button`
   align-items: center;
   justify-content: center;
   padding: 6px;
-  color: var(--text-disabled, #8b95a1);
-  background: var(--bg-muted, #f2f4f6);
+  color: var(--text-disabled);
+  background: var(--bg-muted);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -2631,7 +2631,7 @@ const StudyTitleRow = styled.div`
 const StudyName = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const StudyLocation = styled.div`
@@ -2639,7 +2639,7 @@ const StudyLocation = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
 `;
 
 const DisabledNoticeCard = styled.div`
@@ -2648,8 +2648,8 @@ const DisabledNoticeCard = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 8px;
@@ -2674,11 +2674,11 @@ const DisabledNoticeText = styled.div`
   strong {
     font-size: 13.5px;
     font-weight: 700;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
   span {
     font-size: 12px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
     line-height: 1.4;
   }
 `;
@@ -2689,16 +2689,16 @@ const StudyOccupancyBadge = styled.span<{ $type: string }>`
   padding: 3px 7px;
   border-radius: 6px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#dcfce7" : $type === "warning" ? "#fef3c7" : "#fee2e2"};
+    $type === "avail" ? "#dcfce7" : $type === "warning" ? "var(--yellow-100)" : "var(--bg-error)"};
   color: ${({ $type }) =>
-    $type === "avail" ? "#15803d" : $type === "warning" ? "#b45309" : "#dc2626"};
+    $type === "avail" ? "#15803d" : $type === "warning" ? "#b45309" : "var(--text-error)"};
 `;
 
 const QuotaBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  background: var(--bg-muted, #f2f4f6);
-  color: var(--text-secondary, #4e5968);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
   padding: 3px 7px;
   border-radius: 6px;
 `;
@@ -2706,8 +2706,8 @@ const QuotaBadge = styled.span`
 const StudyPreviewBarBox = styled.div`
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 10px;
@@ -2725,7 +2725,7 @@ const StudyPreviewSlot = styled.div<{ $type: string }>`
   flex: 1;
   border-radius: 3px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#e2e8f0"};
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-200)"};
 `;
 
 const StudyPreviewTimeLabels = styled.div`
@@ -2734,7 +2734,7 @@ const StudyPreviewTimeLabels = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   margin-top: 4px;
 `;
 
@@ -2749,8 +2749,8 @@ const TagRow = styled.div`
 
 const TagChip = styled.span`
   font-size: 11px;
-  color: var(--text-secondary, #6b7684);
-  background: var(--bg-muted, #f2f4f6);
+  color: var(--text-secondary);
+  background: var(--bg-muted);
   padding: 2px 7px;
   border-radius: 6px;
 `;
@@ -2769,16 +2769,16 @@ const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $isTemp }) => ($isTemp ? "#fef3c7" : "#dcfce7")};
+  background: ${({ $isTemp }) => ($isTemp ? "var(--yellow-100)" : "#dcfce7")};
   color: ${({ $isTemp }) => ($isTemp ? "#b45309" : "#15803d")};
 `;
 
 const SeatRoomTitle = styled.div`
   font-size: 15px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   strong {
     font-size: 16px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -2787,7 +2787,7 @@ const TempNoticeBox = styled.div`
   box-sizing: border-box;
   display: flex;
   gap: 10px;
-  background: #fefce8;
+  background: var(--bg-warn);
   border: 1px solid #fef08a;
   border-radius: 12px;
   padding: 12px;
@@ -2799,8 +2799,8 @@ const ExpiryBadge = styled.span<{ $urgent?: boolean }>`
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: ${({ $urgent }) => ($urgent ? "#fee2e2" : "#fef3c7")};
-  color: ${({ $urgent }) => ($urgent ? "#dc2626" : "#92400e")};
+  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--yellow-100)")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#92400e")};
 `;
 
 const NoticeBulletList = styled.ul`
@@ -2820,7 +2820,7 @@ const SeatTimeInfo = styled.div`
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin-bottom: 14px;
 `;
 
@@ -2841,7 +2841,7 @@ const ReminderRow = styled.div`
   gap: 6px;
   padding: 8px;
   border-radius: 8px;
-  background: #fffbeb;
+  background: var(--bg-warn);
   color: #b45309;
   font-size: 12px;
   font-weight: 600;
@@ -2871,15 +2871,15 @@ const ReservationTop = styled.div`
   margin-bottom: 6px;
   strong {
     font-size: 14px;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
 `;
 
 const ReservationStatus = styled.span`
   font-size: 11px;
   font-weight: 600;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -2891,7 +2891,7 @@ const ReservationTime = styled.div`
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin-bottom: 4px;
 `;
 
@@ -2899,7 +2899,7 @@ const ReservationNote = styled.div`
   width: 100%;
   box-sizing: border-box;
   font-size: 11px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   margin-bottom: 10px;
 `;
 
@@ -2910,7 +2910,7 @@ const ReservationActionRow = styled.div`
   gap: 6px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--border-default, #f1f5f9);
+  border-top: 1px solid var(--border-default);
 `;
 
 const SmallActionBtn = styled.button<{ $danger?: boolean }>`
@@ -2925,8 +2925,8 @@ const SmallActionBtn = styled.button<{ $danger?: boolean }>`
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  background: ${({ $danger }) => ($danger ? "var(--bg-error, #fef2f2)" : "var(--interactive-primary, #0061ff)")};
-  color: ${({ $danger }) => ($danger ? "var(--text-error, #ef4444)" : "#ffffff")};
+  background: ${({ $danger }) => ($danger ? "var(--bg-error)" : "var(--interactive-primary)")};
+  color: ${({ $danger }) => ($danger ? "var(--text-error)" : "var(--text-inverse)")};
 `;
 
 // 바텀시트 공용 스타일
@@ -2947,19 +2947,19 @@ const SheetTitle = styled.h2`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const SheetSubtitle = styled.div`
   font-size: 13px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
 `;
 
 const SeatLegendRow = styled.div`
   display: flex;
   gap: 14px;
   font-size: 12px;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
 `;
 
 const SeatLegendItem = styled.div`
@@ -2999,11 +2999,11 @@ const SeatButton = styled.button<{
   font-weight: 600;
   border: 1px solid
     ${({ $isReservable, $isOccupied }) =>
-      $isReservable ? "#bfdbfe" : $isOccupied ? "#fecaca" : "#e2e8f0"};
+      $isReservable ? "var(--border-brand-subtle)" : $isOccupied ? "var(--border-error-subtle)" : "var(--border-default)"};
   background: ${({ $isReservable, $isOccupied }) =>
-    $isReservable ? "#eff6ff" : $isOccupied ? "#fef2f2" : "#f1f5f9"};
+    $isReservable ? "var(--bg-brand)" : $isOccupied ? "var(--bg-error)" : "var(--bg-muted)"};
   color: ${({ $isReservable, $isOccupied }) =>
-    $isReservable ? "#1d4ed8" : $isOccupied ? "#dc2626" : "#94a3b8"};
+    $isReservable ? "var(--text-brand)" : $isOccupied ? "var(--text-error)" : "var(--text-tertiary)"};
   cursor: ${({ $isDisabled }) => ($isDisabled ? "not-allowed" : "pointer")};
   transition: transform 0.1s ease;
 
@@ -3024,15 +3024,15 @@ const RoomInfoBadgeItem = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
-  background: var(--bg-muted, #f2f4f6);
+  color: var(--text-secondary);
+  background: var(--bg-muted);
   padding: 3px 8px;
   border-radius: 6px;
 `;
 
 const NoticeCard = styled.div`
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow: hidden;
 `;
@@ -3051,13 +3051,13 @@ const NoticeTitle = styled.div`
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const NoticeToggleBtn = styled.button`
   background: none;
   border: none;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3079,12 +3079,12 @@ const NoticeSection = styled.div`
 const NoticeSubTitle = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const NoticeText = styled.div`
   font-size: 11.5px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.45;
   white-space: pre-wrap;
 `;
@@ -3100,9 +3100,9 @@ const DateBtn = styled.button<{ $active: boolean }>`
   font-size: 13px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
   border-radius: 10px;
-  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand)" : "var(--border-default)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-base)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   cursor: pointer;
 `;
 
@@ -3110,8 +3110,8 @@ const TimelineSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px;
 `;
@@ -3122,7 +3122,7 @@ const TimelineHeader = styled.div`
   justify-content: space-between;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;
 
 const LegendRow = styled.div`
@@ -3135,7 +3135,7 @@ const LegendItem = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
 `;
 
 const LegendDot = styled.div<{ $type: string }>`
@@ -3143,7 +3143,7 @@ const LegendDot = styled.div<{ $type: string }>`
   height: 8px;
   border-radius: 50%;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#cbd5e1"};
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-300)"};
 `;
 
 const TimelineGrid = styled.div`
@@ -3163,7 +3163,7 @@ const HourSlot = styled.div`
 
 const HourLabel = styled.div`
   font-size: 10px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   text-align: center;
 `;
 
@@ -3177,7 +3177,7 @@ const MinuteBar = styled.div<{ $type: string }>`
   height: 6px;
   border-radius: 2px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "#e2e8f0"};
+    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-200)"};
 `;
 
 const BookingForm = styled.div`
@@ -3207,33 +3207,33 @@ const FormGroup = styled.div`
 const FormLabel = styled.label`
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: space-between;
 `;
 
 const DurationSummaryText = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const FormSelect = styled.select`
   padding: 10px;
   border-radius: 10px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   font-size: 14px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
 `;
 
 const FormInput = styled.input`
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   font-size: 13px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
 `;
 
@@ -3248,9 +3248,9 @@ const DurationBtn = styled.button<{ $active: boolean }>`
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
   border-radius: 8px;
-  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--border-default, #e5e8eb)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f8fafc)")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--text-brand)" : "var(--border-default)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   cursor: pointer;
 `;
 
@@ -3258,8 +3258,8 @@ const CompanionSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px;
 `;
@@ -3273,7 +3273,7 @@ const CompanionHeader = styled.div`
 const CompanionTitle = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
@@ -3281,8 +3281,8 @@ const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
-  background: ${({ $isSatisfied }) => ($isSatisfied ? "#dcfce7" : "#fee2e2")};
-  color: ${({ $isSatisfied }) => ($isSatisfied ? "#15803d" : "#dc2626")};
+  background: ${({ $isSatisfied }) => ($isSatisfied ? "#dcfce7" : "var(--bg-error)")};
+  color: ${({ $isSatisfied }) => ($isSatisfied ? "#15803d" : "var(--text-error)")};
 `;
 
 const CompanionInputRow = styled.div`
@@ -3294,10 +3294,10 @@ const CompanionInput = styled.input`
   flex: 1;
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   font-size: 12px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
 `;
 
@@ -3308,15 +3308,15 @@ const CompanionAddBtn = styled.button`
   padding: 8px 12px;
   border-radius: 8px;
   border: none;
-  background: var(--interactive-primary, #0061ff);
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 
   &:disabled {
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
   }
 `;
@@ -3333,15 +3333,15 @@ const CompanionChip = styled.div`
   gap: 6px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 12px;
 `;
 
 const CompanionChipDeleteBtn = styled.button`
   background: none;
   border: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3354,8 +3354,8 @@ const PrivacyAgreeContainer = styled.div`
   gap: 4px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   cursor: pointer;
 `;
 
@@ -3365,15 +3365,15 @@ const PrivacyAgreeLabel = styled.div`
   gap: 8px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const CustomCheckbox = styled.div<{ $checked: boolean }>`
   width: 16px;
   height: 16px;
   border-radius: 4px;
-  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #cbd5e1)")};
-  background: ${({ $checked }) => ($checked ? "var(--interactive-primary, #0061ff)" : "var(--bg-base, #ffffff)")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--border-default)")};
+  background: ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--bg-base)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3382,7 +3382,7 @@ const CustomCheckbox = styled.div<{ $checked: boolean }>`
 
 const PrivacyNoticeText = styled.div`
   font-size: 11px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.4;
   padding-left: 24px;
 `;

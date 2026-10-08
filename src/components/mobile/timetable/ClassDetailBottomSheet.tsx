@@ -166,7 +166,7 @@ export default function ClassDetailBottomSheet({
     .filter((e) => e.name === liveClass.name)
     .sort((a, b) => a.day - b.day || a.startTime - b.startTime);
 
-  const dotColor = colorMap.get(liveClass.name) || "var(--text-brand, #0061FF)";
+  const dotColor = colorMap.get(liveClass.name) || "var(--text-brand)";
 
   const gradeStr = offering?.hyName
     ? offering.hyName === "0"
@@ -447,7 +447,7 @@ export default function ClassDetailBottomSheet({
 const StyledOverlay = styled(Drawer.Overlay)`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-dim);
   backdrop-filter: blur(4px);
   z-index: 10010;
 `;
@@ -498,7 +498,7 @@ const HandleBar = styled.div`
   width: 32px;
   height: 3px;
   border-radius: 2px;
-  background: var(--border-default, #e5e8eb);
+  background: var(--border-default);
 `;
 
 const ContentArea = styled.div`
@@ -541,7 +541,7 @@ const ColorDot = styled.div<{ $color: string }>`
 
 const ClassTitle = styled.h2`
   overflow: hidden;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   text-overflow: ellipsis;
   margin: 0;
   font-family: Pretendard, sans-serif;
@@ -557,8 +557,8 @@ const OwnerBadge = styled.span`
   justify-content: center;
   padding: 3px 7px;
   border-radius: 999px;
-  background-color: var(--bg-muted, #f1f3f5);
-  color: var(--text-secondary, #333d4b);
+  background-color: var(--bg-muted);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
@@ -574,7 +574,7 @@ const InfoField = styled.div`
 
 const FieldLabel = styled.span`
   overflow: hidden;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-overflow: ellipsis;
   font-size: 14px;
   font-style: normal;
@@ -611,9 +611,9 @@ const BaseFooterButton = styled.button`
 `;
 
 const LectureReviewButton = styled(BaseFooterButton)`
-  border: 1px solid var(--border-warn-subtle, #fef3c7);
-  background: var(--bg-warn, #fffaeb);
-  color: var(--text-warn, #b58000);
+  border: 1px solid var(--border-warn-subtle);
+  background: var(--bg-warn);
+  color: var(--text-warn);
 
   &:active:not(:disabled) {
     transform: scale(0.98);
@@ -622,13 +622,13 @@ const LectureReviewButton = styled(BaseFooterButton)`
 `;
 
 const SyllabusButton = styled(BaseFooterButton)`
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  border: 1px solid var(--border-brand-subtle);
+  background: var(--bg-brand);
+  color: var(--text-brand);
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    background: #dfeeff;
+    background: var(--blue-100);
   }
 `;
 
@@ -665,16 +665,16 @@ const CourseBadges = styled.div`
 const CourseBadge = styled.span`
   padding: 4px 8px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-muted, #f1f3f5);
-  color: var(--text-secondary, #6b7684);
+  border: 1px solid var(--border-default);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
   line-height: 19.6px;
 `;
 
 const DeleteButton = styled.button`
-  background: #fff5f5;
+  background: var(--bg-error);
   border: none;
   border-radius: 999px;
   width: 28px;
@@ -682,7 +682,7 @@ const DeleteButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-error, #ff4d4f);
+  color: var(--text-error);
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
@@ -694,9 +694,9 @@ const DeleteButton = styled.button`
 `;
 
 const EditButton = styled(DeleteButton)`
-  background: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
+  color: var(--text-brand);
   margin-right: 8px;
 `;
 
@@ -724,7 +724,7 @@ const DetailRow = styled.div`
 const DetailLabel = styled.span`
   width: 56px;
   flex-shrink: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -735,7 +735,7 @@ const DetailLabel = styled.span`
 const DetailValue = styled.span`
   flex: 1;
   min-width: 0;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-weight: 400;
@@ -786,7 +786,7 @@ const MemoEditButton = styled.button`
   padding: 0;
   border: none;
   background: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
 
   &:disabled {
@@ -822,7 +822,7 @@ const MemoSaveLink = styled.button`
   font-family: Pretendard, sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -838,7 +838,7 @@ const AddMemoButton = styled.button`
   font-family: Pretendard, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -862,7 +862,7 @@ const SeamlessTextarea = styled.textarea`
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   box-sizing: border-box;
   display: block;
   overflow: hidden;

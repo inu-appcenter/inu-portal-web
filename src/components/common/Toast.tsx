@@ -92,7 +92,7 @@ const ToastCard = styled(motion.div)`
   background: rgba(33, 37, 41, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color: #ffffff;
+  color: var(--text-inverse);
   border-radius: 20px;
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
@@ -110,7 +110,7 @@ const ToastMessage = styled.div`
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: #ffffff;
+  color: var(--text-inverse);
   white-space: pre-line;
   text-align: center;
   flex: 1;

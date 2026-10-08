@@ -464,7 +464,7 @@ const HeroTitle = styled.h1`
 
 const HeroSubtitle = styled.p`
   margin: 0;
-  color: #1f2937;
+  color: var(--text-primary);
   font-size: 15px;
   line-height: 1.45;
   word-break: keep-all;
@@ -478,7 +478,7 @@ const HeroBadge = styled.span`
   min-height: 28px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(94, 146, 240, 0.14);
+  background: rgba(59, 130, 246, 0.14);
   color: #4a74c9;
   font-size: 12px;
   font-weight: 700;
@@ -500,14 +500,14 @@ const FieldContent = styled.div`
 `;
 
 const FieldLabel = styled.span`
-  color: #8a94a6;
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 700;
 `;
 
 const FieldValue = styled.p`
   margin: 0;
-  color: #111827;
+  color: var(--text-primary);
   font-size: 15px;
   line-height: 1.5;
   word-break: break-word;
@@ -515,7 +515,7 @@ const FieldValue = styled.p`
 `;
 
 const FieldLink = styled.a`
-  color: #111827;
+  color: var(--text-primary);
   text-decoration: none;
   font-size: 15px;
   line-height: 1.5;
@@ -523,7 +523,7 @@ const FieldLink = styled.a`
 `;
 
 const RichTextValue = styled.div`
-  color: #111827;
+  color: var(--text-primary);
   font-size: 15px;
   line-height: 1.5;
   word-break: break-word;
@@ -544,7 +544,7 @@ const CopyIconButton = styled.button`
   border: none;
   border-radius: 999px;
   padding: 0;
-  background: #f6f8fc;
+  background: var(--bg-subtle);
   color: #2f5fb3;
   cursor: pointer;
   flex-shrink: 0;
@@ -561,12 +561,12 @@ const EmptyStateCard = styled.section`
   h2 {
     margin: 0 0 8px;
     font-size: 20px;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   p {
     margin: 0;
-    color: #667085;
+    color: var(--gray-600);
     font-size: 14px;
     line-height: 1.5;
   }
@@ -579,7 +579,7 @@ const EmptyActionLink = styled(Link)`
   margin-top: 18px;
   border-radius: 999px;
   padding: 12px 18px;
-  background: #eef4ff;
+  background: var(--bg-brand);
   color: #2f5fb3;
   text-decoration: none;
   font-size: 14px;

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
-import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset } from "./tokens";
 
 interface WizardFavButtonProps {
   /** true면 담긴 상태(파란 원 + 체크), false면 담기(연파랑 원 + 플러스) */
@@ -67,11 +67,11 @@ const Circle = styled.span<{ $added: boolean }>`
   border-radius: 999px;
   border: 1px solid
     ${({ $added }) =>
-      $added ? WIZARD_PRIMARY : "var(--border-brand-subtle, #d3e5ff)"};
+      $added ? "var(--border-brand)" : "var(--border-brand-subtle)"};
   background: ${({ $added }) =>
-    $added ? WIZARD_PRIMARY : "var(--bg-brand, #eff6ff)"};
+    $added ? "var(--interactive-primary)" : "var(--bg-brand)"};
   color: ${({ $added }) =>
-    $added ? "var(--text-inverse, #ffffff)" : "var(--text-brand, #0061ff)"};
+    $added ? "var(--text-inverse)" : "var(--text-brand)"};
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;

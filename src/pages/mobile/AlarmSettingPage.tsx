@@ -485,11 +485,11 @@ function MobileDeptAlarmSetting({
             : "#f2f2f2",
           margin: "0 var(--page-inline)",
           boxShadow: allAlarm
-            ? "0 8px 24px rgba(94, 146, 240, 0.15)"
+            ? "0 8px 24px rgba(59, 130, 246, 0.15)"
             : "0 8px 24px rgba(0, 0, 0, 0.05)",
           border: allAlarm
             ? "1px solid rgba(255, 255, 255, 0.5)"
-            : "1px solid #e0e0e0",
+            : "1px solid var(--border-default)",
           padding: "16px 20px",
         }}
       >
@@ -623,14 +623,14 @@ const AllAlarmCheckBoxWrapper = styled.div`
   word-break: keep-all;
 
   .first-line {
-    color: #1a1a1a;
+    color: var(--text-primary);
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 4px;
   }
 
   .second-line {
-    color: #666;
+    color: var(--gray-600);
     font-size: 13px;
     font-weight: 500;
     line-height: 1.4;
@@ -665,34 +665,34 @@ const InputWrapper = styled.div`
 const StyledInput = styled.input`
   width: 100%;
   border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-default);
   padding: 14px 16px;
   padding-right: 60px;
   box-sizing: border-box;
-  background-color: #f8f9fa;
+  background-color: var(--bg-subtle);
 
-  color: #333;
+  color: var(--text-secondary);
   font-size: 15px;
   font-weight: 600;
   transition: all 0.2s ease;
 
   &:focus {
     outline: none;
-    border-color: #5e92f0;
-    background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(94, 146, 240, 0.1);
+    border-color: var(--interactive-primary);
+    background-color: var(--bg-base);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
   &::placeholder {
-    color: #adb5bd;
+    color: var(--text-disabled);
     font-weight: 500;
   }
 
   &:disabled {
-    background-color: #f1f3f5;
-    color: #adb5bd;
+    background-color: var(--bg-muted);
+    color: var(--text-disabled);
     cursor: not-allowed;
-    border-color: #e9ecef;
+    border-color: var(--border-default);
     box-shadow: none;
   }
 `;
@@ -709,7 +709,7 @@ const TextButton = styled.button<{ disabled?: boolean }>`
 
   font-size: 15px;
   font-weight: 700;
-  color: ${(props) => (props.disabled ? "#ced4da" : "#5e92f0")};
+  color: ${(props) => (props.disabled ? "var(--text-disabled)" : "var(--interactive-primary)")};
   transition: color 0.2s ease;
 
   &:disabled {
@@ -734,8 +734,8 @@ const SelectableChip = styled.div<{ $selected: boolean }>`
   box-sizing: border-box;
   font-size: 14px;
   font-weight: 500;
-  background: ${({ $selected }) => ($selected ? "#5E92F0" : "#ffffff")};
-  color: ${({ $selected }) => ($selected ? "#F4F4F4" : "#666")};
+  background: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
+  color: ${({ $selected }) => ($selected ? "var(--text-inverse)" : "var(--gray-600)")};
   box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
   white-space: nowrap;
@@ -767,8 +767,8 @@ const ExcludeCheckCircle = styled.div<{ $checked: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#ef4444" : "#cbd5e1")};
-  background-color: ${({ $checked }) => ($checked ? "#ef4444" : "#ffffff")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--border-error)" : "var(--border-strong)")};
+  background-color: ${({ $checked }) => ($checked ? "var(--red-500)" : "var(--bg-base)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -779,6 +779,6 @@ const ExcludeCheckCircle = styled.div<{ $checked: boolean }>`
 const ExcludeLabel = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--gray-700);
 `;
 

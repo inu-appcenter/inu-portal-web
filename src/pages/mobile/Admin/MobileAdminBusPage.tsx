@@ -781,11 +781,11 @@ export default function MobileAdminBusPage() {
                       {ruleForm.endStops.length === 0 ? (
                         <div
                           style={{
-                            border: "1.5px dashed #cbd5e1",
+                            border: "1.5px dashed var(--border-strong)",
                             borderRadius: "8px",
                             padding: "24px 16px",
                             textAlign: "center",
-                            backgroundColor: "#f8fafc",
+                            backgroundColor: "var(--bg-subtle)",
                             cursor: "pointer",
                           }}
                           onClick={() => openSearchModal("end")}
@@ -793,10 +793,10 @@ export default function MobileAdminBusPage() {
                           <div style={{ marginBottom: "6px" }}>
                             <Icon name="search" size={22} color="#94a3b8" />
                           </div>
-                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#475569" }}>
+                          <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--gray-700)" }}>
                             목표 도착 정류장을 검색하여 추가해주세요
                           </div>
-                          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
+                          <div style={{ fontSize: "11px", color: "var(--text-tertiary)", marginTop: "2px" }}>
                             1개 또는 여러 개(자연대, 공대, 정문, 기숙사 등)를 원하는 만큼 등록할 수 있습니다.
                           </div>
                         </div>
@@ -806,10 +806,10 @@ export default function MobileAdminBusPage() {
                             <div
                               key={stopItem.bstopId || index}
                               style={{
-                                border: "1px solid #e2e8f0",
+                                border: "1px solid var(--border-default)",
                                 borderRadius: "8px",
                                 padding: "12px",
-                                backgroundColor: "#ffffff",
+                                backgroundColor: "var(--bg-base)",
                                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                               }}
                             >
@@ -826,7 +826,7 @@ export default function MobileAdminBusPage() {
                                     style={{
                                       fontSize: "13px",
                                       fontWeight: 700,
-                                      color: "#1e293b",
+                                      color: "var(--text-primary)",
                                     }}
                                   >
                                     {stopItem.bstopName || "이름 없는 정류장"}
@@ -834,8 +834,8 @@ export default function MobileAdminBusPage() {
                                   <span
                                     style={{
                                       fontSize: "11px",
-                                      backgroundColor: "#f1f5f9",
-                                      color: "#64748b",
+                                      backgroundColor: "var(--bg-muted)",
+                                      color: "var(--gray-600)",
                                       padding: "2px 6px",
                                       borderRadius: "4px",
                                       fontFamily: "monospace",
@@ -848,8 +848,8 @@ export default function MobileAdminBusPage() {
                                   type="button"
                                   style={{
                                     border: "none",
-                                    background: "#fee2e2",
-                                    color: "#ef4444",
+                                    background: "var(--bg-error)",
+                                    color: "var(--text-error)",
                                     borderRadius: "4px",
                                     padding: "3px 7px",
                                     fontSize: "11px",
@@ -866,7 +866,7 @@ export default function MobileAdminBusPage() {
                               </div>
 
                               <FormGroup style={{ marginBottom: 0 }}>
-                                <SubLabel style={{ fontSize: "11px", color: "#64748b" }}>
+                                <SubLabel style={{ fontSize: "11px", color: "var(--gray-600)" }}>
                                   도착지 별칭 (화면 노출용):
                                 </SubLabel>
                                 <Input
@@ -1291,7 +1291,7 @@ export default function MobileAdminBusPage() {
                             <AliasTag>{a.stopAlias}</AliasTag>
                           </td>
                           <td style={{ fontSize: "12px", color: "#b45309" }}>
-                            {a.stopNotice || <span style={{ color: "#9ca3af" }}>-</span>}
+                            {a.stopNotice || <span style={{ color: "var(--text-tertiary)" }}>-</span>}
                           </td>
                           <td>
                             <div style={{ display: "flex", gap: "6px" }}>
@@ -1519,7 +1519,7 @@ const SuccessBanner = styled.div`
 const TabHeader = styled.div`
   display: flex;
   gap: 8px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--border-default);
   padding-bottom: 8px;
   overflow-x: auto;
 `;
@@ -1534,35 +1534,35 @@ const TabButton = styled.button<{ active: boolean }>`
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  background-color: ${({ active }) => (active ? "#2563eb" : "#f3f4f6")};
-  color: ${({ active }) => (active ? "#ffffff" : "#4b5563")};
+  background-color: ${({ active }) => (active ? "var(--interactive-primary)" : "var(--bg-muted)")};
+  color: ${({ active }) => (active ? "var(--text-inverse)" : "var(--gray-700)")};
   transition: all 0.2s;
   white-space: nowrap;
 
   &:hover {
-    background-color: ${({ active }) => (active ? "#1d4ed8" : "#e5e7eb")};
+    background-color: ${({ active }) => (active ? "var(--interactive-primary-hover)" : "var(--gray-200)")};
   }
 `;
 
 const Card = styled.div`
-  background: white;
+  background: var(--bg-base);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   overflow: hidden;
 `;
 
 const CardHeader = styled.div`
   padding: 16px 20px;
-  border-bottom: 1px solid #f3f4f6;
-  background-color: #fafafa;
+  border-bottom: 1px solid var(--bg-base);
+  background-color: var(--bg-subtle);
 `;
 
 const HeaderTitle = styled.h2`
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1575,7 +1575,7 @@ const CardBody = styled.div`
 const CardDesc = styled.p`
   margin: 0 0 16px 0;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--gray-600);
   line-height: 1.5;
 `;
 
@@ -1586,8 +1586,8 @@ const SyncButton = styled.button`
   gap: 8px;
   width: 100%;
   padding: 14px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 8px;
   font-size: 15px;
@@ -1596,10 +1596,10 @@ const SyncButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: #1d4ed8;
+    background-color: var(--interactive-primary-hover);
   }
   &:disabled {
-    background-color: #93c5fd;
+    background-color: var(--interactive-primary-disabled);
     cursor: not-allowed;
   }
 
@@ -1632,41 +1632,41 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-secondary);
 `;
 
 const Input = styled.input`
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 14px;
   &:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const TextArea = styled.textarea`
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 13px;
   resize: vertical;
   &:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const Select = styled.select`
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 14px;
-  background-color: white;
+  background-color: var(--bg-base);
   &:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
@@ -1678,8 +1678,8 @@ const StopSelectionGrid = styled.div`
 `;
 
 const StopSelectBox = styled.div`
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 16px;
   display: flex;
@@ -1697,13 +1697,13 @@ const BoxHeaderRow = styled.div`
 const BoxLabel = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text-primary);
 `;
 
 const SubLabel = styled.label`
   font-size: 11px;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--gray-700);
 `;
 
 const ManualInputGrid = styled.div`
@@ -1726,7 +1726,7 @@ const ChipContainer = styled.div`
 const ChipLabel = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--gray-600);
 `;
 
 const ChipButton = styled.button<{ isSelected?: boolean }>`
@@ -1734,15 +1734,15 @@ const ChipButton = styled.button<{ isSelected?: boolean }>`
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 12px;
-  border: 1px solid ${(props) => (props.isSelected ? "#2563eb" : "#e5e7eb")};
-  background-color: ${(props) => (props.isSelected ? "#eff6ff" : "#ffffff")};
-  color: ${(props) => (props.isSelected ? "#1d4ed8" : "#374151")};
+  border: 1px solid ${(props) => (props.isSelected ? "var(--border-brand)" : "var(--border-default)")};
+  background-color: ${(props) => (props.isSelected ? "var(--bg-brand)" : "var(--bg-base)")};
+  color: ${(props) => (props.isSelected ? "var(--text-brand)" : "var(--text-secondary)")};
   cursor: pointer;
   transition: all 0.15s;
   &:hover {
-    border-color: #2563eb;
-    background-color: #eff6ff;
-    color: #1d4ed8;
+    border-color: var(--border-brand);
+    background-color: var(--bg-brand);
+    color: var(--text-brand);
   }
 `;
 
@@ -1757,7 +1757,7 @@ const CancelMiniButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background-color: #fee2e2;
+  background-color: var(--bg-error);
   border: 1px solid #fca5a5;
   color: #b91c1c;
   border-radius: 6px;
@@ -1771,16 +1771,16 @@ const CancelMiniButton = styled.button`
 
 const CancelButton = styled.button`
   padding: 12px 18px;
-  background-color: #f3f4f6;
-  border: 1px solid #d1d5db;
-  color: #4b5563;
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-strong);
+  color: var(--gray-700);
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   &:hover {
-    background-color: #e5e7eb;
+    background-color: var(--gray-200);
   }
 `;
 
@@ -1795,15 +1795,15 @@ const EditRuleButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 6px 10px;
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #2563eb;
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
+  color: var(--text-brand);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background-color: #dbeafe;
+    background-color: var(--blue-100);
   }
 `;
 
@@ -1814,15 +1814,15 @@ const SearchTriggerButton = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 9px 12px;
-  background-color: #ffffff;
-  border: 1px solid #2563eb;
-  color: #2563eb;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-brand);
+  color: var(--text-brand);
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background-color: #eff6ff;
+    background-color: var(--bg-brand);
   }
 `;
 
@@ -1834,7 +1834,7 @@ const SubmitButton = styled.button`
   gap: 6px;
   padding: 12px 20px;
   background-color: #16a34a;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -1856,14 +1856,14 @@ const RuleCardGrid = styled.div`
 `;
 
 const RuleCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   transition: all 0.2s ease;
   &:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-strong);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
   }
 `;
@@ -1873,8 +1873,8 @@ const RuleCardHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background-color: #f8fafc;
-  border-bottom: 1px solid #f1f5f9;
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const RuleHeaderLeft = styled.div`
@@ -1892,8 +1892,8 @@ const RuleCardBody = styled.div`
 `;
 
 const StopSectionBox = styled.div<{ isStart?: boolean }>`
-  background-color: ${({ isStart }) => (isStart ? "#f8fafc" : "#ffffff")};
-  border: 1px solid ${({ isStart }) => (isStart ? "#e2e8f0" : "#f1f5f9")};
+  background-color: ${({ isStart }) => (isStart ? "var(--bg-subtle)" : "var(--bg-base)")};
+  border: 1px solid ${({ isStart }) => (isStart ? "var(--border-default)" : "var(--bg-base)")};
   border-radius: 8px;
   padding: 12px 14px;
 `;
@@ -1904,7 +1904,7 @@ const SectionHeaderLabel = styled.div`
   gap: 6px;
   font-size: 11px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -1915,7 +1915,7 @@ const SectionHeaderLabel = styled.div`
     border-radius: 50%;
   }
   .start-dot {
-    background-color: #2563eb;
+    background-color: var(--interactive-primary);
   }
   .end-dot {
     background-color: #10b981;
@@ -1933,15 +1933,15 @@ const StopNameRow = styled.div`
 const MainStopName = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
 
 const StopIdBadge = styled.span`
   display: inline-block;
   font-size: 11px;
   font-family: monospace;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--gray-600);
+  background: var(--bg-muted);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -1952,17 +1952,17 @@ const FlowDivider = styled.div`
   justify-content: center;
   gap: 6px;
   padding: 2px 0;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 
   .flow-arrow {
-    color: #3b82f6;
+    color: var(--interactive-primary);
   }
 `;
 
 const FlowText = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const EndStopsList = styled.div`
@@ -1975,8 +1975,8 @@ const EndStopCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 8px 12px;
   gap: 8px;
@@ -1992,14 +1992,14 @@ const EndStopCardLeft = styled.div`
 const EndStopName = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const EndStopIdText = styled.span`
   font-size: 11px;
   font-family: monospace;
-  color: #64748b;
-  background: #e2e8f0;
+  color: var(--gray-600);
+  background: var(--gray-200);
   padding: 1px 5px;
   border-radius: 4px;
 `;
@@ -2018,7 +2018,7 @@ const Badge = styled.span<{ isSchool: boolean }>`
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 12px;
-  background-color: ${({ isSchool }) => (isSchool ? "#dbeafe" : "#fee2e2")};
+  background-color: ${({ isSchool }) => (isSchool ? "var(--blue-100)" : "var(--bg-error)")};
   color: ${({ isSchool }) => (isSchool ? "#1e40af" : "#991b1b")};
 `;
 
@@ -2027,13 +2027,13 @@ const TabBadge = styled.span`
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 12px;
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: var(--bg-muted);
+  color: var(--text-secondary);
 `;
 
 const RouteNoBadge = styled.span`
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
@@ -2043,18 +2043,18 @@ const RouteNoBadge = styled.span`
 const DeleteButton = styled.button`
   background: none;
   border: none;
-  color: #ef4444;
+  color: var(--text-error);
   cursor: pointer;
   padding: 6px;
   border-radius: 4px;
   &:hover {
-    background-color: #fee2e2;
+    background-color: var(--bg-error);
   }
 `;
 
 const EmptyText = styled.p`
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-size: 14px;
   margin: 20px 0;
 `;
@@ -2066,8 +2066,8 @@ const RouteGrid = styled.div`
 `;
 
 const RouteCard = styled.div`
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 16px;
   display: flex;
@@ -2085,7 +2085,7 @@ const RouteHeader = styled.div`
 const SectionTitleText = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 `;
 
 const RoutePathText = styled.div`
@@ -2093,20 +2093,20 @@ const RoutePathText = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #4b5563;
+  color: var(--gray-700);
 `;
 
 const StopCountBadge = styled.div`
   font-size: 11px;
-  color: #6b7280;
+  color: var(--gray-600);
 `;
 
 const NoticeBox = styled.div`
-  background-color: #f3f4f6;
+  background-color: var(--bg-muted);
   padding: 8px 10px;
   border-radius: 6px;
   font-size: 11px;
-  color: #4b5563;
+  color: var(--gray-700);
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -2114,7 +2114,7 @@ const NoticeBox = styled.div`
 `;
 
 const TipBox = styled.div`
-  background-color: #fef3c7;
+  background-color: var(--yellow-100);
   color: #92400e;
   padding: 8px 10px;
   border-radius: 6px;
@@ -2124,7 +2124,7 @@ const TipBox = styled.div`
 
 const NoTipText = styled.div`
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-style: italic;
 `;
 
@@ -2134,7 +2134,7 @@ const ActionRow = styled.div`
   align-items: center;
   margin-top: 6px;
   padding-top: 10px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--bg-base);
 `;
 
 const EditButton = styled.button`
@@ -2142,15 +2142,15 @@ const EditButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background-color: #dbeafe;
+    background-color: var(--blue-100);
   }
 `;
 
@@ -2163,13 +2163,13 @@ const AliasTable = styled.table`
   td {
     padding: 10px 12px;
     text-align: left;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-default);
   }
 
   th {
-    background-color: #f9fafb;
+    background-color: var(--bg-subtle);
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
   }
 `;
 
@@ -2189,7 +2189,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: white;
+  background: var(--bg-base);
   border-radius: 12px;
   width: 100%;
   max-width: 500px;
@@ -2220,7 +2220,7 @@ const ModalTitle = styled.h3`
 const CloseButton = styled.button`
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--gray-600);
   cursor: pointer;
   padding: 4px;
 `;
@@ -2234,19 +2234,19 @@ const SearchForm = styled.form`
 const SearchInput = styled.input`
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 14px;
   &:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const SearchSubmitBtn = styled.button`
   padding: 10px 16px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -2265,7 +2265,7 @@ const SearchResultsList = styled.div`
 
 const SearchGuideText = styled.div`
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-size: 13px;
   padding: 30px 0;
 `;
@@ -2275,13 +2275,13 @@ const SearchResultItem = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: #eff6ff;
+    background-color: var(--bg-brand);
     border-color: #93c5fd;
   }
 `;
@@ -2295,12 +2295,12 @@ const ResultItemLeft = styled.div`
 const ResultStopName = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 `;
 
 const ResultStopMeta = styled.div`
   font-size: 12px;
-  color: #6b7280;
+  color: var(--gray-600);
 `;
 
 const ResultItemRight = styled.div`
@@ -2314,8 +2314,8 @@ const SelectStopBtn = styled.button`
   align-items: center;
   gap: 4px;
   padding: 6px 10px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   font-size: 12px;
@@ -2337,7 +2337,7 @@ const StatusControlCard = styled.div<{ isOnline: boolean }>`
   gap: 16px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  background-color: ${({ isOnline }) => (isOnline ? "#f0fdf4" : "#fef2f2")};
+  background-color: ${({ isOnline }) => (isOnline ? "#f0fdf4" : "var(--bg-error)")};
   border: 1.5px solid ${({ isOnline }) => (isOnline ? "#86efac" : "#fca5a5")};
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
@@ -2362,8 +2362,8 @@ const StatusIconBox = styled.div<{ isOnline: boolean }>`
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "#ef4444")};
-  color: #ffffff;
+  background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "var(--red-500)")};
+  color: var(--text-inverse);
   flex-shrink: 0;
 `;
 
@@ -2383,7 +2383,7 @@ const StatusTitleRow = styled.div`
 const StatusTitle = styled.div`
   font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const StatusBadge = styled.span<{ isOnline: boolean }>`
@@ -2394,20 +2394,20 @@ const StatusBadge = styled.span<{ isOnline: boolean }>`
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
-  background-color: ${({ isOnline }) => (isOnline ? "#dcfce7" : "#fee2e2")};
+  background-color: ${({ isOnline }) => (isOnline ? "#dcfce7" : "var(--bg-error)")};
   color: ${({ isOnline }) => (isOnline ? "#15803d" : "#b91c1c")};
 
   .dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "#ef4444")};
+    background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "var(--red-500)")};
   }
 `;
 
 const StatusDesc = styled.div`
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
@@ -2424,8 +2424,8 @@ const StatusToggleBtn = styled.button<{ isOnline: boolean }>`
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
-  background-color: ${({ isOnline }) => (isOnline ? "#ef4444" : "#16a34a")};
-  color: #ffffff;
+  background-color: ${({ isOnline }) => (isOnline ? "var(--red-500)" : "#16a34a")};
+  color: var(--text-inverse);
 
   &:hover:not(:disabled) {
     opacity: 0.9;

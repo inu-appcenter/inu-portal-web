@@ -94,7 +94,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -132,7 +132,7 @@ const LmsIconCircle = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 18px;
-  background: #eff6ff;
+  background: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,7 +142,7 @@ const LmsIconCircle = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
@@ -153,7 +153,7 @@ const HeaderRightBadge = styled.div`
   gap: 4px;
   font-size: 13px;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--text-brand);
 `;
 
 const CardContent = styled.div`
@@ -172,13 +172,13 @@ const AssignmentItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg-base);
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f1f5f9;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -194,7 +194,7 @@ const ItemLeft = styled.div`
 const CourseName = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -203,7 +203,7 @@ const CourseName = styled.span`
 const AssignmentTitle = styled.span`
   font-size: 14.5px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
   white-space: nowrap;
   overflow: hidden;
@@ -215,8 +215,8 @@ const DDayBadge = styled.span<{ $urgent?: boolean }>`
   font-weight: 800;
   padding: 4px 8px;
   border-radius: 8px;
-  background-color: ${({ $urgent }) => ($urgent ? "#fee2e2" : "#e0f2fe")};
-  color: ${({ $urgent }) => ($urgent ? "#dc2626" : "#0284c7")};
+  background-color: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--bg-brand)")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#0284c7")};
   white-space: nowrap;
 `;
 
@@ -232,7 +232,7 @@ const LoadingPulse = styled.div`
   width: 12px;
   height: 12px;
   border-radius: 6px;
-  background-color: #3b82f6;
+  background-color: var(--interactive-primary);
   animation: pulse 1.2s infinite ease-in-out;
 
   @keyframes pulse {
@@ -251,7 +251,7 @@ const LoadingPulse = styled.div`
 const LoadingText = styled.span`
   font-size: 13.5px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const EmptyBox = styled.div`
@@ -271,12 +271,12 @@ const EmptyEmoji = styled.span`
 const EmptyTitle = styled.h4`
   font-size: 14.5px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const EmptySubtitle = styled.p`
   font-size: 13px;
-  color: #64748b;
+  color: var(--gray-600);
   margin: 0;
 `;

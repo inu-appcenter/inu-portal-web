@@ -130,7 +130,7 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -152,13 +152,13 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 0.9rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const Input = styled.input`
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
@@ -173,7 +173,7 @@ const CheckboxGroup = styled.div`
   align-items: center;
   gap: 10px;
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--text-primary);
   cursor: pointer;
   padding: 4px 0;
   user-select: none;
@@ -187,7 +187,7 @@ const CheckboxGroup = styled.div`
 
   span {
     font-weight: 500;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 `;
 
@@ -200,7 +200,7 @@ const ButtonGroup = styled.div`
 
 const PrimaryButton = styled.button`
   background: #5844e4;
-  color: white;
+  color: var(--text-inverse);
   padding: 14px;
   border-radius: 12px;
   border: none;
@@ -220,17 +220,17 @@ const PrimaryButton = styled.button`
 `;
 
 const SecondaryButton = styled.button`
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--bg-muted);
+  color: var(--gray-700);
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: #e2e8f0;
+    background: var(--gray-200);
   }
 `;

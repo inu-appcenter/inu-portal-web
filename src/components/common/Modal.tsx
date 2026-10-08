@@ -129,7 +129,7 @@ const scaleUp = keyframes`
 const ModalOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
+  background-color: var(--bg-dim);
   ${effects.dim}
   z-index: 19999;
   animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -140,7 +140,7 @@ const ModalContainer = styled(Dialog.Content)`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 32px;
   width: calc(100% - 32px);
   max-width: 328px;
@@ -173,7 +173,7 @@ const ModalTitle = styled.h2`
   font-weight: 600;
   line-height: 32px;
   letter-spacing: 0;
-  color: var(--gray-800, #333d4b);
+  color: var(--gray-800);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -185,7 +185,7 @@ const ModalDescription = styled.div`
   font-style: normal;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;

@@ -483,7 +483,7 @@ const MapArea = styled.div`
     min-width: 0;
     border-radius: 28px;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--bg-base);
     border: 1px solid rgba(64, 113, 185, 0.1);
   }
 `;
@@ -511,7 +511,7 @@ const FallbackCard = styled.div`
   width: 100%;
   padding: 20px;
   border-radius: 24px;
-  background: #ffffff;
+  background: var(--bg-base);
   box-shadow: 0 12px 24px rgba(20, 35, 67, 0.08);
   color: #35506d;
   font-size: 14px;

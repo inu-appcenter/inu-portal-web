@@ -41,10 +41,10 @@ const AccordionContainer = styled.div<{ $isDone: boolean }>`
   width: 100%;
   margin-bottom: 12px;
   border-radius: 12px;
-  background: ${(props) => (props.$isDone ? "#f8fafc" : "#f0f7ff")};
-  border: 1px solid ${(props) => (props.$isDone ? "#e2e8f0" : "#bae0ff")};
+  background: ${(props) => (props.$isDone ? "var(--bg-subtle)" : "var(--bg-brand)")};
+  border: 1px solid ${(props) => (props.$isDone ? "var(--border-default)" : "#bae0ff")};
   font-size: 13px;
-  color: #334155;
+  color: var(--text-secondary);
   transition: all 0.2s ease;
   overflow: hidden;
   ${(props) =>
@@ -79,7 +79,7 @@ const StatusIconWrapper = styled.div<{ $status: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${(props) => (props.$status === "DONE" ? "#10b981" : "#0958d9")};
+  color: ${(props) => (props.$status === "DONE" ? "#10b981" : "var(--text-brand)")};
 
   .spinner {
     animation: ${rotateAnim} 1.2s linear infinite;
@@ -87,7 +87,7 @@ const StatusIconWrapper = styled.div<{ $status: string }>`
 `;
 
 const StatusLabel = styled.span`
-  color: #1e293b;
+  color: var(--text-primary);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -98,7 +98,7 @@ const HeaderRight = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #64748b;
+  color: var(--gray-600);
   font-size: 12px;
 `;
 
@@ -118,16 +118,16 @@ const ToolBadge = styled.span<{ $tool: string }>`
   font-size: 11px;
   font-weight: 600;
   background: ${(props) => {
-    if (props.$tool.includes("INU_AI")) return "#eff6ff";
+    if (props.$tool.includes("INU_AI")) return "var(--bg-brand)";
     if (props.$tool.includes("BUS")) return "#ecfdf5";
-    if (props.$tool.includes("CAFETERIA")) return "#fff7ed";
-    return "#f1f5f9";
+    if (props.$tool.includes("CAFETERIA")) return "var(--bg-warn)";
+    return "var(--bg-muted)";
   }};
   color: ${(props) => {
-    if (props.$tool.includes("INU_AI")) return "#1d4ed8";
+    if (props.$tool.includes("INU_AI")) return "var(--text-brand)";
     if (props.$tool.includes("BUS")) return "#047857";
     if (props.$tool.includes("CAFETERIA")) return "#c2410c";
-    return "#475569";
+    return "var(--gray-700)";
   }};
   border: 1px solid
     ${(props) => {
@@ -140,18 +140,18 @@ const ToolBadge = styled.span<{ $tool: string }>`
 
 const AccordionContent = styled.div`
   padding: 10px 14px 12px;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed var(--border-default);
   font-size: 12px;
   line-height: 1.5;
-  background: #ffffff;
+  background: var(--bg-base);
 `;
 
 const ThoughtBox = styled.div`
   padding: 8px 10px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-left: 3px solid #0958d9;
-  color: #475569;
+  color: var(--gray-700);
   margin-top: 6px;
   white-space: pre-wrap;
   word-break: keep-all;
@@ -248,20 +248,20 @@ export const AgentProcessAccordion: React.FC<AgentProcessAccordionProps> = ({
 
       {isOpen && (
         <AccordionContent>
-          <div style={{ fontWeight: 600, color: "#1e293b", marginBottom: "4px" }}>
+          <div style={{ fontWeight: 600, color: "var(--text-primary)", marginBottom: "4px" }}>
             [에이전트 추론 및 도구 계획]
           </div>
           {process.thought ? (
             <ThoughtBox>{process.thought}</ThoughtBox>
           ) : (
-            <div style={{ color: "#94a3b8" }}>
+            <div style={{ color: "var(--text-tertiary)" }}>
               사용자의 질문 맥락에 맞춰 필요한 도구를 호출하고 결과를 검증했습니다.
             </div>
           )}
 
           {tools.length > 0 && (
             <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ color: "#64748b" }}>실행된 에이전트:</span>
+              <span style={{ color: "var(--gray-600)" }}>실행된 에이전트:</span>
               <div style={{ display: "flex", gap: "4px" }}>
                 {tools.map((tool, idx) => {
                   const meta = getToolMeta(tool);

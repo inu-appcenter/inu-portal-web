@@ -116,7 +116,7 @@ const ModalWrapper = styled(motion.div)`
   max-width: 960px;
   height: 90vh;
   height: 90dvh;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -164,7 +164,7 @@ const MaximizeButton = styled.button`
   border: 1px solid rgba(0, 0, 0, 0.08);
   cursor: pointer;
   padding: 6px;
-  color: #475569;
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,8 +175,8 @@ const MaximizeButton = styled.button`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
-    background: #ffffff;
-    color: #0f172a;
+    background: var(--bg-base);
+    color: var(--text-primary);
     transform: scale(1.05);
   }
 
@@ -191,7 +191,7 @@ const IconButton = styled.button`
   border: 1px solid rgba(0, 0, 0, 0.08);
   cursor: pointer;
   padding: 6px;
-  color: #475569;
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -202,8 +202,8 @@ const IconButton = styled.button`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
-    background: #ffffff;
-    color: #0f172a;
+    background: var(--bg-base);
+    color: var(--text-primary);
     transform: scale(1.05);
   }
 `;
@@ -220,7 +220,7 @@ const LoadingOverlay = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f8faff;
+  background: var(--bg-subtle);
   z-index: 5;
   gap: 12px;
 `;
@@ -233,7 +233,7 @@ const SpinIcon = styled(Loader2)`
 const LoadingText = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const IframeFrame = styled.iframe`

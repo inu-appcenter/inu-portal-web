@@ -79,7 +79,7 @@ export default function MobileUnifiedSearchPage() {
     title: "통합 검색",
     hasback: true,
     onBack: handleBack,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   useEffect(() => {
@@ -700,7 +700,7 @@ export default function MobileUnifiedSearchPage() {
 const PageWrapper = styled.div`
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   padding-bottom: 60px;
 `;
 
@@ -756,20 +756,20 @@ const RecentHeader = styled.div`
 const RecentTitle = styled.h2`
   font-size: 15px;
   font-weight: 700;
-  color: #1E293B;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const ClearAllButton = styled.button`
   font-size: 13px;
-  color: #94A3B8;
+  color: var(--text-tertiary);
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px 0;
 
   &:hover {
-    color: #64748B;
+    color: var(--gray-600);
   }
 `;
 
@@ -784,12 +784,12 @@ const RecentKeywordChip = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #ffffff;
-  border: 1px solid #E2E8F0;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 13px;
-  color: #334155;
+  color: var(--text-secondary);
   cursor: pointer;
   overflow: hidden;
 
@@ -818,7 +818,7 @@ const EmptyResultWrapper = styled.div`
 const SubEmptyGuide = styled.p`
   margin-top: 8px;
   font-size: 13px;
-  color: #94A3B8;
+  color: var(--text-tertiary);
   font-weight: 400;
 `;
 
@@ -829,9 +829,9 @@ const ResultsContainer = styled.div`
 `;
 
 const SectionCard = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 14px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid var(--border-default);
   overflow: hidden;
 `;
 
@@ -840,7 +840,7 @@ const SectionHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px 10px 16px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const SectionTitleGroup = styled.div`
@@ -852,15 +852,15 @@ const SectionTitleGroup = styled.div`
 const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: #0F172A;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const SectionCountBadge = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: #2563EB;
-  background-color: #EFF6FF;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
   padding: 2px 7px;
   border-radius: 999px;
 `;
@@ -870,14 +870,14 @@ const MoreButton = styled.button`
   align-items: center;
   gap: 2px;
   font-size: 13px;
-  color: #64748B;
+  color: var(--gray-600);
   background: none;
   border: none;
   cursor: pointer;
   font-weight: 500;
 
   &:hover {
-    color: #1E293B;
+    color: var(--text-primary);
   }
 `;
 
@@ -889,7 +889,7 @@ const ItemList = styled.div`
 const ResultItem = styled.div`
   position: relative;
   padding: 14px 16px;
-  border-bottom: 1px solid #F8FAFC;
+  border-bottom: 1px solid var(--bg-base);
   cursor: pointer;
   overflow: hidden;
 
@@ -898,7 +898,7 @@ const ResultItem = styled.div`
   }
 
   &:hover {
-    background-color: #F8FAFC;
+    background-color: var(--bg-subtle);
   }
 `;
 
@@ -912,28 +912,28 @@ const ItemMeta = styled.div`
 const CategoryTag = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #2563EB;
-  background-color: #EFF6FF;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
   padding: 2px 6px;
   border-radius: 4px;
 `;
 
 const MetaText = styled.span`
   font-size: 12px;
-  color: #94A3B8;
+  color: var(--text-tertiary);
 `;
 
 const ItemTitle = styled.h4`
   font-size: 14px;
   font-weight: 600;
-  color: #1E293B;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
   line-height: 1.4;
 `;
 
 const ItemSnippet = styled.p`
   font-size: 13px;
-  color: #64748B;
+  color: var(--gray-600);
   margin: 0;
   line-height: 1.5;
   display: -webkit-box;
@@ -953,7 +953,7 @@ const PostCountItem = styled.span`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #94A3B8;
+  color: var(--text-tertiary);
 `;
 
 const ScheduleRow = styled.div`
@@ -963,7 +963,7 @@ const ScheduleRow = styled.div`
 `;
 
 const ScheduleIconWrapper = styled.div`
-  background-color: #EFF6FF;
+  background-color: var(--bg-brand);
   padding: 6px;
   border-radius: 8px;
   display: flex;
@@ -982,14 +982,14 @@ const DirectoryHeader = styled.div`
 const DirectoryName = styled.h4`
   font-size: 15px;
   font-weight: 700;
-  color: #1E293B;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const PositionBadge = styled.span`
   font-size: 11px;
-  color: #64748B;
-  background-color: #F1F5F9;
+  color: var(--gray-600);
+  background-color: var(--bg-muted);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -1005,7 +1005,7 @@ const ContactLink = styled.a`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #2563EB;
+  color: var(--text-brand);
   text-decoration: none;
 
   &:hover {

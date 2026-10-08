@@ -62,7 +62,7 @@ const TextInput = styled.textarea`
     "Pretendard",
     -apple-system,
     sans-serif;
-  color: #1c1e1e;
+  color: var(--text-primary);
   line-height: 1.4;
   margin-right: 10px;
   align-self: center;
@@ -80,9 +80,9 @@ const TextInput = styled.textarea`
 const ActionButton = styled.button<{ $isActive: boolean; $isStop?: boolean }>`
   background-color: ${(props) => {
     if (props.$isStop) return "#ff4d4f";
-    return props.$isActive ? COLORS.figmaBlue : "#c4c4c6";
+    return props.$isActive ? COLORS.figmaBlue : "var(--gray-300)";
   }};
-  color: #ffffff;
+  color: var(--text-inverse);
   border: none;
   border-radius: 60px;
   width: 40px;

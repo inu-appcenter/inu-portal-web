@@ -190,7 +190,7 @@ export default function MobileTimetableGroupWizardPage() {
   useHeader({
     hasback: true,
     showAlarm: false,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
     rightAreaNotCircle: true,
     onBack: handleBack,
     ...headerConfig,
@@ -414,7 +414,7 @@ const PageWrapper = styled.div`
   min-height: calc(100vh - var(--header-height));
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
 `;
 
 const ScrollContent = styled.div`
@@ -434,7 +434,7 @@ const StepBadge = styled.span`
   min-width: 32px;
   height: 32px;
   padding: 0 8px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 600;
 `;
@@ -444,7 +444,7 @@ const HeaderTextButton = styled.button`
   border: none;
   outline: none;
   cursor: pointer;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 15px;
   font-weight: 600;
   padding: 8px 4px;
@@ -452,8 +452,8 @@ const HeaderTextButton = styled.button`
 `;
 
 const Card = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 18px 16px;
   display: flex;
@@ -471,20 +471,20 @@ const CardLabelRow = styled.div`
 `;
 
 const CardLabel = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 16px;
   font-weight: 600;
   line-height: 23px;
 `;
 
 const CardLabelValue = styled.span`
-  color: var(--interactive-primary, #3b82f6);
+  color: var(--interactive-primary);
   font-size: 15px;
   font-weight: 600;
 `;
 
 const Required = styled.span`
-  color: var(--interactive-primary, #3b82f6);
+  color: var(--interactive-primary);
   margin-left: 2px;
 `;
 
@@ -493,9 +493,9 @@ const SelectBox = styled.select`
   height: 52px;
   padding: 0 16px;
   border-radius: 14px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #191f28);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 500;
   line-height: 52px;
@@ -516,7 +516,7 @@ const GroupsIntro = styled.div`
 
 const GroupsIntroTitle = styled.h2`
   margin: 0;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   line-height: 22px;
@@ -524,7 +524,7 @@ const GroupsIntroTitle = styled.h2`
 
 const GroupsIntroText = styled.p`
   margin: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 18px;
 `;
@@ -540,14 +540,14 @@ const GroupHead = styled.div`
 `;
 
 const GroupTitle = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   line-height: 22px;
 `;
 
 const GroupCount = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 400;
 `;
@@ -565,8 +565,8 @@ const GroupRemoveButton = styled.button`
   flex-shrink: 0;
   border: none;
   border-radius: 999px;
-  background: var(--bg-neutral-subtle, #f2f4f6);
-  color: var(--text-tertiary, #8b95a1);
+  background: var(--bg-muted);
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
 `;
@@ -583,13 +583,13 @@ const Chip = styled.div`
   gap: 6px;
   padding: 6px 8px 6px 12px;
   border-radius: 999px;
-  background: var(--bg-brand, #eff6ff);
+  background: var(--bg-brand);
   border: 1px solid transparent;
   max-width: 100%;
 `;
 
 const ChipText = styled.span`
-  color: var(--interactive-primary, #3b82f6);
+  color: var(--interactive-primary);
   font-size: 14px;
   font-weight: 500;
   overflow: hidden;
@@ -605,7 +605,7 @@ const ChipRemove = styled.button`
   border-radius: 999px;
   border: none;
   background: transparent;
-  color: var(--interactive-primary, #3b82f6);
+  color: var(--interactive-primary);
   cursor: pointer;
   flex-shrink: 0;
 `;
@@ -617,9 +617,9 @@ const AddCourseButton = styled.button`
   gap: 6px;
   height: 48px;
   border-radius: 14px;
-  border: 1px dashed var(--interactive-primary, #3b82f6);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--interactive-primary, #3b82f6);
+  border: 1px dashed var(--interactive-primary);
+  background: var(--bg-subtle);
+  color: var(--interactive-primary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -637,9 +637,9 @@ const AddGroupButton = styled.button`
   gap: 6px;
   height: 52px;
   border-radius: 16px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;

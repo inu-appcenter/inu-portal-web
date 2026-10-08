@@ -94,7 +94,7 @@ const DescriptionBox = styled.div`
   line-height: 12px;
   letter-spacing: 0.871981px;
 
-  color: #000000;
+  color: var(--text-primary);
 
   .name {
     font-style: normal;
@@ -103,6 +103,6 @@ const DescriptionBox = styled.div`
     line-height: 12px;
     text-align: center;
 
-    color: #000000;
+    color: var(--text-primary);
   }
 `;

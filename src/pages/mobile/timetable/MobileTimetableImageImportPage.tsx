@@ -280,7 +280,7 @@ export default function MobileTimetableImageImportPage() {
     hasback: true,
     showAlarm: false,
     onBack: handleHeaderBack,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   const handleStayOnPage = () => {
@@ -1062,7 +1062,7 @@ const PageWrapper = styled.div`
   height: calc(100vh - var(--header-height, 56px));
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   position: relative;
   overflow: hidden;
 `;
@@ -1112,13 +1112,13 @@ const TargetTimetableBadge = styled.button`
   gap: 6px;
   align-self: flex-start;
   padding: 6px 12px;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border: 1px solid transparent;
   border-radius: 8px;
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
   line-height: 18px;
   cursor: pointer;
   transition:
@@ -1126,19 +1126,19 @@ const TargetTimetableBadge = styled.button`
     border-color 0.15s ease;
 
   &:hover {
-    background: #e5e8eb;
+    background: var(--gray-200);
   }
 
   &:active {
-    background: #d1d6db;
+    background: var(--gray-300);
   }
 
   svg.calendar {
-    color: #0061ff;
+    color: var(--text-brand);
   }
 
   svg.chevron {
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -1162,7 +1162,7 @@ const SheetTitle = styled.h2`
   font-family: Pretendard;
   font-size: 18px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -1170,7 +1170,7 @@ const SheetSubtitle = styled.p`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 400;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
@@ -1190,7 +1190,7 @@ const SemesterSectionTitle = styled.div`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
-  color: #6b7684;
+  color: var(--gray-600);
   padding: 0 4px;
 `;
 
@@ -1207,14 +1207,14 @@ const TimetableRowButton = styled.button<{ $selected: boolean }>`
   width: 100%;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5e8eb")};
-  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#ffffff")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-default)")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f9fafb")};
+    background: ${({ $selected }) => ($selected ? "var(--blue-100)" : "var(--bg-subtle)")};
   }
 `;
 
@@ -1231,7 +1231,7 @@ const TimetableRowName = styled.div<{ $selected: boolean }>`
   font-family: Pretendard;
   font-size: 15px;
   font-weight: 600;
-  color: ${({ $selected }) => ($selected ? "#0061ff" : "#191f28")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-primary)")};
 `;
 
 const TimetableRowMeta = styled.div`
@@ -1240,24 +1240,24 @@ const TimetableRowMeta = styled.div`
   gap: 6px;
   font-family: Pretendard;
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const PrimaryBadge = styled.span`
   display: inline-flex;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #e5f0ff;
-  color: #0061ff;
+  background: var(--blue-100);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 600;
 `;
 
 const DropzoneCard = styled.button`
   width: 100%;
-  border: 1.5px dashed #0061ff;
+  border: 1.5px dashed var(--border-brand);
   border-radius: 20px;
-  background: var(--bg-brand, #eff6ff);
+  background: var(--bg-brand);
   padding: 20px 16px 0 16px;
   display: flex;
   flex-direction: column;
@@ -1271,7 +1271,7 @@ const DropzoneCard = styled.button`
     border-color 0.2s;
 
   &:hover {
-    background: #e5f0ff;
+    background: var(--blue-100);
   }
 `;
 
@@ -1286,7 +1286,7 @@ const IconBox = styled.div`
   height: 40px;
   flex-shrink: 0;
   border-radius: 12px;
-  background: #0061ff;
+  background: var(--interactive-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1304,7 +1304,7 @@ const DropzoneTitle = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const DropzoneSubtitle = styled.div`
@@ -1312,7 +1312,7 @@ const DropzoneSubtitle = styled.div`
   font-weight: 400;
   font-size: 12px;
   line-height: 18px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const SampleImageWrapper = styled.div`
@@ -1345,7 +1345,7 @@ const GuideFootnote = styled.p`
   font-weight: 400;
   font-size: 12px;
   line-height: 18px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 const GuideSectionTitle = styled.h2`
@@ -1353,13 +1353,13 @@ const GuideSectionTitle = styled.h2`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #333d4b;
+  color: var(--text-secondary);
   margin: 0;
 `;
 
 const GuideCard = styled.div`
-  background: #ffffff;
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -1391,14 +1391,14 @@ const GuideItemTitle = styled.span`
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
-  color: #333d4b;
+  color: var(--text-secondary);
 `;
 
 const AccuracyBadge = styled.span`
   padding: 2px 6px;
   border-radius: 999px;
-  background: #e8f2ff;
-  color: #0061ff;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 10px;
   font-weight: 700;
   line-height: 14px;
@@ -1409,12 +1409,12 @@ const GuideItemSubtitle = styled.span`
   font-weight: 400;
   font-size: 12px;
   line-height: 18px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const GuideDivider = styled.div`
   height: 1px;
-  background: var(--border-default, #f1f3f5);
+  background: var(--border-default);
   width: 100%;
 `;
 
@@ -1451,7 +1451,7 @@ const AnalyzingStatusText = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #333d4b;
+  color: var(--text-secondary);
   text-align: center;
 `;
 
@@ -1459,7 +1459,7 @@ const ProgressTrack = styled.div`
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: #e5e8eb;
+  background: var(--gray-200);
   overflow: hidden;
 `;
 
@@ -1467,7 +1467,7 @@ const ProgressBar = styled.div<{ $progress: number }>`
   width: ${({ $progress }) => `${Math.max(4, $progress)}%`};
   height: 100%;
   border-radius: inherit;
-  background: #0061ff;
+  background: var(--interactive-primary);
   transition: width 0.2s ease;
 `;
 
@@ -1476,7 +1476,7 @@ const ProgressPercent = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #0061ff;
+  color: var(--text-brand);
   text-align: center;
 `;
 
@@ -1502,7 +1502,7 @@ const ResultTitle = styled.h2`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -1514,9 +1514,9 @@ const ResultStatusBadge = styled.div<{ $completed: boolean }>`
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  background: ${({ $completed }) => ($completed ? "#e8f2ff" : "#fff0f0")};
-  border: 1px solid ${({ $completed }) => ($completed ? "#d3e5ff" : "#ffd5d5")};
-  color: ${({ $completed }) => ($completed ? "#0061ff" : "#e5484d")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
+  border: 1px solid ${({ $completed }) => ($completed ? "var(--border-brand-subtle)" : "var(--border-error-subtle)")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "#e5484d")};
 `;
 
 const ResultDescription = styled.p`
@@ -1525,7 +1525,7 @@ const ResultDescription = styled.p`
   font-weight: 400;
   font-size: 13px;
   line-height: 20px;
-  color: #6b7684;
+  color: var(--gray-600);
   white-space: pre-line;
   word-break: keep-all;
 `;
@@ -1540,8 +1540,8 @@ const ResultCardsList = styled.div`
 const ResultCard = styled.div<{ $completed: boolean }>`
   padding: 16px;
   border-radius: 16px;
-  background: ${({ $completed }) => ($completed ? "#ffffff" : "#fffafa")};
-  border: 1px solid ${({ $completed }) => ($completed ? "#d3e5ff" : "#fecaca")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-base)" : "var(--bg-base)")};
+  border: 1px solid ${({ $completed }) => ($completed ? "var(--border-brand-subtle)" : "var(--border-error-subtle)")};
   box-sizing: border-box;
   transition:
     background 0.2s,
@@ -1568,11 +1568,11 @@ const CardCourseTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const CardDot = styled.span`
-  color: #6b7684;
+  color: var(--gray-600);
   font-size: 14px;
 `;
 
@@ -1581,7 +1581,7 @@ const CardProfessor = styled.span`
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const CardActionGroup = styled.div`
@@ -1596,8 +1596,8 @@ const CardStatusBadge = styled.span<{ $completed: boolean }>`
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  background: ${({ $completed }) => ($completed ? "#e8f2ff" : "#fff0f0")};
-  color: ${({ $completed }) => ($completed ? "#0061ff" : "#e5484d")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "#e5484d")};
   white-space: nowrap;
 `;
 
@@ -1605,8 +1605,8 @@ const RemoveButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #f1f3f5;
-  color: #8b95a1;
+  background: var(--bg-muted);
+  color: var(--text-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1615,8 +1615,8 @@ const RemoveButton = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: #e5e8eb;
-    color: #4e5968;
+    background: var(--gray-200);
+    color: var(--gray-700);
   }
 `;
 
@@ -1624,8 +1624,8 @@ const EditButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #f1f3f5;
-  color: #4e5968;
+  background: var(--bg-muted);
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1634,8 +1634,8 @@ const EditButton = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: #e5e8eb;
-    color: #191f28;
+    background: var(--gray-200);
+    color: var(--text-primary);
   }
 `;
 
@@ -1644,7 +1644,7 @@ const CardScheduleText = styled.div`
   font-weight: 400;
   font-size: 13px;
   line-height: 19px;
-  color: #6b7684;
+  color: var(--gray-600);
   margin: 6px 0 12px;
 `;
 
@@ -1659,15 +1659,15 @@ const CandidateLabel = styled.div`
   font-weight: 500;
   font-size: 12px;
   line-height: 18px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const SelectWrapper = styled.div<{ $selected: boolean; $open: boolean }>`
   position: relative;
   z-index: ${({ $open }) => ($open ? 30 : 1)};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#fca5a5")};
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "#fca5a5")};
   border-radius: 12px;
-  background: ${({ $selected }) => ($selected ? "#f5f9ff" : "#ffffff")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
 `;
 
 const SelectTrigger = styled.button`
@@ -1687,7 +1687,7 @@ const TriggerText = styled.span<{ $placeholder: boolean }>`
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
-  color: ${({ $placeholder }) => ($placeholder ? "#8b95a1" : "#191f28")};
+  color: ${({ $placeholder }) => ($placeholder ? "var(--text-tertiary)" : "var(--text-primary)")};
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1699,8 +1699,8 @@ const CandidatePopover = styled(motion.div)<{ $openUpward: boolean }>`
   left: 0;
   right: 0;
   ${({ $openUpward }) => ($openUpward ? "bottom: calc(100% + 4px);" : "top: calc(100% + 4px);")}
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   max-height: 200px;
@@ -1717,11 +1717,11 @@ const PopoverOption = styled.button<{ $selected: boolean }>`
   gap: 8px;
   padding: 10px;
   border-radius: 10px;
-  background: ${({ $selected }) => ($selected ? "#e8f2ff" : "transparent")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "transparent")};
   cursor: pointer;
 
   &:hover {
-    background: ${({ $selected }) => ($selected ? "#e8f2ff" : "#f8f9fb")};
+    background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-subtle)")};
   }
 `;
 
@@ -1737,24 +1737,24 @@ const PopoverOptionText = styled.div`
     align-items: baseline;
     gap: 6px;
     font-size: 13px;
-    color: #191f28;
+    color: var(--text-primary);
 
     span {
       font-size: 11px;
-      color: #6b7684;
+      color: var(--gray-600);
       font-weight: 500;
     }
   }
 
   small {
     font-size: 11px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 
   em {
     font-style: normal;
     font-size: 11px;
-    color: #4e5968;
+    color: var(--gray-700);
   }
 `;
 
@@ -1765,7 +1765,7 @@ const OptionCheck = styled.div<{ $selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ $selected }) => ($selected ? "#0061ff" : "transparent")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "transparent")};
 `;
 
 const WarningText = styled.div`
@@ -1818,9 +1818,9 @@ const FloatingPortalCTA = styled.button`
   align-self: center;
   padding: 8px 16px;
   border-radius: 9999px;
-  background-color: var(--bg-surface, #ffffff);
-  color: var(--interactive-primary, #0061ff);
-  border: 1px solid var(--border-brand, rgba(0, 97, 255, 0.25));
+  background-color: var(--bg-base);
+  color: var(--interactive-primary);
+  border: 1px solid var(--border-brand);
   box-shadow:
     0 4px 12px rgba(0, 97, 255, 0.12),
     0 2px 4px rgba(0, 0, 0, 0.04);
@@ -1833,7 +1833,7 @@ const FloatingPortalCTA = styled.button`
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background-color: var(--bg-brand-subtle, #eff6ff);
+    background-color: var(--bg-brand);
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(0, 97, 255, 0.18);
   }
@@ -2155,7 +2155,7 @@ const ModalContentSheet = styled.div`
   width: 100%;
   max-width: 600px;
   max-height: 85dvh;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
@@ -2178,37 +2178,37 @@ const ModalSheetHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   padding: 20px 20px 14px;
-  border-bottom: 1px solid #f2f4f6;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const ModalSheetTitle = styled.h3`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const ModalSheetSubtitle = styled.p`
   margin: 4px 0 0;
   font-size: 13px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const ModalCloseButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7684;
+  color: var(--gray-600);
   cursor: pointer;
   flex-shrink: 0;
 
   &:hover {
-    background: #e5e8eb;
+    background: var(--gray-200);
   }
 `;
 
@@ -2243,7 +2243,7 @@ const FormRow = styled.div`
 const FormLabel = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -2253,18 +2253,18 @@ const FormInput = styled.input`
   width: 100%;
   height: 44px;
   padding: 0 14px;
-  border: 1px solid #e5e8eb;
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   font-size: 14px;
-  color: #191f28;
-  background: #fdfdfe;
+  color: var(--text-primary);
+  background: var(--bg-base);
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
 
   &:focus {
-    border-color: #0061ff;
-    background: #ffffff;
+    border-color: var(--border-brand);
+    background: var(--bg-base);
   }
 `;
 
@@ -2279,9 +2279,9 @@ const DayChip = styled.button<{ $active: boolean }>`
   min-width: 40px;
   height: 38px;
   border-radius: 8px;
-  border: 1px solid ${({ $active }) => ($active ? "#0061ff" : "#e5e8eb")};
-  background: ${({ $active }) => ($active ? "#0061ff" : "#ffffff")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#4e5968")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--border-brand)" : "var(--border-default)")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-base)")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2302,12 +2302,12 @@ const ResultsSectionTitle = styled.div`
   justify-content: space-between;
   font-size: 13px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const SearchLoadingBadge = styled.span`
   font-size: 11px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-weight: 600;
 `;
 
@@ -2320,7 +2320,7 @@ const ModalSheetFooter = styled.div`
   align-items: center;
   gap: 8px;
   padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #f2f4f6;
-  background: #ffffff;
+  border-top: 1px solid var(--bg-base);
+  background: var(--bg-base);
 `;
 

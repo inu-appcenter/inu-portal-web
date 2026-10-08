@@ -132,7 +132,7 @@ const RefreshArea = styled.div`
 
 const LastUpdated = styled.span`
   font-size: 11px;
-  color: #888;
+  color: var(--text-tertiary);
   font-weight: normal;
 `;
 
@@ -147,7 +147,7 @@ const RefreshButton = styled.button<{
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${(props) => (props.$isCooldown ? "#ccc" : "#666")};
+  color: ${(props) => (props.$isCooldown ? "var(--text-disabled)" : "var(--gray-600)")};
   transition: color 0.2s;
 
   ${(props) =>

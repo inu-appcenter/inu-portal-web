@@ -431,7 +431,7 @@ export default BasicInfoPage;
 const FootnoteText = styled.p`
   margin: 8px 0 0;
   font-size: 12.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.4;
 `;
@@ -454,8 +454,8 @@ const ContentSection = styled.div`
 `;
 
 const EmptyCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 32px 20px;
   display: flex;
@@ -469,20 +469,20 @@ const EmptyTitle = styled.h3`
   margin: 8px 0 0;
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const EmptyDesc = styled.p`
   margin: 0;
   font-size: 13px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.45;
   max-width: 320px;
 `;
 
 const UpdateInfoText = styled.div`
   font-size: 12px;
-  color: #969696;
+  color: var(--text-tertiary);
   text-align: right;
   margin-top: -8px;
 `;
@@ -511,12 +511,12 @@ const InfoItemWrapper = styled.div`
   flex-direction: column;
   gap: 4px;
   .title {
-    color: #969696;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
   }
   .description {
-    color: #000;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
   }

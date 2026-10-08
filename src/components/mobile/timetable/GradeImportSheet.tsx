@@ -318,7 +318,7 @@ const Sheet = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 24px 24px 0 0;
   max-height: 88vh;
   z-index: 2001;
@@ -347,7 +347,7 @@ const SheetHeader = styled.div`
   .drag-handle {
     width: 36px;
     height: 4px;
-    background-color: var(--border-default, #e5e8eb);
+    background-color: var(--border-default);
     border-radius: 2px;
     margin-bottom: 12px;
   }
@@ -363,7 +363,7 @@ const SheetHeader = styled.div`
   .title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -375,7 +375,7 @@ const BackButton = styled.button`
   padding: 0;
   display: flex;
   align-items: center;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
   outline: none;
 `;
@@ -399,7 +399,7 @@ const SheetBody = styled.div`
 // 스크롤 대신 찌그러진다. 아래 블록들은 전부 shrink를 막아 실제 높이대로 쌓이게 한다.
 const GuideBox = styled.div`
   flex-shrink: 0;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -410,11 +410,11 @@ const GuideBox = styled.div`
     margin: 0;
     font-size: 13px;
     line-height: 18px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   .sub {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -426,7 +426,7 @@ const GuideLinkButton = styled.button`
   margin: 0;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   outline: none;
   text-decoration: underline;
@@ -438,22 +438,22 @@ const PasteArea = styled.textarea`
   flex-shrink: 0;
   min-height: 160px;
   box-sizing: border-box;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
-  background-color: var(--bg-base, #ffffff);
+  color: var(--text-secondary);
+  background-color: var(--bg-base);
   resize: vertical;
   outline: none;
 
   &:focus {
-    border-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
   }
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
     white-space: pre;
   }
 `;
@@ -462,13 +462,13 @@ const SummaryLine = styled.div`
   flex-shrink: 0;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 
   .target {
     display: block;
     margin-top: 2px;
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -476,7 +476,7 @@ const PreviewList = styled.div`
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   overflow: hidden;
 `;
@@ -488,7 +488,7 @@ const PreviewRow = styled.div<{ $dimmed?: boolean }>`
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   opacity: ${({ $dimmed }) => ($dimmed ? 0.55 : 1)};
 
   &:last-child {
@@ -505,7 +505,7 @@ const PreviewRow = styled.div<{ $dimmed?: boolean }>`
   .name {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -513,7 +513,7 @@ const PreviewRow = styled.div<{ $dimmed?: boolean }>`
 
   .meta {
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 
   .right {
@@ -531,17 +531,17 @@ const GradePill = styled.span<{ $empty: boolean }>`
   font-size: 13px;
   font-weight: 500;
   background-color: ${({ $empty }) =>
-    $empty ? "var(--bg-muted, #f1f3f5)" : "var(--bg-warn-subtle, #fffaeb)"};
+    $empty ? "var(--bg-muted)" : "var(--bg-warn)"};
   color: ${({ $empty }) =>
-    $empty ? "var(--text-tertiary, #8b95a1)" : "var(--yellow-600, #b58000)"};
+    $empty ? "var(--text-tertiary)" : "var(--yellow-600)"};
 `;
 
 const MatchBadge = styled.span<{ $status: GradeMatchStatus }>`
   font-size: 11px;
   color: ${({ $status }) =>
     $status === "MATCHED_BY_CODE" || $status === "MATCHED_BY_TITLE"
-      ? "var(--text-brand, #0061ff)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--text-brand)"
+      : "var(--text-tertiary)"};
 `;
 
 const EmptyBox = styled.div`
@@ -551,11 +551,11 @@ const EmptyBox = styled.div`
   padding: 24px 4px;
   font-size: 13px;
   line-height: 19px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   b {
     font-size: 14px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -563,7 +563,7 @@ const SkippedList = styled.ul`
   margin: 4px 0 0;
   padding-left: 18px;
   font-size: 12px;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
 
   li {
     overflow: hidden;
@@ -575,5 +575,5 @@ const SkippedList = styled.ul`
 const SheetFooter = styled.div`
   flex-shrink: 0;
   padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;

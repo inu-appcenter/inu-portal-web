@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset } from "./tokens";
 import { typography } from "@/styles/typography";
 import { effects } from "@/styles/effects";
 
@@ -78,7 +78,7 @@ const FixedBar = styled.div`
   background: linear-gradient(
     to bottom,
     rgba(248, 249, 251, 0) 16%,
-    var(--bg-subtle, #f8f9fb) 50%
+    var(--bg-subtle) 50%
   );
   pointer-events: none;
 
@@ -103,8 +103,8 @@ const Button = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: ${WIZARD_PRIMARY};
-  color: var(--text-inverse, #ffffff);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   white-space: nowrap;
   ${effects.elevation1}
   transition:
@@ -117,13 +117,13 @@ const Button = styled.button`
   }
 
   &:disabled {
-    background: var(--interactive-primary-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    background: var(--interactive-primary-disabled);
+    color: var(--text-disabled);
     box-shadow: none;
   }
 
   &[aria-busy="true"] {
-    background: ${WIZARD_PRIMARY};
+    background: var(--interactive-primary);
   }
 `;
 
@@ -132,7 +132,7 @@ const Spinner = styled.span`
   height: 20px;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #ffffff;
+  border-top-color: var(--bg-base);
   animation: wizard-cta-spin 0.8s linear infinite;
 
   @keyframes wizard-cta-spin {

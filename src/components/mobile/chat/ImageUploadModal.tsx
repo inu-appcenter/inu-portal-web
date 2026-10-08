@@ -79,14 +79,14 @@ export default function ImageUploadModal({
               leftButton={{
                 label: "취소",
                 onClick: onCancel,
-                backgroundColor: "#F2F2F7",
-                textColor: "#1C1C1E",
+                backgroundColor: "var(--bg-muted)",
+                textColor: "var(--text-primary)",
               }}
               rightButton={{
                 label: "보내기",
                 onClick: onSend,
-                backgroundColor: "#5E92F0",
-                textColor: "#FFFFFF",
+                backgroundColor: "var(--interactive-primary)",
+                textColor: "var(--text-inverse)",
               }}
               padding="16px 24px 24px"
               height="88px"
@@ -137,7 +137,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 18px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
   text-align: left;
 `;
@@ -156,7 +156,7 @@ const ImageContainer = styled.div`
   align-items: center;
   border-radius: 12px;
   overflow: hidden;
-  background-color: #f2f2f7;
+  background-color: var(--bg-muted);
 
   img {
     max-width: 100%;
@@ -171,7 +171,7 @@ const CountBadge = styled.div`
   bottom: 8px;
   right: 8px;
   background-color: rgba(0, 0, 0, 0.6);
-  color: white;
+  color: var(--text-inverse);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;

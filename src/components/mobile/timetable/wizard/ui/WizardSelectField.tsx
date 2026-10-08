@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
-import { WIZARD_PRIMARY } from "./tokens";
 import { typography } from "@/styles/typography";
 
 export interface WizardSelectOption {
@@ -73,12 +72,12 @@ const Field = styled.div<{ $disabled?: boolean }>`
   display: flex;
   align-items: center;
   border-radius: 20px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
 
   &:focus-within {
-    border-color: ${WIZARD_PRIMARY};
+    border-color: var(--border-brand);
   }
 `;
 
@@ -90,8 +89,8 @@ const Value = styled.span<{ $placeholder: boolean }>`
   white-space: nowrap;
   color: ${({ $placeholder }) =>
     $placeholder
-      ? "var(--text-tertiary, #8b95a1)"
-      : "var(--text-secondary, #333d4b)"};
+      ? "var(--text-tertiary)"
+      : "var(--text-secondary)"};
   ${typography.heading2}
 `;
 
@@ -102,7 +101,7 @@ const Chevron = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const NativeSelect = styled.select`

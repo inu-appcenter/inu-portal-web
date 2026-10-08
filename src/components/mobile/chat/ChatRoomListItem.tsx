@@ -188,7 +188,7 @@ const SingleAvatarArea = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 999px;
-  background-color: var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--border-brand-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,7 +213,7 @@ const DefaultProfileIcon = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--border-brand-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,8 +232,8 @@ const StackAvatarItem = styled.div<{ $isThreeLayout?: boolean }>`
   width: ${({ $isThreeLayout }) => ($isThreeLayout ? "28px" : "26px")};
   height: ${({ $isThreeLayout }) => ($isThreeLayout ? "28px" : "26px")};
   border-radius: 999px;
-  border: 2px solid var(--bg-base, #ffffff);
-  background-color: var(--border-brand-subtle, #d3e5ff);
+  border: 2px solid var(--bg-base);
+  background-color: var(--border-brand-subtle);
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
@@ -298,7 +298,7 @@ const TopRow = styled.div`
 
   .time {
     font-family: Pretendard;
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
     font-size: 12px;
     font-weight: 400;
     line-height: 16px;
@@ -320,7 +320,7 @@ const TitleArea = styled.div`
     font-weight: 600;
     font-size: 16px;
     line-height: 1.4;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -328,7 +328,7 @@ const TitleArea = styled.div`
 `;
 
 const ParticipantCountBadge = styled.div`
-  background-color: var(--bg-disabled, #e5e8eb);
+  background-color: var(--bg-disabled);
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
@@ -342,14 +342,14 @@ const ParticipantCountBadge = styled.div`
     font-weight: 500;
     font-size: 12px;
     line-height: 1.4;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
 const OpenTag = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #5e92f0;
+  color: var(--interactive-primary);
   background: #f0eeff;
   padding: 1px 4px;
   border-radius: 4px;
@@ -357,8 +357,8 @@ const OpenTag = styled.span`
 `;
 
 const OfficialTag = styled(OpenTag)`
-  color: #ffffff;
-  background: #1c1c1e;
+  color: var(--text-inverse);
+  background: var(--gray-900);
 `;
 
 const BottomRow = styled.div`
@@ -372,7 +372,7 @@ const BottomRow = styled.div`
     font-size: 14px;
     font-weight: 400;
     line-height: 1.6;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -380,15 +380,15 @@ const BottomRow = styled.div`
     min-width: 0;
 
     .sender {
-      color: var(--text-tertiary, #8b95a1);
+      color: var(--text-tertiary);
       font-weight: 500;
     }
   }
 `;
 
 const UnreadBadge = styled.div`
-  background-color: var(--interactive-primary, #0061ff);
-  color: var(--text-inverse, #ffffff);
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-family: Pretendard;
   font-size: 12px;
   font-weight: 400;

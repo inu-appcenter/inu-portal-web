@@ -109,7 +109,7 @@ const StyledContent = styled(Dialog.Content)`
   width: 90vw;
   max-width: 400px;
   height: 60vh;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   z-index: 2001;
   display: flex;
@@ -128,7 +128,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 

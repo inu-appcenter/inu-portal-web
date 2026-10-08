@@ -298,7 +298,7 @@ const V2Wrapper = styled.div`
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  background-color: #eff5fc;
+  background-color: var(--bg-brand);
   min-height: 100vh;
 `;
 
@@ -307,7 +307,7 @@ const UpperSection = styled.div`
   flex-direction: column;
   padding-top: calc(var(--header-height, 56px) + 8px);
   padding-bottom: 24px;
-  background: #eff5fc;
+  background: var(--bg-brand);
 `;
 
 const GridWidgets = styled.div`
@@ -317,7 +317,7 @@ const GridWidgets = styled.div`
 `;
 
 const LowerSheetSection = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
   //margin-top: -24px;
@@ -372,7 +372,7 @@ const SectionInner = styled.div`
 `;
 
 const FooterSection = styled.footer`
-  background: var(--gray-50, #f8f9fb);
+  background: var(--gray-50);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -417,7 +417,7 @@ const PolicyLink = styled.a`
   display: flex;
   align-items: center;
   height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -425,7 +425,7 @@ const PolicyLink = styled.a`
   word-break: keep-all;
 
   &:hover {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -450,7 +450,7 @@ const AppcenterMark = styled.img`
 `;
 
 const OrgName = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
@@ -458,7 +458,7 @@ const OrgName = styled.span`
 
 const OrgAddress = styled.p`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -480,16 +480,16 @@ const SocialLink = styled.a`
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
 
   &:hover {
-    background: var(--gray-100, #f1f3f5);
+    background: var(--gray-100);
   }
 `;
 
 const SocialIcon = styled(Icon)`
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const FooterNote = styled.div`
@@ -497,7 +497,7 @@ const FooterNote = styled.div`
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -532,7 +532,7 @@ const GreetingMainTitle = styled.h2`
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.6px;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.25;
 `;
@@ -541,7 +541,7 @@ const GreetingSubTitle = styled.p`
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: #4b5563;
+  color: var(--gray-700);
   margin: 0;
   line-height: 1.4;
 `;

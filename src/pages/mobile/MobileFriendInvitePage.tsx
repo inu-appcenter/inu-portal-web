@@ -224,12 +224,12 @@ const IconWrapper = styled.div<{ $tone?: "brand" | "muted" }>`
   border-radius: 999px;
   background: ${({ $tone }) =>
     $tone === "muted"
-      ? "var(--bg-muted, #f1f3f5)"
-      : "var(--bg-brand, #eff6ff)"};
+      ? "var(--bg-muted)"
+      : "var(--bg-brand)"};
   color: ${({ $tone }) =>
     $tone === "muted"
-      ? "var(--text-tertiary, #8b95a1)"
-      : "var(--text-brand, #0061ff)"};
+      ? "var(--text-tertiary)"
+      : "var(--text-brand)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -241,7 +241,7 @@ const ProfileArea = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 999px;
-  background: var(--bg-muted, #f1f3f5);
+  background: var(--bg-muted);
   margin-bottom: 12px;
 `;
 
@@ -271,9 +271,9 @@ const AcceptedBadge = styled.div`
   width: 26px;
   height: 26px;
   border-radius: 999px;
-  border: 2px solid var(--bg-base, #ffffff);
-  background: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
+  border: 2px solid var(--bg-base);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,7 +283,7 @@ const Nickname = styled.div`
   font-family: Pretendard;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;
 
 const ProfileSubtitle = styled.div`
@@ -291,7 +291,7 @@ const ProfileSubtitle = styled.div`
   margin-bottom: 20px;
   font-family: Pretendard;
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const Title = styled.h2`
@@ -299,7 +299,7 @@ const Title = styled.h2`
   font-family: Pretendard;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   text-align: center;
 `;
 
@@ -308,7 +308,7 @@ const Description = styled.p`
   font-family: Pretendard;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
 `;
 
@@ -321,8 +321,8 @@ const PrimaryButton = styled.button`
   height: 52px;
   border: none;
   border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-family: Pretendard;
   font-size: 16px;
   font-weight: 600;
@@ -330,13 +330,13 @@ const PrimaryButton = styled.button`
   outline: none;
 
   &:active:not(:disabled) {
-    background-color: var(--interactive-primary-pressed, #2563eb);
+    background-color: var(--interactive-primary-pressed);
     transform: scale(0.98);
   }
 
   &:disabled {
-    background-color: var(--bg-muted, #f1f3f5);
-    color: var(--text-tertiary, #8b95a1);
+    background-color: var(--bg-muted);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
 `;

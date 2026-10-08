@@ -629,8 +629,8 @@ const PageWrapper = styled.div`
     max-width: 768px;
     margin: 0 auto;
     padding-top: 0;
-    border-left: 1px solid var(--border-default, #e5e8eb);
-    border-right: 1px solid var(--border-default, #e5e8eb);
+    border-left: 1px solid var(--border-default);
+    border-right: 1px solid var(--border-default);
   }
 `;
 
@@ -638,10 +638,10 @@ const RetryButton = styled.button`
   display: block;
   margin: 12px auto 0;
   padding: 8px 16px;
-  border-radius: var(--radius-full, 999px);
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-secondary, #333d4b);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -664,7 +664,7 @@ const CourseTitle = styled.h1`
   font-size: 20px;
   font-weight: 700;
   line-height: 28px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   letter-spacing: -0.2px;
   margin: 0;
 `;
@@ -673,7 +673,7 @@ const ProfessorName = styled.p`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
@@ -685,10 +685,10 @@ const ChipRow = styled.div`
 `;
 
 const Chip = styled.div`
-  background-color: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 4px 10px;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -697,7 +697,7 @@ const Chip = styled.div`
     font-size: 13px;
     font-weight: 500;
     line-height: 18px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
     white-space: nowrap;
   }
 `;
@@ -713,7 +713,7 @@ const CatalogInfoRow = styled.div`
   flex-direction: column;
   gap: 2px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
 
   &:last-child {
     border-bottom: none;
@@ -724,26 +724,26 @@ const InfoLabel = styled.span`
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const InfoValue = styled.span`
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const AccordionSectionGroup = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const AccordionContainer = styled.div`
   width: 100%;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const AccordionHeader = styled.div`
@@ -760,7 +760,7 @@ const AccordionTitle = styled.span`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const ChevronIconWrapper = styled.div<{ $isOpen: boolean }>`
@@ -771,7 +771,7 @@ const ChevronIconWrapper = styled.div<{ $isOpen: boolean }>`
   height: 24px;
   transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
   transition: transform 0.2s ease-in-out;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const AccordionContent = styled.div`
@@ -785,7 +785,7 @@ const OverviewText = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 
   p {
     margin: 0 0 12px;
@@ -799,7 +799,7 @@ const BulletList = styled.ul`
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   padding-left: 0;
   list-style-type: none;
@@ -816,14 +816,14 @@ const TableTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0 0 6px;
 `;
 
 const DeliveryTable = styled.div<{ $columns: number }>`
   display: grid;
   grid-template-columns: repeat(${({ $columns }) => Math.max($columns, 1)}, 1fr);
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
@@ -835,7 +835,7 @@ const TableCell = styled.div`
   align-items: center;
   justify-content: center;
   height: 52px;
-  border-right: 1px solid var(--border-default, #e5e8eb);
+  border-right: 1px solid var(--border-default);
   box-sizing: border-box;
 
   &:last-child {
@@ -848,8 +848,8 @@ const TableCell = styled.div`
     justify-content: center;
     width: 100%;
     flex: 1;
-    border-bottom: 1px solid var(--border-default, #e5e8eb);
-    background-color: var(--bg-subtle, #f8f9fb);
+    border-bottom: 1px solid var(--border-default);
+    background-color: var(--bg-subtle);
     padding: 2px 0;
   }
 
@@ -857,7 +857,7 @@ const TableCell = styled.div`
     font-size: 10px;
     font-weight: 500;
     line-height: 14px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     text-align: center;
     white-space: nowrap;
   }
@@ -875,7 +875,7 @@ const TableCell = styled.div`
     font-size: 10px;
     font-weight: 400;
     line-height: 14px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     text-align: center;
   }
 `;
@@ -886,7 +886,7 @@ const GradingProgressBar = styled.div`
   height: 12px;
   border-radius: 999px;
   overflow: hidden;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   margin-bottom: 8px;
 `;
 
@@ -918,7 +918,7 @@ const GradingLegendItem = styled.div`
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -927,9 +927,9 @@ const ReferenceCard = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background-color: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-xl, 16px);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 8px;
@@ -950,22 +950,22 @@ const ReferenceTitle = styled.h4`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   flex: 1;
 `;
 
 const ReferenceChip = styled.div`
-  background-color: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 2px 8px;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
 
   span {
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -976,18 +976,18 @@ const ReferenceDetailsRow = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   .author {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   .separator {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 
   .details {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     word-break: break-all;
   }
 `;
@@ -997,7 +997,7 @@ const WeeklyPlanItem = styled.div`
   gap: 12px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   width: 100%;
   box-sizing: border-box;
 
@@ -1007,10 +1007,10 @@ const WeeklyPlanItem = styled.div`
 `;
 
 const WeeklyChip = styled.div`
-  background-color: var(--bg-warn-subtle, #fffaeb);
-  border: 1px solid var(--bg-warn, #fef3c7);
+  background-color: var(--bg-warn);
+  border: 1px solid var(--bg-warn);
   padding: 4px 8px;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
   width: 56px;
   display: flex;
   align-items: center;
@@ -1021,7 +1021,7 @@ const WeeklyChip = styled.div`
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-warn, #7a5400);
+    color: var(--text-warn);
   }
 `;
 
@@ -1029,7 +1029,7 @@ const WeeklyDesc = styled.p`
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   flex: 1;
 `;
@@ -1039,9 +1039,9 @@ const AssignmentCard = styled.div`
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  background-color: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-xl, 16px);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 8px;
@@ -1061,23 +1061,23 @@ const AssignmentTitle = styled.h4`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   flex: 1;
 `;
 
 const AssignmentChip = styled.div`
-  background-color: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 2px 8px;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
   flex-shrink: 0;
 
   span {
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -1090,14 +1090,14 @@ const AssignmentField = styled.div`
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 
   .value {
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -1111,7 +1111,7 @@ const WeightsSection = styled.div`
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -1122,16 +1122,16 @@ const TagChipRow = styled.div`
 `;
 
 const TagChip = styled.div`
-  background-color: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 4px 8px;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
 
   span {
     font-size: 12px;
     font-weight: 500;
     line-height: 16px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -1148,7 +1148,7 @@ const DisabilityTitle = styled.h3`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -1156,7 +1156,7 @@ const DisabilityContent = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   p {
     margin: 0;

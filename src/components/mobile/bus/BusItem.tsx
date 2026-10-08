@@ -137,10 +137,10 @@ const LabelWrapper = styled.div`
 
 const StatusInfo = styled.span`
   border-radius: 2px;
-  border: 0.5px solid #cecece;
+  border: 0.5px solid var(--border-strong);
   padding: 2px;
   font-size: 12px;
-  color: #666;
+  color: var(--gray-600);
   font-weight: 400;
   word-break: keep-all;
 `;

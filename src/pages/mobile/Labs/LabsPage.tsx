@@ -259,7 +259,7 @@ const Icon = styled.img`
   height: 48px;
   border-radius: 8px;
   object-fit: cover;
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
   flex-shrink: 0;
 `;
 
@@ -267,8 +267,8 @@ const IconWrapper = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background-color: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,12 +281,12 @@ const ContentArea = styled.div`
   gap: 4px;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
   }
   .description {
-    color: #969696;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
     text-overflow: ellipsis;

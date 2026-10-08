@@ -226,7 +226,7 @@ const SettingRow = styled.div`
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   transition: background-color 0.2s ease;
 
   &:first-child {
@@ -240,7 +240,7 @@ const SettingRow = styled.div`
   }
 
   &:active {
-    background-color: #f8f9fa;
+    background-color: var(--bg-subtle);
   }
 `;
 
@@ -255,12 +255,12 @@ const RowContent = styled.div`
 const RowTitle = styled.div`
   font-size: 16px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
 `;
 
 const RowDescription = styled.div`
   font-size: 13px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   line-height: 1.4;
 `;
 

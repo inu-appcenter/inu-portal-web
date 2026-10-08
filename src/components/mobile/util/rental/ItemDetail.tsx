@@ -316,13 +316,13 @@ const DetailWrapper = styled.div`
     gap: 8px;
     background-color: transparent;
     border: none;
-    color: black;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 500;
 
     svg {
       width: 14px;
-      color: #444444;
+      color: var(--text-secondary);
     }
   }
 `;
@@ -342,7 +342,7 @@ const InputWrapper = styled.div`
   input {
     padding: 8px;
     font-size: 14px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 4px;
   }
 `;
@@ -363,7 +363,7 @@ const ButtonWrapper = styled.div`
 
   button:first-child {
     background-color: #7aa7e5;
-    color: white;
+    color: var(--text-inverse);
   }
 `;
 
@@ -375,7 +375,7 @@ const ErrorText = styled.div`
 const Content = styled.div`
   font-weight: 400;
   font-size: 13px;
-  color: #656565;
+  color: var(--gray-600);
   width: 100%;
 `;
 

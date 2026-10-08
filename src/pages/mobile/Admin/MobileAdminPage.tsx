@@ -240,7 +240,7 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const MenuGrid = styled.div`
@@ -250,10 +250,10 @@ const MenuGrid = styled.div`
 `;
 
 const MenuCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   padding: 24px;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   gap: 20px;
@@ -263,13 +263,13 @@ const MenuCard = styled.div`
   overflow: hidden;
 
   &:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-strong);
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
 
     & > div:last-child {
       transform: translateX(4px);
-      color: #0f172a;
+      color: var(--text-primary);
     }
   }
 `;
@@ -297,18 +297,18 @@ const CardTitle = styled.h4`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const CardDescription = styled.p`
   margin: 0;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
 const ArrowIcon = styled.div`
-  color: #cbd5e1;
+  color: var(--text-disabled);
   transition: all 0.2s;
   flex-shrink: 0;
 `;

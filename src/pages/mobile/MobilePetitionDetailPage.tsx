@@ -190,7 +190,7 @@ const Wrapper = styled.div`
 const PostTopWrapper = styled.div`
   width: 100%;
   height: 70px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-strong);
 `;
 
 const PostWrapper = styled.div`
@@ -212,7 +212,7 @@ const PostUtilWrapper = styled.div`
 `;
 
 const BackBtn = styled.div`
-  color: #888888;
+  color: var(--text-tertiary);
   margin-right: auto;
   display: flex;
   padding: 8px;
@@ -220,7 +220,7 @@ const BackBtn = styled.div`
   svg {
     width: 10px;
     height: 18px;
-    color: black;
+    color: var(--text-primary);
   }
 `;
 

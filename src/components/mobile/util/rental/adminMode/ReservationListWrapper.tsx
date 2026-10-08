@@ -74,7 +74,7 @@ export default ReservationList;
 const ReservationListWrapper = styled.div`
   margin-top: 16px;
   font-size: 14px;
-  color: #333;
+  color: var(--text-secondary);
 
   h4 {
     font-size: 16px;
@@ -89,7 +89,7 @@ const ReservationListWrapper = styled.div`
   li {
     margin-bottom: 8px;
     padding: 8px;
-    border: 1px solid #f0f0f0;
+    border: 1px solid var(--border-default);
     border-radius: 4px;
     display: flex;
     flex-direction: column;
@@ -102,15 +102,15 @@ const ButtonWrapper = styled.div`
 `;
 
 const StyledButton = styled.button`
-  background-color: #007bff;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: var(--interactive-primary-hover);
   }
 
   &:focus {

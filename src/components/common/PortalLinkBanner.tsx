@@ -109,8 +109,8 @@ const BannerWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 16px 18px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
@@ -124,7 +124,7 @@ const CloseButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--bg-muted, #f2f4f6);
+  background: var(--bg-muted);
   border: none;
   border-radius: 50%;
   width: 22px;
@@ -137,7 +137,7 @@ const CloseButton = styled.button`
   transition: background 0.15s ease;
 
   &:hover {
-    background: var(--border-default, #e5e8eb);
+    background: var(--border-default);
   }
 
   &:active {
@@ -149,7 +149,7 @@ const IconBox = styled.div`
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: var(--bg-brand-subtle, #eff6ff);
+  background: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,7 +169,7 @@ const Title = styled.h4`
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   line-height: 1.35;
   letter-spacing: -0.2px;
   overflow: hidden;
@@ -181,7 +181,7 @@ const Description = styled.p`
   margin: 0;
   font-size: 12.5px;
   font-weight: 400;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -190,8 +190,8 @@ const Description = styled.p`
 
 const ActionButton = styled.button`
   flex-shrink: 0;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   border: none;
   border-radius: 12px;
   padding: 10px 18px;

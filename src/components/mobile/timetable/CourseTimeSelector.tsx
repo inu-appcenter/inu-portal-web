@@ -206,7 +206,7 @@ const SelectorHeader = styled.div`
 `;
 
 const Title = styled.h3`
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 16px;
   font-style: normal;
@@ -227,7 +227,7 @@ const ActionButtons = styled.div`
 
 const IconButton = styled.button`
   background: transparent;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   width: 40px;
   height: 40px;
@@ -239,7 +239,7 @@ const IconButton = styled.button`
   transition: all 0.2s ease;
 
   &:active {
-    background-color: var(--bg-muted, #f8f9fb);
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -253,17 +253,17 @@ const StyledDayChip = styled(({ isSelected, ...props }: DayChipProps) => <DayChi
   border-radius: 999px;
 
   /* 비선택 상태 */
-  background-color: var(--bg-base, white) !important;
-  color: var(--text-primary, #333d4b) !important;
-  border: 1px solid var(--border-default, #e5e8eb) !important;
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
 
   /* 선택 상태 */
   ${({ isSelected }) =>
     isSelected &&
     `
-      background-color: var(--interactive-primary, #3b82f6) !important;
-      border: 1px solid var(--interactive-primary, #3b82f6) !important;
-      color: white !important;
+      background-color: var(--interactive-primary) !important;
+      border: 1px solid var(--interactive-primary) !important;
+      color: var(--text-inverse) !important;
     `}
 `;
 
@@ -290,9 +290,9 @@ const TimePickerField = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-lg, 12px);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 8px 12px;
   height: 58px;
   box-sizing: border-box;
@@ -304,7 +304,7 @@ const TimePickerLabel = styled.span`
   font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 2px;
   text-align: left;
 `;
@@ -314,9 +314,9 @@ const LocationField = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-lg, 12px);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 8px 12px;
   height: 58px;
   box-sizing: border-box;
@@ -330,14 +330,14 @@ const LocationInput = styled.input`
   padding: 0;
   width: 100%;
   box-sizing: border-box;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
     font-weight: 400;
   }
 `;

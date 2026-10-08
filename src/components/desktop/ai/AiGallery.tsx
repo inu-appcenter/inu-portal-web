@@ -265,12 +265,12 @@ const GalleryWrapper = styled.div`
 
 const PromptText = styled.p`
   font-size: 14px;
-  color: #fff;
+  color: var(--text-inverse);
   text-align: center;
 `;
 
 const Skeleton = styled.div`
-  background-color: #e0e0e0;
+  background-color: var(--gray-200);
   border-radius: 12px;
   animation: pulse 1.5s infinite ease-in-out;
   @media (min-width: 768px) {
@@ -318,7 +318,7 @@ const ImageContainer = styled.div`
     padding: 5px 10px;
     font-size: 14px;
     background-color: #6d4dc7;
-    color: #fff;
+    color: var(--text-inverse);
     border: none;
     border-radius: 8px;
     text-decoration: none;
@@ -350,14 +350,14 @@ const GalleryStatus = styled.div`
   p {
     margin: 5px 0;
     font-size: 14px;
-    color: #fff;
+    color: var(--text-inverse);
   }
 `;
 
 const SmallRefreshButton = styled.button`
   padding: 5px 10px;
   font-size: 14px;
-  background-color: #fff;
+  background-color: var(--bg-base);
   color: #6d4dc7;
   border: none;
   border-radius: 8px;
@@ -376,8 +376,8 @@ const PaginationWrapper = styled.div`
 const PageNumber = styled.button<{ $active: boolean }>`
   padding: 8px 12px;
   font-size: 16px;
-  background-color: ${(props) => (props.$active ? "#6d4dc7" : "white")};
-  color: ${(props) => (props.$active ? "white" : "#333")};
+  background-color: ${(props) => (props.$active ? "#6d4dc7" : "var(--bg-base)")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--text-secondary)")};
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -386,8 +386,8 @@ const PageNumber = styled.button<{ $active: boolean }>`
 const NavButton = styled.button`
   padding: 8px 12px;
   font-size: 16px;
-  background-color: white;
-  color: #333;
+  background-color: var(--bg-base);
+  color: var(--text-secondary);
   border: none;
   border-radius: 6px;
   cursor: pointer;

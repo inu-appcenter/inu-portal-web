@@ -70,7 +70,7 @@ const BoxArea = styled.span<{ $variant: "compact" | "list" }>`
 `;
 
 const Label = styled.span<{ $variant: "compact" | "list" }>`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
   ${({ $variant }) => ($variant === "compact" ? typography.label2 : typography.heading2)}
 `;

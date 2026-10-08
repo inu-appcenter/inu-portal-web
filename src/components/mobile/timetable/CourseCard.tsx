@@ -100,8 +100,8 @@ const CourseCardWrapper = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   overflow: hidden;
 `;
@@ -118,12 +118,12 @@ const Header = styled.button`
   background: none;
   font: inherit;
   text-align: left;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
-    outline: 2px solid var(--interactive-brand, #0061ff);
+    outline: 2px solid var(--border-brand);
     outline-offset: -2px;
   }
 `;
@@ -138,7 +138,7 @@ const HeaderInfo = styled.div`
 `;
 
 const Title = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   word-break: break-word;
   ${typography.heading2}
 `;
@@ -152,7 +152,7 @@ const MetaRow = styled.div`
 `;
 
 const MetaText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
   ${typography.label3}
 `;

@@ -337,8 +337,8 @@ function MajorCourseRow({ course }: { course: RequiredMajorCourseProgress }) {
 }
 
 const Card = styled.div`
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 16px 20px;
   display: flex;
@@ -356,7 +356,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -369,7 +369,7 @@ const EditButton = styled.button`
   padding: 0;
   cursor: pointer;
   outline: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 
   span {
     font-size: 13px;
@@ -380,12 +380,12 @@ const EmptyText = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const RuleSummary = styled.div`
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const NoticeBox = styled.div<{ $tone: "warn" | "info" }>`
@@ -398,12 +398,12 @@ const NoticeBox = styled.div<{ $tone: "warn" | "info" }>`
   line-height: 18px;
   background-color: ${({ $tone }) =>
     $tone === "warn"
-      ? "var(--bg-warn-subtle, #fffaeb)"
-      : "var(--bg-subtle, #f8f9fb)"};
+      ? "var(--bg-warn)"
+      : "var(--bg-subtle)"};
   color: ${({ $tone }) =>
     $tone === "warn"
-      ? "var(--yellow-600, #b58000)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--yellow-600)"
+      : "var(--text-tertiary)"};
 
   svg {
     flex-shrink: 0;
@@ -431,22 +431,22 @@ const ProgressTop = styled.div`
 
 const ProgressLabel = styled.span`
   font-size: 13px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const Muted = styled.span`
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const ProgressValue = styled.span`
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   strong {
     font-size: 15px;
     font-weight: 700;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -454,7 +454,7 @@ const ProgressTrack = styled.div`
   width: 100%;
   height: 6px;
   border-radius: 999px;
-  background-color: var(--bg-muted, #f1f3f5);
+  background-color: var(--bg-muted);
   overflow: hidden;
 `;
 
@@ -464,8 +464,8 @@ const ProgressFill = styled.div<{ $ratio: number; $satisfied: boolean }>`
   border-radius: 999px;
   background-color: ${({ $satisfied }) =>
     $satisfied
-      ? "var(--border-success, #22c55e)"
-      : "var(--interactive-primary, #3b82f6)"};
+      ? "var(--border-success)"
+      : "var(--interactive-primary)"};
   transition: width 0.3s ease;
 `;
 
@@ -473,8 +473,8 @@ const ProgressCaption = styled.span<{ $satisfied: boolean }>`
   font-size: 12px;
   color: ${({ $satisfied }) =>
     $satisfied
-      ? "var(--text-success, #15803d)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "#15803d"
+      : "var(--text-tertiary)"};
 `;
 
 const Section = styled.div`
@@ -482,24 +482,24 @@ const Section = styled.div`
   flex-direction: column;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const SectionTitle = styled.h4`
   margin: 0;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const SectionText = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   strong {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -512,9 +512,9 @@ const AreaList = styled.div`
 const AreaTag = styled.span`
   padding: 4px 8px;
   border-radius: 8px;
-  background-color: var(--bg-brand-subtle, #eff6ff);
+  background-color: var(--bg-brand);
   font-size: 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const CourseList = styled.div`
@@ -538,7 +538,7 @@ const CourseName = styled.div`
 
   span {
     font-size: 13px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -549,9 +549,9 @@ const CategoryTag = styled.span`
   flex-shrink: 0;
   padding: 2px 6px;
   border-radius: 6px;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   font-size: 11px !important;
-  color: var(--text-tertiary, #8b95a1) !important;
+  color: var(--text-tertiary) !important;
 `;
 
 const CourseStatus = styled.div<{ $status: string }>`
@@ -561,9 +561,9 @@ const CourseStatus = styled.div<{ $status: string }>`
   flex-shrink: 0;
   font-size: 12px;
   color: ${({ $status }) => {
-    if ($status === "DONE") return "var(--text-success, #15803d)";
-    if ($status === "MISSING") return "var(--text-error, #ef4444)";
-    return "var(--text-tertiary, #8b95a1)";
+    if ($status === "DONE") return "#15803d";
+    if ($status === "MISSING") return "var(--text-error)";
+    return "var(--text-tertiary)";
   }};
 `;
 
@@ -574,7 +574,7 @@ const ToggleButton = styled.button`
   padding: 0;
   cursor: pointer;
   font-size: 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const NoticeList = styled.ul`
@@ -587,7 +587,7 @@ const NoticeList = styled.ul`
   li {
     font-size: 12px;
     line-height: 18px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -596,14 +596,14 @@ const ReportSection = styled.div`
   flex-direction: column;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const ReportText = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 18px;
-  color: var(--text-warning, #ff4d00);
+  color: var(--text-warn);
 `;
 
 const ReportButton = styled.a`
@@ -613,9 +613,9 @@ const ReportButton = styled.a`
   gap: 6px;
   padding: 10px 12px;
   border-radius: 12px;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   font-size: 13px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   text-decoration: none;
 
   svg {
@@ -628,6 +628,6 @@ const SourceLink = styled.a`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   text-decoration: none;
 `;

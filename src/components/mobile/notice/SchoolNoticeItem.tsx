@@ -70,7 +70,7 @@ const InnerContent = styled.div`
 const ItemContainer = styled.div<{ $interactive?: boolean }>`
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -93,8 +93,8 @@ const ItemContainer = styled.div<{ $interactive?: boolean }>`
 `;
 
 const CategoryBadge = styled.div`
-  background: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 999px;
   padding: 4px 8px;
   display: inline-flex;
@@ -108,7 +108,7 @@ const CategoryText = styled.span`
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   white-space: nowrap;
 `;
 
@@ -117,7 +117,7 @@ const Title = styled.h3`
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   margin: 0;
   word-break: break-word;
   width: 100%;
@@ -134,10 +134,10 @@ const MetaRow = styled.div`
 `;
 
 const MetaText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
 `;
 
 const DividerPipe = styled.span`
-  color: var(--border-default, #e5e8eb);
+  color: var(--border-default);
 `;

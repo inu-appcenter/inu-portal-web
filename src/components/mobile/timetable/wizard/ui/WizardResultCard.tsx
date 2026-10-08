@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import WizardTag, { type WizardTagTone } from "./WizardTag";
-import { WIZARD_PRIMARY } from "./tokens";
 import { typography } from "@/styles/typography";
 
 export interface WizardResultTag {
@@ -75,8 +74,8 @@ const Card = styled.div<{ $selected: boolean }>`
   border-radius: 20px;
   border: 1px solid
     ${({ $selected }) =>
-      $selected ? WIZARD_PRIMARY : "var(--border-default, #e5e8eb)"};
-  background: var(--bg-base, #ffffff);
+      $selected ? "var(--border-brand)" : "var(--border-default)"};
+  background: var(--bg-base);
   font: inherit;
   text-align: left;
   overflow: hidden;
@@ -89,7 +88,7 @@ const Card = styled.div<{ $selected: boolean }>`
   }
 
   &:focus-visible {
-    outline: 2px solid ${WIZARD_PRIMARY};
+    outline: 2px solid var(--border-brand);
     outline-offset: 2px;
   }
 `;
@@ -110,14 +109,14 @@ const NameGroup = styled.div`
 `;
 
 const Name = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
   ${typography.heading2}
 `;
 
 const Summary = styled.span`
   flex-shrink: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
   ${typography.label2}
 `;
@@ -131,7 +130,7 @@ const Body = styled.div`
 
 const Courses = styled.p`
   margin: 0;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   /* 시안처럼 과목명 중간에서도 줄을 바꾼다(keep-all이면 줄 끝이 크게 비어 보인다) */
   overflow-wrap: anywhere;
   ${typography.body2}

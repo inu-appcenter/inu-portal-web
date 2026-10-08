@@ -318,7 +318,7 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   min-height: calc(100vh - var(--header-height, 56px));
   padding: 16px;
   padding-bottom: 120px;
@@ -330,7 +330,7 @@ const PageWrapper = styled.div`
 `;
 
 const StatusText = styled.p`
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
   font-size: 14px;
   line-height: 20px;
   text-align: center;
@@ -345,7 +345,7 @@ const FormSection = styled.section`
 `;
 
 const SectionTitle = styled.h2`
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
   font-family:
     "Pretendard",
     -apple-system,
@@ -372,7 +372,7 @@ const FormFields = styled.div`
 
 const StyledInputField = styled(InputField)`
   && {
-    background-color: ${({ error }) => (error ? "var(--bg-error, #fff0f0)" : "var(--bg-base, #ffffff)")};
+    background-color: ${({ error }) => (error ? "var(--bg-error)" : "var(--bg-base)")};
   }
 `;
 

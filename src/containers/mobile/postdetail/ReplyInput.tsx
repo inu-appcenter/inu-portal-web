@@ -246,8 +246,8 @@ const StyledReplyInput = styled.div`
   width: calc(100% - 32px);
   max-width: 480px;
   z-index: 9999;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-strong, #d1d6db);
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
   border-radius: 24px;
   box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10px);
@@ -284,7 +284,7 @@ const StyledReplyInput = styled.div`
       font-family: Pretendard, sans-serif;
       font-size: 12px;
       line-height: 16px;
-      color: var(--text-disabled, #b0b8c1);
+      color: var(--text-disabled);
       white-space: nowrap;
     }
   }
@@ -303,14 +303,14 @@ const StyledReplyInput = styled.div`
     font-family: Pretendard, sans-serif;
     font-size: 15px;
     line-height: 24px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     outline: none;
     box-sizing: border-box;
     resize: none;
     overflow-y: auto;
 
     &::placeholder {
-      color: var(--text-disabled, #b0b8c1);
+      color: var(--text-disabled);
     }
   }
 
@@ -344,7 +344,7 @@ const SendButtonBtn = styled.div<{ $disabled?: boolean }>`
 
   &:active {
     background-color: ${({ $disabled }) =>
-      $disabled ? "transparent" : "#f0f4ff"};
+      $disabled ? "transparent" : "var(--bg-brand)"};
   }
 `;
 
@@ -357,17 +357,17 @@ const EditOrReplyBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
+  background: var(--bg-base);
   padding: 4px 12px;
   border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
 
   button {
     font-family: Pretendard, sans-serif;
     font-size: 13px;
     padding: 0;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     background-color: transparent;
     border: none;
     cursor: pointer;

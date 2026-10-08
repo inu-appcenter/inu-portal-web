@@ -110,9 +110,9 @@ const CardContainer = styled.div<{ $isMe?: boolean }>`
   width: 248px;
   max-width: 100%;
   box-sizing: border-box;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #d3e5ff;
+  border: 1px solid var(--border-brand-subtle);
   box-shadow: 0px 2px 8px 0px rgba(0, 97, 255, 0.07);
   overflow: hidden;
   cursor: pointer;
@@ -142,7 +142,7 @@ const HeaderTitle = styled.span`
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const TimeList = styled.div`
@@ -152,8 +152,8 @@ const TimeList = styled.div`
 `;
 
 const TimeItem = styled.div`
-  background: #f8f9fb;
-  border: 0.667px solid #e5e8eb;
+  background: var(--bg-subtle);
+  border: 0.667px solid var(--border-default);
   border-radius: 12px;
   padding: 4px 4px 4px 12px;
   display: flex;
@@ -174,7 +174,7 @@ const DayText = styled.span`
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
-  color: #333d4b;
+  color: var(--text-secondary);
   flex-shrink: 0;
 `;
 
@@ -183,7 +183,7 @@ const TimeText = styled.span`
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
-  color: #333d4b;
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -193,9 +193,9 @@ const CountBadge = styled.div<{ $isTop?: boolean }>`
   justify-content: center;
   padding: 4px 8px;
   border-radius: 999px;
-  background: ${({ $isTop }) => ($isTop ? "#0061FF" : "#EFF6FF")};
-  border: ${({ $isTop }) => ($isTop ? "none" : "1px solid #D3E5FF")};
-  color: ${({ $isTop }) => ($isTop ? "#FFFFFF" : "#0061FF")};
+  background: ${({ $isTop }) => ($isTop ? "var(--interactive-primary)" : "var(--bg-brand)")};
+  border: ${({ $isTop }) => ($isTop ? "none" : "1px solid var(--border-brand-subtle)")};
+  color: ${({ $isTop }) => ($isTop ? "var(--text-inverse)" : "var(--text-brand)")};
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -206,7 +206,7 @@ const CountBadge = styled.div<{ $isTop?: boolean }>`
 
 const EmptyText = styled.div`
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   text-align: center;
   padding: 8px 0;
 `;
@@ -216,7 +216,7 @@ const FooterButton = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 8px 8px 8px 16px;
-  background: #0061ff;
+  background: var(--interactive-primary);
   border-radius: 12px;
   box-sizing: border-box;
   cursor: pointer;
@@ -226,7 +226,7 @@ const FooterButton = styled.div`
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
-    color: #ffffff;
+    color: var(--text-inverse);
     user-select: none;
   }
 `;

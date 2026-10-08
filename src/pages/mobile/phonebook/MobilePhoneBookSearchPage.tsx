@@ -551,8 +551,8 @@ const ResultIconCircle = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: #c9ced8;
-  color: #fff;
+  background: var(--gray-300);
+  color: var(--text-inverse);
   flex-shrink: 0;
 `;
 
@@ -576,7 +576,7 @@ const ResultSubtitle = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
-  color: #1f2937;
+  color: var(--text-primary);
   word-break: keep-all;
 `;
 
@@ -585,7 +585,7 @@ const ResultPhone = styled.p`
   font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
-  color: #111827;
+  color: var(--text-primary);
   word-break: break-word;
 `;
 
@@ -593,7 +593,7 @@ const ResultArrow = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #98a2b3;
+  color: var(--text-tertiary);
 `;
 
 const SkeletonCard = styled.div`
@@ -654,7 +654,7 @@ const LoadMoreButton = styled.button`
   border: none;
   border-radius: 14px;
   padding: 14px 16px;
-  background: #eef4ff;
+  background: var(--bg-brand);
   color: #2f5fb3;
   font-size: 14px;
   font-weight: 700;
@@ -670,7 +670,7 @@ const LoadMoreButton = styled.button`
 
 const EmptyState = styled.div`
   font-size: 14px;
-  color: #888;
+  color: var(--text-tertiary);
   text-align: center;
   padding: 24px 0;
 `;

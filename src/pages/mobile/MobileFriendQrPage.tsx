@@ -189,8 +189,8 @@ const QrCard = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 24px 20px 20px;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
 `;
 
@@ -200,7 +200,7 @@ const ProfileArea = styled.div`
   height: 56px;
   border-radius: 999px;
   overflow: hidden;
-  background: var(--bg-muted, #f1f3f5);
+  background: var(--bg-muted);
 `;
 
 const DefaultIconArea = styled.div`
@@ -225,14 +225,14 @@ const Nickname = styled.div`
   font-family: Pretendard;
   font-size: 17px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;
 
 const ProfileSubtitle = styled.div`
   margin-top: 2px;
   font-family: Pretendard;
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const QrArea = styled.div`
@@ -243,14 +243,14 @@ const QrArea = styled.div`
   height: 232px;
   margin-top: 20px;
   border-radius: 16px;
-  background: #ffffff;
-  border: 1px solid var(--border-subtle, #f1f3f5);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
 `;
 
 const QrPlaceholder = styled.div`
   font-family: Pretendard;
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const QrHint = styled.p`
@@ -258,7 +258,7 @@ const QrHint = styled.p`
   font-family: Pretendard;
   font-size: 13px;
   line-height: 19px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
 `;
 
@@ -267,7 +267,7 @@ const LinkRow = styled.div`
   align-items: center;
   gap: 8px;
   padding: 12px 12px 12px 16px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   border-radius: 14px;
 `;
 
@@ -276,7 +276,7 @@ const LinkText = styled.span`
   min-width: 0;
   font-family: Pretendard;
   font-size: 13px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -290,14 +290,14 @@ const IconButton = styled.button`
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #6b7684);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   cursor: pointer;
   outline: none;
 
   &:active:not(:disabled) {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:disabled {
@@ -315,8 +315,8 @@ const PrimaryButton = styled.button`
   height: 52px;
   border: none;
   border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-family: Pretendard;
   font-size: 16px;
   font-weight: 600;
@@ -324,13 +324,13 @@ const PrimaryButton = styled.button`
   outline: none;
 
   &:active:not(:disabled) {
-    background-color: var(--interactive-primary-pressed, #2563eb);
+    background-color: var(--interactive-primary-pressed);
     transform: scale(0.98);
   }
 
   &:disabled {
-    background-color: var(--bg-muted, #f1f3f5);
-    color: var(--text-tertiary, #8b95a1);
+    background-color: var(--bg-muted);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
 `;
@@ -342,10 +342,10 @@ const SecondaryButton = styled.button`
   gap: 6px;
   width: 100%;
   height: 46px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #6b7684);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   font-family: Pretendard;
   font-size: 14px;
   font-weight: 600;
@@ -353,7 +353,7 @@ const SecondaryButton = styled.button`
   outline: none;
 
   &:active:not(:disabled) {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:disabled {
@@ -365,7 +365,7 @@ const SecondaryButton = styled.button`
 const NoticeBox = styled.div`
   margin-top: 4px;
   padding: 16px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   border-radius: 16px;
 `;
 
@@ -373,7 +373,7 @@ const NoticeTitle = styled.div`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin-bottom: 8px;
 `;
 
@@ -388,11 +388,11 @@ const NoticeList = styled.ul`
     font-family: Pretendard;
     font-size: 13px;
     line-height: 19px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
   }
 
   strong {
-    color: var(--text-primary, #333d4b);
+    color: var(--text-primary);
     font-weight: 600;
   }
 `;

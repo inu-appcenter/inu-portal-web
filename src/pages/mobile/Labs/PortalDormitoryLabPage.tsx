@@ -1652,7 +1652,7 @@ const Breadcrumb = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #8c95a0;
+  color: var(--text-tertiary);
   padding: 4px 6px;
   width: 100%;
   box-sizing: border-box;
@@ -1664,8 +1664,8 @@ const Breadcrumb = styled.div`
 `;
 
 const WebFallbackCard = styled.div`
-  background-color: #ffffff;
-  border: 1px dashed #cbd5e1;
+  background-color: var(--bg-base);
+  border: 1px dashed var(--border-strong);
   border-radius: 14px;
   padding: 20px;
   display: flex;
@@ -1673,7 +1673,7 @@ const WebFallbackCard = styled.div`
   align-items: center;
   text-align: center;
   gap: 8px;
-  color: #64748b;
+  color: var(--gray-600);
   margin-top: 12px;
   width: 100%;
   box-sizing: border-box;
@@ -1681,7 +1681,7 @@ const WebFallbackCard = styled.div`
   .title {
     font-size: 15px;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .desc {
@@ -1714,7 +1714,7 @@ const UpdatedTimeText = styled.div`
   justify-content: flex-end;
   gap: 4px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -1740,15 +1740,15 @@ const SectionHeader = styled.div`
   .title {
     font-size: 15px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .term-badge {
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 10px;
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--bg-muted);
+    color: var(--gray-700);
     font-weight: 500;
   }
 `;
@@ -1757,8 +1757,8 @@ const CardContainer = styled.div`
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
@@ -1769,8 +1769,8 @@ const ProfileTopArea = styled.div`
   align-items: center;
   gap: 14px;
   padding: 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+  background-color: var(--bg-base);
+  border-bottom: 1px solid var(--bg-base);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -1780,8 +1780,8 @@ const AvatarWrapper = styled.div`
   height: 98px;
   flex-shrink: 0;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1798,7 +1798,7 @@ const AvatarWrapper = styled.div`
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    color: #94a3b8;
+    color: var(--text-tertiary);
     font-size: 10px;
   }
 `;
@@ -1819,18 +1819,18 @@ const IdentityWrapper = styled.div`
     .name {
       font-size: 17px;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text-primary);
     }
 
     .eng-name {
       font-size: 12px;
-      color: #64748b;
+      color: var(--gray-600);
     }
   }
 
   .student-id {
     font-size: 12px;
-    color: #475569;
+    color: var(--gray-700);
     font-weight: 500;
   }
 
@@ -1844,12 +1844,12 @@ const IdentityWrapper = styled.div`
       font-size: 11px;
       padding: 2px 6px;
       border-radius: 4px;
-      background-color: #f1f5f9;
-      color: #334155;
+      background-color: var(--bg-muted);
+      color: var(--text-secondary);
 
       &.highlight {
-        background-color: #eff6ff;
-        color: #1d4ed8;
+        background-color: var(--bg-brand);
+        color: var(--text-brand);
         font-weight: 600;
       }
     }
@@ -1879,12 +1879,12 @@ const InfoCell = styled.div<{ fullWidth?: boolean }>`
 
   .label {
     font-size: 11px;
-    color: #8c95a0;
+    color: var(--text-tertiary);
   }
 
   .value {
     font-size: 13px;
-    color: #1e293b;
+    color: var(--text-primary);
     font-weight: 500;
     word-break: break-all;
   }
@@ -1897,31 +1897,31 @@ const PointBar = styled.div`
   box-sizing: border-box;
   gap: 8px;
   padding: 10px 14px 14px;
-  background-color: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+  background-color: var(--bg-subtle);
+  border-top: 1px solid var(--bg-base);
 `;
 
 const PointChip = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   padding: 6px 4px;
   min-width: 0;
 
   .title {
     font-size: 10px;
-    color: #64748b;
+    color: var(--gray-600);
   }
 
   .score {
     font-size: 15px;
     font-weight: 700;
 
-    &.merit { color: #2563eb; }
-    &.demerit { color: #dc2626; }
+    &.merit { color: var(--text-brand); }
+    &.demerit { color: var(--text-error); }
     &.fixed { color: #d97706; }
   }
 `;
@@ -1956,9 +1956,9 @@ const TabChip = styled.button<{ active?: boolean }>`
   padding: 7px 11px;
   font-size: 12px;
   font-weight: ${({ active }) => (active ? "600" : "400")};
-  color: ${({ active }) => (active ? "#0055b8" : "#64748b")};
-  background-color: ${({ active }) => (active ? "#eef6ff" : "#ffffff")};
-  border: 1px solid ${({ active }) => (active ? "#bfdbfe" : "#e2e8f0")};
+  color: ${({ active }) => (active ? "#0055b8" : "var(--gray-600)")};
+  background-color: ${({ active }) => (active ? "var(--bg-brand)" : "var(--bg-base)")};
+  border: 1px solid ${({ active }) => (active ? "var(--border-brand-subtle)" : "var(--border-default)")};
   border-radius: 18px;
   cursor: pointer;
   white-space: nowrap;
@@ -1986,8 +1986,8 @@ const CardsList = styled.div`
 `;
 
 const DetailCard = styled.div`
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 12px 14px;
   display: flex;
@@ -2014,26 +2014,26 @@ const DetailCardHeader = styled.div`
     font-weight: 600;
 
     &.merit {
-      background-color: #eff6ff;
-      color: #1d4ed8;
+      background-color: var(--bg-brand);
+      color: var(--text-brand);
     }
     &.demerit {
-      background-color: #fef2f2;
-      color: #dc2626;
+      background-color: var(--bg-error);
+      color: var(--text-error);
     }
     &.neutral {
-      background-color: #f1f5f9;
-      color: #334155;
+      background-color: var(--bg-muted);
+      color: var(--text-secondary);
     }
   }
 
   .sub-text {
     font-size: 11px;
-    color: #64748b;
+    color: var(--gray-600);
 
     &.font-bold {
       font-weight: 600;
-      color: #1e293b;
+      color: var(--text-primary);
     }
   }
 `;
@@ -2048,12 +2048,12 @@ const DetailRow = styled.div`
   gap: 8px;
 
   .k {
-    color: #64748b;
+    color: var(--gray-600);
     flex-shrink: 0;
   }
 
   .v {
-    color: #1e293b;
+    color: var(--text-primary);
     text-align: right;
     word-break: break-all;
 
@@ -2062,7 +2062,7 @@ const DetailRow = styled.div`
     }
 
     &.text-muted {
-      color: #94a3b8;
+      color: var(--text-tertiary);
     }
   }
 `;
@@ -2073,11 +2073,11 @@ const EmptyBanner = styled.div`
   justify-content: space-between;
   gap: 8px;
   padding: 8px 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--border-strong);
   font-size: 11px;
-  color: #64748b;
+  color: var(--gray-600);
   font-weight: 500;
   width: 100%;
   box-sizing: border-box;
@@ -2089,7 +2089,7 @@ const EmptyBanner = styled.div`
   }
 
   svg {
-    color: #94a3b8;
+    color: var(--text-tertiary);
     flex-shrink: 0;
   }
 `;
@@ -2098,8 +2098,8 @@ const FetchInlineButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: #ffffff;
-  border: 1px solid #bfdbfe;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
   color: #0055b8;
   font-size: 11px;
@@ -2111,7 +2111,7 @@ const FetchInlineButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background-color: #eef6ff;
+    background-color: var(--bg-brand);
   }
 
   &:disabled {
@@ -2127,11 +2127,11 @@ const FetchInlineButton = styled.button`
 const PledgeContentBox = styled.div`
   margin-top: 6px;
   padding: 10px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 6px;
   font-size: 11px;
   line-height: 1.5;
-  color: #475569;
+  color: var(--gray-700);
   white-space: pre-wrap;
   max-height: 160px;
   overflow-y: auto;
@@ -2141,9 +2141,9 @@ const PledgeContentBox = styled.div`
 
 const DebugSection = styled.div`
   margin-top: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   overflow: hidden;
   width: 100%;
   max-width: 100%;
@@ -2156,7 +2156,7 @@ const DebugHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   cursor: pointer;
   user-select: none;
   width: 100%;
@@ -2167,7 +2167,7 @@ const DebugHeader = styled.div`
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--gray-600);
     font-weight: 500;
   }
 
@@ -2181,19 +2181,19 @@ const DebugHeader = styled.div`
     font-weight: 600;
 
     &.error {
-      background-color: #fee2e2;
-      color: #ef4444;
+      background-color: var(--bg-error);
+      color: var(--text-error);
     }
 
     &.running {
-      background-color: #e0f2fe;
+      background-color: var(--bg-brand);
       color: #0284c7;
     }
   }
 
   .toggle-hint {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -2215,7 +2215,7 @@ const LogToolbar = styled.div`
   font-size: 11px;
 
   .log-meta {
-    color: #64748b;
+    color: var(--gray-600);
     font-size: 10px;
   }
 
@@ -2230,9 +2230,9 @@ const LogActionButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: #1e293b;
+  background-color: var(--gray-900);
   border: 1px solid #334155;
-  color: #cbd5e1;
+  color: var(--text-disabled);
   font-size: 11px;
   border-radius: 4px;
   padding: 3px 8px;
@@ -2240,8 +2240,8 @@ const LogActionButton = styled.button`
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background-color: #334155;
-    color: #ffffff;
+    background-color: var(--gray-800);
+    color: var(--text-inverse);
   }
 
   &:disabled {
@@ -2253,7 +2253,7 @@ const LogActionButton = styled.button`
 const LogEmptyNotice = styled.div`
   padding: 16px;
   text-align: center;
-  color: #475569;
+  color: var(--gray-700);
   font-size: 11px;
 `;
 
@@ -2273,7 +2273,7 @@ const LogLine = styled.div<{ level: string }>`
   word-break: break-all;
 
   .time {
-    color: #64748b;
+    color: var(--gray-600);
     margin-right: 6px;
     font-size: 10px;
   }
@@ -2294,15 +2294,15 @@ const LogLine = styled.div<{ level: string }>`
         ? "#fbbf24"
         : level === "success"
         ? "#34d399"
-        : "#94a3b8"};
+        : "var(--text-tertiary)"};
   }
 
   .msg {
-    color: #f1f5f9;
+    color: var(--text-inverse);
   }
 
   .elapsed {
-    color: #64748b;
+    color: var(--gray-600);
     margin-left: 6px;
     font-size: 10px;
   }
@@ -2310,7 +2310,7 @@ const LogLine = styled.div<{ level: string }>`
   .detail {
     margin-top: 2px;
     margin-left: 12px;
-    color: #cbd5e1;
+    color: var(--text-disabled);
     background-color: rgba(30, 41, 59, 0.7);
     padding: 3px 6px;
     border-radius: 4px;
@@ -2333,33 +2333,33 @@ const MiniTable = styled.table`
   font-size: 11px;
 
   th {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--bg-muted);
+    color: var(--gray-700);
     padding: 4px 8px;
     text-align: left;
-    border-bottom: 1px solid #cbd5e1;
+    border-bottom: 1px solid var(--border-strong);
   }
 
   td {
     padding: 4px 8px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--bg-base);
     font-family: monospace;
   }
 
   .key {
-    color: #2563eb;
+    color: var(--text-brand);
     width: 35%;
     word-break: break-all;
   }
 
   .val {
-    color: #1e293b;
+    color: var(--text-primary);
     width: 65%;
     word-break: break-all;
   }
 
   .empty-val {
-    color: #94a3b8;
+    color: var(--text-tertiary);
   }
 
   .photo-val {

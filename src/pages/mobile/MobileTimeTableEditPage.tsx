@@ -649,7 +649,7 @@ const ScoreArea = styled.div`
   gap: 12px;
 
   .type1 {
-    color: #6b7280;
+    color: var(--gray-600);
 
     font-size: 14px;
     font-style: normal;

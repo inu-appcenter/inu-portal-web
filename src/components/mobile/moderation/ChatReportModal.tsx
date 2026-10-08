@@ -161,19 +161,19 @@ const QuotedMessage = styled.div`
   gap: 4px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
 `;
 
 const QuotedSender = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
 `;
 
 const QuotedContent = styled.div`
   font-size: 14px;
   line-height: 1.4;
-  color: var(--gray-800, #333d4b);
+  color: var(--gray-800);
   word-break: break-all;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -184,7 +184,7 @@ const QuotedContent = styled.div`
 const FieldLabel = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
 `;
 
 const ReasonList = styled.div`
@@ -212,12 +212,12 @@ const ReasonItem = styled.button<{ $selected: boolean }>`
   border: 1px solid
     ${({ $selected }) =>
       $selected
-        ? "var(--border-brand, #0061ff)"
-        : "var(--border-default, #e5e8eb)"};
+        ? "var(--border-brand)"
+        : "var(--border-default)"};
   background-color: ${({ $selected }) =>
-    $selected ? "var(--bg-brand, #eff6ff)" : "var(--bg-base, #ffffff)"};
+    $selected ? "var(--bg-brand)" : "var(--bg-base)"};
   color: ${({ $selected }) =>
-    $selected ? "var(--text-brand, #0061ff)" : "var(--gray-800, #333d4b)"};
+    $selected ? "var(--text-brand)" : "var(--gray-800)"};
 `;
 
 const DetailInput = styled.textarea`
@@ -226,14 +226,14 @@ const DetailInput = styled.textarea`
   padding: 10px 12px;
   box-sizing: border-box;
   border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   line-height: 1.4;
   resize: none;
 
   &::placeholder {
-    color: var(--gray-500, #8b95a1);
+    color: var(--gray-500);
   }
 `;

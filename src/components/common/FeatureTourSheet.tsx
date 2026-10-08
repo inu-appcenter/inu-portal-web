@@ -92,13 +92,13 @@ const Title = styled.h2`
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const Subtitle = styled.p`
   margin: 0;
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const ItemList = styled.div`
@@ -113,15 +113,15 @@ const ItemCard = styled.button`
   gap: 14px;
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
-  background: var(--bg-base, #ffffff);
+  background: var(--bg-base);
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
 
   &:active {
-    background: var(--bg-muted, #f1f3f5);
+    background: var(--bg-muted);
   }
 `;
 
@@ -133,8 +133,8 @@ const IconBadge = styled.span`
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
 `;
 
 const ItemText = styled.span`
@@ -147,13 +147,13 @@ const ItemText = styled.span`
 const ItemTitle = styled.span`
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const ItemDescription = styled.span`
   font-size: 13px;
   line-height: 1.4;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   word-break: keep-all;
 `;
 
@@ -170,11 +170,11 @@ const LaterButton = styled.button`
   background: transparent;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
 `;
 
 const FooterHint = styled.span`
   font-size: 12px;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
 `;

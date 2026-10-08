@@ -33,8 +33,8 @@ const MobileCouncilHeaderWrapper = styled.div`
   align-items: center;
   width: 100%;
   min-height: 46px;
-  color: rgba(155, 155, 155, 1);
-  background: rgba(243, 247, 254, 1);
+  color: var(--text-tertiary);
+  background: var(--bg-brand);
 
   button {
     box-sizing: content-box;
@@ -43,12 +43,12 @@ const MobileCouncilHeaderWrapper = styled.div`
     background-color: transparent;
     border: 0;
     font-weight: 600;
-    color: black;
+    color: var(--text-primary);
   }
 
   .selected {
     background: linear-gradient(180deg, #6d98d7 0%, #0e4d9d 100%);
-    color: white;
+    color: var(--text-inverse);
     min-height: 46px;
   }
 `;

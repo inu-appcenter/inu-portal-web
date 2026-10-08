@@ -539,7 +539,7 @@ const SwiperContainer = styled(Swiper)`
 `;
 
 const SlideContent = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -591,7 +591,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   height: 6px;
   border-radius: 50%;
   background-color: ${(props) =>
-    props.$active ? "var(--text-brand, #0061ff)" : "rgba(0, 0, 0, 0.15)"};
+    props.$active ? "var(--text-brand)" : "rgba(0, 0, 0, 0.15)"};
   transition:
     transform 0.2s ease,
     background-color 0.2s ease;
@@ -611,7 +611,7 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -622,7 +622,7 @@ const WidgetTitle = styled.span`
 `;
 
 const WidgetSubTitle = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -661,7 +661,7 @@ const BusLeftSection = styled.div`
 `;
 
 const BusNumber = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 15px;
   font-weight: 700;
   line-height: 20px;
@@ -673,7 +673,7 @@ const BusNumber = styled.span`
 const BusTime = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
   text-align: right;
   flex-shrink: 0;
@@ -688,7 +688,7 @@ const SkeletonContainer = styled.div`
 
 const EmptyText = styled.span`
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   width: 100%;
 `;

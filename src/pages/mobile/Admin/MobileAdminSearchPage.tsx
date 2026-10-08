@@ -48,7 +48,7 @@ const DOMAIN_LIST: DomainItem[] = [
     name: "학과 공지사항",
     description: "단과대 및 각 학과별 맞춤 공지 데이터",
     icon: (size) => <Building2 size={size} color="#fff" />,
-    color: "#2563eb",
+    color: "var(--text-brand)",
   },
   {
     id: "posts",
@@ -401,7 +401,7 @@ const BannerIconWrapper = styled.div`
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -428,9 +428,9 @@ const BannerDesc = styled.p`
 `;
 
 const SectionCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 24px;
   box-shadow: ${SOFT_CARD_SHADOW};
   display: flex;
@@ -459,13 +459,13 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const SectionSubDesc = styled.p`
   margin: 2px 0 0;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const OptionBox = styled.div<{ $active: boolean }>`
@@ -475,8 +475,8 @@ const OptionBox = styled.div<{ $active: boolean }>`
   gap: 16px;
   padding: 16px 18px;
   border-radius: 14px;
-  background-color: ${(props) => (props.$active ? "#f0f9ff" : "#f8fafc")};
-  border: 1px solid ${(props) => (props.$active ? "#7dd3fc" : "#e2e8f0")};
+  background-color: ${(props) => (props.$active ? "var(--bg-brand)" : "var(--bg-subtle)")};
+  border: 1px solid ${(props) => (props.$active ? "#7dd3fc" : "var(--border-default)")};
   transition: all 0.2s;
 `;
 
@@ -490,7 +490,7 @@ const OptionTextGroup = styled.div`
 const OptionLabel = styled.div`
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -503,12 +503,12 @@ const Badge = styled.span<{ $active: boolean }>`
   padding: 2px 8px;
   border-radius: 6px;
   background-color: ${(props) => (props.$active ? "#0284c7" : "#64748b")};
-  color: #ffffff;
+  color: var(--text-inverse);
 `;
 
 const OptionHelp = styled.div`
   font-size: 0.825rem;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
@@ -530,7 +530,7 @@ const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }>`
     props.$variant === "primary"
       ? css`
           background-color: #0284c7;
-          color: #ffffff;
+          color: var(--text-inverse);
           box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 
           &:hover:not(:disabled) {
@@ -539,11 +539,11 @@ const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }>`
           }
         `
       : css`
-          background-color: #f1f5f9;
-          color: #334155;
+          background-color: var(--bg-muted);
+          color: var(--text-secondary);
 
           &:hover:not(:disabled) {
-            background-color: #e2e8f0;
+            background-color: var(--bg-disabled);
           }
         `}
 
@@ -570,13 +570,13 @@ const DomainCard = styled.div`
   gap: 14px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid #f1f5f9;
-  background-color: #f8fafc;
+  border: 1px solid var(--bg-base);
+  background-color: var(--bg-subtle);
   transition: all 0.2s;
 
   &:hover {
-    background-color: #f1f5f9;
-    border-color: #e2e8f0;
+    background-color: var(--bg-muted);
+    border-color: var(--border-default);
   }
 `;
 
@@ -608,13 +608,13 @@ const DomainNameRow = styled.div`
 const DomainName = styled.span`
   font-size: 0.925rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const DomainTag = styled.span`
   font-size: 0.725rem;
-  color: #64748b;
-  background-color: #e2e8f0;
+  color: var(--gray-600);
+  background-color: var(--gray-200);
   padding: 1px 6px;
   border-radius: 4px;
   font-family: monospace;
@@ -622,7 +622,7 @@ const DomainTag = styled.span`
 
 const DomainDesc = styled.span`
   font-size: 0.775rem;
-  color: #64748b;
+  color: var(--gray-600);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -634,9 +634,9 @@ const DomainButton = styled.button`
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   font-size: 0.825rem;
   font-weight: 600;
   cursor: pointer;
@@ -644,9 +644,9 @@ const DomainButton = styled.button`
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: #f8fafc;
+    background-color: var(--bg-subtle);
     border-color: #94a3b8;
-    color: #0f172a;
+    color: var(--text-primary);
   }
 
   &:disabled {
@@ -658,9 +658,9 @@ const DomainButton = styled.button`
 const EmptyLogBox = styled.div`
   padding: 32px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.875rem;
-  border: 1px dashed #e2e8f0;
+  border: 1px dashed var(--border-default);
   border-radius: 12px;
 `;
 
@@ -673,8 +673,8 @@ const LogList = styled.div`
 const LogItem = styled.div<{ $success: boolean }>`
   padding: 12px 16px;
   border-radius: 10px;
-  background-color: ${(props) => (props.$success ? "#f0fdf4" : "#fef2f2")};
-  border: 1px solid ${(props) => (props.$success ? "#bbf7d0" : "#fecaca")};
+  background-color: ${(props) => (props.$success ? "#f0fdf4" : "var(--bg-error)")};
+  border: 1px solid ${(props) => (props.$success ? "#bbf7d0" : "var(--border-error-subtle)")};
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -695,7 +695,7 @@ const LogStatusGroup = styled.div`
 const LogTargetText = styled.span`
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const LogBadge = styled.span<{ $success: boolean }>`
@@ -703,19 +703,19 @@ const LogBadge = styled.span<{ $success: boolean }>`
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 4px;
-  background-color: ${(props) => (props.$success ? "#10b981" : "#ef4444")};
-  color: #ffffff;
+  background-color: ${(props) => (props.$success ? "#10b981" : "var(--red-500)")};
+  color: var(--text-inverse);
 `;
 
 const LogMeta = styled.div`
   display: flex;
   gap: 8px;
   font-size: 0.775rem;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const LogMsg = styled.div`
   font-size: 0.825rem;
-  color: #334155;
+  color: var(--text-secondary);
   line-height: 1.4;
 `;

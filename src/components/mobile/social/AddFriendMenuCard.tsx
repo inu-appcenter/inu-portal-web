@@ -47,11 +47,11 @@ export default function AddFriendMenuCard({
           닉네임으로 찾기
         </MenuRow>
         <MenuRow type="button" onClick={onNearbyClick}>
-          <Icon name="location" size={20} color="#5E92F0" />
+          <Icon name="location" size={20} color="var(--interactive-primary)" />
           주변 친구 찾기
         </MenuRow>
         <MenuRow type="button" onClick={onInviteClick}>
-          <Icon name="qr-code" size={20} color="#5E92F0" />
+          <Icon name="qr-code" size={20} color="var(--interactive-primary)" />
           링크·QR로 초대
         </MenuRow>
       </MenuCard>
@@ -78,8 +78,8 @@ const MenuCard = styled.div<{ $open: boolean }>`
   flex-direction: column;
   min-width: 190px;
   padding: 8px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
   transform-origin: bottom right;
@@ -102,7 +102,7 @@ const MenuRow = styled.button`
   border: none;
   background: none;
   border-radius: 14px;
-  color: #1c1c1e;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -111,10 +111,10 @@ const MenuRow = styled.button`
 
   & > svg {
     flex-shrink: 0;
-    color: #5e92f0;
+    color: var(--interactive-primary);
   }
 
   &:active {
-    background-color: #f1f3f5;
+    background-color: var(--bg-muted);
   }
 `;

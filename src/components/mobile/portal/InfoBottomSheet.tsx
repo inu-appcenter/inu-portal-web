@@ -77,7 +77,7 @@ const StyledContent = styled(Drawer.Content)`
 `;
 
 const SheetInner = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   width: 100%;
   height: 100%;
   display: flex;
@@ -100,7 +100,7 @@ const HandleBar = styled.div`
   width: 42px;
   height: 5px;
   border-radius: 999px;
-  background: #d7deea;
+  background: var(--gray-300);
 `;
 
 const HeaderSection = styled.div`
@@ -115,7 +115,7 @@ const IconWrapper = styled.div`
   width: 52px;
   height: 52px;
   border-radius: 999px;
-  background: #eef4ff;
+  background: var(--bg-brand);
   color: #2f6fec;
   display: flex;
   align-items: center;
@@ -126,7 +126,7 @@ const Title = styled.h2`
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
 `;
 
 const BodySection = styled.div`

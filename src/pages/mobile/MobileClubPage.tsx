@@ -121,7 +121,7 @@ const ClubListSection = ({
                   style={
                     isTarget
                       ? {
-                          borderColor: "var(--brand-primary, #2563eb)",
+                          borderColor: "var(--border-brand)",
                           boxShadow: "0 0 0 2px rgba(37, 99, 235, 0.25)",
                           transition: "all 0.3s ease",
                         }
@@ -369,7 +369,7 @@ const MobileClubPageWrapper = styled.div`
     right: 20px;
     bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     z-index: 9999;
-    color: white;
+    color: var(--text-inverse);
     background-color: rgba(64, 113, 185, 1);
     border-radius: 100%;
     width: 64px;

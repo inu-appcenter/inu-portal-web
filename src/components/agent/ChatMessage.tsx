@@ -56,13 +56,13 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
   overflow-wrap: anywhere;
 
   background-color: ${(props) => {
-    if (props.$isError) return "#fff1f0";
+    if (props.$isError) return "var(--bg-error)";
     return props.$isUser ? COLORS.figmaBlue : "transparent";
   }};
 
   color: ${(props) => {
-    if (props.$isError) return "#ff4d4f";
-    return props.$isUser ? "#ffffff" : COLORS.textDark;
+    if (props.$isError) return "var(--text-error)";
+    return props.$isUser ? "var(--text-inverse)" : COLORS.textDark;
   }};
 
   border: ${(props) => {
@@ -125,8 +125,8 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
   }
 
   pre {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-default);
     border-radius: 6px;
     padding: 10px 14px;
     overflow-x: auto;
@@ -146,7 +146,7 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
     border-left: 3.5px solid ${COLORS.figmaBlue};
     background-color: rgba(0, 122, 255, 0.04);
     border-radius: 0 6px 6px 0;
-    color: #4a5568;
+    color: var(--gray-700);
 
     p {
       margin: 0;
@@ -155,7 +155,7 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
 
   hr {
     border: none;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-default);
     margin: 14px 0;
   }
 
@@ -172,12 +172,12 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
     color: ${COLORS.textDark};
     font-weight: 600;
     padding: 8px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-default);
   }
 
   td {
     padding: 8px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-default);
   }
 
   tr:nth-child(even) td {
@@ -204,7 +204,7 @@ const MessageFooter = styled.div<{ $isUser: boolean }>`
   gap: 8px;
   margin-top: 6px;
   font-size: 11px;
-  color: #999999;
+  color: var(--text-tertiary);
   flex-direction: ${(props) => (props.$isUser ? "row-reverse" : "row")};
 `;
 
@@ -213,7 +213,7 @@ const ActionButton = styled.button`
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: #999;
+  color: var(--text-tertiary);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -253,7 +253,7 @@ const ChipButton = styled.button`
   text-decoration: none;
   transition: all 0.2s ease;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   color: ${COLORS.figmaBlue};
   border: 1.5px solid ${COLORS.figmaBlue};
   box-shadow: 0 2px 6px rgba(0, 122, 255, 0.08);
@@ -424,7 +424,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   <ActionButton
                     onClick={() => setFeedback((prev) => (prev === -1 ? null : -1))}
                     title="싫어요"
-                    style={feedback === -1 ? { color: "#ff4d4f", fontWeight: 600 } : undefined}
+                    style={feedback === -1 ? { color: "var(--text-error)", fontWeight: 600 } : undefined}
                   >
                     <ThumbsDown size={12} color={feedback === -1 ? "#ff4d4f" : undefined} />
                   </ActionButton>

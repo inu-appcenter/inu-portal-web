@@ -100,7 +100,7 @@ const BottomBorder = styled.div`
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #e0e0e0;
+  background-color: var(--gray-200);
   z-index: 1;
 `;
 
@@ -117,7 +117,7 @@ const FolderItem = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? "#4071B9" : "#000")};
+  color: ${({ selected }) => (selected ? "#4071B9" : "var(--text-primary)")};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -129,7 +129,7 @@ const ManageFolderButton = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? "#4071B9" : "#E0E0E0")};
+  color: ${({ selected }) => (selected ? "#4071B9" : "var(--text-inverse)")};
   font-size: 30px;
   font-weight: 500;
   cursor: pointer;

@@ -141,8 +141,8 @@ const DropdownMenu = styled.div`
   min-width: 140px;
   padding: 4px 0;
   border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   transform: translateX(-100%);
@@ -159,9 +159,9 @@ const DropdownItem = styled.button<{ $danger?: boolean }>`
   font-size: 14px;
   cursor: pointer;
   color: ${({ $danger }) =>
-    $danger ? "var(--text-danger, #f04452)" : "var(--text-primary, #191f28)"};
+    $danger ? "var(--text-error)" : "var(--text-primary)"};
 
   &:active {
-    background: var(--bg-subtle, #f8f9fb);
+    background: var(--bg-subtle);
   }
 `;

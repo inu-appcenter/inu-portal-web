@@ -176,8 +176,8 @@ const TextButton = styled.button`
   ${buttonReset}
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
-  color: var(--text-secondary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
+  color: var(--text-secondary);
   ${typography.label3}
 `;

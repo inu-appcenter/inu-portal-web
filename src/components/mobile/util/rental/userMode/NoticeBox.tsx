@@ -51,7 +51,7 @@ const TitleWrapper = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  border-bottom: #dfdfdf 1px solid;
+  border-bottom: var(--border-default) 1px solid;
 `;
 
 const Title = styled.div`
@@ -61,13 +61,13 @@ const Title = styled.div`
   align-items: center;
   font-weight: 700;
   font-size: 15px;
-  color: #000000;
+  color: var(--text-primary);
 `;
 
 const Content = styled.div`
   font-weight: 400;
   font-size: 13px;
-  color: #656565;
+  color: var(--gray-600);
   width: 100%;
 `;
 

@@ -820,7 +820,7 @@ export default function ChattingPage() {
                       cy="30"
                       r="27"
                       fill="none"
-                      stroke="#5e92f0"
+                      stroke="var(--interactive-primary)"
                       strokeWidth="3"
                       strokeDasharray={169.646}
                       strokeDashoffset={169.646 * (1 - upload.progress / 100)}
@@ -923,7 +923,7 @@ export default function ChattingPage() {
         })}
         {isFetchingPrevious && (
           <LoadingWrapper>
-            <Loader2 size={20} color="#5E92F0" />
+            <Loader2 size={20} color="var(--interactive-primary)" />
           </LoadingWrapper>
         )}
       </ChattingWrapper>
@@ -1117,7 +1117,7 @@ export default function ChattingPage() {
             width: "100%",
             padding: "12px 16px",
             borderRadius: "12px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid var(--border-default)",
             fontSize: "16px",
             boxSizing: "border-box",
             outline: "none",
@@ -1141,7 +1141,7 @@ const ChatPageWrapper = styled.div`
   left: 0;
   right: 0;
   overscroll-behavior: none;
-  background-color: #f8f9fb;
+  background-color: var(--bg-subtle);
   z-index: 60;
 `;
 
@@ -1171,7 +1171,7 @@ const ChattingWrapper = styled.div`
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: #d1d1d1;
+    background-color: var(--gray-300);
     border-radius: 3px;
   }
 
@@ -1206,7 +1206,7 @@ const ChatbuliGuideBanner = styled.div`
   bottom: 100%;
   left: 16px;
   margin-bottom: 8px;
-  background: #fff8f3;
+  background: var(--bg-base);
   border: 1px solid #ffd8bf;
   border-radius: 12px;
   padding: 6px 10px;
@@ -1295,7 +1295,7 @@ const FloatingInputBar = styled.div`
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid #d1d6db;
+  border: 1px solid var(--border-strong);
   border-radius: 28px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   box-sizing: border-box;
@@ -1314,7 +1314,7 @@ const PlusIconButton = styled.button`
   justify-content: center;
   flex-shrink: 0;
   padding: 0;
-  color: #0061ff;
+  color: var(--text-brand);
   transition: opacity 0.15s ease;
 
   &:active {
@@ -1340,7 +1340,7 @@ const InputBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: #ffffff;
+  background: var(--bg-base);
   border: 1px solid #ffd8bf;
   border-radius: 12px;
   padding: 0 6px;
@@ -1370,11 +1370,11 @@ const InputBadge = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #8e8e93;
+    color: var(--text-tertiary);
     margin-left: 2px;
 
     &:hover {
-      color: #1c1c1e;
+      color: var(--text-primary);
     }
   }
 `;
@@ -1390,19 +1390,19 @@ const Input = styled.textarea<{ $isChatbuli?: boolean }>`
   font-size: 15px;
   font-weight: 400;
   line-height: 22px;
-  color: #333d4b;
+  color: var(--text-secondary);
   resize: none;
   outline: none;
   max-height: 120px;
   text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
 
   &::placeholder {
-    color: #b0b8c1;
+    color: var(--text-disabled);
     text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
   }
 
   &::-webkit-input-placeholder {
-    color: #b0b8c1;
+    color: var(--text-disabled);
     text-indent: ${(props) => (props.$isChatbuli ? "84px" : "0px")};
   }
 `;
@@ -1411,7 +1411,7 @@ const SendButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  background: #0061ff;
+  background: var(--interactive-primary);
   border: none;
   cursor: pointer;
   display: flex;
@@ -1450,7 +1450,7 @@ const DateDivider = styled.div`
   .line {
     flex: 1;
     height: 1px;
-    background-color: #e5e8eb;
+    background-color: var(--gray-200);
     min-width: 0;
   }
 
@@ -1459,7 +1459,7 @@ const DateDivider = styled.div`
     font-size: 12px;
     font-weight: 500;
     line-height: 1.4;
-    color: #b0b8c1;
+    color: var(--text-disabled);
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -1472,8 +1472,8 @@ const SystemMessage = styled.div`
   margin: 12px 0;
 
   .bubble {
-    background-color: #f2f2f7;
-    color: #8e8e93;
+    background-color: var(--bg-muted);
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
     padding: 6px 14px;
@@ -1510,7 +1510,7 @@ const ProfileImage = styled.img`
   cursor: pointer;
   object-fit: cover;
   flex-shrink: 0;
-  background-color: #d3e5ff;
+  background-color: var(--blue-150);
   border: none;
   box-shadow: none;
   transition: transform 0.15s ease;
@@ -1545,7 +1545,7 @@ const SenderName = styled.span`
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   cursor: pointer;
   width: fit-content;
   max-width: 100%;
@@ -1554,7 +1554,7 @@ const SenderName = styled.span`
   white-space: nowrap;
 
   &:hover {
-    color: #5e92f0;
+    color: var(--interactive-primary);
   }
 `;
 
@@ -1596,8 +1596,8 @@ const Bubble = styled.div<{ $isMe?: boolean; $hasTail?: boolean }>`
   box-sizing: border-box;
   word-break: break-word;
   overflow-wrap: anywhere;
-  background-color: ${({ $isMe }) => ($isMe ? "#d3e5ff" : "#ffffff")};
-  color: #333d4b;
+  background-color: ${({ $isMe }) => ($isMe ? "var(--blue-150)" : "var(--bg-base)")};
+  color: var(--text-secondary);
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.08);
   white-space: pre-wrap;
   cursor: pointer;
@@ -1643,7 +1643,7 @@ const ImageThumbnail = styled.img`
   height: auto;
   min-width: 100px;
   min-height: 150px;
-  background: #e5e8eb;
+  background: var(--gray-200);
   border-radius: 16px;
   cursor: pointer;
   object-fit: cover;
@@ -1665,7 +1665,7 @@ const ImageThumbnail = styled.img`
 const Time = styled.span`
   font-size: 10px;
   font-weight: 400;
-  color: #b0b8c1;
+  color: var(--text-disabled);
   white-space: nowrap;
 `;
 
@@ -1935,7 +1935,7 @@ const TimeArea = styled.div`
 const UnreadCount = styled.span`
   font-size: 10px;
   font-weight: 400;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const MyMessageContent = styled(MessageContent)`
@@ -1979,8 +1979,8 @@ const TitleWrapper = styled.div`
 const OfficialTag = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #ffffff;
-  background: #1c1c1e;
+  color: var(--text-inverse);
+  background: var(--gray-900);
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -2006,13 +2006,13 @@ const NewMessageBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #5e92f0;
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   cursor: pointer;
   animation: fadeIn 200ms ease-out forwards;
 
@@ -2047,7 +2047,7 @@ const PreviewContainer = styled.div`
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
 `;
 
 const PreviewImage = styled.img`
@@ -2091,7 +2091,7 @@ const ProgressGlassRing = styled.div`
 
   .percentage {
     position: relative;
-    color: #ffffff;
+    color: var(--text-inverse);
     font-size: 12px;
     z-index: 1;
   }

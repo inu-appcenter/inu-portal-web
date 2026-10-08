@@ -279,7 +279,7 @@ const ListContainer = styled.div`
 
 const EmptyState = styled.div`
   font-size: 14px;
-  color: #bbb;
+  color: var(--text-disabled);
   text-align: center;
   padding: 40px 20px;
 `;
@@ -287,6 +287,6 @@ const EmptyState = styled.div`
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
-  color: #888;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;

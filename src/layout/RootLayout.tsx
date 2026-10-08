@@ -210,7 +210,7 @@ const ScreenContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  background: var(--bg-subtle, #F8F9FB);
+  background: var(--bg-subtle);
 
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 

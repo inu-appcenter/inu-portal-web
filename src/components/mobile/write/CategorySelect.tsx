@@ -91,7 +91,7 @@ const DropdownButton = styled.button`
   border: none;
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 8px;
@@ -106,8 +106,8 @@ const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background: #ffffff;
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   z-index: 1000;
@@ -121,13 +121,13 @@ const DropdownItem = styled.div<{ $selected: boolean }>`
   font-size: 14px;
   font-weight: ${(props) => (props.$selected ? "600" : "400")};
   color: ${(props) =>
-    props.$selected ? "var(--text-brand, #0061ff)" : "#333d4b"};
-  background-color: ${(props) => (props.$selected ? "#f0f6ff" : "transparent")};
+    props.$selected ? "var(--text-brand)" : "var(--text-secondary)"};
+  background-color: ${(props) => (props.$selected ? "var(--bg-brand)" : "transparent")};
   cursor: pointer;
   text-align: left;
   transition: background-color 0.15s ease-in-out;
 
   &:active {
-    background-color: #f8f9fb;
+    background-color: var(--bg-subtle);
   }
 `;

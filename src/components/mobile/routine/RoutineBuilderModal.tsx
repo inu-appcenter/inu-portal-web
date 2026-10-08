@@ -588,7 +588,7 @@ const Overlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: #f7f8fa;
+  background: var(--bg-subtle);
   width: 100%;
   max-width: 520px;
   max-height: 92vh;
@@ -614,18 +614,18 @@ const ModalContainer = styled.div`
 `;
 
 const ModalTopNav = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const NavTitle = styled.h3`
   font-size: 17px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -634,7 +634,7 @@ const NavButton = styled.button`
   border: none;
   font-size: 15px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
   cursor: pointer;
   padding: 4px 6px;
 `;
@@ -644,7 +644,7 @@ const NavSaveButton = styled.button`
   border: none;
   font-size: 15.5px;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--text-brand);
   cursor: pointer;
   padding: 4px 6px;
 
@@ -665,15 +665,15 @@ const ModalBody = styled.div`
 const SectionHeader = styled.h4`
   font-size: 17px;
   font-weight: 800;
-  color: #000000;
+  color: var(--text-primary);
   margin: 8px 0 0 4px;
   letter-spacing: -0.3px;
 `;
 
 const OneUiCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 22px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-default);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -684,31 +684,31 @@ const OneUiCard = styled.div`
 const CardHeaderLabel = styled.span`
   font-size: 13px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const CardSubLabel = styled.span`
   font-size: 12.5px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const TitleInput = styled.input`
   width: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--border-default);
   border-radius: 14px;
   font-size: 15.5px;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
   outline: none;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   transition: all 0.15s ease;
 
   &:focus {
-    border-color: #2563eb;
-    background-color: #ffffff;
+    border-color: var(--border-brand);
+    background-color: var(--bg-base);
   }
 `;
 
@@ -720,7 +720,7 @@ const TimeSelectorContainer = styled.div`
 
 const AmPmToggleGroup = styled.div`
   display: flex;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   border-radius: 12px;
   padding: 3px;
   gap: 2px;
@@ -728,8 +728,8 @@ const AmPmToggleGroup = styled.div`
 
 const AmPmBtn = styled.button<{ $active: boolean }>`
   border: none;
-  background-color: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
+  background-color: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--gray-600)")};
   font-size: 13.5px;
   font-weight: 700;
   padding: 8px 12px;
@@ -749,19 +749,19 @@ const TimeSelectsRow = styled.div`
 const StyledSelect = styled.select`
   flex: 1;
   padding: 9px 12px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--border-default);
   border-radius: 12px;
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
-  background-color: #f8fafc;
+  color: var(--text-primary);
+  background-color: var(--bg-subtle);
   outline: none;
 `;
 
 const TimeColon = styled.span`
   font-size: 18px;
   font-weight: 800;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 `;
 
 const RepeatDaysWrapper = styled.div`
@@ -795,15 +795,15 @@ const DayCircleButton = styled.button<{
   cursor: pointer;
   transition: all 0.15s ease;
 
-  background-color: ${({ $selected }) => ($selected ? "#2563eb" : "#f1f5f9")};
+  background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-muted)")};
   color: ${({ $selected, $isSunday, $isSaturday }) =>
     $selected
-      ? "#ffffff"
+      ? "var(--text-inverse)"
       : $isSunday
-      ? "#ef4444"
+      ? "var(--text-error)"
       : $isSaturday
-      ? "#3b82f6"
-      : "#475569"};
+      ? "var(--interactive-primary)"
+      : "var(--gray-700)"};
 `;
 
 const ActionItemRow = styled.div`
@@ -815,13 +815,13 @@ const ActionItemRow = styled.div`
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f8fafc;
+    background-color: var(--bg-subtle);
   }
 `;
 
 const ActionDivider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   margin-left: 68px;
 `;
 
@@ -847,12 +847,12 @@ const ActionTextCol = styled.div`
 const ActionTitle = styled.div`
   font-size: 15.5px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
 `;
 
 const ActionDesc = styled.div`
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.4;
 `;
 
@@ -860,8 +860,8 @@ const OneUiCheckbox = styled.div<{ $checked: boolean }>`
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#2563eb" : "#cbd5e1")};
-  background-color: ${({ $checked }) => ($checked ? "#2563eb" : "transparent")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--border-brand)" : "var(--border-strong)")};
+  background-color: ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "transparent")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -873,9 +873,9 @@ const OneUiCheckbox = styled.div<{ $checked: boolean }>`
 const SubOptionContainer = styled.div`
   margin-top: 8px;
   padding: 8px 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -889,7 +889,7 @@ const SubOptionRow = styled.div`
   span {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--gray-700);
     width: 40px;
   }
 `;
@@ -897,18 +897,18 @@ const SubOptionRow = styled.div`
 const SubOptionSelect = styled.select`
   flex: 1;
   padding: 5px 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   font-size: 12.5px;
-  color: #111827;
-  background-color: #ffffff;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
   outline: none;
 `;
 
 const NotificationPreviewCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 22px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
@@ -923,8 +923,8 @@ const NotificationHeader = styled.div`
 `;
 
 const AppBadge = styled.span`
-  background-color: #2563eb;
-  color: #ffffff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 10px;
   font-weight: 800;
   padding: 2px 5px;
@@ -935,25 +935,25 @@ const AppBadge = styled.span`
 const AppName = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
   flex: 1;
 `;
 
 const NotifTime = styled.span`
   font-size: 11.5px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 `;
 
 const NotificationTitle = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   line-height: 1.35;
 `;
 
 const NotificationBody = styled.div`
   font-size: 12.5px;
-  color: #475569;
+  color: var(--gray-700);
   line-height: 1.5;
   white-space: pre-line;
 `;
@@ -963,8 +963,8 @@ const DeleteRoutineButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background-color: #fee2e2;
-  color: #ef4444;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   border: none;
   border-radius: 16px;
   padding: 12px;

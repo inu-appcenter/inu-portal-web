@@ -47,7 +47,7 @@ export const DeptNoticeItem = ({
               <>
                 <DividerPipe>|</DividerPipe>
                 <ViewCountWrapper>
-                  <Icon name="eye" size={14} color="var(--text-tertiary, #8b95a1)" />
+                  <Icon name="eye" size={14} color="var(--text-tertiary)" />
                   <MetaText>{views}</MetaText>
                 </ViewCountWrapper>
               </>
@@ -89,7 +89,7 @@ const InnerContent = styled.div`
 const ItemContainer = styled.div<{ $interactive?: boolean }>`
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -116,7 +116,7 @@ const Title = styled.h3`
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   margin: 0;
   word-break: break-word;
   width: 100%;
@@ -141,11 +141,11 @@ const InfoRow = styled.div`
 `;
 
 const MetaText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const DividerPipe = styled.span`
-  color: var(--border-default, #e5e8eb);
+  color: var(--border-default);
 `;
 
 const ViewCountWrapper = styled.div`
@@ -159,7 +159,7 @@ const AiCalendarButton = styled.button`
   position: relative;
   z-index: 2;
   background: linear-gradient(107.78deg, rgb(230, 241, 255) 0%, rgb(235, 235, 255) 100%);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 999px;
   padding: 2px 8px 2px 4px;
   display: flex;
@@ -187,6 +187,6 @@ const AiCalendarButtonText = styled.span`
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   white-space: nowrap;
 `;

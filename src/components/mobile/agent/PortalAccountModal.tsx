@@ -158,7 +158,7 @@ const Overlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
   width: 100%;
   max-width: 360px;
@@ -178,7 +178,7 @@ const Header = styled.div`
 const Title = styled.h3`
   font-size: 17px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -223,14 +223,14 @@ const InputGroup = styled.div`
 const InputLabel = styled.label`
   font-size: 12px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
 `;
 
 const InputWrap = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border-radius: 10px;
   padding: 0 12px;
   height: 44px;
@@ -241,22 +241,22 @@ const Input = styled.input`
   background: transparent;
   width: 100%;
   font-size: 14px;
-  color: #191f28;
+  color: var(--text-primary);
   outline: none;
 
   &::placeholder {
-    color: #b0b8c1;
+    color: var(--text-disabled);
   }
 `;
 
 const ErrorText = styled.span`
   font-size: 12px;
-  color: #f04452;
+  color: var(--text-error);
 `;
 
 const SubmitButton = styled.button`
-  background: #3182f6;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   height: 46px;
@@ -266,7 +266,7 @@ const SubmitButton = styled.button`
   margin-top: 6px;
 
   &:disabled {
-    background: #b0b8c1;
+    background: var(--gray-400);
     cursor: not-allowed;
   }
 `;

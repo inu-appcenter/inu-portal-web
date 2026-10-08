@@ -272,13 +272,13 @@ const Date = styled.div`
 const ListTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: #221112;
+  color: var(--text-primary);
 `;
 
 const GridTitle = styled.div`
   font-size: 15px;
   font-weight: 500;
-  color: #221112;
+  color: var(--text-primary);
   flex: 1;
   text-align: center;
   //background: red;
@@ -295,7 +295,7 @@ const Content = styled.div`
   flex: 1;
   font-size: 10px;
   font-weight: 500;
-  color: #888888;
+  color: var(--text-tertiary);
 `;
 
 const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
@@ -321,9 +321,9 @@ const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
   .writer {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     /* grid 모드일 때만 적용 */
@@ -340,9 +340,9 @@ const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
   .view {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     display: flex;
@@ -466,9 +466,9 @@ const DateViewWrapper = styled.div`
   .view {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     display: flex;

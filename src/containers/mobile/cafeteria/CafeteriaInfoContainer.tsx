@@ -82,7 +82,7 @@ const CafeteriaInfoWrapper = styled.div`
     .time {
       font-size: 8px;
       font-weight: 400;
-      color: #969696;
+      color: var(--text-tertiary);
       margin: 0;
     }
   }

@@ -119,7 +119,7 @@ const ProfileImage = styled.img`
   object-fit: cover;
   position: relative;
   z-index: 2;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
 `;
 
 const DefaultIconArea = styled.div`
@@ -129,7 +129,7 @@ const DefaultIconArea = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,7 +147,7 @@ const InfoArea = styled.div`
 const Name = styled.div`
   font-size: 16px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -156,7 +156,7 @@ const Name = styled.div`
 const Subtitle = styled.div`
   font-size: 13px;
   font-weight: 500;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -178,8 +178,8 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
   transition: opacity 0.2s;
 
   background-color: ${({ $variant }) =>
-    $variant === "primary" ? "#5E92F0" : "#F2F2F7"};
-  color: ${({ $variant }) => ($variant === "primary" ? "white" : "#3A3A3C")};
+    $variant === "primary" ? "var(--interactive-primary)" : "var(--bg-muted)"};
+  color: ${({ $variant }) => ($variant === "primary" ? "var(--text-inverse)" : "var(--text-secondary)")};
 
   &:active {
     opacity: 0.7;

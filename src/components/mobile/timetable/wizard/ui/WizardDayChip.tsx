@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { buttonReset, WIZARD_PRIMARY } from "./tokens";
+import { buttonReset } from "./tokens";
 import { typography } from "@/styles/typography";
 
 interface WizardDayChipProps {
@@ -40,13 +40,13 @@ const Chip = styled.button<{ $selected: boolean }>`
   border-radius: 999px;
   border: 1px solid
     ${({ $selected }) =>
-      $selected ? WIZARD_PRIMARY : "var(--border-default, #e5e8eb)"};
+      $selected ? "var(--border-brand)" : "var(--border-default)"};
   background: ${({ $selected }) =>
-    $selected ? WIZARD_PRIMARY : "var(--bg-base, #ffffff)"};
+    $selected ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $selected }) =>
     $selected
-      ? "var(--text-inverse, #ffffff)"
-      : "var(--text-secondary, #333d4b)"};
+      ? "var(--text-inverse)"
+      : "var(--text-secondary)"};
   white-space: nowrap;
   transition:
     background-color 0.15s ease,

@@ -40,7 +40,7 @@ interface StyledSkeletonProps {
 
 // 스타일 컴포넌트 정의
 const StyledSkeleton = styled.div<StyledSkeletonProps>`
-  background: #e3e3e3;
+  background: var(--gray-200);
   border-radius: 6px;
   position: relative;
   overflow: hidden;

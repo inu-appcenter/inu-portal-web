@@ -182,7 +182,7 @@ const DesktopPanelShell = styled.aside`
 `;
 
 const PanelSurface = styled.div<{ $isDesktop: boolean }>`
-  background: #ffffff;
+  background: var(--bg-base);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -237,7 +237,7 @@ const HandleWrapper = styled.div`
 const HandleBar = styled.div`
   width: 40px;
   height: 4px;
-  background: #e5e5e5;
+  background: var(--gray-200);
   border-radius: 999px;
 `;
 

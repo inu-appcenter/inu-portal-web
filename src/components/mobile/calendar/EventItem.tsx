@@ -182,23 +182,23 @@ const EventDot = styled.div<{ $type: ScheduleType }>`
 const EventTypeText = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #3a3a3c;
+  color: var(--text-secondary);
 `;
 
 const EventDate = styled.span`
   font-size: 12px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-weight: 500;
 `;
 
 const EventTitle = styled.strong`
   font-size: 15px;
-  color: #1c1c1e;
+  color: var(--text-primary);
   padding-left: 16px;
 `;
 
 const ArrowIcon = styled(motion.div)`
-  color: #5e92f0;
+  color: var(--interactive-primary);
   display: flex;
   align-items: center;
   padding-top: 2px;
@@ -212,7 +212,7 @@ const DetailContainer = styled.div`
   margin-top: 12px;
   margin-left: 16px;
   padding: 12px;
-  background-color: #f8f8fa;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -226,7 +226,7 @@ const AiBadge = styled.div`
   gap: 6px;
   width: 100%;
   font-size: 10.5px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   border-radius: 4px;
 
   svg {
@@ -243,7 +243,7 @@ const AiText = styled.span`
   word-break: keep-all;
 
   strong {
-    color: #48484a;
+    color: var(--text-secondary);
     font-weight: 600;
   }
 `;
@@ -251,7 +251,7 @@ const AiText = styled.span`
 const Description = styled.p`
   font-size: 14px;
   line-height: 1.5;
-  color: #48484a;
+  color: var(--text-secondary);
   margin: 0;
   white-space: pre-wrap;
 `;
@@ -260,7 +260,7 @@ const InfoGrid = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border-top: 1px solid #e5e5ea;
+  border-top: 1px solid var(--border-default);
   padding-top: 8px;
 `;
 
@@ -271,12 +271,12 @@ const InfoRow = styled.div`
 `;
 
 const InfoLabel = styled.span`
-  color: #8e8e93;
+  color: var(--text-tertiary);
   min-width: 50px;
 `;
 
 const InfoValue = styled.span`
-  color: #3a3a3c;
+  color: var(--text-secondary);
 `;
 
 const DetailFooter = styled.div`

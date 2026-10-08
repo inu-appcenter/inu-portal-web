@@ -65,7 +65,7 @@ const TitleText = styled.p`
   font-size: 16px;
   font-weight: 600;
   line-height: 1.5;
-  color: #1c1e1e;
+  color: var(--text-primary);
   text-align: center;
   white-space: pre-line;
 `;
@@ -75,7 +75,7 @@ const SubtitleText = styled.p`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
-  color: #6f6f6f;
+  color: var(--gray-600);
   text-align: center;
   white-space: pre-line;
 

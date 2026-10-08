@@ -401,7 +401,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   background-color: ${(props) =>
     props.$active
       ? "var(--swiper-theme-color, #007aff)"
-      : "rgba(0, 0, 0, 0.2)"};
+      : "var(--bg-dim)"};
   transition:
     transform 0.2s ease,
     background-color 0.2s ease;
@@ -421,7 +421,7 @@ const PageCounter = styled.div`
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 11px;
   font-weight: 500;
   line-height: 1;
@@ -431,7 +431,7 @@ const PageCounter = styled.div`
 
   span.current {
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text-inverse);
   }
 
   span.divider {

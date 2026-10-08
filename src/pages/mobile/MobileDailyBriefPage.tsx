@@ -457,7 +457,7 @@ const TimetableSectionWrapper = styled(BriefWidgetSectionWrapper)`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;

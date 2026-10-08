@@ -1396,7 +1396,7 @@ export default function MobileGradeCalculatorPage() {
                     y1="4"
                     x2="12"
                     y2="4"
-                    stroke="var(--border-brand, #0061FF)"
+                    stroke="var(--border-brand)"
                     strokeWidth="2"
                   />
                 </svg>
@@ -1416,7 +1416,7 @@ export default function MobileGradeCalculatorPage() {
                     y1="4"
                     x2="12"
                     y2="4"
-                    stroke="var(--border-warn, #FEE588)"
+                    stroke="var(--border-warn)"
                     strokeWidth="2"
                     strokeDasharray="3 2"
                   />
@@ -1471,12 +1471,12 @@ export default function MobileGradeCalculatorPage() {
                   <Line
                     type="linear"
                     dataKey="overall"
-                    stroke="var(--border-brand, #0061FF)"
+                    stroke="var(--border-brand)"
                     strokeWidth={2.5}
                     dot={
                       <GpaPointDot
                         activeIndex={activeGraphIndex}
-                        color="var(--border-brand, #0061FF)"
+                        color="var(--border-brand)"
                         onToggle={toggleGraphPoint}
                       />
                     }
@@ -1485,7 +1485,7 @@ export default function MobileGradeCalculatorPage() {
                         activeIndex={activeGraphIndex}
                         placement="top"
                         label="전체"
-                        color="var(--border-brand, #0061FF)"
+                        color="var(--border-brand)"
                       />
                     }
                     isAnimationActive={false}
@@ -1493,13 +1493,13 @@ export default function MobileGradeCalculatorPage() {
                   <Line
                     type="linear"
                     dataKey="major"
-                    stroke="var(--border-warn, #FEE588)"
+                    stroke="var(--border-warn)"
                     strokeWidth={2.5}
                     strokeDasharray="4 4"
                     dot={
                       <GpaPointDot
                         activeIndex={activeGraphIndex}
-                        color="var(--border-warn, #FEE588)"
+                        color="var(--border-warn)"
                         onToggle={toggleGraphPoint}
                       />
                     }
@@ -1508,7 +1508,7 @@ export default function MobileGradeCalculatorPage() {
                         activeIndex={activeGraphIndex}
                         placement="bottom"
                         label="전공"
-                        color="var(--border-warn, #FEE588)"
+                        color="var(--border-warn)"
                       />
                     }
                     isAnimationActive={false}
@@ -1939,8 +1939,8 @@ const FloatingSaveArea = styled.div`
 
 // 1. 요약 카드 스타일
 const StickyStatsCard = styled.div`
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 16px 20px 4px;
   display: flex;
@@ -1958,7 +1958,7 @@ const StatsHeader = styled.div`
 const StatsTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -1979,7 +1979,7 @@ const StatBox = styled.div`
 
 const StatLabel = styled.span`
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 4px;
 `;
 
@@ -1992,14 +1992,14 @@ const StatValueWrapper = styled.div`
 const StatValueText = styled.span`
   font-size: 24px;
   font-weight: 700;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   letter-spacing: -0.2px;
   line-height: 32px;
 `;
 
 const StatMaxText = styled.span`
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   line-height: 16px;
 `;
 
@@ -2015,12 +2015,12 @@ const TargetCreditsButton = styled.button`
 
   .target-limit {
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     line-height: 16px;
   }
 
   .pencil-icon {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     opacity: 0.8;
   }
 
@@ -2031,7 +2031,7 @@ const TargetCreditsButton = styled.button`
 
 const GraphSection = styled.div<{ $expanded: boolean }>`
   border-top: 1px solid
-    ${(props) => (props.$expanded ? "var(--border-default, #e5e8eb)" : "transparent")};
+    ${(props) => (props.$expanded ? "var(--border-default)" : "transparent")};
   padding: ${(props) => (props.$expanded ? "16px 0 8px" : "0px")};
   width: 100%;
   max-height: ${(props) => (props.$expanded ? "320px" : "0px")};
@@ -2067,11 +2067,11 @@ const GraphFoldButton = styled.button`
   span {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 
   .caret-icon {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -2088,7 +2088,7 @@ const LegendItem = styled.div`
 
   span {
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -2111,15 +2111,15 @@ const GraphCardBody = styled.div`
 const EmptyGraphText = styled.div`
   text-align: center;
   font-size: 14px;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
   padding: 40px 16px;
   width: 100%;
 `;
 
 // 2. 메인 컨테이너 스타일
 const MainContainer = styled.div`
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -2148,11 +2148,11 @@ const SemesterSelectButton = styled.button`
   .semester-name {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   .dropdown-caret {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -2171,7 +2171,7 @@ const SemStatBox = styled.div`
   .stat-val {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
 
     &.bold {
       font-size: 24px;
@@ -2183,7 +2183,7 @@ const SemStatBox = styled.div`
 
   .stat-label {
     font-size: 12px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -2207,12 +2207,12 @@ const ImportTimetableButton = styled.button`
   margin-top: 8px;
 
   .calendar-icon {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 
   .import-text {
     font-size: 14px;
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -2227,11 +2227,11 @@ const TableHeader = styled.div`
   display: flex;
   align-items: center;
   height: 40px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-subtle, #f8f9fb);
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-weight: 400;
   text-align: center;
 `;
@@ -2246,7 +2246,7 @@ const TableRow = styled.div<{ $dimmed?: boolean }>`
   display: flex;
   align-items: center;
   height: 52px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   /* 재수강으로 성적이 취소된 과목 — 계산에서 빠졌다는 걸 보이게 남긴다 */
   opacity: ${({ $dimmed }) => ($dimmed ? 0.5 : 1)};
   &:last-child {
@@ -2257,7 +2257,7 @@ const TableRow = styled.div<{ $dimmed?: boolean }>`
 const EmptyRowText = styled.div`
   text-align: center;
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   padding: 40px 16px;
 `;
 
@@ -2304,14 +2304,14 @@ const SubjectInput = styled.input`
   border: none;
   background: transparent;
   font-size: 15px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   outline: none;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;
 
@@ -2322,21 +2322,21 @@ const CreditsSelectorWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   cursor: pointer;
 
   .credits-val {
     font-size: 14px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
 const GradeSelectorButton = styled.div`
   position: relative;
-  background-color: var(--bg-warn-subtle, #fffaeb);
-  border: 1px solid #fef3c7; /* border/warn-subtle */
+  background-color: var(--bg-warn);
+  border: 1px solid var(--border-warn-subtle); /* border/warn-subtle */
   border-radius: 999px;
   height: 32px;
   width: 58px;
@@ -2349,13 +2349,13 @@ const GradeSelectorButton = styled.div`
   .grade-val {
     font-size: 14px;
     font-weight: 500;
-    color: var(--yellow-600, #b58000);
+    color: var(--yellow-600);
     text-align: center;
     min-width: 24px;
   }
 
   .grade-caret {
-    color: var(--yellow-600, #b58000);
+    color: var(--yellow-600);
     opacity: 0.4;
   }
 `;
@@ -2385,7 +2385,7 @@ const CheckboxWrapper = styled.div`
 const CheckedIcon = styled.div`
   width: 24px;
   height: 24px;
-  background-color: var(--interactive-primary-pressed, #0061ff);
+  background-color: var(--interactive-primary);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -2395,7 +2395,7 @@ const CheckedIcon = styled.div`
 const UncheckedIcon = styled.div`
   width: 24px;
   height: 24px;
-  border: 2px solid var(--border-strong, #d1d6db);
+  border: 2px solid var(--border-strong);
   border-radius: 8px;
   box-sizing: border-box;
 `;
@@ -2403,7 +2403,7 @@ const UncheckedIcon = styled.div`
 const DeleteButton = styled.button`
   background: none;
   border: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2413,7 +2413,7 @@ const DeleteButton = styled.button`
   opacity: 0.7;
 
   &:hover {
-    color: var(--text-error, #ef4444);
+    color: var(--text-error);
     opacity: 1;
   }
 `;
@@ -2425,7 +2425,7 @@ const TableFooter = styled.div`
   justify-content: space-between;
   height: 48px;
   padding: 0 16px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const AddSubjectButton = styled.button`
@@ -2434,7 +2434,7 @@ const AddSubjectButton = styled.button`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--interactive-primary, #3b82f6);
+  color: var(--interactive-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -2445,7 +2445,7 @@ const AddSubjectButton = styled.button`
 const ResetButton = styled.button`
   background: none;
   border: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -2476,7 +2476,7 @@ const BottomSheet = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   border-radius: 24px 24px 0 0;
   max-height: 70vh;
   z-index: 2001;
@@ -2503,7 +2503,7 @@ const SheetHeader = styled.div`
   .drag-handle {
     width: 36px;
     height: 4px;
-    background-color: var(--border-default, #e5e8eb);
+    background-color: var(--border-default);
     border-radius: 2px;
     margin-bottom: 12px;
   }
@@ -2511,7 +2511,7 @@ const SheetHeader = styled.div`
   .title {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -2529,13 +2529,13 @@ const SheetItem = styled.div<{ $active?: boolean }>`
   padding: 0 16px;
   border-radius: 12px;
   font-size: 15px;
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   font-weight: ${({ $active }) => ($active ? "600" : "400")};
-  background-color: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent")};
+  background-color: ${({ $active }) => ($active ? "var(--bg-brand)" : "transparent")};
   cursor: pointer;
 
   &:active {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   .timetable-info {
@@ -2546,18 +2546,18 @@ const SheetItem = styled.div<{ $active?: boolean }>`
 
     .semester {
       font-size: 12px;
-      color: var(--text-tertiary, #8b95a1);
+      color: var(--text-tertiary);
     }
 
     .name {
       font-size: 14px;
-      color: var(--text-secondary, #333d4b);
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
     .count {
       font-size: 12px;
-      color: var(--text-brand, #0061ff);
+      color: var(--text-brand);
     }
   }
 `;
@@ -2565,7 +2565,7 @@ const SheetItem = styled.div<{ $active?: boolean }>`
 const EmptySheetText = styled.div`
   text-align: center;
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   padding: 32px 16px;
 `;
 
@@ -2575,7 +2575,7 @@ const SemesterSheetRow = styled.div<{ $active?: boolean }>`
   align-items: center;
   border-radius: 12px;
   background-color: ${({ $active }) =>
-    $active ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
+    $active ? "var(--bg-brand)" : "transparent"};
 `;
 
 const SemesterLabelButton = styled.button<{ $active?: boolean }>`
@@ -2589,7 +2589,7 @@ const SemesterLabelButton = styled.button<{ $active?: boolean }>`
   text-align: left;
   font-size: 15px;
   color: ${({ $active }) =>
-    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+    $active ? "var(--text-brand)" : "var(--text-secondary)"};
   font-weight: ${({ $active }) => ($active ? 600 : 400)};
   cursor: pointer;
   outline: none;
@@ -2604,12 +2604,12 @@ const DeleteSemesterButton = styled.button`
   justify-content: center;
   background: none;
   border: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
   outline: none;
 
   &:hover {
-    color: var(--text-error, #ef4444);
+    color: var(--text-error);
   }
 `;
 
@@ -2621,9 +2621,9 @@ const AddSemesterRow = styled.button`
   padding: 0 16px;
   margin-top: 4px;
   border: none;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
   background: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -2645,11 +2645,11 @@ const TermPickerButton = styled.button<{ $active: boolean }>`
   border-radius: 10px;
   border: 1px solid
     ${({ $active }) =>
-    $active ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+    $active ? "var(--border-brand)" : "var(--border-default)"};
   background-color: ${({ $active }) =>
-    $active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-base, #ffffff)"};
+    $active ? "var(--bg-brand)" : "var(--bg-base)"};
   color: ${({ $active }) =>
-    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+    $active ? "var(--text-brand)" : "var(--text-secondary)"};
   font-size: 14px;
   font-weight: ${({ $active }) => ($active ? 600 : 400)};
   cursor: pointer;
@@ -2668,12 +2668,12 @@ const EmptySemesterState = styled.div`
   p {
     margin: 0;
     font-size: 14px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   .sub {
     font-size: 13px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     margin-bottom: 8px;
   }
 `;
@@ -2686,8 +2686,8 @@ const PortalModalContent = styled.div`
 `;
 
 const PortalNoticeCard = styled.div`
-  background-color: var(--bg-subtle, #f8f9fa);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px 14px;
   display: flex;
@@ -2702,24 +2702,24 @@ const NoticeTitleRow = styled.div`
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--interactive-primary, #0061ff);
+  color: var(--interactive-primary);
 `;
 
 const NoticeDescText = styled.p`
   font-size: 12.5px;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
   line-height: 1.45;
   margin: 0;
 
   strong {
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
     font-weight: 600;
   }
 `;
 
 const SecurityNoticeText = styled.div`
   font-size: 11.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
 `;
 

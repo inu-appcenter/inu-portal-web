@@ -15,7 +15,7 @@ const TabButton = ({
       onClick={onClick}
       style={{
         borderBottomColor: isSelected ? "#0E4D9D" : "#B5B5B5",
-        color: isSelected ? "#0E4D9D" : "#B5B5B5",
+        color: isSelected ? "#0E4D9D" : "var(--text-disabled)",
       }}
     >
       {text}

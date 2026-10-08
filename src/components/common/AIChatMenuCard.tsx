@@ -83,8 +83,8 @@ const MenuCard = styled.div<{ $open: boolean }>`
   flex-direction: column;
   width: 250px;
   padding: 8px;
-  background-color: #ffffff;
-  border: 1px solid #e5e8eb;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
   transform-origin: bottom right;
@@ -113,11 +113,11 @@ const MenuRow = styled.button`
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f7f9fc;
+    background-color: var(--bg-subtle);
   }
 
   &:active {
-    background-color: #f1f3f5;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -152,16 +152,16 @@ const TitleRow = styled.div`
 const MainTitle = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: #191f28;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 `;
 
 const Badge = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #0061ff;
-  background-color: #eff6ff;
-  border: 1px solid #d3e5ff;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 1px 5px;
   border-radius: 6px;
   line-height: 1.2;
@@ -169,7 +169,7 @@ const Badge = styled.span`
 
 const SubTitle = styled.span`
   font-size: 11px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   letter-spacing: -0.2px;
   white-space: nowrap;
   overflow: hidden;
@@ -178,6 +178,6 @@ const SubTitle = styled.span`
 
 const Divider = styled.div`
   height: 1px;
-  background-color: #f2f4f6;
+  background-color: var(--bg-muted);
   margin: 4px 6px;
 `;

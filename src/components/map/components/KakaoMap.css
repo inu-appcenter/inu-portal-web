@@ -44,28 +44,28 @@
 }
 
 .custom_typecontrol .btn {
-    background: #fff;
+    background: var(--bg-base);
     background: linear-gradient(#fff, #e6e6e6);
 }
 
 .custom_typecontrol .btn:hover {
-    background: #f5f5f5;
+    background: var(--bg-muted);
     background: linear-gradient(#f5f5f5, #e3e3e3);
 }
 
 .custom_typecontrol .btn:active {
-    background: #e6e6e6;
+    background: var(--gray-200);
     background: linear-gradient(#e6e6e6, #fff);
 }
 
 .custom_typecontrol .selected_btn {
-    color: #fff;
+    color: var(--text-inverse);
     background: #425470;
     background: linear-gradient(#425470, #5b6d8a);
 }
 
 .custom_typecontrol .selected_btn:hover {
-    color: #fff;
+    color: var(--text-inverse);
 }
 
 .custom_zoomcontrol {
@@ -76,7 +76,7 @@
     height: 80px;
     overflow: hidden;
     z-index: 2;
-    background-color: #f5f5f5;
+    background-color: var(--bg-muted);
 }
 
 .custom_zoomcontrol span {

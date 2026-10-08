@@ -116,14 +116,14 @@ export default function OpenChatPreviewModal({
               leftButton={{
                 label: "닫기",
                 onClick: () => onOpenChange(false),
-                backgroundColor: "#F2F2F7",
-                textColor: "#1C1C1E",
+                backgroundColor: "var(--bg-muted)",
+                textColor: "var(--text-primary)",
               }}
               rightButton={{
                 label: room.joined ? "참여 중" : "참여하기",
                 onClick: handleJoin,
-                backgroundColor: room.joined ? "rgba(94, 146, 240, 0.12)" : "#5E92F0",
-                textColor: room.joined ? "#5E92F0" : "#FFFFFF",
+                backgroundColor: room.joined ? "rgba(59, 130, 246, 0.12)" : "var(--interactive-primary)",
+                textColor: room.joined ? "var(--interactive-primary)" : "var(--text-inverse)",
               }}
               padding="16px 24px 24px"
               height="88px"
@@ -156,7 +156,7 @@ const StyledContent = styled(Dialog.Content)`
   display: flex;
   flex-direction: column;
   outline: none;
-  background: white;
+  background: var(--bg-base);
   border-radius: 24px;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
 `;
@@ -181,10 +181,10 @@ const Thumbnail = styled.img`
   height: 80px;
   border-radius: 24px;
   object-fit: cover;
-  border: 1px solid #f2f2f7;
+  border: 1px solid var(--border-default);
   position: relative;
   z-index: 2;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
 `;
 
 const DefaultIcon = styled.div`
@@ -194,25 +194,25 @@ const DefaultIcon = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 24px;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
-  border: 1px solid #f2f2f7;
+  border: 1px solid var(--border-default);
 `;
 
 const OfficialBadge = styled.div`
   position: absolute;
   top: -6px;
   right: -6px;
-  background: #1C1C1E;
-  color: white;
+  background: var(--gray-900);
+  color: var(--text-inverse);
   font-size: 11px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 6px;
-  border: 2px solid white;
+  border: 2px solid var(--bg-base);
   z-index: 3;
 `;
 
@@ -225,7 +225,7 @@ const TitleSection = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #1C1C1E;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.4;
 `;
@@ -241,7 +241,7 @@ const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  background: #F8F9FA;
+  background: var(--bg-subtle);
   padding: 16px;
   border-radius: 16px;
 `;
@@ -253,13 +253,13 @@ const InfoItem = styled.div`
   font-size: 14px;
   
   .label {
-    color: #8E8E93;
+    color: var(--text-tertiary);
     font-weight: 500;
     min-width: 60px;
   }
   
   .value {
-    color: #1C1C1E;
+    color: var(--text-primary);
     font-weight: 600;
   }
 `;
@@ -275,13 +275,13 @@ const DescriptionSection = styled.div`
     gap: 6px;
     font-size: 13px;
     font-weight: 700;
-    color: #8E8E93;
+    color: var(--text-tertiary);
   }
 `;
 
 const DescriptionText = styled.div`
   font-size: 15px;
-  color: #48484A;
+  color: var(--text-secondary);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-all;

@@ -289,7 +289,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -317,7 +317,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
@@ -326,8 +326,8 @@ const AcademicScheduleBanner = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 10px 14px;
   margin-top: 14px;
@@ -335,7 +335,7 @@ const AcademicScheduleBanner = styled.div`
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f1f5f9;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -351,7 +351,7 @@ const ScheduleBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
   color: #0284c7;
-  background-color: #e0f2fe;
+  background-color: var(--bg-brand);
   padding: 2px 6px;
   border-radius: 5px;
   white-space: nowrap;
@@ -360,7 +360,7 @@ const ScheduleBadge = styled.span`
 const ScheduleTitleText = styled.span`
   font-size: 13.5px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -387,7 +387,7 @@ const BreakBadge = styled.span<{ $active?: boolean }>`
   font-size: 11.5px;
   font-weight: 800;
   color: ${({ $active }) => ($active ? "#0369a1" : "#0284c7")};
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   padding: 3px 8px;
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -402,7 +402,7 @@ const BreakTimeRange = styled.span`
 const BreakDescription = styled.p`
   font-size: 13px;
   font-weight: 500;
-  color: #334155;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.45;
   letter-spacing: -0.2px;
@@ -420,23 +420,23 @@ const BreakChip = styled.button`
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
   padding: 5px 10px;
   border-radius: 14px;
   font-size: 12px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #f8fafc;
+    background: var(--bg-subtle);
     border-color: #94a3b8;
   }
 
   &:active {
-    background: #f1f5f9;
+    background: var(--bg-muted);
   }
 `;
 
@@ -453,13 +453,13 @@ const EditButton = styled.button`
   transition: background-color 0.15s ease;
 
   &:hover {
-    background: #e5e7eb;
+    background: var(--gray-200);
   }
 `;
 
 const Divider = styled.div`
   height: 1px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-muted);
   margin: 16px 0 14px 0;
 `;
 
@@ -485,7 +485,7 @@ const AccentBar = styled.div<{ $isCurrent: boolean }>`
   height: 38px;
   border-radius: 2px;
   background-color: ${({ $isCurrent }) =>
-    $isCurrent ? "#3B82F6" : "rgba(107, 114, 128, 0.25)"};
+    $isCurrent ? "var(--interactive-primary)" : "rgba(107, 114, 128, 0.25)"};
   flex-shrink: 0;
   margin-top: 2px;
 `;
@@ -506,15 +506,15 @@ const ClassNameRow = styled.div`
 const ClassName = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 `;
 
 const CurrentBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
-  background-color: #eff6ff;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
   padding: 2px 6px;
   border-radius: 4px;
 `;
@@ -522,7 +522,7 @@ const CurrentBadge = styled.span`
 const ClassMeta = styled.span`
   font-size: 13.5px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gray-600);
   letter-spacing: -0.2px;
 `;
 
@@ -536,6 +536,6 @@ const EmptyStateWrapper = styled.div`
 const EmptyText = styled.p`
   font-size: 14.5px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gray-600);
   margin: 0;
 `;

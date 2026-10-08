@@ -266,7 +266,7 @@ const RouletteWheel = forwardRef<RouletteWheelHandle, RouletteWheelProps>(
                 cx={WHEEL_SIZE / 2}
                 cy={WHEEL_SIZE / 2}
                 r="7"
-                fill="var(--branding-brand-blue, #0061ff)"
+                fill="var(--interactive-primary)"
               />
             </StyledSvg>
           </CircleClipWrapper>
@@ -319,7 +319,7 @@ const PointerTriangle = styled.div`
   height: 0;
   border-left: 9px solid transparent;
   border-right: 9px solid transparent;
-  border-top: 18px solid #ef4444;
+  border-top: 18px solid var(--border-error);
   border-radius: 3px;
 `;
 
@@ -366,6 +366,6 @@ const ItemText = styled.text<{ $isMultiLine?: boolean; $itemCount: number }>`
 
 const WarningText = styled.span`
   font-size: 11px;
-  color: var(--text-error, #ef4444);
+  color: var(--text-error);
   font-weight: 500;
 `;

@@ -246,7 +246,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -284,14 +284,14 @@ const HeaderLeft = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
 
 const TabSwitchGroup = styled.div`
   display: flex;
-  background: #f1f5f9;
+  background: var(--bg-muted);
   padding: 3px;
   border-radius: 12px;
   gap: 2px;
@@ -299,8 +299,8 @@ const TabSwitchGroup = styled.div`
 
 const TabButton = styled.button<{ $active: boolean }>`
   border: none;
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  color: ${({ $active }) => ($active ? "#1e293b" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-primary)" : "var(--gray-600)")};
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
   padding: 4px 10px;
@@ -315,7 +315,7 @@ const HeaderMoreButton = styled.div`
   width: 28px;
   height: 28px;
   border-radius: 14px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,7 +341,7 @@ const ReactNoticeItem = styled.div`
 
 const ItemDivider = styled.div`
   height: 1px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-muted);
   margin-bottom: 10px;
 `;
 
@@ -360,9 +360,9 @@ const TopMetaRow = styled.div`
 const CategoryBadge = styled.span`
   font-size: 11.5px;
   font-weight: 700;
-  color: #2563eb;
-  background-color: #eff6ff;
-  border: 1px solid #dbeafe;
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 2px 7px;
   border-radius: 6px;
   line-height: 1.2;
@@ -382,13 +382,13 @@ const DeptBadge = styled.span`
 const NoticeDate = styled.span`
   font-size: 12px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-tertiary);
 `;
 
 const NoticeTitleText = styled.h3`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
   line-height: 1.4;
   margin: 0;
@@ -400,14 +400,14 @@ const NoticeTitleText = styled.h3`
 
 const LoadingText = styled.p`
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 20px 0;
 `;
 
 const EmptyNoticeText = styled.p`
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 20px 0;
 `;
@@ -424,15 +424,15 @@ const AuthPromptWrapper = styled.div`
 const PromptText = styled.p`
   font-size: 14px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gray-600);
   text-align: center;
   margin: 0;
   line-height: 1.4;
 `;
 
 const PromptButton = styled.button`
-  background: #2563eb;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 20px;
   padding: 8px 18px;
@@ -447,7 +447,7 @@ const PromptButton = styled.button`
 `;
 
 const FooterRow = styled.div`
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--bg-base);
   padding-top: 12px;
   margin-top: 4px;
 `;
@@ -456,11 +456,11 @@ const ViewAllButton = styled.button`
   width: 100%;
   height: 44px;
   border-radius: 22px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   font-size: 14px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
   letter-spacing: -0.2px;
   display: flex;
   align-items: center;
@@ -469,6 +469,6 @@ const ViewAllButton = styled.button`
   transition: all 0.15s ease;
 
   &:active {
-    background: #edf2f7;
+    background: var(--bg-muted);
   }
 `;

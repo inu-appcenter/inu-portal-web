@@ -572,7 +572,7 @@ const MonthDisplay = styled.h2`
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  color: #222;
+  color: var(--text-primary);
 `;
 
 const ArrowButton = styled.button`
@@ -584,7 +584,7 @@ const ArrowButton = styled.button`
   display: flex;
   align-items: center;
   &:hover {
-    background-color: #f0f0f0;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -601,7 +601,7 @@ const WeekdayCell = styled.div<{ $index: number }>`
   font-size: 13px;
   font-weight: 500;
   color: ${({ $index }) =>
-    $index === 0 ? "#F97171" : $index === 6 ? "#0A84FF" : "#4C4C4C"};
+    $index === 0 ? "#F97171" : $index === 6 ? "#0A84FF" : "var(--gray-700)"};
 `;
 
 const CalendarBody = styled.div`
@@ -621,7 +621,7 @@ const WeekRow = styled.div<{ $maxRows: number }>`
 
 const DayCell = styled.div<{ $isCurrentMonth: boolean }>`
   padding: 4px 0;
-  background-color: #f9f9fb;
+  background-color: var(--bg-subtle);
   border-radius: 4px;
   opacity: ${({ $isCurrentMonth }) => ($isCurrentMonth ? 1 : 0.4)};
   text-align: center;
@@ -650,7 +650,7 @@ const DateNumber = styled.div<{
   font-size: 14px;
   font-weight: ${({ $isToday }) => ($isToday ? "700" : "500")};
   line-height: 22px;
-  color: ${({ $isToday }) => ($isToday ? "#fff" : "#000")};
+  color: ${({ $isToday }) => ($isToday ? "var(--text-inverse)" : "var(--text-primary)")};
 `;
 
 const EventBar = styled.div<{
@@ -670,7 +670,7 @@ const EventBar = styled.div<{
   height: 20px;
   background-color: ${({ $type }) =>
     $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
-  color: black;
+  color: var(--text-primary);
   font-size: 11px;
   font-weight: 400;
   padding: 0 8px;
@@ -688,7 +688,7 @@ const EventBar = styled.div<{
 
 const EmptyMessage = styled.p`
   text-align: center;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 14px;
   margin: 20px 0;
   padding: 0 20px;

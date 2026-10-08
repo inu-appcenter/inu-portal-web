@@ -64,13 +64,13 @@ const StatusButton = styled.button<{ active: boolean; status: string }>`
   background-color: ${({ active, status }) =>
     active
       ? status === "CONFIRM"
-        ? "#007bff"
-        : "#dc3545" // 승인: 파란색, 거절: 빨간색
-      : "#e0e0e0"};
-  color: ${({ active }) => (active ? "white" : "#333")};
+        ? "var(--interactive-primary)"
+        : "var(--red-500)" // 승인: 파란색, 거절: 빨간색
+      : "var(--gray-200)"};
+  color: ${({ active }) => (active ? "var(--text-inverse)" : "var(--text-secondary)")};
   border: 1px solid
     ${({ active, status }) =>
-      active ? (status === "CONFIRM" ? "#007bff" : "#dc3545") : "#ccc"};
+      active ? (status === "CONFIRM" ? "var(--border-brand)" : "#dc3545") : "var(--border-strong)"};
   border-radius: 4px;
   padding: 10px 20px;
   cursor: pointer;
@@ -78,7 +78,7 @@ const StatusButton = styled.button<{ active: boolean; status: string }>`
 
   &:hover {
     background-color: ${({ active, status }) =>
-      active ? (status === "CONFIRM" ? "#0056b3" : "#c82333") : "#ccc"};
+      active ? (status === "CONFIRM" ? "var(--interactive-primary-hover)" : "#c82333") : "var(--gray-300)"};
   }
 
   &:focus {
@@ -99,7 +99,7 @@ const ModalWrapper = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: white;
+  background-color: var(--bg-base);
   padding: 20px;
   border-radius: 8px;
   max-width: 400px;
@@ -114,9 +114,9 @@ const ConfirmCancelButtonWrapper = styled.div`
 `;
 
 const ConfirmButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: 1px solid #007bff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--border-brand);
   border-radius: 4px;
   padding: 10px 20px;
   cursor: pointer;
@@ -126,8 +126,8 @@ const ConfirmButton = styled.button`
     border-color 0.3s ease;
 
   &:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: var(--interactive-primary-hover);
+    border-color: var(--interactive-primary-hover);
   }
 
   &:focus {
@@ -140,9 +140,9 @@ const ConfirmButton = styled.button`
 `;
 
 const CancelButton = styled.button`
-  background-color: #f8f9fa;
-  color: #333;
-  border: 1px solid #ccc;
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
   border-radius: 4px;
   padding: 10px 20px;
   cursor: pointer;
@@ -152,7 +152,7 @@ const CancelButton = styled.button`
     border-color 0.3s ease;
 
   &:hover {
-    background-color: #e2e6ea;
+    background-color: var(--gray-200);
     border-color: #adb5bd;
   }
 
@@ -161,6 +161,6 @@ const CancelButton = styled.button`
   }
 
   &:active {
-    background-color: #d6d8db;
+    background-color: var(--gray-300);
   }
 `;

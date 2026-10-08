@@ -172,17 +172,17 @@ const PortalShortcutButton = styled.button`
   width: 100%;
   padding: 10px;
   margin-top: 4px;
-  background-color: #f0f6ff;
-  border: 1px solid #d3e5ff;
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 10px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #e5f0ff;
+    background-color: var(--blue-100);
   }
 `;
 
@@ -190,9 +190,9 @@ const SelectContainer = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg, 12px);
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-base, #ffffff);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-base);
   padding: 8px 12px;
   min-height: 56px;
   transition: all 0.2s ease;
@@ -200,12 +200,12 @@ const SelectContainer = styled.div`
   box-sizing: border-box;
 
   &:focus-within {
-    border-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
   }
 `;
 
 const SelectLabel = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 4px;
   pointer-events: none;
   text-align: left;
@@ -222,7 +222,7 @@ const StyledSelect = styled.select`
   padding: 0;
   width: 100%;
   box-sizing: border-box;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   font-size: 16px;
   font-style: normal;
   font-weight: 400;

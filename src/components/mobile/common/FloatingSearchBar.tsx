@@ -329,9 +329,9 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean; $size: number }>`
   position: relative;
   box-sizing: border-box;
 
-  border: 1px solid var(--border-default, #E5E8EB);
-  background: ${(props) => (props.$isActive ? "#ffffff" : "rgba(255, 255, 255, 0.50)")};
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-default);
+  background: ${(props) => (props.$isActive ? "var(--bg-base)" : "rgba(255, 255, 255, 0.50)")};
+  box-shadow: var(--elevation-1-shadow);
   backdrop-filter: ${(props) => (props.$isActive ? "none" : "blur(8px)")};
 
   width: ${(props) => (props.$isActive ? "100%" : `${props.$size}px`)};
@@ -344,7 +344,7 @@ const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
   outline: none;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   box-sizing: border-box;
 
   opacity: ${(props) => (props.$isActive ? 1 : 0)};
@@ -354,7 +354,7 @@ const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
   pointer-events: ${(props) => (props.$isActive ? "auto" : "none")};
 
   border-radius: 999px;
-  border: 1px solid var(--border-strong, #d1d6db);
+  border: 1px solid var(--border-strong);
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(8px);
 
@@ -364,7 +364,7 @@ const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
   will-change: opacity, padding;
 
   &::placeholder {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -379,8 +379,8 @@ const ClearButton = styled.button`
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--bg-neutral, #e5e8eb);
-  color: var(--text-tertiary, #8b95a1);
+  background: var(--gray-200);
+  color: var(--text-tertiary);
   border: none;
   cursor: pointer;
   outline: none;
@@ -389,8 +389,8 @@ const ClearButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--border-strong, #d1d6db);
-    color: var(--text-secondary, #4e5968);
+    background: var(--border-strong);
+    color: var(--text-secondary);
   }
 
   &:active {
@@ -404,8 +404,8 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
   cursor: pointer;
   outline: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -421,9 +421,9 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
     right: 3px;
     width: ${props.$size - 8}px;
     height: ${props.$size - 8}px;
-    background: var(--interactive-primary, #3b82f6);
-    color: #ffffff;
-    border: 1px solid var(--border-brand, #0061FF);
+    background: var(--interactive-primary);
+    color: var(--text-inverse);
+    border: 1px solid var(--border-brand);
   `
       : `
     top: 0px;
@@ -431,7 +431,7 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
     width: ${props.$size - 2}px;
     height: ${props.$size - 2}px;
     background: transparent;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   `}
 
   &:active {

@@ -81,7 +81,7 @@ const FullPageContainer = styled.div`
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background-color: #f8faff;
+  background-color: var(--bg-subtle);
   overflow: hidden;
   padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
   padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
@@ -105,13 +105,13 @@ const CloseButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #475569;
+  color: var(--gray-700);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
 
   &:hover {
-    background: #ffffff;
-    color: #0f172a;
+    background: var(--bg-base);
+    color: var(--text-primary);
     transform: scale(1.05);
   }
 `;

@@ -142,7 +142,7 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   box-sizing: border-box;
   padding: 24px ${MOBILE_PAGE_GUTTER} 120px;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
 `;
 
 const SearchBarWrapper = styled.div`
@@ -153,7 +153,7 @@ const HeaderActionButton = styled.button`
   border: none;
   background: none;
   padding: 8px 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font: 500 16px/1.4 Pretendard;
   white-space: nowrap;
 `;
@@ -181,7 +181,7 @@ const InviteButton = styled(CapsuleButton)`
   font: 700 16px/24px Pretendard;
 
   &:disabled {
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
   }
 `;

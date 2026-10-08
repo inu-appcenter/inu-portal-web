@@ -40,12 +40,12 @@ const Button = styled.button<{ $active?: boolean }>`
   border: 1px solid
     ${({ $active }) =>
       $active
-        ? "var(--border-brand-subtle, #d3e5ff)"
-        : "var(--border-default, #e5e8eb)"};
+        ? "var(--border-brand-subtle)"
+        : "var(--border-default)"};
   background: ${({ $active }) =>
-    $active ? "var(--bg-brand, #eff6ff)" : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
+    $active ? "var(--bg-brand)" : "var(--bg-blur)"};
   color: ${({ $active }) =>
-    $active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #333d4b)"};
+    $active ? "var(--text-brand)" : "var(--text-secondary)"};
   ${effects.floatingButton}
   transition: transform 0.1s ease;
 

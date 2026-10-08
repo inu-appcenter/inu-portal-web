@@ -87,10 +87,10 @@ const Thumbnail = styled.img`
   height: 100%;
   border-radius: 16px;
   object-fit: cover;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
   position: relative;
   z-index: 2;
-  border: 1px solid #f2f2f7;
+  border: 1px solid var(--border-default);
 `;
 
 const DefaultIcon = styled.div`
@@ -100,7 +100,7 @@ const DefaultIcon = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 16px;
-  background-color: #f4f4f4;
+  background-color: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,7 +122,7 @@ const TitleArea = styled.div`
 `;
 
 const Title = styled.div`
-  color: #000;
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 600;
   overflow: hidden;
@@ -133,15 +133,15 @@ const Title = styled.div`
 const OfficialTag = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #ffffff;
-  background: #1c1c1e;
+  color: var(--text-inverse);
+  background: var(--gray-900);
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;
 `;
 
 const Description = styled.div`
-  color: #666;
+  color: var(--gray-600);
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,22 +152,22 @@ const ParticipantInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 500;
 `;
 
 const JoinButton = styled.div<{ $joined?: boolean }>`
   padding: 6px 12px;
-  background-color: ${(props) => (props.$joined ? "#ffffff" : "#f2f2f7")};
-  color: ${(props) => (props.$joined ? "#1c1c1e" : "#5e92f0")};
-  border: ${(props) => (props.$joined ? "1px solid #e0e0e0" : "none")};
+  background-color: ${(props) => (props.$joined ? "var(--bg-base)" : "var(--bg-muted)")};
+  color: ${(props) => (props.$joined ? "var(--text-primary)" : "var(--interactive-primary)")};
+  border: ${(props) => (props.$joined ? "1px solid var(--border-default)" : "none")};
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
 
   &:active {
-    background-color: ${(props) => (props.$joined ? "#f4f4f4" : "#e5e5ea")};
+    background-color: ${(props) => (props.$joined ? "var(--bg-muted)" : "var(--gray-200)")};
   }
 `;

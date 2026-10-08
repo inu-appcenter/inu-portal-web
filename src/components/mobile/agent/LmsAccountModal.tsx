@@ -129,7 +129,7 @@ const Overlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 20px;
   width: 100%;
   max-width: 360px;
@@ -153,14 +153,14 @@ const TitleRow = styled.div`
 const Title = styled.h2`
   font-size: 16.5px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 4px;
 `;
@@ -190,17 +190,17 @@ const InputGroup = styled.div`
 const Label = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
 `;
 
 const InputWrap = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #e5e8eb;
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 10px 12px;
-  background: #f9fafb;
+  background: var(--bg-subtle);
 `;
 
 const Input = styled.input`
@@ -208,13 +208,13 @@ const Input = styled.input`
   background: transparent;
   width: 100%;
   font-size: 14px;
-  color: #191f28;
+  color: var(--text-primary);
   outline: none;
 `;
 
 const ErrorText = styled.span`
   font-size: 12px;
-  color: #f04452;
+  color: var(--text-error);
   font-weight: 500;
 `;
 
@@ -222,7 +222,7 @@ const SubmitButton = styled.button`
   width: 100%;
   padding: 12px 0;
   background: #00a651;
-  color: #ffffff;
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 14.5px;

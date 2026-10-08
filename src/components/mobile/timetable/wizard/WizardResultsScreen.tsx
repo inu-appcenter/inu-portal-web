@@ -55,7 +55,7 @@ const Hero = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const HeroTitle = styled.h1`

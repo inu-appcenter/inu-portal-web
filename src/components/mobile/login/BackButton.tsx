@@ -50,5 +50,5 @@ const Button = styled.button<{ $isScrolled?: boolean }>`
   outline: none;
   transition: all 0.2s ease-in-out;
 
-  color: black;
+  color: var(--text-primary);
 `;

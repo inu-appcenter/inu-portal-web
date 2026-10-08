@@ -303,7 +303,7 @@ export default function MobileFriendListPage() {
     title: isShareMode ? "시간표 공유 대상 선택" : "친구",
     hasback: true,
     immersive: true,
-    pageBgColor: "#f8f9fb",
+    pageBgColor: "var(--bg-subtle)",
     rightAreaNotCircle: true,
     rightArea: headerRight,
     subHeader: subHeader,
@@ -496,12 +496,12 @@ const PageWrapper = styled.div<{ $isShareMode?: boolean }>`
     $isShareMode
       ? `calc(var(--header-height, 56px) + 12px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 90px)`
       : `calc(var(--header-height, 56px) + 16px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 80px)`};
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
 `;
 
 const FriendListContainer = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -525,7 +525,7 @@ const EmptyTitle = styled.h3`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin: 24px 0 8px 0;
   text-align: center;
 `;
@@ -579,9 +579,9 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean; $isMenuOpen?: boolean 
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`
   height: 48px;
   border-radius: 24px;
-  background-color: #5e92f0;
+  background-color: var(--interactive-primary);
   border: none;
-  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.35);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
   cursor: pointer;
   z-index: 10;
 
@@ -607,7 +607,7 @@ const FloatingActionButton = styled.button<{ $isTop: boolean }>`
 const ButtonLabel = styled.span<{ $isTop: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-inverse);
   white-space: nowrap;
   overflow: hidden;
 
@@ -647,7 +647,7 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
 `;
 
 const CompareButton = styled(CapsuleButton)`
-  color: #fff;
+  color: var(--text-inverse);
   text-align: center;
 
   /* title-3 */
@@ -658,14 +658,14 @@ const CompareButton = styled(CapsuleButton)`
   line-height: 24px; /* 150% */
   letter-spacing: -0.2px;
   border-radius: 999px;
-  background: var(--interactive-primary, #0061ff);
+  background: var(--interactive-primary);
   height: 48px;
   padding: 12px 24px;
 
   &:disabled {
-    border-color: var(--border-default, #e5e8eb);
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #8b95a1);
+    border-color: var(--border-default);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
     box-shadow: none;
   }
@@ -685,13 +685,13 @@ const HeaderActionButton = styled.button`
   font-weight: 500;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   outline: none;
   padding: 0;
 
   &.cancel {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   &:active {
@@ -712,9 +712,9 @@ const SelectableRoomItemWrapper = styled.div<{ $isSelected: boolean }>`
   width: 100%;
   box-sizing: border-box;
   padding: 4px 16px 4px 16px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
+    $isSelected ? "var(--bg-brand)" : "transparent"};
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
 
@@ -728,9 +728,9 @@ const RoomItemCheckOverlay = styled.div<{ $isSelected: boolean }>`
   height: 22px;
   border-radius: 50%;
   border: 2px solid
-    ${({ $isSelected }) => ($isSelected ? "#0061ff" : "#c2c8d0")};
+    ${({ $isSelected }) => ($isSelected ? "var(--border-brand)" : "var(--border-strong)")};
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "#0061ff" : "transparent"};
+    $isSelected ? "var(--interactive-primary)" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;

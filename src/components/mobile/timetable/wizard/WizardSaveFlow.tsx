@@ -202,7 +202,7 @@ const WizardSaveFlow = ({
           onClick: handleConfirmOverwrite,
           // Figma는 파괴적 확정 버튼을 진한 빨강 채움으로 표현 — 공용 danger variant(파스텔)는
           // 다른 화면(필터 미저장 이탈 등)과 공유하므로 그대로 두고 이 버튼만 override
-          style: { background: "#dc322f", color: "#ffffff" },
+          style: { background: "#dc322f", color: "var(--text-inverse)" },
         }}
       />
 
@@ -258,7 +258,7 @@ export default WizardSaveFlow;
 
 const SheetTitle = styled.h2`
   margin: 4px 0 16px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 700;
   line-height: 27px;
@@ -271,11 +271,11 @@ const OptionRow = styled.div<{ $active: boolean }>`
   padding: 14px 16px;
   border-radius: 14px;
   cursor: pointer;
-  background: ${({ $active }) => ($active ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-subtle)")};
   border-width: ${({ $active }) => ($active ? "1.5px" : "1px")};
   border-style: solid;
   border-color: ${({ $active }) =>
-    $active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+    $active ? "var(--interactive-primary)" : "var(--border-default)"};
 `;
 
 const RadioCircle = styled.span<{ $active: boolean }>`
@@ -284,11 +284,11 @@ const RadioCircle = styled.span<{ $active: boolean }>`
   height: 24px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--bg-base, #ffffff);
+  background: var(--bg-base);
   border: ${({ $active }) =>
     $active
-      ? "6px solid var(--interactive-primary, #3b82f6)"
-      : "1.5px solid var(--border-default, #e5e8eb)"};
+      ? "6px solid var(--interactive-primary)"
+      : "1.5px solid var(--border-default)"};
   box-sizing: border-box;
   transition: border-width 0.15s ease;
 `;
@@ -300,14 +300,14 @@ const OptionText = styled.div`
 `;
 
 const OptionTitle = styled.span<{ $active: boolean }>`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
   line-height: 23px;
 `;
 
 const OptionSubtitle = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 12px;
   line-height: 18px;
 `;
@@ -320,7 +320,7 @@ const TargetDropdownWrap = styled.div`
 `;
 
 const TargetLabel = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
 `;
@@ -330,9 +330,9 @@ const SelectBox = styled.select`
   height: 52px;
   padding: 0 16px;
   border-radius: 14px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 500;
   line-height: 52px;

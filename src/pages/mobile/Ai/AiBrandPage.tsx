@@ -62,7 +62,7 @@ const AppItem = ({
           <TitleRow>
             <div
               className="title"
-              style={{ color: isPreparing ? "#8e8e93" : "#000" }}
+              style={{ color: isPreparing ? "var(--text-tertiary)" : "var(--text-primary)" }}
             >
               {title}
             </div>
@@ -343,7 +343,7 @@ const IconWrapper = styled.div<{ $isPreparing?: boolean }>`
   height: 48px;
   border-radius: 8px;
   background-color: ${({ $isPreparing }) =>
-    $isPreparing ? "#f2f2f7" : "#f0ecfa"};
+    $isPreparing ? "var(--bg-muted)" : "#f0ecfa"};
   flex-shrink: 0;
 `;
 
@@ -352,12 +352,12 @@ const ContentArea = styled.div`
   flex-direction: column;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
   }
   .description {
-    color: #969696;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
     text-overflow: ellipsis;
@@ -372,7 +372,7 @@ const TitleRow = styled.div`
 `;
 
 const ExternalIconImg = styled(FontelloIcon)`
-  color: #969696;
+  color: var(--text-tertiary);
   opacity: 0.55;
   flex-shrink: 0;
 `;

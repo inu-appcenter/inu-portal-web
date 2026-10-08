@@ -193,7 +193,7 @@ const MainGreeting = styled.h1`
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.8px;
-  color: #111827;
+  color: var(--text-primary);
   margin: 0;
   line-height: 1.2;
   word-break: keep-all;
@@ -204,7 +204,7 @@ const SubGreeting = styled.p`
   font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: #374151;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
 `;

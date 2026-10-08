@@ -356,7 +356,7 @@ const SectionWrapper = styled.div`
 const ContextIntro = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   margin: 0;
   padding: 0 4px;
   letter-spacing: -0.3px;
@@ -395,14 +395,14 @@ const HeaderLeft = styled.div`
 const CardTitle = styled.h2`
   font-size: 17px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0;
 `;
 
 const DirectionToggleGroup = styled.div`
   display: flex;
-  background: #f1f5f9;
+  background: var(--bg-muted);
   padding: 3px;
   border-radius: 12px;
   gap: 2px;
@@ -410,8 +410,8 @@ const DirectionToggleGroup = styled.div`
 
 const DirectionButton = styled.button<{ $active: boolean }>`
   border: none;
-  background: ${({ $active }) => ($active ? "#ffffff" : "transparent")};
-  color: ${({ $active }) => ($active ? "#1e293b" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-primary)" : "var(--gray-600)")};
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
   padding: 3px 9px;
@@ -429,7 +429,7 @@ const BusList = styled.div`
 
 const ListDivider = styled.div`
   height: 1px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-muted);
   margin: 12px 0;
 `;
 
@@ -456,34 +456,34 @@ const BusLeftSection = styled.div`
 const BusNumber = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: #111827;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 `;
 
 const BusDetail = styled.span`
   font-size: 12.5px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--gray-600);
   margin-left: 2px;
 `;
 
 const BusTime = styled.span<{ $highlight?: boolean }>`
   font-size: 14.5px;
   font-weight: 700;
-  color: ${({ $highlight }) => ($highlight ? "#2563eb" : "#4b5563")};
+  color: ${({ $highlight }) => ($highlight ? "var(--text-brand)" : "var(--gray-700)")};
   letter-spacing: -0.3px;
 `;
 
 const LoadingStateText = styled.p`
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 14px 0;
 `;
 
 const EmptyText = styled.p`
   font-size: 14px;
-  color: #9ca3af;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 14px 0;
 `;
@@ -492,7 +492,7 @@ const FooterRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--bg-base);
   padding-top: 14px;
   margin-top: 2px;
 `;
@@ -500,21 +500,21 @@ const FooterRow = styled.div`
 const UpdateTimestamp = styled.span`
   font-size: 11.5px;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-tertiary);
 `;
 
 const MoreButton = styled.button`
-  background: #f3f4f6;
+  background: var(--bg-muted);
   border: none;
   border-radius: 12px;
   padding: 6px 12px;
   font-size: 12.5px;
   font-weight: 700;
-  color: #4b5563;
+  color: var(--gray-700);
   cursor: pointer;
   transition: background-color 0.15s ease;
 
   &:hover {
-    background: #e5e7eb;
+    background: var(--gray-200);
   }
 `;

@@ -209,7 +209,7 @@ const Thumbnail = styled.img`
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
-  background-color: #eee;
+  background-color: var(--bg-muted);
 `;
 
 const InfoWrapper = styled.div`
@@ -230,7 +230,7 @@ const TitleSkeletonWrapper = styled.div`
 const VideoTitle = styled.h3`
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -248,7 +248,7 @@ const MetaInfo = styled.div`
 
 const InfoText = styled.span`
   font-size: 11px;
-  color: #888;
+  color: var(--text-tertiary);
   &.date {
     color: #4071b9;
     font-weight: 500;
@@ -257,5 +257,5 @@ const InfoText = styled.span`
 
 const DividerDot = styled.span`
   font-size: 10px;
-  color: #ccc;
+  color: var(--text-disabled);
 `;

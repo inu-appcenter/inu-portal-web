@@ -47,5 +47,5 @@ const CheckboxImg = styled.img`
 const CheckboxText = styled.div`
   font-size: 15px;
   font-weight: 500;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
 `;

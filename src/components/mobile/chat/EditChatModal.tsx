@@ -160,14 +160,14 @@ export default function EditChatModal({
             leftButton={{
               label: "취소",
               onClick: () => onOpenChange(false),
-              backgroundColor: "#F2F2F7",
-              textColor: "#1C1C1E",
+              backgroundColor: "var(--bg-muted)",
+              textColor: "var(--text-primary)",
             }}
             rightButton={{
               label: isLoading ? "수정 중..." : "수정하기",
               onClick: handleUpdate,
-              backgroundColor: "#5E92F0",
-              textColor: "#FFFFFF",
+              backgroundColor: "var(--interactive-primary)",
+              textColor: "var(--text-inverse)",
               disabled: isLoading,
             }}
             padding="16px 24px 24px"
@@ -201,7 +201,7 @@ const StyledContent = styled(Dialog.Content)`
   flex-direction: column;
   outline: none;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   max-height: 85vh;
   overflow: hidden;
@@ -215,7 +215,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -255,7 +255,7 @@ const ThumbnailPreview = styled.div<{ src: string }>`
   width: 100px;
   height: 100px;
   border-radius: 20px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   background-image: ${({ src }) => (src ? `url(${src})` : "none")};
   background-size: cover;
   background-position: center;
@@ -263,7 +263,7 @@ const ThumbnailPreview = styled.div<{ src: string }>`
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
 `;
 
 const FileInput = styled.input`
@@ -277,17 +277,17 @@ const EditBadge = styled.div`
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: #5e92f0;
+  background-color: var(--interactive-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
+  border: 2px solid var(--bg-base);
 `;
 
 const Label = styled.label`
   font-size: 14px;
   font-weight: 600;
-  color: #767676;
+  color: var(--gray-600);
   align-self: flex-start;
 `;
 
@@ -295,13 +295,13 @@ const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
 
   &:focus {
-    border-color: #5e92f0;
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -309,7 +309,7 @@ const TextArea = styled.textarea`
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
@@ -317,6 +317,6 @@ const TextArea = styled.textarea`
   font-family: inherit;
 
   &:focus {
-    border-color: #5e92f0;
+    border-color: var(--interactive-primary);
   }
 `;

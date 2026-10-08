@@ -281,7 +281,7 @@ const ItemContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-bottom: 0.5px solid #d6d6d6;
+  border-bottom: 0.5px solid var(--border-strong);
 `;
 
 const Header = styled.div`
@@ -306,7 +306,7 @@ const Title = styled.div`
 
   small {
     font-size: 12px;
-    color: #888;
+    color: var(--text-tertiary);
   }
 `;
 

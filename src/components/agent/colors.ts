@@ -3,8 +3,8 @@ export const COLORS = {
   figmaBlue: "#0958d9", // Main/Main2
   blue200: "#bae0ff",   // Blue/Blue200
   inuYellow: "#FFA500",
-  textDark: "#111111",
-  textMuted: "#666666",
-  textPlaceholder: "#8e8e93", // Variable 6 (#8e8e93)
-  bgWhite: "#ffffff",
+  textDark: "var(--text-primary)",
+  textMuted: "var(--gray-600)",
+  textPlaceholder: "var(--text-tertiary)",
+  bgWhite: "var(--bg-base)",
 };

@@ -13,9 +13,9 @@ const WizardCard = styled.div<{ $radius?: 14 | 16 | 20; $subtle?: boolean }>`
   flex-direction: column;
   overflow: hidden;
   border-radius: ${({ $radius = 20 }) => $radius}px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   background: ${({ $subtle }) =>
-    $subtle ? "var(--bg-subtle, #f8f9fb)" : "var(--bg-base, #ffffff)"};
+    $subtle ? "var(--bg-subtle)" : "var(--bg-base)"};
 `;
 
 export default WizardCard;

@@ -108,8 +108,8 @@ const Wrapper = styled.div`
 const Button = styled.button`
   margin-top: 20px;
   padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -117,6 +117,6 @@ const Button = styled.button`
   margin-bottom: 15px;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: var(--interactive-primary-hover);
   }
 `;

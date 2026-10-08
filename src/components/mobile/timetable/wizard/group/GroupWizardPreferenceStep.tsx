@@ -172,8 +172,8 @@ const ScrollContent = styled.div`
 `;
 
 const Card = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 18px 16px;
   display: flex;
@@ -187,7 +187,7 @@ const Card = styled.div`
 const PreferenceCardBox = styled(Card)<{ $checked: boolean }>`
   border-width: ${({ $checked }) => ($checked ? "1.5px" : "1px")};
   border-color: ${({ $checked }) =>
-    $checked ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+    $checked ? "var(--interactive-primary)" : "var(--border-default)"};
 `;
 
 const WarningInline = styled.div`
@@ -196,7 +196,7 @@ const WarningInline = styled.div`
   gap: 8px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: #fff8e9;
+  background: var(--bg-warn);
   border: 1px solid #fdd9aa;
   color: #d97706;
   font-size: 12px;
@@ -209,9 +209,9 @@ const SelectBox = styled.select`
   height: 52px;
   padding: 0 16px;
   border-radius: 14px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-subtle, #f8f9fb);
-  color: var(--text-primary, #191f28);
+  border: 1px solid var(--border-default);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
   font-size: 16px;
   font-weight: 500;
   line-height: 52px;
@@ -225,7 +225,7 @@ const SelectBox = styled.select`
 
 const SectionHeading = styled.h2`
   margin: 0 0 4px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
   font-weight: 400;
   line-height: 20px;
@@ -245,14 +245,14 @@ const PreferenceTextWrap = styled.div`
 `;
 
 const PreferenceTitle = styled.span<{ $checked: boolean }>`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
   line-height: 23px;
 `;
 
 const PreferenceCode = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 11px;
   line-height: 17px;
 `;
@@ -264,16 +264,16 @@ const CheckboxInput = styled.input`
   height: 22px;
   flex-shrink: 0;
   border-radius: 6px;
-  border: 1.5px solid var(--gray-400, #b0b8c1);
-  background-color: var(--bg-base, #ffffff);
+  border: 1.5px solid var(--gray-400);
+  background-color: var(--bg-base);
   position: relative;
   cursor: pointer;
   outline: none;
   transition: all 0.2s;
 
   &:checked {
-    border-color: var(--interactive-primary, #3b82f6);
-    background-color: var(--interactive-primary, #3b82f6);
+    border-color: var(--interactive-primary);
+    background-color: var(--interactive-primary);
   }
 
   &:checked::after {
@@ -283,7 +283,7 @@ const CheckboxInput = styled.input`
     top: 3px;
     width: 5px;
     height: 10px;
-    border: solid #ffffff;
+    border: solid var(--bg-base);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
@@ -300,10 +300,10 @@ const DayButton = styled.button<{ $active: boolean }>`
   border-radius: 999px;
   border: 1px solid
     ${({ $active }) =>
-      $active ? "var(--interactive-primary, #3b82f6)" : "var(--border-default, #e5e8eb)"};
+      $active ? "var(--interactive-primary)" : "var(--border-default)"};
   background: ${({ $active }) =>
-    $active ? "var(--interactive-primary, #3b82f6)" : "var(--bg-subtle, #f8f9fb)"};
-  color: ${({ $active }) => ($active ? "#ffffff" : "var(--text-secondary, #333d4b)")};
+    $active ? "var(--interactive-primary)" : "var(--bg-subtle)"};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--text-secondary)")};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

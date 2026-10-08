@@ -110,7 +110,7 @@ const ModalWrapper = styled.div`
 const StyledContent = styled(Dialog.Content)`
   width: 100%;
   max-width: 500px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -134,19 +134,19 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const Title = styled(Dialog.Title)`
   margin: 0;
-  color: #0f172a;
+  color: var(--text-primary);
   font-size: 1.25rem;
   font-weight: 700;
 `;
 
 const DescriptionText = styled(Dialog.Description)`
   margin: 4px 0 0;
-  color: #64748b;
+  color: var(--gray-600);
   font-size: 0.875rem;
   line-height: 1.5;
 `;
@@ -154,15 +154,15 @@ const DescriptionText = styled(Dialog.Description)`
 const CloseButton = styled.button`
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   padding: 4px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--bg-muted);
+    color: var(--gray-700);
   }
 `;
 
@@ -177,6 +177,6 @@ const Footer = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  background-color: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+  background-color: var(--bg-subtle);
+  border-top: 1px solid var(--bg-base);
 `;

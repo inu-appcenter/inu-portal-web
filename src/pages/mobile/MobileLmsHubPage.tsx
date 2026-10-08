@@ -734,14 +734,14 @@ const Container = styled.div`
 const FootnoteText = styled.p`
   margin: 20px 0 0;
   font-size: 12.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.4;
 `;
 
 const TabBar = styled.div`
   display: flex;
-  background: var(--bg-muted, #f2f4f6);
+  background: var(--bg-muted);
   padding: 4px;
   border-radius: 14px;
   margin-bottom: 16px;
@@ -756,8 +756,8 @@ const TabButton = styled.button<{ $active: boolean }>`
   padding: 10px 0;
   font-size: 13px;
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #6b7684)")};
-  background: ${({ $active }) => ($active ? "var(--bg-base, #ffffff)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
+  background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
   border-radius: 10px;
   border: none;
   cursor: pointer;
@@ -768,8 +768,8 @@ const TabButton = styled.button<{ $active: boolean }>`
 const CountBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   padding: 1px 6px;
   border-radius: 999px;
 `;
@@ -778,8 +778,8 @@ const BannerCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   padding: 14px 16px;
   margin-bottom: 16px;
@@ -790,7 +790,7 @@ const BannerCard = styled.div`
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-muted, #f8fafc);
+    background: var(--bg-muted);
   }
 `;
 
@@ -805,11 +805,11 @@ const BannerText = styled.div`
   flex-direction: column;
   strong {
     font-size: 14px;
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
   span {
     font-size: 12px;
-    color: var(--text-secondary, #6b7684);
+    color: var(--text-secondary);
     margin-top: 2px;
   }
 `;
@@ -860,8 +860,8 @@ const SearchBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 9px 12px;
   width: 100%;
@@ -869,7 +869,7 @@ const SearchBox = styled.div`
   transition: border-color 0.15s ease;
 
   &:focus-within {
-    border-color: var(--interactive-primary, #0061ff);
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -878,12 +878,12 @@ const SearchInput = styled.input`
   border: none;
   background: transparent;
   font-size: 13.5px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-placeholder, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -894,12 +894,12 @@ const ClearBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   cursor: pointer;
   border-radius: 50%;
 
   &:hover {
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
 `;
 
@@ -926,9 +926,9 @@ const FilterChip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   font-size: 12.5px;
   font-weight: ${({ $active }) => ($active ? "600" : "500")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
-  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -942,7 +942,7 @@ const FilterChip = styled.button<{ $active: boolean }>`
 const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -953,7 +953,7 @@ const RefreshBtn = styled.button`
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   cursor: pointer;
 `;
 
@@ -963,8 +963,8 @@ const EmptyBox = styled.div`
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px dashed var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px dashed var(--border-default);
   border-radius: 16px;
   text-align: center;
   gap: 8px;
@@ -975,13 +975,13 @@ const EmptyBox = styled.div`
 const EmptyTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin-top: 4px;
 `;
 
 const EmptyDesc = styled.div`
   font-size: 12px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   line-height: 1.5;
   max-width: 280px;
 `;
@@ -1012,8 +1012,8 @@ const AssignTop = styled.div`
 const CourseNameBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
-  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 3px 8px;
   border-radius: 6px;
   max-width: 70%;
@@ -1027,14 +1027,14 @@ const DueBadge = styled.span<{ $isUrgent?: boolean }>`
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 6px;
-  background: ${({ $isUrgent }) => ($isUrgent ? "var(--bg-error, #fef2f2)" : "var(--bg-muted, #f2f4f6)")};
-  color: ${({ $isUrgent }) => ($isUrgent ? "var(--text-error, #ef4444)" : "var(--text-secondary, #4e5968)")};
+  background: ${({ $isUrgent }) => ($isUrgent ? "var(--bg-error)" : "var(--bg-muted)")};
+  color: ${({ $isUrgent }) => ($isUrgent ? "var(--text-error)" : "var(--text-secondary)")};
 `;
 
 const AssignTitle = styled.div`
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   line-height: 1.4;
   width: 100%;
   box-sizing: border-box;
@@ -1045,7 +1045,7 @@ const TimeRow = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   margin-top: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -1057,7 +1057,7 @@ const ActionBtnRow = styled.div`
   gap: 8px;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #f1f5f9);
+  border-top: 1px solid var(--border-default);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -1071,9 +1071,9 @@ const SubActionBtn = styled.button`
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #4e5968);
-  background: var(--bg-muted, #f2f4f6);
-  border: 1px solid var(--border-default, #e5e8eb);
+  color: var(--text-secondary);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1092,8 +1092,8 @@ const PrimaryActionBtn = styled.button`
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #ffffff;
-  background: var(--interactive-primary, #0061ff);
+  color: var(--text-inverse);
+  background: var(--interactive-primary);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -1115,12 +1115,12 @@ const CourseHeader = styled.div`
 const CourseTitle = styled.div`
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const CourseCode = styled.div`
   font-size: 12px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   margin-top: 2px;
 `;
 
@@ -1130,15 +1130,15 @@ const CourseMetaRow = styled.div`
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid var(--border-default, #f1f5f9);
+  border-top: 1px solid var(--border-default);
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   width: 100%;
   box-sizing: border-box;
 `;
 
 const OpenDetailText = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-weight: 600;
 `;
 
@@ -1159,19 +1159,19 @@ const GradeLeft = styled.div`
 const GradeCourseName = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const GradeRaw = styled.div`
   font-size: 12px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
 `;
 
 const GradeBadge = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-brand, #0061ff);
-  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 4px 12px;
   border-radius: 8px;
 `;
@@ -1194,12 +1194,12 @@ const SheetTitle = styled.h2`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const SheetSubtitle = styled.div`
   font-size: 13px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
 `;
 
 const SectionListContainer = styled.div`
@@ -1217,7 +1217,7 @@ const SectionGroup = styled.div`
 const SectionName = styled.div`
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   padding-left: 2px;
 `;
 
@@ -1231,8 +1231,8 @@ const ModuleItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 10px 12px;
   gap: 10px;
@@ -1248,7 +1248,7 @@ const ModuleLeft = styled.div`
 const ModuleName = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1266,12 +1266,12 @@ const StatusBadge = styled.span<{ $done: boolean }>`
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 6px;
-  background: ${({ $done }) => ($done ? "#dcfce7" : "var(--bg-muted, #f2f4f6)")};
-  color: ${({ $done }) => ($done ? "#15803d" : "var(--text-disabled, #8b95a1)")};
+  background: ${({ $done }) => ($done ? "#dcfce7" : "var(--bg-muted)")};
+  color: ${({ $done }) => ($done ? "#15803d" : "var(--text-disabled)")};
 `;
 
 const EmptySectionText = styled.div`
   font-size: 12px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   padding: 6px 4px;
 `;

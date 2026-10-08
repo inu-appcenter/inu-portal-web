@@ -304,7 +304,7 @@ const IconWrap = styled.div`
   place-items: center;
   border-radius: 22px;
   background: linear-gradient(135deg, #1f5fbf 0%, #5f9cff 100%);
-  color: #ffffff;
+  color: var(--text-inverse);
   box-shadow: 0 18px 32px rgba(58, 114, 201, 0.3);
 
   svg {
@@ -443,13 +443,13 @@ const BaseButton = styled.button`
 
 const SecondaryButton = styled(BaseButton)`
   color: #28568f;
-  background: #eff5ff;
-  border: 1px solid #d4e1f5;
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   box-shadow: 0 10px 22px rgba(27, 79, 152, 0.08);
 `;
 
 const PrimaryButton = styled(BaseButton)`
-  color: #ffffff;
+  color: var(--text-inverse);
   background: linear-gradient(135deg, #1f5fbf 0%, #4f87de 100%);
   box-shadow: 0 16px 30px rgba(31, 95, 191, 0.28);
 `;

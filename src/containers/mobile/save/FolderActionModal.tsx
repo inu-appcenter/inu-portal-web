@@ -58,7 +58,7 @@ const ModalWrapper = styled.div`
   padding: 16px;
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   min-height: 120px;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
@@ -78,7 +78,7 @@ const ModalTitle = styled.div`
 `;
 
 const CloseButton = styled.div`
-  color: #444444;
+  color: var(--text-secondary);
   width: 14px;
   height: 14px;
 `;

@@ -394,7 +394,7 @@ const PortalTimetableLabPage = () => {
                           <SummaryDivider />
                           <SummaryItem>
                             <SummaryLabel>총 평점평균</SummaryLabel>
-                            <SummaryValue style={{ color: "#0061ff" }}>
+                            <SummaryValue style={{ color: "var(--text-brand)" }}>
                               {report.semesterGrades[0]?.cumulativeAverageScore || "-"} / 4.5
                             </SummaryValue>
                           </SummaryItem>
@@ -457,7 +457,7 @@ const PortalTimetableLabPage = () => {
                           <div style={{ flex: 1 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                               <Badge>{crs.courseTypeName}</Badge>
-                              <span style={{ fontSize: 12, color: "#8b95a1" }}>{crs.semesterName}</span>
+                              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{crs.semesterName}</span>
                               {crs.isRetake && <RetakeBadge>재수강</RetakeBadge>}
                             </div>
                             <CourseTitle>{crs.courseName}</CourseTitle>
@@ -486,7 +486,7 @@ const PortalTimetableLabPage = () => {
                       <CreditGrid>
                         <CreditBox>
                           <span className="lbl">총 취득학점</span>
-                          <span className="val" style={{ color: "#0061ff" }}>
+                          <span className="val" style={{ color: "var(--text-brand)" }}>
                             {report.creditSummary.totalCredits}
                             {report.creditSummary.standardTotalCredits !== "0" && (
                               <small> / {report.creditSummary.standardTotalCredits}학점</small>
@@ -519,7 +519,7 @@ const PortalTimetableLabPage = () => {
                         <AreaCard key={idx}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                             <div>
-                              <span style={{ fontSize: 12, color: "#8b95a1" }}>{area.courseTypeName}</span>
+                              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{area.courseTypeName}</span>
                               <AreaTitle>{area.areaName}</AreaTitle>
                             </div>
                             <AreaCreditStatus $satisfied={area.isSatisfied}>
@@ -563,8 +563,8 @@ const PortalTimetableLabPage = () => {
                             <Badge>{scal.paymentMethod}</Badge>
                           </CourseHeader>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                            <span style={{ fontSize: 13, color: "#6b7684" }}>{scal.semesterName}</span>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: "#191f28" }}>
+                            <span style={{ fontSize: 13, color: "var(--gray-600)" }}>{scal.semesterName}</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
                               {scal.amount.toLocaleString()}원
                             </span>
                           </div>
@@ -654,27 +654,27 @@ const WarningBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #f0f6ff;
-  border: 1px solid #d3e5ff;
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 12px;
   padding: 14px;
 `;
 
 const WarningBannerText = styled.p`
   font-size: 13px;
-  color: #191f28;
+  color: var(--text-primary);
   line-height: 1.45;
   margin: 0;
   flex: 1;
 
   strong {
-    color: #0061ff;
+    color: var(--text-brand);
   }
 `;
 
 const LaunchButton = styled.button`
-  background: #0061ff;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 8px;
   padding: 6px 10px;
@@ -686,12 +686,12 @@ const LaunchButton = styled.button`
 
 const DescriptionText = styled.p`
   font-size: 14px;
-  color: #4e5968;
+  color: var(--gray-700);
   line-height: 1.5;
   margin: 0;
 
   strong {
-    color: #191f28;
+    color: var(--text-primary);
   }
 `;
 
@@ -700,15 +700,15 @@ const StyledSelect = styled.select`
   height: 48px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid #e5e8eb;
-  background-color: #ffffff;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-base);
   font-size: 15px;
-  color: #191f28;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
 
   &:focus {
-    border-color: #0061ff;
+    border-color: var(--border-brand);
   }
 `;
 
@@ -730,8 +730,8 @@ const TabButton = styled.button<{ $active: boolean }>`
   border-radius: 10px;
   font-size: 13px;
   font-weight: ${(props) => (props.$active ? "700" : "500")};
-  background-color: ${(props) => (props.$active ? "#191f28" : "#f2f4f6")};
-  color: ${(props) => (props.$active ? "#ffffff" : "#4e5968")};
+  background-color: ${(props) => (props.$active ? "var(--gray-900)" : "var(--bg-muted)")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-700)")};
   border: none;
   cursor: pointer;
   white-space: nowrap;
@@ -755,19 +755,19 @@ const SummaryItem = styled.div`
 
 const SummaryLabel = styled.span`
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const SummaryValue = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const SummaryDivider = styled.div`
   width: 1px;
   height: 28px;
-  background-color: #e5e8eb;
+  background-color: var(--gray-200);
 `;
 
 const CourseList = styled.div`
@@ -778,8 +778,8 @@ const CourseList = styled.div`
 `;
 
 const CourseCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 14px;
   display: flex;
@@ -797,15 +797,15 @@ const CourseHeader = styled.div`
 const CourseTitle = styled.h4`
   font-size: 15px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const Badge = styled.span`
   font-size: 11.5px;
   font-weight: 600;
-  background-color: #e8f3ff;
-  color: #0061ff;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
   padding: 2px 8px;
   border-radius: 6px;
   white-space: nowrap;
@@ -814,7 +814,7 @@ const Badge = styled.span`
 const RetakeBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  background-color: #fef0f0;
+  background-color: var(--bg-error);
   color: #f04438;
   padding: 2px 6px;
   border-radius: 6px;
@@ -832,7 +832,7 @@ const MetaItem = styled.div`
   align-items: center;
   gap: 4px;
   font-size: 12.5px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const TimeSlotsWrapper = styled.div`
@@ -847,21 +847,21 @@ const TimeSlotTag = styled.span`
   align-items: center;
   gap: 4px;
   font-size: 11.5px;
-  color: #333d4b;
-  background-color: #f2f4f6;
+  color: var(--text-secondary);
+  background-color: var(--bg-muted);
   padding: 3px 8px;
   border-radius: 6px;
 `;
 
 const CourseCodeText = styled.span`
   font-size: 11.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin-top: 2px;
 `;
 
 const GradeCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -878,18 +878,18 @@ const GradeCardHeader = styled.div`
 const SemesterTitle = styled.h4`
   font-size: 16px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const GradeSubText = styled.span`
   font-size: 12.5px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const ScoreBadge = styled.div`
-  background-color: #e8f3ff;
-  color: #0061ff;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
   padding: 6px 12px;
   border-radius: 10px;
   font-size: 13px;
@@ -904,7 +904,7 @@ const GradeMetaGrid = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f9fafb;
+  background-color: var(--bg-subtle);
   border-radius: 10px;
   padding: 10px 14px;
 `;
@@ -917,19 +917,19 @@ const GradeMetaItem = styled.div`
 
   span {
     font-size: 11.5px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 
   strong {
     font-size: 13.5px;
     font-weight: 700;
-    color: #333d4b;
+    color: var(--text-secondary);
   }
 `;
 
 const CourseGradeCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 14px;
   padding: 14px;
   display: flex;
@@ -948,25 +948,25 @@ const GradeResultBox = styled.div<{ $grade: string }>`
   border-radius: 8px;
   background-color: ${(props) =>
     props.$grade.startsWith("A")
-      ? "#e8f3ff"
+      ? "var(--bg-brand)"
       : props.$grade === "P"
       ? "#e6f8ed"
-      : "#f2f4f6"};
+      : "var(--bg-muted)"};
 
   .grade {
     font-size: 16px;
     font-weight: 800;
     color: ${(props) =>
       props.$grade.startsWith("A")
-        ? "#0061ff"
+        ? "var(--text-brand)"
         : props.$grade === "P"
         ? "#12b76a"
-        : "#333d4b"};
+        : "var(--text-secondary)"};
   }
 
   .score {
     font-size: 11px;
-    color: #6b7684;
+    color: var(--gray-600);
     font-weight: 600;
   }
 `;
@@ -979,7 +979,7 @@ const CreditGrid = styled.div`
 `;
 
 const CreditBox = styled.div`
-  background: #f9fafb;
+  background: var(--bg-subtle);
   padding: 12px;
   border-radius: 10px;
   display: flex;
@@ -988,31 +988,31 @@ const CreditBox = styled.div`
 
   .lbl {
     font-size: 12px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 
   .val {
     font-size: 18px;
     font-weight: 700;
-    color: #191f28;
+    color: var(--text-primary);
 
     small {
       font-size: 12px;
       font-weight: 400;
-      color: #8b95a1;
+      color: var(--text-tertiary);
     }
   }
 
   .sub {
     font-size: 11px;
-    color: #6b7684;
+    color: var(--gray-600);
     margin-top: 2px;
   }
 `;
 
 const AreaCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px 14px;
 `;
@@ -1020,7 +1020,7 @@ const AreaCard = styled.div`
 const AreaTitle = styled.h5`
   font-size: 14.5px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 2px 0 0 0;
 `;
 
@@ -1037,32 +1037,32 @@ const ScholarshipBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-  background-color: #f0f6ff;
-  border: 1px solid #d3e5ff;
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 14px;
   padding: 16px;
 
   .title {
     font-size: 13px;
-    color: #4e5968;
+    color: var(--gray-700);
     margin-bottom: 4px;
   }
 
   .amount {
     font-size: 22px;
     font-weight: 800;
-    color: #0061ff;
+    color: var(--text-brand);
   }
 `;
 
 const EmptyBox = styled.div`
   text-align: center;
   padding: 40px 16px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   font-size: 14px;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 14px;
-  border: 1px dashed #e5e8eb;
+  border: 1px dashed var(--border-default);
 `;
 
 const ActionArea = styled.div`
@@ -1076,8 +1076,8 @@ const ActionArea = styled.div`
 const SecondaryButton = styled.button`
   width: 100%;
   height: 48px;
-  background: #f2f4f6;
-  color: #333d4b;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
   border: none;
   border-radius: 12px;
   font-size: 15px;
@@ -1086,7 +1086,7 @@ const SecondaryButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover {
-    background: #e5e8eb;
+    background: var(--gray-200);
   }
 `;
 
@@ -1096,7 +1096,7 @@ const RawJsonToggleButton = styled.button`
   gap: 6px;
   background: none;
   border: none;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   font-size: 12.5px;
   cursor: pointer;
   padding: 4px 8px;
@@ -1104,8 +1104,8 @@ const RawJsonToggleButton = styled.button`
 
 const RawJsonPre = styled.pre`
   width: 100%;
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: var(--gray-900);
+  color: var(--text-disabled);
   padding: 12px;
   border-radius: 10px;
   font-size: 11.5px;
@@ -1116,7 +1116,7 @@ const RawJsonPre = styled.pre`
 
 const FootnoteText = styled.p`
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin: 0;
   text-align: center;
 `;

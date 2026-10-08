@@ -20,6 +20,6 @@ const Icon = styled.button`
   background: none;
   padding: 0;
   margin-bottom: 1px;
-  color: #9b9b9b;
+  color: var(--text-tertiary);
 
 `;

@@ -37,14 +37,14 @@ const STATUS_CONFIG: Record<
 > = {
   PENDING: {
     label: "대기 중",
-    color: "#64748b",
-    bg: "#f1f5f9",
+    color: "var(--gray-600)",
+    bg: "var(--bg-muted)",
     renderIcon: (size) => <Clock size={size} />,
   },
   PROCESSING: {
     label: "처리 중",
-    color: "#3b82f6",
-    bg: "#eff6ff",
+    color: "var(--interactive-primary)",
+    bg: "var(--bg-brand)",
     renderIcon: (size) => <Clock size={size} />,
   },
   SUCCESS: {
@@ -56,25 +56,25 @@ const STATUS_CONFIG: Record<
   PARTIAL_FAILURE: {
     label: "부분 실패",
     color: "#f59e0b",
-    bg: "#fffbeb",
+    bg: "var(--bg-warn)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
   FAILED: {
     label: "실패",
-    color: "#ef4444",
-    bg: "#fef2f2",
+    color: "var(--text-error)",
+    bg: "var(--bg-error)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
   NO_TARGET: {
     label: "대상 없음",
-    color: "#64748b",
-    bg: "#f8fafc",
+    color: "var(--gray-600)",
+    bg: "var(--bg-subtle)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
   ABANDONED: {
     label: "발송 포기",
     color: "#a855f7",
-    bg: "#faf5ff",
+    bg: "var(--bg-brand)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
 };
@@ -95,12 +95,12 @@ const SCHEDULE_STATUS_CONFIG: Record<
   ScheduledNotificationStatus,
   { label: string; color: string; bg: string }
 > = {
-  SCHEDULED: { label: "발송 대기", color: "#3b82f6", bg: "#eff6ff" },
-  DISPATCHING: { label: "발송 중", color: "#3b82f6", bg: "#eff6ff" },
+  SCHEDULED: { label: "발송 대기", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
+  DISPATCHING: { label: "발송 중", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
   SENT: { label: "발송됨", color: "#10b981", bg: "#ecfdf5" },
-  FAILED: { label: "발송 실패", color: "#ef4444", bg: "#fef2f2" },
-  CANCELED: { label: "취소됨", color: "#64748b", bg: "#f1f5f9" },
-  EXPIRED: { label: "만료됨", color: "#f59e0b", bg: "#fffbeb" },
+  FAILED: { label: "발송 실패", color: "var(--text-error)", bg: "var(--bg-error)" },
+  CANCELED: { label: "취소됨", color: "var(--gray-600)", bg: "var(--bg-muted)" },
+  EXPIRED: { label: "만료됨", color: "#f59e0b", bg: "var(--bg-warn)" },
 };
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -386,7 +386,7 @@ export default function MobileAdminNotificationPage() {
                         <MetaItem>예약 시각 {item.scheduledAt.replace("T", " ")}</MetaItem>
                         <MetaItem>대상 {item.targetType}</MetaItem>
                         {item.failureReason && (
-                          <MetaItem style={{ color: "#ef4444" }}>
+                          <MetaItem style={{ color: "var(--text-error)" }}>
                             {item.failureReason}
                           </MetaItem>
                         )}
@@ -448,7 +448,7 @@ export default function MobileAdminNotificationPage() {
                 <StatLab>성공</StatLab>
               </StatItem>
               <StatItem>
-                <StatVal style={{ color: "#ef4444" }}>{selectedLog.failureCount}</StatVal>
+                <StatVal style={{ color: "var(--text-error)" }}>{selectedLog.failureCount}</StatVal>
                 <StatLab>실패</StatLab>
               </StatItem>
             </StatsRow>
@@ -516,7 +516,7 @@ export default function MobileAdminNotificationPage() {
                     </RetryStatusRow>
                     <RetryStatusRow>
                       <span>재발송 가능 대상</span>
-                      <strong style={{ color: selectedLog.retryableCount > 0 ? "#ef4444" : "#10b981" }}>
+                      <strong style={{ color: selectedLog.retryableCount > 0 ? "var(--text-error)" : "#10b981" }}>
                         {selectedLog.retryableCount}명
                       </strong>
                     </RetryStatusRow>
@@ -572,13 +572,13 @@ const RetryBtn = styled.button`
   border-radius: 10px;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #ef4444;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  color: var(--text-error);
+  background-color: var(--bg-error);
+  border: 1px solid var(--border-error-subtle);
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: #fee2e2;
+    background-color: var(--bg-error);
   }
 
   &:disabled {
@@ -599,7 +599,7 @@ const RetryStatusBox = styled.div`
   gap: 8px;
   padding: 12px 14px;
   border-radius: 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
 `;
 
 const RetryStatusRow = styled.div`
@@ -607,10 +607,10 @@ const RetryStatusRow = styled.div`
   justify-content: space-between;
   align-items: center;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--gray-600);
 
   strong {
-    color: #0f172a;
+    color: var(--text-primary);
     font-weight: 700;
   }
 `;
@@ -620,25 +620,25 @@ const ClickRateHeadline = styled.div`
   flex-direction: column;
   gap: 2px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const ClickRateValue = styled.div`
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
 `;
 
 const ClickRateCaption = styled.div`
   font-size: 0.8125rem;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.5;
 `;
 
 const StatHint = styled.p`
   margin: 8px 0 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   line-height: 1.6;
 `;
 
@@ -646,7 +646,7 @@ const RetryNotice = styled.p`
   margin: 0;
   padding: 12px 14px;
   border-radius: 12px;
-  background-color: #fffbeb;
+  background-color: var(--bg-warn);
   color: #92400e;
   font-size: 0.8125rem;
   line-height: 1.6;
@@ -662,8 +662,8 @@ const RetryPrimaryBtn = styled.button`
   border-radius: 12px;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #ffffff;
-  background-color: #ef4444;
+  color: var(--text-inverse);
+  background-color: var(--red-500);
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
@@ -718,16 +718,16 @@ const TabButton = styled.button<{ $active: boolean }>`
   font-weight: 700;
   transition: all 0.2s;
   background-color: ${(props) => (props.$active ? "#0f172a" : "transparent")};
-  color: ${(props) => (props.$active ? "#ffffff" : "#64748b")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
 
-  &:hover { color: ${(props) => (props.$active ? "#ffffff" : "#0f172a")}; }
+  &:hover { color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--text-primary)")}; }
 `;
 
 const TabBadge = styled.span`
   padding: 1px 7px;
   border-radius: 999px;
-  background-color: #ef4444;
-  color: #fff;
+  background-color: var(--red-500);
+  color: var(--text-inverse);
   font-size: 0.7rem;
   font-weight: 800;
 `;
@@ -740,10 +740,10 @@ const CancelIconBtn = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   flex-shrink: 0;
 
-  &:hover { background-color: #fef2f2; color: #ef4444; }
+  &:hover { background-color: var(--bg-error); color: var(--text-error); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
@@ -753,7 +753,7 @@ const CreateBtn = styled.button`
   gap: 8px;
   padding: 10px 20px;
   background-color: #0f766e;
-  color: #fff;
+  color: var(--text-inverse);
   border-radius: 12px;
   font-weight: 700;
   transition: all 0.2s;
@@ -766,14 +766,14 @@ const RefreshBtn = styled.button`
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background-color: #fff;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-base);
+  color: var(--gray-600);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   font-weight: 600;
   transition: all 0.2s;
 
-  &:hover { background-color: #f8fafc; color: #0f172a; }
+  &:hover { background-color: var(--bg-subtle); color: var(--text-primary); }
   &:disabled { opacity: 0.7; cursor: not-allowed; }
 `;
 
@@ -797,16 +797,16 @@ const LogList = styled.div`
 const LogCard = styled.div`
   display: flex;
   gap: 16px;
-  background: #fff;
+  background: var(--bg-base);
   padding: 16px;
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: ${SOFT_CARD_SHADOW};
 
   &:hover {
-    border-color: #cbd5e1;
+    border-color: var(--border-strong);
     transform: translateY(-1px);
     box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
   }
@@ -840,7 +840,7 @@ const LogTitle = styled.h4`
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -859,7 +859,7 @@ const StatusBadge = styled.span<{ $bg: string; $color: string }>`
 const LogBody = styled.p`
   margin: 4px 0 10px;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--gray-600);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -874,7 +874,7 @@ const LogMeta = styled.div`
 `;
 
 const MetaItem = styled.span`
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.75rem;
   font-weight: 600;
 `;
@@ -884,7 +884,7 @@ const EmptyState = styled.div`
   flex-direction: column;
   align-items: center;
   padding: 80px 20px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   gap: 16px;
   p { font-size: 0.95rem; font-weight: 500; }
 `;
@@ -900,20 +900,20 @@ const DetailItem = styled.div``;
 const DetailLabel = styled.div`
   font-size: 0.75rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   text-transform: uppercase;
   margin-bottom: 6px;
 `;
 
 const DetailValue = styled.div`
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--text-primary);
   line-height: 1.5;
 `;
 
 const Divider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
 `;
 
 const StatsRow = styled.div`
@@ -924,7 +924,7 @@ const StatsRow = styled.div`
 
 const StatItem = styled.div`
   text-align: center;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   padding: 12px;
   border-radius: 12px;
 `;
@@ -932,12 +932,12 @@ const StatItem = styled.div`
 const StatVal = styled.div`
   font-size: 1.25rem;
   font-weight: 800;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const StatLab = styled.div`
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--gray-600);
   margin-top: 2px;
 `;
 

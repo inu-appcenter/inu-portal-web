@@ -65,7 +65,7 @@ const TitleText = styled.h1`
   font-weight: 700;
   line-height: 32px;
   letter-spacing: -0.2px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   word-break: break-word;
   margin: 0;
 `;
@@ -101,7 +101,7 @@ const AuthorName = styled.div`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const DateText = styled.div`
@@ -109,7 +109,7 @@ const DateText = styled.div`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const ViewCountRow = styled.div`
@@ -122,6 +122,6 @@ const ViewCountRow = styled.div`
     font-size: 12px;
     font-weight: 400;
     line-height: 16px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;

@@ -31,8 +31,8 @@ const SchoolInfoBox = ({ place }: { place: Place }) => {
 };
 
 const SchoolInfoBoxWrapper = styled.div`
-  background: #ffffff;
-  border: 1px solid #c0c0c2;
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
 
   display: flex;

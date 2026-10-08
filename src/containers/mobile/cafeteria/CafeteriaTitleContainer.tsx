@@ -54,9 +54,9 @@ const CafeteriaTitleWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   padding: 16px 14px;
-  border: 1px solid #e5ebf3;
+  border: 1px solid var(--border-default);
   border-radius: 18px;
-  background: #ffffff;
+  background: var(--bg-base);
   box-shadow: 0 2px 10px rgba(18, 38, 72, 0.04);
 
   @media ${DESKTOP_MEDIA} {
@@ -71,7 +71,7 @@ const CurrentCafeteriaName = styled.h2`
   font-size: 28px;
   font-weight: 700;
   line-height: 1.3;
-  color: #273142;
+  color: var(--text-secondary);
 
   // @media ${DESKTOP_MEDIA} {
   //   font-size: 19px;

@@ -245,7 +245,7 @@ const OptionList = styled.div`
 const SubLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--gray-600);
   margin-bottom: 4px;
 `;
 
@@ -255,10 +255,10 @@ const CheckItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 12px;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   user-select: none;
 `;
 
@@ -268,10 +268,10 @@ const RadioItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 12px;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   user-select: none;
 `;
 
@@ -285,13 +285,13 @@ const ItemTextCol = styled.div`
 const ItemName = styled.span`
   font-size: 14.5px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const ItemDesc = styled.span`
   font-size: 12px;
   font-weight: 400;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.35;
 `;
 
@@ -299,8 +299,8 @@ const CheckboxIcon = styled.div<{ $checked: boolean }>`
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  background-color: ${({ $checked }) => ($checked ? "#3b82f6" : "#ffffff")};
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#3b82f6" : "#cbd5e1")};
+  background-color: ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--bg-base)")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "#3b82f6" : "var(--border-strong)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,8 +312,8 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "#cbd5e1")};
-  background-color: ${({ $selected }) => ($selected ? "#3b82f6" : "#ffffff")};
+  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-strong)")};
+  background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
   flex-shrink: 0;
   transition: all 0.15s ease;
   position: relative;
@@ -329,7 +329,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background-color: #ffffff;
+      background-color: var(--bg-base);
       transform: translate(-50%, -50%);
     }
   `}

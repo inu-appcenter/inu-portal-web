@@ -45,7 +45,7 @@ const HeaderTitle = styled.div`
 
 const BetaBadge = styled.span`
   background: linear-gradient(142deg, #007aff 26.94%, #570099 87.68%);
-  color: #fafafa;
+  color: var(--text-inverse);
   font-size: 11px;
   font-weight: 600;
   padding: 3px 8px;

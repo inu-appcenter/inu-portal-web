@@ -147,7 +147,7 @@ const ConfirmButton = styled.button`
   border-radius: 16px;
   padding: 14px 16px;
   background: linear-gradient(180deg, #2d75da, #1558b7);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;

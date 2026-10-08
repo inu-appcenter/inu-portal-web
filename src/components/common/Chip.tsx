@@ -81,9 +81,9 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
   outline: none;
   cursor: pointer;
 
-  border-radius: var(--radius-full, 999px);
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #fff);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
 
   //box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 
@@ -98,7 +98,7 @@ const ExternalLinkImg = styled(FontelloIcon).attrs({
   name: "link-external" as const,
   size: 11,
 })`
-  color: #969696;
+  color: var(--text-tertiary);
 `;
 
 const Icon = styled.img<{ $isAIButton?: boolean }>`
@@ -122,7 +122,7 @@ const ContentArea = styled.div`
   white-space: nowrap;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
   }

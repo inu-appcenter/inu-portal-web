@@ -96,7 +96,7 @@ const DetailWrapper = styled.div`
   .info {
     font-size: 13px;
     font-weight: 500;
-    color: #404040;
+    color: var(--text-secondary);
     margin: 0;
     /* 서버가 코너와 메뉴를 개행으로 구분해 내려준다. */
     white-space: pre-line;
@@ -118,7 +118,7 @@ const DetailWrapper = styled.div`
       padding: 3px;
       font-size: 10px;
       font-weight: 500;
-      color: #888888;
+      color: var(--text-tertiary);
     }
   }
 

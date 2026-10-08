@@ -379,7 +379,7 @@ const BannerVisual = styled.div`
   flex: 0 0 auto;
   width: fit-content;
   height: 100%;
-  background: #fff;
+  background: var(--bg-base);
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
@@ -457,14 +457,14 @@ const LogoInfoContent = styled(motion.div)`
 
   .sub-text {
     font-size: 14px;
-    color: #666;
+    color: var(--gray-600);
     margin: 0;
   }
 
   .main-title {
     font-size: 18px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-secondary);
     line-height: 1.4;
     margin: 0;
     word-break: keep-all;
@@ -507,14 +507,14 @@ const GuideItem = styled.div`
   .number {
     font-size: 16px;
     font-weight: 700;
-    color: #333;
+    color: var(--text-secondary);
     min-width: 20px;
   }
 
   .content {
     h3 {
       font-size: 16px;
-      color: #333;
+      color: var(--text-secondary);
       margin: 0 0 4px;
       font-weight: 500;
 
@@ -525,7 +525,7 @@ const GuideItem = styled.div`
 
     p {
       font-size: 14px;
-      color: #666;
+      color: var(--gray-600);
       margin: 0;
     }
   }

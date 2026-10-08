@@ -75,8 +75,8 @@ const BottomBarWrapper = styled.div`
   transform: translateX(-50%);
   width: 100%;
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
-  background: #ffffff;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-default);
   padding: 12px ${MOBILE_PAGE_GUTTER} calc(12px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   display: flex;
@@ -114,8 +114,8 @@ const ImageBadge = styled.span`
   position: absolute;
   top: -2px;
   right: -4px;
-  background: var(--text-brand, #0061ff);
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 10px;
   font-weight: 700;
   width: 16px;
@@ -129,7 +129,7 @@ const ImageBadge = styled.span`
 const SubmitButton = styled.button`
   background: transparent;
   border: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -137,7 +137,7 @@ const SubmitButton = styled.button`
   transition: opacity 0.15s ease-in-out;
 
   &:disabled {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
 

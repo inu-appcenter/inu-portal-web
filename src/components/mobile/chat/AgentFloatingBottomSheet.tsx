@@ -328,7 +328,7 @@ const SheetContainer = styled(motion.div)<{
   width: 100%;
   max-width: ${({ $isExpanded }) => ($isExpanded ? "100%" : "680px")};
   height: ${({ $height }) => $height};
-  background: ${({ $isExpanded }) => ($isExpanded ? "#f8fafe" : "transparent")};
+  background: ${({ $isExpanded }) => ($isExpanded ? "var(--bg-subtle)" : "transparent")};
   border-radius: ${({ $isExpanded }) => ($isExpanded ? "0" : "28px 28px 0 0")};
   z-index: 9999;
   display: flex;
@@ -351,7 +351,7 @@ const SheetContainer = styled(motion.div)<{
       padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
       padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
       padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
-      background-color: #f8fafe;
+      background-color: var(--bg-subtle);
     `
         : `
       padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));

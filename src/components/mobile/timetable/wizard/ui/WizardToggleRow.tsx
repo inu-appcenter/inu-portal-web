@@ -49,7 +49,7 @@ const Row = styled.div<{ $divider: boolean }>`
   align-items: center;
   gap: 11px;
   border-bottom: ${({ $divider }) =>
-    $divider ? "1px solid var(--border-default, #e5e8eb)" : "none"};
+    $divider ? "1px solid var(--border-default)" : "none"};
 `;
 
 const Txt = styled.div`
@@ -62,11 +62,11 @@ const Txt = styled.div`
 `;
 
 const Title = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
 const Description = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;

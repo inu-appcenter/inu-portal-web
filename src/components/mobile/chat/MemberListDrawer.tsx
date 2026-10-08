@@ -385,7 +385,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--bg-dim);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   animation: ${fadeIn} 200ms ease-out;
@@ -398,7 +398,7 @@ const StyledContent = styled(Dialog.Content)`
   bottom: 0;
   width: 85vw;
   max-width: 380px;
-  background-color: #f8f9fb;
+  background-color: var(--bg-subtle);
   border-top-left-radius: 32px;
   border-bottom-left-radius: 32px;
   z-index: 1001;
@@ -442,7 +442,7 @@ const RoomTitle = styled.h2`
   font-size: 20px;
   font-weight: 600;
   line-height: 1.4;
-  color: #333d4b;
+  color: var(--text-secondary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -459,7 +459,7 @@ const HeaderIconButton = styled.button`
   background: none;
   border-radius: 50%;
   cursor: pointer;
-  color: #333d4b;
+  color: var(--text-secondary);
   flex-shrink: 0;
   transition: opacity 0.15s ease;
 
@@ -485,7 +485,7 @@ const PanelBody = styled.div`
 `;
 
 const Card = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 16px;
   box-sizing: border-box;
   overflow: hidden;
@@ -502,7 +502,7 @@ const SectionHeader = styled.div`
 const SectionTitle = styled.span`
   font-size: 12px;
   font-weight: 500;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   line-height: 1.4;
 `;
 
@@ -515,7 +515,7 @@ const InvitationButton = styled.button`
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 6px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.4;
@@ -540,7 +540,7 @@ const MemberItem = styled.div`
   transition: background-color 0.15s ease;
 
   &:active {
-    background-color: #f2f4f6;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -556,7 +556,7 @@ const AvatarImg = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  background-color: #e5e8eb;
+  background-color: var(--gray-200);
 `;
 
 const CrownBadge = styled.div`
@@ -579,7 +579,7 @@ const MemberInfo = styled.div`
 const MemberName = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: #333d4b;
+  color: var(--text-secondary);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -589,7 +589,7 @@ const MemberName = styled.span`
 const MemberDetails = styled.span`
   font-size: 12px;
   font-weight: 400;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -599,7 +599,7 @@ const MemberDetails = styled.span`
 const LoadingText = styled.div`
   padding: 24px 0;
   text-align: center;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   font-size: 13px;
 `;
 
@@ -614,7 +614,7 @@ const ChatbotCard = styled(Card)`
     background-color 0.15s ease;
 
   &:active {
-    background-color: #f2f4f6;
+    background-color: var(--bg-muted);
     transform: scale(0.98);
   }
 `;
@@ -637,14 +637,14 @@ const ChatbotTextCol = styled.div`
 const ChatbotTitle = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: #333d4b;
+  color: var(--text-secondary);
   line-height: 1.4;
 `;
 
 const ChatbotDesc = styled.span`
   font-size: 12px;
   font-weight: 400;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   line-height: 1.35;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -679,7 +679,7 @@ const SyncSubCard = styled.div<{ $bgColor: string }>`
 const SyncCardTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: #333d4b;
+  color: var(--text-secondary);
   line-height: 1.4;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -705,18 +705,18 @@ const ActionRow = styled.div<{ $danger?: boolean }>`
   justify-content: space-between;
   font-size: 14px;
   font-weight: 400;
-  color: ${({ $danger }) => ($danger ? "#ef4444" : "#333d4b")};
+  color: ${({ $danger }) => ($danger ? "var(--text-error)" : "var(--text-secondary)")};
   cursor: pointer;
   transition: background-color 0.15s ease;
   word-break: keep-all;
   overflow-wrap: break-word;
 
   &:active {
-    background-color: #f2f4f6;
+    background-color: var(--bg-muted);
   }
 
   &:not(:last-child) {
-    border-bottom: 1px solid #f8f9fb;
+    border-bottom: 1px solid var(--bg-base);
   }
 `;
 

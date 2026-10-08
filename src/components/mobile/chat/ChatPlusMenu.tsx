@@ -42,7 +42,7 @@ export default function ChatPlusMenu({
           onMouseDown={(e) => e.preventDefault()}
         >
           <IconCircle $bg="#F0F4FF">
-            <Icon name="image" size={20} color="#5E92F0" />
+            <Icon name="image" size={20} color="var(--interactive-primary)" />
           </IconCircle>
           <ItemLabel>사진 보내기</ItemLabel>
         </MenuItem>
@@ -65,8 +65,8 @@ const MenuContainer = styled.div`
   bottom: 100%;
   left: 8px;
   margin-bottom: 8px;
-  background: #ffffff;
-  border: 1px solid #eaeef4;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   padding: 8px;
@@ -107,11 +107,11 @@ const MenuItem = styled.button`
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f7f9fc;
+    background-color: var(--bg-subtle);
   }
 
   &:active {
-    background-color: #f0f4f9;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -134,5 +134,5 @@ const IconCircle = styled.div<{ $bg: string }>`
 const ItemLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
 `;

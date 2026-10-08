@@ -19,9 +19,9 @@ const CardsContainer = styled.div`
 `;
 
 const CardBase = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 14px 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
   font-size: 13px;
@@ -34,7 +34,7 @@ const CardHeader = styled.div`
   justify-content: space-between;
   margin-bottom: 8px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const CardTitle = styled.div`
@@ -42,14 +42,14 @@ const CardTitle = styled.div`
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const CardLinkButton = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #0958d9;
+  color: var(--text-brand);
   text-decoration: none;
   font-size: 12px;
   font-weight: 500;
@@ -61,8 +61,8 @@ const CardLinkButton = styled.a`
 
 /* 옵션 A: 모바일 앱 연동 안내 카드 */
 const AuthWarningCard = styled(CardBase)`
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
+  background: var(--bg-warn);
+  border: 1px solid var(--border-warn-subtle);
 `;
 
 const WarningContent = styled.div`
@@ -85,7 +85,7 @@ const AppDownloadButton = styled.a`
   padding: 6px 12px;
   border-radius: 8px;
   background: #0958d9;
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -103,7 +103,7 @@ const ActionModalButton = styled.button`
   padding: 8px 14px;
   border-radius: 8px;
   background: #0958d9;
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
   border: none;
@@ -129,17 +129,17 @@ const CitationItem = styled.a`
   justify-content: space-between;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #334155;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
   text-decoration: none;
   font-size: 12px;
   transition: all 0.15s ease;
 
   &:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1d4ed8;
+    background: var(--bg-brand);
+    border-color: var(--border-brand-subtle);
+    color: var(--text-brand);
   }
 `;
 
@@ -228,7 +228,7 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
                   </CardLinkButton>
                 )}
               </CardHeader>
-              <div style={{ fontSize: "12px", color: "#64748b" }}>
+              <div style={{ fontSize: "12px", color: "var(--gray-600)" }}>
                 인천대학교 공식 규정집 및 학사 공지사항에서 확인된 출처입니다:
               </div>
               {citations.length > 0 ? (
@@ -249,7 +249,7 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
                   ))}
                 </CitationList>
               ) : (
-                <div style={{ marginTop: "6px", fontSize: "12px", color: "#0958d9" }}>
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "var(--text-brand)" }}>
                   공식 학칙 조항에 근거하여 작성된 답변입니다.
                 </div>
               )}

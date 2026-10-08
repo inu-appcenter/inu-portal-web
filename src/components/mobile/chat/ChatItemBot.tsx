@@ -112,7 +112,7 @@ const BotProfileImage = styled.img`
   margin-right: 10px;
   cursor: pointer;
   object-fit: contain;
-  background-color: #fff4ed;
+  background-color: var(--bg-error);
   border: 1px solid #ffe5d3;
   padding: 2px;
   flex-shrink: 0;
@@ -148,7 +148,7 @@ const BotTitleWrapper = styled.div`
 const BotTitle = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
 `;
 
 const BotBadge = styled.span`
@@ -165,7 +165,7 @@ const BotBadge = styled.span`
 const BotSubtitle = styled.span`
   font-size: 11px;
   font-weight: 500;
-  color: #8e8e93;
+  color: var(--text-tertiary);
 `;
 
 const BotCardWrapper = styled.div`
@@ -177,8 +177,8 @@ const BotCardWrapper = styled.div`
 `;
 
 const BotCardContent = styled.div`
-  background: #ffffff;
-  border: 1px solid #eaeef4;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
   border-radius: 4px 18px 18px 18px;
   padding: 10px 14px;
@@ -209,7 +209,7 @@ const LoadingState = styled.div`
 
 const LoadingText = styled.span`
   font-size: 14px;
-  color: #4e5968;
+  color: var(--gray-700);
   font-weight: 500;
 `;
 
@@ -219,7 +219,7 @@ const ActionButtonsWrapper = styled.div`
   gap: 6px;
   width: 100%;
   padding-top: 6px;
-  border-top: 1px solid #f2f4f8;
+  border-top: 1px solid var(--border-default);
 `;
 
 const ActionButton = styled.button`
@@ -227,13 +227,13 @@ const ActionButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background: #f7f9fc;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   padding: 7px 10px;
   font-size: 12px;
   font-weight: 600;
-  color: #333d4b;
+  color: var(--text-secondary);
   cursor: pointer;
   word-break: keep-all;
   white-space: normal;
@@ -249,8 +249,8 @@ const ActionButton = styled.button`
   }
 
   &:hover {
-    background: #eef2f7;
-    border-color: #d1d6db;
+    background: var(--bg-muted);
+    border-color: var(--border-strong);
   }
 
   &:active {
@@ -261,15 +261,15 @@ const ActionButton = styled.button`
 const Disclaimer = styled.div`
   font-size: 10px;
   line-height: 1.4;
-  color: #8b95a1;
-  //background: #f9fafb;
+  color: var(--text-tertiary);
+  //background: var(--bg-subtle);
   border-radius: 8px;
   padding: 6px 8px;
 `;
 
 const TimeLabel = styled.span`
   font-size: 11px;
-  color: #767676;
+  color: var(--gray-600);
   white-space: nowrap;
   flex-shrink: 0;
 `;

@@ -160,7 +160,7 @@ export default function MobileTimeTableListPage() {
     hasback: true,
     onBack: handleBack,
     immersive: true,
-    pageBgColor: "#f8f9fb",
+    pageBgColor: "var(--bg-subtle)",
     rightArea: headerRight
   });
 
@@ -328,7 +328,7 @@ const PageWrapper = styled.div`
   flex-direction: column;
   padding: calc(var(--header-height, 56px) + 20px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 0px) + 40px);
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   min-height: 100vh;
 `;
 
@@ -340,8 +340,8 @@ const ListContainer = styled.div`
 `;
 
 const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -358,7 +358,7 @@ const TimeTableListCard = styled.div<{ $isClickable?: boolean }>`
     $isClickable &&
     `
     &:hover {
-      border-color: var(--border-brand, #0061ff);
+      border-color: var(--border-brand);
       box-shadow: 0 4px 16px rgba(0, 97, 255, 0.08);
       transform: translateY(-1px);
     }
@@ -379,7 +379,7 @@ const SemesterTitle = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const SemesterAddButton = styled.button`
@@ -393,15 +393,15 @@ const SemesterAddButton = styled.button`
   background: none;
   cursor: pointer;
   outline: none;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:active {
-    background-color: var(--bg-disabled, #e5e8eb);
+    background-color: var(--bg-disabled);
   }
 `;
 
@@ -417,7 +417,7 @@ const ScheduleRow = styled.div`
   justify-content: space-between;
   align-items: center;
   height: 48px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   cursor: pointer;
   
   &:last-child {
@@ -430,7 +430,7 @@ const ScheduleName = styled.span`
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const TimetableMeta = styled.div`
@@ -445,9 +445,9 @@ const CreditBadge = styled.span`
   justify-content: center;
   padding: 4px 12px;
   border-radius: 999px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-muted, #f1f3f5);
-  color: var(--text-primary, #333d4b);
+  border: 1px solid var(--border-default);
+  background: var(--bg-muted);
+  color: var(--text-primary);
   font-family: Pretendard;
   font-size: 12px;
   font-style: normal;
@@ -478,7 +478,7 @@ const RowIconButton = styled.button`
   border: none;
   cursor: pointer;
   outline: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const EmptySemesterWrapper = styled.div`
@@ -486,7 +486,7 @@ const EmptySemesterWrapper = styled.div`
   font-family: Pretendard;
   font-weight: 400;
   font-size: 14px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   text-align: center;
 `;
 
@@ -503,7 +503,7 @@ const IconButton = styled.button`
   outline: none;
   
   &:active {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 `;
 

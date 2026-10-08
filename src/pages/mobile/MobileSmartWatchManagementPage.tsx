@@ -425,7 +425,7 @@ const Container = styled.div`
 const FootnoteText = styled.p`
   margin: 20px 0 0;
   font-size: 12.5px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 1.4;
 `;
@@ -449,8 +449,8 @@ const HubCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   padding: 14px 16px;
   width: 100%;
@@ -460,7 +460,7 @@ const HubCard = styled.div`
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-muted, #f8fafc);
+    background: var(--bg-muted);
   }
 `;
 
@@ -490,12 +490,12 @@ const HubContent = styled.div`
 const HubTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const HubDesc = styled.div`
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin-top: 2px;
 `;
 
@@ -521,8 +521,8 @@ const SearchBox = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 9px 12px;
   width: 100%;
@@ -530,7 +530,7 @@ const SearchBox = styled.div`
   transition: border-color 0.15s ease;
 
   &:focus-within {
-    border-color: var(--interactive-primary, #0061ff);
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -539,12 +539,12 @@ const SearchInput = styled.input`
   border: none;
   background: transparent;
   font-size: 13.5px;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   outline: none;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-placeholder, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -555,12 +555,12 @@ const ClearBtn = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   cursor: pointer;
   border-radius: 50%;
 
   &:hover {
-    color: var(--text-primary, #191f28);
+    color: var(--text-primary);
   }
 `;
 
@@ -587,9 +587,9 @@ const FilterChip = styled.button<{ $active: boolean }>`
   padding: 6px 12px;
   font-size: 12.5px;
   font-weight: ${({ $active }) => ($active ? "600" : "500")};
-  color: ${({ $active }) => ($active ? "var(--text-brand, #0061ff)" : "var(--text-secondary, #4e5968)")};
-  background: ${({ $active }) => ($active ? "var(--bg-brand-subtle, #eff6ff)" : "var(--bg-muted, #f2f4f6)")};
-  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary, #0061ff)" : "var(--border-default, #e5e8eb)")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.12s ease;
@@ -603,7 +603,7 @@ const FilterChip = styled.button<{ $active: boolean }>`
 const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -614,7 +614,7 @@ const RefreshButton = styled.button`
   background: none;
   border: none;
   font-size: 12px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   cursor: pointer;
 
   .spin {
@@ -636,8 +636,8 @@ const EmptyBox = styled.div`
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px dashed var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px dashed var(--border-default);
   border-radius: 16px;
   text-align: center;
   gap: 8px;
@@ -648,13 +648,13 @@ const EmptyBox = styled.div`
 const EmptyText = styled.div`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin-top: 4px;
 `;
 
 const EmptySubText = styled.div`
   font-size: 12px;
-  color: var(--text-secondary, #8b95a1);
+  color: var(--text-secondary);
   line-height: 1.5;
   max-width: 280px;
 `;
@@ -691,8 +691,8 @@ const BadgeGroup = styled.div`
 const DomainBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
-  background: var(--bg-brand-subtle, #eff6ff);
+  color: var(--text-brand);
+  background: var(--bg-brand);
   padding: 3px 8px;
   border-radius: 6px;
 `;
@@ -705,7 +705,7 @@ const SourceBadge = styled.span<{ $isServer: boolean }>`
   font-weight: 600;
   padding: 3px 7px;
   border-radius: 6px;
-  background: ${({ $isServer }) => ($isServer ? "#f0fdf4" : "#f5f3ff")};
+  background: ${({ $isServer }) => ($isServer ? "#f0fdf4" : "var(--bg-brand)")};
   color: ${({ $isServer }) => ($isServer ? "#16a34a" : "#7c3aed")};
 `;
 
@@ -721,14 +721,14 @@ const RemainingTimeBadge = styled.div`
 const TargetName = styled.div`
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   width: 100%;
   box-sizing: border-box;
 `;
 
 const ConditionDesc = styled.div`
   font-size: 13px;
-  color: var(--text-secondary, #4e5968);
+  color: var(--text-secondary);
   margin-top: 4px;
   width: 100%;
   box-sizing: border-box;
@@ -740,14 +740,14 @@ const CardFooter = styled.div`
   justify-content: space-between;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #f1f5f9);
+  border-top: 1px solid var(--border-default);
   width: 100%;
   box-sizing: border-box;
 `;
 
 const NoticeText = styled.span`
   font-size: 11px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
 `;
 
 const CancelButton = styled.button`
@@ -756,8 +756,8 @@ const CancelButton = styled.button`
   gap: 4px;
   padding: 6px 12px;
   font-size: 12px;
-  color: var(--text-error, #ef4444);
-  background: var(--bg-error, #fef2f2);
+  color: var(--text-error);
+  background: var(--bg-error);
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -765,7 +765,7 @@ const CancelButton = styled.button`
   transition: background 0.15s ease;
 
   &:active {
-    background: #fee2e2;
+    background: var(--bg-error);
   }
 `;
 
@@ -774,8 +774,8 @@ const PastJobCard = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: var(--bg-muted, #f8fafc);
-  border: 1px solid var(--border-default, #f1f5f9);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   width: 100%;
   box-sizing: border-box;
@@ -784,12 +784,12 @@ const PastJobCard = styled.div`
 const PastJobTitle = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const PastJobTime = styled.div`
   font-size: 11px;
-  color: var(--text-disabled, #8b95a1);
+  color: var(--text-disabled);
   margin-top: 2px;
 `;
 
@@ -798,6 +798,6 @@ const StatusTag = styled.span<{ $status: string }>`
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-  background: ${({ $status }) => ($status === "NOTIFIED" ? "#dcfce7" : "#f1f5f9")};
-  color: ${({ $status }) => ($status === "NOTIFIED" ? "#15803d" : "#64748b")};
+  background: ${({ $status }) => ($status === "NOTIFIED" ? "#dcfce7" : "var(--bg-muted)")};
+  color: ${({ $status }) => ($status === "NOTIFIED" ? "#15803d" : "var(--gray-600)")};
 `;

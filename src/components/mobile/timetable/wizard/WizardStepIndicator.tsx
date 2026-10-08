@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { WIZARD_PRIMARY } from "./ui/tokens";
 
 interface WizardStepIndicatorProps {
   /** 현재 단계(1부터). 이 단계까지 채운다 */
@@ -45,6 +44,6 @@ const Bar = styled.div<{ $active: boolean }>`
   height: 4px;
   border-radius: 2px;
   background: ${({ $active }) =>
-    $active ? WIZARD_PRIMARY : "var(--border-default, #e5e8eb)"};
+    $active ? "var(--interactive-primary)" : "var(--border-default)"};
   transition: background-color 0.2s ease;
 `;

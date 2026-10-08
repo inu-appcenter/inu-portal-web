@@ -654,13 +654,13 @@ export default function FoodRouletteModal({
                   fontFamily: "inherit",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: "var(--text-brand, #0061ff)",
+                  color: "var(--text-brand)",
                   textDecoration: "underline",
                   padding: "4px 8px",
                   marginTop: "2px",
                   "&:hover": {
                     textDecoration: "underline",
-                    backgroundColor: "var(--bg-brand, #eff6ff)",
+                    backgroundColor: "var(--bg-brand)",
                   },
                 }}
               >
@@ -677,11 +677,11 @@ export default function FoodRouletteModal({
                 fontFamily: "inherit",
                 fontSize: "12px",
                 fontWeight: 600,
-                color: "var(--gray-600, #6b7684)",
+                color: "var(--gray-600)",
                 textDecoration: "underline",
                 padding: "2px 6px",
                 "&:hover": {
-                  color: "var(--text-brand, #0061ff)",
+                  color: "var(--text-brand)",
                   textDecoration: "underline",
                   backgroundColor: "transparent",
                 },
@@ -703,7 +703,7 @@ export default function FoodRouletteModal({
                   fontFamily: "inherit",
                   fontSize: "12px",
                   fontWeight: 600,
-                  color: "var(--text-brand, #0061ff)",
+                  color: "var(--text-brand)",
                   padding: "4px 8px",
                   textTransform: "none",
                   borderRadius: "8px",
@@ -732,7 +732,7 @@ export default function FoodRouletteModal({
                       borderRadius: "8px",
                       fontSize: "12px",
                       height: "36px",
-                      backgroundColor: "var(--bg-subtle, #f8f9fb)",
+                      backgroundColor: "var(--bg-subtle)",
                     },
                   }}
                 />
@@ -749,7 +749,7 @@ export default function FoodRouletteModal({
                     whiteSpace: "nowrap",
                     boxShadow: "none",
                     textTransform: "none",
-                    backgroundColor: "var(--branding-brand-blue, #0061ff)",
+                    backgroundColor: "var(--interactive-primary)",
                     "&:hover": {
                       backgroundColor: "#004ecc",
                       boxShadow: "none",
@@ -784,7 +784,7 @@ export default function FoodRouletteModal({
                         fontSize: 11,
                         fontWeight: 600,
                         borderRadius: "8px",
-                        backgroundColor: "#f5f3ff",
+                        backgroundColor: "var(--bg-brand)",
                         color: "#7c3aed",
                         border: "1px solid #ddd6fe",
                         "& .MuiChip-deleteIcon": {
@@ -824,15 +824,15 @@ export default function FoodRouletteModal({
                         transition: "all 0.15s ease",
                         ...(isSelected
                           ? {
-                              backgroundColor: "var(--bg-brand, #eff6ff)",
-                              color: "var(--text-brand, #0061ff)",
-                              borderColor: "var(--border-brand, #0061ff)",
-                              "& .MuiChip-icon": { color: "var(--text-brand, #0061ff)" },
+                              backgroundColor: "var(--bg-brand)",
+                              color: "var(--text-brand)",
+                              borderColor: "var(--border-brand)",
+                              "& .MuiChip-icon": { color: "var(--text-brand)" },
                             }
                           : {
-                              borderColor: "var(--border-default, #e5e8eb)",
-                              color: "var(--gray-600, #6b7684)",
-                              backgroundColor: "#ffffff",
+                              borderColor: "var(--border-default)",
+                              color: "var(--gray-600)",
+                              backgroundColor: "var(--bg-base)",
                             }),
                       }}
                     />
@@ -877,7 +877,7 @@ export default function FoodRouletteModal({
                           }}
                         >
                           <span>{option.label}</span>
-                          {isSelected && <MdCheck size={15} color="var(--text-brand, #0061ff)" />}
+                          {isSelected && <MdCheck size={15} color="var(--text-brand)" />}
                         </DropdownItem>
                       );
                     })}
@@ -896,7 +896,7 @@ export default function FoodRouletteModal({
                     fontFamily: "inherit",
                     fontSize: "11px",
                     fontWeight: 600,
-                    color: "var(--text-brand, #0061ff)",
+                    color: "var(--text-brand)",
                     minWidth: "auto",
                     padding: "3px 6px",
                     textTransform: "none",
@@ -904,7 +904,7 @@ export default function FoodRouletteModal({
                     textDecoration: "underline",
                     "&:hover": {
                       textDecoration: "underline",
-                      backgroundColor: "var(--bg-brand, #eff6ff)",
+                      backgroundColor: "var(--bg-brand)",
                     },
                   }}
                 >
@@ -920,15 +920,15 @@ export default function FoodRouletteModal({
                       onClick={() => setView("settings")}
                       aria-label="식당 목록 설정"
                       sx={{
-                        color: "var(--gray-500, #8b95a1)",
-                        backgroundColor: "var(--bg-subtle, #f8f9fb)",
-                        border: "1px solid var(--border-default, #e5e8eb)",
+                        color: "var(--gray-500)",
+                        backgroundColor: "var(--bg-subtle)",
+                        border: "1px solid var(--border-default)",
                         padding: "5px",
                         borderRadius: "8px",
                         transition: "all 0.15s ease",
                         "&:hover": {
-                          color: "var(--text-secondary, #333d4b)",
-                          backgroundColor: "var(--gray-200, #e5e8eb)",
+                          color: "var(--text-secondary)",
+                          backgroundColor: "var(--gray-200)",
                         },
                         "&:disabled": {
                           opacity: 0.4,
@@ -976,24 +976,24 @@ export default function FoodRouletteModal({
                       ...(isSelected
                         ? {
                             backgroundColor: corner.isCustom
-                              ? "#f5f3ff"
-                              : "var(--bg-brand, #eff6ff)",
+                              ? "var(--bg-brand)"
+                              : "var(--bg-brand)",
                             color: corner.isCustom
                               ? "#7c3aed"
-                              : "var(--text-brand, #0061ff)",
+                              : "var(--text-brand)",
                             borderColor: corner.isCustom
                               ? "#8b5cf6"
-                              : "var(--border-brand, #0061ff)",
+                              : "var(--border-brand)",
                             "& .MuiChip-icon": {
                               color: corner.isCustom
                                 ? "#7c3aed"
-                                : "var(--text-brand, #0061ff)",
+                                : "var(--text-brand)",
                             },
                           }
                         : {
-                            borderColor: "var(--border-default, #e5e8eb)",
-                            color: "var(--gray-600, #6b7684)",
-                            backgroundColor: "#ffffff",
+                            borderColor: "var(--border-default)",
+                            color: "var(--gray-600)",
+                            backgroundColor: "var(--bg-base)",
                           }),
                     }}
                   />
@@ -1072,19 +1072,19 @@ const DropdownTrigger = styled.button<{ $isOpen: boolean }>`
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
-  background-color: var(--bg-subtle, #f8f9fb);
+  color: var(--text-brand);
+  background-color: var(--bg-subtle);
   border: 1px solid
     ${({ $isOpen }) =>
-      $isOpen ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+      $isOpen ? "var(--border-brand)" : "var(--border-default)"};
   box-shadow: ${({ $isOpen }) =>
-    $isOpen ? "0 0 0 1px var(--border-brand, #0061ff)" : "none"};
+    $isOpen ? "0 0 0 1px var(--border-brand)" : "none"};
   cursor: pointer;
   transition: all 0.15s ease;
   box-sizing: border-box;
 
   &:hover:not(:disabled) {
-    border-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
   }
 
   &:disabled {
@@ -1097,7 +1097,7 @@ const DropdownArrow = styled.div<{ $isOpen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   transition: transform 0.2s ease;
   transform: ${({ $isOpen }) => ($isOpen ? "rotate(180deg)" : "rotate(0deg)")};
 `;
@@ -1107,9 +1107,9 @@ const DropdownMenu = styled.div`
   top: calc(100% + 4px);
   left: 0;
   min-width: 130px;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 10px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   padding: 4px;
   z-index: 100;
@@ -1139,15 +1139,15 @@ const DropdownItem = styled.div<{ $isSelected: boolean }>`
   font-size: 12px;
   font-weight: ${({ $isSelected }) => ($isSelected ? 700 : 500)};
   color: ${({ $isSelected }) =>
-    $isSelected ? "var(--text-brand, #0061ff)" : "var(--text-default, #333d4b)"};
+    $isSelected ? "var(--text-brand)" : "var(--text-secondary)"};
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "var(--bg-brand, #eff6ff)" : "transparent"};
+    $isSelected ? "var(--bg-brand)" : "transparent"};
   cursor: pointer;
   transition: background-color 0.1s ease;
 
   &:hover {
     background-color: ${({ $isSelected }) =>
-      $isSelected ? "var(--bg-brand, #eff6ff)" : "var(--bg-subtle, #f8f9fb)"};
+      $isSelected ? "var(--bg-brand)" : "var(--bg-subtle)"};
   }
 `;
 
@@ -1180,9 +1180,9 @@ const MenuPriceTag = styled.span`
   display: inline-block;
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-brand, #0061ff);
-  background-color: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
   padding: 1px 6px;
   margin-left: 6px;
@@ -1194,7 +1194,7 @@ const CustomWinnerHint = styled.p`
   font-size: 11px;
   color: #7c3aed;
   font-weight: 500;
-  background-color: #f5f3ff;
+  background-color: var(--bg-brand);
   border-radius: 6px;
   padding: 5px 8px;
 `;
@@ -1226,7 +1226,7 @@ const SectionHeaderTitle = styled.h4`
   margin: 0;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const AddForm = styled.form`
@@ -1239,7 +1239,7 @@ const AddForm = styled.form`
 const EmptyCustomHint = styled.p`
   margin: 0;
   font-size: 11px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   padding: 6px 0;
 `;
 
@@ -1297,9 +1297,9 @@ const ResultHeaderBlock = styled.div`
 const ResultMealBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-brand, #0061ff);
-  background-color: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  color: var(--text-brand);
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   padding: 3px 8px;
   border-radius: 6px;
 `;
@@ -1308,7 +1308,7 @@ const ResultMainTitle = styled.h3`
   margin: 0;
   font-size: 18px;
   font-weight: 800;
-  color: var(--gray-900, #191f28);
+  color: var(--gray-900);
   text-align: center;
   word-break: keep-all;
   line-height: 1.35;
@@ -1319,8 +1319,8 @@ const ResultCard = styled(Paper)`
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  background-color: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px 14px;
   box-sizing: border-box;
@@ -1336,14 +1336,14 @@ const ResultCardTopRow = styled.div`
 const ResultCardSubLabel = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: var(--gray-500, #8b95a1);
+  color: var(--gray-500);
 `;
 
 const ResultCardMenuContent = styled.p`
   margin: 0;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   line-height: 1.5;
   word-break: keep-all;
   white-space: pre-line;

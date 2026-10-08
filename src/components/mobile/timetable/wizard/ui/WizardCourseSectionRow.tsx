@@ -104,12 +104,12 @@ const Row = styled.div<{ $expanded: boolean; $clickable: boolean }>`
   flex-direction: column;
   gap: 12px;
   background: ${({ $expanded }) =>
-    $expanded ? "var(--bg-subtle, #f8f9fb)" : "transparent"};
+    $expanded ? "var(--bg-subtle)" : "transparent"};
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
   -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
-    outline: 2px solid var(--interactive-brand, #0061ff);
+    outline: 2px solid var(--border-brand);
     outline-offset: -2px;
   }
 `;
@@ -135,7 +135,7 @@ const ProfessorInfo = styled.div`
   display: flex;
   align-items: baseline;
   gap: 8px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -149,7 +149,7 @@ const SubjectNumber = styled.span`
 
 const SubText = styled.p`
   margin: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;
 

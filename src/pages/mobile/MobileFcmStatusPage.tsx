@@ -105,13 +105,13 @@ export default function MobileFcmStatusPage() {
 
 const Container = styled.div`
   padding: 20px;
-  //background-color: #f8f9fa;
+  //background-color: var(--bg-subtle);
   min-height: calc(100vh - 100px);
 `;
 
 const Section = styled.div`
   margin-bottom: 24px;
-  background: white;
+  background: var(--bg-base);
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -119,7 +119,7 @@ const Section = styled.div`
 
 const Label = styled.div`
   font-size: 14px;
-  color: #666;
+  color: var(--gray-600);
   margin-bottom: 12px;
   font-weight: 600;
 `;
@@ -131,20 +131,20 @@ const TokenWrapper = styled.div`
 `;
 
 const TokenValue = styled.div`
-  background: #f1f3f5;
+  background: var(--bg-muted);
   padding: 12px;
   border-radius: 8px;
   font-size: 12px;
   word-break: break-all;
   line-height: 1.5;
-  color: #444;
-  border: 1px solid #e9ecef;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
 `;
 
 const CopyButton = styled.button`
   align-self: flex-end;
   background: #3b5bdb;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
@@ -157,7 +157,7 @@ const CopyButton = styled.button`
 
 const StatusBox = styled.div<{ $status?: "success" | "fail" }>`
   font-size: 14px;
-  color: #444;
+  color: var(--text-secondary);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -175,7 +175,7 @@ const StatusText = styled.span<{ $status?: "success" | "fail" }>`
 `;
 
 const ErrorText = styled.div`
-  background: #fff5f5;
+  background: var(--bg-error);
   color: #e03131;
   padding: 8px;
   border-radius: 6px;
@@ -187,7 +187,7 @@ const ErrorText = styled.div`
 const InfoBox = styled.div`
   margin-top: 32px;
   font-size: 12px;
-  color: #868e96;
+  color: var(--text-tertiary);
   line-height: 1.6;
   p {
     margin: 4px 0;

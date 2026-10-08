@@ -306,14 +306,14 @@ const MessageContainer = styled.div`
 
 const MessageText = styled.span`
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   line-height: 20px;
 `;
 
 const ActionButton = styled.button`
-  background-color: var(--text-brand, #0061ff);
-  color: #fff;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 50px;
   padding: 6px 16px;
@@ -338,5 +338,5 @@ const EmptyContainer = styled.div`
 
 const EmptyText = styled.span`
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;

@@ -32,14 +32,14 @@ const FillButtonWrapper = styled.button`
   font-size: 14px;
   font-weight: 500;
 
-  background: #5e92f0;
-  color: #f4f4f4;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   box-shadow: ${SOFT_PILL_SHADOW};
   cursor: pointer;
 
   /* 비활성화 상태 스타일 */
   &:disabled {
-    background: #ccc;
+    background: var(--gray-300);
     cursor: not-allowed;
   }
 `;

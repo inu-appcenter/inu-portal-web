@@ -227,17 +227,17 @@ const DateSelector = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff;
+  background: var(--bg-base);
   padding: 10px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  border: 1px solid var(--border-default);
+  color: var(--gray-600);
 
   input {
     border: none;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     outline: none;
     cursor: pointer;
     background: transparent;
@@ -276,13 +276,13 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
 `;
 
 const DistributionCard = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -311,7 +311,7 @@ const RatioLabel = styled.div`
 
 const LabelText = styled.span`
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const RatioValue = styled.span<{ $color: string }>`
@@ -329,7 +329,7 @@ const ColorDot = styled.div<{ $color: string }>`
 const ProgressBar = styled.div`
   height: 12px;
   border-radius: 6px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   display: flex;
   overflow: hidden;
 `;
@@ -371,9 +371,9 @@ const FloatingSearchBarContainer = styled.div`
 `;
 
 const MemberList = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   max-height: 500px;
   overflow-y: auto;
@@ -384,10 +384,10 @@ const MemberItem = styled.div`
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid var(--bg-base);
   transition: background 0.2s;
 
-  &:hover { background-color: #f8fafc; }
+  &:hover { background-color: var(--bg-subtle); }
   &:last-child { border-bottom: none; }
 `;
 
@@ -398,8 +398,8 @@ const MemberIcon = styled.div<{ $isUser: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${props => props.$isUser ? "#eff6ff" : "#f1f5f9"};
-  color: ${props => props.$isUser ? "#3b82f6" : "#64748b"};
+  background-color: ${props => props.$isUser ? "var(--bg-brand)" : "var(--bg-muted)"};
+  color: ${props => props.$isUser ? "var(--interactive-primary)" : "var(--gray-600)"};
 `;
 
 const MemberInfo = styled.div`
@@ -410,32 +410,32 @@ const MemberInfo = styled.div`
 const MemberId = styled.span`
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const MemberType = styled.span`
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-weight: 500;
 `;
 
 const LoadingMsg = styled.div`
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.9rem;
 `;
 
 const EmptyMsg = styled.div`
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.9rem;
 `;
 
 const ErrorBox = styled.div`
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;

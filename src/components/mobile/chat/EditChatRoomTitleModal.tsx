@@ -90,14 +90,14 @@ export default function EditChatRoomTitleModal({
               leftButton={{
                 label: "취소",
                 onClick: () => onOpenChange(false),
-                backgroundColor: "#F2F2F7",
-                textColor: "#1C1C1E",
+                backgroundColor: "var(--bg-muted)",
+                textColor: "var(--text-primary)",
               }}
               rightButton={{
                 label: isLoading ? "변경 중..." : "변경하기",
                 onClick: handleUpdate,
-                backgroundColor: "#5E92F0",
-                textColor: "#FFFFFF",
+                backgroundColor: "var(--interactive-primary)",
+                textColor: "var(--text-inverse)",
                 disabled: isLoading,
               }}
               padding="16px 24px 24px"
@@ -141,7 +141,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -162,19 +162,19 @@ const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
 
   &:focus {
-    border-color: #5E92F0;
+    border-color: var(--interactive-primary);
   }
 `;
 
 const Description = styled.p`
   font-size: 13px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   margin: 4px 0 0 0;
   line-height: 1.4;
 `;

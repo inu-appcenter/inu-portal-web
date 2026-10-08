@@ -21,7 +21,7 @@ const StyledButton = styled.button<ActionButtonProps>`
   border-radius: 999px;
   padding: 13px 22px;
   background: linear-gradient(180deg, #6f9ffc 0%, #4d7ee2 100%);
-  color: #fff;
+  color: var(--text-inverse);
   text-decoration: none;
   font-size: 15px;
   font-weight: 700;
@@ -43,8 +43,8 @@ const StyledButton = styled.button<ActionButtonProps>`
   ${(props) =>
     props.disabled &&
     css`
-      background: #cccccc; // 배경색 회색 처리
-      color: #ffffff;
+      background: var(--gray-300); // 배경색 회색 처리
+      color: var(--text-inverse);
       box-shadow: none; // 그림자 제거
       cursor: not-allowed; // 금지 커서
       pointer-events: none; // 클릭 이벤트 차단

@@ -82,10 +82,10 @@ const FeatureItem = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   padding: 12px 14px;
   border-radius: 16px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--bg-base);
 `;
 
 const FeatureIcon = styled.span`
@@ -104,14 +104,14 @@ const FeatureTextCol = styled.div`
 const FeatureName = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 `;
 
 const FeatureDesc = styled.span`
   font-size: 12.5px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.45;
   letter-spacing: -0.2px;
 `;

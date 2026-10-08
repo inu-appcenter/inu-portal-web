@@ -268,7 +268,7 @@ const ThumbnailContainer = styled.div`
   flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
 
   img {
     width: 100%;
@@ -285,7 +285,7 @@ const RemoveImageButton = styled.button`
   height: 18px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: var(--text-inverse);
   border: none;
   display: flex;
   align-items: center;

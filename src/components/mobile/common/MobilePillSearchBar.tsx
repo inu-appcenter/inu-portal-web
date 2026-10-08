@@ -63,14 +63,14 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
     $variant === "clean"
       ? `
     height: 40px;
-    background-color: var(--bg-base, #ffffff);
-    border: 1px solid var(--border-default, #e5e8eb);
+    background-color: var(--bg-base);
+    border: 1px solid var(--border-default);
     padding: 2px 2px 2px 16px;
     gap: 8px;
 
     &:focus-within {
-      background-color: #ffffff;
-      border-color: var(--interactive-primary, #0061ff);
+      background-color: var(--bg-base);
+      border-color: var(--interactive-primary);
     }
 
     input {
@@ -80,7 +80,7 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
       font-size: 14px;
       line-height: 1.6;
       font-weight: 400;
-      color: var(--text-primary, #191f28);
+      color: var(--text-primary);
       flex-grow: 1;
       outline: none;
       min-width: 0;
@@ -88,14 +88,14 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
       height: 100%;
 
       &::placeholder {
-        color: var(--text-tertiary, #8b95a1);
+        color: var(--text-tertiary);
       }
     }
 
     button {
       border: none;
       background-color: transparent;
-      color: var(--text-tertiary, #8b95a1);
+      color: var(--text-tertiary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -112,8 +112,8 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
         transform 0.1s;
 
       &:hover {
-        background-color: var(--bg-subtle, #f8f9fb);
-        color: var(--text-secondary, #333d4b);
+        background-color: var(--bg-subtle);
+        color: var(--text-secondary);
       }
 
       &:active {
@@ -126,10 +126,10 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
     background-color: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: var(--elevation-1-shadow);
     padding: 4px 6px 4px 16px;
     gap: 8px;
-    border: 1px solid #eaeaea;
+    border: 1px solid var(--border-default);
 
     &:focus-within {
       background-color: rgba(255, 255, 255, 0.85);
@@ -141,7 +141,7 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
       border: none;
       background: transparent;
       font-size: 16px;
-      color: #333;
+      color: var(--text-secondary);
       font-weight: 500;
       flex-grow: 1;
       outline: none;
@@ -150,14 +150,14 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
       height: 100%;
 
       &::placeholder {
-        color: #a3a9b3;
+        color: var(--text-disabled);
       }
     }
 
     button {
       border: none;
       background-color: #9cafe2;
-      color: #fff;
+      color: var(--text-inverse);
       display: flex;
       align-items: center;
       justify-content: center;

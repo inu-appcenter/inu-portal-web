@@ -1229,14 +1229,14 @@ const RoutinePageWrapper = styled.div`
 `;
 
 const HeaderBannerCard = styled.div`
-  background-color: #f7f8fa;
+  background-color: var(--bg-subtle);
   border-radius: 24px;
   padding: 20px 20px 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #edf0f5;
+  border: 1px solid var(--border-default);
 `;
 
 const HeaderBannerLeft = styled.div`
@@ -1249,7 +1249,7 @@ const HeaderBannerLeft = styled.div`
 const BannerTitle = styled.h1`
   font-size: 18px;
   font-weight: 800;
-  color: #111827;
+  color: var(--text-primary);
   line-height: 1.35;
   margin: 0;
   letter-spacing: -0.4px;
@@ -1261,8 +1261,8 @@ const CreateNewRoutineButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #111827;
-  color: #ffffff;
+  background-color: var(--gray-900);
+  color: var(--text-inverse);
   border: none;
   border-radius: 9999px;
   padding: 8px 14px;
@@ -1307,7 +1307,7 @@ const SectionTitleRow = styled.div`
 const SectionTitle = styled.h2`
   font-size: 14.5px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
   margin: 0;
   letter-spacing: -0.2px;
 `;
@@ -1315,16 +1315,16 @@ const SectionTitle = styled.h2`
 const CountBadge = styled.span`
   font-size: 12px;
   font-weight: 700;
-  color: #2563eb;
-  background-color: #dbeafe;
+  color: var(--text-brand);
+  background-color: var(--blue-100);
   padding: 2px 7px;
   border-radius: 9999px;
 `;
 
 const GroupCard = styled.div`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 22px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 `;
@@ -1332,7 +1332,7 @@ const GroupCard = styled.div`
 const EmptyRoutineCard = styled.div`
   position: relative;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 22px;
   padding: 24px 20px;
   display: flex;
@@ -1341,19 +1341,19 @@ const EmptyRoutineCard = styled.div`
   justify-content: center;
   gap: 6px;
   text-align: center;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--border-strong);
   cursor: pointer;
 `;
 
 const EmptyRoutineTitle = styled.div`
   font-size: 14.5px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const EmptyRoutineSubTitle = styled.div`
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   line-height: 1.4;
 `;
 
@@ -1369,7 +1369,7 @@ const GroupRow = styled.div`
 
 const CardDivider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   margin-left: 68px;
 `;
 
@@ -1399,7 +1399,7 @@ const TextContentWrapper = styled.div`
 const RowMainTitle = styled.div<{ $disabled?: boolean }>`
   font-size: 15.5px;
   font-weight: 700;
-  color: ${({ $disabled }) => ($disabled ? "#9ca3af" : "#111827")};
+  color: ${({ $disabled }) => ($disabled ? "var(--text-tertiary)" : "var(--text-primary)")};
   letter-spacing: -0.3px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1409,7 +1409,7 @@ const RowMainTitle = styled.div<{ $disabled?: boolean }>`
 const RowSubTitle = styled.div`
   font-size: 12.5px;
   font-weight: 400;
-  color: #6b7280;
+  color: var(--gray-600);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1446,8 +1446,8 @@ const NavTabButton = styled.button<{ $active: boolean }>`
   position: relative;
   overflow: hidden;
   border: none;
-  background: ${({ $active }) => ($active ? "#eff6ff" : "transparent")};
-  color: ${({ $active }) => ($active ? "#1d4ed8" : "#64748b")};
+  background: ${({ $active }) => ($active ? "var(--bg-brand)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--gray-600)")};
   padding: 9px 20px;
   border-radius: 9999px;
   display: flex;
@@ -1497,7 +1497,7 @@ const PickerRow = styled.div`
 
 const AmPmToggle = styled.div`
   display: flex;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   border-radius: 12px;
   padding: 4px;
   gap: 2px;
@@ -1507,8 +1507,8 @@ const AmPmButton = styled.button<{ $active: boolean }>`
   position: relative;
   overflow: hidden;
   border: none;
-  background-color: ${({ $active }) => ($active ? "#2563eb" : "transparent")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#64748b")};
+  background-color: ${({ $active }) => ($active ? "var(--interactive-primary)" : "transparent")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
   font-size: 14px;
   font-weight: 700;
   padding: 8px 14px;
@@ -1525,33 +1525,33 @@ const TimeInputGroup = styled.div`
 
 const TimeSelect = styled.select`
   appearance: none;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 8px 12px;
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   text-align: center;
   outline: none;
   cursor: pointer;
 
   &:focus {
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const TimeColon = styled.span`
   font-size: 20px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const ModalGroupCard = styled.div`
   width: 100%;
-  background: #f8fafc;
+  background: var(--bg-subtle);
   border-radius: 16px;
-  border: 1px solid #edf0f5;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   box-sizing: border-box;
 `;
@@ -1564,19 +1564,19 @@ const ModalGroupRow = styled.div<{ $selected?: boolean }>`
   justify-content: space-between;
   padding: 12px 16px;
   cursor: pointer;
-  background-color: ${({ $selected }) => ($selected ? "#eff6ff" : "transparent")};
+  background-color: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "transparent")};
   transition: background-color 0.15s;
 `;
 
 const ModalOptionText = styled.span<{ $selected?: boolean }>`
   font-size: 14.5px;
   font-weight: ${({ $selected }) => ($selected ? 700 : 500)};
-  color: ${({ $selected }) => ($selected ? "#2563eb" : "#1e293b")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-primary)")};
 `;
 
 const ModalDivider = styled.div`
   height: 1px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
 `;
 
 const ModalFormSection = styled.div`
@@ -1591,35 +1591,35 @@ const ModalFormSection = styled.div`
 const ModalSectionLabel = styled.label`
   font-size: 13.5px;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const InlineSelect = styled.select`
   appearance: none;
   width: 100%;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 14.5px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
 
   &:focus {
-    border-color: #2563eb;
+    border-color: var(--border-brand);
   }
 `;
 
 const ModalNoticeTip = styled.div`
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.45;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid #edf0f5;
+  border: 1px solid var(--border-default);
 `;
 
 const MethodSelectionContainer = styled.div`
@@ -1636,8 +1636,8 @@ const MethodCard = styled.div<{ $selected: boolean }>`
   gap: 6px;
   padding: 14px 16px;
   border-radius: 16px;
-  background-color: ${({ $selected }) => ($selected ? "#eff6ff" : "#f8fafc")};
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#2563eb" : "#e2e8f0")};
+  background-color: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-subtle)")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-default)")};
   cursor: pointer;
   transition: all 0.15s ease;
 `;
@@ -1652,7 +1652,7 @@ const MethodRadioDot = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#2563eb" : "#94a3b8")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "#94a3b8")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1663,7 +1663,7 @@ const InnerRadioCircle = styled.div`
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background-color: #2563eb;
+  background-color: var(--interactive-primary);
 `;
 
 const MethodTitleWrapper = styled.div`
@@ -1675,21 +1675,21 @@ const MethodTitleWrapper = styled.div`
 const MethodTitle = styled.div<{ $selected: boolean }>`
   font-size: 14.5px;
   font-weight: 700;
-  color: ${({ $selected }) => ($selected ? "#1e40af" : "#1e293b")};
+  color: ${({ $selected }) => ($selected ? "#1e40af" : "var(--text-primary)")};
 `;
 
 const RecommendTag = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
-  background-color: #dbeafe;
+  color: var(--text-brand);
+  background-color: var(--blue-100);
   padding: 1px 6px;
   border-radius: 6px;
 `;
 
 const MethodDescription = styled.div`
   font-size: 12.5px;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.45;
   padding-left: 28px;
 `;

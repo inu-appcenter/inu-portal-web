@@ -74,7 +74,7 @@ const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
 
   text-align: center;
   color: ${({ isSelected }) =>
-    isSelected ? "#0E4D9D" : "#B5B5B5"}; /* 회색 계열로 변경 */
+    isSelected ? "#0E4D9D" : "var(--text-disabled)"}; /* 회색 계열로 변경 */
   cursor: pointer;
 `;
 
