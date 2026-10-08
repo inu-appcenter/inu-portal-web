@@ -27,6 +27,7 @@ import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 import { markNoticesSeen } from "@/utils/noticeSeenStorage";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -164,9 +165,9 @@ const MobileSchoolNoticePage = () => {
   const committedQuery = params.get("query")?.trim() ?? "";
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const { data: categoryResData } = useQuery({
     queryKey: ["categories", "school_notices"],
@@ -222,7 +223,7 @@ const MobileSchoolNoticePage = () => {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     if (nextCategory && nextCategory !== selectedCategory) {

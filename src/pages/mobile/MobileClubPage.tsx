@@ -23,6 +23,7 @@ import {
 } from "@/styles/responsive";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 interface ClubListSectionProps {
   category: string;
@@ -233,9 +234,9 @@ export default function MobileClubPage() {
   ]);
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const currentIndex = useMemo(() => {
     const idx = clubCategories.indexOf(selectedCategory);
@@ -267,7 +268,7 @@ export default function MobileClubPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     resetScrollToTop();

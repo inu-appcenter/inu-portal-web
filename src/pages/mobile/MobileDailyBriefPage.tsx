@@ -21,6 +21,7 @@ import TodayTimetableWidget from "@/components/mobile/home/TodayTimetableWidget"
 import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
 import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import Icon from "@/components/common/Icon";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 export type DailyBriefTimeTheme = "morning" | "afternoon" | "sunset" | "night";
 
@@ -48,7 +49,6 @@ const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
     "linear-gradient(180deg, #C7D2FE 0%, #DDD6FE 20%, #E2E8F0 52%, #EDE9FE 80%, #E0E7FF 100%)",
 };
 
-const DAILY_BRIEF_INTRO_SHOWN_KEY = "daily_brief_intro_shown";
 const DAILY_BRIEF_CARD_RETURN_KEY = "daily_brief_card_return";
 const CARD_NAVIGATION_WINDOW_MS = 1500;
 
@@ -57,13 +57,10 @@ export default function MobileDailyBriefPage() {
   const navigationType = useNavigationType();
 
   // 최초 방문 여부 (온보딩 모달 미확인 시)
-  const isFirstEverVisit = useMemo(() => {
-    try {
-      return !localStorage.getItem(DAILY_BRIEF_INTRO_SHOWN_KEY);
-    } catch {
-      return false;
-    }
-  }, []);
+  const isFirstEverVisit = useMemo(
+    () => !promotionSeenStorage.has(SEEN_PROMOTIONS.DAILY_BRIEF_INTRO),
+    [],
+  );
 
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(isFirstEverVisit);
 
@@ -212,11 +209,7 @@ export default function MobileDailyBriefPage() {
   }, [isFirstEverVisit, isRestored]);
 
   const handleCloseInfoModal = () => {
-    try {
-      localStorage.setItem(DAILY_BRIEF_INTRO_SHOWN_KEY, "true");
-    } catch {
-      // 저장소를 사용할 수 없어도 현재 세션의 모달은 닫는다.
-    }
+    promotionSeenStorage.mark(SEEN_PROMOTIONS.DAILY_BRIEF_INTRO);
     setIsInfoModalOpen(false);
 
     // 최초 모달 확인 시점에 브리핑 로딩 시작 -> 완료 시 순차 fade-in
