@@ -220,7 +220,7 @@ const ScreenWrapper = styled.main`
   padding: 24px;
   background:
     radial-gradient(circle at top, rgba(131, 185, 255, 0.28), transparent 40%),
-    linear-gradient(180deg, #f8fbff 0%, #eef4fb 48%, #e6edf7 100%);
+    linear-gradient(180deg, var(--bg-subtle) 0%, var(--blue-50) 48%, var(--blue-100) 100%);
 `;
 
 const AmbientOrb = styled.div`
@@ -274,9 +274,9 @@ const Badge = styled.div`
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: rgba(54, 108, 192, 0.08);
-  color: #335a96;
+  color: var(--text-brand);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
@@ -303,7 +303,7 @@ const IconWrap = styled.div`
   display: grid;
   place-items: center;
   border-radius: 22px;
-  background: linear-gradient(135deg, #1f5fbf 0%, #5f9cff 100%);
+  background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-400) 100%);
   color: var(--text-inverse);
   box-shadow: 0 18px 32px rgba(58, 114, 201, 0.3);
 
@@ -314,7 +314,7 @@ const IconWrap = styled.div`
 
 const Title = styled.h1`
   margin: 0;
-  color: #16335b;
+  color: var(--blue-800);
   font-size: clamp(28px, 4vw, 38px);
   font-weight: 900;
   line-height: 1.12;
@@ -323,13 +323,13 @@ const Title = styled.h1`
 
 const Description = styled.p`
   margin: 12px 0 0;
-  color: #526b8f;
+  color: var(--text-secondary);
   font-size: 15px;
   line-height: 1.7;
   word-break: keep-all;
 
   strong {
-    color: #1b4f98;
+    color: var(--blue-700);
     font-weight: 800;
   }
 `;
@@ -345,7 +345,7 @@ const SummaryPanel = styled.section`
 `;
 
 const SummaryLabel = styled.span`
-  color: #4d6a93;
+  color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -353,7 +353,7 @@ const SummaryLabel = styled.span`
 
 const SummaryMessage = styled.p`
   margin: 0;
-  color: #173861;
+  color: var(--blue-800);
   font-size: 18px;
   font-weight: 800;
   line-height: 1.45;
@@ -366,7 +366,7 @@ const SummaryDetail = styled.pre`
   word-break: break-word;
   font-size: 13px;
   line-height: 1.6;
-  color: #59729a;
+  color: var(--text-tertiary);
 `;
 
 const DetailPanel = styled.section`
@@ -380,12 +380,12 @@ const DetailHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #4b668f;
+  color: var(--text-secondary);
   font-size: 13px;
   font-weight: 800;
 
   small {
-    color: #8197b6;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 600;
   }
@@ -398,8 +398,8 @@ const DetailBody = styled.pre`
   max-height: 280px;
   overflow: auto;
   border-radius: 20px;
-  background: #0f2038;
-  color: #e2ecff;
+  background: var(--gray-900);
+  color: var(--blue-50);
   font-size: 12px;
   line-height: 1.65;
   white-space: pre-wrap;
@@ -442,7 +442,7 @@ const BaseButton = styled.button`
 `;
 
 const SecondaryButton = styled(BaseButton)`
-  color: #28568f;
+  color: var(--blue-700);
   background: var(--bg-brand);
   border: 1px solid var(--border-brand-subtle);
   box-shadow: 0 10px 22px rgba(27, 79, 152, 0.08);
@@ -450,13 +450,13 @@ const SecondaryButton = styled(BaseButton)`
 
 const PrimaryButton = styled(BaseButton)`
   color: var(--text-inverse);
-  background: linear-gradient(135deg, #1f5fbf 0%, #4f87de 100%);
+  background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-500) 100%);
   box-shadow: 0 16px 30px rgba(31, 95, 191, 0.28);
 `;
 
 const FooterText = styled.p`
   margin: -4px 0 0;
-  color: #6e84a6;
+  color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.6;
   text-align: center;

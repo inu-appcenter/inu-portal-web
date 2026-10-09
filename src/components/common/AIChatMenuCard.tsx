@@ -49,7 +49,7 @@ export default function AIChatMenuCard({
         <Divider />
 
         <MenuRow type="button" onClick={onSelectLegacyChatBul}>
-          <IconCircle $bg="#fff4ed">
+          <IconCircle $bg="var(--bg-warn)">
             <img src={TorchAiLogo} alt="챗불이" width={20} height={20} />
           </IconCircle>
           <TextGroup>

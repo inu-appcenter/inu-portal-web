@@ -140,13 +140,13 @@ const TextGroup = styled.div`
 const Title = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: #17325c;
+  color: var(--text-secondary);
   line-height: 1.3;
 `;
 
 const Subtitle = styled.span`
   font-size: 12px;
-  color: var(--gray-600);
+  color: var(--text-tertiary);
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;

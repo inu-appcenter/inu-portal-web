@@ -111,18 +111,18 @@ const Description = styled.p`
 const UpdateButton = styled.button`
   width: 100%;
   height: 52px;
-  background-color: #002d62; /* 인팁 메인 네이비 색상 계열 */
+  background-color: var(--blue-800);
   color: var(--text-inverse);
   border: none;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--heading-2-font-size);
+  font-weight: var(--heading-2-font-weight);
   cursor: pointer;
   outline: none;
   transition: transform 0.1s ease, background-color 0.2s ease;
 
   &:active {
     transform: scale(0.96); /* 토스식 눌림 피드백 적용 */
-    background-color: #001f44;
+    background-color: var(--blue-800);
   }
 `;
