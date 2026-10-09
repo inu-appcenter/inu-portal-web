@@ -46,6 +46,7 @@ import {
   Copy,
   Check,
   AlertTriangle,
+  Maximize2,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import { MobileDormitoryCard } from "@/components/mobile/dormitory/MobileDormitoryCard";
@@ -916,26 +917,41 @@ const PortalDormitoryLabPage = () => {
         {/* 1. 상단 모바일 사생카드 */}
         <SectionBlock>
           <SectionHeader>
-            <span className="title">모바일 사생증</span>
-            {year && term ? (
-              <span className="term-badge">{year}년 {mapSemester(term)}학기</span>
-            ) : null}
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="title">모바일 사생증</span>
+              {year && term ? (
+                <span className="term-badge">{year}년 {mapSemester(term)}학기</span>
+              ) : null}
+            </div>
+            <FullscreenCardBtn
+              type="button"
+              onClick={() => navigate(ROUTES.DORMITORY_CARD)}
+              title="모바일 사생증 전체화면 열기"
+            >
+              <Maximize2 size={13} strokeWidth={2.2} />
+              전체화면
+            </FullscreenCardBtn>
           </SectionHeader>
 
-          <MobileDormitoryCard
-            studentName={studentName}
-            englishName={englishName}
-            studentId={studentId}
-            department={department}
-            grade={grade}
-            photoSrc={profilePhotoSrc}
-            dormitoryType={dormitoryType}
-            dormitoryBuilding={dormitoryBuilding || mappedDormName}
-            studentDormNo={studentDormNo}
-            year={year}
-            term={term}
-            status={inOutList[0]?.status ? mapInOutStatus(inOutList[0].status) : (profile ? "정규입사생" : "")}
-          />
+          <CardClickWrapper
+            onClick={() => navigate(ROUTES.DORMITORY_CARD)}
+            title="탭하여 전체화면 사생증 보기"
+          >
+            <MobileDormitoryCard
+              studentName={studentName}
+              englishName={englishName}
+              studentId={studentId}
+              department={department}
+              grade={grade}
+              photoSrc={profilePhotoSrc}
+              dormitoryType={dormitoryType}
+              dormitoryBuilding={dormitoryBuilding || mappedDormName}
+              studentDormNo={studentDormNo}
+              year={year}
+              term={term}
+              status={inOutList[0]?.status ? mapInOutStatus(inOutList[0].status) : (profile ? "정규입사생" : "")}
+            />
+          </CardClickWrapper>
 
           {/* 상벌점 배지 영역 */}
           <PointBar style={{ marginTop: 14 }}>
@@ -1852,6 +1868,41 @@ const SectionHeader = styled.div`
     background-color: var(--bg-muted);
     color: var(--gray-700);
     font-weight: 500;
+  }
+`;
+
+const FullscreenCardBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
+const CardClickWrapper = styled.div`
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:active {
+    transform: scale(0.99);
+    opacity: 0.95;
   }
 `;
 

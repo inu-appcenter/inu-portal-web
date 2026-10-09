@@ -86,6 +86,7 @@ import LabsRoutinePage from "@/pages/mobile/Labs/LabsRoutinePage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
 import PortalTimetableLabPage from "@/pages/mobile/Labs/PortalTimetableLabPage";
 import PortalDormitoryLabPage from "@/pages/mobile/Labs/PortalDormitoryLabPage";
+import MobileDormitoryCardPage from "@/pages/mobile/dormitory/MobileDormitoryCardPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
@@ -403,6 +404,8 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
           { path: "/agent", element: <AgentPage /> },
           { path: "/assistant", element: <AgentPage /> },
+          { path: ROUTES.DORMITORY_CARD, element: <MobileDormitoryCardPage /> },
+          { path: ROUTES.LABS.PORTAL.DORMITORY_CARD, element: <MobileDormitoryCardPage /> },
         ],
       },
     ],

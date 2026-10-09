@@ -68,6 +68,7 @@ export const ROUTES = {
       BASIC_INFO: "/labs/portal/basic-info",
       TIMETABLE: "/labs/portal/timetable",
       DORMITORY: "/labs/portal/dormitory",
+      DORMITORY_CARD: "/labs/portal/dormitory/card",
     },
   },
 
@@ -151,6 +152,7 @@ export const ROUTES = {
 
   // 기타
   UNIDORM: "/unidorm",
+  DORMITORY_CARD: "/dormitory/card",
 
   // 관리자
   ADMIN: {
