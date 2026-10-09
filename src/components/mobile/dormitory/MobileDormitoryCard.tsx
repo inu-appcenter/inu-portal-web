@@ -15,6 +15,7 @@ export interface MobileDormitoryCardProps {
   year?: string;
   term?: string;
   status?: string;
+  fullscreen?: boolean;
 }
 
 interface DormitoryTheme {
@@ -93,6 +94,7 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
   year,
   term,
   status = "정규입사생",
+  fullscreen = false,
 }) => {
   // 실시간 시계 (초 단위 갱신, YYYY.MM.DD HH:mm:ss)
   const [clockText, setClockText] = useState<string>("");
@@ -124,7 +126,7 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
   const termDisplay = year && formattedTerm ? `${year}학년도 ${formattedTerm}` : (year ? `${year}학년도` : "");
 
   return (
-    <CardContainer $borderColor={theme.borderColor}>
+    <CardContainer $borderColor={theme.borderColor} $fullscreen={fullscreen}>
       {/* 위조 방지: 배경 은은한 한글 워터마크 (영어 없이 순수 한글, 3.5% 투명도) */}
       <WatermarkLayer aria-hidden="true">
         <WatermarkRow>
@@ -219,10 +221,12 @@ const watermarkFlow = keyframes`
   100% { transform: translateX(-50%); }
 `;
 
-const CardContainer = styled.div<{ $borderColor: string }>`
+const CardContainer = styled.div<{ $borderColor: string; $fullscreen?: boolean }>`
   position: relative;
   width: 100%;
-  max-width: 380px;
+  max-width: ${({ $fullscreen }) => ($fullscreen ? "100%" : "380px")};
+  height: ${({ $fullscreen }) => ($fullscreen ? "100%" : "auto")};
+  flex: ${({ $fullscreen }) => ($fullscreen ? "1" : "initial")};
   background-color: #ffffff;
   border-radius: 20px;
   border: 2px solid ${({ $borderColor }) => $borderColor};
@@ -231,6 +235,7 @@ const CardContainer = styled.div<{ $borderColor: string }>`
   user-select: none;
   display: flex;
   flex-direction: column;
+  justify-content: ${({ $fullscreen }) => ($fullscreen ? "space-between" : "flex-start")};
   margin: 0 auto;
   box-sizing: border-box;
 `;
