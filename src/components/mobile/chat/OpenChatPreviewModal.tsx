@@ -69,7 +69,7 @@ export default function OpenChatPreviewModal({
                   />
                 )}
                 <DefaultIcon className="fallback">
-                  <Icon name="users" size={32} color="#D6D1D5" />
+                  <Icon name="users" size={32} color="var(--gray-300)" />
                 </DefaultIcon>
                 {room.official && <OfficialBadge>공식</OfficialBadge>}
               </ThumbnailWrapper>
@@ -81,17 +81,17 @@ export default function OpenChatPreviewModal({
             <ContentArea>
               <InfoGrid>
                 <InfoItem>
-                  <Crown size={16} color="#8E8E93" />
+                  <Crown size={16} color="var(--gray-500)" />
                   <span className="label">방장</span>
                   <span className="value">{room.ownerNickname}</span>
                 </InfoItem>
                 <InfoItem>
-                  <Icon name="users" size={16} color="#8E8E93" />
+                  <Icon name="users" size={16} color="var(--gray-500)" />
                   <span className="label">참여 인원</span>
                   <span className="value">{room.currentParticipants} / {room.maxCapacity}</span>
                 </InfoItem>
                 <InfoItem>
-                  <Calendar size={16} color="#8E8E93" />
+                  <Calendar size={16} color="var(--gray-500)" />
                   <span className="label">생성일</span>
                   <span className="value">
                     {room.createDate

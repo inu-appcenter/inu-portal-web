@@ -227,7 +227,7 @@ const LoadingOverlay = styled.div`
 
 const SpinIcon = styled(Loader2)`
   animation: ${spin} 1s linear infinite;
-  color: #ff6b00;
+  color: rgb(255, 107, 0);
 `;
 
 const LoadingText = styled.span`

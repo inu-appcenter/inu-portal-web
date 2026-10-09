@@ -26,7 +26,7 @@ export default function OpenChatRoomListItem({
             />
           )}
           <DefaultIcon className="fallback">
-            <Icon name="users" size={24} color="#D6D1D5" />
+            <Icon name="users" size={24} color="var(--gray-300)" />
           </DefaultIcon>
         </ThumbnailArea>
         <ContentArea>
@@ -36,7 +36,7 @@ export default function OpenChatRoomListItem({
           </TitleArea>
           {room.description && <Description>{room.description}</Description>}
           <ParticipantInfo>
-            <Icon name="users" size={14} color="#8E8E93" />
+            <Icon name="users" size={14} color="var(--gray-500)" />
             <span>
               {room.currentParticipants} / {room.maxCapacity}
             </span>

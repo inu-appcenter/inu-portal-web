@@ -183,7 +183,7 @@ export default function ImageModal({
 
           <HeaderBar $show={showControls}>
             <BackButton onClick={() => onOpenChange(false)}>
-              <ArrowLeft size={24} color="#FFFFFF" />
+              <ArrowLeft size={24} color="var(--text-inverse)" />
             </BackButton>
 
             {hasSenderInfo && (
@@ -208,7 +208,7 @@ export default function ImageModal({
             <DownloadButton onClick={handleDownload} disabled={isDownloading}>
               <Download
                 size={24}
-                color={isDownloading ? "#767676" : "#FFFFFF"}
+                color={isDownloading ? "var(--text-disabled)" : "var(--text-inverse)"}
               />
             </DownloadButton>
           </FooterBar>
@@ -222,7 +222,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 20000;
-  background-color: #000000;
+  background-color: var(--neutral-1000);
   animation: ${fadeIn} 200ms ease-out;
 `;
 
@@ -233,7 +233,7 @@ const StyledContent = styled(Dialog.Content)`
   height: 100vh;
   z-index: 20001;
   outline: none;
-  background-color: #000000;
+  background-color: var(--neutral-1000);
   box-sizing: border-box;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
@@ -255,7 +255,7 @@ const StyledSwiper = styled(Swiper)`
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #000000;
+    background-color: var(--neutral-1000);
   }
 `;
 

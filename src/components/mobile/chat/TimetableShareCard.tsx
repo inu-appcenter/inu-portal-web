@@ -76,7 +76,7 @@ export default function TimetableShareCard({
   return (
     <CardContainer $isMe={isMe} onClick={handleNavigate}>
       <CardHeader>
-        <Icon name="calendar-add" size={24} color="#0061FF" />
+        <Icon name="calendar-add" size={24} color="var(--interactive-primary)" />
         <HeaderTitle>만나기 좋은 시간 추천</HeaderTitle>
       </CardHeader>
 
@@ -100,7 +100,7 @@ export default function TimetableShareCard({
 
       <FooterButton>
         <span>공강 시간 확인하러 가기</span>
-        <Icon name="chevron-right" size={16} color="#FFFFFF" />
+        <Icon name="chevron-right" size={16} color="var(--text-inverse)" />
       </FooterButton>
     </CardContainer>
   );

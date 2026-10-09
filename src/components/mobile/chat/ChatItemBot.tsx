@@ -53,7 +53,7 @@ export default function ChatItemBot({
           <BotCardContent>
             {isLoading ? (
               <LoadingState>
-                <SpinLoader size={18} color="#FF6B00" />
+                <SpinLoader size={18} color="rgb(255, 107, 0)" />
                 <LoadingText>챗불이가 답변을 생각하고 있어요...</LoadingText>
               </LoadingState>
             ) : (
@@ -69,7 +69,7 @@ export default function ChatItemBot({
                   </ActionButton>
                   {onAskHere && (
                     <ActionButton onClick={onAskHere}>
-                      <Icon name="chat" size={16} color="#4E5968" />
+                      <Icon name="chat" size={16} color="var(--gray-600)" />
                       <span>여기서 질문</span>
                     </ActionButton>
                   )}
@@ -113,7 +113,7 @@ const BotProfileImage = styled.img`
   cursor: pointer;
   object-fit: contain;
   background-color: var(--bg-error);
-  border: 1px solid #ffe5d3;
+  border: 1px solid rgb(255, 229, 211);
   padding: 2px;
   flex-shrink: 0;
   box-shadow: 0 2px 6px rgba(255, 107, 0, 0.12);
@@ -154,9 +154,9 @@ const BotTitle = styled.span`
 const BotBadge = styled.span`
   font-size: 10px;
   font-weight: 700;
-  color: #ff6b00;
-  background-color: #fff0e6;
-  border: 1px solid #ffd8bf;
+  color: rgb(255, 107, 0);
+  background-color: rgb(255, 240, 230);
+  border: 1px solid rgb(255, 216, 191);
   padding: 1px 5px;
   border-radius: 6px;
   line-height: 1.2;

@@ -126,7 +126,7 @@ export default function ChatRoomListItem({
                 </ParticipantCountBadge>
               )}
               {!room.pushEnabled && (
-                <BellOff size={14} color="#8E8E93" style={{ flexShrink: 0 }} />
+                <BellOff size={14} color="var(--gray-500)" style={{ flexShrink: 0 }} />
               )}
               {room.official && <OfficialTag>공식</OfficialTag>}
             </TitleArea>
@@ -350,7 +350,7 @@ const OpenTag = styled.span`
   font-size: 10px;
   font-weight: 600;
   color: var(--interactive-primary);
-  background: #f0eeff;
+  background: rgb(240, 238, 255);
   padding: 1px 4px;
   border-radius: 4px;
   flex-shrink: 0;

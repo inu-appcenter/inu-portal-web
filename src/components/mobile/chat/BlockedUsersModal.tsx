@@ -58,7 +58,7 @@ export default function BlockedUsersModal({
               <Title>{title}</Title>
             </TitleArea>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
           <ScrollArea>

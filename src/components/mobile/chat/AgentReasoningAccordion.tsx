@@ -107,7 +107,7 @@ export const AgentReasoningAccordion: React.FC<AgentReasoningAccordionProps> = (
                         {isCurrentItem ? (
                           <DotPulse />
                         ) : (
-                          <CheckCircle2 size={13} color="#0061ff" />
+                          <CheckCircle2 size={13} color="var(--interactive-primary)" />
                         )}
                       </StepDot>
                       {idx < thoughts.length - 1 && <StepLine />}
@@ -116,7 +116,7 @@ export const AgentReasoningAccordion: React.FC<AgentReasoningAccordionProps> = (
                     <StepContent>
                       <StepHeader>
                         <StepHopLabel>
-                          <Sparkles size={11} color="#0061ff" /> {item.hop}단계 추론
+                          <Sparkles size={11} color="var(--interactive-primary)" /> {item.hop}단계 추론
                         </StepHopLabel>
                         {item.tools && item.tools.length > 0 && (
                           <ToolTagGroup>
@@ -240,9 +240,9 @@ const HopBadge = styled.span`
 const CompletedBadge = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #059669;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  color: var(--text-success);
+  background: rgb(236, 253, 245);
+  border: 1px solid rgb(167, 243, 208);
   padding: 1px 6px;
   border-radius: 9999px;
 `;
@@ -348,7 +348,7 @@ const ToolTagGroup = styled.div`
 const ToolTag = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #0369a1;
+  color: var(--interactive-primary);
   background: var(--bg-brand);
   padding: 1px 6px;
   border-radius: 4px;

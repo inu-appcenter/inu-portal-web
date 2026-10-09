@@ -303,11 +303,11 @@ const AmbientEdgeGlow = styled(motion.div)<{ $active: boolean }>`
   height: 24px;
   background: linear-gradient(
     90deg,
-    #00f2fe 0%,
-    #4facfe 25%,
-    #7f00ff 50%,
-    #e100ff 75%,
-    #ff0844 100%
+    rgb(0, 242, 254) 0%,
+    rgb(79, 172, 254) 25%,
+    rgb(127, 0, 255) 50%,
+    rgb(225, 0, 255) 75%,
+    rgb(255, 8, 68) 100%
   );
   border-radius: 9999px 9999px 0 0;
   z-index: 9995;
