@@ -149,64 +149,66 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
         {termDisplay ? <TermBadge>{termDisplay}</TermBadge> : null}
       </HeaderSection>
 
-      {/* 프로필 영역: 증명사진 + 기본 인적사항 */}
-      <ProfileSection>
-        <PhotoWrapper>
-          {photoSrc ? (
-            <PhotoImg src={photoSrc} alt="사생 증명사진" />
-          ) : (
-            <PlaceholderPhoto>
-              <User size={36} strokeWidth={1.5} color="#94a3b8" />
-            </PlaceholderPhoto>
-          )}
-        </PhotoWrapper>
+      {/* 본문 영역: 프로필 + 핵심 사생 정보 */}
+      <CardBody $fullscreen={fullscreen}>
+        <ProfileSection>
+          <PhotoWrapper $fullscreen={fullscreen}>
+            {photoSrc ? (
+              <PhotoImg src={photoSrc} alt="사생 증명사진" />
+            ) : (
+              <PlaceholderPhoto>
+                <User size={36} strokeWidth={1.5} color="#94a3b8" />
+              </PlaceholderPhoto>
+            )}
+          </PhotoWrapper>
 
-        <ProfileInfo>
-          <NameRow>
-            <StudentName>{studentName}</StudentName>
-            {englishName ? <EnglishName>{englishName}</EnglishName> : null}
-          </NameRow>
+          <ProfileInfo>
+            <NameRow>
+              <StudentName $fullscreen={fullscreen}>{studentName}</StudentName>
+              {englishName ? <EnglishName>{englishName}</EnglishName> : null}
+            </NameRow>
 
-          <MetaList>
-            <MetaItem>
-              <MetaKey>학번</MetaKey>
-              <MetaVal>{studentId}</MetaVal>
-            </MetaItem>
-            <MetaItem>
-              <MetaKey>학과</MetaKey>
-              <MetaVal>{department}</MetaVal>
-            </MetaItem>
-            <MetaItem>
-              <MetaKey>학년</MetaKey>
-              <MetaVal>{grade}</MetaVal>
-            </MetaItem>
-          </MetaList>
-        </ProfileInfo>
-      </ProfileSection>
+            <MetaList>
+              <MetaItem>
+                <MetaKey>학번</MetaKey>
+                <MetaVal>{studentId}</MetaVal>
+              </MetaItem>
+              <MetaItem>
+                <MetaKey>학과</MetaKey>
+                <MetaVal>{department}</MetaVal>
+              </MetaItem>
+              <MetaItem>
+                <MetaKey>학년</MetaKey>
+                <MetaVal>{grade}</MetaVal>
+              </MetaItem>
+            </MetaList>
+          </ProfileInfo>
+        </ProfileSection>
 
-      {/* 핵심 사생 정보 박스: 배정 기숙사(테마색상) + 사생번호(대형 강조) */}
-      <DetailBox $boxBg={theme.boxBg} $boxBorder={theme.boxBorder}>
-        <DetailHeader>
-          <DetailLabel>배정 기숙사</DetailLabel>
-          <DormBadge $bg={theme.badgeBg} $text={theme.badgeText}>
-            {dormitoryBuilding || theme.name}
-          </DormBadge>
-        </DetailHeader>
+        {/* 핵심 사생 정보 박스: 배정 기숙사(테마색상) + 사생번호(대형 강조) */}
+        <DetailBox $boxBg={theme.boxBg} $boxBorder={theme.boxBorder} $fullscreen={fullscreen}>
+          <DetailHeader>
+            <DetailLabel>배정 기숙사</DetailLabel>
+            <DormBadge $bg={theme.badgeBg} $text={theme.badgeText}>
+              {dormitoryBuilding || theme.name}
+            </DormBadge>
+          </DetailHeader>
 
-        <DormNoRow>
-          <DormNoLabel>사생번호</DormNoLabel>
-          <DormNoValue>{studentDormNo}</DormNoValue>
-        </DormNoRow>
+          <DormNoRow>
+            <DormNoLabel>사생번호</DormNoLabel>
+            <DormNoValue $fullscreen={fullscreen}>{studentDormNo}</DormNoValue>
+          </DormNoRow>
 
-        <StatusRow>
-          <StatusLabel>입사 구분</StatusLabel>
-          <StatusValue>{status || "정규입사생"}</StatusValue>
-        </StatusRow>
-      </DetailBox>
+          <StatusRow>
+            <StatusLabel>입사 구분</StatusLabel>
+            <StatusValue>{status || "정규입사생"}</StatusValue>
+          </StatusRow>
+        </DetailBox>
+      </CardBody>
 
-      {/* 하단 풋터: 실시간 시계 (불필요한 '현재 시각' 라벨 없이 초 단위 시계만 단정하게 표시) */}
-      <FooterSection>
-        <ClockText>{clockText || "—"}</ClockText>
+      {/* 하단 풋터: 실시간 시계 */}
+      <FooterSection $fullscreen={fullscreen}>
+        <ClockText $fullscreen={fullscreen}>{clockText || "—"}</ClockText>
       </FooterSection>
     </CardContainer>
   );
@@ -304,6 +306,20 @@ const TermBadge = styled.span`
   letter-spacing: -0.2px;
 `;
 
+const CardBody = styled.div<{ $fullscreen?: boolean }>`
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  ${({ $fullscreen }) =>
+    $fullscreen &&
+    `
+    flex: 1;
+    justify-content: center;
+    gap: 10px;
+  `}
+`;
+
 const ProfileSection = styled.div`
   position: relative;
   z-index: 2;
@@ -313,9 +329,9 @@ const ProfileSection = styled.div`
   gap: 16px;
 `;
 
-const PhotoWrapper = styled.div`
-  width: 96px;
-  height: 128px;
+const PhotoWrapper = styled.div<{ $fullscreen?: boolean }>`
+  width: ${({ $fullscreen }) => ($fullscreen ? "104px" : "96px")};
+  height: ${({ $fullscreen }) => ($fullscreen ? "138px" : "128px")};
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
@@ -352,8 +368,8 @@ const NameRow = styled.div`
   flex-direction: column;
 `;
 
-const StudentName = styled.h1`
-  font-size: 20px;
+const StudentName = styled.h1<{ $fullscreen?: boolean }>`
+  font-size: ${({ $fullscreen }) => ($fullscreen ? "22px" : "20px")};
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.5px;
@@ -396,17 +412,17 @@ const MetaVal = styled.span`
   font-weight: 600;
 `;
 
-const DetailBox = styled.div<{ $boxBg: string; $boxBorder: string }>`
+const DetailBox = styled.div<{ $boxBg: string; $boxBorder: string; $fullscreen?: boolean }>`
   position: relative;
   z-index: 2;
-  margin: 0 20px 16px 20px;
-  padding: 14px 16px;
-  border-radius: 14px;
+  margin: ${({ $fullscreen }) => ($fullscreen ? "0 20px 20px 20px" : "0 20px 16px 20px")};
+  padding: ${({ $fullscreen }) => ($fullscreen ? "16px 18px" : "14px 16px")};
+  border-radius: ${({ $fullscreen }) => ($fullscreen ? "16px" : "14px")};
   background-color: ${({ $boxBg }) => $boxBg};
   border: 1px solid ${({ $boxBorder }) => $boxBorder};
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: ${({ $fullscreen }) => ($fullscreen ? "12px" : "10px")};
 `;
 
 const DetailHeader = styled.div`
@@ -446,9 +462,9 @@ const DormNoLabel = styled.span`
   color: #475569;
 `;
 
-const DormNoValue = styled.span`
+const DormNoValue = styled.span<{ $fullscreen?: boolean }>`
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 18px;
+  font-size: ${({ $fullscreen }) => ($fullscreen ? "24px" : "18px")};
   font-weight: 900;
   color: #0f172a;
   letter-spacing: 0.5px;
@@ -471,10 +487,10 @@ const StatusValue = styled.span`
   color: #334155;
 `;
 
-const FooterSection = styled.div`
+const FooterSection = styled.div<{ $fullscreen?: boolean }>`
   position: relative;
   z-index: 2;
-  padding: 10px 20px;
+  padding: ${({ $fullscreen }) => ($fullscreen ? "14px 20px" : "10px 20px")};
   background-color: #f8fafc;
   border-top: 1px solid #f1f5f9;
   display: flex;
@@ -482,9 +498,9 @@ const FooterSection = styled.div`
   justify-content: center;
 `;
 
-const ClockText = styled.span`
+const ClockText = styled.span<{ $fullscreen?: boolean }>`
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
+  font-size: ${({ $fullscreen }) => ($fullscreen ? "13px" : "12px")};
   font-weight: 600;
   color: #475569;
   letter-spacing: 0.3px;

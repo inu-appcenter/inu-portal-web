@@ -38,6 +38,7 @@ import {
   Zap,
   FileCheck,
   ChevronRight,
+  User,
   Database,
   RefreshCw,
   Inbox,
@@ -46,10 +47,8 @@ import {
   Copy,
   Check,
   AlertTriangle,
-  Maximize2,
 } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
-import { MobileDormitoryCard } from "@/components/mobile/dormitory/MobileDormitoryCard";
 
 const STORAGE_KEY_DORMITORY_DATA = "portal_dormitory_student_info";
 const STORAGE_KEY_DORMITORY_UPDATED = "portal_dormitory_last_updated";
@@ -773,6 +772,23 @@ const PortalDormitoryLabPage = () => {
   const dormitoryBuilding = profile?.dormitoryBuilding || dormInfo?.dormitoryBuilding || dormInfo?.rawFields?.dormBdNm || dormInfo?.rawFields?.dormBdCd || "";
   const studentDormNo = profile?.studentDormNo || dormInfo?.rawFields?.domstuNo || dormInfo?.rawFields?.domStuNo || "";
 
+  const phoneNumber =
+    profile?.phoneNumber ||
+    dormInfo?.rawFields?.handpNo ||
+    fallbackAcademic?.phoneNumber ||
+    fallbackAcademic?.rawFields?.handpNo ||
+    "";
+
+  const email =
+    profile?.email ||
+    dormInfo?.rawFields?.email ||
+    fallbackAcademic?.email ||
+    fallbackAcademic?.rawFields?.email ||
+    "";
+
+  const zipCode = profile?.zipCode || dormInfo?.rawFields?.zipNo || "";
+  const address = profile?.address || dormInfo?.rawFields?.addr || "";
+  const detailedAddress = profile?.detailedAddress || dormInfo?.rawFields?.detaAddr || "";
   const meritPoints = profile?.meritPoints ?? dormInfo?.meritPoints ?? dormInfo?.rawFields?.ardScr1 ?? "0";
   const demeritPoints = profile?.demeritPoints ?? dormInfo?.demeritPoints ?? dormInfo?.rawFields?.ardScr2 ?? "0";
   const nonOffsetDemeritPoints = profile?.nonOffsetDemeritPoints ?? dormInfo?.rawFields?.ardScr3 ?? "0";
@@ -898,14 +914,31 @@ const PortalDormitoryLabPage = () => {
         )}
 
         <ActionBar>
-          <ActionButton
-            as="button"
-            disabled={isLoading}
-            onClick={loadDormitoryInfo}
-          >
-            <RefreshCw size={14} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
-            {isLoading ? loadingMessage || "조회 중..." : "정보 새로고침"}
-          </ActionButton>
+          <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+            <ActionButton
+              as="button"
+              disabled={isLoading}
+              onClick={loadDormitoryInfo}
+              style={{ flex: 1 }}
+            >
+              <RefreshCw size={14} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
+              {isLoading ? loadingMessage || "조회 중..." : "정보 새로고침"}
+            </ActionButton>
+            <ActionButton
+              as="button"
+              onClick={() => navigate(ROUTES.DORMITORY_CARD)}
+              style={{
+                flex: 1,
+                backgroundColor: "#1d4ed8",
+                color: "#ffffff",
+                borderColor: "#1d4ed8",
+                fontWeight: 600,
+              }}
+            >
+              <CreditCard size={14} style={{ marginRight: 6 }} />
+              모바일 사생증
+            </ActionButton>
+          </div>
           {lastUpdated && (
             <UpdatedTimeText>
               <Clock size={12} />
@@ -914,60 +947,97 @@ const PortalDormitoryLabPage = () => {
           )}
         </ActionBar>
 
-        {/* 1. 상단 모바일 사생카드 */}
+        {/* 1. 상단 사생정보 카드 */}
         <SectionBlock>
           <SectionHeader>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="title">모바일 사생증</span>
-              {year && term ? (
-                <span className="term-badge">{year}년 {mapSemester(term)}학기</span>
-              ) : null}
-            </div>
-            <FullscreenCardBtn
-              type="button"
-              onClick={() => navigate(ROUTES.DORMITORY_CARD)}
-              title="모바일 사생증 전체화면 열기"
-            >
-              <Maximize2 size={13} strokeWidth={2.2} />
-              전체화면
-            </FullscreenCardBtn>
+            <span className="title">사생정보</span>
+            {year && term ? (
+              <span className="term-badge">{year}년 {mapSemester(term)}학기</span>
+            ) : null}
           </SectionHeader>
 
-          <CardClickWrapper
-            onClick={() => navigate(ROUTES.DORMITORY_CARD)}
-            title="탭하여 전체화면 사생증 보기"
-          >
-            <MobileDormitoryCard
-              studentName={studentName}
-              englishName={englishName}
-              studentId={studentId}
-              department={department}
-              grade={grade}
-              photoSrc={profilePhotoSrc}
-              dormitoryType={dormitoryType}
-              dormitoryBuilding={dormitoryBuilding || mappedDormName}
-              studentDormNo={studentDormNo}
-              year={year}
-              term={term}
-              status={inOutList[0]?.status ? mapInOutStatus(inOutList[0].status) : (profile ? "정규입사생" : "")}
-            />
-          </CardClickWrapper>
+          <CardContainer>
+            {/* 상단 프로필 헤더: 사진 + 핵심 신원 */}
+            <ProfileTopArea>
+              <AvatarWrapper>
+                {profilePhotoSrc ? (
+                  <img src={profilePhotoSrc} alt="사생 증명사진" className="avatar-img" />
+                ) : (
+                  <div className="avatar-placeholder">
+                    <User size={32} strokeWidth={1.5} />
+                    <span>미등록</span>
+                  </div>
+                )}
+              </AvatarWrapper>
 
-          {/* 상벌점 배지 영역 */}
-          <PointBar style={{ marginTop: 14 }}>
-            <PointChip>
-              <span className="title">상점</span>
-              <span className="score merit">{meritPoints}</span>
-            </PointChip>
-            <PointChip>
-              <span className="title">일반벌점</span>
-              <span className="score demerit">{demeritPoints}</span>
-            </PointChip>
-            <PointChip>
-              <span className="title">상쇄불가벌점</span>
-              <span className="score fixed">{nonOffsetDemeritPoints}</span>
-            </PointChip>
-          </PointBar>
+              <IdentityWrapper>
+                <div className="name-row">
+                  <span className="name">{studentName || "(이름 없음)"}</span>
+                  {englishName ? <span className="eng-name">{englishName}</span> : null}
+                </div>
+                {studentId ? <div className="student-id">학번: {studentId}</div> : null}
+                <div className="tags-row">
+                  {department ? <span className="tag">{department}</span> : null}
+                  {grade ? <span className="tag">{grade}</span> : null}
+                  {dormitoryBuilding ? <span className="tag highlight">{dormitoryBuilding}</span> : null}
+                </div>
+              </IdentityWrapper>
+            </ProfileTopArea>
+
+            {/* 상세 항목 리스트 (모바일 친화적인 키-값 그리드) */}
+            <InfoGrid>
+              <InfoCell>
+                <span className="label">기숙사구분</span>
+                <span className="value">{dormitoryType || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">건물구분</span>
+                <span className="value">{dormitoryBuilding || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">사생번호</span>
+                <span className="value">{studentDormNo || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">성별 / 국적</span>
+                <span className="value">
+                  {gender || "-"}{nationality ? ` / ${nationality}` : ""}
+                </span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">휴대전화번호</span>
+                <span className="value">{phoneNumber || "-"}</span>
+              </InfoCell>
+              <InfoCell>
+                <span className="label">이메일</span>
+                <span className="value">{email || "-"}</span>
+              </InfoCell>
+              <InfoCell fullWidth>
+                <span className="label">거주지 주소</span>
+                <span className="value">
+                  {zipCode ? `[${zipCode}] ` : ""}
+                  {address || ""} {detailedAddress || ""}
+                  {!zipCode && !address && !detailedAddress ? "-" : ""}
+                </span>
+              </InfoCell>
+            </InfoGrid>
+
+            {/* 상벌점 배지 영역 */}
+            <PointBar>
+              <PointChip>
+                <span className="title">상점</span>
+                <span className="score merit">{meritPoints}</span>
+              </PointChip>
+              <PointChip>
+                <span className="title">일반벌점</span>
+                <span className="score demerit">{demeritPoints}</span>
+              </PointChip>
+              <PointChip>
+                <span className="title">상쇄불가벌점</span>
+                <span className="score fixed">{nonOffsetDemeritPoints}</span>
+              </PointChip>
+            </PointBar>
+          </CardContainer>
         </SectionBlock>
 
         {/* 2. 하단 7개 탭 네비게이션 */}
@@ -1871,38 +1941,140 @@ const SectionHeader = styled.div`
   }
 `;
 
-const FullscreenCardBtn = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  transition: all 0.15s ease;
+const CardContainer = styled.div`
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+`;
 
-  &:hover {
-    background-color: #e2e8f0;
-    color: #0f172a;
+const ProfileTopArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background-color: var(--bg-base);
+  border-bottom: 1px solid var(--bg-base);
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const AvatarWrapper = styled.div`
+  width: 76px;
+  height: 98px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  &:active {
-    transform: scale(0.97);
+  .avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-tertiary);
+    font-size: 10px;
   }
 `;
 
-const CardClickWrapper = styled.div`
-  cursor: pointer;
-  width: 100%;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+const IdentityWrapper = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 
-  &:active {
-    transform: scale(0.99);
-    opacity: 0.95;
+  .name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+
+    .name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .eng-name {
+      font-size: 12px;
+      color: var(--gray-600);
+    }
+  }
+
+  .student-id {
+    font-size: 12px;
+    color: var(--gray-700);
+    font-weight: 500;
+  }
+
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+
+    .tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background-color: var(--bg-muted);
+      color: var(--text-secondary);
+
+      &.highlight {
+        background-color: var(--bg-brand);
+        color: var(--text-brand);
+        font-weight: 600;
+      }
+    }
+  }
+`;
+
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  gap: 10px 14px;
+
+  @media (max-width: 380px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+`;
+
+const InfoCell = styled.div<{ fullWidth?: boolean }>`
+  grid-column: ${({ fullWidth }) => (fullWidth ? "1 / -1" : "auto")};
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+
+  .label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .value {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+    word-break: break-all;
   }
 `;
 
