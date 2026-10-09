@@ -13,17 +13,18 @@ const SwitchContainer = styled(HeadlessSwitch)<{ checked: boolean }>`
   align-items: center;
   height: 24px;
   width: 44px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   border: none;
   transition: background-color 0.2s ease-in-out;
-  background-color: ${({ checked }) => (checked ? "#0A84FF" : "#A2A1A5")};
+  background-color: ${({ checked }) =>
+    checked ? "var(--interactive-primary)" : "var(--gray-400)"};
 `;
 
 const SwitchHandle = styled.span<{ checked: boolean }>`
   position: relative;
   height: 16px;
   width: 16px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background-color: var(--bg-base);
   transform: ${({ checked }) =>
     checked ? "translateX(24px)" : "translateX(4px)"};

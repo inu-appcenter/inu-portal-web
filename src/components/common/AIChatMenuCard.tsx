@@ -34,8 +34,8 @@ export default function AIChatMenuCard({
         )}
       <MenuCard $open={open}>
         <MenuRow type="button" onClick={onSelectAgent}>
-          <IconCircle $bg="#eff6ff">
-            <Sparkles size={18} color="#0061ff" />
+          <IconCircle $bg="var(--blue-50)">
+            <Sparkles size={18} color="var(--blue-600)" />
           </IconCircle>
           <TextGroup>
             <TitleRow>

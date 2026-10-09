@@ -87,11 +87,11 @@ export default function PortalLinkBanner({
     <BannerWrapper style={style} className={className}>
       {!hideCloseButton && (
         <CloseButton onClick={handleClose} type="button" aria-label="닫기">
-          <X size={15} color="#8b95a1" />
+          <X size={15} color="var(--text-tertiary)" />
         </CloseButton>
       )}
       <IconBox>
-        {inApp ? <KeyRound size={20} color="#0061ff" /> : <Smartphone size={20} color="#0061ff" />}
+        {inApp ? <KeyRound size={20} color="var(--text-brand)" /> : <Smartphone size={20} color="var(--text-brand)" />}
       </IconBox>
       <TextContent>
         <Title>{resolvedTitle}</Title>

@@ -29,7 +29,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
   height = "68px",
   gap = "10px",
   padding = "10px 16px",
-  containerBackgroundColor = "#ffffff",
+  containerBackgroundColor = "var(--bg-base)",
   position = "fixed",
 }) => {
   const paddingVal = padding.split(" ")[0];
@@ -46,8 +46,8 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
       >
         <GroupButton
           $flex={leftButton.flex || 1}
-          $backgroundColor={leftButton.backgroundColor || "#e5e7eb"}
-          $textColor={leftButton.textColor || "#374151"}
+          $backgroundColor={leftButton.backgroundColor || "var(--gray-200)"}
+          $textColor={leftButton.textColor || "var(--gray-700)"}
           $disabled={leftButton.disabled}
           onClick={leftButton.onClick}
           disabled={leftButton.disabled}
@@ -57,8 +57,8 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
         </GroupButton>
         <GroupButton
           $flex={rightButton.flex || 1}
-          $backgroundColor={rightButton.backgroundColor || "#3b82f6"}
-          $textColor={rightButton.textColor || "#ffffff"}
+          $backgroundColor={rightButton.backgroundColor || "var(--interactive-primary)"}
+          $textColor={rightButton.textColor || "var(--text-inverse)"}
           $disabled={rightButton.disabled}
           onClick={rightButton.onClick}
           disabled={rightButton.disabled}
