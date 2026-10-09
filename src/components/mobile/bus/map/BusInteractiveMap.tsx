@@ -398,7 +398,7 @@ export default function BusInteractiveMap({
       const polyline = new window.kakao.maps.Polyline({
         path,
         strokeWeight: 5,
-        strokeColor: "#2f6fe4",
+        strokeColor: "rgb(47, 111, 228)",
         strokeOpacity: 0.92,
         strokeStyle: "solid",
       });
@@ -464,7 +464,7 @@ export default function BusInteractiveMap({
 
   if (loading) {
     return (
-      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "var(--text-tertiary)", fontSize: "14px" }}>
         지도를 불러오는 중입니다...
       </MapShell>
     );
@@ -472,7 +472,7 @@ export default function BusInteractiveMap({
 
   if (error) {
     return (
-      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+      <MapShell style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "var(--text-error)", fontSize: "14px" }}>
         지도를 불러오는 데 실패했습니다.
       </MapShell>
     );

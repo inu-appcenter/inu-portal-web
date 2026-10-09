@@ -57,7 +57,7 @@ export default function BusItem({
                     <StatusInfo>
                       {stationText === "시간표 기반" ||
                       stationText === "통계 추정" ? (
-                        <span style={{ color: "#4f46e5", fontWeight: 600 }}>
+                        <span style={{ color: "var(--interactive-primary)", fontWeight: 600 }}>
                           ⏱️ 시간표 기반
                         </span>
                       ) : (
@@ -100,7 +100,7 @@ const TopSection = styled.div``;
 const RouteText = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
 `;
 
 const MainSection = styled.div`
@@ -150,11 +150,11 @@ const StatusText = styled.span<{ $status?: string }>`
   color: ${({ $status }) => {
     switch ($status) {
       case "여유":
-        return "#006F1E";
+        return "var(--border-success)";
       case "보통":
-        return "#0E4D9D";
+        return "var(--text-brand)";
       case "혼잡":
-        return "#D10000";
+        return "var(--text-error)";
       default:
         return "inherit";
     }
@@ -163,5 +163,5 @@ const StatusText = styled.span<{ $status?: string }>`
 
 const LastBus = styled.span`
   font-weight: 500;
-  color: red;
+  color: var(--text-error);
 `;

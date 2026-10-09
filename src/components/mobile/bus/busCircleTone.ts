@@ -6,9 +6,9 @@ export type BusCircleTone = "default" | "green" | "red";
 
 /** 노선 번호 색. 인입런 페이지·홈 버스 위젯·Daily Brief가 모두 이 값을 쓴다. */
 export const BUS_TONE_COLOR: Record<BusCircleTone, string> = {
-  default: "#1b4e9b",
-  green: "#2c9b37",
-  red: "#d64a3a",
+  default: "rgb(27, 78, 155)",
+  green: "rgb(44, 155, 55)",
+  red: "rgb(214, 74, 58)",
 };
 
 export function getBusCircleTone(number: string): BusCircleTone {
