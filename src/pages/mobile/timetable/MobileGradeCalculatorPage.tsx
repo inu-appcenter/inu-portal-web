@@ -267,7 +267,7 @@ const CustomXAxisTick = (props: any) => {
         x={0}
         y={12}
         textAnchor="middle"
-        fill="#8b95a1"
+        fill="var(--gray-500)"
         fontSize={fontSize}
         fontWeight={500}
       >
@@ -278,7 +278,7 @@ const CustomXAxisTick = (props: any) => {
           x={0}
           y={12 + fontSize + 3}
           textAnchor="middle"
-          fill="#8b95a1"
+          fill="var(--gray-500)"
           fontSize={fontSize}
           fontWeight={500}
         >
@@ -322,7 +322,7 @@ const GpaPointLabel = (props: {
         width={width}
         height={height}
         rx={9}
-        fill="#ffffff"
+        fill="var(--text-inverse)"
         stroke={color}
         strokeWidth={1}
       />
@@ -330,7 +330,7 @@ const GpaPointLabel = (props: {
         x={width / 2}
         y={height / 2 + 3.5}
         textAnchor="middle"
-        fill="#333d4b"
+        fill="var(--gray-800)"
         fontSize={10}
         fontWeight={700}
       >
@@ -364,7 +364,7 @@ const GpaPointDot = (props: {
       <circle cx={cx} cy={cy} r={16} fill="transparent" />
       {/* 선택된 점은 흰 링을 한 겹 둘러 배경선과 구분되게 키운다. */}
       {isActive && (
-        <circle cx={cx} cy={cy} r={7} fill="#ffffff" stroke={color} strokeWidth={2} />
+        <circle cx={cx} cy={cy} r={7} fill="var(--text-inverse)" stroke={color} strokeWidth={2} />
       )}
       <circle cx={cx} cy={cy} r={isActive ? 4 : 3.5} fill={color} />
     </g>
@@ -1441,11 +1441,11 @@ export default function MobileGradeCalculatorPage() {
                   // 뜨는 말풍선이 잘리지 않을 만큼 남긴다.
                   margin={{ top: 12, right: 4, left: 0, bottom: 30 }}
                 >
-                  <ReferenceLine y={4.5} stroke="#e5e8eb" strokeWidth={1} />
-                  <ReferenceLine y={4.0} stroke="#e5e8eb" strokeWidth={1} />
-                  <ReferenceLine y={3.5} stroke="#e5e8eb" strokeWidth={1} />
-                  <ReferenceLine y={3.0} stroke="#e5e8eb" strokeWidth={1} />
-                  <ReferenceLine y={2.0} stroke="#e5e8eb" strokeWidth={1} />
+                  <ReferenceLine y={4.5} stroke="var(--border-default)" strokeWidth={1} />
+                  <ReferenceLine y={4.0} stroke="var(--border-default)" strokeWidth={1} />
+                  <ReferenceLine y={3.5} stroke="var(--border-default)" strokeWidth={1} />
+                  <ReferenceLine y={3.0} stroke="var(--border-default)" strokeWidth={1} />
+                  <ReferenceLine y={2.0} stroke="var(--border-default)" strokeWidth={1} />
 
                   <XAxis
                     dataKey="name"
@@ -1463,7 +1463,7 @@ export default function MobileGradeCalculatorPage() {
                     width={28}
                     interval={0}
                     tickFormatter={(val) => val.toFixed(1)}
-                    tick={{ fill: "#8b95a1", fontSize: 11, fontWeight: 500 }}
+                    tick={{ fill: "var(--gray-500)", fontSize: 11, fontWeight: 500 }}
                   />
                   <Line
                     type="linear"
@@ -1570,7 +1570,7 @@ export default function MobileGradeCalculatorPage() {
                   onClick={handleOpenPortalGradeConfirm}
                   disabled={isFetchingPortalGrades}
                 >
-                  <School size={16} className="calendar-icon" color="#0061ff" />
+                  <School size={16} className="calendar-icon" color="var(--interactive-primary)" />
                   <span className="import-text">
                     {isFetchingPortalGrades ? "가져오는 중..." : "포털에서 성적 가져오기"}
                   </span>
@@ -1682,7 +1682,7 @@ export default function MobileGradeCalculatorPage() {
                               >
                                 <path
                                   d="M20 6L9 17L4 12"
-                                  stroke="#FFFFFF"
+                                  stroke="var(--text-inverse)"
                                   strokeWidth="3"
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
@@ -1864,7 +1864,7 @@ export default function MobileGradeCalculatorPage() {
         <PortalModalContent>
           <PortalNoticeCard>
             <NoticeTitleRow>
-              <AlertCircle size={15} color="#0061ff" />
+              <AlertCircle size={15} color="var(--interactive-primary)" />
               <span>기존 데이터 덮어쓰기 안내</span>
             </NoticeTitleRow>
             <NoticeDescText>

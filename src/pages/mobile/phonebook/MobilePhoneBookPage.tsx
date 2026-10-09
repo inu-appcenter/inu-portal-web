@@ -393,9 +393,9 @@ const BannerVisual = styled.div`
     content: "";
     position: absolute;
     inset: 0;
-    border-top: 3px solid #111;
-    border-left: 3px solid #111;
-    border-right: 3px solid #111;
+    border-top: 3px solid var(--text-primary);
+    border-left: 3px solid var(--text-primary);
+    border-right: 3px solid var(--text-primary);
     border-top-left-radius: ${BANNER_PHONE_RADIUS};
     border-top-right-radius: ${BANNER_PHONE_RADIUS};
     pointer-events: none;
@@ -471,11 +471,11 @@ const LogoInfoContent = styled(motion.div)`
 
     span {
       font-weight: 700;
-      color: #2b6cb0;
+      color: rgb(43, 108, 176);
     }
 
     .highlight {
-      color: #4a90e2;
+      color: rgb(74, 144, 226);
     }
   }
 `;

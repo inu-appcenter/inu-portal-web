@@ -455,7 +455,7 @@ const HeroTitleBlock = styled.div`
 
 const HeroTitle = styled.h1`
   margin: 0;
-  color: #2456ad;
+  color: rgb(36, 86, 173);
   font-size: 28px;
   font-weight: 800;
   line-height: 1.2;
@@ -479,7 +479,7 @@ const HeroBadge = styled.span`
   padding: 0 12px;
   border-radius: 999px;
   background: rgba(59, 130, 246, 0.14);
-  color: #4a74c9;
+  color: rgb(74, 116, 201);
   font-size: 12px;
   font-weight: 700;
 `;
@@ -530,7 +530,7 @@ const RichTextValue = styled.div`
   white-space: pre-wrap;
 
   a {
-    color: #2f5fb3;
+    color: rgb(47, 95, 179);
     text-decoration: none;
   }
 `;
@@ -545,7 +545,7 @@ const CopyIconButton = styled.button`
   border-radius: 999px;
   padding: 0;
   background: var(--bg-subtle);
-  color: #2f5fb3;
+  color: rgb(47, 95, 179);
   cursor: pointer;
   flex-shrink: 0;
   align-self: center;
@@ -580,7 +580,7 @@ const EmptyActionLink = styled(Link)`
   border-radius: 999px;
   padding: 12px 18px;
   background: var(--bg-brand);
-  color: #2f5fb3;
+  color: rgb(47, 95, 179);
   text-decoration: none;
   font-size: 14px;
   font-weight: 700;

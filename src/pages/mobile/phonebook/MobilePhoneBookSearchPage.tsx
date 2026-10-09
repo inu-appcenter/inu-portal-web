@@ -567,7 +567,7 @@ const ResultTitle = styled.h3`
   margin: 0;
   font-size: 14px;
   font-weight: 800;
-  color: #2456ad;
+  color: rgb(36, 86, 173);
   line-height: 1.35;
   word-break: keep-all;
 `;
@@ -605,7 +605,7 @@ const SkeletonCard = styled.div`
 
   div {
     border-radius: 999px;
-    background: linear-gradient(90deg, #eef2f8 0%, #f7f9fc 50%, #eef2f8 100%);
+    background: linear-gradient(90deg, rgb(238, 242, 248) 0%, rgb(247, 249, 252) 50%, rgb(238, 242, 248) 100%);
     background-size: 200% 100%;
     animation: pulse 1.4s ease-in-out infinite;
   }
@@ -655,7 +655,7 @@ const LoadMoreButton = styled.button`
   border-radius: 14px;
   padding: 14px 16px;
   background: var(--bg-brand);
-  color: #2f5fb3;
+  color: rgb(47, 95, 179);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
