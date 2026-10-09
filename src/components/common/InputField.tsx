@@ -189,7 +189,7 @@ const StyledTextArea = styled.textarea`
   outline: none;
   font-size: 15px;
   font-weight: 500;
-  color: var(--gray-800);
+  color: var(--text-secondary);
   padding: 0;
   width: 100%;
   resize: none;
@@ -203,7 +203,7 @@ const StyledTextArea = styled.textarea`
 
 const ErrorMessage = styled.span`
   color: var(--text-error);
-  font-size: 11px;
+  font-size: var(--caption-1-font-size);
   margin-top: 4px;
   text-align: left;
 `;
