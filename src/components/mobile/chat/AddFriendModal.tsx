@@ -126,19 +126,21 @@ export default function AddFriendModal({
               )}
             </ResultArea>
 
-            <FloatingSearchBar
-              value={nicknameInput}
-              onChange={(val) => {
-                setNicknameInput(val);
-                if (searchResult) setSearchResult(null);
-              }}
-              onSubmit={handleSearch}
-              onSearch={handleSearch}
-              placeholder="닉네임을 입력하세요."
-              isActive={true}
-              disableCollapse={true}
-              disableHistory={true}
-            />
+            <SearchBarContainer>
+              <FloatingSearchBar
+                value={nicknameInput}
+                onChange={(val) => {
+                  setNicknameInput(val);
+                  if (searchResult) setSearchResult(null);
+                }}
+                onSubmit={handleSearch}
+                onSearch={handleSearch}
+                placeholder="닉네임을 입력하세요."
+                isActive={true}
+                disableCollapse={true}
+                disableHistory={true}
+              />
+            </SearchBarContainer>
           </Content>
         </StyledContent>
       </Dialog.Portal>
@@ -258,3 +260,10 @@ const SubmitButton = styled.button`
     opacity: 0.9;
   }
 `;
+
+const SearchBarContainer = styled.div`
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 12px;
+`;
+
