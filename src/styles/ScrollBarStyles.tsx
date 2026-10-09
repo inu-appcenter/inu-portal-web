@@ -12,12 +12,12 @@ const ScrollBarStyles = createGlobalStyle`
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #82ADE899;
+      background: rgba(130, 173, 232, 0.6);
       border-radius: 5px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #82ADE8FF;
+      background: rgba(130, 173, 232, 1);
     }
   }
 `;

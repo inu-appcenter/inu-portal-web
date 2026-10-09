@@ -147,7 +147,7 @@ export const router = createBrowserRouter([
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
-        element: <SubLayout showNav={false} backgroundColor="#fff" />,
+        element: <SubLayout showNav={false} backgroundColor="var(--bg-base)" />,
         children: [
           // 채팅
           { path: "/chat/:roomId", element: <ChattingPage /> },
@@ -399,7 +399,7 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        element: <FullscreenSubLayout backgroundColor="#ffffff" />,
+        element: <FullscreenSubLayout backgroundColor="var(--bg-base)" />,
         children: [
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
           { path: "/agent", element: <AgentPage /> },

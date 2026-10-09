@@ -8,7 +8,7 @@
  * map/markers/의 "이름으로 조회하지 않는 고정 에셋" named export 배럴이 더
  * 정직한 선례다.
  *
- * 또한 각 파일이 여러 fill 색(#9CAFE2, #4071B9 등)을 쓰는 다색 일러스트라
+ * 또한 각 파일이 여러 fill 색(9CAFE2, 4071B9 등)을 쓰는 다색 일러스트라
  * icons/가 아니라 illustrations/에 둔다(단색 currentColor 변환 대상 아님).
  * menu.svg는 data:image base64 래스터 임베드(가짜 SVG)라 currentColor 자체가
  * 불가능하다.
