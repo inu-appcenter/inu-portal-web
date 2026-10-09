@@ -115,7 +115,7 @@ const ListboxButton = styled(Listbox.Button)`
 
   &:focus {
     outline: none;
-    border-color: #0d9488;
+    border-color: rgb(13, 148, 136);
     box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
   }
 `;
@@ -167,7 +167,7 @@ const OptionItem = styled.div<{ $active: boolean }>`
   user-select: none;
   padding: 10px 12px;
   border-radius: 10px;
-  background-color: ${({ $active }) => ($active ? "#f0fdfa" : "transparent")};
+  background-color: ${({ $active }) => ($active ? "rgb(240, 253, 250)" : "transparent")};
   transition: background-color 0.2s;
 `;
 
@@ -189,7 +189,7 @@ const OptionLabel = styled.span<{ $selected: boolean }>`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: ${({ $selected }) => ($selected ? "700" : "500")};
-  color: ${({ $selected }) => ($selected ? "#0d9488" : "var(--text-primary)")};
+  color: ${({ $selected }) => ($selected ? "rgb(13, 148, 136)" : "var(--text-primary)")};
   font-size: 0.95rem;
 `;
 
@@ -202,6 +202,6 @@ const OptionDesc = styled.span`
 const CheckIconWrapper = styled.span`
   display: flex;
   align-items: center;
-  color: #0d9488;
+  color: rgb(13, 148, 136);
   margin-left: 12px;
 `;
