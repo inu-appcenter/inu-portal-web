@@ -616,7 +616,7 @@ const LectureReviewButton = styled(BaseFooterButton)`
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    background: #fff4d1;
+    background: var(--yellow-100);
   }
 `;
 

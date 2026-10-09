@@ -156,7 +156,7 @@ export default function TimeTableCreateModal({
             onOpenPortalImport(currentLabel);
           }}
         >
-          <School size={16} color="#0061ff" />
+          <School size={16} color="var(--branding-brand-blue)" />
           <span>포털에서 시간표 및 성적 바로 불러오기</span>
         </PortalShortcutButton>
       )}

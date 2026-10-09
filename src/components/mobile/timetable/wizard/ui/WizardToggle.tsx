@@ -11,7 +11,7 @@ interface WizardToggleProps {
 }
 
 /**
- * 48×30 스위치 (Figma Toggle). 공용 Switch(44×24, #0A84FF)와 치수·색이 달라 따로 둔다.
+ * 48×30 스위치 (Figma Toggle). 공용 Switch(44×24)와 치수·색이 달라 따로 둔다.
  * 노브 22px, 가장자리 4px, 그림자 0 1 3 rgba(0,0,0,.12)는 시안 SVG 값.
  */
 const WizardToggle = ({

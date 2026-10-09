@@ -127,11 +127,11 @@ const CourseTimeSelector = ({
           {/* 첫 일정은 삭제 불가 — 항상 최소 1개 슬롯이 남는다 */}
           {index > 0 && (
             <IconButton onClick={onRemove} type="button">
-              <Icon name="remove-minus" size={20} color="#8b95a1" />
+              <Icon name="remove-minus" size={20} color="var(--gray-500)" />
             </IconButton>
           )}
           <IconButton onClick={onAdd} type="button">
-            <Icon name="add-plus-sm" size={20} color="#8b95a1" />
+            <Icon name="add-plus-sm" size={20} color="var(--gray-500)" />
           </IconButton>
         </ActionButtons>
       </SelectorHeader>

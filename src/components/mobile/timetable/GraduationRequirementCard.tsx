@@ -473,7 +473,7 @@ const ProgressCaption = styled.span<{ $satisfied: boolean }>`
   font-size: 12px;
   color: ${({ $satisfied }) =>
     $satisfied
-      ? "#15803d"
+      ? "var(--border-success)"
       : "var(--text-tertiary)"};
 `;
 
@@ -561,7 +561,7 @@ const CourseStatus = styled.div<{ $status: string }>`
   flex-shrink: 0;
   font-size: 12px;
   color: ${({ $status }) => {
-    if ($status === "DONE") return "#15803d";
+    if ($status === "DONE") return "var(--border-success)";
     if ($status === "MISSING") return "var(--text-error)";
     return "var(--text-tertiary)";
   }};

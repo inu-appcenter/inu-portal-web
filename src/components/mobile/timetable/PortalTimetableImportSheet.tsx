@@ -503,7 +503,7 @@ export default function PortalTimetableImportSheet({
         <Container>
           <Header>
             <TitleRow>
-              <School size={22} color="#0061ff" />
+              <School size={22} color="var(--branding-brand-blue)" />
               <Title>시간표 및 성적 가져오기</Title>
             </TitleRow>
             <SubTitle>
@@ -523,7 +523,7 @@ export default function PortalTimetableImportSheet({
                 }}
               >
                 <ImageImportLinkLeft>
-                  <ScanLine size={18} color="#0061ff" />
+                  <ScanLine size={18} color="var(--branding-brand-blue)" />
                   <div>
                     <ImageImportLinkTitle>
                       시간표 이미지(캡처)로 등록하기
@@ -533,7 +533,7 @@ export default function PortalTimetableImportSheet({
                     </ImageImportLinkSub>
                   </div>
                 </ImageImportLinkLeft>
-                <ChevronRight size={18} color="#8b95a1" />
+                <ChevronRight size={18} color="var(--gray-500)" />
               </ImageImportLinkCard>
 
               <SectionGroup>
@@ -557,7 +557,7 @@ export default function PortalTimetableImportSheet({
                       >
                         <Checkbox $checked={isChecked}>
                           {isChecked && (
-                            <Check size={14} color="#ffffff" strokeWidth={3} />
+                            <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
                           )}
                         </Checkbox>
                         <SemesterLabelText>{sem.label}</SemesterLabelText>
@@ -604,14 +604,14 @@ export default function PortalTimetableImportSheet({
 
               {errorMessage && (
                 <ErrorBox>
-                  <AlertCircle size={16} color="#f04452" />
+                  <AlertCircle size={16} color="var(--text-error)" />
                   <span>{errorMessage}</span>
                 </ErrorBox>
               )}
 
               <InfoBanner>
                 <InfoBannerIcon>
-                  <School size={16} color="#0061ff" />
+                  <School size={16} color="var(--branding-brand-blue)" />
                 </InfoBannerIcon>
                 <InfoBannerText>
                   로그인 정보는 기기 보안 영역(Keystore)에만 안전하게 보관돼요.
@@ -677,7 +677,7 @@ export default function PortalTimetableImportSheet({
                           >
                             <Checkbox $checked={isGroupAllSelected}>
                               {isGroupAllSelected && (
-                                <Check size={14} color="#ffffff" strokeWidth={3} />
+                                <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
                               )}
                             </Checkbox>
                           </GroupCheckboxSlot>
@@ -689,9 +689,9 @@ export default function PortalTimetableImportSheet({
 
                         <ExpandIconSlot>
                           {group.isExpanded ? (
-                            <ChevronUp size={18} color="#8b95a1" />
+                            <ChevronUp size={18} color="var(--gray-500)" />
                           ) : (
-                            <ChevronDown size={18} color="#8b95a1" />
+                            <ChevronDown size={18} color="var(--gray-500)" />
                           )}
                         </ExpandIconSlot>
                       </GroupHeaderRow>
@@ -712,7 +712,7 @@ export default function PortalTimetableImportSheet({
                                   {c.isSelected && (
                                     <Check
                                       size={14}
-                                      color="#ffffff"
+                                      color="var(--text-inverse)"
                                       strokeWidth={3}
                                     />
                                   )}
@@ -806,7 +806,7 @@ export default function PortalTimetableImportSheet({
           {step === "ASK_GRADE_IMPORT" && (
             <GradePromptContent>
               <PromptBadge>
-                <Sparkles size={16} color="#0061ff" />
+                <Sparkles size={16} color="var(--branding-brand-blue)" />
                 <span>시간표 등록 완료</span>
               </PromptBadge>
 
@@ -820,7 +820,7 @@ export default function PortalTimetableImportSheet({
               <PromptFeatureCard>
                 <FeatureItem>
                   <FeatureIconBox>
-                    <GraduationCap size={18} color="#0061ff" />
+                    <GraduationCap size={18} color="var(--branding-brand-blue)" />
                   </FeatureIconBox>
                   <FeatureTextBox>
                     <FeatureTextTitle>전 학기 과목 및 평점 자동 등록</FeatureTextTitle>
@@ -831,7 +831,7 @@ export default function PortalTimetableImportSheet({
                 </FeatureItem>
                 <FeatureItem>
                   <FeatureIconBox>
-                    <CheckCircle2 size={18} color="#0061ff" />
+                    <CheckCircle2 size={18} color="var(--branding-brand-blue)" />
                   </FeatureIconBox>
                   <FeatureTextBox>
                     <FeatureTextTitle>안전한 기기 내 포털 조회</FeatureTextTitle>
@@ -865,7 +865,7 @@ export default function PortalTimetableImportSheet({
           {step === "GRADE_SUCCESS" && (
             <GradeSuccessContent>
               <SuccessIconCircle>
-                <CheckCircle2 size={36} color="#0061ff" />
+                <CheckCircle2 size={36} color="var(--branding-brand-blue)" />
               </SuccessIconCircle>
               <SuccessTitle>성적 연동이 완료되었어요!</SuccessTitle>
               <SuccessDesc>
@@ -1021,7 +1021,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "#b0b8c1")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-strong)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1239,7 +1239,7 @@ const Checkbox = styled.div<{ $checked?: boolean; $disabled?: boolean }>`
   border-radius: 6px;
   border: 1.5px solid
     ${({ $checked, $disabled }) =>
-      $disabled ? "var(--border-strong)" : $checked ? "var(--border-brand)" : "#b0b8c1"};
+      $disabled ? "var(--border-strong)" : $checked ? "var(--border-brand)" : "var(--border-strong)"};
   background-color: ${({ $checked, $disabled }) =>
     $disabled ? "var(--bg-disabled)" : $checked ? "var(--interactive-primary)" : "transparent"};
   display: flex;
@@ -1280,9 +1280,9 @@ const Badge = styled.span<{
   ${({ $variant }) => {
     switch ($variant) {
       case "success":
-        return "background-color: #e8f8f0; color: #1b633d;";
+        return "background-color: rgba(16, 185, 129, 0.12); color: var(--border-success);";
       case "warning":
-        return "background-color: var(--bg-warn); color: #d97706;";
+        return "background-color: var(--bg-warn); color: var(--text-warn);";
       case "danger":
         return "background-color: var(--bg-error); color: var(--text-error);";
       case "muted":

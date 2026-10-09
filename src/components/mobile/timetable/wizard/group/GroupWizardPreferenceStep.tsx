@@ -197,8 +197,8 @@ const WarningInline = styled.div`
   padding: 10px 12px;
   border-radius: 10px;
   background: var(--bg-warn);
-  border: 1px solid #fdd9aa;
-  color: #d97706;
+  border: 1px solid var(--border-warn);
+  color: var(--text-warn);
   font-size: 12px;
   font-weight: 400;
   line-height: 18px;

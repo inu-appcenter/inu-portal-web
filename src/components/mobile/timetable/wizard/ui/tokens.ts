@@ -5,9 +5,9 @@ import { css } from "styled-components";
 
 /** 시안에 토큰 없이 hex로만 들어간 성공(조건 충족) 색 */
 export const WIZARD_SUCCESS = {
-  bg: "#ecf8f2",
-  border: "#d1f3e2",
-  text: "#219e73",
+  bg: "rgb(236, 248, 242)",
+  border: "rgb(209, 243, 226)",
+  text: "rgb(33, 158, 115)",
 } as const;
 
 /** 버튼 리셋. 각 컴포넌트가 배경·테두리를 다시 정한다 */
