@@ -203,7 +203,7 @@ export default function MobileSmartWatchManagementPage() {
       <HubSection>
         <HubCard onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
           <HubLeft>
-            <HubIconWrapper $bg="#eff6ff" $color="#2563eb">
+            <HubIconWrapper $bg="rgb(239, 246, 255)" $color="var(--primary)">
               <BookOpen size={18} />
             </HubIconWrapper>
             <HubContent>
@@ -211,12 +211,12 @@ export default function MobileSmartWatchManagementPage() {
               <HubDesc>열람실 잔여석 확인 및 빈자리 알림 신청</HubDesc>
             </HubContent>
           </HubLeft>
-          <ChevronRight size={18} color="#94a3b8" />
+          <ChevronRight size={18} color="var(--button-inactive)" />
         </HubCard>
 
         <HubCard onClick={() => navigate(ROUTES.SERVICES.LMS)}>
           <HubLeft>
-            <HubIconWrapper $bg="#f0fdf4" $color="#16a34a">
+            <HubIconWrapper $bg="rgb(240, 253, 244)" $color="var(--text-success)">
               <GraduationCap size={18} />
             </HubIconWrapper>
             <HubContent>
@@ -224,7 +224,7 @@ export default function MobileSmartWatchManagementPage() {
               <HubDesc>수강 강좌 및 과제 마감 일정 확인</HubDesc>
             </HubContent>
           </HubLeft>
-          <ChevronRight size={18} color="#94a3b8" />
+          <ChevronRight size={18} color="var(--button-inactive)" />
         </HubCard>
       </HubSection>
 
@@ -240,7 +240,7 @@ export default function MobileSmartWatchManagementPage() {
       {activeJobs.length > 0 && (
         <FilterArea>
           <SearchBox>
-            <Search size={16} color="#8b95a1" />
+            <Search size={16} color="var(--gray-500)" />
             <SearchInput
               type="text"
               placeholder="알림 대상 또는 열람실/과목명 검색"
@@ -288,7 +288,7 @@ export default function MobileSmartWatchManagementPage() {
         </JobList>
       ) : !isMobileAppEnvironment() ? (
         <EmptyBox>
-          <Smartphone size={32} color="#0061ff" />
+          <Smartphone size={32} color="var(--interactive-primary)" />
           <EmptyText>INTIP 모바일 앱에서 이용할 수 있어요</EmptyText>
           <EmptySubText>
             도서관 빈자리 알림 및 과제 마감 리마인더는 INTIP 모바일 앱에서 제공돼요.
@@ -303,7 +303,7 @@ export default function MobileSmartWatchManagementPage() {
         </EmptyBox>
       ) : activeJobs.length === 0 ? (
         <EmptyBox>
-          <Bell size={28} color="#94a3b8" />
+          <Bell size={28} color="var(--button-inactive)" />
           <EmptyText>진행 중인 알림이 없어요</EmptyText>
           <EmptySubText>
             도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
@@ -311,7 +311,7 @@ export default function MobileSmartWatchManagementPage() {
         </EmptyBox>
       ) : filteredActiveJobs.length === 0 ? (
         <EmptyBox>
-          <Search size={28} color="#94a3b8" />
+          <Search size={28} color="var(--button-inactive)" />
           <EmptyText>일치하는 알림이 없어요</EmptyText>
           <EmptySubText>검색어나 필터 조건을 변경해보세요.</EmptySubText>
         </EmptyBox>
@@ -705,8 +705,8 @@ const SourceBadge = styled.span<{ $isServer: boolean }>`
   font-weight: 600;
   padding: 3px 7px;
   border-radius: 6px;
-  background: ${({ $isServer }) => ($isServer ? "#f0fdf4" : "var(--bg-brand)")};
-  color: ${({ $isServer }) => ($isServer ? "#16a34a" : "#7c3aed")};
+  background: ${({ $isServer }) => ($isServer ? "rgb(240, 253, 244)" : "var(--bg-brand)")};
+  color: ${({ $isServer }) => ($isServer ? "var(--text-success)" : "rgb(124, 58, 237)")};
 `;
 
 const RemainingTimeBadge = styled.div`
@@ -715,7 +715,7 @@ const RemainingTimeBadge = styled.div`
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: #d97706;
+  color: rgb(217, 119, 6);
 `;
 
 const TargetName = styled.div`
@@ -798,6 +798,6 @@ const StatusTag = styled.span<{ $status: string }>`
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-  background: ${({ $status }) => ($status === "NOTIFIED" ? "#dcfce7" : "var(--bg-muted)")};
-  color: ${({ $status }) => ($status === "NOTIFIED" ? "#15803d" : "var(--gray-600)")};
+  background: ${({ $status }) => ($status === "NOTIFIED" ? "rgb(220, 252, 231)" : "var(--bg-muted)")};
+  color: ${({ $status }) => ($status === "NOTIFIED" ? "rgb(21, 128, 61)" : "var(--gray-600)")};
 `;

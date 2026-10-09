@@ -149,7 +149,7 @@ export default function MobileFriendInvitePage() {
             }}
           />
           <DefaultIconArea>
-            <Icon name="user-02" size={32} color="#D6D1D5" />
+            <Icon name="user-02" size={32} color="var(--gray-300)" />
           </DefaultIconArea>
           {isAccepted && (
             <AcceptedBadge>

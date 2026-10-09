@@ -59,7 +59,7 @@ const CaretDownIcon = () => (
   >
     <path
       d="M6 9L12 15L18 9"
-      stroke="#333D4B"
+      stroke="var(--gray-800)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,7 +77,7 @@ const UsersIcon = () => (
   >
     <path
       d="M31.5 29.9999C31.5 27.3875 28.9956 25.165 25.5 24.3413M22.5 30C22.5 26.6863 18.4706 24 13.5 24C8.52944 24 4.5 26.6863 4.5 30M22.5 19.5C25.8137 19.5 28.5 16.8137 28.5 13.5C28.5 10.1863 25.8137 7.5 22.5 7.5M13.5 19.5C10.1863 19.5 7.5 16.8137 7.5 13.5C7.5 10.1863 10.1863 7.5 13.5 7.5C16.8137 7.5 19.5 10.1863 19.5 13.5C19.5 16.8137 16.8137 19.5 13.5 19.5Z"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -95,7 +95,7 @@ const CalculatorIcon = () => (
   >
     <path
       d="M6.80128 29.8209L29.1989 7.42331M10.5342 16.1335V11.1562M10.5342 11.1562V6.179M10.5342 11.1562H5.55697M10.5342 11.1562H15.5115M20.4887 27.3323H30.4432"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -295,10 +295,10 @@ const MobileTimeTablePage = () => {
             navigate(`${ROUTES.TIMETABLE.EDIT}?id=${activeTimetable.id}`)
           }
         >
-          <Pencil size={22} color="#1C1C1E" />
+          <Pencil size={22} color="var(--text-primary)" />
         </IconButton>
         <IconButton onClick={() => setIsMenuSheetOpen(true)}>
-          <MoreVertical size={22} color="#1C1C1E" />
+          <MoreVertical size={22} color="var(--text-primary)" />
         </IconButton>
       </HeaderRightArea>
     );
@@ -382,7 +382,7 @@ const MobileTimeTablePage = () => {
       },
       {
         label: "시간표 삭제",
-        icon: <Trash2 size={20} color="#FF3B30" />,
+        icon: <Trash2 size={20} color="var(--text-error)" />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("시간표 삭제", "헤더 메뉴");
           setIsDeleteModalOpen(true);

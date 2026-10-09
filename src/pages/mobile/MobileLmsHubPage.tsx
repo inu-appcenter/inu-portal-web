@@ -198,16 +198,16 @@ export default function MobileLmsHubPage() {
   const getModuleIcon = (modname: string) => {
     switch (modname) {
       case "vod":
-        return <Video size={16} color="#2563eb" />;
+        return <Video size={16} color="var(--primary)" />;
       case "assign":
-        return <FileText size={16} color="#7c3aed" />;
+        return <FileText size={16} color="rgb(124, 58, 237)" />;
       case "quiz":
-        return <HelpCircle size={16} color="#d97706" />;
+        return <HelpCircle size={16} color="rgb(217, 119, 6)" />;
       case "folder":
       case "resource":
-        return <Folder size={16} color="#475569" />;
+        return <Folder size={16} color="var(--gray-600)" />;
       default:
-        return <BookOpen size={16} color="#64748b" />;
+        return <BookOpen size={16} color="var(--gray-500)" />;
     }
   };
 
@@ -270,13 +270,13 @@ export default function MobileLmsHubPage() {
       {/* 알림 관리 바로가기 배너 */}
       <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
         <BannerLeft>
-          <Bell size={18} color="#0061ff" />
+          <Bell size={18} color="var(--interactive-primary)" />
           <BannerText>
             <strong>빈자리 및 마감 알림 관리</strong>
             <span>등록된 과제 리마인더 및 도서관 빈자리 알림 목록</span>
           </BannerText>
         </BannerLeft>
-        <ChevronRight size={18} color="#94a3b8" />
+        <ChevronRight size={18} color="var(--button-inactive)" />
       </BannerCard>
 
       {/* 액션 안내 토스트 배너 */}
@@ -322,7 +322,7 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="#8b95a1" />
+                    <Search size={16} color="var(--gray-500)" />
                     <SearchInput
                       type="text"
                       placeholder="과제명 또는 강좌명 검색"
@@ -357,7 +357,7 @@ export default function MobileLmsHubPage() {
 
               {!isMobileAppEnvironment() ? (
                 <EmptyBox>
-                  <Smartphone size={32} color="#0061ff" />
+                  <Smartphone size={32} color="var(--interactive-primary)" />
                   <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
                   <EmptyDesc>과제 마감 일정 및 수강 강좌 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
                   <CapsuleButton
@@ -370,7 +370,7 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : !isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#0061ff" />
+                  <KeyRound size={28} color="var(--interactive-primary)" />
                   <EmptyTitle>포털 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시돼요.</EmptyDesc>
                   <CapsuleButton
@@ -383,13 +383,13 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : assignments.length === 0 ? (
                 <EmptyBox>
-                  <CheckCircle2 size={32} color="#16a34a" />
+                  <CheckCircle2 size={32} color="var(--text-success)" />
                   <EmptyTitle>마감 예정인 일정이 없습니다</EmptyTitle>
                   <EmptyDesc>모든 과제를 제출했거나 2주 이내 마감 예정 항목이 없습니다.</EmptyDesc>
                 </EmptyBox>
               ) : filteredAssignments.length === 0 ? (
                 <EmptyBox>
-                  <Search size={28} color="#94a3b8" />
+                  <Search size={28} color="var(--button-inactive)" />
                   <EmptyTitle>일치하는 마감 일정이 없습니다</EmptyTitle>
                   <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
                 </EmptyBox>
@@ -446,7 +446,7 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="#8b95a1" />
+                    <Search size={16} color="var(--gray-500)" />
                     <SearchInput
                       type="text"
                       placeholder="강좌명 또는 학수번호 검색"
@@ -464,7 +464,7 @@ export default function MobileLmsHubPage() {
 
               {!isMobileAppEnvironment() ? (
                 <EmptyBox>
-                  <Smartphone size={32} color="#0061ff" />
+                  <Smartphone size={32} color="var(--interactive-primary)" />
                   <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
                   <EmptyDesc>수강 강좌 및 주차별 강의 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
                   <CapsuleButton
@@ -477,7 +477,7 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : !isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#0061ff" />
+                  <KeyRound size={28} color="var(--interactive-primary)" />
                   <EmptyTitle>포털 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>이번 학기 수강 중인 강좌 목록과 주차별 학습 현황을 확인해보세요.</EmptyDesc>
                   <CapsuleButton
@@ -490,12 +490,12 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : courses.length === 0 ? (
                 <EmptyBox>
-                  <GraduationCap size={32} color="#94a3b8" />
+                  <GraduationCap size={32} color="var(--button-inactive)" />
                   <EmptyTitle>수강 중인 강좌가 없어요</EmptyTitle>
                 </EmptyBox>
               ) : filteredCourses.length === 0 ? (
                 <EmptyBox>
-                  <Search size={28} color="#94a3b8" />
+                  <Search size={28} color="var(--button-inactive)" />
                   <EmptyTitle>일치하는 강좌가 없어요</EmptyTitle>
                   <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
                 </EmptyBox>
@@ -508,7 +508,7 @@ export default function MobileLmsHubPage() {
                           <CourseTitle>{c.fullname}</CourseTitle>
                           <CourseCode>{c.shortname}</CourseCode>
                         </div>
-                        <ChevronRight size={18} color="#94a3b8" />
+                        <ChevronRight size={18} color="var(--button-inactive)" />
                       </CourseHeader>
                       <CourseMetaRow>
                         <span>수강생 {c.enrolledusercount ?? 0}명</span>
@@ -535,7 +535,7 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="#8b95a1" />
+                    <Search size={16} color="var(--gray-500)" />
                     <SearchInput
                       type="text"
                       placeholder="과목명 검색"
@@ -553,7 +553,7 @@ export default function MobileLmsHubPage() {
 
               {!isMobileAppEnvironment() ? (
                 <EmptyBox>
-                  <Smartphone size={32} color="#0061ff" />
+                  <Smartphone size={32} color="var(--interactive-primary)" />
                   <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
                   <EmptyDesc>과목별 성적 조회는 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
                   <CapsuleButton
@@ -566,7 +566,7 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : !isLinked ? (
                 <EmptyBox>
-                  <KeyRound size={28} color="#0061ff" />
+                  <KeyRound size={28} color="var(--interactive-primary)" />
                   <EmptyTitle>포털 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
                   <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있어요.</EmptyDesc>
                   <CapsuleButton
@@ -579,13 +579,13 @@ export default function MobileLmsHubPage() {
                 </EmptyBox>
               ) : grades.length === 0 ? (
                 <EmptyBox>
-                  <Award size={32} color="#94a3b8" />
+                  <Award size={32} color="var(--button-inactive)" />
                   <EmptyTitle>조회된 성적 정보가 없어요</EmptyTitle>
                   <EmptyDesc>학기 말 성적 입력 기간 또는 LMS에 공개된 성적이 표시돼요.</EmptyDesc>
                 </EmptyBox>
               ) : filteredGrades.length === 0 ? (
                 <EmptyBox>
-                  <Search size={28} color="#94a3b8" />
+                  <Search size={28} color="var(--button-inactive)" />
                   <EmptyTitle>일치하는 과목 성적이 없어요</EmptyTitle>
                   <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
                 </EmptyBox>
@@ -683,7 +683,7 @@ export default function MobileLmsHubPage() {
                                   {isCompleted ? "응시 완료" : "미응시"}
                                 </StatusBadge>
                               ) : null}
-                              {mod.url && <ExternalLink size={13} color="#94a3b8" />}
+                              {mod.url && <ExternalLink size={13} color="var(--button-inactive)" />}
                             </ModuleRight>
                           </ModuleItem>
                         );
@@ -818,9 +818,9 @@ const ToastBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #15803d;
+  background: rgb(240, 253, 244);
+  border: 1px solid rgb(187, 247, 208);
+  color: rgb(21, 128, 61);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13px;
@@ -1266,8 +1266,8 @@ const StatusBadge = styled.span<{ $done: boolean }>`
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 6px;
-  background: ${({ $done }) => ($done ? "#dcfce7" : "var(--bg-muted)")};
-  color: ${({ $done }) => ($done ? "#15803d" : "var(--text-disabled)")};
+  background: ${({ $done }) => ($done ? "rgb(220, 252, 231)" : "var(--bg-muted)")};
+  color: ${({ $done }) => ($done ? "rgb(21, 128, 61)" : "var(--text-disabled)")};
 `;
 
 const EmptySectionText = styled.div`

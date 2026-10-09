@@ -988,13 +988,13 @@ export default function MobileLibraryHubPage() {
       {/* 알림 관리 바로가기 배너 */}
       <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
         <BannerLeft>
-          <Bell size={18} color="#0061ff" />
+          <Bell size={18} color="var(--interactive-primary)" />
           <BannerText>
             <strong>빈자리 및 마감 알림 관리</strong>
             <span>빈자리 알림 및 좌석 만료 알림 목록</span>
           </BannerText>
         </BannerLeft>
-        <ChevronRight size={18} color="#94a3b8" />
+        <ChevronRight size={18} color="var(--button-inactive)" />
       </BannerCard>
 
       {/* 액션 피드백 토스트 */}
@@ -1013,7 +1013,7 @@ export default function MobileLibraryHubPage() {
             <FavSection>
               <FavHeader>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Star size={15} color="#f59e0b" fill="#f59e0b" />
+                  <Star size={15} color="var(--state-warning)" fill="var(--state-warning)" />
                   <FavTitle>내 선호좌석 ({favoriteSeats.length})</FavTitle>
                 </div>
               </FavHeader>
@@ -1059,7 +1059,7 @@ export default function MobileLibraryHubPage() {
           {/* 검색 및 필터 바 */}
           <FilterArea>
             <SearchBox>
-              <Search size={16} color="#8b95a1" />
+              <Search size={16} color="var(--gray-500)" />
               <SearchInput
                 type="text"
                 placeholder="열람실 이름 검색"
@@ -1105,7 +1105,7 @@ export default function MobileLibraryHubPage() {
             <EmptyBox>현재 조회 가능한 열람실이 없습니다.</EmptyBox>
           ) : filteredRooms.length === 0 ? (
             <EmptyBox>
-              <Search size={28} color="#94a3b8" />
+              <Search size={28} color="var(--button-inactive)" />
               <EmptyTitle>일치하는 열람실이 없습니다</EmptyTitle>
               <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
             </EmptyBox>
@@ -1182,7 +1182,7 @@ export default function MobileLibraryHubPage() {
           {/* 검색 및 필터 바 */}
           <FilterArea>
             <SearchBox>
-              <Search size={16} color="#8b95a1" />
+              <Search size={16} color="var(--gray-500)" />
               <SearchInput
                 type="text"
                 placeholder="스터디룸 이름 또는 위치 검색"
@@ -1232,7 +1232,7 @@ export default function MobileLibraryHubPage() {
             <EmptyBox>현재 조회 가능한 스터디룸이 없습니다.</EmptyBox>
           ) : filteredStudyRooms.length === 0 ? (
             <EmptyBox>
-              <Search size={28} color="#94a3b8" />
+              <Search size={28} color="var(--button-inactive)" />
               <EmptyTitle>일치하는 스터디룸이 없습니다</EmptyTitle>
               <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
             </EmptyBox>
@@ -1315,9 +1315,9 @@ export default function MobileLibraryHubPage() {
             <DisabledNoticeCard>
               <DisabledNoticeLeft>
                 {!isMobileAppEnvironment() ? (
-                  <Smartphone size={20} color="#0061ff" />
+                  <Smartphone size={20} color="var(--interactive-primary)" />
                 ) : (
-                  <KeyRound size={20} color="#0061ff" />
+                  <KeyRound size={20} color="var(--interactive-primary)" />
                 )}
                 <DisabledNoticeText>
                   {!isMobileAppEnvironment() ? (
@@ -1381,10 +1381,10 @@ export default function MobileLibraryHubPage() {
 
               {mySeat.isTempCharge && (
                 <TempNoticeBox>
-                  <AlertCircle size={16} color="#b45309" style={{ flexShrink: 0, marginTop: "2px" }} />
+                  <AlertCircle size={16} color="rgb(180, 83, 9)" style={{ flexShrink: 0, marginTop: "2px" }} />
                   <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                      <strong style={{ fontSize: "13px", color: "#78350f" }}>배정 확정 안내</strong>
+                      <strong style={{ fontSize: "13px", color: "rgb(120, 53, 15)" }}>배정 확정 안내</strong>
                       {remainingCheckinSec !== null && (
                         <ExpiryBadge $urgent={remainingCheckinSec < 300}>
                           남은 시간: {Math.floor(remainingCheckinSec / 60)}분{" "}
@@ -1392,7 +1392,7 @@ export default function MobileLibraryHubPage() {
                         </ExpiryBadge>
                       )}
                     </div>
-                    <span style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.45 }}>
+                    <span style={{ fontSize: "12px", color: "rgb(146, 64, 14)", lineHeight: 1.45 }}>
                       학산도서관 게이트 통과 후 <strong>[배정 확정]</strong>을 누르시면 정상 이용 상태로 변경됩니다.
                     </span>
                     <NoticeBulletList>
@@ -1404,7 +1404,7 @@ export default function MobileLibraryHubPage() {
               )}
 
               <SeatTimeInfo>
-                <Clock size={15} color="#0061ff" />
+                <Clock size={15} color="var(--interactive-primary)" />
                 <span>
                   이용 시간:{" "}
                   {mySeat.beginTime
@@ -1431,8 +1431,8 @@ export default function MobileLibraryHubPage() {
                     <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
-                        color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
-                        fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
+                        color={mySeat.isFavoriteSeat ? "var(--state-warning)" : "var(--gray-500)"}
+                        fill={mySeat.isFavoriteSeat ? "var(--state-warning)" : "none"}
                       />
                       <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
                     </SecondaryActionBtn>
@@ -1450,8 +1450,8 @@ export default function MobileLibraryHubPage() {
                     <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
-                        color={mySeat.isFavoriteSeat ? "#f59e0b" : "#64748b"}
-                        fill={mySeat.isFavoriteSeat ? "#f59e0b" : "none"}
+                        color={mySeat.isFavoriteSeat ? "var(--state-warning)" : "var(--gray-500)"}
+                        fill={mySeat.isFavoriteSeat ? "var(--state-warning)" : "none"}
                       />
                       <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
                     </SecondaryActionBtn>
@@ -1464,7 +1464,7 @@ export default function MobileLibraryHubPage() {
               </ActionRow>
 
               <ReminderRow onClick={handleRegisterSeatReminder}>
-                <Bell size={14} color="#d97706" />
+                <Bell size={14} color="rgb(217, 119, 6)" />
                 <span>종료 20분 전 알림 받기</span>
               </ReminderRow>
             </Box>
@@ -1618,11 +1618,11 @@ export default function MobileLibraryHubPage() {
             <>
               <SeatLegendRow>
                 <SeatLegendItem>
-                  <SeatLegendBox $color="#eff6ff" $border="#93c5fd" />
+                  <SeatLegendBox $color="rgb(239, 246, 255)" $border="rgb(147, 197, 253)" />
                   <span>배정 가능 (터치 시 배정)</span>
                 </SeatLegendItem>
                 <SeatLegendItem>
-                  <SeatLegendBox $color="#fef2f2" $border="#fca5a5" />
+                  <SeatLegendBox $color="rgb(254, 242, 242)" $border="rgb(252, 165, 165)" />
                   <span>사용 중 (터치 시 알림)</span>
                 </SeatLegendItem>
               </SeatLegendRow>
@@ -1698,7 +1698,7 @@ export default function MobileLibraryHubPage() {
             <NoticeCard>
               <NoticeHeader onClick={() => setShowAttention((prev) => !prev)}>
                 <NoticeTitle>
-                  <Info size={15} color="#0061ff" />
+                  <Info size={15} color="var(--interactive-primary)" />
                   <span>공간 설명 및 이용 주의사항</span>
                 </NoticeTitle>
                 <NoticeToggleBtn type="button">
@@ -1972,7 +1972,7 @@ export default function MobileLibraryHubPage() {
             <PrivacyAgreeContainer onClick={() => setIsPrivacyAgreed((prev) => !prev)}>
               <PrivacyAgreeLabel>
                 <CustomCheckbox $checked={isPrivacyAgreed}>
-                  {isPrivacyAgreed && <Check size={11} color="#fff" strokeWidth={3} />}
+                  {isPrivacyAgreed && <Check size={11} color="var(--text-inverse)" strokeWidth={3} />}
                 </CustomCheckbox>
                 <span>
                   동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "var(--text-error)" }}>*필수</span>
@@ -2155,9 +2155,9 @@ const ToastMessage = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #15803d;
+  background: rgb(240, 253, 244);
+  border: 1px solid rgb(187, 247, 208);
+  color: rgb(21, 128, 61);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13px;
@@ -2206,7 +2206,7 @@ const RefreshButton = styled.button`
 const NoticeBanner = styled.div`
   background: var(--bg-brand);
   border: 1px solid var(--border-brand-subtle);
-  color: #1e40af;
+  color: rgb(30, 64, 175);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 12.5px;
@@ -2547,8 +2547,8 @@ const FavBadge = styled.span<{ $isAvail: boolean }>`
   font-weight: 600;
   padding: 2px 5px;
   border-radius: 4px;
-  background: ${({ $isAvail }) => ($isAvail ? "#dcfce7" : "var(--bg-error)")};
-  color: ${({ $isAvail }) => ($isAvail ? "#15803d" : "var(--text-error)")};
+  background: ${({ $isAvail }) => ($isAvail ? "rgb(220, 252, 231)" : "var(--bg-error)")};
+  color: ${({ $isAvail }) => ($isAvail ? "rgb(21, 128, 61)" : "var(--text-error)")};
 `;
 
 const FavBtnRow = styled.div`
@@ -2689,9 +2689,9 @@ const StudyOccupancyBadge = styled.span<{ $type: string }>`
   padding: 3px 7px;
   border-radius: 6px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#dcfce7" : $type === "warning" ? "var(--yellow-100)" : "var(--bg-error)"};
+    $type === "avail" ? "rgb(220, 252, 231)" : $type === "warning" ? "var(--yellow-100)" : "var(--bg-error)"};
   color: ${({ $type }) =>
-    $type === "avail" ? "#15803d" : $type === "warning" ? "#b45309" : "var(--text-error)"};
+    $type === "avail" ? "rgb(21, 128, 61)" : $type === "warning" ? "rgb(180, 83, 9)" : "var(--text-error)"};
 `;
 
 const QuotaBadge = styled.span`
@@ -2725,7 +2725,7 @@ const StudyPreviewSlot = styled.div<{ $type: string }>`
   flex: 1;
   border-radius: 3px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-200)"};
+    $type === "avail" ? "rgb(134, 239, 172)" : $type === "occ" ? "rgb(252, 165, 165)" : "var(--gray-200)"};
 `;
 
 const StudyPreviewTimeLabels = styled.div`
@@ -2769,8 +2769,8 @@ const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $isTemp }) => ($isTemp ? "var(--yellow-100)" : "#dcfce7")};
-  color: ${({ $isTemp }) => ($isTemp ? "#b45309" : "#15803d")};
+  background: ${({ $isTemp }) => ($isTemp ? "var(--yellow-100)" : "rgb(220, 252, 231)")};
+  color: ${({ $isTemp }) => ($isTemp ? "rgb(180, 83, 9)" : "rgb(21, 128, 61)")};
 `;
 
 const SeatRoomTitle = styled.div`
@@ -2788,7 +2788,7 @@ const TempNoticeBox = styled.div`
   display: flex;
   gap: 10px;
   background: var(--bg-warn);
-  border: 1px solid #fef08a;
+  border: 1px solid rgb(254, 240, 138);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 12px;
@@ -2800,7 +2800,7 @@ const ExpiryBadge = styled.span<{ $urgent?: boolean }>`
   padding: 2px 6px;
   border-radius: 4px;
   background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--yellow-100)")};
-  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#92400e")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "rgb(146, 64, 14)")};
 `;
 
 const NoticeBulletList = styled.ul`
@@ -2808,7 +2808,7 @@ const NoticeBulletList = styled.ul`
   padding: 0;
   list-style: none;
   font-size: 11.5px;
-  color: #78350f;
+  color: rgb(120, 53, 15);
   line-height: 1.5;
 `;
 
@@ -2842,7 +2842,7 @@ const ReminderRow = styled.div`
   padding: 8px;
   border-radius: 8px;
   background: var(--bg-warn);
-  color: #b45309;
+  color: rgb(180, 83, 9);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -3143,7 +3143,7 @@ const LegendDot = styled.div<{ $type: string }>`
   height: 8px;
   border-radius: 50%;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-300)"};
+    $type === "avail" ? "rgb(134, 239, 172)" : $type === "occ" ? "rgb(252, 165, 165)" : "var(--gray-300)"};
 `;
 
 const TimelineGrid = styled.div`
@@ -3177,7 +3177,7 @@ const MinuteBar = styled.div<{ $type: string }>`
   height: 6px;
   border-radius: 2px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#86efac" : $type === "occ" ? "#fca5a5" : "var(--gray-200)"};
+    $type === "avail" ? "rgb(134, 239, 172)" : $type === "occ" ? "rgb(252, 165, 165)" : "var(--gray-200)"};
 `;
 
 const BookingForm = styled.div`
@@ -3281,8 +3281,8 @@ const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
-  background: ${({ $isSatisfied }) => ($isSatisfied ? "#dcfce7" : "var(--bg-error)")};
-  color: ${({ $isSatisfied }) => ($isSatisfied ? "#15803d" : "var(--text-error)")};
+  background: ${({ $isSatisfied }) => ($isSatisfied ? "rgb(220, 252, 231)" : "var(--bg-error)")};
+  color: ${({ $isSatisfied }) => ($isSatisfied ? "rgb(21, 128, 61)" : "var(--text-error)")};
 `;
 
 const CompanionInputRow = styled.div`

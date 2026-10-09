@@ -945,7 +945,7 @@ const Slide = styled.div`
 
 const NotificationWarningBanner = styled.div`
   .link {
-    color: #0a84ff;
+    color: var(--primary);
     text-decoration: underline;
     margin-left: 6px;
     font-weight: 500;
