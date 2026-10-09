@@ -33,6 +33,18 @@ interface DormitoryTheme {
 function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): DormitoryTheme {
   const combined = `${dormType || ""} ${dormBuilding || ""}`.trim();
 
+  // 데이터가 없거나 미배정인 경우 -> 중립 테마
+  if (!combined || combined === "-") {
+    return {
+      name: "-",
+      borderColor: "rgba(148, 163, 184, 0.28)",
+      badgeBg: "#64748b",
+      badgeText: "#ffffff",
+      boxBg: "#f8fafc",
+      boxBorder: "rgba(148, 163, 184, 0.2)",
+    };
+  }
+
   // 제2기숙사 (직영 / BTL) -> 그린
   if (combined.includes("02") || combined.includes("03") || combined.includes("2기숙사") || combined.includes("제2")) {
     return {
@@ -57,7 +69,7 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
     };
   }
 
-  // 기본값: 제1기숙사 -> INU 시그니처 블루
+  // 제1기숙사 -> INU 시그니처 블루
   return {
     name: "제1기숙사",
     borderColor: "rgba(29, 78, 216, 0.28)",
@@ -82,7 +94,7 @@ function formatSemesterTerm(term?: string): string {
 }
 
 export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
-  studentName = "사생",
+  studentName = "-",
   englishName,
   studentId = "-",
   department = "-",
@@ -93,7 +105,7 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
   studentDormNo = "-",
   year,
   term,
-  status = "정규입사생",
+  status = "-",
   fullscreen = false,
 }) => {
   // 실시간 시계 (초 단위 갱신, YYYY.MM.DD HH:mm:ss)
@@ -185,12 +197,12 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
           </ProfileInfo>
         </ProfileSection>
 
-        {/* 핵심 사생 정보 박스: 배정 기숙사(테마색상) + 사생번호(대형 강조) */}
+        {/* 핵심 사생 정보 박스: 기숙사(테마색상) + 사생번호(대형 강조) */}
         <DetailBox $boxBg={theme.boxBg} $boxBorder={theme.boxBorder} $fullscreen={fullscreen}>
           <DetailHeader>
-            <DetailLabel>배정 기숙사</DetailLabel>
+            <DetailLabel>기숙사</DetailLabel>
             <DormBadge $bg={theme.badgeBg} $text={theme.badgeText}>
-              {dormitoryBuilding || theme.name}
+              {dormitoryBuilding || dormitoryType || (theme.name !== "-" ? theme.name : "-")}
             </DormBadge>
           </DetailHeader>
 
@@ -201,7 +213,7 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
 
           <StatusRow>
             <StatusLabel>입사 구분</StatusLabel>
-            <StatusValue>{status || "정규입사생"}</StatusValue>
+            <StatusValue>{status || "-"}</StatusValue>
           </StatusRow>
         </DetailBox>
       </CardBody>

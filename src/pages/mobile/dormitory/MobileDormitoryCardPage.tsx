@@ -50,6 +50,21 @@ function mapGrade(val?: string): string {
   return trimmed;
 }
 
+function mapInOutStatus(code?: string): string {
+  if (!code) return "";
+  const trimmed = code.trim();
+  switch (trimmed) {
+    case "01":
+      return "입사";
+    case "02":
+      return "퇴사";
+    case "03":
+      return "중도퇴사";
+    default:
+      return trimmed;
+  }
+}
+
 export default function MobileDormitoryCardPage() {
   const navigate = useNavigate();
   const [dormInfo, setDormInfo] = useState<DormitoryStudentInfo | null>(null);
@@ -109,7 +124,7 @@ export default function MobileDormitoryCardPage() {
     profile?.name ||
     rawFields?.korNm ||
     rawFields?.nm ||
-    "사생";
+    "-";
 
   const englishName =
     profile?.englishName ||
@@ -140,12 +155,13 @@ export default function MobileDormitoryCardPage() {
   const rawDormGbn = rawFields?.dormGbn || profile?.dormitoryType || "";
   const mappedDormName = mapDormitoryType(rawDormGbn);
   const dormitoryType = mappedDormName || profile?.dormitoryBuilding || rawFields?.dormBdNm || "-";
-  const dormitoryBuilding = profile?.dormitoryBuilding || rawFields?.dormBdNm || rawFields?.dormBdCd || "";
+  const dormitoryBuilding = profile?.dormitoryBuilding || rawFields?.dormBdNm || rawFields?.dormBdCd || mappedDormName || "-";
   const studentDormNo = profile?.studentDormNo || rawFields?.domstuNo || rawFields?.domStuNo || "-";
 
   const year = profile?.year || dormInfo?.appliedYear || rawFields?.yy || "";
   const term = profile?.term || dormInfo?.appliedSemester || rawFields?.tmGbn || "";
-  const status = dormInfo?.inOutList?.[0]?.status ? dormInfo.inOutList[0].status : (profile ? "정규입사생" : "");
+  const rawStatus = dormInfo?.inOutList?.[0]?.status || rawFields?.dormLeavdormGbn || "";
+  const status = rawStatus ? mapInOutStatus(rawStatus) : "-";
 
   return (
     <PageContainer>
