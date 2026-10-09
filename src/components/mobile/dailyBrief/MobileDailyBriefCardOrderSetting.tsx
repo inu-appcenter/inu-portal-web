@@ -250,7 +250,7 @@ export default function MobileDailyBriefCardOrderSetting() {
           aria-label="기본 설정으로 초기화"
         >
           <Ripple color="rgba(0, 0, 0, 0.08)" />
-          <RotateCcw size={15} color="#64748B" />
+          <RotateCcw size={15} color="var(--gray-500)" />
           <span>초기화</span>
         </ResetIconButton>
       </SectionHeaderRow>
@@ -276,7 +276,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                       <Icon
                         name="chevron-up"
                         size={13}
-                        color={index === 0 ? "#cbd5e1" : "#475569"}
+                        color={index === 0 ? "var(--border-strong)" : "var(--gray-600)"}
                       />
                     </OrderButton>
                     <OrderButton
@@ -289,7 +289,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                         name="chevron-down"
                         size={13}
                         color={
-                          index === order.length - 1 ? "#cbd5e1" : "#475569"
+                          index === order.length - 1 ? "var(--border-strong)" : "var(--gray-600)"
                         }
                       />
                     </OrderButton>
@@ -313,7 +313,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                       aria-label={`${meta.name} 세부 설정`}
                     >
                       <Ripple color="rgba(0, 0, 0, 0.08)" />
-                      <Icon name="settings" size={13} color="#475569" />
+                      <Icon name="settings" size={13} color="var(--gray-600)" />
                       <span>설정</span>
                     </DetailConfigButton>
                   )}
@@ -343,7 +343,7 @@ export default function MobileDailyBriefCardOrderSetting() {
         </SectionTitleTextCol>
         <AddRuleButton onClick={() => setIsAddRuleModalOpen(true)}>
           <Ripple color="rgba(59, 130, 246, 0.12)" />
-          <Icon name="add-plus-sm" size={14} color="#2563EB" />
+          <Icon name="add-plus-sm" size={14} color="var(--interactive-primary)" />
           <span>규칙 추가</span>
         </AddRuleButton>
       </SectionHeaderRow>
@@ -379,7 +379,7 @@ export default function MobileDailyBriefCardOrderSetting() {
                     aria-label="규칙 삭제"
                   >
                     <Ripple color="rgba(239, 68, 68, 0.1)" />
-                    <Icon name="close-md" size={14} color="#ef4444" />
+                    <Icon name="close-md" size={14} color="var(--text-error)" />
                   </DeleteRuleButton>
                 </RuleRow>
                 {idx < timeRules.length - 1 && <Divider margin="0" />}
@@ -503,7 +503,7 @@ const ModeOptionCard = styled.div<{ $selected: boolean }>`
   gap: 14px;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-default)")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--border-default)")};
   background-color: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -513,7 +513,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-strong)")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--border-strong)")};
   background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
   flex-shrink: 0;
   margin-top: 2px;
@@ -868,7 +868,7 @@ const SelectDropdown = styled.select`
   outline: none;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -882,7 +882,7 @@ const TimeInput = styled.input`
   outline: none;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: var(--interactive-primary);
   }
 `;
 

@@ -83,17 +83,17 @@ export default function DailyBriefLibraryCard() {
 
     const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
     let status = "여유";
-    let statusColor = "#16A34A"; // green
-    let statusBg = "#DCFCE7";
+    let statusColor = "var(--text-success)"; // green
+    let statusBg = "rgb(220, 252, 231)";
 
     if (percent >= 85) {
       status = "혼잡";
-      statusColor = "#DC2626"; // red
-      statusBg = "#FEE2E2";
+      statusColor = "var(--text-error)"; // red
+      statusBg = "rgb(254, 226, 226)";
     } else if (percent >= 60) {
       status = "보통";
-      statusColor = "#2563EB"; // blue
-      statusBg = "#DBEAFE";
+      statusColor = "var(--interactive-primary)"; // blue
+      statusBg = "rgb(219, 234, 254)";
     }
 
     return { total, occupied, available, percent, status, statusColor, statusBg };
@@ -135,7 +135,7 @@ export default function DailyBriefLibraryCard() {
           </HeaderLeft>
           <HeaderRightBadge>
             <span>좌석 예약</span>
-            <Icon name="chevron-right" size={13} color="#2563EB" />
+            <Icon name="chevron-right" size={13} color="var(--interactive-primary)" />
           </HeaderRightBadge>
         </CardHeader>
 

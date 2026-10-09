@@ -148,7 +148,7 @@ export default function DailyBriefCardDetailConfigModal({
                   <Ripple color="rgba(0, 0, 0, 0.06)" />
                   <ItemName>{room}</ItemName>
                   <CheckboxIcon $checked={checked}>
-                    {checked && <Icon name="check" size={13} color="#FFFFFF" />}
+                    {checked && <Icon name="check" size={13} color="var(--text-inverse)" />}
                   </CheckboxIcon>
                 </CheckItem>
               );
@@ -300,7 +300,7 @@ const CheckboxIcon = styled.div<{ $checked: boolean }>`
   height: 20px;
   border-radius: 6px;
   background-color: ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--bg-base)")};
-  border: 1.5px solid ${({ $checked }) => ($checked ? "#3b82f6" : "var(--border-strong)")};
+  border: 1.5px solid ${({ $checked }) => ($checked ? "var(--interactive-primary)" : "var(--border-strong)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -312,7 +312,7 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "#3b82f6" : "var(--border-strong)")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--border-strong)")};
   background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
   flex-shrink: 0;
   transition: all 0.15s ease;

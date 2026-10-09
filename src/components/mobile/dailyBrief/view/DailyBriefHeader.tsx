@@ -25,7 +25,7 @@ export default function DailyBriefHeader({
       {onBack && (
         <TopNavRow>
           <BackButton onClick={onBack} aria-label="뒤로 가기">
-            <Icon name="chevron-left" size={24} color="#1E232A" />
+            <Icon name="chevron-left" size={24} color="var(--text-primary)" />
           </BackButton>
         </TopNavRow>
       )}

@@ -17,20 +17,20 @@ const NAVER_WEATHER_URL = "https://weather.naver.com/today/11185106";
 
 const getGradientForWeather = (sky: string, isNight: boolean): string => {
   if (isNight) {
-    return "linear-gradient(135deg, #1e293b 0%, #1e1b4b 55%, #0f172a 100%)";
+    return "linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(30, 27, 75) 55%, rgb(15, 23, 42) 100%)";
   }
 
   if (sky.includes("비") || sky.includes("진눈깨비")) {
-    return "linear-gradient(135deg, #475569 0%, #546e7a 50%, #37474f 100%)";
+    return "linear-gradient(135deg, rgb(71, 85, 105) 0%, rgb(84, 110, 122) 50%, rgb(55, 71, 79) 100%)";
   }
   if (sky.includes("눈")) {
-    return "linear-gradient(135deg, #64748b 0%, #78909c 50%, #90a4ae 100%)";
+    return "linear-gradient(135deg, rgb(100, 116, 139) 0%, rgb(120, 144, 156) 50%, rgb(144, 164, 174) 100%)";
   }
   if (sky.includes("구름") || sky.includes("흐림")) {
-    return "linear-gradient(135deg, #5b9bd5 0%, #7b9ebc 50%, #94a3b8 100%)";
+    return "linear-gradient(135deg, rgb(91, 155, 213) 0%, rgb(123, 158, 188) 50%, rgb(148, 163, 184) 100%)";
   }
   // 맑음 (차분하고 산뜻한 파스텔 스카이-민트)
-  return "linear-gradient(135deg, #4299e1 0%, #5dade2 50%, #68d391 100%)";
+  return "linear-gradient(135deg, rgb(66, 153, 225) 0%, rgb(93, 173, 226) 50%, rgb(104, 211, 145) 100%)";
 };
 
 export default function DailyBriefWeatherCard() {
@@ -101,7 +101,7 @@ export default function DailyBriefWeatherCard() {
               <LocationBadge>연수구 송도동</LocationBadge>
             </HeaderLeft>
             <LinkIconBadge aria-label="네이버 날씨 새창 열기">
-              <Icon name="link-external" size={15} color="#FFFFFF" />
+              <Icon name="link-external" size={15} color="var(--text-inverse)" />
             </LinkIconBadge>
           </CardHeader>
 

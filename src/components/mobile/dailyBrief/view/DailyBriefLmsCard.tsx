@@ -34,7 +34,7 @@ export default function DailyBriefLmsCard() {
           </HeaderLeft>
           <HeaderRightBadge>
             <span>이러닝 열기</span>
-            <Icon name="link-external" size={13} color="#2563EB" />
+            <Icon name="link-external" size={13} color="var(--interactive-primary)" />
           </HeaderRightBadge>
         </CardHeader>
 
@@ -216,7 +216,7 @@ const DDayBadge = styled.span<{ $urgent?: boolean }>`
   padding: 4px 8px;
   border-radius: 8px;
   background-color: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--bg-brand)")};
-  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#0284c7")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "var(--interactive-primary)")};
   white-space: nowrap;
 `;
 

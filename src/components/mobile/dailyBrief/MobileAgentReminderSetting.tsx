@@ -96,9 +96,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
-    toolParams: { stopName: "인천대입구역 1번출구", iconType: "bus", iconBg: "#ff7a00" },
+    toolParams: { stopName: "인천대입구역 1번출구", iconType: "bus", iconBg: "rgb(255, 122, 0)" },
     iconType: "bus",
-    iconBg: "#ff7a00",
+    iconBg: "rgb(255, 122, 0)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "인천대입구역 1번출구 버스 도착 정보",
@@ -111,9 +111,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "17:30",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
-    toolParams: { stopName: "인천대 정문", iconType: "bus", iconBg: "#ff7a00" },
+    toolParams: { stopName: "인천대 정문", iconType: "bus", iconBg: "rgb(255, 122, 0)" },
     iconType: "bus",
-    iconBg: "#ff7a00",
+    iconBg: "rgb(255, 122, 0)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오후 05:30\n평일 (월~금)",
     whatTitle: "인천대 정문 정류소 버스 도착 정보",
@@ -130,7 +130,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTools: ["WEATHER", "TIMETABLE"],
     toolParams: {
       iconType: "sun",
-      iconBg: "#5c9cf8",
+      iconBg: "rgb(92, 156, 248)",
       triggers: [
         {
           id: "trig-now-1",
@@ -146,19 +146,19 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
           type: "WEATHER",
           title: "캠퍼스 날씨 알림",
           subtitle: "송도 캠퍼스 오늘 날씨 예보",
-          iconBg: "#5c9cf8",
+          iconBg: "rgb(92, 156, 248)",
         },
         {
           id: "act-time-1",
           type: "TIMETABLE",
           title: "오늘 강의 시간표 알림",
           subtitle: "오늘 수업 시간표 및 강의실 위치",
-          iconBg: "#a855f7",
+          iconBg: "rgb(168, 85, 247)",
         },
       ],
     },
     iconType: "sun",
-    iconBg: "#5c9cf8",
+    iconBg: "rgb(92, 156, 248)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "캠퍼스 날씨 및 수업 시간표",
@@ -171,9 +171,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "11:30",
     repeatType: "WEEKDAYS",
     targetTools: ["CAFETERIA"],
-    toolParams: { cafeteria: "전체", mealType: "LUNCH", iconType: "cafeteria", iconBg: "#22c55e" },
+    toolParams: { cafeteria: "전체", mealType: "LUNCH", iconType: "cafeteria", iconBg: "rgb(34, 197, 94)" },
     iconType: "cafeteria",
-    iconBg: "#22c55e",
+    iconBg: "rgb(34, 197, 94)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
     whatTitle: "학생식당 & 교내 식당 점심 메뉴",
@@ -610,33 +610,33 @@ export default function MobileAgentReminderSetting() {
         </HeaderBannerLeft>
         <HeaderBannerIllustration>
           <svg viewBox="0 0 160 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="80" cy="115" rx="60" ry="8" fill="#e2e8f0" />
+            <ellipse cx="80" cy="115" rx="60" ry="8" fill="rgb(226, 232, 240)" />
             <path
               d="M30 75C30 70 35 65 42 65H118C125 65 130 70 130 75V105H30V75Z"
-              fill="#eab308"
+              fill="rgb(234, 179, 8)"
             />
             <path
               d="M25 78C25 74 28 70 32 70H38V108H32C28 108 25 104 25 100V78Z"
-              fill="#ca8a04"
+              fill="rgb(202, 138, 4)"
             />
             <path
               d="M122 70H128C132 70 135 74 135 78V100C135 104 132 108 128 108H122V70Z"
-              fill="#ca8a04"
+              fill="rgb(202, 138, 4)"
             />
-            <rect x="35" y="105" width="8" height="12" rx="2" fill="#78350f" />
-            <rect x="117" y="105" width="8" height="12" rx="2" fill="#78350f" />
-            <circle cx="100" cy="35" r="10" fill="#fbcfe8" />
+            <rect x="35" y="105" width="8" height="12" rx="2" fill="rgb(120, 53, 15)" />
+            <rect x="117" y="105" width="8" height="12" rx="2" fill="rgb(120, 53, 15)" />
+            <circle cx="100" cy="35" r="10" fill="rgb(251, 207, 232)" />
             <path
               d="M96 28C96 26 100 24 105 27C110 30 108 36 106 38C104 40 98 38 96 35Z"
-              fill="#ea580c"
+              fill="rgb(234, 88, 12)"
             />
             <path
               d="M93 45C91 52 86 68 86 78H106C106 68 107 54 103 45L93 45Z"
-              fill="#f43f5e"
+              fill="rgb(244, 63, 94)"
             />
             <path
               d="M86 75L72 90C70 92 68 98 72 100L95 100C98 100 100 95 98 90L92 75H86Z"
-              fill="#ffffff"
+              fill="rgb(255, 255, 255)"
             />
             <rect
               x="72"
@@ -645,7 +645,7 @@ export default function MobileAgentReminderSetting() {
               height="15"
               rx="3"
               transform="rotate(-15 72 52)"
-              fill="#64748b"
+              fill="rgb(100, 116, 139)"
             />
             <rect
               x="74"
@@ -654,22 +654,22 @@ export default function MobileAgentReminderSetting() {
               height="11"
               rx="1.5"
               transform="rotate(-15 74 54)"
-              fill="#93c5fd"
+              fill="rgb(147, 197, 253)"
             />
             <path
               d="M62 30C62 28 66 28 66 32V38M66 32L74 29V35M74 35C74 37 71 39 69 38M66 38C66 40 63 42 61 41"
-              stroke="#ea580c"
+              stroke="rgb(234, 88, 12)"
               strokeWidth="1.5"
               strokeLinecap="round"
             />
-            <ellipse cx="48" cy="98" rx="14" ry="9" fill="#d97706" />
-            <circle cx="36" cy="92" r="6" fill="#d97706" />
-            <path d="M34 88C32 86 31 89 33 91Z" fill="#b45309" />
-            <rect x="40" y="104" width="4" height="8" rx="1.5" fill="#d97706" />
-            <rect x="52" y="104" width="4" height="8" rx="1.5" fill="#d97706" />
+            <ellipse cx="48" cy="98" rx="14" ry="9" fill="rgb(217, 119, 6)" />
+            <circle cx="36" cy="92" r="6" fill="rgb(217, 119, 6)" />
+            <path d="M34 88C32 86 31 89 33 91Z" fill="rgb(180, 83, 9)" />
+            <rect x="40" y="104" width="4" height="8" rx="1.5" fill="rgb(217, 119, 6)" />
+            <rect x="52" y="104" width="4" height="8" rx="1.5" fill="rgb(217, 119, 6)" />
             <path
               d="M62 95C66 93 68 90 67 87"
-              stroke="#d97706"
+              stroke="rgb(217, 119, 6)"
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -723,8 +723,8 @@ export default function MobileAgentReminderSetting() {
                   {/* 1. 오늘 강의 시간표 알림 */}
                   <GroupRow onClick={handleOpenTimetableBriefModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor="#a855f7">
-                      <Calendar size={20} color="#ffffff" />
+                    <IconCircle $bgColor="rgb(168, 85, 247)">
+                      <Calendar size={20} color="var(--text-inverse)" />
                     </IconCircle>
 
                     <TextContentWrapper>
@@ -749,8 +749,8 @@ export default function MobileAgentReminderSetting() {
                   {/* 2. 수업 시작 전 알림 (Now Bar 또는 일반 푸시 통합) */}
                   <GroupRow onClick={handleOpenPreClassModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor="#0055D4">
-                      <Clock size={20} color="#ffffff" />
+                    <IconCircle $bgColor="var(--interactive-primary)">
+                      <Clock size={20} color="var(--text-inverse)" />
                     </IconCircle>
 
                     <TextContentWrapper>
@@ -777,8 +777,8 @@ export default function MobileAgentReminderSetting() {
                   {/* 3. 주요 학사일정 알림 */}
                   <GroupRow onClick={handleOpenScheduleModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
-                    <IconCircle $bgColor="#3b82f6">
-                      <GraduationCap size={20} color="#ffffff" />
+                    <IconCircle $bgColor="var(--interactive-primary)">
+                      <GraduationCap size={20} color="var(--text-inverse)" />
                     </IconCircle>
 
                     <TextContentWrapper>
@@ -834,7 +834,7 @@ export default function MobileAgentReminderSetting() {
                         >
                           <Ripple color="rgba(0, 0, 0, 0.05)" />
                           <IconCircle $bgColor={bg}>
-                            {renderRoutineIcon(iconId, 20, "#ffffff")}
+                            {renderRoutineIcon(iconId, 20, "var(--text-inverse)")}
                           </IconCircle>
 
                           <TextContentWrapper>
@@ -868,7 +868,7 @@ export default function MobileAgentReminderSetting() {
             <SectionWrapper>
               <SectionTitleRow>
                 <SectionTitle>이동할 때 유용한</SectionTitle>
-                <ChevronRight size={18} color="#9ca3af" />
+                <ChevronRight size={18} color="var(--gray-500)" />
               </SectionTitleRow>
 
               <GroupCard>
@@ -882,7 +882,7 @@ export default function MobileAgentReminderSetting() {
                     >
                       <Ripple color="rgba(0, 0, 0, 0.05)" />
                       <IconCircle $bgColor={preset.iconBg}>
-                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                        {renderRoutineIcon(preset.iconType, 20, "var(--text-inverse)")}
                       </IconCircle>
 
                       <TextContentWrapper>
@@ -890,7 +890,7 @@ export default function MobileAgentReminderSetting() {
                         <RowSubTitle>{preset.description}</RowSubTitle>
                       </TextContentWrapper>
 
-                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                      <ChevronRight size={18} color="var(--border-strong)" style={{ position: "relative", zIndex: 1 }} />
                     </GroupRow>
                   </React.Fragment>
                 ))}
@@ -901,7 +901,7 @@ export default function MobileAgentReminderSetting() {
             <SectionWrapper>
               <SectionTitleRow>
                 <SectionTitle>특정 시간이나 장소에서 유용한</SectionTitle>
-                <ChevronRight size={18} color="#9ca3af" />
+                <ChevronRight size={18} color="var(--gray-500)" />
               </SectionTitleRow>
 
               <GroupCard>
@@ -915,7 +915,7 @@ export default function MobileAgentReminderSetting() {
                     >
                       <Ripple color="rgba(0, 0, 0, 0.05)" />
                       <IconCircle $bgColor={preset.iconBg}>
-                        {renderRoutineIcon(preset.iconType, 20, "#ffffff")}
+                        {renderRoutineIcon(preset.iconType, 20, "var(--text-inverse)")}
                       </IconCircle>
 
                       <TextContentWrapper>
@@ -923,7 +923,7 @@ export default function MobileAgentReminderSetting() {
                         <RowSubTitle>{preset.description}</RowSubTitle>
                       </TextContentWrapper>
 
-                      <ChevronRight size={18} color="#d1d5db" style={{ position: "relative", zIndex: 1 }} />
+                      <ChevronRight size={18} color="var(--border-strong)" style={{ position: "relative", zIndex: 1 }} />
                     </GroupRow>
                   </React.Fragment>
                 ))}
@@ -1070,7 +1070,7 @@ export default function MobileAgentReminderSetting() {
                   <ModalOptionText $selected={tempPreClassMinutes === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempPreClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempPreClassMinutes === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -1652,7 +1652,7 @@ const MethodRadioDot = styled.div<{ $selected: boolean }>`
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "#94a3b8")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-strong)")};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1675,7 +1675,7 @@ const MethodTitleWrapper = styled.div`
 const MethodTitle = styled.div<{ $selected: boolean }>`
   font-size: 14.5px;
   font-weight: 700;
-  color: ${({ $selected }) => ($selected ? "#1e40af" : "var(--text-primary)")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-primary)")};
 `;
 
 const RecommendTag = styled.span`
