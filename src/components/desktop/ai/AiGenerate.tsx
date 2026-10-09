@@ -287,7 +287,7 @@ const EtaText = styled.div`
 const RefreshButton = styled.button`
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #6d4dc7;
+  background-color: rgb(109, 77, 199);
   color: var(--text-inverse);
   border: none;
   border-radius: 12px;
@@ -324,7 +324,7 @@ const GenerateButton = styled.button`
   padding: 0 20px;
   border-radius: 12px;
   border: none;
-  background: #6d4dc7;
+  background: rgb(109, 77, 199);
   color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;
@@ -336,7 +336,7 @@ const MobileLoginButton = styled.button`
   padding: 0 20px;
   border-radius: 12px;
   border: none;
-  background: #6d4dc7;
+  background: rgb(109, 77, 199);
   color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;
@@ -356,7 +356,7 @@ const DesktopLoginButton = styled.a`
   padding: 0 20px;
   border-radius: 12px;
   border: none;
-  background: #6d4dc7;
+  background: rgb(109, 77, 199);
   color: var(--text-inverse);
   font-size: 16px;
   font-weight: bold;

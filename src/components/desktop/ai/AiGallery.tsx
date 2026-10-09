@@ -317,14 +317,14 @@ const ImageContainer = styled.div`
     margin-top: 8px;
     padding: 5px 10px;
     font-size: 14px;
-    background-color: #6d4dc7;
+    background-color: rgb(109, 77, 199);
     color: var(--text-inverse);
     border: none;
     border-radius: 8px;
     text-decoration: none;
 
     &:hover {
-      background-color: #5836a5;
+      background-color: rgb(88, 54, 165);
     }
   }
 `;
@@ -342,7 +342,7 @@ const GalleryStatus = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #6d4dc7;
+  background-color: rgb(109, 77, 199);
   border-radius: 12px;
   padding: 8px;
   text-align: center;
@@ -358,7 +358,7 @@ const SmallRefreshButton = styled.button`
   padding: 5px 10px;
   font-size: 14px;
   background-color: var(--bg-base);
-  color: #6d4dc7;
+  color: rgb(109, 77, 199);
   border: none;
   border-radius: 8px;
   margin-top: 10px;
@@ -376,7 +376,7 @@ const PaginationWrapper = styled.div`
 const PageNumber = styled.button<{ $active: boolean }>`
   padding: 8px 12px;
   font-size: 16px;
-  background-color: ${(props) => (props.$active ? "#6d4dc7" : "var(--bg-base)")};
+  background-color: ${(props) => (props.$active ? "rgb(109, 77, 199)" : "var(--bg-base)")};
   color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--text-secondary)")};
   border: none;
   border-radius: 6px;
