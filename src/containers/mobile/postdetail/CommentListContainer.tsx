@@ -117,7 +117,7 @@ export default function CommentListMobile({
           setActiveMenuId(activeMenuId === reply.id ? null : reply.id)
         }
       >
-        <Icon name="dot-vertical" size={20} color="#8B95A1" />
+        <Icon name="dot-vertical" size={20} color="var(--text-tertiary)" />
       </MenuIconBtn>
       {activeMenuId === reply.id && (
         <>

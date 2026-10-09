@@ -117,7 +117,7 @@ const FolderItem = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? "#4071B9" : "var(--text-primary)")};
+  color: ${({ selected }) => (selected ? "var(--text-brand)" : "var(--text-primary)")};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -129,7 +129,7 @@ const ManageFolderButton = styled.div<{ selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ selected }) => (selected ? "#4071B9" : "var(--text-inverse)")};
+  color: ${({ selected }) => (selected ? "var(--text-brand)" : "var(--text-inverse)")};
   font-size: 30px;
   font-weight: 500;
   cursor: pointer;
@@ -138,7 +138,7 @@ const ManageFolderButton = styled.div<{ selected: boolean }>`
 const SelectedBar = styled.div`
   width: 100%;
   height: 2px;
-  background-color: #4071b9;
+  background-color: var(--branding-brand-blue);
   position: absolute;
   bottom: 0px;
   z-index: 10;

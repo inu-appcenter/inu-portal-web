@@ -125,7 +125,7 @@ export default function CardComment({
 const CardWrapper = styled.div`
   font-size: 15px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
 
   span {
     color: var(--text-tertiary);
@@ -266,7 +266,7 @@ const Description = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  color: #df5532;
+  color: var(--text-error);
   font-size: 16px;
   font-weight: 500;
   width: 100%;
@@ -282,7 +282,7 @@ const ModalBottom = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #0e4d9d;
+  color: var(--text-brand);
   font-size: 16px;
   font-weight: 500;
 `;

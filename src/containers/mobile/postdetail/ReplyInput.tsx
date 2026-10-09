@@ -197,9 +197,9 @@ export default function ReplyInput({
           }
         >
           {isAnonymous ? (
-            <CheckSquare size={18} color={loading ? "#8B95A1" : "#0061FF"} />
+            <CheckSquare size={18} color={loading ? "var(--text-tertiary)" : "var(--text-brand)"} />
           ) : (
-            <Square size={18} color="#B0B8C1" />
+            <Square size={18} color="var(--text-disabled)" />
           )}
           <span>익명</span>
         </span>
@@ -216,9 +216,9 @@ export default function ReplyInput({
             />
             <SendButtonBtn onClick={handleCreateReply} $disabled={loading}>
               {loading ? (
-                <SpinIcon size={20} color="#0061FF" />
+                <SpinIcon size={20} color="var(--text-brand)" />
               ) : (
-                <CornerDownLeft size={20} color="#0061FF" />
+                <CornerDownLeft size={20} color="var(--text-brand)" />
               )}
             </SendButtonBtn>
           </>

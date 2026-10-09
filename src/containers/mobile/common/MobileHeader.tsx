@@ -91,7 +91,7 @@ const Badge = styled.div`
   z-index: 1;
   width: 8px;
   height: 8px;
-  background-color: #ffd60a;
+  background-color: var(--yellow-400);
   border-radius: 50%;
   pointer-events: none;
 `;

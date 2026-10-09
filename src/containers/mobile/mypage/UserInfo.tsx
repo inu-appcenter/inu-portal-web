@@ -27,7 +27,7 @@ export default function UserInfo({ clickable = true }: UserInfoProps) {
           <Department>{userInfo.department || "학과 정보 없음"}</Department>
         </TextSection>
       </ProfileSection>
-      {clickable && <FiChevronRight size={24} color="#adb5bd" />}
+      {clickable && <FiChevronRight size={24} color="var(--gray-400)" />}
     </UserInfoWrapper>
   );
 }

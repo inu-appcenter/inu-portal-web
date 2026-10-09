@@ -130,7 +130,7 @@ const CardWrapper = styled.div`
   box-sizing: border-box;
   font-size: 15px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;
@@ -204,7 +204,7 @@ const Description = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  color: #df5532;
+  color: var(--text-error);
   font-size: 16px;
   font-weight: 500;
   width: 100%;
@@ -220,7 +220,7 @@ const ModalBottom = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #0e4d9d;
+  color: var(--text-brand);
   font-size: 16px;
   font-weight: 500;
 `;
