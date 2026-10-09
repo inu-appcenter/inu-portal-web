@@ -79,6 +79,26 @@ function toAnonymousAcademicContext(data: any) {
   };
 }
 
+/**
+ * UI 표시 및 안전한 캐싱을 위한 정제 학적 정보 생성.
+ * rawFields 등 저수준 프로토콜 파편 및 불필요한 민감 필드를 배제합니다.
+ */
+export function toSanitizedAcademicDisplay(data: any) {
+  if (!data) return undefined;
+  const raw = data.rawFields || {};
+  return {
+    studentId: data.studentId || raw.stuno || "",
+    koreanName: data.koreanName || raw.korNm || "",
+    departmentName: data.departmentName || raw.deptNm || "",
+    collegeName: data.collegeName || "",
+    enrollmentStatus: data.enrollmentStatus || "재학",
+    acquiredCredits: String(data.acquiredCredits || raw.acqHp || "0"),
+    gradeAverage: String(data.gradeAverage || raw.mrksAvg || "0.0"),
+    advisorProfessorName: data.advisorProfessorName || "",
+    completedSemesterCount: String(data.completedSemesterCount || raw.mrksCptnTmCnt || ""),
+  };
+}
+
 export interface AgentActionResult<T = any> {
   success: boolean;
   data?: T;
@@ -797,10 +817,14 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
         fetchAcademicInfoFromApp()
           .then((res) => {
             if (res?.success && res.data) {
-              context.academicDisplay = res.data;
+              context.academicDisplay = toSanitizedAcademicDisplay(res.data);
               context.academic = toAnonymousAcademicContext(res.data);
               try {
-                localStorage.setItem("portal_student_info", JSON.stringify(res.data));
+                const cachedData = {
+                  ...res.data,
+                  rawFields: undefined,
+                };
+                localStorage.setItem("portal_student_info", JSON.stringify(cachedData));
                 localStorage.setItem("portal_info_last_updated", new Date().toISOString());
               } catch {}
             }

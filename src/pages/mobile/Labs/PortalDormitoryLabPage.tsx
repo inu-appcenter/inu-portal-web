@@ -563,7 +563,12 @@ const PortalDormitoryLabPage = () => {
         setLastUpdated(nowIso);
 
         try {
-          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(finalDormData));
+          const sanitizedDormData = {
+            ...finalDormData,
+            rawDatasets: {},
+            rawFields: undefined,
+          };
+          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(sanitizedDormData));
           localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
           addLog("CACHE_SAVED", "로컬 스토리지에 최신 사생정보 캐싱 완료", "info");
         } catch (storageErr) {
@@ -589,7 +594,8 @@ const PortalDormitoryLabPage = () => {
                       ...prev,
                       photoBase64: photo,
                       profile: prev.profile ? { ...prev.profile, photoBase64: photo } : prev.profile,
-                      rawFields: { ...rf, ...(prev.rawFields || {}) },
+                      rawFields: undefined,
+                      rawDatasets: {},
                     };
                     try {
                       localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
@@ -654,6 +660,8 @@ const PortalDormitoryLabPage = () => {
             if (!prev) return res.data as DormitoryStudentInfo;
             const updated: DormitoryStudentInfo = {
               ...prev,
+              rawFields: undefined,
+              rawDatasets: {},
               ...(tabType === "utility" && res.data?.utilityList
                 ? { utilityList: res.data.utilityList }
                 : {}),

@@ -56,7 +56,11 @@ export const PortalAccountModal: React.FC<Props> = ({
         if (academicRes.success) {
           if (academicRes.data) {
             try {
-              localStorage.setItem("portal_student_info", JSON.stringify(academicRes.data));
+              const cachedData = {
+                ...academicRes.data,
+                rawFields: undefined,
+              };
+              localStorage.setItem("portal_student_info", JSON.stringify(cachedData));
               localStorage.setItem("portal_info_last_updated", new Date().toISOString());
             } catch {}
           }
