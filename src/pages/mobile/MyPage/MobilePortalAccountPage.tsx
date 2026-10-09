@@ -11,6 +11,7 @@ import {
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import { StudentInfo } from "@/types/portal";
+import { secureStorage } from "@/utils/secureStorage";
 import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
@@ -66,12 +67,10 @@ export default function MobilePortalAccountPage() {
   const loadStatus = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 로컬에 캐시된 학적 정보 확인
-      const savedInfo = localStorage.getItem("portal_student_info");
+      // 보안 스토리지에 캐시된 학적 정보 확인
+      const savedInfo = await secureStorage.getItem<StudentInfo>("portal_student_info");
       if (savedInfo) {
-        try {
-          setStudentInfo(JSON.parse(savedInfo));
-        } catch {}
+        setStudentInfo(savedInfo);
       }
 
       if (isMobileAppEnvironment()) {
@@ -83,7 +82,7 @@ export default function MobilePortalAccountPage() {
           if (academicRes?.success && academicRes.data) {
             const student = adaptAcademicInfoToStudentInfo(academicRes.data);
             setStudentInfo(student);
-            localStorage.setItem("portal_student_info", JSON.stringify(student));
+            void secureStorage.setItem("portal_student_info", student);
             localStorage.setItem("portal_info_last_updated", new Date().toISOString());
           }
         }
@@ -122,7 +121,7 @@ export default function MobilePortalAccountPage() {
         if (academicRes.success && academicRes.data) {
           const student = adaptAcademicInfoToStudentInfo(academicRes.data);
           setStudentInfo(student);
-          localStorage.setItem("portal_student_info", JSON.stringify(student));
+          await secureStorage.setItem("portal_student_info", student);
           localStorage.setItem("portal_info_last_updated", new Date().toISOString());
         }
 
@@ -147,7 +146,7 @@ export default function MobilePortalAccountPage() {
       if (isMobileAppEnvironment()) {
         await deletePortalAccount().catch(() => {});
       }
-      localStorage.removeItem("portal_student_info");
+      secureStorage.removeItem("portal_student_info");
       localStorage.removeItem("portal_info_last_updated");
       setStudentInfo(null);
       setIsLinked(false);

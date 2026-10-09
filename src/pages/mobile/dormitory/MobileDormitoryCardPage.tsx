@@ -7,6 +7,7 @@ import {
   DormitoryStudentInfo,
   parseDormitoryStudentInfo,
 } from "@/utils/ssvParser";
+import { secureStorage } from "@/utils/secureStorage";
 import { MobileDormitoryCard } from "@/components/mobile/dormitory/MobileDormitoryCard";
 
 const STORAGE_KEY_DORMITORY_DATA = "portal_dormitory_student_info";
@@ -53,21 +54,20 @@ export default function MobileDormitoryCardPage() {
   const navigate = useNavigate();
   const [dormInfo, setDormInfo] = useState<DormitoryStudentInfo | null>(null);
 
-  // 로컬 스토리지 캐시 데이터 복원
-  const loadCachedData = useCallback(() => {
+  // 로컬 보안 스토리지 캐시 데이터 복원
+  const loadCachedData = useCallback(async () => {
     try {
-      const cached = localStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
-      const academicCached = localStorage.getItem("portal_student_info");
+      const cached = await secureStorage.getItem<any>(STORAGE_KEY_DORMITORY_DATA);
+      const academicCached = await secureStorage.getItem<any>("portal_student_info");
       let academicParsed: any = null;
       if (academicCached) {
         try {
-          academicParsed = parseDormitoryStudentInfo(JSON.parse(academicCached));
+          academicParsed = parseDormitoryStudentInfo(academicCached);
         } catch {}
       }
 
       if (cached) {
-        const parsedJson = JSON.parse(cached);
-        const restored = parseDormitoryStudentInfo(parsedJson);
+        const restored = parseDormitoryStudentInfo(cached);
         const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
         if ((!restored.studentName || !hasValidRf) && academicParsed) {
           setDormInfo({

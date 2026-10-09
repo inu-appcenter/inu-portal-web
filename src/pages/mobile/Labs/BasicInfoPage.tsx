@@ -22,6 +22,7 @@ import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
 import { KeyRound, Smartphone } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
+import { secureStorage } from "@/utils/secureStorage";
 
 interface InfoItemProps {
   title: string;
@@ -63,22 +64,27 @@ const BasicInfoPage = () => {
 
   // 컴포넌트 마운트 시 데이터 복구 및 연동 상태 확인
   useEffect(() => {
-    const savedData = localStorage.getItem("portal_student_info");
-    const savedTime = localStorage.getItem("portal_info_last_updated");
+    let isMounted = true;
+    const restoreData = async () => {
+      const savedStudent = await secureStorage.getItem<StudentInfo>("portal_student_info");
+      const savedTime = localStorage.getItem("portal_info_last_updated");
 
-    if (savedData && savedTime) {
-      try {
-        setStudentInfo(JSON.parse(savedData));
+      if (!isMounted) return;
+      if (savedStudent && savedTime) {
+        setStudentInfo(savedStudent);
         setLastUpdated(savedTime);
         setIsFetched(true);
-      } catch (e) {
-        console.error("Failed to parse saved student info:", e);
+      } else {
+        setIsFetched(false);
       }
-    } else {
-      setIsFetched(false);
-    }
+    };
 
+    void restoreData();
     void checkLinkStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, [checkLinkStatus]);
 
   useEffect(() => {
@@ -130,7 +136,7 @@ const BasicInfoPage = () => {
         setIsFetched(true);
         setIsPortalLinked(true);
 
-        localStorage.setItem("portal_student_info", JSON.stringify(student));
+        void secureStorage.setItem("portal_student_info", student);
         localStorage.setItem("portal_info_last_updated", now);
 
         setTimeout(() => {
@@ -193,7 +199,7 @@ const BasicInfoPage = () => {
         label: "캐시된 학적 데이터 삭제",
         onClick: async () => {
           if (window.confirm("기기에 캐시된 학적 정보를 삭제할까요?")) {
-            localStorage.removeItem("portal_student_info");
+            secureStorage.removeItem("portal_student_info");
             localStorage.removeItem("portal_info_last_updated");
             setStudentInfo(null);
             setLastUpdated(null);
