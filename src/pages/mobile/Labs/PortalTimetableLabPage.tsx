@@ -235,7 +235,7 @@ const PortalTimetableLabPage = () => {
     <PageWrapper>
       {!isMobileAppEnvironment() && (
         <WarningBanner>
-          <Smartphone size={20} color="#0061ff" />
+          <Smartphone size={20} color="var(--interactive-primary)" />
           <WarningBannerText>
             <strong>INTIP 모바일 앱 환경이 아니에요</strong>
             <br />
@@ -334,11 +334,11 @@ const PortalTimetableLabPage = () => {
 
                         <CourseMetaGrid>
                           <MetaItem>
-                            <User size={13} color="#6b7684" />
+                            <User size={13} color="var(--gray-500)" />
                             <span>{item.professorName || "교수 미정"}</span>
                           </MetaItem>
                           <MetaItem>
-                            <BookOpen size={13} color="#6b7684" />
+                            <BookOpen size={13} color="var(--gray-500)" />
                             <span>
                               {item.credits}학점 · {item.departmentName || "개설학과"}
                             </span>
@@ -543,7 +543,7 @@ const PortalTimetableLabPage = () => {
               <>
                 <TitleContentArea title="장학금 총 수혜액">
                   <ScholarshipBanner>
-                    <Award size={32} color="#0061ff" />
+                    <Award size={32} color="var(--interactive-primary)" />
                     <div>
                       <div className="title">총 누적 수혜 장학금</div>
                       <div className="amount">
@@ -815,7 +815,7 @@ const RetakeBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
   background-color: var(--bg-error);
-  color: #f04438;
+  color: var(--text-error);
   padding: 2px 6px;
   border-radius: 6px;
   white-space: nowrap;
@@ -950,7 +950,7 @@ const GradeResultBox = styled.div<{ $grade: string }>`
     props.$grade.startsWith("A")
       ? "var(--bg-brand)"
       : props.$grade === "P"
-      ? "#e6f8ed"
+      ? "rgb(230, 248, 237)"
       : "var(--bg-muted)"};
 
   .grade {
@@ -960,7 +960,7 @@ const GradeResultBox = styled.div<{ $grade: string }>`
       props.$grade.startsWith("A")
         ? "var(--text-brand)"
         : props.$grade === "P"
-        ? "#12b76a"
+        ? "var(--text-success)"
         : "var(--text-secondary)"};
   }
 
@@ -1030,7 +1030,7 @@ const AreaCreditStatus = styled.div<{ $satisfied: boolean }>`
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: ${(props) => (props.$satisfied ? "#12b76a" : "#f04438")};
+  color: ${(props) => (props.$satisfied ? "var(--text-success)" : "var(--text-error)")};
 `;
 
 const ScholarshipBanner = styled.div`

@@ -49,13 +49,13 @@ const STATUS_CONFIG: Record<
   },
   SUCCESS: {
     label: "성공",
-    color: "#10b981",
-    bg: "#ecfdf5",
+    color: "var(--text-success)",
+    bg: "rgb(236, 253, 245)",
     renderIcon: (size) => <Icon name="circle-check" size={size} />,
   },
   PARTIAL_FAILURE: {
     label: "부분 실패",
-    color: "#f59e0b",
+    color: "var(--state-warning)",
     bg: "var(--bg-warn)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
@@ -73,7 +73,7 @@ const STATUS_CONFIG: Record<
   },
   ABANDONED: {
     label: "발송 포기",
-    color: "#a855f7",
+    color: "rgb(168, 85, 247)",
     bg: "var(--bg-brand)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
@@ -97,10 +97,10 @@ const SCHEDULE_STATUS_CONFIG: Record<
 > = {
   SCHEDULED: { label: "발송 대기", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
   DISPATCHING: { label: "발송 중", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
-  SENT: { label: "발송됨", color: "#10b981", bg: "#ecfdf5" },
+  SENT: { label: "발송됨", color: "var(--text-success)", bg: "rgb(236, 253, 245)" },
   FAILED: { label: "발송 실패", color: "var(--text-error)", bg: "var(--bg-error)" },
   CANCELED: { label: "취소됨", color: "var(--gray-600)", bg: "var(--bg-muted)" },
-  EXPIRED: { label: "만료됨", color: "#f59e0b", bg: "var(--bg-warn)" },
+  EXPIRED: { label: "만료됨", color: "var(--state-warning)", bg: "var(--bg-warn)" },
 };
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -358,7 +358,7 @@ export default function MobileAdminNotificationPage() {
             </LogList>
           ) : (
             <EmptyState>
-              <Icon name="bell" size={48} color="#e2e8f0" />
+              <Icon name="bell" size={48} color="var(--border-default)" />
               <p>{loading ? "불러오는 중..." : "전송 이력이 없습니다."}</p>
             </EmptyState>
           )}
@@ -407,7 +407,7 @@ export default function MobileAdminNotificationPage() {
             </LogList>
           ) : (
             <EmptyState>
-              <Clock size={48} color="#e2e8f0" />
+              <Clock size={48} color="var(--border-default)" />
               <p>{scheduledLoading ? "불러오는 중..." : "예약된 알림이 없습니다."}</p>
             </EmptyState>
           )}
@@ -444,7 +444,7 @@ export default function MobileAdminNotificationPage() {
                 <StatLab>총 대상</StatLab>
               </StatItem>
               <StatItem>
-                <StatVal style={{ color: "#10b981" }}>{selectedLog.sendCount}</StatVal>
+                <StatVal style={{ color: "var(--text-success)" }}>{selectedLog.sendCount}</StatVal>
                 <StatLab>성공</StatLab>
               </StatItem>
               <StatItem>
@@ -516,7 +516,7 @@ export default function MobileAdminNotificationPage() {
                     </RetryStatusRow>
                     <RetryStatusRow>
                       <span>재발송 가능 대상</span>
-                      <strong style={{ color: selectedLog.retryableCount > 0 ? "var(--text-error)" : "#10b981" }}>
+                      <strong style={{ color: selectedLog.retryableCount > 0 ? "var(--text-error)" : "var(--text-success)" }}>
                         {selectedLog.retryableCount}명
                       </strong>
                     </RetryStatusRow>
@@ -589,7 +589,7 @@ const RetryBtn = styled.button`
 
 const RetryMetaItem = styled.span`
   font-size: 0.75rem;
-  color: #a855f7;
+  color: rgb(168, 85, 247);
   font-weight: 600;
 `;
 
@@ -647,7 +647,7 @@ const RetryNotice = styled.p`
   padding: 12px 14px;
   border-radius: 12px;
   background-color: var(--bg-warn);
-  color: #92400e;
+  color: rgb(146, 64, 14);
   font-size: 0.8125rem;
   line-height: 1.6;
 `;
@@ -667,7 +667,7 @@ const RetryPrimaryBtn = styled.button`
   transition: all 0.2s;
 
   &:hover:not(:disabled) {
-    background-color: #dc2626;
+    background-color: rgb(220, 38, 38);
   }
 
   &:disabled {
@@ -717,7 +717,7 @@ const TabButton = styled.button<{ $active: boolean }>`
   font-size: 0.875rem;
   font-weight: 700;
   transition: all 0.2s;
-  background-color: ${(props) => (props.$active ? "#0f172a" : "transparent")};
+  background-color: ${(props) => (props.$active ? "var(--text-primary)" : "transparent")};
   color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
 
   &:hover { color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--text-primary)")}; }
@@ -752,13 +752,13 @@ const CreateBtn = styled.button`
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background-color: #0f766e;
+  background-color: rgb(15, 118, 110);
   color: var(--text-inverse);
   border-radius: 12px;
   font-weight: 700;
   transition: all 0.2s;
 
-  &:hover { background-color: #0d9488; transform: translateY(-1px); }
+  &:hover { background-color: rgb(13, 148, 136); transform: translateY(-1px); }
 `;
 
 const RefreshBtn = styled.button`

@@ -14,12 +14,12 @@ import { ROUTES } from "@/constants/routes";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
-const METHOD_COLORS: Record<string, string> = {
-  GET: "#10b981",
-  POST: "#3b82f6",
-  PUT: "#f59e0b",
-  DELETE: "#ef4444",
-  PATCH: "#8b5cf6",
+const METHOD_COLORS: Record<string, { text: string; bg: string }> = {
+  GET: { text: "var(--text-success)", bg: "rgba(16, 185, 129, 0.12)" },
+  POST: { text: "var(--primary)", bg: "rgba(59, 130, 246, 0.12)" },
+  PUT: { text: "var(--state-warning)", bg: "rgba(245, 158, 11, 0.12)" },
+  DELETE: { text: "var(--text-error)", bg: "rgba(239, 68, 68, 0.12)" },
+  PATCH: { text: "rgb(139, 92, 246)", bg: "rgba(139, 92, 246, 0.12)" },
 };
 
 const MobileAdminApiStatisticsPage: React.FC = () => {
@@ -110,21 +110,21 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
             title="총 API 호출"
             value={totalCalls.toLocaleString()}
             icon={(size) => <Activity size={size} />}
-            color="#0f766e"
+            color="rgb(15, 118, 110)"
             description="오늘 발생한 총 요청"
           />
           <StatsDashboardCard
             title="가장 많이 호출됨"
             value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
             icon={(size) => <Zap size={size} />}
-            color="#f59e0b"
+            color="var(--state-warning)"
             description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
           />
           <StatsDashboardCard
             title="엔드포인트 개수"
             value={apiLogs.length}
             icon={(size) => <BarChart3 size={size} />}
-            color="#3b82f6"
+            color="var(--primary)"
             description="활성 API 경로 수"
           />
         </StatsGrid>
@@ -345,7 +345,7 @@ const Table = styled.table`
 
     .rank { font-weight: 700; color: var(--text-tertiary); white-space: nowrap; text-align: center; }
     .uri { font-family: monospace; font-weight: 500; color: var(--text-primary); }
-    .count { font-weight: 800; color: #0f766e; text-align: right; 
+    .count { font-weight: 800; color: rgb(15, 118, 110); text-align: right; 
       small { font-weight: 500; color: var(--text-tertiary); font-size: 0.75rem; }
     }
     .loading, .empty { text-align: center; padding: 60px; color: var(--text-tertiary); }
@@ -357,8 +357,8 @@ const MethodBadge = styled.span<{ $method: string }>`
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 800;
-  background-color: ${props => METHOD_COLORS[props.$method] || "#64748b"}20;
-  color: ${props => METHOD_COLORS[props.$method] || "#64748b"};
+  background-color: ${props => METHOD_COLORS[props.$method]?.bg || "rgba(100, 116, 139, 0.12)"};
+  color: ${props => METHOD_COLORS[props.$method]?.text || "var(--gray-500)"};
   display: inline-block;
   min-width: 60px;
   text-align: center;

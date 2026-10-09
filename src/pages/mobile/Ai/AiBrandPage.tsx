@@ -54,7 +54,7 @@ const AppItem = ({
           <IconWrapper $isPreparing={isPreparing}>
             <IconComponent
               size={24}
-              color={isPreparing ? "#a0a0a0" : "#6d4dc7"}
+              color={isPreparing ? "var(--button-inactive)" : "rgb(109, 77, 199)"}
             />
           </IconWrapper>
         ) : null}
@@ -67,7 +67,7 @@ const AppItem = ({
               {title}
             </div>
             {isPreparing && (
-              <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
+              <LuLock size={13} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />
             )}
             {isExternal && (
               <ExternalIconImg name="link-external" size={14} label="외부 서비스" />
@@ -343,7 +343,7 @@ const IconWrapper = styled.div<{ $isPreparing?: boolean }>`
   height: 48px;
   border-radius: 8px;
   background-color: ${({ $isPreparing }) =>
-    $isPreparing ? "var(--bg-muted)" : "#f0ecfa"};
+    $isPreparing ? "var(--bg-muted)" : "rgb(240, 236, 250)"};
   flex-shrink: 0;
 `;
 

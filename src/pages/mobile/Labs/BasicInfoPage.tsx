@@ -223,7 +223,7 @@ const BasicInfoPage = () => {
 
         {!isMobileAppEnvironment() ? (
           <EmptyCard>
-            <Smartphone size={32} color="#0061ff" />
+            <Smartphone size={32} color="var(--interactive-primary)" />
             <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
             <EmptyDesc>
               학적 정보 조회는 INTIP 모바일 앱 환경에서 제공돼요.
@@ -239,7 +239,7 @@ const BasicInfoPage = () => {
           </EmptyCard>
         ) : !isPortalLinked && !isFetched ? (
           <EmptyCard>
-            <KeyRound size={32} color="#0061ff" />
+            <KeyRound size={32} color="var(--interactive-primary)" />
             <EmptyTitle>포털 계정 연동 후 학적 정보를 확인할 수 있어요</EmptyTitle>
             <EmptyDesc>
               마이페이지에서 포털 계정을 등록하면 학적 상태, 취득 학점, 성적 정보를 안전하게 가져와요.

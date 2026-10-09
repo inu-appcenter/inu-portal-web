@@ -29,64 +29,64 @@ const MobileAdminPage = () => {
       label: "접속 유저 통계",
       path: ROUTES.ADMIN.USER_STAT,
       description: "전체 활성 유저 및 유형별 유입 통계",
-      icon: (size: number) => <Icon name="users" size={size} color="#fff" />,
-      color: "#3b82f6",
+      icon: (size: number) => <Icon name="users" size={size} color="var(--text-inverse)" />,
+      color: "var(--primary)",
       isExternal: false,
     },
     {
       label: "API 사용 통계",
       path: ROUTES.ADMIN.API_STAT,
       description: "엔드포인트별 호출 빈도 및 트래픽 분석",
-      icon: (size: number) => <Activity size={size} color="#fff" />,
-      color: "#10b981",
+      icon: (size: number) => <Activity size={size} color="var(--text-inverse)" />,
+      color: "var(--text-success)",
       isExternal: false,
     },
     {
       label: "푸시 알림 전송",
       path: ROUTES.ADMIN.USER_NOTIFICATIION,
       description: "전체 또는 타겟별 맞춤형 푸시 자동화",
-      icon: (size: number) => <Icon name="bell" size={size} color="#fff" />,
-      color: "#f59e0b",
+      icon: (size: number) => <Icon name="bell" size={size} color="var(--text-inverse)" />,
+      color: "var(--state-warning)",
       isExternal: false,
     },
     {
       label: "Feature Flag 관리",
       path: ROUTES.ADMIN.FEATURE_FLAGS,
       description: "배포 없이 즉각적인 신규 기능 제어",
-      icon: (size: number) => <Flag size={size} color="#fff" />,
-      color: "#8b5cf6",
+      icon: (size: number) => <Flag size={size} color="var(--text-inverse)" />,
+      color: "rgb(139, 92, 246)",
       isExternal: false,
     },
     {
       label: "채팅방 관리",
       path: ROUTES.ADMIN.CHAT,
       description: "축제 및 상시 채팅방 생성 및 제어",
-      icon: (size: number) => <Icon name="chat" size={size} color="#fff" />,
-      color: "#5844e4",
+      icon: (size: number) => <Icon name="chat" size={size} color="var(--text-inverse)" />,
+      color: "rgb(88, 68, 228)",
       isExternal: false,
     },
     {
       label: "AI 챗불이 관리",
       path: chatBotConsoleUrl,
       description: "AI 챗불이 설정 및 모니터링",
-      icon: (size: number) => <Bot size={size} color="#fff" />,
-      color: "#ec4899",
+      icon: (size: number) => <Bot size={size} color="var(--text-inverse)" />,
+      color: "rgb(236, 72, 153)",
       isExternal: true,
     },
     {
       label: "버스 노선 및 수집 관리",
       path: ROUTES.ADMIN.BUS,
       description: "동적 노선 구간 슬라이싱 및 30초 수집 정류장 설정",
-      icon: (size: number) => <Bus size={size} color="#fff" />,
-      color: "#2563eb",
+      icon: (size: number) => <Bus size={size} color="var(--text-inverse)" />,
+      color: "rgb(37, 99, 235)",
       isExternal: false,
     },
     {
       label: "검색 엔진 색인 관리",
       path: ROUTES.ADMIN.SEARCH,
       description: "Elasticsearch 인덱스 재생성, 동의어 반영 및 백필",
-      icon: (size: number) => <Search size={size} color="#fff" />,
-      color: "#0284c7",
+      icon: (size: number) => <Search size={size} color="var(--text-inverse)" />,
+      color: "rgb(2, 132, 199)",
       isExternal: false,
     },
   ];
@@ -163,7 +163,7 @@ const MobileAdminPage = () => {
             title="오늘의 방문자"
             value={stats.todayUsers}
             icon={(size) => <Icon name="users" size={size} />}
-            color="#3b82f6"
+            color="var(--primary)"
             trend={{ value: 12, isUp: true }}
             description="어제보다 12% 증가"
             onClick={() => navigate(ROUTES.ADMIN.USER_STAT)}
@@ -172,7 +172,7 @@ const MobileAdminPage = () => {
             title="오늘의 API 호출"
             value={stats.apiCalls.toLocaleString()}
             icon={(size) => <Activity size={size} />}
-            color="#10b981"
+            color="var(--text-success)"
             trend={{ value: 5, isUp: true }}
             onClick={() => navigate(ROUTES.ADMIN.API_STAT)}
           />
@@ -180,7 +180,7 @@ const MobileAdminPage = () => {
             title="활성 기능 플래그"
             value={stats.activeFlags}
             icon={(size) => <Flag size={size} />}
-            color="#818cf8"
+            color="rgb(129, 140, 248)"
             description="현재 적용 중인 주요 기능"
             onClick={() => navigate(ROUTES.ADMIN.FEATURE_FLAGS)}
           />

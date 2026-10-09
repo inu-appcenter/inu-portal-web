@@ -328,12 +328,12 @@ const CreateBtn = styled.button`
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background-color: #0f766e;
+  background-color: rgb(15, 118, 110);
   color: var(--text-inverse);
   border-radius: 12px;
   font-weight: 700;
   transition: all 0.2s;
-  &:hover { background-color: #0d9488; }
+  &:hover { background-color: rgb(13, 148, 136); }
 `;
 
 const RefreshBtn = styled.button`
@@ -420,8 +420,8 @@ const FlagIconBox = styled.div<{ $enabled: boolean }>`
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background-color: ${(props) => props.$enabled ? "#ecfdf5" : "var(--bg-muted)"};
-  color: ${(props) => props.$enabled ? "#059669" : "var(--text-tertiary)"};
+  background-color: ${(props) => props.$enabled ? "rgb(236, 253, 245)" : "var(--bg-muted)"};
+  color: ${(props) => props.$enabled ? "var(--text-success)" : "var(--text-tertiary)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -462,7 +462,7 @@ const VisibilityIndicator = styled.div<{ $visible: boolean }>`
   gap: 6px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${(props) => props.$visible ? "#0f766e" : "var(--text-tertiary)"};
+  color: ${(props) => props.$visible ? "rgb(15, 118, 110)" : "var(--text-tertiary)"};
 `;
 
 const SettingBtn = styled.button`
@@ -508,7 +508,7 @@ const Input = styled.input`
   border-radius: 10px;
   border: 1px solid var(--border-default);
   font-size: 0.95rem;
-  &:focus { outline: none; border-color: #0f766e; }
+  &:focus { outline: none; border-color: rgb(15, 118, 110); }
 `;
 
 const ReadOnlyValue = styled.div`
@@ -526,7 +526,7 @@ const TextArea = styled.textarea`
   border: 1px solid var(--border-default);
   font-size: 0.95rem;
   resize: vertical;
-  &:focus { outline: none; border-color: #0f766e; }
+  &:focus { outline: none; border-color: rgb(15, 118, 110); }
 `;
 
 const ToggleRow = styled.div`
@@ -565,9 +565,9 @@ const CancelBtn = styled.button`
 
 const PrimaryBtn = styled.button`
   padding: 10px 24px;
-  background-color: #0f766e;
+  background-color: rgb(15, 118, 110);
   color: var(--text-inverse);
   border-radius: 10px;
   font-weight: 700;
-  &:disabled { background-color: #94a3b8; }
+  &:disabled { background-color: var(--button-inactive); }
 `;

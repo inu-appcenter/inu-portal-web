@@ -164,7 +164,7 @@ const Input = styled.input`
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #5844e4;
+    border-color: rgb(88, 68, 228);
   }
 `;
 
@@ -199,7 +199,7 @@ const ButtonGroup = styled.div`
 `;
 
 const PrimaryButton = styled.button`
-  background: #5844e4;
+  background: rgb(88, 68, 228);
   color: var(--text-inverse);
   padding: 14px;
   border-radius: 12px;
