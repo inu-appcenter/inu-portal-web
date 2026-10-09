@@ -175,7 +175,7 @@ const EventDot = styled.div<{ $type: ScheduleType }>`
   width: 8px;
   height: 8px;
   background-color: ${({ $type }) =>
-    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
+    $type === "dept" ? "rgb(154, 225, 217)" : "rgb(164, 182, 230)"};
   border-radius: 50%;
 `;
 

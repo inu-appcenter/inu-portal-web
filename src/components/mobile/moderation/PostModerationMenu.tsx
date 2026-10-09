@@ -59,7 +59,7 @@ export default function PostModerationMenu({
             setIsOpen((prev) => !prev);
           }}
         >
-          <Icon name="dot-vertical" size={18} color="#8B95A1" />
+          <Icon name="dot-vertical" size={18} color="var(--text-tertiary)" />
         </MenuIconBtn>
       </MenuWrapper>
 

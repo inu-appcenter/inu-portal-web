@@ -35,7 +35,7 @@ const ComingSoonModal = ({ isOpen, onClose }: ComingSoonModalProps) => {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             <IconWrapper>
-              <Construction size={48} color="#7a6dd0" />
+              <Construction size={48} color="rgb(122, 109, 208)" />
             </IconWrapper>
             <Title>준비 중인 기능이에요!</Title>
             <Description>
@@ -84,7 +84,7 @@ const ModalContainer = styled(motion.div)`
 const IconWrapper = styled.div`
   width: 80px;
   height: 80px;
-  background-color: #f3f0ff;
+  background-color: rgb(243, 240, 255);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -110,7 +110,7 @@ const Description = styled.p`
 const BackButton = styled.button`
   width: 100%;
   padding: 14px;
-  background-color: #7a6dd0;
+  background-color: rgb(122, 109, 208);
   color: var(--text-inverse);
   border: none;
   border-radius: 12px;

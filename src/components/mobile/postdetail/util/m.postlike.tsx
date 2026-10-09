@@ -88,8 +88,8 @@ export default function PostLike({ id, like, isLikedProp }: PostLikeProps) {
     <LikeContainer onClick={handleLike}>
       <Heart
         size={24}
-        color={isLikedState ? "#ef4444" : "#333D4B"}
-        fill={isLikedState ? "#ef4444" : "none"}
+        color={isLikedState ? "var(--text-error)" : "var(--gray-800)"}
+        fill={isLikedState ? "var(--text-error)" : "none"}
       />
       <span>{likeState}</span>
     </LikeContainer>

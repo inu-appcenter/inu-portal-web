@@ -42,7 +42,7 @@ const DropBoxWrapper = styled.div`
     padding: 0;
   }
   .point {
-    color: #20559e;
+    color: var(--interactive-primary);
     font-weight: 800;
   }
 `;

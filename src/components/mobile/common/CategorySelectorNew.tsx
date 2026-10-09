@@ -146,11 +146,11 @@ const CategoryScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
 
   mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, #000 85%, transparent 100%)`
+      ? `linear-gradient(to right, rgb(0, 0, 0) 85%, transparent 100%)`
       : "none"};
   -webkit-mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, #000 85%, transparent 100%)`
+      ? `linear-gradient(to right, rgb(0, 0, 0) 85%, transparent 100%)`
       : "none"};
 
   &::-webkit-scrollbar {

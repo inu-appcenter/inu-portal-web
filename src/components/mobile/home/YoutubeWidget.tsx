@@ -250,7 +250,7 @@ const InfoText = styled.span`
   font-size: 11px;
   color: var(--text-tertiary);
   &.date {
-    color: #4071b9;
+    color: var(--interactive-primary);
     font-weight: 500;
   }
 `;

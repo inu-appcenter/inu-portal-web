@@ -226,7 +226,7 @@ const TodayTimetableCard = styled.div`
   background-color: var(--bg-base);
   border-radius: 20px;
   padding: 16px;
-  box-shadow: 0px 4px 24px 0px #3b82f63d;
+  box-shadow: 0px 4px 24px 0px rgba(59, 130, 246, 0.24);
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;

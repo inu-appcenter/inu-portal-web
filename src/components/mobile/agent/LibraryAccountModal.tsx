@@ -64,7 +64,7 @@ export const LibraryAccountModal: React.FC<Props> = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <Header>
           <TitleRow>
-            <ShieldCheck size={20} color="#3182f6" />
+            <ShieldCheck size={20} color="var(--interactive-primary)" />
             <Title>학산도서관 계정 연동</Title>
           </TitleRow>
           <CloseButton onClick={onClose} type="button">
@@ -80,7 +80,7 @@ export const LibraryAccountModal: React.FC<Props> = ({
           <InputGroup>
             <Label>도서관 아이디 (학번)</Label>
             <InputWrap>
-              <User size={16} color="#8b95a1" />
+              <User size={16} color="var(--text-tertiary)" />
               <Input
                 type="text"
                 placeholder="예: 202001518"
@@ -95,7 +95,7 @@ export const LibraryAccountModal: React.FC<Props> = ({
           <InputGroup>
             <Label>도서관 비밀번호</Label>
             <InputWrap>
-              <Lock size={16} color="#8b95a1" />
+              <Lock size={16} color="var(--text-tertiary)" />
               <Input
                 type="password"
                 placeholder="도서관 시스템 비밀번호"
@@ -177,7 +177,7 @@ const NoticeBox = styled.div`
   border-radius: 12px;
   padding: 12px;
   font-size: 12px;
-  color: #1b64da;
+  color: var(--interactive-primary);
   line-height: 1.5;
 `;
 
@@ -232,7 +232,7 @@ const SubmitButton = styled.button`
   transition: background 0.2s;
 
   &:disabled {
-    background: #b0cbf7;
+    background: var(--blue-200);
     cursor: not-allowed;
   }
 `;

@@ -67,7 +67,7 @@ const Button = styled.button`
   }
 
   &:active {
-    background-color: #004085;
+    background-color: var(--interactive-primary-press);
   }
 
   &:focus {

@@ -14,8 +14,8 @@ const TabButton = ({
     <TabButtonWrapper
       onClick={onClick}
       style={{
-        borderBottomColor: isSelected ? "#0E4D9D" : "#B5B5B5",
-        color: isSelected ? "#0E4D9D" : "var(--text-disabled)",
+        borderBottomColor: isSelected ? "var(--interactive-primary)" : "var(--border-subtle)",
+        color: isSelected ? "var(--interactive-primary)" : "var(--text-disabled)",
       }}
     >
       {text}
@@ -68,7 +68,7 @@ const TabButtonWrapper = styled.div`
   height: fit-content;
   padding: 4px 20px;
   box-sizing: border-box;
-  border-bottom: 2px solid #b5b5b5; /* 기본 색상 설정 */
+  border-bottom: 2px solid var(--border-subtle); /* 기본 색상 설정 */
   font-style: normal;
   font-weight: 600;
   font-size: 13px;

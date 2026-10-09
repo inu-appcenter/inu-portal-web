@@ -224,7 +224,7 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger
   }};
   color: ${({ $variant }) => {
     if ($variant === "primary") return "var(--text-inverse)";
-    if ($variant === "danger") return "#FF3B30";
+    if ($variant === "danger") return "var(--text-error)";
     return "var(--text-secondary)";
   }};
 
@@ -288,18 +288,18 @@ const CircleActionButton = styled.button`
 
 const AlarmIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="13" r="7.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 9V13L14 15" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 3L8 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M19 3L16 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 20L4.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M18 20L19.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="13" r="7.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 9V13L14 15" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 3L8 1.3" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 3L16 1.3" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 20L4.5 21.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M18 20L19.5 21.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 const ChatBubbleIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="var(--interactive-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -681,7 +681,7 @@ export default function UserProfileModal({
                       )}
                       {profile.friendStatus === "ACCEPTED" && (
                         <EditAliasButton onClick={handleEditAlias}>
-                          <Edit3 size={16} color="#8E8E93" />
+                          <Edit3 size={16} color="var(--text-tertiary)" />
                         </EditAliasButton>
                       )}
                     </NicknameArea>
@@ -740,7 +740,7 @@ export default function UserProfileModal({
                             <Icon
                               name="star"
                               size={24}
-                              color={isFavorite ? "#FFC107" : "#0061FF"}
+                              color={isFavorite ? "rgb(255, 193, 7)" : "var(--interactive-primary)"}
                             />
                           </CircleActionButton>
                         )}
@@ -784,7 +784,7 @@ export default function UserProfileModal({
                             $variant="secondary"
                             disabled={deleteMutation.isPending}
                           >
-                            <UserCheck size={20} color="#8E8E93" />
+                            <UserCheck size={20} color="var(--text-tertiary)" />
                             요청 대기 중
                           </ActionButton>
                         )}
@@ -795,7 +795,7 @@ export default function UserProfileModal({
                             onClick={handleKick}
                             $variant="danger"
                           >
-                            <LogOut size={20} color="#FF3B30" />
+                            <LogOut size={20} color="var(--text-error)" />
                             강퇴
                           </ActionButton>
                         )}

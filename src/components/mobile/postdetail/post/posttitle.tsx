@@ -43,7 +43,7 @@ export default function PostTitle({
 
         {view !== undefined && (
           <ViewCountRow>
-            <Icon name="eye" size={16} color="#8B95A1" />
+            <Icon name="eye" size={16} color="var(--text-tertiary)" />
             <span>{view}</span>
           </ViewCountRow>
         )}

@@ -56,7 +56,7 @@ const MobileUtilHeaderWrapper = styled.div`
   }
 
   .selected {
-    background: linear-gradient(180deg, #6d98d7 0%, #0e4d9d 100%);
+    background: linear-gradient(180deg, rgb(109, 152, 215) 0%, rgb(14, 77, 157) 100%);
     color: var(--text-inverse);
     min-height: 46px;
   }

@@ -38,7 +38,7 @@ const ChevronLeft = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path
       d="M15 6L9 12L15 18"
-      stroke="#333"
+      stroke="var(--text-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -50,7 +50,7 @@ const ChevronRight = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path
       d="M9 18L15 12L9 6"
-      stroke="#333"
+      stroke="var(--text-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -601,7 +601,7 @@ const WeekdayCell = styled.div<{ $index: number }>`
   font-size: 13px;
   font-weight: 500;
   color: ${({ $index }) =>
-    $index === 0 ? "#F97171" : $index === 6 ? "#0A84FF" : "var(--gray-700)"};
+    $index === 0 ? "var(--text-error)" : $index === 6 ? "var(--interactive-primary)" : "var(--gray-700)"};
 `;
 
 const CalendarBody = styled.div`
@@ -637,7 +637,7 @@ const TodayCircle = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  background-color: #0a84ff;
+  background-color: var(--interactive-primary);
   z-index: 1;
 `;
 
@@ -669,7 +669,7 @@ const EventBar = styled.div<{
   }};
   height: 20px;
   background-color: ${({ $type }) =>
-    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
+    $type === "dept" ? "rgb(154, 225, 217)" : "rgb(164, 182, 230)"};
   color: var(--text-primary);
   font-size: 11px;
   font-weight: 400;

@@ -79,7 +79,7 @@ export default function CafeteriaItem({ section, isLoading }: CafeteriaItemProps
 const TinyCircle = styled.p`
   width: 1px;
   height: 1px;
-  background-color: #888888;
+  background-color: var(--text-tertiary);
   border-radius: 50%;
 `;
 

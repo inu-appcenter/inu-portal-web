@@ -272,7 +272,7 @@ const Modal = styled.div`
   border-radius: 16px;
   width: 95%;
   height: 80%;
-  background: linear-gradient(90deg, #6084d7 0%, #c294eb 100%);
+  background: linear-gradient(90deg, rgb(96, 132, 215) 0%, rgb(194, 148, 235) 100%);
 
   .close {
     display: flex;

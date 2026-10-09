@@ -362,7 +362,7 @@ const ButtonWrapper = styled.div`
   }
 
   button:first-child {
-    background-color: #7aa7e5;
+    background-color: var(--interactive-focus);
     color: var(--text-inverse);
   }
 `;
@@ -383,7 +383,7 @@ const GoodWrapper = styled.div`
   position: relative;
   width: 100%;
   height: 158px; /* 고정된 높이 */
-  border: 0.871981px solid #7aa7e5;
+  border: 0.871981px solid var(--interactive-focus);
   border-radius: 15px;
 
   display: flex;

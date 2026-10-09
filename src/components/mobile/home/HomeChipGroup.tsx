@@ -68,7 +68,7 @@ const HomeChipGroup = () => {
     {
       id: "phonebook",
       iconComponent: CallInuIcon,
-      iconColor: "#4071B9",
+      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "INU 전화번호부",
       onClick: () => {
@@ -79,7 +79,7 @@ const HomeChipGroup = () => {
     {
       id: "routine",
       iconComponent: LuRepeat,
-      iconColor: "#4071B9",
+      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "루틴",
       onClick: () => {
@@ -121,7 +121,7 @@ const HomeChipGroup = () => {
     {
       id: "unidorm",
       iconComponent: UnidormIcon,
-      iconColor: "#0E4D9D",
+      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "유니돔",
       isExternalLink: true,

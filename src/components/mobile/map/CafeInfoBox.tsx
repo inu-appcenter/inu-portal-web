@@ -64,7 +64,7 @@ const Title = styled.div`
   line-height: 30px;
   text-align: start;
 
-  color: #324d97;
+  color: var(--interactive-primary);
   width: 100%;
   height: fit-content;
 

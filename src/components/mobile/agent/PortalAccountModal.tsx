@@ -92,12 +92,12 @@ export const PortalAccountModal: React.FC<Props> = ({
         <Header>
           <Title>포털 계정 1회 연동</Title>
           <CloseButton onClick={onClose} type="button">
-            <X size={20} color="#8b95a1" />
+            <X size={20} color="var(--text-tertiary)" />
           </CloseButton>
         </Header>
 
         <SecurityNotice>
-          <ShieldCheck size={18} color="#00a651" />
+          <ShieldCheck size={18} color="var(--text-success)" />
           <SecurityNoticeText>
             <strong>안심하세요!</strong> 인천대 포털, LMS, 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 등록하시면 기기 보안 영역(KeyStore)에만 암호화 보관되며, 포털 학적·LMS 과제·도서관 좌석이 한 번에 자동 연동됩니다.
           </SecurityNoticeText>
@@ -107,7 +107,7 @@ export const PortalAccountModal: React.FC<Props> = ({
           <InputGroup>
             <InputLabel>포털 학번</InputLabel>
             <InputWrap>
-              <User size={16} color="#8b95a1" />
+              <User size={16} color="var(--text-tertiary)" />
               <Input
                 type="text"
                 placeholder="예: 202101234"
@@ -121,7 +121,7 @@ export const PortalAccountModal: React.FC<Props> = ({
           <InputGroup>
             <InputLabel>포털 비밀번호</InputLabel>
             <InputWrap>
-              <Lock size={16} color="#8b95a1" />
+              <Lock size={16} color="var(--text-tertiary)" />
               <Input
                 type="password"
                 placeholder="포털 비밀번호 입력"
@@ -193,7 +193,7 @@ const CloseButton = styled.button`
 `;
 
 const SecurityNotice = styled.div`
-  background: #e8f8f0;
+  background: rgb(232, 248, 240);
   border-radius: 12px;
   padding: 10px 12px;
   display: flex;
@@ -203,7 +203,7 @@ const SecurityNotice = styled.div`
 
 const SecurityNoticeText = styled.p`
   font-size: 11.5px;
-  color: #1b633d;
+  color: var(--text-success);
   line-height: 1.45;
   margin: 0;
 `;

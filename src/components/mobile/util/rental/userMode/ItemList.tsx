@@ -71,7 +71,7 @@ const GoodsListWrapper = styled.div`
 const GoodWrapper = styled.div`
   width: 150px;
   height: 170px; /* 고정된 높이 */
-  border: 0.871981px solid #a5a5a5;
+  border: 0.871981px solid var(--border-default);
   border-radius: 15px;
 
   display: flex;

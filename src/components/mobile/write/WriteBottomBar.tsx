@@ -36,7 +36,7 @@ export default function WriteBottomBar({
         <AnonymousCheck checked={anonymous} onChange={onAnonymousChange} />
 
         <IconButton onClick={() => cameraInputRef.current?.click()} type="button">
-          <Icon name="camera" size={24} color="#333D4B" />
+          <Icon name="camera" size={24} color="var(--gray-800)" />
         </IconButton>
         <input
           ref={cameraInputRef}
@@ -48,7 +48,7 @@ export default function WriteBottomBar({
         />
 
         <IconButton onClick={() => fileInputRef.current?.click()} type="button">
-          <Icon name="image" size={24} color="#333D4B" />
+          <Icon name="image" size={24} color="var(--gray-800)" />
           {imageCount > 0 && <ImageBadge>{imageCount}</ImageBadge>}
         </IconButton>
         <input

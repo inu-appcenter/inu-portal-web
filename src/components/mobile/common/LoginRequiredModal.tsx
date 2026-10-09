@@ -34,7 +34,7 @@ const LoginRequiredModal = ({ isOpen }: LoginRequiredModalProps) => {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             <IconWrapper>
-              <LogIn size={48} color="#7a6dd0" />
+              <LogIn size={48} color="rgb(122, 109, 208)" />
             </IconWrapper>
             <Title>로그인이 필요해요</Title>
             <Description>
@@ -86,7 +86,7 @@ const ModalContainer = styled(motion.div)`
 const IconWrapper = styled.div`
   width: 80px;
   height: 80px;
-  background-color: #f3f0ff;
+  background-color: rgb(243, 240, 255);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@ const ButtonGroup = styled.div`
 const LoginButton = styled.button`
   width: 100%;
   padding: 14px;
-  background-color: #7a6dd0;
+  background-color: rgb(122, 109, 208);
   color: var(--text-inverse);
   border: none;
   border-radius: 12px;
@@ -137,8 +137,8 @@ const HomeButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: transparent;
-  color: #7a6dd0;
-  border: 1px solid #7a6dd0;
+  color: rgb(122, 109, 208);
+  border: 1px solid rgb(122, 109, 208);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -146,6 +146,6 @@ const HomeButton = styled.button`
   transition: background-color 0.2s;
 
   &:active {
-    background-color: #f3f0ff;
+    background-color: rgb(243, 240, 255);
   }
 `;
