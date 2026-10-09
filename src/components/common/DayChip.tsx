@@ -17,17 +17,17 @@ const ChipButton = styled.button<{ $isSelected: boolean }>`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   box-sizing: border-box;
   transition: all 0.2s ease-in-out;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  font-size: 16px;
+  font-size: var(--label-1-font-size);
   font-style: normal;
-  font-weight: 500;
-  line-height: 24px;
+  font-weight: var(--label-1-font-weight);
+  line-height: var(--label-1-line-height);
   white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
 
   /* 비선택 상태 */

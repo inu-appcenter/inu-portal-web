@@ -1033,7 +1033,7 @@ const ImageImportPrompt = styled.div`
   margin-bottom: 12px;
   padding: 16px;
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--bg-brand);
 `;
 
@@ -1043,11 +1043,11 @@ const ImageImportPromptText = styled.div`
   flex-direction: column;
   gap: 4px;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
 
   span {
-    color: var(--gray-600);
+    color: var(--text-tertiary);
     font-size: 13px;
     word-break: keep-all;
   }
@@ -1087,7 +1087,7 @@ const EmptyActionGroup = styled.div`
    움직이므로 이 화면에서만 덮어쓴다. */
 const EmptyActionButton = styled(CapsuleButton)`
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: var(--heading-2-font-size);
   line-height: 1.4;
 `;
 
@@ -1124,20 +1124,20 @@ const NoTimetableTextGroup = styled.div`
 `;
 
 const NoTimetableTitle = styled.h3`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 32px;
+  font-family: inherit;
+  font-weight: var(--heading-1-font-weight);
+  font-size: var(--heading-1-font-size);
+  line-height: var(--heading-1-line-height);
   color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
 
 const NoTimetableDescription = styled.p`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: inherit;
+  font-weight: var(--body-2-font-weight);
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
   color: var(--text-secondary);
   margin: 0;
   text-align: center;

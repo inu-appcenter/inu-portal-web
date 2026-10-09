@@ -141,13 +141,13 @@ const ModalContainer = styled(Dialog.Content)`
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: var(--bg-base);
-  border-radius: 32px;
+  border-radius: var(--radius-2xl);
   width: calc(100% - 32px);
   max-width: 328px;
   max-height: calc(100dvh - 40px);
   padding: 20px 16px 16px 16px;
   box-sizing: border-box;
-  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--elevation-1-shadow);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -168,12 +168,12 @@ const HeaderContainer = styled.div`
 
 const ModalTitle = styled.h2`
   margin: 0;
-  font-size: 20px;
+  font-size: var(--heading-1-font-size);
   font-style: normal;
-  font-weight: 600;
-  line-height: 32px;
-  letter-spacing: 0;
-  color: var(--gray-800);
+  font-weight: var(--heading-1-font-weight);
+  line-height: var(--heading-1-line-height);
+  letter-spacing: var(--heading-1-letter-spacing);
+  color: var(--text-secondary);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -181,11 +181,11 @@ const ModalTitle = styled.h2`
 `;
 
 const ModalDescription = styled.div`
-  font-size: 14px;
+  font-size: var(--body-2-font-size);
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--gray-600);
+  font-weight: var(--body-2-font-weight);
+  line-height: var(--body-2-line-height);
+  color: var(--text-tertiary);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;

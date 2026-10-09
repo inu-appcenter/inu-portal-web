@@ -115,7 +115,7 @@ export default function MobileHomePageV2() {
               </GreetingSubTitle>
             </GreetingTextGroup>
             <GreetingChevron>
-              <Icon name="chevron-right" size={20} color="#9CA3AF" />
+              <Icon name="chevron-right" size={20} color="var(--text-disabled)" />
             </GreetingChevron>
           </DailyBriefGreetingEntry>
 
@@ -318,8 +318,8 @@ const GridWidgets = styled.div`
 
 const LowerSheetSection = styled.div`
   background-color: var(--bg-base);
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
+  border-top-left-radius: var(--radius-2xl);
+  border-top-right-radius: var(--radius-2xl);
   //margin-top: -24px;
   position: relative;
   z-index: 5;
@@ -372,7 +372,7 @@ const SectionInner = styled.div`
 `;
 
 const FooterSection = styled.footer`
-  background: var(--gray-50);
+  background: var(--bg-subtle);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -479,12 +479,12 @@ const SocialLink = styled.a`
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
 
   &:hover {
-    background: var(--gray-100);
+    background: var(--bg-muted);
   }
 `;
 
@@ -541,7 +541,7 @@ const GreetingSubTitle = styled.p`
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: var(--gray-700);
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
 `;

@@ -174,7 +174,7 @@ const StyledContent = styled(Drawer.Content)<{
 
 const SheetInner = styled.div`
   position: relative;
-  border-radius: 32px 32px 0 0;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
   background: var(--bg-base);
   ${effects.bottomSheet}
   width: 100%;
@@ -203,7 +203,7 @@ const DragHeader = styled.div<{ $compact: boolean }>`
 const HandleBar = styled.div<{ $compact: boolean }>`
   width: ${({ $compact }) => ($compact ? "40px" : "36px")};
   height: ${({ $compact }) => ($compact ? "4px" : "5px")};
-  border-radius: ${({ $compact }) => ($compact ? "2px" : "999px")};
+  border-radius: ${({ $compact }) => ($compact ? "2px" : "var(--radius-full)")};
   background: var(--border-default);
 `;
 

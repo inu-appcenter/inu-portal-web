@@ -417,7 +417,7 @@ const EmptySearchContainer = styled.div`
 
 const EmptyIconCircle = styled.div`
   background: var(--bg-disabled);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,11 +439,11 @@ const EmptyTitleRow = styled.div`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: "Pretendard", sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
+  font-family: inherit;
+  font-size: var(--title-2-font-size);
+  font-weight: var(--title-2-font-weight);
+  line-height: var(--title-2-line-height);
+  letter-spacing: var(--title-2-letter-spacing);
 `;
 
 const EmptyQueryHighlight = styled.span`
@@ -455,10 +455,11 @@ const EmptyTitleText = styled.span`
 `;
 
 const EmptyDescription = styled.p`
-  font-family: "Pretendard", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
+  font-family: inherit;
+  font-size: var(--label-2-font-size);
+  font-weight: var(--label-2-font-weight);
+  line-height: var(--label-2-line-height);
+  letter-spacing: var(--label-2-letter-spacing);
   color: var(--text-tertiary);
   margin: 0;
 `;

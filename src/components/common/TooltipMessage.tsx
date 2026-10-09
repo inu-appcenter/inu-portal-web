@@ -219,7 +219,7 @@ const TooltipContainer = styled.div<{
   ${({ $minWidth }) => $minWidth && `min-width: ${$minWidth};`}
   padding: 10px 22px;
   color: var(--text-inverse);
-  font-size: 12px;
+  font-size: var(--caption-1-font-size);
   text-align: center;
   cursor: pointer;
   white-space: pre-line;
@@ -228,7 +228,7 @@ const TooltipContainer = styled.div<{
   background-color: ${TOOLTIP_BG};
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 

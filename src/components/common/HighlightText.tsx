@@ -24,8 +24,8 @@ export default function HighlightText({ text, className }: HighlightTextProps) {
 }
 
 const StyledMark = styled.mark`
-  background-color: rgba(30, 144, 255, 0.12);
-  color: #0284C7;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
   font-weight: 600;
   padding: 0 3px;
   border-radius: 3px;
