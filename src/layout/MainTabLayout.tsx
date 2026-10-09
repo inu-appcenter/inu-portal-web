@@ -94,7 +94,7 @@ const LayoutContainer = styled.div<{ $isHome: boolean; $pageBgColor?: string }>`
   width: 100%;
   min-height: 100vh;
   position: relative;
-  isolation: isolate;
+  isolation: ${(props) => (props.$isHome ? "isolate" : "auto")};
   background-color: ${(props) => props.$pageBgColor ?? (props.$isHome ? "transparent" : "var(--bg-muted)")};
 `;
 

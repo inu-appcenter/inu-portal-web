@@ -328,6 +328,7 @@ const SearchBarWrapper = styled.div<{ $isActive: boolean; $size: number }>`
   overflow: hidden;
   position: relative;
   box-sizing: border-box;
+  flex-shrink: 0;
 
   border: 1px solid var(--border-default);
   background: ${(props) => (props.$isActive ? "var(--bg-base)" : "rgba(255, 255, 255, 0.50)")};
@@ -353,10 +354,8 @@ const SearchInput = styled.input<{ $isActive: boolean; $hasValue: boolean }>`
     props.$isActive ? (props.$hasValue ? "76px" : "46px") : "0px"};
   pointer-events: ${(props) => (props.$isActive ? "auto" : "none")};
 
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(8px);
+  border: none;
+  background: transparent;
 
   transition: 
     opacity 0.25s ease,
@@ -417,8 +416,9 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
   ${(props) =>
     props.$isActive
       ? `
-    top: 3px;
-    right: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 4px;
     width: ${props.$size - 8}px;
     height: ${props.$size - 8}px;
     background: var(--interactive-primary);
@@ -435,6 +435,6 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
   `}
 
   &:active {
-    transform: scale(0.95);
+    transform: ${(props) => (props.$isActive ? "translateY(-50%) scale(0.95)" : "scale(0.95)")};
   }
 `;
