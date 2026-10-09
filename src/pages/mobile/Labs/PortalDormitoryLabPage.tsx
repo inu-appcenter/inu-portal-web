@@ -27,6 +27,7 @@ import {
 import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
+import { secureStorage } from "@/utils/secureStorage";
 import {
   Clock,
   Smartphone,
@@ -425,46 +426,58 @@ const PortalDormitoryLabPage = () => {
     }
   }, [isLabsFlagFetched, isLabsEnabled, navigate]);
 
-  // 마운트 시 캐시된 로컬 데이터를 먼저 복원
+  const [fallbackAcademic, setFallbackAcademic] = useState<any>(null);
+
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
-      const cachedTime = localStorage.getItem(STORAGE_KEY_DORMITORY_UPDATED);
-      const academicCached = localStorage.getItem("portal_student_info");
-      let academicParsed: any = null;
-      if (academicCached) {
-        try {
-          academicParsed = parseDormitoryStudentInfo(JSON.parse(academicCached));
-        } catch {}
-      }
-
-      if (cached) {
-        const parsedJson = JSON.parse(cached);
-        const restored = parseDormitoryStudentInfo(parsedJson);
-
-        // 만약 복원된 dormInfo의 studentName이나 rawFields가 비어있고 학적 캐시가 있으면 보강
-        const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
-        if ((!restored.studentName || !hasValidRf) && academicParsed) {
-          setDormInfo({
-            ...academicParsed,
-            ...restored,
-            studentName: restored.studentName || academicParsed.studentName,
-            studentId: restored.studentId || academicParsed.studentId,
-            profile: restored.profile || academicParsed.profile,
-            rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
-          });
-        } else {
-          setDormInfo(restored);
+    let isMounted = true;
+    const restoreDormData = async () => {
+      try {
+        const cached = await secureStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
+        const cachedTime = localStorage.getItem(STORAGE_KEY_DORMITORY_UPDATED);
+        const academicCached = await secureStorage.getItem("portal_student_info");
+        let academicParsed: any = null;
+        if (academicCached) {
+          try {
+            academicParsed = parseDormitoryStudentInfo(academicCached);
+          } catch {}
         }
-        if (cachedTime) {
-          setLastUpdated(cachedTime);
+
+        if (!isMounted) return;
+        if (academicParsed) {
+          setFallbackAcademic(academicParsed);
         }
-      } else if (academicParsed) {
-        setDormInfo(academicParsed);
+        if (cached) {
+          const restored = parseDormitoryStudentInfo(cached);
+
+          // 만약 복원된 dormInfo의 studentName이나 rawFields가 비어있고 학적 캐시가 있으면 보강
+          const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
+          if ((!restored.studentName || !hasValidRf) && academicParsed) {
+            setDormInfo({
+              ...academicParsed,
+              ...restored,
+              studentName: restored.studentName || academicParsed.studentName,
+              studentId: restored.studentId || academicParsed.studentId,
+              profile: restored.profile || academicParsed.profile,
+              rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
+            });
+          } else {
+            setDormInfo(restored);
+          }
+          if (cachedTime) {
+            setLastUpdated(cachedTime);
+          }
+        } else if (academicParsed) {
+          setDormInfo(academicParsed);
+        }
+      } catch (e) {
+        console.warn("Dormitory cache load error:", e);
       }
-    } catch (e) {
-      console.warn("Dormitory cache load error:", e);
-    }
+    };
+
+    void restoreDormData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // 새로고침 버튼을 눌렀을 때만 ERP 직접 조회 (진행 단계별 로깅)
@@ -542,9 +555,9 @@ const PortalDormitoryLabPage = () => {
         let finalDormData = res.data;
         // 로컬에 기존 학적 사진이 있으면 병합
         try {
-          const academicCached = localStorage.getItem("portal_student_info");
+          const academicCached = await secureStorage.getItem("portal_student_info");
           if (academicCached) {
-            const parsedAc = JSON.parse(academicCached);
+            const parsedAc = typeof academicCached === "string" ? JSON.parse(academicCached) : academicCached;
             const acRf = parsedAc.rawFields || {};
             const photo = parsedAc.photoBase64 || acRf.phtFile2 || acRf.phtFile1 || acRf.phtFile;
             if (photo && !finalDormData.photoBase64 && !finalDormData.profile?.photoBase64) {
@@ -568,12 +581,12 @@ const PortalDormitoryLabPage = () => {
             rawDatasets: {},
             rawFields: undefined,
           };
-          localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(sanitizedDormData));
+          await secureStorage.setItem(STORAGE_KEY_DORMITORY_DATA, sanitizedDormData);
           localStorage.setItem(STORAGE_KEY_DORMITORY_UPDATED, nowIso);
-          addLog("CACHE_SAVED", "로컬 스토리지에 최신 사생정보 캐싱 완료", "info");
+          addLog("CACHE_SAVED", "보안 스토리지에 최신 사생정보 암호화 캐싱 완료", "info");
         } catch (storageErr) {
           console.warn("Dormitory cache save error:", storageErr);
-          addLog("CACHE_WARN", "로컬 스토리지 캐시 저장 실패", "warn", String(storageErr));
+          addLog("CACHE_WARN", "보안 스토리지 캐시 저장 실패", "warn", String(storageErr));
         }
 
         // 학적 사진이 아직 없으면 백그라운드에서 학적 정보를 함께 조회하여 증명사진 동기화
@@ -584,9 +597,7 @@ const PortalDormitoryLabPage = () => {
               if (acRes.success && acRes.data) {
                 const rf = acRes.data.rawFields || {};
                 const photo = (acRes.data as any).photoBase64 || rf.phtFile2 || rf.phtFile1 || rf.phtFile;
-                try {
-                  localStorage.setItem("portal_student_info", JSON.stringify(acRes.data));
-                } catch {}
+                void secureStorage.setItem("portal_student_info", acRes.data);
                 if (photo) {
                   setDormInfo((prev) => {
                     if (!prev) return prev;
@@ -597,9 +608,7 @@ const PortalDormitoryLabPage = () => {
                       rawFields: undefined,
                       rawDatasets: {},
                     };
-                    try {
-                      localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
-                    } catch {}
+                    void secureStorage.setItem(STORAGE_KEY_DORMITORY_DATA, updated);
                     return updated;
                   });
                   addLog("ACADEMIC_SYNC", "학적 증명사진 동기화 완료", "success");
@@ -669,10 +678,8 @@ const PortalDormitoryLabPage = () => {
                 ? { pledge: res.data.pledge }
                 : {}),
             };
-            try {
-              localStorage.setItem(STORAGE_KEY_DORMITORY_DATA, JSON.stringify(updated));
-              addLog("TAB_CACHE", `[${tabName}] 기존 사생정보에 병합 캐싱 완료`, "info");
-            } catch {}
+            void secureStorage.setItem(STORAGE_KEY_DORMITORY_DATA, updated);
+            addLog("TAB_CACHE", `[${tabName}] 기존 사생정보에 병합 캐싱 완료`, "info");
             return updated;
           });
         } else {
@@ -699,15 +706,6 @@ const PortalDormitoryLabPage = () => {
     [addLog]
   );
 
-  // 학적 캐시 fallback (기숙사 데이터셋에 인적사항 필드가 누락되었을 때 대비)
-  const fallbackAcademic = useMemo(() => {
-    try {
-      const saved = localStorage.getItem("portal_student_info");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  }, []);
 
   const profile = dormInfo?.profile;
 

@@ -1,4 +1,5 @@
 import useUserStore from "@/stores/useUserStore";
+import { secureStorage } from "@/utils/secureStorage";
 import {
   parseAcademicBasicInfo,
   parseTimetableList,
@@ -21,17 +22,17 @@ export function resolveCurrentStudentId(): string {
     }
   } catch {}
   try {
-    const portalSaved = localStorage.getItem("portal_student_info");
+    const portalSaved = secureStorage.getItemSync<any>("portal_student_info") || localStorage.getItem("portal_student_info");
     if (portalSaved) {
-      const parsed = JSON.parse(portalSaved);
+      const parsed = typeof portalSaved === "string" ? JSON.parse(portalSaved) : portalSaved;
       const sid = parsed.studentId || parsed.stuno || "";
       if (sid) return String(sid).trim();
     }
   } catch {}
   try {
-    const dormSaved = localStorage.getItem("portal_dormitory_student_info");
+    const dormSaved = secureStorage.getItemSync<any>("portal_dormitory_student_info") || localStorage.getItem("portal_dormitory_student_info");
     if (dormSaved) {
-      const parsed = JSON.parse(dormSaved);
+      const parsed = typeof dormSaved === "string" ? JSON.parse(dormSaved) : dormSaved;
       const sid = parsed.studentId || parsed.profile?.studentId || "";
       if (sid) return String(sid).trim();
     }
@@ -824,7 +825,7 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
                   ...res.data,
                   rawFields: undefined,
                 };
-                localStorage.setItem("portal_student_info", JSON.stringify(cachedData));
+                void secureStorage.setItem("portal_student_info", cachedData);
                 localStorage.setItem("portal_info_last_updated", new Date().toISOString());
               } catch {}
             }

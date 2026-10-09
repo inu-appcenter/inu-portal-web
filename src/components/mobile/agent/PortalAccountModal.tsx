@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { X, ShieldCheck, Lock, User } from "lucide-react";
 import { savePortalAccount, deletePortalAccount, fetchAcademicInfoFromApp, isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
+import { secureStorage } from "@/utils/secureStorage";
 
 interface Props {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export const PortalAccountModal: React.FC<Props> = ({
                 ...academicRes.data,
                 rawFields: undefined,
               };
-              localStorage.setItem("portal_student_info", JSON.stringify(cachedData));
+              void secureStorage.setItem("portal_student_info", cachedData);
               localStorage.setItem("portal_info_last_updated", new Date().toISOString());
             } catch {}
           }

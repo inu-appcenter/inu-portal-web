@@ -38,6 +38,7 @@ import {
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester, pickCurrentSemester, termToTmGbn } from "@/utils/semester";
+import { secureStorage } from "@/utils/secureStorage";
 
 type TabKey = "timetable" | "semesterGrades" | "courseGrades" | "credits" | "scholarship";
 
@@ -99,37 +100,37 @@ const PortalTimetableLabPage = () => {
 
   // 컴포넌트 마운트 시 데이터 복구 및 연동 상태 확인
   useEffect(() => {
-    const savedReport = localStorage.getItem("portal_lab_academic_report");
-    const savedTimetable = localStorage.getItem("portal_lab_timetable_list");
-    const savedTime = localStorage.getItem("portal_lab_timetable_last_updated");
+    let isMounted = true;
+    const restoreData = async () => {
+      const savedReport = await secureStorage.getItem<FullAcademicReport>("portal_lab_academic_report");
+      const savedTimetable = await secureStorage.getItem<TimetableCourseItem[]>("portal_lab_timetable_list");
+      const savedTime = localStorage.getItem("portal_lab_timetable_last_updated");
 
-    if (savedReport) {
-      try {
-        const parsedReport = JSON.parse(savedReport) as FullAcademicReport;
-        setReport(parsedReport);
-        if (parsedReport.timetable && parsedReport.timetable.length > 0) {
-          setTimetableList(parsedReport.timetable);
+      if (!isMounted) return;
+      if (savedReport) {
+        setReport(savedReport);
+        if (savedReport.timetable && savedReport.timetable.length > 0) {
+          setTimetableList(savedReport.timetable);
         } else if (savedTimetable) {
-          setTimetableList(JSON.parse(savedTimetable));
+          setTimetableList(savedTimetable);
         }
         setLastUpdated(savedTime || new Date().toISOString());
         setIsFetched(true);
-      } catch (e) {
-        console.error("Failed to parse saved report:", e);
-      }
-    } else if (savedTimetable && savedTime) {
-      try {
-        setTimetableList(JSON.parse(savedTimetable));
+      } else if (savedTimetable && savedTime) {
+        setTimetableList(savedTimetable);
         setLastUpdated(savedTime);
         setIsFetched(true);
-      } catch (e) {
-        console.error("Failed to parse saved timetable:", e);
+      } else {
+        setIsFetched(false);
       }
-    } else {
-      setIsFetched(false);
-    }
+    };
 
+    void restoreData();
     void checkLinkStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, [checkLinkStatus]);
 
   useEffect(() => {
@@ -171,9 +172,9 @@ const PortalTimetableLabPage = () => {
         setLastUpdated(now);
         setIsFetched(true);
 
-        localStorage.setItem("portal_lab_academic_report", JSON.stringify(fullReport));
+        void secureStorage.setItem("portal_lab_academic_report", fullReport);
         if (fullReport.timetable) {
-          localStorage.setItem("portal_lab_timetable_list", JSON.stringify(fullReport.timetable));
+          void secureStorage.setItem("portal_lab_timetable_list", fullReport.timetable);
         }
         localStorage.setItem("portal_lab_timetable_last_updated", now);
 

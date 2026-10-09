@@ -10,6 +10,7 @@ import {
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
 import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
+import { secureStorage } from "@/utils/secureStorage";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
 import TermsLinks from "@/components/common/TermsLinks";
@@ -65,7 +66,7 @@ export default function LoginForm() {
           void fetchAcademicInfoFromApp().then((res) => {
             if (res.success && res.data) {
               const student = adaptAcademicInfoToStudentInfo(res.data);
-              localStorage.setItem("portal_student_info", JSON.stringify(student));
+              void secureStorage.setItem("portal_student_info", student);
               localStorage.setItem("portal_info_last_updated", new Date().toISOString());
             }
           }).catch(() => {});
