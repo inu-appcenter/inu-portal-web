@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { UserRoundSearch } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { createPortal } from "react-dom";
@@ -65,7 +65,7 @@ export default function AddFriendMenuCard({
     };
   }, [open, updatePosition]);
 
-  const handleTransitionEnd = () => {
+  const handleAnimationEnd = () => {
     if (!open) {
       setIsRendered(false);
     }
@@ -109,7 +109,7 @@ export default function AddFriendMenuCard({
             />
             <MenuCard
               $open={open}
-              onTransitionEnd={handleTransitionEnd}
+              onAnimationEnd={handleAnimationEnd}
               style={{
                 bottom: `${menuPosition.bottom}px`,
                 right: `${menuPosition.right}px`,
@@ -152,6 +152,28 @@ export default function AddFriendMenuCard({
   );
 }
 
+const unfurlAnimation = keyframes`
+  from {
+    transform: scale(0.92) translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+`;
+
+const furlAnimation = keyframes`
+  from {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.92) translateY(8px);
+    opacity: 0;
+  }
+`;
+
 const Scrim = styled.div`
   position: fixed;
   inset: 0;
@@ -174,13 +196,9 @@ const MenuCard = styled.div<{ $open: boolean }>`
   border-radius: 20px;
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.12);
   transform-origin: bottom right;
-  opacity: ${({ $open }) => ($open ? 1 : 0)};
-  transform: ${({ $open }) =>
-    $open ? "scale(1) translateY(0)" : "scale(0.92) translateY(8px)"};
+  animation: ${({ $open }) => ($open ? unfurlAnimation : furlAnimation)} 0.18s
+    cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-  transition:
-    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    opacity 0.15s ease;
   z-index: 1002;
 `;
 
