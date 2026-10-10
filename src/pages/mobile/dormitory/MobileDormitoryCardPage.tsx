@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
@@ -9,6 +9,8 @@ import {
 } from "@/utils/ssvParser";
 import { secureStorage } from "@/utils/secureStorage";
 import { MobileDormitoryCard } from "@/components/mobile/dormitory/MobileDormitoryCard";
+import { typography } from "@/styles/typography";
+import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const STORAGE_KEY_DORMITORY_DATA = "portal_dormitory_student_info";
 
@@ -69,44 +71,51 @@ export default function MobileDormitoryCardPage() {
   const navigate = useNavigate();
   const [dormInfo, setDormInfo] = useState<DormitoryStudentInfo | null>(null);
 
-  // 로컬 보안 스토리지 캐시 데이터 복원
-  const loadCachedData = useCallback(async () => {
-    try {
-      const cached = await secureStorage.getItem<any>(STORAGE_KEY_DORMITORY_DATA);
-      const academicCached = await secureStorage.getItem<any>("portal_student_info");
-      let academicParsed: any = null;
-      if (academicCached) {
-        try {
-          academicParsed = parseDormitoryStudentInfo(academicCached);
-        } catch {}
-      }
-
-      if (cached) {
-        const restored = parseDormitoryStudentInfo(cached);
-        const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
-        if ((!restored.studentName || !hasValidRf) && academicParsed) {
-          setDormInfo({
-            ...academicParsed,
-            ...restored,
-            studentName: restored.studentName || academicParsed.studentName,
-            studentId: restored.studentId || academicParsed.studentId,
-            profile: restored.profile || academicParsed.profile,
-            rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
-          });
-        } else {
-          setDormInfo(restored);
-        }
-      } else if (academicParsed) {
-        setDormInfo(academicParsed);
-      }
-    } catch (e) {
-      console.error("사생정보 로드 실패", e);
-    }
-  }, []);
-
   useEffect(() => {
-    loadCachedData();
-  }, [loadCachedData]);
+    let isMounted = true;
+    const fetchCached = async () => {
+      try {
+        const cached = await secureStorage.getItem<unknown>(STORAGE_KEY_DORMITORY_DATA);
+        const academicCached = await secureStorage.getItem<unknown>("portal_student_info");
+        let academicParsed: DormitoryStudentInfo | null = null;
+        if (academicCached) {
+          try {
+            academicParsed = parseDormitoryStudentInfo(academicCached);
+          } catch (err) {
+            void err;
+          }
+        }
+
+        if (!isMounted) return;
+
+        if (cached) {
+          const restored = parseDormitoryStudentInfo(cached);
+          const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
+          if ((!restored.studentName || !hasValidRf) && academicParsed) {
+            setDormInfo({
+              ...academicParsed,
+              ...restored,
+              studentName: restored.studentName || academicParsed.studentName,
+              studentId: restored.studentId || academicParsed.studentId,
+              profile: restored.profile || academicParsed.profile,
+              rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
+            });
+          } else {
+            setDormInfo(restored);
+          }
+        } else if (academicParsed) {
+          setDormInfo(academicParsed);
+        }
+      } catch (e) {
+        console.error("사생정보 로드 실패", e);
+      }
+    };
+
+    void fetchCached();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -164,7 +173,7 @@ export default function MobileDormitoryCardPage() {
   const status = rawStatus ? mapInOutStatus(rawStatus) : "-";
 
   return (
-    <PageContainer>
+    <PageContainer as="main">
       <TopBar>
         <BackButton onClick={handleBack} aria-label="뒤로가기">
           <ChevronLeft size={24} color="var(--text-primary)" />
@@ -173,7 +182,7 @@ export default function MobileDormitoryCardPage() {
         <TopBarSpacer />
       </TopBar>
 
-      <CardArea>
+      <CardArea as="section">
         <MobileDormitoryCard
           fullscreen
           studentName={studentName}
@@ -208,7 +217,7 @@ const PageContainer = styled.div`
   @media (min-width: 768px) {
     max-width: 440px;
     margin: 0 auto;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--bottom-sheet-shadow);
   }
 `;
 
@@ -232,19 +241,21 @@ const BackButton = styled.button`
   height: 38px;
   border: none;
   background: transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 
   &:active {
     background-color: var(--bg-subtle);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--border-brand);
+  }
 `;
 
 const BarTitle = styled.h1`
-  font-size: 17px;
-  font-weight: 700;
+  ${typography.heading2}
   color: var(--text-primary);
-  letter-spacing: -0.3px;
   margin: 0;
 `;
 
@@ -252,11 +263,11 @@ const TopBarSpacer = styled.div`
   width: 38px;
 `;
 
-const CardArea = styled.main`
+const CardArea = styled.section`
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(16px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   box-sizing: border-box;
   overflow-y: auto;
 `;

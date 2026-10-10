@@ -25,7 +25,9 @@ import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import BottomSheet from "@/components/common/BottomSheet";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import EmptyState from "@/components/common/EmptyState";
 import Modal from "@/components/common/Modal";
+import { typography } from "@/styles/typography";
 import {
   Search,
   X,
@@ -36,7 +38,6 @@ import {
   RefreshCw,
   ExternalLink,
   BookOpen,
-  CheckCircle2,
   Video,
   FileText,
   HelpCircle,
@@ -116,7 +117,7 @@ export default function MobileLmsHubPage() {
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
 
     const handleOpenModal = () => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
     window.addEventListener("openLmsAccountModal", handleOpenModal);
@@ -141,7 +142,7 @@ export default function MobileLmsHubPage() {
       ]);
       setCourseSections(sections);
       setCompletionMap(completions);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e);
       showAlert("강좌 상세 조회 오류", "강좌 상세 정보를 불러오지 못했습니다.");
     } finally {
@@ -189,7 +190,7 @@ export default function MobileLmsHubPage() {
       }
 
       showToast(`'${item.name}' 마감 알림이 등록되었습니다.`);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e);
       showAlert("알림 등록 실패", "알림 예약에 실패했습니다.");
     }
@@ -198,16 +199,16 @@ export default function MobileLmsHubPage() {
   const getModuleIcon = (modname: string) => {
     switch (modname) {
       case "vod":
-        return <Video size={16} color="var(--primary)" />;
+        return <Video size={16} color="var(--interactive-primary)" />;
       case "assign":
-        return <FileText size={16} color="rgb(124, 58, 237)" />;
+        return <FileText size={16} color="var(--text-brand)" />;
       case "quiz":
-        return <HelpCircle size={16} color="rgb(217, 119, 6)" />;
+        return <HelpCircle size={16} color="var(--text-warn)" />;
       case "folder":
       case "resource":
-        return <Folder size={16} color="var(--gray-600)" />;
+        return <Folder size={16} color="var(--text-secondary)" />;
       default:
-        return <BookOpen size={16} color="var(--gray-500)" />;
+        return <BookOpen size={16} color="var(--text-tertiary)" />;
     }
   };
 
@@ -248,27 +249,55 @@ export default function MobileLmsHubPage() {
   });
 
   return (
-    <Container>
+    <Container as="main">
       {/* 상단 탭 네비게이션 */}
-      <TabBar>
-        <TabButton $active={activeTab === "assignments"} onClick={() => setActiveTab("assignments")}>
+      <TabBar role="tablist" aria-label="이러닝 메뉴">
+        <TabButton
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "assignments"}
+          $active={activeTab === "assignments"}
+          onClick={() => setActiveTab("assignments")}
+        >
           <Calendar size={15} />
           <span>마감 일정</span>
           {assignments.length > 0 && <CountBadge>{assignments.length}</CountBadge>}
         </TabButton>
-        <TabButton $active={activeTab === "courses"} onClick={() => setActiveTab("courses")}>
+        <TabButton
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "courses"}
+          $active={activeTab === "courses"}
+          onClick={() => setActiveTab("courses")}
+        >
           <GraduationCap size={15} />
           <span>수강 강좌</span>
           {courses.length > 0 && <CountBadge>{courses.length}</CountBadge>}
         </TabButton>
-        <TabButton $active={activeTab === "grades"} onClick={() => setActiveTab("grades")}>
+        <TabButton
+          type="button"
+          role="tab"
+          aria-selected={activeTab === "grades"}
+          $active={activeTab === "grades"}
+          onClick={() => setActiveTab("grades")}
+        >
           <Award size={15} />
           <span>성적 요약</span>
         </TabButton>
       </TabBar>
 
       {/* 알림 관리 바로가기 배너 */}
-      <BannerCard onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}>
+      <BannerCard
+        role="button"
+        tabIndex={0}
+        onClick={() => navigate(ROUTES.MYPAGE.SMART_WATCH)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigate(ROUTES.MYPAGE.SMART_WATCH);
+          }
+        }}
+      >
         <BannerLeft>
           <Bell size={18} color="var(--interactive-primary)" />
           <BannerText>
@@ -276,12 +305,12 @@ export default function MobileLmsHubPage() {
             <span>등록된 과제 리마인더 및 도서관 빈자리 알림 목록</span>
           </BannerText>
         </BannerLeft>
-        <ChevronRight size={18} color="var(--button-inactive)" />
+        <ChevronRight size={18} color="var(--text-disabled)" />
       </BannerCard>
 
       {/* 액션 안내 토스트 배너 */}
       {actionMessage && (
-        <ToastBanner>
+        <ToastBanner role="status">
           <Check size={16} />
           <span>{actionMessage}</span>
         </ToastBanner>
@@ -310,10 +339,10 @@ export default function MobileLmsHubPage() {
         <>
           {/* ================= 1. 과제 & 마감 일정 탭 ================= */}
           {activeTab === "assignments" && (
-            <SectionWrapper>
+            <SectionWrapper as="section" aria-label="마감 예정 과제 및 학습">
               <SectionTop>
                 <SectionTitle>마감 예정 과제 및 학습 ({isLinked ? filteredAssignments.length : 0})</SectionTitle>
-                <RefreshBtn onClick={loadData}>
+                <RefreshBtn type="button" onClick={() => void loadData()}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
@@ -322,33 +351,64 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="var(--gray-500)" />
+                    <Search size={16} color="var(--text-tertiary)" />
                     <SearchInput
                       type="text"
                       placeholder="과제명 또는 강좌명 검색"
                       value={assignSearchQuery}
                       onChange={(e) => setAssignSearchQuery(e.target.value)}
+                      aria-label="과제 검색"
                     />
                     {assignSearchQuery && (
-                      <ClearBtn onClick={() => setAssignSearchQuery("")} type="button">
+                      <ClearBtn onClick={() => setAssignSearchQuery("")} type="button" aria-label="검색어 지우기">
                         <X size={14} />
                       </ClearBtn>
                     )}
                   </SearchBox>
-                  <ChipRow>
-                    <FilterChip $active={assignFilter === "all"} onClick={() => setAssignFilter("all")}>
+                  <ChipRow role="tablist" aria-label="과제 필터">
+                    <FilterChip
+                      type="button"
+                      role="tab"
+                      aria-selected={assignFilter === "all"}
+                      $active={assignFilter === "all"}
+                      onClick={() => setAssignFilter("all")}
+                    >
                       전체
                     </FilterChip>
-                    <FilterChip $active={assignFilter === "urgent"} onClick={() => setAssignFilter("urgent")}>
+                    <FilterChip
+                      type="button"
+                      role="tab"
+                      aria-selected={assignFilter === "urgent"}
+                      $active={assignFilter === "urgent"}
+                      onClick={() => setAssignFilter("urgent")}
+                    >
                       마감 임박 (D-3)
                     </FilterChip>
-                    <FilterChip $active={assignFilter === "assign"} onClick={() => setAssignFilter("assign")}>
+                    <FilterChip
+                      type="button"
+                      role="tab"
+                      aria-selected={assignFilter === "assign"}
+                      $active={assignFilter === "assign"}
+                      onClick={() => setAssignFilter("assign")}
+                    >
                       과제
                     </FilterChip>
-                    <FilterChip $active={assignFilter === "vod"} onClick={() => setAssignFilter("vod")}>
+                    <FilterChip
+                      type="button"
+                      role="tab"
+                      aria-selected={assignFilter === "vod"}
+                      $active={assignFilter === "vod"}
+                      onClick={() => setAssignFilter("vod")}
+                    >
                       온라인 강의
                     </FilterChip>
-                    <FilterChip $active={assignFilter === "quiz"} onClick={() => setAssignFilter("quiz")}>
+                    <FilterChip
+                      type="button"
+                      role="tab"
+                      aria-selected={assignFilter === "quiz"}
+                      $active={assignFilter === "quiz"}
+                      onClick={() => setAssignFilter("quiz")}
+                    >
                       퀴즈/시험
                     </FilterChip>
                   </ChipRow>
@@ -356,43 +416,43 @@ export default function MobileLmsHubPage() {
               )}
 
               {!isMobileAppEnvironment() ? (
-                <EmptyBox>
-                  <Smartphone size={32} color="var(--interactive-primary)" />
-                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
-                  <EmptyDesc>과제 마감 일정 및 수강 강좌 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => openIntipAppOrStore("lms")}
-                  >
-                    앱에서 보기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <Smartphone size={32} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>과제 마감 일정 및 수강 강좌 확인은 기기 보안 환경이 지원되는 INTIP 모바일 앱에서 제공돼요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => openIntipAppOrStore("lms")}
+                    >
+                      앱에서 열기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : !isLinked ? (
-                <EmptyBox>
-                  <KeyRound size={28} color="var(--interactive-primary)" />
-                  <EmptyTitle>포털 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시돼요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-                  >
-                    포털 계정 연동하기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <KeyRound size={28} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>포털 계정 연동 후 마감 일정을 확인할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>계정을 연동하면 제출 기한이 남은 과제와 온라인 강의 일정이 표시돼요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                    >
+                      포털 계정 연동하기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : assignments.length === 0 ? (
-                <EmptyBox>
-                  <CheckCircle2 size={32} color="var(--text-success)" />
-                  <EmptyTitle>마감 예정인 일정이 없습니다</EmptyTitle>
-                  <EmptyDesc>모든 과제를 제출했거나 2주 이내 마감 예정 항목이 없습니다.</EmptyDesc>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">마감 예정인 과제나 학습 일정이 없어요.</EmptyState>
+                </EmptyStateCard>
               ) : filteredAssignments.length === 0 ? (
-                <EmptyBox>
-                  <Search size={28} color="var(--button-inactive)" />
-                  <EmptyTitle>일치하는 마감 일정이 없습니다</EmptyTitle>
-                  <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">검색 조건과 일치하는 마감 일정이 없어요.</EmptyState>
+                </EmptyStateCard>
               ) : (
                 <ListContainer>
                   {filteredAssignments.map((item) => (
@@ -415,12 +475,12 @@ export default function MobileLmsHubPage() {
 
                       <ActionBtnRow>
                         {item.url && (
-                          <SubActionBtn onClick={() => handleOpenUrl(item.url)}>
+                          <SubActionBtn type="button" onClick={() => handleOpenUrl(item.url)}>
                             <ExternalLink size={13} />
                             <span>{item.actionName || "과제 바로가기"}</span>
                           </SubActionBtn>
                         )}
-                        <PrimaryActionBtn onClick={() => handleRegisterAssignmentReminder(item)}>
+                        <PrimaryActionBtn type="button" onClick={() => void handleRegisterAssignmentReminder(item)}>
                           <Bell size={13} />
                           <span>마감 알림 등록</span>
                         </PrimaryActionBtn>
@@ -434,10 +494,10 @@ export default function MobileLmsHubPage() {
 
           {/* ================= 2. 수강 강좌 & 주차별 진도 탭 ================= */}
           {activeTab === "courses" && (
-            <SectionWrapper>
+            <SectionWrapper as="section" aria-label="수강 중인 강좌">
               <SectionTop>
                 <SectionTitle>수강 중인 강좌 ({isLinked ? filteredCourses.length : 0})</SectionTitle>
-                <RefreshBtn onClick={loadData}>
+                <RefreshBtn type="button" onClick={() => void loadData()}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
@@ -446,15 +506,16 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="var(--gray-500)" />
+                    <Search size={16} color="var(--text-tertiary)" />
                     <SearchInput
                       type="text"
                       placeholder="강좌명 또는 학수번호 검색"
                       value={courseSearchQuery}
                       onChange={(e) => setCourseSearchQuery(e.target.value)}
+                      aria-label="강좌 검색"
                     />
                     {courseSearchQuery && (
-                      <ClearBtn onClick={() => setCourseSearchQuery("")} type="button">
+                      <ClearBtn onClick={() => setCourseSearchQuery("")} type="button" aria-label="검색어 지우기">
                         <X size={14} />
                       </ClearBtn>
                     )}
@@ -463,52 +524,57 @@ export default function MobileLmsHubPage() {
               )}
 
               {!isMobileAppEnvironment() ? (
-                <EmptyBox>
-                  <Smartphone size={32} color="var(--interactive-primary)" />
-                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
-                  <EmptyDesc>수강 강좌 및 주차별 강의 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => openIntipAppOrStore("lms")}
-                  >
-                    앱에서 보기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <Smartphone size={32} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>수강 강좌 및 주차별 강의 확인은 INTIP 모바일 앱에서 제공돼요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => openIntipAppOrStore("lms")}
+                    >
+                      앱에서 열기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : !isLinked ? (
-                <EmptyBox>
-                  <KeyRound size={28} color="var(--interactive-primary)" />
-                  <EmptyTitle>포털 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>이번 학기 수강 중인 강좌 목록과 주차별 학습 현황을 확인해보세요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-                  >
-                    포털 계정 연동하기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <KeyRound size={28} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>포털 계정 연동 후 수강 강좌를 확인할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>이번 학기 수강 중인 강좌 목록과 주차별 학습 현황을 확인해보세요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                    >
+                      포털 계정 연동하기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : courses.length === 0 ? (
-                <EmptyBox>
-                  <GraduationCap size={32} color="var(--button-inactive)" />
-                  <EmptyTitle>수강 중인 강좌가 없어요</EmptyTitle>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">수강 중인 강좌가 없어요.</EmptyState>
+                </EmptyStateCard>
               ) : filteredCourses.length === 0 ? (
-                <EmptyBox>
-                  <Search size={28} color="var(--button-inactive)" />
-                  <EmptyTitle>일치하는 강좌가 없어요</EmptyTitle>
-                  <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">일치하는 강좌가 없어요.</EmptyState>
+                </EmptyStateCard>
               ) : (
                 <ListContainer>
                   {filteredCourses.map((c) => (
-                    <Box key={c.id} onClick={() => handleOpenCourseDetail(c)} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
+                    <Box
+                      key={c.id}
+                      onClick={() => void handleOpenCourseDetail(c)}
+                      style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}
+                    >
                       <CourseHeader>
                         <div>
                           <CourseTitle>{c.fullname}</CourseTitle>
                           <CourseCode>{c.shortname}</CourseCode>
                         </div>
-                        <ChevronRight size={18} color="var(--button-inactive)" />
+                        <ChevronRight size={18} color="var(--text-disabled)" />
                       </CourseHeader>
                       <CourseMetaRow>
                         <span>수강생 {c.enrolledusercount ?? 0}명</span>
@@ -523,10 +589,10 @@ export default function MobileLmsHubPage() {
 
           {/* ================= 3. 성적 요약 탭 ================= */}
           {activeTab === "grades" && (
-            <SectionWrapper>
+            <SectionWrapper as="section" aria-label="과목별 성적 현황">
               <SectionTop>
                 <SectionTitle>과목별 성적 현황 ({isLinked ? filteredGrades.length : 0})</SectionTitle>
-                <RefreshBtn onClick={loadData}>
+                <RefreshBtn type="button" onClick={() => void loadData()}>
                   <RefreshCw size={13} />
                   <span>새로고침</span>
                 </RefreshBtn>
@@ -535,15 +601,16 @@ export default function MobileLmsHubPage() {
               {isLinked && (
                 <FilterArea>
                   <SearchBox>
-                    <Search size={16} color="var(--gray-500)" />
+                    <Search size={16} color="var(--text-tertiary)" />
                     <SearchInput
                       type="text"
                       placeholder="과목명 검색"
                       value={gradeSearchQuery}
                       onChange={(e) => setGradeSearchQuery(e.target.value)}
+                      aria-label="과목 검색"
                     />
                     {gradeSearchQuery && (
-                      <ClearBtn onClick={() => setGradeSearchQuery("")} type="button">
+                      <ClearBtn onClick={() => setGradeSearchQuery("")} type="button" aria-label="검색어 지우기">
                         <X size={14} />
                       </ClearBtn>
                     )}
@@ -552,43 +619,43 @@ export default function MobileLmsHubPage() {
               )}
 
               {!isMobileAppEnvironment() ? (
-                <EmptyBox>
-                  <Smartphone size={32} color="var(--interactive-primary)" />
-                  <EmptyTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyTitle>
-                  <EmptyDesc>과목별 성적 조회는 INTIP 모바일 앱에서 제공돼요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => openIntipAppOrStore("lms")}
-                  >
-                    앱에서 보기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <Smartphone size={32} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>과목별 성적 조회는 기기 보안 인증이 지원되는 INTIP 모바일 앱에서 제공돼요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => openIntipAppOrStore("lms")}
+                    >
+                      앱에서 열기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : !isLinked ? (
-                <EmptyBox>
-                  <KeyRound size={28} color="var(--interactive-primary)" />
-                  <EmptyTitle>포털 계정 연동 후 성적을 확인할 수 있어요</EmptyTitle>
-                  <EmptyDesc>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있어요.</EmptyDesc>
-                  <CapsuleButton
-                    variant="brand"
-                    style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-                    onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-                  >
-                    포털 계정 연동하기
-                  </CapsuleButton>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyStateContent>
+                    <KeyRound size={28} color="var(--interactive-primary)" />
+                    <EmptyStateTitle>포털 계정 연동 후 성적을 확인할 수 있어요</EmptyStateTitle>
+                    <EmptyStateDescription>계정을 연동하면 과목별 원점수 및 취득 성적을 확인할 수 있어요.</EmptyStateDescription>
+                    <CapsuleButton
+                      variant="brand"
+                      style={{ marginTop: "12px", padding: "8px 20px" }}
+                      onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+                    >
+                      포털 계정 연동하기
+                    </CapsuleButton>
+                  </EmptyStateContent>
+                </EmptyStateCard>
               ) : grades.length === 0 ? (
-                <EmptyBox>
-                  <Award size={32} color="var(--button-inactive)" />
-                  <EmptyTitle>조회된 성적 정보가 없어요</EmptyTitle>
-                  <EmptyDesc>학기 말 성적 입력 기간 또는 LMS에 공개된 성적이 표시돼요.</EmptyDesc>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">조회된 성적 정보가 없어요. 학기 말 성적 입력 기간에 확인해보세요.</EmptyState>
+                </EmptyStateCard>
               ) : filteredGrades.length === 0 ? (
-                <EmptyBox>
-                  <Search size={28} color="var(--button-inactive)" />
-                  <EmptyTitle>일치하는 과목 성적이 없어요</EmptyTitle>
-                  <EmptyDesc>검색어를 확인해보세요.</EmptyDesc>
-                </EmptyBox>
+                <EmptyStateCard>
+                  <EmptyState padding="32px 0">일치하는 과목 성적이 없어요.</EmptyState>
+                </EmptyStateCard>
               ) : (
                 <ListContainer>
                   {filteredGrades.map((g, idx) => {
@@ -648,7 +715,7 @@ export default function MobileLmsHubPage() {
               ))}
             </SectionListContainer>
           ) : courseSections.length === 0 ? (
-            <EmptyBox style={{ margin: "20px 0" }}>등록된 주차별 콘텐츠가 없습니다.</EmptyBox>
+            <EmptyState padding="32px 0">등록된 주차별 콘텐츠가 없습니다.</EmptyState>
           ) : (
             <SectionListContainer>
               {courseSections.map((sec) => (
@@ -661,7 +728,15 @@ export default function MobileLmsHubPage() {
                         return (
                           <ModuleItem
                             key={mod.id}
+                            role={mod.url ? "link" : undefined}
+                            tabIndex={mod.url ? 0 : undefined}
                             onClick={() => handleOpenUrl(mod.url)}
+                            onKeyDown={(e) => {
+                              if (mod.url && (e.key === "Enter" || e.key === " ")) {
+                                e.preventDefault();
+                                handleOpenUrl(mod.url);
+                              }
+                            }}
                             style={{ cursor: mod.url ? "pointer" : "default" }}
                           >
                             <ModuleLeft>
@@ -683,7 +758,7 @@ export default function MobileLmsHubPage() {
                                   {isCompleted ? "응시 완료" : "미응시"}
                                 </StatusBadge>
                               ) : null}
-                              {mod.url && <ExternalLink size={13} color="var(--button-inactive)" />}
+                              {mod.url && <ExternalLink size={13} color="var(--text-disabled)" />}
                             </ModuleRight>
                           </ModuleItem>
                         );
@@ -712,7 +787,7 @@ export default function MobileLmsHubPage() {
         }}
       />
 
-      <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+      <FootnoteText>기기 백그라운드 작업은 휴대폰 환경에 맞추어 안전하게 수행돼요.</FootnoteText>
     </Container>
   );
 }
@@ -720,31 +795,34 @@ export default function MobileLmsHubPage() {
 // ================= STYLES =================
 
 const Container = styled.div`
-  padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   max-width: 600px;
   margin: 0 auto;
+  box-sizing: border-box;
   min-height: 100vh;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 
   @media ${DESKTOP_MEDIA} {
     max-width: 1200px;
-    padding: 24px 0 80px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   }
 `;
 
 const FootnoteText = styled.p`
-  margin: 20px 0 0;
-  font-size: 12.5px;
+  margin: var(--space-4) 0 0;
+  ${typography.caption1}
   color: var(--text-tertiary);
   text-align: center;
-  line-height: 1.4;
 `;
 
 const TabBar = styled.div`
   display: flex;
   background: var(--bg-muted);
   padding: 4px;
-  border-radius: 14px;
-  margin-bottom: 16px;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-1);
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
@@ -754,11 +832,11 @@ const TabButton = styled.button<{ $active: boolean }>`
   justify-content: center;
   gap: 6px;
   padding: 10px 0;
-  font-size: 13px;
+  ${typography.label2}
   font-weight: ${({ $active }) => ($active ? "700" : "500")};
   color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   background: ${({ $active }) => ($active ? "var(--bg-base)" : "transparent")};
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
   box-shadow: ${({ $active }) => ($active ? "0 2px 6px rgba(0, 0, 0, 0.06)" : "none")};
@@ -766,12 +844,12 @@ const TabButton = styled.button<{ $active: boolean }>`
 `;
 
 const CountBadge = styled.span`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 700;
   background: var(--bg-brand);
   color: var(--text-brand);
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
 `;
 
 const BannerCard = styled.div`
@@ -780,17 +858,16 @@ const BannerCard = styled.div`
   justify-content: space-between;
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
-  margin-bottom: 16px;
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
-  transition: transform 0.12s ease-in-out;
+  transition: transform 0.12s ease-in-out, background-color 0.12s ease;
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-muted);
+    background: var(--bg-subtle);
   }
 `;
 
@@ -804,12 +881,13 @@ const BannerText = styled.div`
   display: flex;
   flex-direction: column;
   strong {
+    ${typography.heading2}
     font-size: 14px;
     color: var(--text-primary);
   }
   span {
-    font-size: 12px;
-    color: var(--text-secondary);
+    ${typography.caption1}
+    color: var(--text-tertiary);
     margin-top: 2px;
   }
 `;
@@ -818,14 +896,12 @@ const ToastBanner = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgb(240, 253, 244);
-  border: 1px solid rgb(187, 247, 208);
-  color: rgb(21, 128, 61);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-success);
+  color: var(--border-success);
   padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  ${typography.label2}
   width: 100%;
   box-sizing: border-box;
 `;
@@ -851,7 +927,7 @@ const FilterArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 2px;
+  margin-bottom: var(--space-1);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -862,7 +938,7 @@ const SearchBox = styled.div`
   gap: 8px;
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 9px 12px;
   width: 100%;
   box-sizing: border-box;
@@ -877,13 +953,13 @@ const SearchInput = styled.input`
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 13.5px;
+  ${typography.body2}
   color: var(--text-primary);
   outline: none;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-tertiary);
+    color: var(--text-disabled);
   }
 `;
 
@@ -896,7 +972,7 @@ const ClearBtn = styled.button`
   justify-content: center;
   color: var(--text-disabled);
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 
   &:hover {
     color: var(--text-primary);
@@ -924,12 +1000,11 @@ const FilterChip = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  font-size: 12.5px;
-  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  ${typography.label3}
   color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
   border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: all 0.12s ease;
   white-space: nowrap;
@@ -939,9 +1014,8 @@ const FilterChip = styled.button<{ $active: boolean }>`
   }
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 15px;
-  font-weight: 700;
+const SectionTitle = styled.h2`
+  ${typography.title4}
   color: var(--text-primary);
   margin: 0;
 `;
@@ -952,38 +1026,44 @@ const RefreshBtn = styled.button`
   gap: 4px;
   background: none;
   border: none;
-  font-size: 12px;
-  color: var(--text-secondary);
+  ${typography.label3}
+  color: var(--text-tertiary);
   cursor: pointer;
 `;
 
-const EmptyBox = styled.div`
+const EmptyStateCard = styled(Box)`
+  padding: 32px 16px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+`;
+
+const EmptyStateContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  background: var(--bg-muted);
-  border: 1px dashed var(--border-default);
-  border-radius: 16px;
   text-align: center;
-  gap: 8px;
   width: 100%;
-  box-sizing: border-box;
+  gap: var(--space-2);
 `;
 
-const EmptyTitle = styled.div`
-  font-size: 14px;
-  font-weight: 600;
+const EmptyStateTitle = styled.div`
+  ${typography.heading2}
   color: var(--text-primary);
-  margin-top: 4px;
+  margin-top: var(--space-1);
+  text-align: center;
 `;
 
-const EmptyDesc = styled.div`
-  font-size: 12px;
-  color: var(--text-secondary);
+const EmptyStateDescription = styled.div`
+  ${typography.body2}
+  color: var(--text-tertiary);
+  max-width: 320px;
   line-height: 1.5;
-  max-width: 280px;
+  text-align: center;
+  margin: 0 auto;
 `;
 
 const ListContainer = styled.div`
@@ -1010,7 +1090,7 @@ const AssignTop = styled.div`
 `;
 
 const CourseNameBadge = styled.span`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   color: var(--text-brand);
   background: var(--bg-brand);
@@ -1023,7 +1103,7 @@ const CourseNameBadge = styled.span`
 `;
 
 const DueBadge = styled.span<{ $isUrgent?: boolean }>`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 6px;
@@ -1032,8 +1112,7 @@ const DueBadge = styled.span<{ $isUrgent?: boolean }>`
 `;
 
 const AssignTitle = styled.div`
-  font-size: 15px;
-  font-weight: 600;
+  ${typography.heading2}
   color: var(--text-primary);
   line-height: 1.4;
   width: 100%;
@@ -1044,7 +1123,7 @@ const TimeRow = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-secondary);
   margin-top: 6px;
   width: 100%;
@@ -1069,12 +1148,11 @@ const SubActionBtn = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
+  ${typography.label3}
   color: var(--text-secondary);
   background: var(--bg-muted);
   border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -1090,12 +1168,11 @@ const PrimaryActionBtn = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 600;
+  ${typography.label3}
   color: var(--text-inverse);
   background: var(--interactive-primary);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -1113,13 +1190,12 @@ const CourseHeader = styled.div`
 `;
 
 const CourseTitle = styled.div`
-  font-size: 15px;
-  font-weight: 600;
+  ${typography.heading2}
   color: var(--text-primary);
 `;
 
 const CourseCode = styled.div`
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-disabled);
   margin-top: 2px;
 `;
@@ -1131,7 +1207,7 @@ const CourseMetaRow = styled.div`
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border-default);
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-secondary);
   width: 100%;
   box-sizing: border-box;
@@ -1157,23 +1233,21 @@ const GradeLeft = styled.div`
 `;
 
 const GradeCourseName = styled.div`
-  font-size: 14px;
-  font-weight: 600;
+  ${typography.heading2}
   color: var(--text-primary);
 `;
 
 const GradeRaw = styled.div`
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-disabled);
 `;
 
 const GradeBadge = styled.div`
-  font-size: 16px;
-  font-weight: 700;
+  ${typography.title3}
   color: var(--text-brand);
   background: var(--bg-brand);
   padding: 4px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 `;
 
 // 바텀시트 내부 스타일
@@ -1192,13 +1266,12 @@ const SheetHeader = styled.div`
 
 const SheetTitle = styled.h2`
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  ${typography.title2}
   color: var(--text-primary);
 `;
 
 const SheetSubtitle = styled.div`
-  font-size: 13px;
+  ${typography.body2}
   color: var(--text-secondary);
 `;
 
@@ -1215,7 +1288,7 @@ const SectionGroup = styled.div`
 `;
 
 const SectionName = styled.div`
-  font-size: 13px;
+  ${typography.label2}
   font-weight: 700;
   color: var(--text-primary);
   padding-left: 2px;
@@ -1233,7 +1306,7 @@ const ModuleItem = styled.div`
   justify-content: space-between;
   background: var(--bg-muted);
   border: 1px solid var(--border-default);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 10px 12px;
   gap: 10px;
 `;
@@ -1246,7 +1319,7 @@ const ModuleLeft = styled.div`
 `;
 
 const ModuleName = styled.span`
-  font-size: 13px;
+  ${typography.body2}
   font-weight: 500;
   color: var(--text-primary);
   overflow: hidden;
@@ -1262,16 +1335,17 @@ const ModuleRight = styled.div`
 `;
 
 const StatusBadge = styled.span<{ $done: boolean }>`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 6px;
-  background: ${({ $done }) => ($done ? "rgb(220, 252, 231)" : "var(--bg-muted)")};
-  color: ${({ $done }) => ($done ? "rgb(21, 128, 61)" : "var(--text-disabled)")};
+  background: ${({ $done }) => ($done ? "var(--bg-subtle)" : "var(--bg-muted)")};
+  color: ${({ $done }) => ($done ? "var(--border-success)" : "var(--text-disabled)")};
+  border: 1px solid ${({ $done }) => ($done ? "var(--border-success)" : "var(--border-default)")};
 `;
 
 const EmptySectionText = styled.div`
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-disabled);
   padding: 6px 4px;
 `;

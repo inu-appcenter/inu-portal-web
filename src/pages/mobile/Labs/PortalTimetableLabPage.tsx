@@ -5,6 +5,8 @@ import { useHeader } from "@/context/HeaderContext";
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import ActionButton from "@/components/common/ActionButton";
+import EmptyState from "@/components/common/EmptyState";
+import CapsuleButton from "@/components/common/CapsuleButton";
 import { ROUTES } from "@/constants/routes";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import {
@@ -39,6 +41,8 @@ import { openIntipAppOrStore } from "@/utils/appLauncher";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester, pickCurrentSemester, termToTmGbn } from "@/utils/semester";
 import { secureStorage } from "@/utils/secureStorage";
+import { typography } from "@/styles/typography";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 
 type TabKey = "timetable" | "semesterGrades" | "courseGrades" | "credits" | "scholarship";
 
@@ -200,9 +204,10 @@ const PortalTimetableLabPage = () => {
           alert(`데이터를 가져오는 데 실패했어요: ${res.errorMessage || "조회 오류"}`);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("종합 데이터 조회 실패:", error);
-      alert(error?.message || "데이터를 가져오는 중 오류가 발생했어요.");
+      const msg = error instanceof Error ? error.message : "데이터를 가져오는 중 오류가 발생했어요.";
+      alert(msg);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -233,7 +238,7 @@ const PortalTimetableLabPage = () => {
   );
 
   return (
-    <PageWrapper>
+    <PageWrapper as="main">
       {!isMobileAppEnvironment() && (
         <WarningBanner>
           <Smartphone size={20} color="var(--interactive-primary)" />
@@ -248,53 +253,81 @@ const PortalTimetableLabPage = () => {
         </WarningBanner>
       )}
 
-      <ContentSection>
+      <ContentSection as="section">
         <TitleContentArea title="기능 안내">
           <Box>
-            <DescriptionText>
+            <DescriptionTextWrapper>
               포털 학사행정의 <strong>개인학적조회</strong> 시스템에서 <strong>수강 시간표, 학기별·과목별 성적, 이수구분별 취득학점, 장학금 수혜 내역</strong>을 한 번에 안전하게 가져와요.
               개인정보는 서버로 전송되지 않고 이 기기 내에서만 처리돼요.
-            </DescriptionText>
+            </DescriptionTextWrapper>
           </Box>
         </TitleContentArea>
 
         <TitleContentArea title="조회 학기 선택">
           <Box>
-            <StyledSelect
-              value={selectedSemesterId ?? ""}
-              onChange={(e) => setSelectedSemesterId(Number(e.target.value))}
-              disabled={isLoading}
-            >
-              {semesterOptions.map((sem) => (
-                <option key={sem.id} value={sem.id}>
-                  {sem.label}
-                </option>
-              ))}
-            </StyledSelect>
+            <SelectContainer>
+              <StyledSelect
+                value={selectedSemesterId ?? ""}
+                onChange={(e) => setSelectedSemesterId(Number(e.target.value))}
+                disabled={isLoading}
+                aria-label="조회 학기 선택"
+              >
+                {semesterOptions.map((sem) => (
+                  <option key={sem.id} value={sem.id}>
+                    {sem.label}
+                  </option>
+                ))}
+              </StyledSelect>
+            </SelectContainer>
           </Box>
         </TitleContentArea>
 
         {isFetched ? (
           <>
             {/* 탭 네비게이션 */}
-            <TabBar>
-              <TabButton $active={activeTab === "timetable"} onClick={() => setActiveTab("timetable")}>
+            <TabBar role="tablist" aria-label="성적 및 시간표 조회 탭">
+              <TabButton
+                role="tab"
+                aria-selected={activeTab === "timetable"}
+                $active={activeTab === "timetable"}
+                onClick={() => setActiveTab("timetable")}
+              >
                 <Calendar size={14} />
                 <span>시간표</span>
               </TabButton>
-              <TabButton $active={activeTab === "semesterGrades"} onClick={() => setActiveTab("semesterGrades")}>
+              <TabButton
+                role="tab"
+                aria-selected={activeTab === "semesterGrades"}
+                $active={activeTab === "semesterGrades"}
+                onClick={() => setActiveTab("semesterGrades")}
+              >
                 <GraduationCap size={14} />
                 <span>학기별 성적</span>
               </TabButton>
-              <TabButton $active={activeTab === "courseGrades"} onClick={() => setActiveTab("courseGrades")}>
+              <TabButton
+                role="tab"
+                aria-selected={activeTab === "courseGrades"}
+                $active={activeTab === "courseGrades"}
+                onClick={() => setActiveTab("courseGrades")}
+              >
                 <BookOpen size={14} />
                 <span>과목별 성적</span>
               </TabButton>
-              <TabButton $active={activeTab === "credits"} onClick={() => setActiveTab("credits")}>
+              <TabButton
+                role="tab"
+                aria-selected={activeTab === "credits"}
+                $active={activeTab === "credits"}
+                onClick={() => setActiveTab("credits")}
+              >
                 <BookMarked size={14} />
                 <span>취득학점·교양</span>
               </TabButton>
-              <TabButton $active={activeTab === "scholarship"} onClick={() => setActiveTab("scholarship")}>
+              <TabButton
+                role="tab"
+                aria-selected={activeTab === "scholarship"}
+                $active={activeTab === "scholarship"}
+                onClick={() => setActiveTab("scholarship")}
+              >
                 <Award size={14} />
                 <span>장학금</span>
               </TabButton>
@@ -307,74 +340,78 @@ const PortalTimetableLabPage = () => {
                   <Box>
                     <SummaryRow>
                       <SummaryItem>
-                        <SummaryLabel>신청 과목수</SummaryLabel>
-                        <SummaryValue>{timetableList.length}과목</SummaryValue>
+                        <span className="label">신청 과목수</span>
+                        <span className="value">{timetableList.length}과목</span>
                       </SummaryItem>
                       <SummaryDivider />
                       <SummaryItem>
-                        <SummaryLabel>신청 학점</SummaryLabel>
-                        <SummaryValue>{totalCredits}학점</SummaryValue>
+                        <span className="label">신청 학점</span>
+                        <span className="value">{totalCredits}학점</span>
                       </SummaryItem>
                       <SummaryDivider />
                       <SummaryItem>
-                        <SummaryLabel>조회 기준</SummaryLabel>
-                        <SummaryValue>{selectedSemester?.label || "-"}</SummaryValue>
+                        <span className="label">조회 기준</span>
+                        <span className="value">{selectedSemester?.label || "-"}</span>
                       </SummaryItem>
                     </SummaryRow>
                   </Box>
                 </TitleContentArea>
 
                 <TitleContentArea title={`과목별 시간표 (${timetableList.length}건)`}>
-                  <CourseList>
-                    {timetableList.map((item, idx) => (
-                      <CourseCard key={idx}>
-                        <CourseHeader>
-                          <CourseTitle>{item.courseName}</CourseTitle>
-                          <Badge>{item.courseType || "전공"}</Badge>
-                        </CourseHeader>
+                  {timetableList.length > 0 ? (
+                    <CourseList>
+                      {timetableList.map((item, idx) => (
+                        <CourseCard key={idx}>
+                          <CourseHeader>
+                            <CourseTitle>{item.courseName}</CourseTitle>
+                            <StatusBadge>{item.courseType || "전공"}</StatusBadge>
+                          </CourseHeader>
 
-                        <CourseMetaGrid>
-                          <MetaItem>
-                            <User size={13} color="var(--gray-500)" />
-                            <span>{item.professorName || "교수 미정"}</span>
-                          </MetaItem>
-                          <MetaItem>
-                            <BookOpen size={13} color="var(--gray-500)" />
-                            <span>
-                              {item.credits}학점 · {item.departmentName || "개설학과"}
-                            </span>
-                          </MetaItem>
-                        </CourseMetaGrid>
+                          <CourseMetaGrid>
+                            <MetaItem>
+                              <User size={13} color="var(--text-tertiary)" />
+                              <span>{item.professorName || "교수 미정"}</span>
+                            </MetaItem>
+                            <MetaItem>
+                              <BookOpen size={13} color="var(--text-tertiary)" />
+                              <span>
+                                {item.credits}학점 · {item.departmentName || "개설학과"}
+                              </span>
+                            </MetaItem>
+                          </CourseMetaGrid>
 
-                        {item.timeSlots.length > 0 && (
-                          <TimeSlotsWrapper>
-                            {item.timeSlots.map((slot, sIdx) => (
-                              <TimeSlotTag key={sIdx}>
-                                <Clock size={12} />
-                                <span>
-                                  {slot.day} {slot.periods}
-                                </span>
-                                {(slot.building || slot.room) && (
-                                  <>
-                                    <MapPin size={12} style={{ marginLeft: 4 }} />
-                                    <span>
-                                      {slot.building} {slot.room}
-                                    </span>
-                                  </>
-                                )}
-                              </TimeSlotTag>
-                            ))}
-                          </TimeSlotsWrapper>
-                        )}
+                          {item.timeSlots.length > 0 && (
+                            <TimeSlotsWrapper>
+                              {item.timeSlots.map((slot, sIdx) => (
+                                <TimeSlotTag key={sIdx}>
+                                  <Clock size={12} />
+                                  <span>
+                                    {slot.day} {slot.periods}
+                                  </span>
+                                  {(slot.building || slot.room) && (
+                                    <>
+                                      <MapPin size={12} />
+                                      <span>
+                                        {slot.building} {slot.room}
+                                      </span>
+                                    </>
+                                  )}
+                                </TimeSlotTag>
+                              ))}
+                            </TimeSlotsWrapper>
+                          )}
 
-                        <CourseCodeText>학수번호: {item.courseCode}</CourseCodeText>
-                      </CourseCard>
-                    ))}
-                  </CourseList>
+                          <CourseCodeText>학수번호: {item.courseCode}</CourseCodeText>
+                        </CourseCard>
+                      ))}
+                    </CourseList>
+                  ) : (
+                    <EmptyState padding="32px 0">조회된 시간표 과목이 없어요.</EmptyState>
+                  )}
                 </TitleContentArea>
 
                 <ActionButton as="button" onClick={() => setIsImportSheetOpen(true)}>
-                  <School size={18} />
+                  <School size={18} style={{ marginRight: 6 }} />
                   <span>내 시간표 서비스에 등록하기</span>
                 </ActionButton>
               </>
@@ -389,20 +426,20 @@ const PortalTimetableLabPage = () => {
                       <Box>
                         <SummaryRow>
                           <SummaryItem>
-                            <SummaryLabel>총 취득학점</SummaryLabel>
-                            <SummaryValue>{report.semesterGrades[0]?.cumulativeAcquiredCredits || "-"}학점</SummaryValue>
+                            <span className="label">총 취득학점</span>
+                            <span className="value">{report.semesterGrades[0]?.cumulativeAcquiredCredits || "-"}학점</span>
                           </SummaryItem>
                           <SummaryDivider />
                           <SummaryItem>
-                            <SummaryLabel>총 평점평균</SummaryLabel>
-                            <SummaryValue style={{ color: "var(--text-brand)" }}>
+                            <span className="label">총 평점평균</span>
+                            <span className="value highlight">
                               {report.semesterGrades[0]?.cumulativeAverageScore || "-"} / 4.5
-                            </SummaryValue>
+                            </span>
                           </SummaryItem>
                           <SummaryDivider />
                           <SummaryItem>
-                            <SummaryLabel>총 백분위</SummaryLabel>
-                            <SummaryValue>{report.semesterGrades[0]?.cumulativePercentage || "-"}점</SummaryValue>
+                            <span className="label">총 백분위</span>
+                            <span className="value">{report.semesterGrades[0]?.cumulativePercentage || "-"}점</span>
                           </SummaryItem>
                         </SummaryRow>
                       </Box>
@@ -424,16 +461,16 @@ const PortalTimetableLabPage = () => {
 
                             <GradeMetaGrid>
                               <GradeMetaItem>
-                                <span>백분위</span>
-                                <strong>{sem.percentage}점</strong>
+                                <span className="meta-lbl">백분위</span>
+                                <span className="meta-val">{sem.percentage}점</span>
                               </GradeMetaItem>
                               <GradeMetaItem>
-                                <span>전공 석차</span>
-                                <strong>{sem.rank || "-"}</strong>
+                                <span className="meta-lbl">전공 석차</span>
+                                <span className="meta-val">{sem.rank || "-"}</span>
                               </GradeMetaItem>
                               <GradeMetaItem>
-                                <span>누적 평점</span>
-                                <strong>{sem.cumulativeAverageScore}</strong>
+                                <span className="meta-lbl">누적 평점</span>
+                                <span className="meta-val">{sem.cumulativeAverageScore}</span>
                               </GradeMetaItem>
                             </GradeMetaGrid>
                           </GradeCard>
@@ -442,7 +479,7 @@ const PortalTimetableLabPage = () => {
                     </TitleContentArea>
                   </>
                 ) : (
-                  <EmptyBox>조회된 학기별 성적 데이터가 없어요.</EmptyBox>
+                  <EmptyState padding="32px 0">조회된 학기별 성적 데이터가 없어요.</EmptyState>
                 )}
               </>
             )}
@@ -455,15 +492,15 @@ const PortalTimetableLabPage = () => {
                     <CourseList>
                       {report.courseGrades.map((crs, idx) => (
                         <CourseGradeCard key={idx}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                              <Badge>{crs.courseTypeName}</Badge>
-                              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{crs.semesterName}</span>
+                          <CourseInfoColumn>
+                            <CourseTypeRow>
+                              <StatusBadge>{crs.courseTypeName}</StatusBadge>
+                              <span className="sem-name">{crs.semesterName}</span>
                               {crs.isRetake && <RetakeBadge>재수강</RetakeBadge>}
-                            </div>
+                            </CourseTypeRow>
                             <CourseTitle>{crs.courseName}</CourseTitle>
-                            <CourseCodeText style={{ marginTop: 2 }}>{crs.credits}학점 · {crs.courseCode}</CourseCodeText>
-                          </div>
+                            <CourseCodeText>{crs.credits}학점 · {crs.courseCode}</CourseCodeText>
+                          </CourseInfoColumn>
                           <GradeResultBox $grade={crs.grade}>
                             <span className="grade">{crs.grade}</span>
                             {crs.score && <span className="score">{crs.score}</span>}
@@ -473,7 +510,7 @@ const PortalTimetableLabPage = () => {
                     </CourseList>
                   </TitleContentArea>
                 ) : (
-                  <EmptyBox>조회된 과목별 성적 데이터가 없어요.</EmptyBox>
+                  <EmptyState padding="32px 0">조회된 과목별 성적 데이터가 없어요.</EmptyState>
                 )}
               </>
             )}
@@ -487,7 +524,7 @@ const PortalTimetableLabPage = () => {
                       <CreditGrid>
                         <CreditBox>
                           <span className="lbl">총 취득학점</span>
-                          <span className="val" style={{ color: "var(--text-brand)" }}>
+                          <span className="val highlight">
                             {report.creditSummary.totalCredits}
                             {report.creditSummary.standardTotalCredits !== "0" && (
                               <small> / {report.creditSummary.standardTotalCredits}학점</small>
@@ -518,9 +555,9 @@ const PortalTimetableLabPage = () => {
                     <CourseList>
                       {report.generalEducationAreas.map((area, idx) => (
                         <AreaCard key={idx}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <AreaRow>
                             <div>
-                              <span style={{ fontSize: 12, color: "var(--text-tertiary)" }}>{area.courseTypeName}</span>
+                              <span className="area-type">{area.courseTypeName}</span>
                               <AreaTitle>{area.areaName}</AreaTitle>
                             </div>
                             <AreaCreditStatus $satisfied={area.isSatisfied}>
@@ -530,7 +567,7 @@ const PortalTimetableLabPage = () => {
                                 {area.standardCredits !== "0" && ` / ${area.standardCredits}`}학점
                               </span>
                             </AreaCreditStatus>
-                          </div>
+                          </AreaRow>
                         </AreaCard>
                       ))}
                     </CourseList>
@@ -561,29 +598,34 @@ const PortalTimetableLabPage = () => {
                         <CourseCard key={idx}>
                           <CourseHeader>
                             <CourseTitle>{scal.scholarshipName}</CourseTitle>
-                            <Badge>{scal.paymentMethod}</Badge>
+                            <StatusBadge>{scal.paymentMethod}</StatusBadge>
                           </CourseHeader>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                            <span style={{ fontSize: 13, color: "var(--gray-600)" }}>{scal.semesterName}</span>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>
+                          <ScholarshipMetaRow>
+                            <span className="sem-text">{scal.semesterName}</span>
+                            <span className="amount-text">
                               {scal.amount.toLocaleString()}원
                             </span>
-                          </div>
+                          </ScholarshipMetaRow>
                         </CourseCard>
                       ))}
                     </CourseList>
                   </TitleContentArea>
                 ) : (
-                  <EmptyBox>수혜받은 장학금 내역이 없거나 아직 등록되지 않았어요.</EmptyBox>
+                  <EmptyState padding="32px 0">수혜받은 장학금 내역이 없거나 아직 등록되지 않았어요.</EmptyState>
                 )}
               </>
             )}
 
             {/* 공통 하단 액션 버튼 */}
             <ActionArea>
-              <SecondaryButton type="button" onClick={handleMainAction} disabled={isLoading}>
+              <CapsuleButton
+                variant="secondary"
+                fullWidth
+                onClick={handleMainAction}
+                disabled={isLoading}
+              >
                 {isLoading ? (loadingMessage || "가져오는 중...") : "포털에서 최신 데이터 다시 가져오기"}
-              </SecondaryButton>
+              </CapsuleButton>
 
               <RawJsonToggleButton type="button" onClick={() => setShowRawJson(!showRawJson)}>
                 <Code size={14} />
@@ -638,38 +680,45 @@ export default PortalTimetableLabPage;
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 16px 16px 50px 16px;
+  gap: var(--space-5);
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   max-width: 600px;
   margin: 0 auto;
+  width: 100%;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
 `;
 
 const ContentSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
+  width: 100%;
 `;
 
 const WarningBanner = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   background-color: var(--bg-brand);
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px;
 `;
 
 const WarningBannerText = styled.p`
-  font-size: 13px;
+  ${typography.body2}
   color: var(--text-primary);
-  line-height: 1.45;
   margin: 0;
   flex: 1;
 
   strong {
     color: var(--text-brand);
+    font-weight: 600;
   }
 `;
 
@@ -677,36 +726,47 @@ const LaunchButton = styled.button`
   background: var(--interactive-primary);
   color: var(--text-inverse);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 600;
+  ${typography.label3}
   cursor: pointer;
   white-space: nowrap;
+
+  &:active {
+    background: var(--interactive-primary-pressed);
+  }
 `;
 
-const DescriptionText = styled.p`
-  font-size: 14px;
-  color: var(--gray-700);
+const DescriptionTextWrapper = styled.div`
+  padding: 16px;
+  ${typography.body2}
+  color: var(--text-secondary);
   line-height: 1.5;
-  margin: 0;
 
   strong {
     color: var(--text-primary);
+    font-weight: 600;
   }
+`;
+
+const SelectContainer = styled.div`
+  padding: 12px 14px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const StyledSelect = styled.select`
   width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border-radius: 12px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
-  background-color: var(--bg-base);
-  font-size: 15px;
+  background-color: var(--bg-subtle);
+  ${typography.body2}
   color: var(--text-primary);
   outline: none;
   cursor: pointer;
+  box-sizing: border-box;
 
   &:focus {
     border-color: var(--border-brand);
@@ -728,15 +788,19 @@ const TabButton = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: var(--radius-full);
+  ${typography.label2}
   font-weight: ${(props) => (props.$active ? "700" : "500")};
-  background-color: ${(props) => (props.$active ? "var(--gray-900)" : "var(--bg-muted)")};
-  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-700)")};
-  border: none;
+  background-color: ${(props) => (props.$active ? "var(--text-primary)" : "var(--bg-muted)")};
+  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--text-secondary)")};
+  border: 1px solid ${(props) => (props.$active ? "transparent" : "var(--border-default)")};
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--border-brand);
+  }
 `;
 
 const SummaryRow = styled.div`
@@ -744,7 +808,8 @@ const SummaryRow = styled.div`
   align-items: center;
   justify-content: space-around;
   width: 100%;
-  padding: 4px 0;
+  padding: 16px 12px;
+  box-sizing: border-box;
 `;
 
 const SummaryItem = styled.div`
@@ -752,23 +817,26 @@ const SummaryItem = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 4px;
-`;
 
-const SummaryLabel = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary);
-`;
+  .label {
+    ${typography.caption1}
+    color: var(--text-tertiary);
+  }
 
-const SummaryValue = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
+  .value {
+    ${typography.title3}
+    color: var(--text-primary);
+
+    &.highlight {
+      color: var(--text-brand);
+    }
+  }
 `;
 
 const SummaryDivider = styled.div`
   width: 1px;
   height: 28px;
-  background-color: var(--gray-200);
+  background-color: var(--border-default);
 `;
 
 const CourseList = styled.div`
@@ -781,11 +849,11 @@ const CourseList = styled.div`
 const CourseCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 14px;
-  padding: 14px;
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const CourseHeader = styled.div`
@@ -796,29 +864,28 @@ const CourseHeader = styled.div`
 `;
 
 const CourseTitle = styled.h4`
-  font-size: 15px;
-  font-weight: 700;
+  ${typography.heading2}
   color: var(--text-primary);
   margin: 0;
 `;
 
-const Badge = styled.span`
-  font-size: 11.5px;
+const StatusBadge = styled.span`
+  ${typography.caption1}
   font-weight: 600;
   background-color: var(--bg-brand);
   color: var(--text-brand);
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 `;
 
 const RetakeBadge = styled.span`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   background-color: var(--bg-error);
   color: var(--text-error);
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 `;
 
@@ -832,8 +899,8 @@ const MetaItem = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12.5px;
-  color: var(--gray-600);
+  ${typography.caption1}
+  color: var(--text-tertiary);
 `;
 
 const TimeSlotsWrapper = styled.div`
@@ -847,23 +914,22 @@ const TimeSlotTag = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11.5px;
+  ${typography.caption1}
   color: var(--text-secondary);
   background-color: var(--bg-muted);
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 `;
 
 const CourseCodeText = styled.span`
-  font-size: 11.5px;
+  ${typography.caption1}
   color: var(--text-tertiary);
-  margin-top: 2px;
 `;
 
 const GradeCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -877,14 +943,13 @@ const GradeCardHeader = styled.div`
 `;
 
 const SemesterTitle = styled.h4`
-  font-size: 16px;
-  font-weight: 700;
+  ${typography.heading2}
   color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const GradeSubText = styled.span`
-  font-size: 12.5px;
+  ${typography.caption1}
   color: var(--text-tertiary);
 `;
 
@@ -892,12 +957,12 @@ const ScoreBadge = styled.div`
   background-color: var(--bg-brand);
   color: var(--text-brand);
   padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  ${typography.label2}
 
   strong {
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 700;
   }
 `;
 
@@ -906,7 +971,7 @@ const GradeMetaGrid = styled.div`
   align-items: center;
   justify-content: space-between;
   background-color: var(--bg-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
 `;
 
@@ -916,13 +981,13 @@ const GradeMetaItem = styled.div`
   align-items: center;
   gap: 2px;
 
-  span {
-    font-size: 11.5px;
+  .meta-lbl {
+    ${typography.caption1}
     color: var(--text-tertiary);
   }
 
-  strong {
-    font-size: 13.5px;
+  .meta-val {
+    ${typography.label2}
     font-weight: 700;
     color: var(--text-secondary);
   }
@@ -931,12 +996,32 @@ const GradeMetaItem = styled.div`
 const CourseGradeCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 14px;
-  padding: 14px;
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+`;
+
+const CourseInfoColumn = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const CourseTypeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+
+  .sem-name {
+    ${typography.caption1}
+    color: var(--text-tertiary);
+  }
 `;
 
 const GradeResultBox = styled.div<{ $grade: string }>`
@@ -946,28 +1031,28 @@ const GradeResultBox = styled.div<{ $grade: string }>`
   justify-content: center;
   min-width: 52px;
   padding: 6px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background-color: ${(props) =>
     props.$grade.startsWith("A")
       ? "var(--bg-brand)"
       : props.$grade === "P"
-      ? "rgb(230, 248, 237)"
+      ? "var(--bg-subtle)"
       : "var(--bg-muted)"};
 
   .grade {
-    font-size: 16px;
+    ${typography.heading2}
     font-weight: 800;
     color: ${(props) =>
       props.$grade.startsWith("A")
         ? "var(--text-brand)"
         : props.$grade === "P"
-        ? "var(--text-success)"
+        ? "var(--border-success)"
         : "var(--text-secondary)"};
   }
 
   .score {
-    font-size: 11px;
-    color: var(--gray-600);
+    ${typography.caption1}
+    color: var(--text-tertiary);
     font-weight: 600;
   }
 `;
@@ -977,36 +1062,40 @@ const CreditGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   width: 100%;
+  padding: 12px;
+  box-sizing: border-box;
 `;
 
 const CreditBox = styled.div`
   background: var(--bg-subtle);
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
   gap: 2px;
 
   .lbl {
-    font-size: 12px;
+    ${typography.caption1}
     color: var(--text-tertiary);
   }
 
   .val {
-    font-size: 18px;
-    font-weight: 700;
+    ${typography.title3}
     color: var(--text-primary);
 
+    &.highlight {
+      color: var(--text-brand);
+    }
+
     small {
-      font-size: 12px;
-      font-weight: 400;
+      ${typography.caption1}
       color: var(--text-tertiary);
     }
   }
 
   .sub {
-    font-size: 11px;
-    color: var(--gray-600);
+    ${typography.caption1}
+    color: var(--text-tertiary);
     margin-top: 2px;
   }
 `;
@@ -1014,13 +1103,23 @@ const CreditBox = styled.div`
 const AreaCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 12px 14px;
 `;
 
+const AreaRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .area-type {
+    ${typography.caption1}
+    color: var(--text-tertiary);
+  }
+`;
+
 const AreaTitle = styled.h5`
-  font-size: 14.5px;
-  font-weight: 700;
+  ${typography.heading3}
   color: var(--text-primary);
   margin: 2px 0 0 0;
 `;
@@ -1029,9 +1128,9 @@ const AreaCreditStatus = styled.div<{ $satisfied: boolean }>`
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  ${typography.label2}
   font-weight: 700;
-  color: ${(props) => (props.$satisfied ? "var(--text-success)" : "var(--text-error)")};
+  color: ${(props) => (props.$satisfied ? "var(--border-success)" : "var(--text-error)")};
 `;
 
 const ScholarshipBanner = styled.div`
@@ -1040,55 +1139,47 @@ const ScholarshipBanner = styled.div`
   gap: 16px;
   background-color: var(--bg-brand);
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 16px;
+  box-sizing: border-box;
+  width: 100%;
 
   .title {
-    font-size: 13px;
-    color: var(--gray-700);
-    margin-bottom: 4px;
+    ${typography.label2}
+    color: var(--text-secondary);
+    margin-bottom: 2px;
   }
 
   .amount {
-    font-size: 22px;
-    font-weight: 800;
+    ${typography.title1}
     color: var(--text-brand);
   }
 `;
 
-const EmptyBox = styled.div`
-  text-align: center;
-  padding: 40px 16px;
-  color: var(--text-tertiary);
-  font-size: 14px;
-  background: var(--bg-base);
-  border-radius: 14px;
-  border: 1px dashed var(--border-default);
+const ScholarshipMetaRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+
+  .sem-text {
+    ${typography.body2}
+    color: var(--text-secondary);
+  }
+
+  .amount-text {
+    ${typography.title3}
+    color: var(--text-primary);
+  }
 `;
 
 const ActionArea = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-`;
-
-const SecondaryButton = styled.button`
+  gap: var(--space-3);
+  margin-top: var(--space-2);
   width: 100%;
-  height: 48px;
-  background: var(--bg-muted);
-  color: var(--text-secondary);
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background: var(--gray-200);
-  }
 `;
 
 const RawJsonToggleButton = styled.button`
@@ -1098,7 +1189,7 @@ const RawJsonToggleButton = styled.button`
   background: none;
   border: none;
   color: var(--text-tertiary);
-  font-size: 12.5px;
+  ${typography.caption1}
   cursor: pointer;
   padding: 4px 8px;
 `;
@@ -1106,9 +1197,9 @@ const RawJsonToggleButton = styled.button`
 const RawJsonPre = styled.pre`
   width: 100%;
   background: var(--gray-900);
-  color: var(--text-disabled);
+  color: var(--gray-300);
   padding: 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 11.5px;
   overflow-x: auto;
   box-sizing: border-box;
@@ -1116,7 +1207,7 @@ const RawJsonPre = styled.pre`
 `;
 
 const FootnoteText = styled.p`
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-tertiary);
   margin: 0;
   text-align: center;
