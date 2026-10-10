@@ -44,7 +44,7 @@ const HeaderTitle = styled.div`
 `;
 
 const BetaBadge = styled.span`
-  background: linear-gradient(142deg, #007aff 26.94%, #570099 87.68%);
+  background: linear-gradient(142deg, var(--interactive-primary) 26.94%, rgb(87, 0, 153) 87.68%);
   color: var(--text-inverse);
   font-size: 11px;
   font-weight: 600;

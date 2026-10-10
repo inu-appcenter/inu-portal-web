@@ -108,7 +108,7 @@ export default function EditChatModal({
               <Label>방 썸네일</Label>
               <ThumbnailInputWrapper>
                 <ThumbnailPreview src={previewUrl || ""}>
-                  {!previewUrl && <Icon name="camera" size={24} color="#CBD5E1" />}
+                  {!previewUrl && <Icon name="camera" size={24} color="var(--gray-300)" />}
                 </ThumbnailPreview>
                 <FileInput
                   type="file"

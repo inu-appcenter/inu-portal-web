@@ -111,19 +111,19 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
             title="총 방문자"
             value={memberLog?.memberCount || 0}
             icon={(size) => <Icon name="users" size={size} />}
-            color="#0f766e"
+            color="rgb(15, 118, 110)"
           />
           <StatsDashboardCard
             title="로그인 유저"
             value={counts.login}
             icon={(size) => <UserCheck size={size} />}
-            color="#3b82f6"
+            color="var(--primary)"
           />
           <StatsDashboardCard
             title="비로그인 유저"
             value={counts.guest}
             icon={(size) => <Icon name="user-remove" size={size} />}
-            color="#64748b"
+            color="var(--gray-500)"
           />
         </StatsGrid>
 
@@ -134,22 +134,22 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
               <RatioInfo>
                 <RatioItem>
                   <RatioLabel>
-                    <ColorDot $color="#3b82f6" />
+                    <ColorDot $color="var(--primary)" />
                     <LabelText>로그인 유저</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="#3b82f6">{loginRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--primary)">{loginRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
                 <RatioItem>
                   <RatioLabel>
-                    <ColorDot $color="#cbd5e1" />
+                    <ColorDot $color="rgb(203, 213, 225)" />
                     <LabelText>비로그인</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="#94a3b8">{guestRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--button-inactive)">{guestRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
               </RatioInfo>
               <ProgressBar>
-                <ProgressFill $width={loginRatio} $color="#3b82f6" />
-                <ProgressFill $width={guestRatio} $color="#cbd5e1" />
+                <ProgressFill $width={loginRatio} $color="var(--primary)" />
+                <ProgressFill $width={guestRatio} $color="rgb(203, 213, 225)" />
               </ProgressBar>
             </DistributionCard>
           </VisualSection>

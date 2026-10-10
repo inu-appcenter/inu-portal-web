@@ -37,7 +37,7 @@ const ModalOverlay = styled.div`
 
 const ModalContent = styled.div`
   background: var(--bg-subtle);
-  box-shadow: 0px 4px 4px 0px #00000040;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   border-radius: 10px;
   width: 90%;
   max-width: 380px;
@@ -63,7 +63,7 @@ const ButtonGroup = styled.div`
 const Button = styled.div`
   height: 26px;
   width: 64px;
-  background-color: #9cafe2;
+  background-color: var(--interactive-focus);
   color: var(--text-inverse);
   border-radius: 10px;
   display: flex;

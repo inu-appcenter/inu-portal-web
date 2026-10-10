@@ -570,7 +570,7 @@ export default function MobileAdminBusPage() {
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <RefreshCw size={20} color="#2563eb" /> 원클릭 노선 전체 자동
+                  <RefreshCw size={20} color="var(--interactive-primary)" /> 원클릭 노선 전체 자동
                   동기화
                 </HeaderTitle>
               </CardHeader>
@@ -596,11 +596,11 @@ export default function MobileAdminBusPage() {
                 <HeaderTitle>
                   {editingRuleId !== null ? (
                     <>
-                      <Edit2 size={20} color="#2563eb" /> 탐색 규칙 수정 (ID: #{editingRuleId})
+                      <Edit2 size={20} color="var(--interactive-primary)" /> 탐색 규칙 수정 (ID: #{editingRuleId})
                     </>
                   ) : (
                     <>
-                      <Icon name="add-plus-sm" size={20} color="#16a34a" /> 시종점 기반 자동 탐색 규칙 추가
+                      <Icon name="add-plus-sm" size={20} color="var(--text-success)" /> 시종점 기반 자동 탐색 규칙 추가
                     </>
                   )}
                 </HeaderTitle>
@@ -791,7 +791,7 @@ export default function MobileAdminBusPage() {
                           onClick={() => openSearchModal("end")}
                         >
                           <div style={{ marginBottom: "6px" }}>
-                            <Icon name="search" size={22} color="#94a3b8" />
+                            <Icon name="search" size={22} color="var(--button-inactive)" />
                           </div>
                           <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--gray-700)" }}>
                             목표 도착 정류장을 검색하여 추가해주세요
@@ -928,7 +928,7 @@ export default function MobileAdminBusPage() {
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <List size={20} color="#6b7280" /> 등록된 탐색 규칙 목록 (
+                  <List size={20} color="var(--gray-500)" /> 등록된 탐색 규칙 목록 (
                   {targetRules.length}개)
                 </HeaderTitle>
               </CardHeader>
@@ -1048,7 +1048,7 @@ export default function MobileAdminBusPage() {
           <Card>
             <CardHeader>
               <HeaderTitle>
-                <Bus size={20} color="#2563eb" /> 등록된 노선 구간 목록 및 직접
+                <Bus size={20} color="var(--interactive-primary)" /> 등록된 노선 구간 목록 및 직접
                 수정 ({routeSections.length}개)
               </HeaderTitle>
             </CardHeader>
@@ -1123,7 +1123,7 @@ export default function MobileAdminBusPage() {
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <Tag size={20} color="#8b5cf6" /> 정류장 별칭(Alias) 등록
+                  <Tag size={20} color="rgb(139, 92, 246)" /> 정류장 별칭(Alias) 등록
                 </HeaderTitle>
               </CardHeader>
               <CardBody>
@@ -1264,7 +1264,7 @@ export default function MobileAdminBusPage() {
             <Card>
               <CardHeader>
                 <HeaderTitle>
-                  <List size={20} color="#6b7280" /> 등록된 정류장 별칭 및 안내 문구 목록 (
+                  <List size={20} color="var(--gray-500)" /> 등록된 정류장 별칭 및 안내 문구 목록 (
                   {stopAliases.length}개)
                 </HeaderTitle>
               </CardHeader>
@@ -1290,7 +1290,7 @@ export default function MobileAdminBusPage() {
                           <td>
                             <AliasTag>{a.stopAlias}</AliasTag>
                           </td>
-                          <td style={{ fontSize: "12px", color: "#b45309" }}>
+                          <td style={{ fontSize: "12px", color: "rgb(180, 83, 9)" }}>
                             {a.stopNotice || <span style={{ color: "var(--text-tertiary)" }}>-</span>}
                           </td>
                           <td>
@@ -1507,13 +1507,13 @@ const Container = styled.div`
 `;
 
 const SuccessBanner = styled.div`
-  background-color: #ecfdf5;
-  color: #065f46;
+  background-color: rgb(236, 253, 245);
+  color: rgb(6, 95, 70);
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid #a7f3d0;
+  border: 1px solid rgb(167, 243, 208);
 `;
 
 const TabHeader = styled.div`
@@ -1758,14 +1758,14 @@ const CancelMiniButton = styled.button`
   gap: 4px;
   padding: 4px 10px;
   background-color: var(--bg-error);
-  border: 1px solid #fca5a5;
-  color: #b91c1c;
+  border: 1px solid rgb(252, 165, 165);
+  color: rgb(185, 28, 28);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   &:hover {
-    background-color: #fecaca;
+    background-color: rgb(254, 202, 202);
   }
 `;
 
@@ -1833,7 +1833,7 @@ const SubmitButton = styled.button`
   justify-content: center;
   gap: 6px;
   padding: 12px 20px;
-  background-color: #16a34a;
+  background-color: rgb(22, 163, 74);
   color: var(--text-inverse);
   border: none;
   border-radius: 6px;
@@ -1842,10 +1842,10 @@ const SubmitButton = styled.button`
   cursor: pointer;
   width: 100%;
   &:hover:not(:disabled) {
-    background-color: #15803d;
+    background-color: rgb(21, 128, 61);
   }
   &:disabled {
-    background-color: #86efac;
+    background-color: rgb(134, 239, 172);
   }
 `;
 
@@ -1918,7 +1918,7 @@ const SectionHeaderLabel = styled.div`
     background-color: var(--interactive-primary);
   }
   .end-dot {
-    background-color: #10b981;
+    background-color: var(--text-success);
   }
 `;
 
@@ -2005,8 +2005,8 @@ const EndStopIdText = styled.span`
 `;
 
 const AliasTag = styled.span`
-  background-color: #ede9fe;
-  color: #6d28d9;
+  background-color: rgb(237, 233, 254);
+  color: rgb(109, 40, 217);
   font-size: 11px;
   font-weight: 600;
   padding: 2px 6px;
@@ -2019,7 +2019,7 @@ const Badge = styled.span<{ isSchool: boolean }>`
   padding: 3px 8px;
   border-radius: 12px;
   background-color: ${({ isSchool }) => (isSchool ? "var(--blue-100)" : "var(--bg-error)")};
-  color: ${({ isSchool }) => (isSchool ? "#1e40af" : "#991b1b")};
+  color: ${({ isSchool }) => (isSchool ? "rgb(30, 64, 175)" : "rgb(153, 27, 27)")};
 `;
 
 const TabBadge = styled.span`
@@ -2115,7 +2115,7 @@ const NoticeBox = styled.div`
 
 const TipBox = styled.div`
   background-color: var(--yellow-100);
-  color: #92400e;
+  color: rgb(146, 64, 14);
   padding: 8px 10px;
   border-radius: 6px;
   font-size: 12px;
@@ -2282,7 +2282,7 @@ const SearchResultItem = styled.div`
 
   &:hover {
     background-color: var(--bg-brand);
-    border-color: #93c5fd;
+    border-color: rgb(147, 197, 253);
   }
 `;
 
@@ -2337,8 +2337,8 @@ const StatusControlCard = styled.div<{ isOnline: boolean }>`
   gap: 16px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  background-color: ${({ isOnline }) => (isOnline ? "#f0fdf4" : "var(--bg-error)")};
-  border: 1.5px solid ${({ isOnline }) => (isOnline ? "#86efac" : "#fca5a5")};
+  background-color: ${({ isOnline }) => (isOnline ? "rgb(240, 253, 244)" : "var(--bg-error)")};
+  border: 1.5px solid ${({ isOnline }) => (isOnline ? "rgb(134, 239, 172)" : "rgb(252, 165, 165)")};
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 
@@ -2362,7 +2362,7 @@ const StatusIconBox = styled.div<{ isOnline: boolean }>`
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "var(--red-500)")};
+  background-color: ${({ isOnline }) => (isOnline ? "rgb(34, 197, 94)" : "var(--red-500)")};
   color: var(--text-inverse);
   flex-shrink: 0;
 `;
@@ -2394,14 +2394,14 @@ const StatusBadge = styled.span<{ isOnline: boolean }>`
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
-  background-color: ${({ isOnline }) => (isOnline ? "#dcfce7" : "var(--bg-error)")};
-  color: ${({ isOnline }) => (isOnline ? "#15803d" : "#b91c1c")};
+  background-color: ${({ isOnline }) => (isOnline ? "rgb(220, 252, 231)" : "var(--bg-error)")};
+  color: ${({ isOnline }) => (isOnline ? "rgb(21, 128, 61)" : "rgb(185, 28, 28)")};
 
   .dot {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background-color: ${({ isOnline }) => (isOnline ? "#22c55e" : "var(--red-500)")};
+    background-color: ${({ isOnline }) => (isOnline ? "rgb(34, 197, 94)" : "var(--red-500)")};
   }
 `;
 
@@ -2424,7 +2424,7 @@ const StatusToggleBtn = styled.button<{ isOnline: boolean }>`
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
-  background-color: ${({ isOnline }) => (isOnline ? "var(--red-500)" : "#16a34a")};
+  background-color: ${({ isOnline }) => (isOnline ? "var(--red-500)" : "rgb(22, 163, 74)")};
   color: var(--text-inverse);
 
   &:hover:not(:disabled) {

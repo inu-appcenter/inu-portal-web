@@ -185,7 +185,7 @@ const TimetableAiEvaluationBubble = ({
         const headerText = trimmed.replace(/^#{1,6}\s+/, "");
         return (
           <SectionHeader key={idx}>
-            <Sparkles size={13} color="#FF5F15" />
+            <Sparkles size={13} color="rgb(255, 95, 21)" />
             <span>{renderInlineMarkdown(headerText)}</span>
           </SectionHeader>
         );
@@ -307,7 +307,7 @@ const TimetableAiEvaluationBubble = ({
                 {/* 2. 에러 상태 */}
                 {error && (
                   <ErrorContainer>
-                    <Icon name="circle-warning" size={28} color="#FF3B30" />
+                    <Icon name="circle-warning" size={28} color="var(--text-error)" />
                     <ErrorMessage>{error}</ErrorMessage>
                     <RetryButton onClick={handleRetry}>
                       다시 시도하기
@@ -331,7 +331,7 @@ const TimetableAiEvaluationBubble = ({
                         <MessageFooter>
                           <ActionButton onClick={handleCopy} title="답변 복사">
                             {copied ? (
-                              <Icon name="check" size={12} color="#52c41a" />
+                              <Icon name="check" size={12} color="var(--border-success)" />
                             ) : (
                               <Copy size={12} />
                             )}
@@ -626,7 +626,7 @@ const ScanningAvatarWrapper = styled.div`
 const ScanningRadar = styled.div`
   position: absolute;
   inset: -5px;
-  border: 1.5px dashed #ff5f15;
+  border: 1.5px dashed rgb(255, 95, 21);
   border-radius: 50%;
   animation: ${spin} 5s linear infinite;
 `;
@@ -652,7 +652,7 @@ const DotsLoader = styled.div`
   span {
     width: 5px;
     height: 5px;
-    background: #ff5f15;
+    background: rgb(255, 95, 21);
     border-radius: 50%;
     animation: ${pulse} 1.2s infinite ease-in-out;
 
@@ -675,12 +675,12 @@ const ErrorContainer = styled.div`
 
 const ErrorMessage = styled.p`
   font-size: 12.5px;
-  color: #ff3b30;
+  color: var(--text-error);
   margin: 8px 0 12px 0;
 `;
 
 const RetryButton = styled.button`
-  background: #ff3b30;
+  background: var(--text-error);
   color: var(--text-inverse);
   border: none;
   padding: 6px 14px;
@@ -709,7 +709,7 @@ const BoldText = styled.strong`
 
 const HighlightBadge = styled.span`
   background: var(--bg-error);
-  color: #ea580c;
+  color: var(--orange-500);
   font-weight: 700;
   font-size: 12.5px;
   padding: 1px 5px;
@@ -722,7 +722,7 @@ const SectionHeader = styled.div`
   gap: 5px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #ff5f15;
+  color: rgb(255, 95, 21);
   margin-top: 10px;
   margin-bottom: 3px;
 `;
@@ -742,7 +742,7 @@ const BulletItem = styled.div`
 const BulletDot = styled.span`
   width: 3.5px;
   height: 3.5px;
-  background: #ff5f15;
+  background: rgb(255, 95, 21);
   border-radius: 50%;
   margin-top: 7px;
   flex-shrink: 0;
@@ -762,7 +762,7 @@ const NumberedItem = styled.div`
 
 const NumberLabel = styled.span`
   font-weight: 700;
-  color: #ff5f15;
+  color: rgb(255, 95, 21);
   font-size: 13px;
   flex-shrink: 0;
 `;
@@ -780,7 +780,7 @@ const TypingCursor = styled.span`
     display: inline-block;
     width: 5px;
     height: 13px;
-    background: #ff5f15;
+    background: rgb(255, 95, 21);
     animation: ${blink} 0.8s infinite;
     vertical-align: middle;
   }
@@ -868,7 +868,7 @@ const StartButton = styled.button`
   display: flex;
   align-items: center;
   gap: 5px;
-  background: linear-gradient(135deg, #ff5f15 0%, #ff3b30 100%);
+  background: linear-gradient(135deg, rgb(255, 95, 21) 0%, var(--red-500) 100%);
   color: var(--text-inverse);
   border: none;
   padding: 8px 16px;

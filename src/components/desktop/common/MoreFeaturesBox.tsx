@@ -19,7 +19,7 @@ const MoreFeaturesBox = ({ title, content, style, onClick }: Props) => {
 export default MoreFeaturesBox;
 
 const Container = styled.div<{ $isClickable: boolean }>`
-  background-color: #e2e8f4;
+  background-color: var(--bg-brand);
   border-radius: 20px;
   padding: 20px 24px;
   margin: 20px 0;
@@ -47,7 +47,7 @@ const Title = styled.p`
 `;
 
 const Content = styled.div`
-  color: #3d6fd0;
+  color: var(--text-brand);
   font-size: 16px;
   white-space: pre-line;
 `;

@@ -790,7 +790,7 @@ const PanelTitle = styled.h2`
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
-  color: #20355d;
+  color: var(--text-primary);
   word-break: keep-all;
   min-width: 0;
 `;
@@ -799,7 +799,7 @@ const PanelDescription = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #516a86;
+  color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: keep-all;
 `;
@@ -817,7 +817,7 @@ const SortSelect = styled.select`
   border: 1px solid rgba(133, 164, 210, 0.45);
   border-radius: 999px;
   background: var(--bg-base);
-  color: #35506d;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -826,7 +826,7 @@ const SortSelect = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #7da8ea;
+    border-color: var(--interactive-primary);
   }
 `;
 
@@ -856,9 +856,9 @@ const TimetableTriggerBtn = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: var(--border-success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -866,7 +866,7 @@ const TimetableTriggerBtn = styled.button`
   transition: all 0.15s;
 
   &:hover {
-    background-color: #dcfce7;
+    background-color: rgba(16, 185, 129, 0.2);
   }
 `;
 
@@ -898,7 +898,7 @@ const CardTimetableBtn = styled.button`
 
 const LastUpdatedText = styled.span`
   font-size: 11px;
-  color: #70839d;
+  color: var(--text-tertiary);
 `;
 
 const RefreshButton = styled.button<{
@@ -913,7 +913,7 @@ const RefreshButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #70839d;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
 
@@ -976,7 +976,7 @@ const BusSectionHeading = styled.div<{ $isRed: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "#1f5fbc")};
+  color: ${({ $isRed }) => ($isRed ? "var(--red-500)" : "var(--interactive-primary)")};
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
@@ -1032,7 +1032,7 @@ const BusCardButtonInnerWrapper = styled.div`
 const RouteDescription = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
   word-break: keep-all;
 `;
 
@@ -1084,11 +1084,11 @@ const ChevronIcon = styled.span<{ $selected: boolean }>`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "#8ca0bb")};
+  color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--border-strong)")};
 `;
 
 const BusNoticeText = styled.div<{ $hasRouteProgress: boolean }>`
-  color: #4f6482;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.55;
@@ -1100,11 +1100,11 @@ const StatusText = styled.span<{ $status?: string }>`
   color: ${({ $status }) => {
     switch ($status) {
       case "여유":
-        return "#006f1e";
+        return "var(--border-success)";
       case "보통":
-        return "#0e4d9d";
+        return "var(--text-brand)";
       case "혼잡":
-        return "#d10000";
+        return "var(--text-error)";
       default:
         return "inherit";
     }
@@ -1113,7 +1113,7 @@ const StatusText = styled.span<{ $status?: string }>`
 
 const LastBus = styled.span`
   font-weight: 500;
-  color: #d10000;
+  color: var(--text-error);
 `;
 
 const SkeletonCard = styled.div`
@@ -1147,7 +1147,7 @@ const EmptyPanelMessage = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #6c819d;
+  color: var(--text-tertiary);
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;

@@ -175,7 +175,7 @@ export default function MobilePortalAccountPage() {
         /* ================= 0. 모바일 앱 환경 아닐 때 안내 화면 ================= */
         <ContentContainer>
           <NotAppCard>
-            <Smartphone size={36} color="#0061ff" />
+            <Smartphone size={36} color="var(--interactive-primary)" />
             <NotAppTitle>INTIP 모바일 앱 전용 기능이에요</NotAppTitle>
             <NotAppDesc>
               포털 계정 연동은 기기 보안 저장소(KeyStore)를 이용하므로 INTIP 모바일 앱 환경에서만 등록하고 이용할 수 있어요.
@@ -257,45 +257,45 @@ export default function MobilePortalAccountPage() {
           <ServiceListCard>
             <ServiceItem onClick={() => navigate(ROUTES.LABS.PORTAL.BASIC_INFO)}>
               <ServiceLeft>
-                <ServiceIcon $color="#0061ff" $bg="#eff6ff">
-                  <FileText size={18} color="#0061ff" />
+                <ServiceIcon $color="var(--interactive-primary)" $bg="rgb(239, 246, 255)">
+                  <FileText size={18} color="var(--interactive-primary)" />
                 </ServiceIcon>
                 <ServiceText>
                   <strong>기본 학적 정보 조회</strong>
                   <span>취득학점, 이수학기, 성적 및 학적 상태</span>
                 </ServiceText>
               </ServiceLeft>
-              <ChevronRight size={18} color="#b0b8c1" />
+              <ChevronRight size={18} color="var(--button-inactive)" />
             </ServiceItem>
 
             <ServiceDivider />
 
             <ServiceItem onClick={() => navigate(ROUTES.SERVICES.LMS)}>
               <ServiceLeft>
-                <ServiceIcon $color="#16a34a" $bg="#f0fdf4">
-                  <GraduationCap size={18} color="#16a34a" />
+                <ServiceIcon $color="var(--text-success)" $bg="rgb(240, 253, 244)">
+                  <GraduationCap size={18} color="var(--text-success)" />
                 </ServiceIcon>
                 <ServiceText>
                   <strong>이러닝 (LMS)</strong>
                   <span>수강 강좌, 출석 체크, 과제 마감 리마인더</span>
                 </ServiceText>
               </ServiceLeft>
-              <ChevronRight size={18} color="#b0b8c1" />
+              <ChevronRight size={18} color="var(--button-inactive)" />
             </ServiceItem>
 
             <ServiceDivider />
 
             <ServiceItem onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
               <ServiceLeft>
-                <ServiceIcon $color="#2563eb" $bg="#eff6ff">
-                  <BookOpen size={18} color="#2563eb" />
+                <ServiceIcon $color="var(--primary)" $bg="rgb(239, 246, 255)">
+                  <BookOpen size={18} color="var(--primary)" />
                 </ServiceIcon>
                 <ServiceText>
                   <strong>학산도서관</strong>
                   <span>열람실 잔여 좌석 배정 및 스터디룸 원클릭 예약</span>
                 </ServiceText>
               </ServiceLeft>
-              <ChevronRight size={18} color="#b0b8c1" />
+              <ChevronRight size={18} color="var(--button-inactive)" />
             </ServiceItem>
           </ServiceListCard>
 
@@ -326,7 +326,7 @@ export default function MobilePortalAccountPage() {
             <InputGroup>
               <InputLabel>포털 학번</InputLabel>
               <InputWrap>
-                <User size={18} color="#8b95a1" />
+                <User size={18} color="var(--gray-500)" />
                 <StyledInput
                   type="text"
                   inputMode="numeric"
@@ -341,7 +341,7 @@ export default function MobilePortalAccountPage() {
             <InputGroup>
               <InputLabel>포털 비밀번호</InputLabel>
               <InputWrap>
-                <Lock size={18} color="#8b95a1" />
+                <Lock size={18} color="var(--gray-500)" />
                 <StyledInput
                   type="password"
                   placeholder="포털 비밀번호 입력"
@@ -467,8 +467,8 @@ const StatusBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #e8f8f0;
-  color: #1b633d;
+  background: rgb(232, 248, 240);
+  color: rgb(27, 99, 61);
   padding: 6px 12px;
   border-radius: 999px;
   font-size: 13px;
@@ -561,7 +561,7 @@ const DangerActionBtn = styled.button`
   gap: 6px;
   background: var(--bg-error);
   color: var(--text-error);
-  border: 1px solid #fee2e2;
+  border: 1px solid var(--border-error-subtle);
   border-radius: 12px;
   padding: 10px 0;
   font-size: 13.5px;

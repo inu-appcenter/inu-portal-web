@@ -71,7 +71,7 @@ const ManageButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #28a745;
+  background-color: var(--text-success);
   color: var(--text-inverse);
   border: none;
   border-radius: 4px;
@@ -80,7 +80,7 @@ const ManageButton = styled.button`
   font-size: 14px;
 
   &:hover {
-    background-color: #218838;
+    background-color: var(--green-600);
   }
 
   &:focus {

@@ -57,7 +57,7 @@ export default function CategorySelector({
     <CategorySelectorWrapper ref={dropdownRef}>
       <DropdownButton onClick={() => setIsOpen(!isOpen)} type="button">
         <span>{category || "카테고리"}</span>
-        <Icon name="chevron-down" size={18} color="#333D4B" />
+        <Icon name="chevron-down" size={18} color="var(--gray-800)" />
       </DropdownButton>
 
       {isOpen && (

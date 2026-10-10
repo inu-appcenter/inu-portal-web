@@ -29,7 +29,7 @@ import Modal from "@/components/common/Modal";
 
 const CheckIcon = ({
   size = 16,
-  color = "#ffffff",
+  color = "var(--text-inverse)",
 }: {
   size?: number;
   color?: string;
@@ -63,42 +63,42 @@ const AlarmIcon = () => (
       cx="12"
       cy="13"
       r="7.5"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
       d="M12 9V13L14 15"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
       d="M5 3L8 1.3"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
       d="M19 3L16 1.3"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
       d="M6 20L4.5 21.5"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
       d="M18 20L19.5 21.5"
-      stroke="#B45309"
+      stroke="var(--text-warn)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -116,7 +116,7 @@ const ChatBubbleIcon = () => (
   >
     <path
       d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -134,7 +134,7 @@ const UserIcon = () => (
   >
     <path
       d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -143,7 +143,7 @@ const UserIcon = () => (
       cx="12"
       cy="7"
       r="4"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -159,13 +159,13 @@ const EmptyFriendsIllust = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="60" cy="60" r="52" fill="#F8F9FB" />
-    <circle cx="60" cy="60" r="44" fill="#F2F4F6" />
+    <circle cx="60" cy="60" r="52" fill="rgb(248, 249, 251)" />
+    <circle cx="60" cy="60" r="44" fill="rgb(242, 244, 246)" />
     <g filter="url(#shadow)">
-      <circle cx="48" cy="52" r="12" fill="#D3E5FF" />
-      <circle cx="72" cy="54" r="10" fill="#E5E8EB" />
-      <path d="M48 68C38 68 34 76 34 84H62C62 76 58 68 48 68Z" fill="#D3E5FF" />
-      <path d="M72 68C64 68 60 74 60 81H84C84 74 80 68 72 68Z" fill="#E5E8EB" />
+      <circle cx="48" cy="52" r="12" fill="rgb(211, 229, 255)" />
+      <circle cx="72" cy="54" r="10" fill="rgb(229, 232, 235)" />
+      <path d="M48 68C38 68 34 76 34 84H62C62 76 58 68 48 68Z" fill="rgb(211, 229, 255)" />
+      <path d="M72 68C64 68 60 74 60 81H84C84 74 80 68 72 68Z" fill="rgb(229, 232, 235)" />
     </g>
     <defs>
       <filter
@@ -180,7 +180,7 @@ const EmptyFriendsIllust = () => (
           dx="0"
           dy="2"
           stdDeviation="2"
-          floodColor="#000000"
+          floodColor="rgb(0, 0, 0)"
           floodOpacity="0.04"
         />
       </filter>
@@ -538,7 +538,7 @@ export default function FriendManagementView({
               <NameRow>{friend.friendAlias || friend.nickname}</NameRow>
               {isSelectionMode && (
                 <SelectionCheckbox $selected={isSelected}>
-                  {isSelected && <CheckIcon size={16} color="#ffffff" />}
+                  {isSelected && <CheckIcon size={16} color="var(--text-inverse)" />}
                 </SelectionCheckbox>
               )}
             </RowHeader>
@@ -739,9 +739,9 @@ export default function FriendManagementView({
         >
           <span>{sortOrder === "asc" ? "오름차순" : "내림차순"}</span>
           {sortOrder === "asc" ? (
-            <ArrowDownAZ size={18} color="#8B95A1" />
+            <ArrowDownAZ size={18} color="var(--gray-500)" />
           ) : (
-            <ArrowUpZA size={18} color="#8B95A1" />
+            <ArrowUpZA size={18} color="var(--gray-500)" />
           )}
         </SortIndicator>
       </StatusSection>

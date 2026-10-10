@@ -297,7 +297,7 @@ const WidgetContainer = styled.div`
   height: 100%;
   border-radius: 20px;
   
-  box-shadow: 0px 4px 24px 0px #3B82F63D;
+  box-shadow: 0px 4px 24px 0px rgba(59, 130, 246, 0.24);
 
   
   will-change: transform;

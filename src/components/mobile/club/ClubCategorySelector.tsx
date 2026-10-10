@@ -71,9 +71,9 @@ const Dropdown = styled.div`
   border-radius: 100px;
   background: linear-gradient(
     180deg,
-    #ffffff -21.86%,
-    #d5e4f7 100%,
-    #aac9ee 100%
+    var(--bg-base) -21.86%,
+    rgb(213, 228, 247) 100%,
+    rgb(170, 201, 238) 100%
   );
 `;
 
@@ -95,9 +95,9 @@ const DropdownOptions = styled.div`
   border-radius: 16px;
   background: linear-gradient(
     180deg,
-    #ffffff -21.86%,
-    #d5e4f7 100%,
-    #aac9ee 100%
+    var(--bg-base) -21.86%,
+    rgb(213, 228, 247) 100%,
+    rgb(170, 201, 238) 100%
   );
   z-index: 10;
   overflow-y: scroll;
@@ -120,5 +120,5 @@ const DropdownOption = styled.div`
 const DropdownOptionLine = styled.div`
   height: 1px;
   width: 80%;
-  background-color: #969696;
+  background-color: var(--border-default);
 `;

@@ -57,7 +57,7 @@ export default function SentRequestsModal({
           <Header>
             <Title>보낸 친구 요청 목록</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
           <ScrollArea>

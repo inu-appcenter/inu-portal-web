@@ -34,8 +34,8 @@ export default function AIChatMenuCard({
         )}
       <MenuCard $open={open}>
         <MenuRow type="button" onClick={onSelectAgent}>
-          <IconCircle $bg="#eff6ff">
-            <Sparkles size={18} color="#0061ff" />
+          <IconCircle $bg="var(--blue-50)">
+            <Sparkles size={18} color="var(--blue-600)" />
           </IconCircle>
           <TextGroup>
             <TitleRow>
@@ -49,7 +49,7 @@ export default function AIChatMenuCard({
         <Divider />
 
         <MenuRow type="button" onClick={onSelectLegacyChatBul}>
-          <IconCircle $bg="#fff4ed">
+          <IconCircle $bg="var(--bg-warn)">
             <img src={TorchAiLogo} alt="챗불이" width={20} height={20} />
           </IconCircle>
           <TextGroup>

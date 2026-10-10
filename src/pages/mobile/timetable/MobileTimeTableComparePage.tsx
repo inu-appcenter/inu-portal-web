@@ -1166,7 +1166,7 @@ export default function MobileTimeTableComparePage() {
         }}
         data-vaul-no-drag=""
       >
-        <Icon name="paper-plane" size={24} color="#ffffff" />
+        <Icon name="paper-plane" size={24} color="var(--text-inverse)" />
       </FloatingShareButton>
 
       {/* 7. 공유 확인 모달 */}
@@ -1241,11 +1241,11 @@ const ChipScrollArea = styled.div<{ $hasHorizontalOverflow: boolean }>`
 
   mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, #000 92%, transparent 100%)`
+      ? `linear-gradient(to right, black 92%, transparent 100%)`
       : "none"};
   -webkit-mask-image: ${({ $hasHorizontalOverflow }) =>
     $hasHorizontalOverflow
-      ? `linear-gradient(to right, #000 92%, transparent 100%)`
+      ? `linear-gradient(to right, black 92%, transparent 100%)`
       : "none"};
 
   /* 스크롤바 숨기기 */

@@ -28,33 +28,33 @@ const InfoWindowRestroom = (place: Place) => {
       <!-- 여성용품 배치 -->
       <div style="margin-bottom: 0;">
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
-          <div style="width: 25px; height: 25px; background-color: #4071b9; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+          <div style="width: 25px; height: 25px; background-color: var(--interactive-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
             <img src="${decisionIcon("여성용품")}" alt="여성용품 아이콘" style="width: 14px; height: 14px;" />
           </div>
           <div style="flex: 1; font-size: 10px; color: var(--gray-700);">여성용품 배치</div>
-          <div style="font-weight: 600;  font-size: 10px; color: #0e4d9d;">${place.restareaInfo?.hasFemaleProducts ? "O" : "X"}</div>
+          <div style="font-weight: 600;  font-size: 10px; color: var(--interactive-primary);">${place.restareaInfo?.hasFemaleProducts ? "O" : "X"}</div>
         </div>
       </div>
 
       <!-- 침대, 빈백(개) -->
       <div style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
-          <div style="width: 25px; height: 25px; background-color: #4071b9; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+          <div style="width: 25px; height: 25px; background-color: var(--interactive-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
             <img src="${decisionIcon("침대")}" alt="침대 아이콘" style="width: 14px; height: 14px;" />
           </div>
           <div style="flex: 1; font-size: 10px; color: var(--gray-700);">침대, 빈백(개)</div>
-          <div style="font-weight: 600; font-size: 10px; color: #0e4d9d;">${place.restareaInfo?.bedCount || "X"}</div>
+          <div style="font-weight: 600; font-size: 10px; color: var(--interactive-primary);">${place.restareaInfo?.bedCount || "X"}</div>
         </div>
       </div>
 
       <!-- 샤워실 -->
       <div style="margin-bottom: 10px;">
         <div style="display: flex; align-items: center; margin-bottom: 5px;">
-          <div style="width: 25px; height: 25px; background-color: #4071b9; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
+          <div style="width: 25px; height: 25px; background-color: var(--interactive-primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 10px;">
             <img src="${decisionIcon("샤워실")}" alt="샤워실 아이콘" style="width: 14px; height: 14px;" />
           </div>
           <div style="flex: 1; font-size: 10px; color: var(--gray-700);">샤워실</div>
-          <div style="font-weight: 600; font-size: 10px; color: #0e4d9d;">${place.restareaInfo?.hasShowerRoom ? "O" : "X"}</div>
+          <div style="font-weight: 600; font-size: 10px; color: var(--interactive-primary);">${place.restareaInfo?.hasShowerRoom ? "O" : "X"}</div>
         </div>
       </div>
     </div>

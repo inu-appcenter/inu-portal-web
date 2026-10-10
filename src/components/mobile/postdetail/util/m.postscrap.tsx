@@ -88,8 +88,8 @@ export default function PostScrap({
     <ScrapContainer onClick={handleScrap}>
       <Bookmark
         size={24}
-        color={isScrapedState ? "#0061FF" : "#333D4B"}
-        fill={isScrapedState ? "#0061FF" : "none"}
+        color={isScrapedState ? "var(--interactive-primary)" : "var(--gray-800)"}
+        fill={isScrapedState ? "var(--interactive-primary)" : "none"}
       />
       <span>{scrapState}</span>
     </ScrapContainer>

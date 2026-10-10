@@ -24,14 +24,14 @@ const getTemperatureValue = (temperature: string) =>
   temperature.replace(/\s+/g, "").replace(/[°℃]|C$/gi, "");
 
 const NIGHT_GRADIENT =
-  "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+  "linear-gradient(90deg, rgb(55, 77, 124) 4.5%, rgb(11, 33, 67) 52.5%, rgb(0, 3, 6) 100%)";
 
 const DAY_GRADIENTS: Record<SkyConditionName, string> = {
-  맑음: "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
-  구름: "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)",
-  눈: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-  진눈깨비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-  비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+  맑음: "linear-gradient(90deg, rgb(181, 241, 251) 0%, rgb(140, 227, 214) 100%)",
+  구름: "linear-gradient(90deg, rgb(255, 247, 240) 0%, rgb(133, 179, 242) 100%)",
+  눈: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
+  진눈깨비: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
+  비: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
 };
 
 export default function WeatherForm() {

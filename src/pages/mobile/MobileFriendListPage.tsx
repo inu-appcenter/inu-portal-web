@@ -375,7 +375,7 @@ export default function MobileFriendListPage() {
                   onClick={() => setSelectedRoomId(room.roomId)}
                 >
                   <RoomItemCheckOverlay $isSelected={isSelected}>
-                    {isSelected && <Icon name="check" size={14} color="#ffffff" />}
+                    {isSelected && <Icon name="check" size={14} color="var(--text-inverse)" />}
                   </RoomItemCheckOverlay>
                   <ChatRoomListItemWrapper>
                     <ChatRoomListItem

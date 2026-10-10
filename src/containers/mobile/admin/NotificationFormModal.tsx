@@ -369,8 +369,8 @@ const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #0d9488;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+    border-color: var(--interactive-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
   }
 `;
 
@@ -383,8 +383,8 @@ const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #0d9488;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+    border-color: var(--interactive-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
   }
 `;
 
@@ -406,13 +406,13 @@ const DepartmentChip = styled.button<{ $active: boolean }>`
   font-size: 0.8125rem;
   font-weight: 600;
   transition: all 0.2s;
-  background-color: ${(props) => (props.$active ? "#0f766e" : "var(--bg-base)")};
+  background-color: ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--bg-base)")};
   color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
-  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "var(--border-default)")};
+  border: 1px solid ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--border-default)")};
 
   &:hover {
-    border-color: #0f766e;
-    color: ${(props) => (props.$active ? "var(--text-inverse)" : "#0f766e")};
+    border-color: var(--interactive-primary);
+    color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--interactive-primary)")};
   }
 `;
 
@@ -434,14 +434,14 @@ const ModeButton = styled.button<{ $active: boolean }>`
   font-size: 0.875rem;
   font-weight: 700;
   transition: all 0.2s;
-  background-color: ${(props) => (props.$active ? "#0f766e" : "var(--bg-subtle)")};
+  background-color: ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--bg-subtle)")};
   color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
-  border: 1px solid ${(props) => (props.$active ? "#0f766e" : "var(--border-default)")};
+  border: 1px solid ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--border-default)")};
 `;
 
 const HintText = styled.p`
   font-size: 0.75rem;
-  color: #b45309;
+  color: var(--text-warn);
   background-color: var(--bg-warn);
   padding: 8px 10px;
   border-radius: 8px;
@@ -451,8 +451,8 @@ const HintText = styled.p`
 
 const StatusMsg = styled.p`
   font-size: 0.875rem;
-  color: #0f766e;
-  background-color: #f0fdfa;
+  color: var(--interactive-primary);
+  background-color: var(--bg-brand);
   padding: 12px;
   border-radius: 10px;
   margin: 0;
@@ -472,11 +472,11 @@ const SubmitButton = styled.button`
   gap: 8px;
   padding: 10px 24px;
   border-radius: 10px;
-  background-color: #0f766e;
+  background-color: var(--interactive-primary);
   color: var(--text-inverse);
   font-weight: 700;
   transition: all 0.2s;
 
-  &:hover { background-color: #0d9488; transform: translateY(-1px); }
-  &:disabled { background-color: #94a3b8; transform: none; cursor: not-allowed; }
+  &:hover { background-color: var(--interactive-primary-hover); transform: translateY(-1px); }
+  &:disabled { background-color: var(--interactive-primary-disabled); transform: none; cursor: not-allowed; }
 `;

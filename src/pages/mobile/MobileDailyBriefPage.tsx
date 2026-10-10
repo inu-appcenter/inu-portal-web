@@ -37,16 +37,16 @@ export function getDailyBriefTimeTheme(
 const THEME_GRADIENTS: Record<DailyBriefTimeTheme, string> = {
   // 🌅 아침 (05:00 ~ 11:59): 상쾌한 하늘빛과 따스한 살구 크림 톤
   morning:
-    "linear-gradient(180deg, #BCE3FB 0%, #D8EBF9 18%, #F2F1E6 48%, #FAEDE3 80%, #FDE6D8 100%)",
+    "linear-gradient(180deg, rgb(188, 227, 251) 0%, rgb(216, 235, 249) 18%, rgb(242, 241, 230) 48%, rgb(250, 237, 227) 80%, rgb(253, 230, 216) 100%)",
   // ☀️ 오후 (12:00 ~ 17:59): 맑고 청명한 푸른 하늘빛과 은은한 화이트/민트 톤
   afternoon:
-    "linear-gradient(180deg, #BAE6FD 0%, #D7EFFE 20%, #F0FDF4 50%, #FEFCE8 80%, #FEF3C7 100%)",
+    "linear-gradient(180deg, rgb(186, 230, 253) 0%, rgb(215, 239, 254) 20%, rgb(240, 253, 244) 50%, rgb(254, 252, 232) 80%, rgb(254, 243, 199) 100%)",
   // 🌇 저녁 (18:00 ~ 21:59): 몽환적이고 따스한 코랄 핑크와 노을빛 라벤더 톤
   sunset:
-    "linear-gradient(180deg, #FBCFE8 0%, #FED7AA 22%, #FDE68A 50%, #EDE9FE 78%, #FCE7F3 100%)",
+    "linear-gradient(180deg, rgb(251, 207, 232) 0%, rgb(254, 215, 170) 22%, rgb(253, 230, 138) 50%, rgb(237, 233, 254) 78%, rgb(252, 231, 243) 100%)",
   // 🌙 밤 (22:00 ~ 04:59): 차분하고 고요한 미드나잇 트와일라잇 인디고/라벤더 톤
   night:
-    "linear-gradient(180deg, #C7D2FE 0%, #DDD6FE 20%, #E2E8F0 52%, #EDE9FE 80%, #E0E7FF 100%)",
+    "linear-gradient(180deg, rgb(199, 210, 254) 0%, rgb(221, 214, 254) 20%, rgb(226, 232, 240) 52%, rgb(237, 233, 254) 80%, rgb(224, 231, 255) 100%)",
 };
 
 const DAILY_BRIEF_CARD_RETURN_KEY = "daily_brief_card_return";
@@ -306,13 +306,13 @@ export default function MobileDailyBriefPage() {
             onClick={() => setIsInfoModalOpen(true)}
             aria-label="Daily Brief에 대해 알아보세요"
           >
-            <Icon name="info" size={20} color="#374151" />
+            <Icon name="info" size={20} color="var(--gray-700)" />
           </CircleActionButton>
           <CircleActionButton
             onClick={() => navigate(ROUTES.DAILY_BRIEF.SETTING)}
             aria-label="Daily Brief 설정"
           >
-            <Icon name="settings" size={20} color="#374151" />
+            <Icon name="settings" size={20} color="var(--gray-700)" />
           </CircleActionButton>
         </FloatingBottomActions>
       </ContentContainer>

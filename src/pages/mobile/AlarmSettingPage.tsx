@@ -289,7 +289,7 @@ export function MobileSchoolAlarmSetting({
 
               <ExcludeToggleRow onClick={() => setIsExcluded(!isExcluded)}>
                 <ExcludeCheckCircle $checked={isExcluded}>
-                  {isExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
+                  {isExcluded && <Check size={12} color="var(--text-inverse)" strokeWidth={3} />}
                 </ExcludeCheckCircle>
                 <ExcludeLabel>이 키워드가 포함된 공지는 알림에서 제외하기</ExcludeLabel>
               </ExcludeToggleRow>
@@ -481,8 +481,8 @@ function MobileDeptAlarmSetting({
         style={{
           // 토글 상태에 따른 스타일 분기
           background: allAlarm
-            ? "linear-gradient(135deg, #e0eaff 0%, #f0f4ff 100%)"
-            : "#f2f2f2",
+            ? "linear-gradient(135deg, rgb(224, 234, 255) 0%, rgb(240, 244, 255) 100%)"
+            : "var(--bg-muted)",
           margin: "0 var(--page-inline)",
           boxShadow: allAlarm
             ? "0 8px 24px rgba(59, 130, 246, 0.15)"
@@ -543,7 +543,7 @@ function MobileDeptAlarmSetting({
 
               <ExcludeToggleRow onClick={() => setIsExcluded(!isExcluded)}>
                 <ExcludeCheckCircle $checked={isExcluded}>
-                  {isExcluded && <Check size={12} color="#ffffff" strokeWidth={3} />}
+                  {isExcluded && <Check size={12} color="var(--text-inverse)" strokeWidth={3} />}
                 </ExcludeCheckCircle>
                 <ExcludeLabel>이 키워드가 포함된 공지는 알림에서 제외하기</ExcludeLabel>
               </ExcludeToggleRow>

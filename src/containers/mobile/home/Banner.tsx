@@ -400,7 +400,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   border-radius: 999px;
   background-color: ${(props) =>
     props.$active
-      ? "var(--swiper-theme-color, #007aff)"
+      ? "var(--swiper-theme-color, var(--blue-600))"
       : "var(--bg-dim)"};
   transition:
     transform 0.2s ease,

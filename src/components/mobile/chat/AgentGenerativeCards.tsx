@@ -416,7 +416,7 @@ const ScheduleCard: React.FC<{
   return (
     <ScheduleBox onClick={onClick} style={{ cursor: "pointer" }}>
       <CardHeader>
-        <Calendar size={16} color="#0061ff" />
+        <Calendar size={16} color="var(--interactive-primary)" />
         <CardTitle>학사 및 학과 일정</CardTitle>
       </CardHeader>
       {schedules.length === 0 ? (
@@ -469,7 +469,7 @@ const BusHistoryCard: React.FC<{
   return (
     <BusHistoryBox onClick={handleGoBus} style={{ cursor: "pointer" }}>
       <CardHeader>
-        <Clock size={16} color="#0061ff" />
+        <Clock size={16} color="var(--interactive-primary)" />
         <CardTitle>[{tabName}] 과거 버스 시간표 / 배차</CardTitle>
       </CardHeader>
 
@@ -515,7 +515,7 @@ const DirectoryCard: React.FC<{
   return (
     <DirectoryBox>
       <CardHeader>
-        <Phone size={16} color="#0061ff" />
+        <Phone size={16} color="var(--interactive-primary)" />
         <CardTitle>교내 전화번호부</CardTitle>
       </CardHeader>
       {contacts.length === 0 ? (
@@ -590,7 +590,7 @@ const KeywordConfirmCard: React.FC<{ data: any }> = ({ data }) => {
   return (
     <ActionCardBox>
       <CardHeader>
-        <Bell size={16} color={isExcluded ? "#f04438" : "#0061ff"} />
+        <Bell size={16} color={isExcluded ? "var(--text-error)" : "var(--interactive-primary)"} />
         <CardTitle>{data.statusText || "키워드 알림 설정"}</CardTitle>
       </CardHeader>
       <KeywordContent>
@@ -618,7 +618,7 @@ const SettingResultCard: React.FC<{ data: any }> = ({ data }) => {
   return (
     <ActionCardBox>
       <CardHeader>
-        <Sliders size={16} color="#0061ff" />
+        <Sliders size={16} color="var(--interactive-primary)" />
         <CardTitle>{data.title || "알림 설정"}</CardTitle>
         <SettingBadge $enabled={enabled}>
           {data.statusText || (enabled ? "켜짐" : "꺼짐")}
@@ -642,7 +642,7 @@ const ReminderSettingResultCard: React.FC<{
   return (
     <ActionCardBox>
       <CardHeader>
-        <Bell size={16} color="#0061ff" />
+        <Bell size={16} color="var(--interactive-primary)" />
         <CardTitle>{data.title || "AI 맞춤 알림"}</CardTitle>
         <SettingBadge $enabled={true}>
           {data.statusText || `${data.targetTime || "08:30"} 예약`}
@@ -695,7 +695,7 @@ const MySettingsCard: React.FC<{ data: any }> = ({ data }) => {
   return (
     <ActionCardBox>
       <CardHeader>
-        <Bell size={16} color="#0061ff" />
+        <Bell size={16} color="var(--interactive-primary)" />
         <CardTitle>내 알림 설정 현황</CardTitle>
       </CardHeader>
       <SettingsList>
@@ -756,7 +756,7 @@ const DynamicDataCard: React.FC<{
   return (
     <DynamicBox onClick={handleClick} $clickable={Boolean(redirectUrl)}>
       <CardHeader>
-        <Layers size={16} color="#0061ff" />
+        <Layers size={16} color="var(--interactive-primary)" />
         <CardTitle>{title}</CardTitle>
         {totalCount > 0 && <DynamicCountBadge>총 {totalCount}건</DynamicCountBadge>}
       </CardHeader>
@@ -863,7 +863,7 @@ const WeatherBox = styled.div`
   height: 120px;
   border-radius: 15px 15px 0 0;
   overflow: hidden;
-  background: linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%);
+  background: linear-gradient(90deg, rgb(181, 241, 251) 0%, rgb(140, 227, 214) 100%);
 `;
 
 const WeatherBg = styled.img`
@@ -1061,7 +1061,7 @@ const LoginActionBtn = styled.button`
   cursor: pointer;
 
   &:hover {
-    background-color: #0052d9;
+    background-color: rgb(0, 82, 217);
   }
 `;
 
@@ -1131,8 +1131,8 @@ const KeywordBadgeRow = styled.div`
 const KeywordChip = styled.span<{ $excluded?: boolean }>`
   font-size: 14px;
   font-weight: 700;
-  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "var(--text-brand)")};
-  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "var(--bg-brand)")};
+  color: ${({ $excluded }) => ($excluded ? "var(--text-error)" : "var(--text-brand)")};
+  background-color: ${({ $excluded }) => ($excluded ? "var(--bg-error)" : "var(--bg-brand)")};
   padding: 4px 10px;
   border-radius: 12px;
 `;
@@ -1198,8 +1198,8 @@ const KeywordsChipsContainer = styled.div`
 const MiniKeywordChip = styled.span<{ $excluded?: boolean }>`
   font-size: 11px;
   font-weight: 600;
-  color: ${({ $excluded }) => ($excluded ? "#d92d20" : "var(--text-secondary)")};
-  background-color: ${({ $excluded }) => ($excluded ? "#fee4e2" : "var(--bg-muted)")};
+  color: ${({ $excluded }) => ($excluded ? "var(--text-error)" : "var(--text-secondary)")};
+  background-color: ${({ $excluded }) => ($excluded ? "var(--bg-error)" : "var(--bg-muted)")};
   padding: 2px 7px;
   border-radius: 8px;
 `;
@@ -1246,7 +1246,7 @@ const TimeTableGapCard: React.FC<{ data: any }> = ({ data }) => {
       <TimeTableBox>
         <TodayHeader>
           <TodayHeaderLeft>
-            <Clock size={16} color="#0061ff" />
+            <Clock size={16} color="var(--interactive-primary)" />
             <TodayTitle>시간표 공강 분석</TodayTitle>
           </TodayHeaderLeft>
         </TodayHeader>
@@ -1276,7 +1276,7 @@ const TimeTableGapCard: React.FC<{ data: any }> = ({ data }) => {
     <TimeTableBox>
       <TodayHeader>
         <TodayHeaderLeft>
-          <Clock size={16} color="#0061ff" />
+          <Clock size={16} color="var(--interactive-primary)" />
           <TodayTitle>
             {isToday ? `오늘(${dayName})` : `${dayName}요일`} 공강 분석
           </TodayTitle>
@@ -1348,9 +1348,9 @@ const GapStatusBadge = styled.span<{ $isDayOff?: boolean; $hasBigGap?: boolean }
   padding: 3px 9px;
   border-radius: 12px;
   color: ${({ $isDayOff, $hasBigGap }) =>
-    $isDayOff ? "#d97706" : $hasBigGap ? "#7c3aed" : "var(--text-brand)"};
+    $isDayOff ? "var(--text-warn)" : $hasBigGap ? "rgb(124, 58, 237)" : "var(--text-brand)"};
   background-color: ${({ $isDayOff, $hasBigGap }) =>
-    $isDayOff ? "var(--yellow-100)" : $hasBigGap ? "#f3e8ff" : "var(--bg-brand)"};
+    $isDayOff ? "var(--yellow-100)" : $hasBigGap ? "rgb(243, 232, 255)" : "var(--bg-brand)"};
 `;
 
 const DayOffBanner = styled.div`
@@ -1372,12 +1372,12 @@ const DayOffEmoji = styled.div`
 const DayOffTitle = styled.div`
   font-size: 14.5px;
   font-weight: 700;
-  color: #92400e;
+  color: var(--text-warn);
 `;
 
 const DayOffSub = styled.div`
   font-size: 12.5px;
-  color: #b45309;
+  color: var(--text-warn);
 `;
 
 const GapSummaryStats = styled.div`
@@ -1406,7 +1406,7 @@ const StatLabel = styled.span`
 const StatValue = styled.span<{ $highlight?: boolean }>`
   font-size: 12.5px;
   font-weight: 700;
-  color: ${({ $highlight }) => ($highlight ? "#7c3aed" : "var(--text-primary)")};
+  color: ${({ $highlight }) => ($highlight ? "rgb(124, 58, 237)" : "var(--text-primary)")};
 `;
 
 const GapListSection = styled.div`
@@ -1452,8 +1452,8 @@ const GapTypeTag = styled.span<{ $isBig?: boolean }>`
   font-weight: 600;
   padding: 2px 7px;
   border-radius: 6px;
-  color: ${({ $isBig }) => ($isBig ? "#7c3aed" : "var(--text-brand)")};
-  background-color: ${({ $isBig }) => ($isBig ? "#f3e8ff" : "var(--bg-brand)")};
+  color: ${({ $isBig }) => ($isBig ? "rgb(124, 58, 237)" : "var(--text-brand)")};
+  background-color: ${({ $isBig }) => ($isBig ? "rgb(243, 232, 255)" : "var(--bg-brand)")};
 `;
 
 const GapBetweenText = styled.div`
@@ -1681,7 +1681,7 @@ const AcademicInfoCard: React.FC<{
     <AcademicCardContainer>
       <AcademicHeader>
         <AcademicIconWrap>
-          <GraduationCap size={20} color="#3182f6" />
+          <GraduationCap size={20} color="var(--interactive-primary)" />
         </AcademicIconWrap>
         <AcademicTitleWrap>
           <AcademicTitle>{koreanName}의 학적 정보</AcademicTitle>
@@ -1713,7 +1713,7 @@ const AcademicInfoCard: React.FC<{
 
       {advisorProfessorName && (
         <AdvisorInfoRow>
-          <BookOpen size={13} color="#8b95a1" />
+          <BookOpen size={13} color="var(--gray-500)" />
           <span>지도교수: {advisorProfessorName} 교수님</span>
         </AdvisorInfoRow>
       )}
@@ -1742,7 +1742,7 @@ const PortalAuthRequiredCard: React.FC<{
   return (
     <PortalAuthContainer>
       <PortalAuthIconWrap>
-        <KeyRound size={22} color="#f04452" />
+        <KeyRound size={22} color="var(--text-error)" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
         <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
@@ -1772,7 +1772,7 @@ const AcademicFetchFailedCard: React.FC<{ data?: any }> = ({ data }) => {
   return (
     <PortalAuthContainer>
       <PortalAuthIconWrap style={{ background: "var(--bg-warn)" }}>
-        <KeyRound size={22} color="#f59e0b" />
+        <KeyRound size={22} color="var(--text-warn)" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
         <PortalAuthTitle>연동된 포털에서 학적 정보를 가져오지 못했어요</PortalAuthTitle>
@@ -1840,9 +1840,9 @@ const StatusBadge = styled.span<{ $status?: string }>`
   padding: 3px 8px;
   border-radius: 6px;
   background: ${({ $status }) =>
-    $status === "휴학" ? "var(--bg-error)" : "#e8f8f0"};
+    $status === "휴학" ? "var(--bg-error)" : "rgb(232, 248, 240)"};
   color: ${({ $status }) =>
-    $status === "휴학" ? "var(--text-error)" : "#00a651"};
+    $status === "휴학" ? "var(--text-error)" : "rgb(0, 166, 81)"};
   flex-shrink: 0;
 `;
 
@@ -1892,7 +1892,7 @@ const PortalAuthContainer = styled.div`
   background: var(--bg-base);
   border-radius: 16px;
   padding: 16px;
-  border: 1px solid #fee8e8;
+  border: 1px solid rgb(254, 232, 232);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1972,7 +1972,7 @@ const LibraryRoomsCard: React.FC<{
   return (
     <LibraryCardBox>
       <CardHeader>
-        <BookOpen size={17} color="#3182f6" />
+        <BookOpen size={17} color="var(--interactive-primary)" />
         <CardTitle>학산도서관 실시간 열람실</CardTitle>
         <LibCountBadge>실시간 현황</LibCountBadge>
       </CardHeader>
@@ -2037,7 +2037,7 @@ const LibraryStudyRoomsCard: React.FC<{
   return (
     <LibraryCardBox>
       <CardHeader>
-        <Users size={17} color="#0061ff" />
+        <Users size={17} color="var(--interactive-primary)" />
         <CardTitle>학산도서관 스터디룸</CardTitle>
         <StudyRoomCountBadge>예약 가능</StudyRoomCountBadge>
       </CardHeader>
@@ -2277,7 +2277,7 @@ const LibrarySeatConfirmCard: React.FC<{
   return (
     <LibraryCardBox>
       <CardHeader>
-        <BookOpen size={17} color="#3182f6" />
+        <BookOpen size={17} color="var(--interactive-primary)" />
         <CardTitle>학산도서관 좌석 배정 확인</CardTitle>
         <LibCountBadge>실시간 연동</LibCountBadge>
       </CardHeader>
@@ -2310,9 +2310,9 @@ const LibrarySeatConfirmCard: React.FC<{
             style={{
               padding: "12px",
               borderRadius: "8px",
-              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "var(--bg-error)",
-              border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
-              color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
+              background: actionStatus === "SUCCESS" ? "rgb(240, 253, 244)" : "var(--bg-error)",
+              border: `1px solid ${actionStatus === "SUCCESS" ? "rgb(187, 247, 208)" : "rgb(254, 202, 202)"}`,
+              color: actionStatus === "SUCCESS" ? "rgb(22, 101, 52)" : "rgb(153, 27, 27)",
               fontSize: "13px",
               lineHeight: "1.5",
               fontWeight: 600,
@@ -2344,7 +2344,7 @@ const LibrarySeatConfirmCard: React.FC<{
           ) : (
             <StudyBookButton
               type="button"
-              style={{ marginTop: "10px", width: "100%", background: "#64748b" }}
+              style={{ marginTop: "10px", width: "100%", background: "var(--gray-500)" }}
               onClick={() => setActionStatus("IDLE")}
             >
               다시 시도하기
@@ -2359,11 +2359,11 @@ const LibrarySeatConfirmCard: React.FC<{
         <div>
           {/* 존재하지 않는 좌석 번호 경고 배너 */}
           {isSeatNotFound && targetSeatNo && (
-            <StudyNoticeBox style={{ background: "var(--bg-warn)", borderLeft: "3px solid #f59e0b", margin: "8px 0" }}>
-              <span style={{ color: "#b45309", fontWeight: 600 }}>
+            <StudyNoticeBox style={{ background: "var(--bg-warn)", borderLeft: "3px solid var(--text-warn)", margin: "8px 0" }}>
+              <span style={{ color: "var(--text-warn)", fontWeight: 600 }}>
                 ⚠️ 입력하신 <strong>'{targetSeatNo}'번 좌석</strong>은 [{currentRoomObj.name}]에 존재하지 않는 번호입니다.
               </span>
-              <div style={{ fontSize: "11px", color: "#92400e", marginTop: "2px" }}>
+              <div style={{ fontSize: "11px", color: "var(--text-warn)", marginTop: "2px" }}>
                 아래 실시간 좌석 목록에서 원하시는 좌석을 직접 선택해 주세요.
               </div>
             </StudyNoticeBox>
@@ -2374,8 +2374,8 @@ const LibrarySeatConfirmCard: React.FC<{
             <div>
               {selectedSeat.isOccupied ? (
                 <div>
-                  <StudyNoticeBox style={{ background: "var(--bg-error)", borderLeft: "3px solid #f43f5e", margin: "8px 0" }}>
-                    <span style={{ color: "#9f1239" }}>
+                  <StudyNoticeBox style={{ background: "var(--bg-error)", borderLeft: "3px solid var(--text-error)", margin: "8px 0" }}>
+                    <span style={{ color: "var(--text-error)" }}>
                       🚨 <strong>[{currentRoomObj.name}] {selectedSeat.code}번 좌석</strong>은 현재 다른 학생이 이용 중입니다.
                     </span>
                   </StudyNoticeBox>
@@ -2407,7 +2407,7 @@ const LibrarySeatConfirmCard: React.FC<{
                       <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                         📍 {currentRoomObj.name} {selectedSeat.code}번 좌석
                       </div>
-                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "#16a34a", background: "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
+                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-success)", background: "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
                         배정 가능
                       </span>
                     </div>
@@ -2709,7 +2709,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
   return (
     <LibraryCardBox>
       <CardHeader>
-        <Users size={17} color="#0061ff" />
+        <Users size={17} color="var(--interactive-primary)" />
         <CardTitle>학산도서관 스터디룸 예약 확인</CardTitle>
         <StudyRoomCountBadge>
           {isCurrentOccupied ? "🔴 현재 이용중" : "🟢 현재 비어있음"}
@@ -2736,9 +2736,9 @@ const LibraryStudyRoomConfirmCard: React.FC<{
             style={{
               padding: "12px",
               borderRadius: "8px",
-              background: actionStatus === "SUCCESS" ? "#f0fdf4" : "var(--bg-error)",
-              border: `1px solid ${actionStatus === "SUCCESS" ? "#bbf7d0" : "#fecaca"}`,
-              color: actionStatus === "SUCCESS" ? "#166534" : "#991b1b",
+              background: actionStatus === "SUCCESS" ? "rgb(240, 253, 244)" : "var(--bg-error)",
+              border: `1px solid ${actionStatus === "SUCCESS" ? "rgb(187, 247, 208)" : "rgb(254, 202, 202)"}`,
+              color: actionStatus === "SUCCESS" ? "rgb(22, 101, 52)" : "rgb(153, 27, 27)",
               fontSize: "13px",
               lineHeight: "1.5",
               fontWeight: 600,
@@ -2761,7 +2761,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
           ) : (
             <StudyBookButton
               type="button"
-              style={{ marginTop: "10px", width: "100%", background: "#64748b" }}
+              style={{ marginTop: "10px", width: "100%", background: "var(--gray-500)" }}
               onClick={() => setActionStatus("IDLE")}
             >
               다시 시도하기
@@ -2775,7 +2775,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                 🏢 {currentRoomObj.name} ({currentRoomObj.quota || "2~4인실"})
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "#16a34a", background: isCurrentOccupied ? "var(--bg-error)" : "#dcfce7", padding: "2px 6px", borderRadius: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "var(--text-success)", background: isCurrentOccupied ? "var(--bg-error)" : "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
                 {isCurrentOccupied ? "이용 중" : "지금 이용 가능"}
               </span>
             </div>
@@ -2791,11 +2791,11 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               {isLoadingTimeline ? (
                 <span style={{ color: "var(--gray-600)" }}>⏳ 실시간 타임라인 점유 현황 확인 중...</span>
               ) : occupiedRanges.length > 0 ? (
-                <div style={{ color: "#b91c1c", fontWeight: 600 }}>
+                <div style={{ color: "var(--text-error)", fontWeight: 600 }}>
                   ⚠️ 예약된 시간대: {occupiedRanges.join(", ")}
                 </div>
               ) : (
-                <div style={{ color: "#15803d", fontWeight: 600 }}>
+                <div style={{ color: "var(--text-success)", fontWeight: 600 }}>
                   ✨ 현재 전 시간대 예약 가능합니다.
                 </div>
               )}
@@ -2836,10 +2836,10 @@ const LibraryStudyRoomConfirmCard: React.FC<{
                     <span>09:00 ~ 22:00 시간표</span>
                     <div style={{ display: "flex", gap: "6px", fontSize: "10px", fontWeight: 500, color: "var(--gray-600)" }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                        <span style={{ width: 8, height: 8, background: "#93c5fd", borderRadius: 2, display: "inline-block" }} /> 가능
+                        <span style={{ width: 8, height: 8, background: "rgb(147, 197, 253)", borderRadius: 2, display: "inline-block" }} /> 가능
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                        <span style={{ width: 8, height: 8, background: "#475569", borderRadius: 2, display: "inline-block" }} /> 점유됨
+                        <span style={{ width: 8, height: 8, background: "rgb(71, 85, 105)", borderRadius: 2, display: "inline-block" }} /> 점유됨
                       </span>
                     </div>
                   </StudyTimelineHeader>
@@ -2881,7 +2881,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               disabled={busy || hasTimeConflict}
               style={{
                 flex: 1.4,
-                background: hasTimeConflict ? "#94a3b8" : "var(--interactive-primary)",
+                background: hasTimeConflict ? "var(--border-strong)" : "var(--interactive-primary)",
                 padding: "10px 0",
                 fontSize: "13px",
               }}
@@ -2916,7 +2916,7 @@ const LibraryAuthRequiredCard: React.FC<{
   return (
     <PortalAuthContainer>
       <PortalAuthIconWrap style={{ background: 'var(--bg-brand)' }}>
-        <BookOpen size={22} color="#3182f6" />
+        <BookOpen size={22} color="var(--interactive-primary)" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
         <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
@@ -2965,7 +2965,7 @@ const LibraryClientActionCard: React.FC<{ data?: any; onNavigate?: () => void }>
     } finally { setBusy(false); }
   };
   const label: Record<string, string> = { MY_SEAT: "내 좌석 확인", RENEW_SEAT: "좌석 연장", RETURN_SEAT: "좌석 반납", RESERVE_STUDY_ROOM: "스터디룸 예약하기", CANCEL_STUDY_ROOM: "예약 취소", CHECKIN_STUDY_ROOM: "체크인" };
-  return <LibraryCardBox><CardHeader><BookOpen size={17} color="#3182f6" /><CardTitle>도서관 앱 연동</CardTitle></CardHeader><p>{message || "앱에 안전하게 연결된 도서관 기능입니다."}</p><StudyBookButton type="button" disabled={busy} onClick={run}>{busy ? "처리 중…" : (label[action] || "도서관 열기")}</StudyBookButton></LibraryCardBox>;
+  return <LibraryCardBox><CardHeader><BookOpen size={17} color="var(--interactive-primary)" /><CardTitle>도서관 앱 연동</CardTitle></CardHeader><p>{message || "앱에 안전하게 연결된 도서관 기능입니다."}</p><StudyBookButton type="button" disabled={busy} onClick={run}>{busy ? "처리 중…" : (label[action] || "도서관 열기")}</StudyBookButton></LibraryCardBox>;
 };
 
 const LocalWatchActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = ({ data, onNavigate }) => {
@@ -2976,7 +2976,7 @@ const LocalWatchActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = 
     const res = await registerLocalWatchJobInApp({ watchType: data.watchType, roomId: Number(data.roomId), roomName: data.targetName, seatNo: data.seatNo, targetHour: data.targetHour, hopeDate: data.hopeDate, durationMinutes: Number(data.durationMinutes || 90) });
     setMessage(res.success ? "기기 알림 감시를 등록했습니다." : (res.errorMessage || "감시 등록에 실패했습니다."));
   };
-  return <LibraryCardBox><CardHeader><Bell size={17} color="#3182f6" /><CardTitle>기기 내 빈자리 감시</CardTitle></CardHeader><p>{message || `${data?.targetName || "대상"}의 빈자리를 앱에서 감시합니다.`}</p><StudyBookButton type="button" onClick={register}>{data?.roomId ? "감시 등록" : "대상 선택하기"}</StudyBookButton></LibraryCardBox>;
+  return <LibraryCardBox><CardHeader><Bell size={17} color="var(--interactive-primary)" /><CardTitle>기기 내 빈자리 감시</CardTitle></CardHeader><p>{message || `${data?.targetName || "대상"}의 빈자리를 앱에서 감시합니다.`}</p><StudyBookButton type="button" onClick={register}>{data?.roomId ? "감시 등록" : "대상 선택하기"}</StudyBookButton></LibraryCardBox>;
 };
 
 const LibraryCardBox = styled.div`
@@ -3040,7 +3040,7 @@ const LibProgressBarTrack = styled.div`
 const LibProgressBarFill = styled.div<{ $percent: number; $warning: boolean }>`
   height: 100%;
   width: ${({ $percent }) => Math.min(100, Math.max(0, $percent))}%;
-  background: ${({ $warning }) => ($warning ? "#f04452" : "var(--interactive-primary)")};
+  background: ${({ $warning }) => ($warning ? "var(--text-error)" : "var(--interactive-primary)")};
   border-radius: 3px;
   transition: width 0.3s ease;
 `;
@@ -3111,14 +3111,14 @@ const StudyBookButton = styled.button`
   cursor: pointer;
   white-space: nowrap;
   &:hover {
-    background: #0050d4;
+    background: rgb(0, 80, 212);
   }
 `;
 
 const StudyAvailSlotBadge = styled.div`
   font-size: 11px;
   font-weight: 600;
-  color: #0284c7;
+  color: var(--interactive-primary);
   background: var(--bg-brand);
   padding: 3px 6px;
   border-radius: 4px;
@@ -3159,7 +3159,7 @@ const RoomTabPill = styled.button<{ $active: boolean }>`
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
   color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
-  border: 1px solid ${({ $active }) => ($active ? "#3182f6" : "var(--border-default)")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -3201,13 +3201,13 @@ const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean
       return `
         background: var(--bg-error);
         color: var(--text-error);
-        border: 1px solid #fca5a5;
+        border: 1px solid rgb(252, 165, 165);
       `;
     }
     return `
       background: var(--bg-brand);
       color: var(--text-brand);
-      border: 1px solid #93c5fd;
+      border: 1px solid rgb(147, 197, 253);
       &:hover {
         background: var(--blue-100);
       }
@@ -3273,7 +3273,7 @@ const MiniMinuteBars = styled.div`
 const MiniMinuteBar = styled.div<{ $type: "avail" | "occ" | "past" }>`
   border-radius: 2px;
   background: ${({ $type }) =>
-    $type === "avail" ? "#93c5fd" : $type === "occ" ? "#475569" : "var(--gray-200)"};
+    $type === "avail" ? "rgb(147, 197, 253)" : $type === "occ" ? "rgb(71, 85, 105)" : "var(--gray-200)"};
   transition: all 0.15s ease;
 `;
 
@@ -3290,7 +3290,7 @@ const LmsAssignmentsCard: React.FC<{
   return (
     <LibraryCardBox>
       <CardHeader>
-        <GraduationCap size={18} color="#00a651" />
+        <GraduationCap size={18} color="rgb(0, 166, 81)" />
         <CardTitle>이러닝(LMS) 과제 & 강좌</CardTitle>
         <LmsCountBadge>
           {events.length > 0 ? `마감 예정 ${events.length}건` : `수강 중 ${courses.length}과목`}
@@ -3343,9 +3343,9 @@ const LmsAuthRequiredCard: React.FC<{
   onNavigate?: () => void;
 }> = () => {
   return (
-    <PortalAuthContainer style={{ border: '1px solid #e1f5eb' }}>
-      <PortalAuthIconWrap style={{ background: '#e8f8f0' }}>
-        <GraduationCap size={22} color="#00a651" />
+    <PortalAuthContainer style={{ border: '1px solid rgb(225, 245, 235)' }}>
+      <PortalAuthIconWrap style={{ background: 'rgb(232, 248, 240)' }}>
+        <GraduationCap size={22} color="rgb(0, 166, 81)" />
       </PortalAuthIconWrap>
       <PortalAuthTextWrap>
         <PortalAuthTitle>포털 계정 연동이 필요해요</PortalAuthTitle>
@@ -3355,7 +3355,7 @@ const LmsAuthRequiredCard: React.FC<{
       </PortalAuthTextWrap>
       <PortalAuthActionBtn
         type="button"
-        style={{ background: '#00a651' }}
+        style={{ background: 'rgb(0, 166, 81)' }}
         onClick={() => {
           window.dispatchEvent(new CustomEvent("openPortalAccountModal"));
         }}
@@ -3370,8 +3370,8 @@ const LmsCountBadge = styled.span`
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
-  color: #00a651;
-  background: #e8f8f0;
+  color: rgb(0, 166, 81);
+  background: rgb(232, 248, 240);
   padding: 2px 8px;
   border-radius: 6px;
 `;
@@ -3423,8 +3423,8 @@ const LmsItemDue = styled.span<{ $urgent?: boolean }>`
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "#eefaf3")};
-  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "#00a651")};
+  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "rgb(238, 250, 243)")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "rgb(0, 166, 81)")};
   flex-shrink: 0;
 `;
 
@@ -3442,7 +3442,7 @@ const CampusWatchResultCard: React.FC<{
   return (
     <WatchCardBox>
       <CardHeader>
-        <Bell size={17} color="#0061ff" />
+        <Bell size={17} color="var(--interactive-primary)" />
         <CardTitle>실시간 빈자리 감시 시작</CardTitle>
         <WatchLiveBadge>감시 중</WatchLiveBadge>
       </CardHeader>
@@ -3452,7 +3452,7 @@ const CampusWatchResultCard: React.FC<{
           서버가 45초마다 안전하게 감시 중입니다. 빈자리 발생 시 즉시 푸시 알림을 보내드릴게요!
         </WatchDesc>
         <WatchTimeInfo>
-          <Clock size={13} color="#f59e0b" />
+          <Clock size={13} color="var(--text-warn)" />
           <span>최대 감시 시간: 약 {remainingMinutes}분 (만료 시 자동 종료)</span>
         </WatchTimeInfo>
       </WatchBody>
@@ -3483,7 +3483,7 @@ const CampusWatchListCard: React.FC<{
   return (
     <WatchCardBox>
       <CardHeader>
-        <Bell size={17} color="#0061ff" />
+        <Bell size={17} color="var(--interactive-primary)" />
         <CardTitle>내 스마트 감시 현황</CardTitle>
         <WatchCountBadge>{activeJobs.length}건 진행 중</WatchCountBadge>
       </CardHeader>
@@ -3524,8 +3524,8 @@ const WatchLiveBadge = styled.span`
   margin-left: auto;
   font-size: 11px;
   font-weight: 600;
-  color: #16a34a;
-  background: #dcfce7;
+  color: var(--text-success);
+  background: rgb(220, 252, 231);
   padding: 2px 8px;
   border-radius: 6px;
 `;
@@ -3564,7 +3564,7 @@ const WatchTimeInfo = styled.div`
   align-items: center;
   gap: 5px;
   font-size: 11.5px;
-  color: #d97706;
+  color: var(--text-warn);
   font-weight: 600;
   margin-top: 4px;
 `;
@@ -3623,7 +3623,7 @@ const WatchMiniSub = styled.div`
 const WatchMiniTime = styled.div`
   font-size: 11px;
   font-weight: 600;
-  color: #f59e0b;
+  color: var(--text-warn);
 `;
 
 export default AgentGenerativeCards;

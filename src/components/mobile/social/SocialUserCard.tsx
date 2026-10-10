@@ -43,7 +43,7 @@ export default function SocialUserCard({
             }}
           />
           <DefaultIconArea>
-            <Icon name="user-02" size={24} color="#D6D1D5" />
+            <Icon name="user-02" size={24} color="var(--text-tertiary)" />
           </DefaultIconArea>
         </ProfileArea>
 
@@ -70,7 +70,7 @@ export default function SocialUserCard({
             </ActionButton>
           )}
           {!onActionClick && !onSecondaryActionClick && (
-            <Icon name="chevron-right" size={20} color="#D1D1D6" />
+            <Icon name="chevron-right" size={20} color="var(--text-tertiary)" />
           )}
         </ActionArea>
       </InnerContent>

@@ -70,7 +70,7 @@ const StatusButton = styled.button<{ active: boolean; status: string }>`
   color: ${({ active }) => (active ? "var(--text-inverse)" : "var(--text-secondary)")};
   border: 1px solid
     ${({ active, status }) =>
-      active ? (status === "CONFIRM" ? "var(--border-brand)" : "#dc3545") : "var(--border-strong)"};
+      active ? (status === "CONFIRM" ? "var(--border-brand)" : "var(--text-error)") : "var(--border-strong)"};
   border-radius: 4px;
   padding: 10px 20px;
   cursor: pointer;
@@ -78,7 +78,7 @@ const StatusButton = styled.button<{ active: boolean; status: string }>`
 
   &:hover {
     background-color: ${({ active, status }) =>
-      active ? (status === "CONFIRM" ? "var(--interactive-primary-hover)" : "#c82333") : "var(--gray-300)"};
+      active ? (status === "CONFIRM" ? "var(--interactive-primary-hover)" : "var(--red-600)") : "var(--gray-300)"};
   }
 
   &:focus {
@@ -135,7 +135,7 @@ const ConfirmButton = styled.button`
   }
 
   &:active {
-    background-color: #004085;
+    background-color: var(--interactive-primary-press);
   }
 `;
 
@@ -153,7 +153,7 @@ const CancelButton = styled.button`
 
   &:hover {
     background-color: var(--gray-200);
-    border-color: #adb5bd;
+    border-color: var(--border-strong);
   }
 
   &:focus {

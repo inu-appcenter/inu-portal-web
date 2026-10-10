@@ -135,7 +135,7 @@ export default function DailyBriefNoticeCard() {
             }
             aria-label="공지사항 더보기"
           >
-            <Icon name="chevron-right" size={14} color="#6b7280" />
+            <Icon name="chevron-right" size={14} color="var(--gray-600)" />
           </HeaderMoreButton>
         </CardHeader>
 
@@ -371,9 +371,9 @@ const CategoryBadge = styled.span`
 const DeptBadge = styled.span`
   font-size: 11.5px;
   font-weight: 700;
-  color: #0d9488;
-  background-color: #f0fdfa;
-  border: 1px solid #ccfbf1;
+  color: rgb(13, 148, 136);
+  background-color: rgb(240, 253, 250);
+  border: 1px solid rgb(204, 251, 241);
   padding: 2px 7px;
   border-radius: 6px;
   line-height: 1.2;

@@ -79,7 +79,7 @@ const TextInput = styled.textarea`
 
 const ActionButton = styled.button<{ $isActive: boolean; $isStop?: boolean }>`
   background-color: ${(props) => {
-    if (props.$isStop) return "#ff4d4f";
+    if (props.$isStop) return "var(--text-error)";
     return props.$isActive ? COLORS.figmaBlue : "var(--gray-300)";
   }};
   color: var(--text-inverse);

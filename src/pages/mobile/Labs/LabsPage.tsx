@@ -106,7 +106,7 @@ const LabsPage = () => {
             <Box>
               <div style={{ width: "100%" }}>
                 <AppItem
-                  iconElement={<Sparkles size={22} color="#0061ff" />}
+                  iconElement={<Sparkles size={22} color="var(--interactive-primary)" />}
                   title={"챗불이 에이전트"}
                   description={
                     "학식 · 버스 · 시간표 · 공지 통합 캠퍼스 에이전트"
@@ -117,7 +117,7 @@ const LabsPage = () => {
                 />
                 <Divider margin="0" />
                 <AppItem
-                  iconElement={<BookOpen size={22} color="#2563eb" />}
+                  iconElement={<BookOpen size={22} color="rgb(37, 99, 235)" />}
                   title={"학산도서관 좌석 및 스터디룸"}
                   description={
                     "열람실 잔여 좌석 조회 및 스터디룸 예약, 빈자리 알림 신청"
@@ -126,7 +126,7 @@ const LabsPage = () => {
                 />
                 <Divider margin="0" />
                 <AppItem
-                  iconElement={<GraduationCap size={22} color="#16a34a" />}
+                  iconElement={<GraduationCap size={22} color="var(--text-success)" />}
                   title={"이러닝 (LMS)"}
                   description={
                     "수강 강좌 및 주차별 강의 출석, 과제 마감 일정 확인"
@@ -135,7 +135,7 @@ const LabsPage = () => {
                 />
                 <Divider margin="0" />
                 <AppItem
-                  iconElement={<Radar size={22} color="#9333ea" />}
+                  iconElement={<Radar size={22} color="rgb(147, 51, 234)" />}
                   title={"빈자리 및 마감 알림 관리"}
                   description={
                     "신청한 열람실 빈자리 알림 및 과제 마감 리마인더 목록"

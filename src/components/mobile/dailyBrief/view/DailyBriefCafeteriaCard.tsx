@@ -320,7 +320,7 @@ const CafeteriaChip = styled.button<{
   white-space: nowrap;
   cursor: pointer;
   border: 1px solid
-    ${({ $selected }) => ($selected ? "#111827" : "var(--border-default)")};
+    ${({ $selected }) => ($selected ? "var(--gray-900)" : "var(--border-default)")};
   background-color: ${({ $selected }) =>
     $selected ? "var(--gray-900)" : "var(--bg-subtle)"};
   color: ${({ $selected, $isClosed }) =>
@@ -353,8 +353,8 @@ const ThumbnailBox = styled.div<{ $isOperating: boolean }>`
   border-radius: 18px;
   background: ${({ $isOperating }) =>
     $isOperating
-      ? "linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)"
-      : "linear-gradient(135deg, #4b5563 0%, #1f2937 100%)"};
+      ? "linear-gradient(135deg, rgb(49, 46, 129) 0%, rgb(30, 27, 75) 100%)"
+      : "linear-gradient(135deg, rgb(75, 85, 99) 0%, rgb(31, 41, 55) 100%)"};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -371,7 +371,7 @@ const ThumbnailArt = styled.span`
 const ThumbnailTag = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #e0e7ff;
+  color: rgb(224, 231, 255);
   letter-spacing: -0.2px;
   max-width: 90px;
   white-space: nowrap;
@@ -412,7 +412,7 @@ const BlackActionButton = styled.button`
   width: 100%;
   height: 48px;
   border-radius: 24px;
-  background: #000000;
+  background: var(--neutral-1000);
   border: none;
   font-size: 15px;
   font-weight: 700;

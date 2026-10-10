@@ -133,7 +133,7 @@ const MobileFolderListDropDownsWrapper = styled.div`
   top: 30px;
   width: 207px;
   border-radius: 5px;
-  border: 0.5px solid #969696;
+  border: 0.5px solid var(--border-default);
   background-color: var(--bg-base);
 
   button {
@@ -162,7 +162,7 @@ const FolderListClose = styled.div`
   align-items: center;
   padding: 7px 8px;
   justify-content: space-between;
-  border-bottom: 0.5px solid #969696;
+  border-bottom: 0.5px solid var(--border-default);
 
   div {
     display: flex;
@@ -195,7 +195,7 @@ const FolderListDetail = styled.div`
 const ConfirmButton = styled.button`
   z-index: 1001;
   position: fixed;
-  background-color: #9cafe2;
+  background-color: var(--interactive-focus);
   left: 50%;
   bottom: calc(10% + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);

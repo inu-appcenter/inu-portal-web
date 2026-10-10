@@ -23,7 +23,7 @@ const StatsDashboardCard: React.FC<StatsDashboardCardProps> = ({
   icon,
   trend,
   description,
-  color = "#0f766e",
+  color = "rgb(15, 118, 110)",
   onClick,
 }) => {
   return (
@@ -137,8 +137,8 @@ const TrendBadge = styled.div<{ $isUp: boolean }>`
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  background-color: ${(props) => (props.$isUp ? "#f0fdf4" : "#fef2f2")};
-  color: ${(props) => (props.$isUp ? "#16a34a" : "#dc2626")};
+  background-color: ${(props) => (props.$isUp ? "rgb(240, 253, 244)" : "rgb(254, 242, 242)")};
+  color: ${(props) => (props.$isUp ? "var(--text-success)" : "var(--text-error)")};
 `;
 
 const Body = styled.div`

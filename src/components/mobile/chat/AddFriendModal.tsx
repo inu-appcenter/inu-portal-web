@@ -85,7 +85,7 @@ export default function AddFriendModal({
           <Header>
             <Title>친구 추가</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
 

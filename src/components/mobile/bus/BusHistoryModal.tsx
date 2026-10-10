@@ -713,7 +713,7 @@ export default function BusHistoryModal({
           {/* 상단 네비게이션 헤더 */}
           <NavHeader>
             <BackButton onClick={onClose} aria-label="뒤로가기">
-              <Icon name="chevron-left" size={24} color="#111827" />
+              <Icon name="chevron-left" size={24} color="var(--text-primary)" />
             </BackButton>
             <Dialog.Title asChild>
               <NavTitle>과거 시간표</NavTitle>
@@ -773,7 +773,7 @@ export default function BusHistoryModal({
                 ))}
               </RouteSelect>
               <SelectArrow>
-                <Icon name="chevron-down" size={18} color="#6b7280" />
+                <Icon name="chevron-down" size={18} color="var(--gray-600)" />
               </SelectArrow>
             </RouteSelectWrapper>
           </RouteSelectorContainer>
@@ -822,7 +822,7 @@ export default function BusHistoryModal({
           <TableViewport ref={listContainerRef} onScroll={handleTableScroll}>
             {loading ? (
               <LoadingBox>
-                <RotateCw size={24} className="spin" color="#2563eb" />
+                <RotateCw size={24} className="spin" color="var(--interactive-primary)" />
                 <LoadingText>
                   {isAllRoutesMode
                     ? `${selectedDayIndex === todayDayIndex ? "오늘" : `${currentDayLabel}요일`} 도착 기록을 불러오는 중...`
@@ -833,7 +833,7 @@ export default function BusHistoryModal({
               /* 1. 전체 노선 타임라인 뷰 */
               timelineItems.length === 0 ? (
                 <EmptyBox>
-                  <Clock size={36} color="#d1d5db" />
+                  <Clock size={36} color="var(--gray-300)" />
                   <EmptyTitle>해당 요일의 도착 기록이 없습니다.</EmptyTitle>
                   <EmptyDesc>
                     운행 시간(05:00~23:59) 중 실측된 버스 도착 기록이 표시됩니다.
@@ -906,7 +906,7 @@ export default function BusHistoryModal({
               /* 2. 개별 노선 다주차 비교 매트릭스 표 */
               matrixRows.length === 0 ? (
                 <EmptyBox>
-                  <Clock size={36} color="#d1d5db" />
+                  <Clock size={36} color="var(--gray-300)" />
                   <EmptyTitle>해당 요일의 실측 도착 기록이 없습니다.</EmptyTitle>
                   <EmptyDesc>
                     {selectedDayIndex === todayDayIndex
@@ -1107,9 +1107,9 @@ const RouteBadge = styled.span<{ tone?: string }>`
   padding: 3px 6px;
   border-radius: 4px;
   background-color: ${({ tone }) => {
-    if (tone === "all") return "#475569";
-    if (tone === "green") return "#16a34a";
-    if (tone === "red") return "#dc2626";
+    if (tone === "all") return "var(--gray-600)";
+    if (tone === "green") return "var(--border-success)";
+    if (tone === "red") return "var(--text-error)";
     return "var(--interactive-primary)";
   }};
   color: var(--text-inverse);
@@ -1153,7 +1153,7 @@ const DayTabItem = styled.button<{ active: boolean }>`
   background: transparent;
   border: none;
   border-bottom: 2.5px solid
-    ${({ active }) => (active ? "#0f172a" : "transparent")};
+    ${({ active }) => (active ? "var(--text-primary)" : "transparent")};
   cursor: pointer;
   transition: all 0.15s;
 
@@ -1264,8 +1264,8 @@ const TimelineNode = styled.div<{ $tone?: string; $isTarget?: boolean }>`
   height: ${({ $isTarget }) => ($isTarget ? "12px" : "8px")};
   border-radius: 50%;
   background-color: ${({ $tone }) => {
-    if ($tone === "green") return "#16a34a";
-    if ($tone === "red") return "#dc2626";
+    if ($tone === "green") return "var(--border-success)";
+    if ($tone === "red") return "var(--text-error)";
     return "var(--interactive-primary)";
   }};
   z-index: 2;
@@ -1301,8 +1301,8 @@ const BusBadge = styled.span<{ tone?: string }>`
   font-size: 12.5px;
   font-weight: 700;
   color: ${({ tone }) => {
-    if (tone === "green") return "#15803d";
-    if (tone === "red") return "#b91c1c";
+    if (tone === "green") return "var(--border-success)";
+    if (tone === "red") return "var(--text-error)";
     return "var(--text-brand)";
   }};
 `;

@@ -50,9 +50,9 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
     return {
       name: "제2기숙사",
       borderColor: "rgba(21, 128, 61, 0.28)",
-      badgeBg: "#15803d",
-      badgeText: "#ffffff",
-      boxBg: "#f0fdf4",
+      badgeBg: "var(--text-success)",
+      badgeText: "var(--text-inverse)",
+      boxBg: "rgb(240, 253, 244)",
       boxBorder: "rgba(22, 163, 74, 0.2)",
     };
   }
@@ -62,9 +62,9 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
     return {
       name: "제3기숙사(BTL)",
       borderColor: "rgba(67, 56, 202, 0.28)",
-      badgeBg: "#4338ca",
-      badgeText: "#ffffff",
-      boxBg: "#eef2ff",
+      badgeBg: "rgb(67, 56, 202)",
+      badgeText: "var(--text-inverse)",
+      boxBg: "rgb(238, 242, 255)",
       boxBorder: "rgba(79, 70, 229, 0.2)",
     };
   }
@@ -73,9 +73,9 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
   return {
     name: "제1기숙사",
     borderColor: "rgba(29, 78, 216, 0.28)",
-    badgeBg: "#1d4ed8",
-    badgeText: "#ffffff",
-    boxBg: "#eff6ff",
+    badgeBg: "var(--interactive-primary)",
+    badgeText: "var(--text-inverse)",
+    boxBg: "var(--bg-brand)",
     boxBorder: "rgba(37, 99, 235, 0.2)",
   };
 }
@@ -169,7 +169,7 @@ export const MobileDormitoryCard: React.FC<MobileDormitoryCardProps> = ({
               <PhotoImg src={photoSrc} alt="사생 증명사진" />
             ) : (
               <PlaceholderPhoto>
-                <User size={36} strokeWidth={1.5} color="#94a3b8" />
+                <User size={36} strokeWidth={1.5} color="var(--text-tertiary)" />
               </PlaceholderPhoto>
             )}
           </PhotoWrapper>
@@ -241,7 +241,7 @@ const CardContainer = styled.div<{ $borderColor: string; $fullscreen?: boolean }
   max-width: ${({ $fullscreen }) => ($fullscreen ? "100%" : "380px")};
   height: ${({ $fullscreen }) => ($fullscreen ? "100%" : "auto")};
   flex: ${({ $fullscreen }) => ($fullscreen ? "1" : "initial")};
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   border: 2px solid ${({ $borderColor }) => $borderColor};
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
@@ -273,7 +273,7 @@ const WatermarkRow = styled.div<{ $reverse?: boolean }>`
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
-  color: #0f172a;
+  color: var(--text-primary);
   animation: ${watermarkFlow} 24s linear infinite;
   animation-direction: ${({ $reverse }) => ($reverse ? "reverse" : "normal")};
 `;
@@ -285,7 +285,7 @@ const HeaderSection = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-subtle);
 `;
 
 const HeaderLeft = styled.div`
@@ -296,14 +296,14 @@ const HeaderLeft = styled.div`
 const SubHeading = styled.span`
   font-size: 11px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   letter-spacing: -0.3px;
 `;
 
 const MainTitle = styled.h2`
   font-size: 16px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   margin: 2px 0 0 0;
   letter-spacing: -0.4px;
 `;
@@ -311,8 +311,8 @@ const MainTitle = styled.h2`
 const TermBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #475569;
-  background-color: #f1f5f9;
+  color: var(--gray-700);
+  background-color: var(--bg-subtle);
   padding: 4px 10px;
   border-radius: 6px;
   letter-spacing: -0.2px;
@@ -346,8 +346,8 @@ const PhotoWrapper = styled.div<{ $fullscreen?: boolean }>`
   height: ${({ $fullscreen }) => ($fullscreen ? "138px" : "128px")};
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-subtle);
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 `;
@@ -364,7 +364,7 @@ const PlaceholderPhoto = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f1f5f9;
+  background-color: var(--bg-subtle);
 `;
 
 const ProfileInfo = styled.div`
@@ -383,7 +383,7 @@ const NameRow = styled.div`
 const StudentName = styled.h1<{ $fullscreen?: boolean }>`
   font-size: ${({ $fullscreen }) => ($fullscreen ? "22px" : "20px")};
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
   margin: 0;
   line-height: 1.2;
@@ -392,7 +392,7 @@ const StudentName = styled.h1<{ $fullscreen?: boolean }>`
 const EnglishName = styled.span`
   font-size: 11px;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   margin-top: 1px;
   letter-spacing: 0.2px;
 `;
@@ -408,19 +408,19 @@ const MetaItem = styled.div`
   font-size: 12px;
   display: flex;
   align-items: center;
-  color: #334155;
+  color: var(--gray-800);
   font-weight: 500;
 `;
 
 const MetaKey = styled.span`
-  color: #94a3b8;
+  color: var(--text-tertiary);
   width: 32px;
   flex-shrink: 0;
   font-size: 11px;
 `;
 
 const MetaVal = styled.span`
-  color: #1e293b;
+  color: var(--text-primary);
   font-weight: 600;
 `;
 
@@ -446,7 +446,7 @@ const DetailHeader = styled.div`
 const DetailLabel = styled.span`
   font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const DormBadge = styled.span<{ $bg: string; $text: string }>`
@@ -471,14 +471,14 @@ const DormNoRow = styled.div`
 const DormNoLabel = styled.span`
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const DormNoValue = styled.span<{ $fullscreen?: boolean }>`
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: ${({ $fullscreen }) => ($fullscreen ? "24px" : "18px")};
   font-weight: 900;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: 0.5px;
 `;
 
@@ -487,24 +487,24 @@ const StatusRow = styled.div`
   align-items: center;
   justify-content: space-between;
   font-size: 11px;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const StatusLabel = styled.span`
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const StatusValue = styled.span`
   font-weight: 600;
-  color: #334155;
+  color: var(--gray-800);
 `;
 
 const FooterSection = styled.div<{ $fullscreen?: boolean }>`
   position: relative;
   z-index: 2;
   padding: ${({ $fullscreen }) => ($fullscreen ? "14px 20px" : "10px 20px")};
-  background-color: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+  background-color: var(--bg-subtle);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -514,6 +514,6 @@ const ClockText = styled.span<{ $fullscreen?: boolean }>`
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: ${({ $fullscreen }) => ($fullscreen ? "13px" : "12px")};
   font-weight: 600;
-  color: #475569;
+  color: var(--gray-700);
   letter-spacing: 0.3px;
 `;

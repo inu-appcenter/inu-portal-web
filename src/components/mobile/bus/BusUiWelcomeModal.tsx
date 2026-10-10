@@ -85,7 +85,7 @@ const ModalCard = styled(motion.div)`
       rgba(84, 163, 255, 0.16),
       transparent 34%
     ),
-    linear-gradient(180deg, #ffffff, #f8fbff);
+    linear-gradient(180deg, var(--bg-base), var(--bg-subtle));
   box-shadow:
     0 20px 48px rgba(15, 23, 42, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
@@ -97,7 +97,7 @@ const ModalCard = styled(motion.div)`
 
 const Title = styled.h2`
   margin: 0;
-  color: #102b52;
+  color: var(--text-primary);
   font-size: 24px;
   line-height: 1.25;
   font-weight: 800;
@@ -128,13 +128,13 @@ const HighlightIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1f5fbc;
+  color: var(--interactive-primary);
   background: rgba(255, 255, 255, 0.88);
 `;
 
 const HighlightText = styled.p`
   margin: 0;
-  color: #284567;
+  color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.55;
   word-break: keep-all;
@@ -146,7 +146,7 @@ const ConfirmButton = styled.button`
   border: 0;
   border-radius: 16px;
   padding: 14px 16px;
-  background: linear-gradient(180deg, #2d75da, #1558b7);
+  background: linear-gradient(180deg, rgb(45, 117, 218), rgb(21, 88, 183));
   color: var(--text-inverse);
   font-size: 15px;
   font-weight: 700;

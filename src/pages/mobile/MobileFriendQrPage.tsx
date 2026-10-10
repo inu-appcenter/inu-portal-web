@@ -107,7 +107,7 @@ export default function MobileFriendQrPage() {
             }}
           />
           <DefaultIconArea>
-            <Icon name="user-02" size={22} color="#D6D1D5" />
+            <Icon name="user-02" size={22} color="var(--gray-300)" />
           </DefaultIconArea>
         </ProfileArea>
 
@@ -125,8 +125,8 @@ export default function MobileFriendQrPage() {
               size={200}
               level="M"
               marginSize={0}
-              bgColor="#ffffff"
-              fgColor="#333d4b"
+              bgColor="rgb(255, 255, 255)"
+              fgColor="rgb(51, 61, 75)"
             />
           )}
         </QrArea>

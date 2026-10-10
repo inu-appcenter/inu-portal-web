@@ -96,9 +96,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "08:00",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
-    toolParams: { stopName: "인천대입구역 1번출구", iconType: "bus", iconBg: "#ff7a00" },
+    toolParams: { stopName: "인천대입구역 1번출구", iconType: "bus", iconBg: "rgb(255, 122, 0)" },
     iconType: "bus",
-    iconBg: "#ff7a00",
+    iconBg: "rgb(255, 122, 0)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "인천대입구역 1번출구 버스 도착 정보",
@@ -111,9 +111,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "17:30",
     repeatType: "WEEKDAYS",
     targetTools: ["BUS"],
-    toolParams: { stopName: "인천대 정문", iconType: "bus", iconBg: "#ff7a00" },
+    toolParams: { stopName: "인천대 정문", iconType: "bus", iconBg: "rgb(255, 122, 0)" },
     iconType: "bus",
-    iconBg: "#ff7a00",
+    iconBg: "rgb(255, 122, 0)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오후 05:30\n평일 (월~금)",
     whatTitle: "인천대 정문 정류소 버스 도착 정보",
@@ -130,7 +130,7 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTools: ["WEATHER", "TIMETABLE"],
     toolParams: {
       iconType: "sun",
-      iconBg: "#5c9cf8",
+      iconBg: "rgb(92, 156, 248)",
       triggers: [
         {
           id: "trig-now-1",
@@ -146,19 +146,19 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
           type: "WEATHER",
           title: "캠퍼스 날씨 알림",
           subtitle: "송도 캠퍼스 오늘 날씨 예보",
-          iconBg: "#5c9cf8",
+          iconBg: "rgb(92, 156, 248)",
         },
         {
           id: "act-time-1",
           type: "TIMETABLE",
           title: "오늘 강의 시간표 알림",
           subtitle: "오늘 수업 시간표 및 강의실 위치",
-          iconBg: "#a855f7",
+          iconBg: "rgb(168, 85, 247)",
         },
       ],
     },
     iconType: "sun",
-    iconBg: "#5c9cf8",
+    iconBg: "rgb(92, 156, 248)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 08:00\n평일 (월~금)",
     whatTitle: "캠퍼스 날씨 및 수업 시간표",
@@ -171,9 +171,9 @@ export const ROUTINE_PRESETS: RoutinePreset[] = [
     targetTime: "11:30",
     repeatType: "WEEKDAYS",
     targetTools: ["CAFETERIA"],
-    toolParams: { cafeteria: "전체", mealType: "LUNCH", iconType: "cafeteria", iconBg: "#22c55e" },
+    toolParams: { cafeteria: "전체", mealType: "LUNCH", iconType: "cafeteria", iconBg: "rgb(34, 197, 94)" },
     iconType: "cafeteria",
-    iconBg: "#22c55e",
+    iconBg: "rgb(34, 197, 94)",
     whenTitle: "지정한 시간",
     whenSubtitle: "오전 11:30\n평일 (월~금)",
     whatTitle: "학생식당 & 교내 식당 점심 메뉴",
@@ -185,57 +185,57 @@ export const AVAILABLE_ACTIONS = [
     id: "DEPT_NOTICE" as RoutineActionType,
     title: "새 학과 공지사항 알림",
     description: "선택한 학과의 새 공지와 관심 키워드 소식을 감지해요",
-    icon: <Building2 size={24} color="#ff7a00" />,
-    iconBg: "#ff7a00",
+    icon: <Building2 size={24} color="rgb(255, 122, 0)" />,
+    iconBg: "rgb(255, 122, 0)",
   },
   {
     id: "SCHOOL_NOTICE" as RoutineActionType,
     title: "새 학교 공지사항 알림",
     description: "학교 대표 공지 및 관심 카테고리/키워드 소식을 감지해요",
-    icon: <Bell size={24} color="#5c9cf8" />,
-    iconBg: "#5c9cf8",
+    icon: <Bell size={24} color="rgb(92, 156, 248)" />,
+    iconBg: "rgb(92, 156, 248)",
   },
   {
     id: "TIMETABLE" as RoutineActionType,
     title: "당일 시간표 & 강의실 브리핑",
     description: "오늘 수업 시간표와 이동할 강의실 위치를 안내해요",
-    icon: <Calendar size={24} color="#a855f7" />,
-    iconBg: "#a855f7",
+    icon: <Calendar size={24} color="rgb(168, 85, 247)" />,
+    iconBg: "rgb(168, 85, 247)",
   },
   {
     id: "TIMETABLE_NOWBAR" as RoutineActionType,
     title: "실시간 시간표 Now Bar & Dynamic Island 띄우기",
     description: "잠금화면과 상태바에 실시간 강의실 및 남은 시간 카운트다운 카드를 띄워요",
-    icon: <GraduationCap size={24} color="#0055D4" />,
-    iconBg: "#0055D4",
+    icon: <GraduationCap size={24} color="rgb(0, 85, 212)" />,
+    iconBg: "rgb(0, 85, 212)",
   },
   {
     id: "SCHEDULE" as RoutineActionType,
     title: "학사일정 브리핑",
     description: "다가오는 주요 학사일정과 시험/수강신청 일정을 확인해요",
-    icon: <GraduationCap size={24} color="#3b82f6" />,
-    iconBg: "#3b82f6",
+    icon: <GraduationCap size={24} color="var(--primary)" />,
+    iconBg: "var(--primary)",
   },
   {
     id: "WEATHER" as RoutineActionType,
     title: "캠퍼스 날씨 & 우산 알리미",
     description: "송도 캠퍼스 오늘 기온, 날씨 및 미세먼지 예보를 확인해요",
-    icon: <Sun size={24} color="#5c9cf8" />,
-    iconBg: "#5c9cf8",
+    icon: <Sun size={24} color="rgb(92, 156, 248)" />,
+    iconBg: "rgb(92, 156, 248)",
   },
   {
     id: "BUS" as RoutineActionType,
     title: "실시간 버스 도착 정보 안내",
     description: "인천대입구역 및 교내 정류소 버스 도착 정보를 안내해요",
-    icon: <Bus size={24} color="#ff7a00" />,
-    iconBg: "#ff7a00",
+    icon: <Bus size={24} color="rgb(255, 122, 0)" />,
+    iconBg: "rgb(255, 122, 0)",
   },
   {
     id: "CAFETERIA" as RoutineActionType,
     title: "오늘의 학식 식단 브리핑",
     description: "학생식당 및 기숙사 식당의 오늘 식단 메뉴를 안내해요",
-    icon: <Utensils size={24} color="#22c55e" />,
-    iconBg: "#22c55e",
+    icon: <Utensils size={24} color="rgb(34, 197, 94)" />,
+    iconBg: "rgb(34, 197, 94)",
   },
 ];
 
@@ -260,19 +260,19 @@ export const ROUTINE_ICONS = [
 ];
 
 export const ROUTINE_COLORS = [
-  { id: "blue", hex: "#5c9cf8", label: "블루" },
-  { id: "purple", hex: "#a855f7", label: "퍼플" },
-  { id: "violet", hex: "#8b5cf6", label: "바이올렛" },
-  { id: "orange", hex: "#ff7a00", label: "오렌지" },
-  { id: "green", hex: "#22c55e", label: "그린" },
-  { id: "red", hex: "#ef4444", label: "레드" },
-  { id: "amber", hex: "#f59e0b", label: "앰버" },
-  { id: "indigo", hex: "#6366f1", label: "인디고" },
-  { id: "pink", hex: "#ec4899", label: "핑크" },
-  { id: "slate", hex: "#475569", label: "슬레이트" },
+  { id: "blue", hex: "rgb(92, 156, 248)", label: "블루" },
+  { id: "purple", hex: "rgb(168, 85, 247)", label: "퍼플" },
+  { id: "violet", hex: "rgb(139, 92, 246)", label: "바이올렛" },
+  { id: "orange", hex: "rgb(255, 122, 0)", label: "오렌지" },
+  { id: "green", hex: "rgb(34, 197, 94)", label: "그린" },
+  { id: "red", hex: "var(--text-error)", label: "레드" },
+  { id: "amber", hex: "var(--state-warning)", label: "앰버" },
+  { id: "indigo", hex: "rgb(99, 102, 241)", label: "인디고" },
+  { id: "pink", hex: "rgb(236, 72, 153)", label: "핑크" },
+  { id: "slate", hex: "var(--gray-600)", label: "슬레이트" },
 ];
 
-export const renderRoutineIcon = (iconId?: string, size = 28, color = "#ffffff") => {
+export const renderRoutineIcon = (iconId?: string, size = 28, color = "var(--text-inverse)") => {
   switch (iconId) {
     case "sun":
       return <Sun size={size} color={color} />;
@@ -314,16 +314,16 @@ export const renderRoutineIcon = (iconId?: string, size = 28, color = "#ffffff")
 };
 
 export const getDefaultIconAndBgForTools = (toolsStr?: string) => {
-  if (!toolsStr) return { iconId: "sparkles", bg: "#5c9cf8" };
+  if (!toolsStr) return { iconId: "sparkles", bg: "rgb(92, 156, 248)" };
   const upper = toolsStr.toUpperCase();
-  if (upper.includes("BUS")) return { iconId: "bus", bg: "#ff7a00" };
-  if (upper.includes("CAFETERIA")) return { iconId: "cafeteria", bg: "#22c55e" };
-  if (upper.includes("TIMETABLE")) return { iconId: "timetable", bg: "#a855f7" };
-  if (upper.includes("DEPT_NOTICE")) return { iconId: "dept", bg: "#ff7a00" };
+  if (upper.includes("BUS")) return { iconId: "bus", bg: "rgb(255, 122, 0)" };
+  if (upper.includes("CAFETERIA")) return { iconId: "cafeteria", bg: "rgb(34, 197, 94)" };
+  if (upper.includes("TIMETABLE")) return { iconId: "timetable", bg: "rgb(168, 85, 247)" };
+  if (upper.includes("DEPT_NOTICE")) return { iconId: "dept", bg: "rgb(255, 122, 0)" };
   if (upper.includes("NOTICE")) return { iconId: "notice", bg: "var(--interactive-primary)" };
   if (upper.includes("SCHEDULE")) return { iconId: "graduation", bg: "var(--interactive-primary)" };
-  if (upper.includes("WEATHER")) return { iconId: "sun", bg: "#5c9cf8" };
-  return { iconId: "sparkles", bg: "#5c9cf8" };
+  if (upper.includes("WEATHER")) return { iconId: "sun", bg: "rgb(92, 156, 248)" };
+  return { iconId: "sparkles", bg: "rgb(92, 156, 248)" };
 };
 
 const CAFETERIA_OPTIONS = [
@@ -459,9 +459,9 @@ export default function MobileRoutineDetailPage() {
   // Icon & Theme Color modal
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState<string>("sparkles");
-  const [selectedColor, setSelectedColor] = useState<string>("#5c9cf8");
+  const [selectedColor, setSelectedColor] = useState<string>("rgb(92, 156, 248)");
   const [tempIcon, setTempIcon] = useState<string>("sparkles");
-  const [tempColor, setTempColor] = useState<string>("#5c9cf8");
+  const [tempColor, setTempColor] = useState<string>("rgb(92, 156, 248)");
 
   // Routine Form States (Custom & Builder)
   const [title, setTitle] = useState("");
@@ -624,7 +624,7 @@ export default function MobileRoutineDetailPage() {
                 type: "BUS",
                 title: "버스 도착 알림",
                 subtitle: "인천대입구역 1번출구",
-                iconBg: "#ff7a00",
+                iconBg: "rgb(255, 122, 0)",
                 busParams: { stopName: "인천대입구역 1번출구" },
               };
             }
@@ -634,7 +634,7 @@ export default function MobileRoutineDetailPage() {
                 type: "CAFETERIA",
                 title: "학식 식단",
                 subtitle: "전체 식당 • 당일 식단",
-                iconBg: "#22c55e",
+                iconBg: "rgb(34, 197, 94)",
                 cafeteriaParams: { restaurant: "전체", mealType: "AUTO" },
               };
             }
@@ -644,7 +644,7 @@ export default function MobileRoutineDetailPage() {
                 type: "TIMETABLE",
                 title: "시간표 / 강의실",
                 subtitle: "오늘 수업 시간표 및 강의실 위치",
-                iconBg: "#a855f7",
+                iconBg: "rgb(168, 85, 247)",
               };
             }
             if (tool === "SCHEDULE") {
@@ -653,7 +653,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHEDULE",
                 title: "학사일정 알림",
                 subtitle: "학교 및 학과 학사일정",
-                iconBg: "#3b82f6",
+                iconBg: "var(--primary)",
                 scheduleParams: { scope: "ALL" },
               };
             }
@@ -663,7 +663,7 @@ export default function MobileRoutineDetailPage() {
                 type: "DEPT_NOTICE",
                 title: "학과 공지 알림",
                 subtitle: "내 학과 새 공지 및 키워드",
-                iconBg: "#ff7a00",
+                iconBg: "rgb(255, 122, 0)",
                 deptNoticeParams: {
                   deptCode: "",
                   deptName: "내 학과",
@@ -678,7 +678,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHOOL_NOTICE",
                 title: "학교 공지 알림",
                 subtitle: "학교 대표 새 공지사항",
-                iconBg: "#5c9cf8",
+                iconBg: "rgb(92, 156, 248)",
                 schoolNoticeParams: {
                   categories: [],
                   includeKeywords: [],
@@ -691,7 +691,7 @@ export default function MobileRoutineDetailPage() {
               type: "WEATHER",
               title: "캠퍼스 날씨",
               subtitle: "송도 캠퍼스 오늘 날씨 예보",
-              iconBg: "#5c9cf8",
+              iconBg: "rgb(92, 156, 248)",
             };
           });
         }
@@ -699,7 +699,7 @@ export default function MobileRoutineDetailPage() {
       } else if (pre) {
         setTitle(pre.title);
         setSelectedIcon(pre.iconType || "sun");
-        setSelectedColor(pre.iconBg || "#5c9cf8");
+        setSelectedColor(pre.iconBg || "rgb(92, 156, 248)");
 
         if (pre.toolParams?.triggers && pre.toolParams.triggers.length > 0) {
           setTriggers(pre.toolParams.triggers);
@@ -738,7 +738,7 @@ export default function MobileRoutineDetailPage() {
                 type: "BUS",
                 title: "버스 도착 알림",
                 subtitle: pre.toolParams?.stopName || "인천대입구역 1번출구",
-                iconBg: "#ff7a00",
+                iconBg: "rgb(255, 122, 0)",
                 busParams: { stopName: pre.toolParams?.stopName || "인천대입구역 1번출구" },
               };
             }
@@ -748,7 +748,7 @@ export default function MobileRoutineDetailPage() {
                 type: "CAFETERIA",
                 title: "학식 식단",
                 subtitle: `${pre.toolParams?.cafeteria || "전체"} • ${pre.toolParams?.mealType === "DINNER" ? "석식" : "중식"}`,
-                iconBg: "#22c55e",
+                iconBg: "rgb(34, 197, 94)",
                 cafeteriaParams: {
                   restaurant: pre.toolParams?.cafeteria || "전체",
                   mealType: pre.toolParams?.mealType || "LUNCH",
@@ -761,7 +761,7 @@ export default function MobileRoutineDetailPage() {
                 type: "TIMETABLE",
                 title: "오늘 강의 시간표",
                 subtitle: "오늘 수업 시간표 및 강의실 위치",
-                iconBg: "#a855f7",
+                iconBg: "rgb(168, 85, 247)",
               };
             }
             if (tool === "SCHEDULE") {
@@ -770,7 +770,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHEDULE",
                 title: "주요 학사일정 알림",
                 subtitle: "학교 및 학과 전체 • 당일 알림",
-                iconBg: "#3b82f6",
+                iconBg: "var(--primary)",
                 scheduleParams: { scope: "ALL" },
               };
             }
@@ -780,7 +780,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHOOL_NOTICE",
                 title: "학교 공지 알림",
                 subtitle: "학교 대표 새 공지사항",
-                iconBg: "#3b82f6",
+                iconBg: "var(--primary)",
                 schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
               };
             }
@@ -789,7 +789,7 @@ export default function MobileRoutineDetailPage() {
               type: "WEATHER",
               title: "캠퍼스 날씨",
               subtitle: "송도 캠퍼스 오늘 날씨 예보",
-              iconBg: "#5c9cf8",
+              iconBg: "rgb(92, 156, 248)",
             };
           });
           setActions(preActions);
@@ -800,7 +800,7 @@ export default function MobileRoutineDetailPage() {
         setTriggers([]);
         setActions([]);
         setSelectedIcon("sparkles");
-        setSelectedColor("#5c9cf8");
+        setSelectedColor("rgb(92, 156, 248)");
       }
     },
     [],
@@ -840,7 +840,7 @@ export default function MobileRoutineDetailPage() {
 
           setTitle("오늘 강의 시간표 알림");
           setSelectedIcon("timetable");
-          setSelectedColor("#a855f7");
+          setSelectedColor("rgb(168, 85, 247)");
           setTriggers([
             {
               id: "sys-trigger-brief",
@@ -862,14 +862,14 @@ export default function MobileRoutineDetailPage() {
               type: "TIMETABLE",
               title: "오늘 강의 시간표 알림",
               subtitle: "오늘 수업 시간표 및 강의실 위치",
-              iconBg: "#a855f7",
+              iconBg: "rgb(168, 85, 247)",
             },
           ]);
         } else if (systemType === "timetable-pre") {
           const mins = curSettings.timetablePreAlertMinutes || 10;
           setTitle("강의 시작 전 알림");
           setSelectedIcon("clock");
-          setSelectedColor("#8b5cf6");
+          setSelectedColor("rgb(139, 92, 246)");
           setTriggers([
             {
               id: "sys-trigger-pre",
@@ -885,7 +885,7 @@ export default function MobileRoutineDetailPage() {
               type: "TIMETABLE",
               title: "강의 시작 전 알림",
               subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
-              iconBg: "#8b5cf6",
+              iconBg: "rgb(139, 92, 246)",
             },
           ]);
         } else if (systemType === "timetable-nowbar") {
@@ -895,7 +895,7 @@ export default function MobileRoutineDetailPage() {
           setNowBarLeadMinutes(lead);
           setTitle("실시간 시간표 Now Bar");
           setSelectedIcon("graduation");
-          setSelectedColor("#0055D4");
+          setSelectedColor("rgb(0, 85, 212)");
           setTriggers([
             {
               id: "sys-trigger-nowbar",
@@ -911,7 +911,7 @@ export default function MobileRoutineDetailPage() {
               type: "TIMETABLE_NOWBAR",
               title: "실시간 시간표 Now Bar",
               subtitle: "잠금화면 / 상태바 실시간 강의실 및 카운트다운 카드",
-              iconBg: "#0055D4",
+              iconBg: "rgb(0, 85, 212)",
               timetableNowBarParams: { leadTimeMinutes: lead },
             },
           ]);
@@ -928,7 +928,7 @@ export default function MobileRoutineDetailPage() {
 
           setTitle("주요 학사일정 알림");
           setSelectedIcon("graduation");
-          setSelectedColor("#3b82f6");
+          setSelectedColor("var(--primary)");
           setTriggers([
             {
               id: "sys-trigger-schedule",
@@ -950,7 +950,7 @@ export default function MobileRoutineDetailPage() {
               type: "SCHEDULE",
               title: "주요 학사일정 알림",
               subtitle: `${scopeText} • 당일 알림`,
-              iconBg: "#3b82f6",
+              iconBg: "var(--primary)",
               scheduleParams: { scope },
             },
           ]);
@@ -1068,37 +1068,37 @@ export default function MobileRoutineDetailPage() {
           type: "TIME",
           title: "특정 시간",
           description: "원하는 시간 또는 요일에 실행",
-          icon: <Clock size={20} color="#475569" />,
+          icon: <Clock size={20} color="var(--gray-600)" />,
         },
         {
           type: "BEFORE_FIRST_CLASS",
           title: "당일 첫 수업 시작 전",
           description: "당일 첫 수업 시작 전 시점에 실행",
-          icon: <Sun size={20} color="#475569" />,
+          icon: <Sun size={20} color="var(--gray-600)" />,
         },
         {
           type: "BEFORE_CLASS",
           title: "각 수업 시작 전",
           description: "각 수업 시작 전 시점에 실행",
-          icon: <Clock size={20} color="#475569" />,
+          icon: <Clock size={20} color="var(--gray-600)" />,
         },
         {
           type: "AFTER_LAST_CLASS",
           title: "마지막 수업 종료 전/후",
           description: "마지막 수업 종료 전/후 시점에 실행",
-          icon: <Moon size={20} color="#475569" />,
+          icon: <Moon size={20} color="var(--gray-600)" />,
         },
         {
           type: "LONG_BREAK",
           title: "공강 시작 시",
           description: "긴 공강이 시작되는 시점에 실행",
-          icon: <Coffee size={20} color="#475569" />,
+          icon: <Coffee size={20} color="var(--gray-600)" />,
         },
         {
           type: "NO_CLASS_DAY",
           title: "수업 없는 공강일",
           description: "수업이 없는 공강일 지정 시간에 실행",
-          icon: <Smile size={20} color="#475569" />,
+          icon: <Smile size={20} color="var(--gray-600)" />,
         },
       );
     }
@@ -1108,7 +1108,7 @@ export default function MobileRoutineDetailPage() {
         type: "DEPT_NOTICE",
         title: "새 학과 공지 등록 시",
         description: "선택한 학과 홈페이지에 새 공지가 올라올 때",
-        icon: <Building2 size={20} color="#475569" />,
+        icon: <Building2 size={20} color="var(--gray-600)" />,
       });
     }
 
@@ -1117,7 +1117,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHOOL_NOTICE",
         title: "새 학교 공지 등록 시",
         description: "학교 대표 홈페이지에 새 공지가 올라올 때",
-        icon: <Bell size={20} color="#475569" />,
+        icon: <Bell size={20} color="var(--gray-600)" />,
       });
     }
 
@@ -1172,7 +1172,7 @@ export default function MobileRoutineDetailPage() {
           type: "SCHOOL_NOTICE",
           title: "학교 공지 알림",
           subtitle: "전체 카테고리 공지 알림",
-          iconBg: "#5c9cf8",
+          iconBg: "rgb(92, 156, 248)",
           schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
         };
         setActions((prev) => [...prev, autoAction]);
@@ -1268,7 +1268,7 @@ export default function MobileRoutineDetailPage() {
         type: "TIMETABLE",
         title: "당일 시간표 & 강의실 브리핑",
         subtitle: "오늘 수업 시간표 및 강의실 위치",
-        iconBg: "#a855f7",
+        iconBg: "rgb(168, 85, 247)",
       };
       setActions((prev) => [...prev, autoAction]);
     }
@@ -1306,7 +1306,7 @@ export default function MobileRoutineDetailPage() {
         type: "TIMETABLE",
         title: "당일 시간표 & 강의실 브리핑",
         subtitle: "다음 수업 시간표 및 이동할 강의실 위치",
-        iconBg: "#8b5cf6",
+        iconBg: "rgb(139, 92, 246)",
       };
       setActions((prev) => [...prev, autoAction]);
     }
@@ -1345,7 +1345,7 @@ export default function MobileRoutineDetailPage() {
         type: "BUS",
         title: "실시간 버스",
         subtitle: "인천대 정문",
-        iconBg: "#ff7a00",
+        iconBg: "rgb(255, 122, 0)",
         busParams: { stopName: "인천대 정문" },
       };
       setActions((prev) => [...prev, autoAction]);
@@ -1379,7 +1379,7 @@ export default function MobileRoutineDetailPage() {
         type: "CAFETERIA",
         title: "학식 식단",
         subtitle: "전체 식당 • 시간대별 자동",
-        iconBg: "#22c55e",
+        iconBg: "rgb(34, 197, 94)",
         cafeteriaParams: { restaurant: "전체", mealType: "AUTO" },
       };
       setActions((prev) => [...prev, autoAction]);
@@ -1423,7 +1423,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHEDULE",
         title: "학사일정 알림",
         subtitle: "학교 및 학과 전체 • 당일 알림",
-        iconBg: "#3b82f6",
+        iconBg: "var(--primary)",
         scheduleParams: { scope: "ALL" },
       };
       setActions((prev) => [...prev, autoAction]);
@@ -1494,7 +1494,7 @@ export default function MobileRoutineDetailPage() {
         type: "TIMETABLE",
         title: "시간표 / 강의실",
         subtitle: "오늘 수업 시간표 및 강의실 위치",
-        iconBg: "#a855f7",
+        iconBg: "rgb(168, 85, 247)",
       };
       setActions((prev) => [...prev, newAction]);
     } else if (type === "WEATHER") {
@@ -1503,7 +1503,7 @@ export default function MobileRoutineDetailPage() {
         type: "WEATHER",
         title: "캠퍼스 날씨",
         subtitle: "송도 캠퍼스 오늘 날씨 예보",
-        iconBg: "#5c9cf8",
+        iconBg: "rgb(92, 156, 248)",
       };
       setActions((prev) => [...prev, newAction]);
     }
@@ -1558,7 +1558,7 @@ export default function MobileRoutineDetailPage() {
         type: "DEPT_NOTICE",
         title: `${tempDeptName} 공지 소식`,
         subtitle: kwDesc,
-        iconBg: "#ff7a00",
+        iconBg: "rgb(255, 122, 0)",
         deptNoticeParams: {
           deptCode: tempDeptCode,
           deptName: tempDeptName,
@@ -1617,7 +1617,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHOOL_NOTICE",
         title: "학교 공지 소식",
         subtitle: `${catDesc}${kwDesc}`,
-        iconBg: "#5c9cf8",
+        iconBg: "rgb(92, 156, 248)",
         schoolNoticeParams: {
           categories: tempSchoolCategories,
           includeKeywords: tempSchoolIncludeKeywords,
@@ -1650,7 +1650,7 @@ export default function MobileRoutineDetailPage() {
         type: "BUS",
         title: "실시간 버스 도착 정보 안내",
         subtitle: tempBusStop,
-        iconBg: "#ff7a00",
+        iconBg: "rgb(255, 122, 0)",
         busParams: { stopName: tempBusStop },
       };
       setActions((prev) => [...prev, newAction]);
@@ -1682,7 +1682,7 @@ export default function MobileRoutineDetailPage() {
         type: "CAFETERIA",
         title: "오늘의 학식 식단 브리핑",
         subtitle: sub,
-        iconBg: "#22c55e",
+        iconBg: "rgb(34, 197, 94)",
         cafeteriaParams: { restaurant: tempCafeteria, mealType: tempMealType },
       };
       setActions((prev) => [...prev, newAction]);
@@ -1719,7 +1719,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHEDULE",
         title: "학사일정 브리핑",
         subtitle: sub,
-        iconBg: "#3b82f6",
+        iconBg: "var(--primary)",
         scheduleParams: { scope: tempScheduleScope },
       };
       setActions((prev) => [...prev, newAction]);
@@ -2101,46 +2101,46 @@ export default function MobileRoutineDetailPage() {
   const renderActionIcon = (type: RoutineActionType, _iconBg?: string) => {
     switch (type) {
       case "DEPT_NOTICE":
-        return <Building2 size={24} color="#ff7a00" />;
+        return <Building2 size={24} color="rgb(255, 122, 0)" />;
       case "SCHOOL_NOTICE":
-        return <Bell size={24} color="#5c9cf8" />;
+        return <Bell size={24} color="rgb(92, 156, 248)" />;
       case "TIMETABLE":
-        return <Calendar size={24} color="#a855f7" />;
+        return <Calendar size={24} color="rgb(168, 85, 247)" />;
       case "TIMETABLE_NOWBAR":
-        return <GraduationCap size={24} color="#0055D4" />;
+        return <GraduationCap size={24} color="rgb(0, 85, 212)" />;
       case "SCHEDULE":
-        return <GraduationCap size={24} color="#3b82f6" />;
+        return <GraduationCap size={24} color="var(--primary)" />;
       case "WEATHER":
-        return <Sun size={24} color="#5c9cf8" />;
+        return <Sun size={24} color="rgb(92, 156, 248)" />;
       case "BUS":
-        return <Bus size={24} color="#ff7a00" />;
+        return <Bus size={24} color="rgb(255, 122, 0)" />;
       case "CAFETERIA":
-        return <Utensils size={24} color="#22c55e" />;
+        return <Utensils size={24} color="rgb(34, 197, 94)" />;
       default:
-        return <Sparkles size={24} color="#5c9cf8" />;
+        return <Sparkles size={24} color="rgb(92, 156, 248)" />;
     }
   };
 
   const renderTriggerIcon = (type: RoutineTriggerType) => {
     switch (type) {
       case "TIME":
-        return <Clock size={24} color="#3b82f6" />;
+        return <Clock size={24} color="var(--primary)" />;
       case "BEFORE_FIRST_CLASS":
-        return <Sun size={24} color="#f59e0b" />;
+        return <Sun size={24} color="var(--state-warning)" />;
       case "BEFORE_CLASS":
-        return <Clock size={24} color="#8b5cf6" />;
+        return <Clock size={24} color="rgb(139, 92, 246)" />;
       case "AFTER_LAST_CLASS":
-        return <Moon size={24} color="#6366f1" />;
+        return <Moon size={24} color="rgb(99, 102, 241)" />;
       case "LONG_BREAK":
-        return <Coffee size={24} color="#10b981" />;
+        return <Coffee size={24} color="var(--text-success)" />;
       case "NO_CLASS_DAY":
-        return <Smile size={24} color="#ec4899" />;
+        return <Smile size={24} color="rgb(236, 72, 153)" />;
       case "SCHOOL_NOTICE":
-        return <Bell size={24} color="#5c9cf8" />;
+        return <Bell size={24} color="rgb(92, 156, 248)" />;
       case "DEPT_NOTICE":
-        return <Building2 size={24} color="#ff7a00" />;
+        return <Building2 size={24} color="rgb(255, 122, 0)" />;
       default:
-        return <Clock size={24} color="#111827" />;
+        return <Clock size={24} color="var(--text-primary)" />;
     }
   };
 
@@ -2169,10 +2169,10 @@ export default function MobileRoutineDetailPage() {
             onClick={handleOpenIconModal}
             title={isEditing && !isSystemRoutine ? "아이콘 및 색상 변경" : undefined}
           >
-            {renderRoutineIcon(selectedIcon, 28, "#ffffff")}
+            {renderRoutineIcon(selectedIcon, 28, "var(--text-inverse)")}
             {isEditing && !isSystemRoutine && (
               <IconEditBadge title="아이콘 변경">
-                <Palette size={12} color="#ffffff" strokeWidth={2.5} />
+                <Palette size={12} color="var(--text-inverse)" strokeWidth={2.5} />
               </IconEditBadge>
             )}
           </DetailFloatingIcon>
@@ -2294,7 +2294,7 @@ export default function MobileRoutineDetailPage() {
           {triggers.length === 0 ? (
             <EmptyGuideCard>
               <EmptyGuideIconCircle>
-                <Clock size={20} color="#94a3b8" />
+                <Clock size={20} color="var(--button-inactive)" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 <EmptyGuideTitle>설정된 실행 조건이 없어요</EmptyGuideTitle>
@@ -2350,7 +2350,7 @@ export default function MobileRoutineDetailPage() {
                     onClick={(e) => handleRemoveTrigger(trig.id, e)}
                     title="조건 삭제"
                   >
-                    <Minus size={18} color="#ef4444" strokeWidth={3} />
+                    <Minus size={18} color="var(--text-error)" strokeWidth={3} />
                   </MinusButton>
                 )}
               </OneUiCard>
@@ -2360,7 +2360,7 @@ export default function MobileRoutineDetailPage() {
           {isEditing && !isSystemRoutine && (
             <AddConditionCard onClick={() => setIsTriggerSelectModalOpen(true)}>
               <Ripple color="rgba(16, 185, 129, 0.12)" />
-              <Plus size={18} color="#10b981" strokeWidth={2.5} />
+              <Plus size={18} color="var(--text-success)" strokeWidth={2.5} />
               <span>조건 추가</span>
             </AddConditionCard>
           )}
@@ -2375,7 +2375,7 @@ export default function MobileRoutineDetailPage() {
           {actions.length === 0 ? (
             <EmptyGuideCard>
               <EmptyGuideIconCircle>
-                <Bell size={20} color="#94a3b8" />
+                <Bell size={20} color="var(--button-inactive)" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 {triggers.length === 0 ? (
@@ -2416,7 +2416,7 @@ export default function MobileRoutineDetailPage() {
                     onClick={(e) => handleRemoveAction(act.id, e)}
                     title="동작 삭제"
                   >
-                    <Minus size={18} color="#ef4444" strokeWidth={3} />
+                    <Minus size={18} color="var(--text-error)" strokeWidth={3} />
                   </MinusButton>
                 )}
               </OneUiCard>
@@ -2434,7 +2434,7 @@ export default function MobileRoutineDetailPage() {
               }}
             >
               <Ripple color="rgba(59, 130, 246, 0.12)" />
-              <Plus size={18} color="#3b82f6" strokeWidth={2.5} />
+              <Plus size={18} color="var(--primary)" strokeWidth={2.5} />
               <span>동작 추가</span>
             </AddConditionCard>
           )}
@@ -2465,26 +2465,26 @@ export default function MobileRoutineDetailPage() {
         <FloatingActionPill>
           <PillActionButton onClick={() => setIsEditing(true)}>
             <Ripple color="rgba(0, 0, 0, 0.08)" />
-            <Pencil size={20} color="#111827" />
+            <Pencil size={20} color="var(--text-primary)" />
             <span>편집</span>
           </PillActionButton>
 
           <PillActionButton onClick={handleTestDispatch} disabled={isTesting}>
             <Ripple color="rgba(0, 0, 0, 0.08)" />
-            <Send size={20} color={isTesting ? "#9ca3af" : "#111827"} />
+            <Send size={20} color={isTesting ? "var(--gray-400)" : "var(--text-primary)"} />
             <span>{isTesting ? "발송 중" : "테스트"}</span>
           </PillActionButton>
 
           {isSystemRoutine ? null : reminder ? (
             <PillActionButton onClick={() => setIsDeleteModalOpen(true)}>
               <Ripple color="rgba(239, 68, 68, 0.12)" />
-              <Trash2 size={20} color="#ef4444" />
+              <Trash2 size={20} color="var(--text-error)" />
               <span style={{ color: "var(--text-error)" }}>삭제</span>
             </PillActionButton>
           ) : preset ? (
             <PillActionButton onClick={handleSavePresetDirect}>
               <Ripple color="rgba(0, 0, 0, 0.08)" />
-              <Download size={20} color="#111827" />
+              <Download size={20} color="var(--text-primary)" />
               <span>저장</span>
             </PillActionButton>
           ) : null}
@@ -2533,7 +2533,7 @@ export default function MobileRoutineDetailPage() {
                       <ModalOptionDesc>{item.description}</ModalOptionDesc>
                     </ModalOptionTextGroup>
                   </OptionIconTextRow>
-                  <Plus size={18} color="#94a3b8" strokeWidth={2} />
+                  <Plus size={18} color="var(--button-inactive)" strokeWidth={2} />
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2662,7 +2662,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempBeforeFirstClassMinutes === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempBeforeFirstClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempBeforeFirstClassMinutes === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2699,7 +2699,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempBeforeClassMinutes === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempBeforeClassMinutes === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempBeforeClassMinutes === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2736,7 +2736,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempAfterLastClassOffset === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempAfterLastClassOffset === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempAfterLastClassOffset === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2773,7 +2773,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempLongBreakMinGap === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempLongBreakMinGap === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempLongBreakMinGap === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2884,7 +2884,7 @@ export default function MobileRoutineDetailPage() {
                         <ModalOptionDesc>{action.description}</ModalOptionDesc>
                       </ModalOptionTextGroup>
                     </OptionIconTextRow>
-                    <Plus size={18} color="#94a3b8" strokeWidth={2} />
+                    <Plus size={18} color="var(--button-inactive)" strokeWidth={2} />
                   </ModalGroupRow>
                 </React.Fragment>
               ))}
@@ -2916,7 +2916,7 @@ export default function MobileRoutineDetailPage() {
         <DeptModalWrapper>
           <ModalSectionLabel>대상 학과 선택 (단일 선택)</ModalSectionLabel>
           <SearchInputWrapper>
-            <Search size={16} color="#94a3b8" />
+            <Search size={16} color="var(--button-inactive)" />
             <SearchInput
               type="text"
               placeholder="학과 이름 검색 (예: 컴퓨터, 경영, 전자)"
@@ -2956,7 +2956,7 @@ export default function MobileRoutineDetailPage() {
                   >
                     <Ripple color="rgba(37, 99, 235, 0.1)" />
                     <CustomCheckCircle $checked={isSelected}>
-                      {isSelected && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
+                      {isSelected && <Check size={12} color="var(--text-inverse)" strokeWidth={3.5} />}
                     </CustomCheckCircle>
                     <DeptNameText $checked={isSelected}>
                       {dept.name}
@@ -3049,7 +3049,7 @@ export default function MobileRoutineDetailPage() {
                       }
                     }}
                   >
-                    <X size={13} color="#64748b" />
+                    <X size={13} color="var(--gray-500)" />
                   </ChipDeleteBtn>
                 </KeywordChip>
               ))}
@@ -3091,7 +3091,7 @@ export default function MobileRoutineDetailPage() {
                 >
                   <Ripple color="rgba(37, 99, 235, 0.1)" />
                   <CustomCheckCircle $checked={isSub}>
-                    {isSub && <Check size={12} color="#ffffff" strokeWidth={3.5} />}
+                    {isSub && <Check size={12} color="var(--text-inverse)" strokeWidth={3.5} />}
                   </CustomCheckCircle>
                   <CheckboxLabel $checked={isSub}>{cat}</CheckboxLabel>
                 </CheckboxCard>
@@ -3174,7 +3174,7 @@ export default function MobileRoutineDetailPage() {
                       }
                     }}
                   >
-                    <X size={13} color="#64748b" />
+                    <X size={13} color="var(--gray-500)" />
                   </ChipDeleteBtn>
                 </KeywordChip>
               ))}
@@ -3210,7 +3210,7 @@ export default function MobileRoutineDetailPage() {
                 >
                   <Ripple color="rgba(0, 0, 0, 0.04)" />
                   <ModalOptionText $selected={tempBusStop === opt.value}>{opt.label}</ModalOptionText>
-                  {tempBusStop === opt.value && <Check size={18} color="#2563eb" strokeWidth={3} />}
+                  {tempBusStop === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -3312,7 +3312,7 @@ export default function MobileRoutineDetailPage() {
                   title={c.label}
                 >
                   <Ripple color="rgba(255, 255, 255, 0.3)" />
-                  {isSelected && <Check size={16} color="#ffffff" strokeWidth={3} />}
+                  {isSelected && <Check size={16} color="var(--text-inverse)" strokeWidth={3} />}
                 </ColorSelectButton>
               );
             })}
@@ -3332,7 +3332,7 @@ export default function MobileRoutineDetailPage() {
                 >
                   <Ripple color="rgba(37, 99, 235, 0.1)" />
                   <IconCirclePreview $selected={isSelected} $bgColor={tempColor}>
-                    {renderRoutineIcon(item.id, 22, isSelected ? "#ffffff" : "#475569")}
+                    {renderRoutineIcon(item.id, 22, isSelected ? "var(--text-inverse)" : "var(--gray-600)")}
                   </IconCirclePreview>
                   <IconGridLabel $selected={isSelected}>{item.label}</IconGridLabel>
                 </IconGridItem>
@@ -3488,7 +3488,7 @@ const UnderlineInputWrapper = styled.div`
 const UnderlineInput = styled.input`
   width: 100%;
   border: none;
-  border-bottom: 2px solid #111827;
+  border-bottom: 2px solid var(--text-primary);
   padding: 8px 0;
   font-size: 18px;
   font-weight: 700;
@@ -3562,7 +3562,7 @@ const CardMainText = styled.div`
 const CardBlueText = styled.div`
   font-size: 13.5px;
   font-weight: 600;
-  color: #2d79f3;
+  color: rgb(45, 121, 243);
   line-height: 1.35;
   white-space: pre-line;
 `;
@@ -3596,13 +3596,13 @@ const AddConditionCard = styled.button`
   overflow: hidden;
   font-size: 14.5px;
   font-weight: 700;
-  color: #10b981;
+  color: var(--text-success);
   width: 100%;
   box-sizing: border-box;
 
   &:hover {
     border-color: var(--border-success);
-    background: #f0fdf4;
+    background: rgb(240, 253, 244);
   }
 `;
 
@@ -3658,7 +3658,7 @@ const InlineSelect = styled.select`
   box-sizing: border-box;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: var(--primary);
     background-color: var(--bg-base);
   }
 `;
@@ -3979,7 +3979,7 @@ const CustomCheckCircle = styled.div<{ $checked?: boolean }>`
 const CheckboxLabel = styled.span<{ $checked?: boolean }>`
   font-size: 13.5px;
   font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
-  color: ${({ $checked }) => ($checked ? "#1e40af" : "var(--text-secondary)")};
+  color: ${({ $checked }) => ($checked ? "rgb(30, 64, 175)" : "var(--text-secondary)")};
 `;
 
 const DeptModalWrapper = styled.div`
@@ -4034,7 +4034,7 @@ const DeptListItem = styled.div<{ $checked?: boolean }>`
 const DeptNameText = styled.span<{ $checked?: boolean }>`
   font-size: 14px;
   font-weight: ${({ $checked }) => ($checked ? 700 : 500)};
-  color: ${({ $checked }) => ($checked ? "#1e40af" : "var(--text-primary)")};
+  color: ${({ $checked }) => ($checked ? "rgb(30, 64, 175)" : "var(--text-primary)")};
   display: flex;
   align-items: center;
   gap: 6px;
@@ -4043,9 +4043,9 @@ const DeptNameText = styled.span<{ $checked?: boolean }>`
 const MyMajorBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #ff7a00;
+  color: rgb(255, 122, 0);
   background: var(--bg-warn);
-  border: 1px solid #ffedd5;
+  border: 1px solid rgb(255, 237, 213);
   padding: 2px 6px;
   border-radius: 6px;
 `;
@@ -4110,7 +4110,7 @@ const ColorSelectButton = styled.button<{ $color: string; $selected: boolean }>`
   height: 34px;
   border-radius: 50%;
   background: ${({ $color }) => $color};
-  border: 2px solid ${({ $selected }) => ($selected ? "#111827" : "transparent")};
+  border: 2px solid ${({ $selected }) => ($selected ? "var(--text-primary)" : "transparent")};
   cursor: pointer;
   display: flex;
   align-items: center;

@@ -64,7 +64,7 @@ export const LmsAccountModal: React.FC<Props> = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <Header>
           <TitleRow>
-            <GraduationCap size={20} color="#00a651" />
+            <GraduationCap size={20} color="var(--text-success)" />
             <Title>이러닝(LMS) 계정 연동</Title>
           </TitleRow>
           <CloseButton onClick={onClose} type="button">
@@ -80,7 +80,7 @@ export const LmsAccountModal: React.FC<Props> = ({
           <InputGroup>
             <Label>LMS 사용자 아이디 (학번)</Label>
             <InputWrap>
-              <User size={16} color="#8b95a1" />
+              <User size={16} color="var(--text-tertiary)" />
               <Input
                 type="text"
                 placeholder="예: 202001518"
@@ -95,7 +95,7 @@ export const LmsAccountModal: React.FC<Props> = ({
           <InputGroup>
             <Label>LMS 비밀번호</Label>
             <InputWrap>
-              <Lock size={16} color="#8b95a1" />
+              <Lock size={16} color="var(--text-tertiary)" />
               <Input
                 type="password"
                 placeholder="이러닝 비밀번호 (포털 비밀번호)"
@@ -172,12 +172,12 @@ const Form = styled.form`
 `;
 
 const NoticeBox = styled.div`
-  background: #eefaf3;
-  border: 1px solid #c9eed7;
+  background: rgb(238, 250, 243);
+  border: 1px solid rgb(201, 238, 215);
   border-radius: 12px;
   padding: 12px;
   font-size: 12px;
-  color: #008744;
+  color: var(--text-success);
   line-height: 1.5;
 `;
 
@@ -221,7 +221,7 @@ const ErrorText = styled.span`
 const SubmitButton = styled.button`
   width: 100%;
   padding: 12px 0;
-  background: #00a651;
+  background: var(--text-success);
   color: var(--text-inverse);
   border: none;
   border-radius: 12px;
@@ -232,7 +232,7 @@ const SubmitButton = styled.button`
   transition: background 0.2s;
 
   &:disabled {
-    background: #99dbb9;
+    background: rgb(153, 219, 185);
     cursor: not-allowed;
   }
 `;

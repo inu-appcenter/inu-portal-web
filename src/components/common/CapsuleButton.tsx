@@ -116,7 +116,7 @@ const StyledButton = styled.button<{
   padding: 12px 24px;
   justify-content: center;
   align-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid transparent;
   outline: none;
   cursor: pointer;
@@ -126,12 +126,12 @@ const StyledButton = styled.button<{
 
   box-shadow: var(--elevation-1-shadow);
 
-  font-family: Pretendard;
+  font-family: inherit;
   text-align: center;
-  font-size: 20px;
+  font-size: var(--heading-1-font-size);
   font-style: normal;
-  font-weight: 600;
-  line-height: 32px; /* 160% */
+  font-weight: var(--heading-1-font-weight);
+  line-height: var(--heading-1-line-height);
 
   ${({ $variant }) => getVariantStyles($variant)}
 

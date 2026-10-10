@@ -41,7 +41,7 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
     const polyline = new window.kakao.maps.Polyline({
       path: linePath,
       strokeWeight: 4,
-      strokeColor: "#3E69D1",
+      strokeColor: "rgb(62, 105, 209)",
       strokeOpacity: 0.9,
       strokeStyle: "solid",
     });

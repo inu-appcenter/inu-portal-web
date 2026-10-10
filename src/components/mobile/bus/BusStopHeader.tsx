@@ -70,7 +70,7 @@ const StopName = styled.span`
 
 const Notice = styled.p`
   font-size: 13px;
-  color: #3b566e;
+  color: var(--text-secondary);
   white-space: pre-wrap;
   margin: 0;
   line-height: 1.4;

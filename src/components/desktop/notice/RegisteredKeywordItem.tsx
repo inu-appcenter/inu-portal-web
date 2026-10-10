@@ -16,14 +16,14 @@ const RegisteredKeywordItem = ({
     <RegisteredKeywordItemWrapper>
       <KeywordRow>
         {isExcluded && <ExcludeBadge>제외</ExcludeBadge>}
-        <span className="keyword" style={{ color: isExcluded ? "#b91c1c" : "var(--text-secondary)" }}>
+        <span className="keyword" style={{ color: isExcluded ? "var(--text-error)" : "var(--text-secondary)" }}>
           {keyword}
         </span>
       </KeywordRow>
       <FiTrash2
         size={18}
         onClick={onDelete}
-        color={"#888"}
+        color={"var(--gray-500)"}
         style={{ cursor: "pointer", flexShrink: 0 }}
       />
     </RegisteredKeywordItemWrapper>
@@ -62,7 +62,7 @@ const ExcludeBadge = styled.span`
   padding: 2px 7px;
   background-color: var(--bg-error);
   color: var(--text-error);
-  border: 1px solid #fca5a5;
+  border: 1px solid var(--border-error-subtle);
   border-radius: 9999px;
   font-size: 11.5px;
   font-weight: 700;

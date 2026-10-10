@@ -383,12 +383,12 @@ const SectionTop = styled.div`
     margin: 0;
     font-size: 18px;
     font-weight: 800;
-    color: #1e355a;
+    color: var(--text-primary);
   }
 
   p {
     margin: 6px 0 0;
-    color: #6980a1;
+    color: var(--text-tertiary);
     font-size: 13px;
     line-height: 1.55;
   }
@@ -403,7 +403,7 @@ const Counter = styled.span`
   padding: 0 10px;
   border-radius: 999px;
   background: var(--bg-brand);
-  color: #4274c4;
+  color: var(--text-brand);
   font-size: 12px;
   font-weight: 800;
 `;
@@ -413,11 +413,11 @@ const StyledInput = styled.input`
   padding: 15px 16px;
   box-sizing: border-box;
   border-radius: 16px;
-  color: #21324c;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   background: var(--bg-subtle);
-  border: 1px solid #dce8f6;
+  border: 1px solid var(--border-brand-subtle);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -435,7 +435,7 @@ const StyledInput = styled.input`
   }
 
   &[readonly] {
-    color: #51657f;
+    color: var(--text-secondary);
     cursor: pointer;
   }
 `;
@@ -445,11 +445,11 @@ const DepartmentSelect = styled.select`
   padding: 15px 44px 15px 16px;
   box-sizing: border-box;
   border-radius: 16px;
-  color: #21324c;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
   background: var(--bg-subtle);
-  border: 1px solid #dce8f6;
+  border: 1px solid var(--border-brand-subtle);
   cursor: pointer;
 
   &:focus {
@@ -471,7 +471,7 @@ const PreviewCard = styled.div`
   gap: 14px;
   padding: 14px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #eef5ff 0%, #f7fbff 100%);
+  background: linear-gradient(135deg, var(--bg-brand) 0%, var(--bg-subtle) 100%);
   border: 1px solid rgba(211, 225, 243, 0.95);
 `;
 
@@ -498,14 +498,14 @@ const PreviewText = styled.div`
   gap: 6px;
 
   strong {
-    color: #1e355a;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 800;
     word-break: break-all;
   }
 
   span {
-    color: #6e84a1;
+    color: var(--text-tertiary);
     font-size: 13px;
     line-height: 1.45;
     word-break: break-word;
@@ -551,7 +551,7 @@ const ImageOption = styled.button<{ $selected: boolean }>`
     width: 100%;
     height: 100%;
     border: 3px solid
-      ${({ $selected }) => ($selected ? "#7ea9f3" : "transparent")};
+      ${({ $selected }) => ($selected ? "var(--border-brand)" : "transparent")};
     border-radius: 50%;
     display: block;
     object-fit: cover;
@@ -587,7 +587,7 @@ const SubmitArea = styled.div`
 
 const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   box-sizing: border-box;
-  background: linear-gradient(135deg, #5e92f0 0%, #4a7fd0 100%);
+  background: linear-gradient(135deg, var(--blue-400) 0%, var(--interactive-primary) 100%);
   color: var(--text-inverse);
   padding: 14px 18px;
   border-radius: 16px;

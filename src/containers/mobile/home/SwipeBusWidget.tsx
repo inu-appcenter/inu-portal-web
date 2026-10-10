@@ -488,7 +488,7 @@ const WidgetContainer = styled.div`
   border-radius: 20px;
 
   /* 그림자는 overflow가 없는 WidgetContainer 구역에 단독 상시 적용하여 잘림 차단 */
-  box-shadow: 0px 4px 24px 0px #3B82F63D;
+  box-shadow: 0px 4px 24px 0px rgba(59, 130, 246, 0.24);
 
 
   will-change: transform;

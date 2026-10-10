@@ -65,7 +65,7 @@ const AiPageWrapper = styled.div`
 
 const AiContents = styled.div`
   min-height: 75vh;
-  background: linear-gradient(90deg, #6084d7 0%, #c294eb 100%);
+  background: linear-gradient(90deg, rgb(96, 132, 215) 0%, rgb(194, 148, 235) 100%);
   border-radius: 12px;
   //margin: 32px 16px;
   padding: 48px 32px;
@@ -86,7 +86,7 @@ const Info = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #6d4dc7;
+  background: rgb(109, 77, 199);
   color: var(--text-inverse);
   font-weight: 600;
   font-size: 16px;
@@ -96,7 +96,7 @@ const Info = styled.div`
   transition: all 0.3s ease;
 
   &:hover {
-    background: linear-gradient(90deg, #5060b0, #a57fd9);
+    background: linear-gradient(90deg, rgb(80, 96, 176), rgb(165, 127, 217));
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
   }
@@ -122,7 +122,7 @@ const Modal = styled.div`
   flex-direction: column;
   gap: 32px;
   box-sizing: border-box;
-  background: linear-gradient(90deg, #6084d7 0%, #c294eb 100%);
+  background: linear-gradient(90deg, rgb(96, 132, 215) 0%, rgb(194, 148, 235) 100%);
   padding: 32px 12px;
   border-radius: 16px;
   width: 95%;

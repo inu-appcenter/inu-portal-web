@@ -59,7 +59,7 @@ const CaretDownIcon = () => (
   >
     <path
       d="M6 9L12 15L18 9"
-      stroke="#333D4B"
+      stroke="var(--gray-800)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,7 +77,7 @@ const UsersIcon = () => (
   >
     <path
       d="M31.5 29.9999C31.5 27.3875 28.9956 25.165 25.5 24.3413M22.5 30C22.5 26.6863 18.4706 24 13.5 24C8.52944 24 4.5 26.6863 4.5 30M22.5 19.5C25.8137 19.5 28.5 16.8137 28.5 13.5C28.5 10.1863 25.8137 7.5 22.5 7.5M13.5 19.5C10.1863 19.5 7.5 16.8137 7.5 13.5C7.5 10.1863 10.1863 7.5 13.5 7.5C16.8137 7.5 19.5 10.1863 19.5 13.5C19.5 16.8137 16.8137 19.5 13.5 19.5Z"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -95,7 +95,7 @@ const CalculatorIcon = () => (
   >
     <path
       d="M6.80128 29.8209L29.1989 7.42331M10.5342 16.1335V11.1562M10.5342 11.1562V6.179M10.5342 11.1562H5.55697M10.5342 11.1562H15.5115M20.4887 27.3323H30.4432"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -295,10 +295,10 @@ const MobileTimeTablePage = () => {
             navigate(`${ROUTES.TIMETABLE.EDIT}?id=${activeTimetable.id}`)
           }
         >
-          <Pencil size={22} color="#1C1C1E" />
+          <Pencil size={22} color="var(--text-primary)" />
         </IconButton>
         <IconButton onClick={() => setIsMenuSheetOpen(true)}>
-          <MoreVertical size={22} color="#1C1C1E" />
+          <MoreVertical size={22} color="var(--text-primary)" />
         </IconButton>
       </HeaderRightArea>
     );
@@ -382,7 +382,7 @@ const MobileTimeTablePage = () => {
       },
       {
         label: "시간표 삭제",
-        icon: <Trash2 size={20} color="#FF3B30" />,
+        icon: <Trash2 size={20} color="var(--text-error)" />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("시간표 삭제", "헤더 메뉴");
           setIsDeleteModalOpen(true);
@@ -1033,7 +1033,7 @@ const ImageImportPrompt = styled.div`
   margin-bottom: 12px;
   padding: 16px;
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--bg-brand);
 `;
 
@@ -1043,11 +1043,11 @@ const ImageImportPromptText = styled.div`
   flex-direction: column;
   gap: 4px;
   color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
 
   span {
-    color: var(--gray-600);
+    color: var(--text-tertiary);
     font-size: 13px;
     word-break: keep-all;
   }
@@ -1087,7 +1087,7 @@ const EmptyActionGroup = styled.div`
    움직이므로 이 화면에서만 덮어쓴다. */
 const EmptyActionButton = styled(CapsuleButton)`
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: var(--heading-2-font-size);
   line-height: 1.4;
 `;
 
@@ -1124,20 +1124,20 @@ const NoTimetableTextGroup = styled.div`
 `;
 
 const NoTimetableTitle = styled.h3`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 32px;
+  font-family: inherit;
+  font-weight: var(--heading-1-font-weight);
+  font-size: var(--heading-1-font-size);
+  line-height: var(--heading-1-line-height);
   color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
 
 const NoTimetableDescription = styled.p`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
+  font-family: inherit;
+  font-weight: var(--body-2-font-weight);
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
   color: var(--text-secondary);
   margin: 0;
   text-align: center;

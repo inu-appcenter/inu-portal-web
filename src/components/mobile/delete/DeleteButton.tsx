@@ -83,7 +83,7 @@ const UserCancelButton = styled.button`
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #0e4d9d;
+  color: var(--interactive-primary);
   border-radius: 10px;
   box-sizing: border-box;
 `;
@@ -95,7 +95,7 @@ const UserDeleteButton = styled.button`
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #df5532;
+  color: var(--text-error);
   border-radius: 10px;
   box-sizing: border-box;
 `;
@@ -139,7 +139,7 @@ const CancelButton = styled.button`
 `;
 
 const ConfirmButton = styled.button`
-  background-color: #df5532;
+  background-color: var(--text-error);
   border: none;
   padding: 10px 20px;
   cursor: pointer;

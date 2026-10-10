@@ -28,7 +28,7 @@ export default function ChatPlusMenu({
           }}
           onMouseDown={(e) => e.preventDefault()}
         >
-          <IconCircle $bg="#FFF4ED">
+          <IconCircle $bg="rgb(255, 244, 237)">
             <img src={TorchAiLogo} alt="챗불이" width={22} height={22} />
           </IconCircle>
           <ItemLabel>챗불이에게 질문</ItemLabel>
@@ -41,7 +41,7 @@ export default function ChatPlusMenu({
           }}
           onMouseDown={(e) => e.preventDefault()}
         >
-          <IconCircle $bg="#F0F4FF">
+          <IconCircle $bg="var(--bg-brand)">
             <Icon name="image" size={20} color="var(--interactive-primary)" />
           </IconCircle>
           <ItemLabel>사진 보내기</ItemLabel>

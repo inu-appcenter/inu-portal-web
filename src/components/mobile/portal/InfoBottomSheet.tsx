@@ -116,7 +116,7 @@ const IconWrapper = styled.div`
   height: 52px;
   border-radius: 999px;
   background: var(--bg-brand);
-  color: #2f6fec;
+  color: var(--interactive-primary);
   display: flex;
   align-items: center;
   justify-content: center;

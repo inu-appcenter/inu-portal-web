@@ -20,14 +20,14 @@ interface RouletteWheelProps {
 }
 
 const WHEEL_COLORS = [
-  "#3B82F6", // 블루
-  "#F97316", // 오렌지
-  "#10B981", // 에메랄드 그린
-  "#EC4899", // 핑크
-  "#8B5CF6", // 바이올렛
-  "#F59E0B", // 앰버
-  "#06B6D4", // 시안
-  "#6366F1", // 인디고
+  "rgb(59, 130, 246)", // 블루
+  "rgb(249, 115, 22)", // 오렌지
+  "rgb(16, 185, 129)", // 에메랄드 그린
+  "rgb(236, 72, 153)", // 핑크
+  "rgb(139, 92, 246)", // 바이올렛
+  "rgb(245, 158, 11)", // 앰버
+  "rgb(6, 182, 212)", // 시안
+  "rgb(99, 102, 241)", // 인디고
 ];
 
 const formatWheelText = (name: string): string[] => {
@@ -202,8 +202,8 @@ const RouletteWheel = forwardRef<RouletteWheelHandle, RouletteWheelProps>(
                   cx={WHEEL_SIZE / 2}
                   cy={WHEEL_SIZE / 2}
                   r={WHEEL_SIZE / 2 - 4}
-                  fill="#f1f5f9"
-                  stroke="#ffffff"
+                  fill="var(--bg-subtle)"
+                  stroke="var(--bg-base)"
                   strokeWidth="1.5"
                 />
               )}
@@ -215,14 +215,14 @@ const RouletteWheel = forwardRef<RouletteWheelHandle, RouletteWheelProps>(
                       cy={WHEEL_SIZE / 2}
                       r={WHEEL_SIZE / 2 - 4}
                       fill={slice.color}
-                      stroke="#ffffff"
+                      stroke="var(--bg-base)"
                       strokeWidth="1.5"
                     />
                   ) : (
                     <path
                       d={slice.pathData}
                       fill={slice.color}
-                      stroke="#ffffff"
+                      stroke="var(--bg-base)"
                       strokeWidth="1.5"
                     />
                   )}
@@ -259,7 +259,7 @@ const RouletteWheel = forwardRef<RouletteWheelHandle, RouletteWheelProps>(
                 cx={WHEEL_SIZE / 2}
                 cy={WHEEL_SIZE / 2}
                 r="14"
-                fill="#ffffff"
+                fill="var(--bg-base)"
                 filter="drop-shadow(0 1px 3px rgba(0,0,0,0.15))"
               />
               <circle
@@ -347,7 +347,7 @@ const StyledSvg = styled.svg<{ $rotation: number; $isSpinning: boolean }>`
 `;
 
 const ItemText = styled.text<{ $isMultiLine?: boolean; $itemCount: number }>`
-  fill: #ffffff;
+  fill: var(--text-inverse);
   font-size: ${({ $itemCount, $isMultiLine }) =>
     $itemCount >= 9
       ? $isMultiLine

@@ -40,50 +40,50 @@ const DOMAIN_LIST: DomainItem[] = [
     id: "notices",
     name: "학교 공지사항",
     description: "학사, 장학, 채용 등 학교 전체 공지 데이터",
-    icon: (size) => <FileText size={size} color="#fff" />,
-    color: "#0284c7",
+    icon: (size) => <FileText size={size} color="var(--text-inverse)" />,
+    color: "rgb(2, 132, 199)",
   },
   {
     id: "dept-notices",
     name: "학과 공지사항",
     description: "단과대 및 각 학과별 맞춤 공지 데이터",
-    icon: (size) => <Building2 size={size} color="#fff" />,
+    icon: (size) => <Building2 size={size} color="var(--text-inverse)" />,
     color: "var(--text-brand)",
   },
   {
     id: "posts",
     name: "정보나눔 / 게시글",
     description: "학생 커뮤니티 꿀팁 및 질문/답변 게시글",
-    icon: (size) => <MessageSquare size={size} color="#fff" />,
-    color: "#8b5cf6",
+    icon: (size) => <MessageSquare size={size} color="var(--text-inverse)" />,
+    color: "rgb(139, 92, 246)",
   },
   {
     id: "schedules",
     name: "학사일정",
     description: "수강신청, 시험, 개강/종강 등 연간 학사 일정",
-    icon: (size) => <Calendar size={size} color="#fff" />,
-    color: "#10b981",
+    icon: (size) => <Calendar size={size} color="var(--text-inverse)" />,
+    color: "var(--text-success)",
   },
   {
     id: "directory",
     name: "교내 전화번호부",
     description: "교수 연구실, 행정부서, 학과 사무실 연락처",
-    icon: (size) => <Phone size={size} color="#fff" />,
-    color: "#f59e0b",
+    icon: (size) => <Phone size={size} color="var(--text-inverse)" />,
+    color: "var(--state-warning)",
   },
   {
     id: "courses",
     name: "개설 강의",
     description: "학기별 개설 강의 목록 및 수업계획서 정보",
-    icon: (size) => <BookOpen size={size} color="#fff" />,
-    color: "#ec4899",
+    icon: (size) => <BookOpen size={size} color="var(--text-inverse)" />,
+    color: "rgb(236, 72, 153)",
   },
   {
     id: "clubs",
     name: "동아리",
     description: "중앙동아리 및 학과 소모임 정보",
-    icon: (size) => <Users size={size} color="#fff" />,
-    color: "#06b6d4",
+    icon: (size) => <Users size={size} color="var(--text-inverse)" />,
+    color: "rgb(6, 182, 212)",
   },
 ];
 
@@ -218,7 +218,7 @@ export default function MobileAdminSearchPage() {
         {/* 설명 안내 배너 */}
         <NoticeBanner>
           <BannerIconWrapper>
-            <Database size={24} color="#0284c7" />
+            <Database size={24} color="rgb(2, 132, 199)" />
           </BannerIconWrapper>
           <BannerTextContent>
             <BannerTitle>검색 엔진(Elasticsearch) 색인 관리</BannerTitle>
@@ -234,8 +234,8 @@ export default function MobileAdminSearchPage() {
         {/* 전체 재색인 섹션 */}
         <SectionCard>
           <SectionHeader>
-            <SectionIconBox $color="#0284c7">
-              <Layers size={22} color="#fff" />
+            <SectionIconBox $color="rgb(2, 132, 199)">
+              <Layers size={22} color="var(--text-inverse)" />
             </SectionIconBox>
             <div>
               <SectionTitle>전체 데이터 재색인</SectionTitle>
@@ -252,7 +252,7 @@ export default function MobileAdminSearchPage() {
               </OptionLabel>
               <OptionHelp>
                 {recreate ? (
-                  <span style={{ color: "#0369a1" }}>
+                  <span style={{ color: "rgb(3, 105, 161)" }}>
                     ⚠️ 기존 7개 인덱스를 삭제하고 최신 `settings.json` 설정으로 재생성합니다. 형태소/동의어 업데이트 시 필수입니다.
                   </span>
                 ) : (
@@ -282,8 +282,8 @@ export default function MobileAdminSearchPage() {
         {/* 도메인별 개별 재색인 섹션 */}
         <SectionCard>
           <SectionHeader>
-            <SectionIconBox $color="#4f46e5">
-              <Database size={22} color="#fff" />
+            <SectionIconBox $color="rgb(79, 70, 229)">
+              <Database size={22} color="var(--text-inverse)" />
             </SectionIconBox>
             <div>
               <SectionTitle>도메인별 개별 재색인</SectionTitle>
@@ -320,8 +320,8 @@ export default function MobileAdminSearchPage() {
         {/* 최근 실행 기록 */}
         <SectionCard>
           <SectionHeader>
-            <SectionIconBox $color="#64748b">
-              <Clock size={22} color="#fff" />
+            <SectionIconBox $color="var(--gray-500)">
+              <Clock size={22} color="var(--text-inverse)" />
             </SectionIconBox>
             <div>
               <SectionTitle>최근 작업 결과</SectionTitle>
@@ -338,9 +338,9 @@ export default function MobileAdminSearchPage() {
                   <LogHeader>
                     <LogStatusGroup>
                       {log.success ? (
-                        <CheckCircle2 size={16} color="#10b981" />
+                        <CheckCircle2 size={16} color="var(--text-success)" />
                       ) : (
-                        <AlertTriangle size={16} color="#ef4444" />
+                        <AlertTriangle size={16} color="var(--text-error)" />
                       )}
                       <LogTargetText>{log.target}</LogTargetText>
                       <LogBadge $success={log.success}>
@@ -388,8 +388,8 @@ const Wrapper = styled.div`
 `;
 
 const NoticeBanner = styled.div`
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, rgb(240, 249, 255) 0%, rgb(224, 242, 254) 100%);
+  border: 1px solid rgb(186, 230, 253);
   border-radius: 16px;
   padding: 18px 20px;
   display: flex;
@@ -417,13 +417,13 @@ const BannerTitle = styled.h4`
   margin: 0 0 6px;
   font-size: 1rem;
   font-weight: 700;
-  color: #0369a1;
+  color: rgb(3, 105, 161);
 `;
 
 const BannerDesc = styled.p`
   margin: 0;
   font-size: 0.875rem;
-  color: #0c4a6e;
+  color: rgb(12, 74, 110);
   line-height: 1.5;
 `;
 
@@ -476,7 +476,7 @@ const OptionBox = styled.div<{ $active: boolean }>`
   padding: 16px 18px;
   border-radius: 14px;
   background-color: ${(props) => (props.$active ? "var(--bg-brand)" : "var(--bg-subtle)")};
-  border: 1px solid ${(props) => (props.$active ? "#7dd3fc" : "var(--border-default)")};
+  border: 1px solid ${(props) => (props.$active ? "rgb(125, 211, 252)" : "var(--border-default)")};
   transition: all 0.2s;
 `;
 
@@ -502,7 +502,7 @@ const Badge = styled.span<{ $active: boolean }>`
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-  background-color: ${(props) => (props.$active ? "#0284c7" : "#64748b")};
+  background-color: ${(props) => (props.$active ? "rgb(2, 132, 199)" : "var(--gray-500)")};
   color: var(--text-inverse);
 `;
 
@@ -529,12 +529,12 @@ const ActionButton = styled.button<{ $variant?: "primary" | "secondary" }>`
   ${(props) =>
     props.$variant === "primary"
       ? css`
-          background-color: #0284c7;
+          background-color: rgb(2, 132, 199);
           color: var(--text-inverse);
           box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 
           &:hover:not(:disabled) {
-            background-color: #0369a1;
+            background-color: rgb(3, 105, 161);
             transform: translateY(-1px);
           }
         `
@@ -645,7 +645,7 @@ const DomainButton = styled.button`
 
   &:hover:not(:disabled) {
     background-color: var(--bg-subtle);
-    border-color: #94a3b8;
+    border-color: var(--button-inactive);
     color: var(--text-primary);
   }
 
@@ -673,8 +673,8 @@ const LogList = styled.div`
 const LogItem = styled.div<{ $success: boolean }>`
   padding: 12px 16px;
   border-radius: 10px;
-  background-color: ${(props) => (props.$success ? "#f0fdf4" : "var(--bg-error)")};
-  border: 1px solid ${(props) => (props.$success ? "#bbf7d0" : "var(--border-error-subtle)")};
+  background-color: ${(props) => (props.$success ? "rgb(240, 253, 244)" : "var(--bg-error)")};
+  border: 1px solid ${(props) => (props.$success ? "rgb(187, 247, 208)" : "var(--border-error-subtle)")};
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -703,7 +703,7 @@ const LogBadge = styled.span<{ $success: boolean }>`
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 4px;
-  background-color: ${(props) => (props.$success ? "#10b981" : "var(--red-500)")};
+  background-color: ${(props) => (props.$success ? "var(--text-success)" : "var(--red-500)")};
   color: var(--text-inverse);
 `;
 

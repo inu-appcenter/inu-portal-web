@@ -262,7 +262,7 @@ export default function MobileUnifiedSearchPage() {
                       aria-label="삭제"
                       onClick={(e) => removeRecentKeyword(keyword, e)}
                     >
-                      <IoCloseCircle size={16} color="#9CA3AF" />
+                      <IoCloseCircle size={16} color="var(--gray-400)" />
                     </button>
                   </RecentKeywordChip>
                 ))}
@@ -488,7 +488,7 @@ export default function MobileUnifiedSearchPage() {
                                   <Ripple />
                                   <ScheduleRow>
                                     <ScheduleIconWrapper>
-                                      <IoCalendarOutline size={18} color="#2563EB" />
+                                      <IoCalendarOutline size={18} color="var(--primary)" />
                                     </ScheduleIconWrapper>
                                     <div>
                                       <ItemTitle>

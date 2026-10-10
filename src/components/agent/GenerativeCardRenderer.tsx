@@ -69,7 +69,7 @@ const WarningContent = styled.div`
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  color: #92400e;
+  color: var(--text-warn);
 `;
 
 const AppBadgeGroup = styled.div`
@@ -84,7 +84,7 @@ const AppDownloadButton = styled.a`
   gap: 6px;
   padding: 6px 12px;
   border-radius: 8px;
-  background: #0958d9;
+  background: var(--interactive-primary);
   color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
@@ -92,7 +92,7 @@ const AppDownloadButton = styled.a`
   transition: background 0.15s ease;
 
   &:hover {
-    background: #003eb3;
+    background: var(--blue-700);
   }
 `;
 
@@ -102,7 +102,7 @@ const ActionModalButton = styled.button`
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  background: #0958d9;
+  background: var(--interactive-primary);
   color: var(--text-inverse);
   font-size: 12px;
   font-weight: 600;
@@ -111,7 +111,7 @@ const ActionModalButton = styled.button`
   transition: background 0.15s ease;
 
   &:hover {
-    background: #003eb3;
+    background: var(--blue-700);
   }
 `;
 
@@ -169,21 +169,21 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
           return (
             <AuthWarningCard key={idx}>
               <CardHeader>
-                <CardTitle style={{ color: "#b45309" }}>
-                  <ShieldAlert size={16} color="#d97706" />
+                <CardTitle style={{ color: "var(--text-warn)" }}>
+                  <ShieldAlert size={16} color="var(--text-warn)" />
                   {inApp ? "포털 보안 계정 연동 필요" : "포털 보안 계정 연동 안내 (모바일 앱 전용)"}
                 </CardTitle>
-                <span style={{ fontSize: "11px", color: "#b45309" }}>Zero-Knowledge 보안</span>
+                <span style={{ fontSize: "11px", color: "var(--text-warn)" }}>Zero-Knowledge 보안</span>
               </CardHeader>
               <WarningContent>
-                <Smartphone size={28} color="#d97706" style={{ flexShrink: 0, marginTop: 2 }} />
+                <Smartphone size={28} color="var(--text-warn)" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
                   <div style={{ fontWeight: 500 }}>
                     {inApp
                       ? "학적 정보 및 실시간 학점 조회를 위해 포털 계정 연동이 필요합니다."
                       : "개인 학적·출결·LMS 연동은 모바일 환경에서만 지원됩니다."}
                   </div>
-                  <div style={{ fontSize: "12px", color: "#78350f", marginTop: "4px" }}>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>
                     {inApp
                       ? "학생의 비밀번호와 학적 데이터를 서버에 저장하지 않고, 기기 내 보안 저장소(SecureStorage)에 1회 안전하게 연동하여 실시간 학점과 학적을 조회합니다."
                       : "학생의 비밀번호와 학적 데이터를 서버에 저장하지 않는 보안(Zero-Knowledge) 원칙에 따라, 학교 시스템 실시간 조작은 INTIP 모바일 앱의 보안 영역에서 직접 수행됩니다."}
@@ -219,7 +219,7 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
             <CardBase key={idx}>
               <CardHeader>
                 <CardTitle>
-                  <BookOpen size={16} color="#0958d9" />
+                  <BookOpen size={16} color="var(--interactive-primary)" />
                   inuai 학사 지식베이스 출처 (Citations)
                 </CardTitle>
                 {component.link && (
@@ -244,7 +244,7 @@ export const GenerativeCardRenderer: React.FC<GenerativeCardRendererProps> = ({
                         {c.type === "LAW" ? "📜 " : "🔗 "}
                         {c.title || c.url}
                       </span>
-                      <ExternalLink size={12} color="#94a3b8" />
+                      <ExternalLink size={12} color="var(--text-disabled)" />
                     </CitationItem>
                   ))}
                 </CitationList>

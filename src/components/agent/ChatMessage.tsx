@@ -66,7 +66,7 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
   }};
 
   border: ${(props) => {
-    if (props.$isError) return "1px solid #ffa39e";
+    if (props.$isError) return "1px solid var(--border-error-subtle)";
     return "none";
   }};
 
@@ -95,7 +95,7 @@ const MessageBubble = styled.div<{ $isUser: boolean; $isError?: boolean }>`
   h4, h5, h6 { font-size: 1em; }
 
   a {
-    color: ${(props) => (props.$isUser ? "#ffd700" : COLORS.inuBlue)};
+    color: ${(props) => (props.$isUser ? "var(--branding-brand-yellow)" : COLORS.inuBlue)};
     text-decoration: underline;
     font-weight: 500;
     word-break: break-all;
@@ -403,7 +403,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             {!isUser && message.content && (
               <>
                 <ActionButton onClick={handleCopy} title="답변 복사">
-                  {copied ? <Check size={12} color="#52c41a" /> : <Copy size={12} />}
+                  {copied ? <Check size={12} color="var(--border-success)" /> : <Copy size={12} />}
                   {copied ? "복사됨" : "복사"}
                 </ActionButton>
 
@@ -426,7 +426,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     title="싫어요"
                     style={feedback === -1 ? { color: "var(--text-error)", fontWeight: 600 } : undefined}
                   >
-                    <ThumbsDown size={12} color={feedback === -1 ? "#ff4d4f" : undefined} />
+                    <ThumbsDown size={12} color={feedback === -1 ? "var(--text-error)" : undefined} />
                   </ActionButton>
                 </div>
               </>

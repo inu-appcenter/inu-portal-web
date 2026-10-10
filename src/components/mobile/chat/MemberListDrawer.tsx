@@ -157,7 +157,7 @@ export default function MemberListDrawer({
                   title="채팅방 이름 변경"
                   aria-label="채팅방 이름 변경"
                 >
-                  <Icon name="edit-pencil-01" size={20} color="#8B95A1" />
+                  <Icon name="edit-pencil-01" size={20} color="var(--gray-500)" />
                 </HeaderIconButton>
               )}
             </TitleCol>
@@ -166,7 +166,7 @@ export default function MemberListDrawer({
               title="닫기"
               aria-label="닫기"
             >
-              <Icon name="close-md" size={22} color="#333D4B" />
+              <Icon name="close-md" size={22} color="var(--text-primary)" />
             </HeaderIconButton>
           </PanelHeader>
 
@@ -184,7 +184,7 @@ export default function MemberListDrawer({
                     }}
                     title="초대하기"
                   >
-                    <Icon name="user-add" size={18} color="#0061FF" />
+                    <Icon name="user-add" size={18} color="var(--interactive-primary)" />
                     <span>초대하기</span>
                   </InvitationButton>
                 )}
@@ -222,7 +222,7 @@ export default function MemberListDrawer({
                         <AvatarWrapper>
                           {member.isOwner && (
                             <CrownBadge>
-                              <Crown size={14} color="#FFB800" fill="#FFB800" />
+                              <Crown size={14} color="rgb(255, 184, 0)" fill="rgb(255, 184, 0)" />
                             </CrownBadge>
                           )}
                           <AvatarImg
@@ -264,30 +264,30 @@ export default function MemberListDrawer({
             {/* 3. 공강 & 회의 시간 맞추기 카드 */}
             <FreeTimeContainer>
               <SyncSubCard
-                $bgColor="#eff6ff"
+                $bgColor="rgb(239, 246, 255)"
                 onClick={() => {
                   onOpenChange(false);
                   onFindFreeTime?.();
                 }}
               >
                 <SyncCardTitle>겹치는 공강 보기</SyncCardTitle>
-                <SyncCardAction $textColor="#0061ff">
+                <SyncCardAction $textColor="var(--interactive-primary)">
                   <span>채팅방에 공유하기</span>
-                  <Icon name="chevron-right-md" size={18} color="#0061FF" />
+                  <Icon name="chevron-right-md" size={18} color="var(--interactive-primary)" />
                 </SyncCardAction>
               </SyncSubCard>
 
               <SyncSubCard
-                $bgColor="#e9ffe4"
+                $bgColor="rgb(233, 255, 228)"
                 onClick={() => {
                   onOpenChange(false);
                   (onFindMeetingTime || onFindFreeTime)?.();
                 }}
               >
                 <SyncCardTitle>회의 시간 맞추기</SyncCardTitle>
-                <SyncCardAction $textColor="#22c55e">
+                <SyncCardAction $textColor="var(--text-success)">
                   <span>채팅방에 공유하기</span>
-                  <Icon name="chevron-right-md" size={18} color="#22C55E" />
+                  <Icon name="chevron-right-md" size={18} color="var(--text-success)" />
                 </SyncCardAction>
               </SyncSubCard>
             </FreeTimeContainer>

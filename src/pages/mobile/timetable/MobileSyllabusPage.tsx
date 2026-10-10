@@ -15,14 +15,14 @@ import type { SyllabusContent } from "@/types/syllabus";
 // 진행률 표(수업방식비율/기자재활용비율/성적평가비율) 세그먼트에 순서대로 돌려쓰는 색상.
 // 디자인 토큰에 없는 항목 수까지 대비해 고정 hex로 넉넉히 둔다.
 const RATIO_COLORS = [
-  "#0061ff",
-  "#ffc72c",
-  "#10b981",
-  "#f43f5e",
-  "#8b5cf6",
-  "#0ea5e9",
-  "#f97316",
-  "#64748b",
+  "var(--interactive-primary)",
+  "rgb(255, 199, 44)",
+  "var(--text-success)",
+  "rgb(244, 63, 94)",
+  "rgb(139, 92, 246)",
+  "rgb(14, 165, 233)",
+  "rgb(249, 115, 22)",
+  "var(--gray-500)",
 ];
 
 // 값이 0(혹은 null)인 항목은 표에서 굳이 강조할 필요가 없어 걸러낸다.

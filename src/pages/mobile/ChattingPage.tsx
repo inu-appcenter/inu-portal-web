@@ -307,7 +307,7 @@ export default function ChattingPage() {
           }}
           aria-label="채팅방 메뉴 열기"
         >
-          <Icon name="hamburger-md" size={24} color="#1C1C1E" />
+          <Icon name="hamburger-md" size={24} color="var(--text-primary)" />
         </IconButton>
       </HeaderRightArea>
     ),
@@ -931,7 +931,7 @@ export default function ChattingPage() {
       {showNewMessageBanner && (
         <NewMessageBanner onClick={handleScrollToBottom}>
           <span>새로운 메시지</span>
-          <ArrowDown size={14} color="#FFFFFF" strokeWidth={3} />
+          <ArrowDown size={14} color="var(--text-inverse)" strokeWidth={3} />
         </NewMessageBanner>
       )}
 
@@ -977,7 +977,7 @@ export default function ChattingPage() {
             onMouseDown={(e) => e.preventDefault()}
             aria-label="추가 기능 메뉴"
           >
-            <Icon name="add-plus-l" size={22} color="#0061FF" />
+            <Icon name="add-plus-l" size={22} color="var(--interactive-primary)" />
           </PlusIconButton>
 
           <InputContainer>
@@ -1030,7 +1030,7 @@ export default function ChattingPage() {
             }}
             aria-label="전송"
           >
-            <Icon name="paper-plane" size={20} color="#FFFFFF" />
+            <Icon name="paper-plane" size={20} color="var(--text-inverse)" />
           </SendButton>
         </FloatingInputBar>
       </FloatingInputContainer>
@@ -1207,7 +1207,7 @@ const ChatbuliGuideBanner = styled.div`
   left: 16px;
   margin-bottom: 8px;
   background: var(--bg-base);
-  border: 1px solid #ffd8bf;
+  border: 1px solid rgb(255, 216, 191);
   border-radius: 12px;
   padding: 6px 10px;
   display: inline-flex;
@@ -1234,13 +1234,13 @@ const ChatbuliGuideBanner = styled.div`
   .guide-text {
     font-size: 11.5px;
     font-weight: 500;
-    color: #7a3e14;
+    color: rgb(122, 62, 20);
     line-height: 1.35;
     word-break: keep-all;
 
     strong {
       font-weight: 700;
-      color: #d9480f;
+      color: rgb(217, 72, 15);
     }
   }
 
@@ -1265,7 +1265,7 @@ const BottomGradient = styled.div`
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 16.02%,
-    #f8f9fb 80.42%
+    rgb(248, 249, 251) 80.42%
   );
   pointer-events: none;
   z-index: 90;
@@ -1341,7 +1341,7 @@ const InputBadge = styled.div`
   align-items: center;
   gap: 3px;
   background: var(--bg-base);
-  border: 1px solid #ffd8bf;
+  border: 1px solid rgb(255, 216, 191);
   border-radius: 12px;
   padding: 0 6px;
   box-shadow: 0 1px 3px rgba(255, 107, 0, 0.12);
@@ -1357,7 +1357,7 @@ const InputBadge = styled.div`
   .badge-text {
     font-size: 11px;
     font-weight: 700;
-    color: #ff6b00;
+    color: rgb(255, 107, 0);
     line-height: 1;
     white-space: nowrap;
   }
@@ -1424,7 +1424,7 @@ const SendButton = styled.button`
     transform 0.15s ease;
 
   &:active {
-    background-color: #0050d4;
+    background-color: rgb(0, 80, 212);
     transform: scale(0.96);
   }
 `;
@@ -1620,13 +1620,13 @@ const BotQuestionTag = styled.div`
   align-items: center;
   gap: 4px;
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ffd8bf;
+  border: 1px solid rgb(255, 216, 191);
   border-radius: 10px;
   padding: 2px 7px 2px 5px;
   margin-bottom: 5px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #ff6b00;
+  color: rgb(255, 107, 0);
   width: fit-content;
   box-shadow: 0 1px 3px rgba(255, 107, 0, 0.08);
 
@@ -2017,7 +2017,7 @@ const NewMessageBanner = styled.div`
   animation: fadeIn 200ms ease-out forwards;
 
   &:active {
-    background-color: #4b81e0;
+    background-color: rgb(75, 129, 224);
   }
 `;
 

@@ -561,7 +561,7 @@ export default function MobilePortalTimetableImportPage() {
                     >
                       <Checkbox $checked={isChecked}>
                         {isChecked && (
-                          <Check size={14} color="#ffffff" strokeWidth={3} />
+                          <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
                         )}
                       </Checkbox>
                       <SemesterLabelText>{sem.label}</SemesterLabelText>
@@ -573,7 +573,7 @@ export default function MobilePortalTimetableImportPage() {
 
             {errorMessage && (
               <ErrorBox>
-                <AlertCircle size={16} color="#f04452" />
+                <AlertCircle size={16} color="var(--text-error)" />
                 <span>{errorMessage}</span>
               </ErrorBox>
             )}
@@ -668,7 +668,7 @@ export default function MobilePortalTimetableImportPage() {
 
             {errorMessage && (
               <ErrorBox>
-                <AlertCircle size={16} color="#f04452" />
+                <AlertCircle size={16} color="var(--text-error)" />
                 <span>{errorMessage}</span>
               </ErrorBox>
             )}
@@ -701,7 +701,7 @@ export default function MobilePortalTimetableImportPage() {
               </SummaryText>
               {emptySemesterLabels.length > 0 && (
                 <ExcludedNoticeBox>
-                  <Info size={15} color="#4e5968" />
+                  <Info size={15} color="var(--gray-600)" />
                   <span>
                     {emptySemesterLabels.join(", ")}은(는) 수강 내역이 없어 제외되었어요.
                   </span>
@@ -730,7 +730,7 @@ export default function MobilePortalTimetableImportPage() {
                         >
                           <Checkbox $checked={isGroupAllSelected}>
                             {isGroupAllSelected && (
-                              <Check size={14} color="#ffffff" strokeWidth={3} />
+                              <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
                             )}
                           </Checkbox>
                         </GroupCheckboxSlot>
@@ -742,9 +742,9 @@ export default function MobilePortalTimetableImportPage() {
 
                       <ExpandIconSlot>
                         {group.isExpanded ? (
-                          <ChevronUp size={18} color="#8b95a1" />
+                          <ChevronUp size={18} color="var(--gray-500)" />
                         ) : (
-                          <ChevronDown size={18} color="#8b95a1" />
+                          <ChevronDown size={18} color="var(--gray-500)" />
                         )}
                       </ExpandIconSlot>
                     </GroupHeaderRow>
@@ -767,7 +767,7 @@ export default function MobilePortalTimetableImportPage() {
                                 $disabled={item.isAlreadyAdded || !item.offering}
                               >
                                 {item.isSelected && (
-                                  <Check size={12} color="#ffffff" strokeWidth={3} />
+                                  <Check size={12} color="var(--text-inverse)" strokeWidth={3} />
                                 )}
                               </Checkbox>
                             </CourseCheckboxSlot>
@@ -793,13 +793,13 @@ export default function MobilePortalTimetableImportPage() {
                               <CourseMetaRow>
                                 {item.rawItem.professorName && (
                                   <MetaItem>
-                                    <User size={13} color="#8b95a1" />
+                                    <User size={13} color="var(--gray-500)" />
                                     <span>{item.rawItem.professorName}</span>
                                   </MetaItem>
                                 )}
                                 {item.rawItem.timeInfoRaw && (
                                   <MetaItem>
-                                    <Clock size={13} color="#8b95a1" />
+                                    <Clock size={13} color="var(--gray-500)" />
                                     <span>{item.rawItem.timeInfoRaw}</span>
                                   </MetaItem>
                                 )}
@@ -808,7 +808,7 @@ export default function MobilePortalTimetableImportPage() {
                               {item.offering &&
                                 item.matchStatus === "MATCHED_EXACT" && (
                                   <MatchSuccessNotice>
-                                    <Check size={12} color="#0061ff" />
+                                    <Check size={12} color="var(--interactive-primary)" />
                                     <span>개설 강의 자동 매칭 완료</span>
                                   </MatchSuccessNotice>
                                 )}
@@ -828,7 +828,7 @@ export default function MobilePortalTimetableImportPage() {
           <GradePromptContent>
             <TimetableSuccessSummaryCard>
               <TimetableSuccessIconBox>
-                <CheckCircle2 size={20} color="#0061ff" />
+                <CheckCircle2 size={20} color="var(--interactive-primary)" />
               </TimetableSuccessIconBox>
               <TimetableSuccessTextBox>
                 <TimetableSuccessTitle>
@@ -845,7 +845,7 @@ export default function MobilePortalTimetableImportPage() {
             </TimetableSuccessSummaryCard>
 
             <PromptBadge>
-              <Sparkles size={16} color="#0061ff" />
+              <Sparkles size={16} color="var(--interactive-primary)" />
               <span>성적 연동</span>
             </PromptBadge>
 
@@ -857,7 +857,7 @@ export default function MobilePortalTimetableImportPage() {
             <PromptFeatureCard>
               <FeatureItem>
                 <FeatureIconBox>
-                  <GraduationCap size={18} color="#0061ff" />
+                  <GraduationCap size={18} color="var(--interactive-primary)" />
                 </FeatureIconBox>
                 <FeatureTextBox>
                   <FeatureTextTitle>전 학기 과목 및 평점 자동 등록</FeatureTextTitle>
@@ -868,7 +868,7 @@ export default function MobilePortalTimetableImportPage() {
               </FeatureItem>
               <FeatureItem>
                 <FeatureIconBox>
-                  <CheckCircle2 size={18} color="#0061ff" />
+                  <CheckCircle2 size={18} color="var(--interactive-primary)" />
                 </FeatureIconBox>
                 <FeatureTextBox>
                   <FeatureTextTitle>안전한 기기 내 포털 조회</FeatureTextTitle>
@@ -884,7 +884,7 @@ export default function MobilePortalTimetableImportPage() {
         {step === "GRADE_SUCCESS" && (
           <GradeSuccessContent>
             <SuccessIconCircle>
-              <CheckCircle2 size={36} color="#0061ff" />
+              <CheckCircle2 size={36} color="var(--interactive-primary)" />
             </SuccessIconCircle>
             <SuccessTitle>성적을 모두 불러왔어요!</SuccessTitle>
             <SuccessDesc>
@@ -1303,7 +1303,7 @@ const LoadingContainer = styled.div`
 const Spinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #e8f3ff;
+  border: 3px solid rgb(232, 243, 255);
   border-top-color: var(--border-brand);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

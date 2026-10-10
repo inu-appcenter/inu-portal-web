@@ -82,9 +82,9 @@ const FabWrapper = styled.div`
   md-fab {
     /* 구글 공식 Material 3 M3 디자인 토큰 */
     --md-fab-container-shape: 16px; /* M3 공식 16dp squircle */
-    --md-fab-container-color: #d3e3fd; /* M3 Primary Container */
-    --md-fab-icon-color: #041e49; /* M3 On Primary Container */
-    --md-fab-label-text-color: #041e49;
+    --md-fab-container-color: var(--blue-100); /* M3 Primary Container */
+    --md-fab-icon-color: var(--blue-900); /* M3 On Primary Container */
+    --md-fab-label-text-color: var(--blue-900);
     --md-fab-container-elevation: 0; /* 배경 그림자 없음 */
     --md-fab-container-shadow-color: transparent;
     --md-fab-label-text-font: inherit;
@@ -97,7 +97,7 @@ const FabWrapper = styled.div`
     transition: transform 0.15s ease;
 
     &:hover {
-      --md-fab-container-color: #c2d7fc;
+      --md-fab-container-color: var(--blue-200);
       transform: translateY(-2px);
     }
 

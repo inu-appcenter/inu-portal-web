@@ -228,7 +228,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowRoom(!showRoom)}>
                 <SelectionControl $selected={showRoom}>
                   {showRoom && (
-                    <Icon name="check" size={14} color="#ffffff" />
+                    <Icon name="check" size={14} color="var(--text-inverse)" />
                   )}
                 </SelectionControl>
                 <CheckboxText>강의실</CheckboxText>
@@ -237,7 +237,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowProfessor(!showProfessor)}>
                 <SelectionControl $selected={showProfessor}>
                   {showProfessor && (
-                    <Icon name="check" size={14} color="#ffffff" />
+                    <Icon name="check" size={14} color="var(--text-inverse)" />
                   )}
                 </SelectionControl>
                 <CheckboxText>교수명</CheckboxText>
@@ -296,7 +296,7 @@ const RightGradientOverlay = styled.div`
   right: -20px;
   width: 60px;
   height: calc(100% + 8px);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 21.31%, #fff 100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 21.31%, var(--bg-base) 100%);
   z-index: 3;
   pointer-events: none;
 `;

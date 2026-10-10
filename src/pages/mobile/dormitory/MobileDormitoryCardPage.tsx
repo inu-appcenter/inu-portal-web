@@ -167,7 +167,7 @@ export default function MobileDormitoryCardPage() {
     <PageContainer>
       <TopBar>
         <BackButton onClick={handleBack} aria-label="뒤로가기">
-          <ChevronLeft size={24} color="#1e293b" />
+          <ChevronLeft size={24} color="var(--text-primary)" />
         </BackButton>
         <BarTitle>모바일 사생증</BarTitle>
         <TopBarSpacer />
@@ -199,7 +199,7 @@ const PageContainer = styled.div`
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   overflow: hidden;
   box-sizing: border-box;
   padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
@@ -219,8 +219,8 @@ const TopBar = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+  background-color: var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
   z-index: 10;
 `;
 
@@ -236,14 +236,14 @@ const BackButton = styled.button`
   cursor: pointer;
 
   &:active {
-    background-color: #f1f5f9;
+    background-color: var(--bg-subtle);
   }
 `;
 
 const BarTitle = styled.h1`
   font-size: 17px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
   margin: 0;
 `;

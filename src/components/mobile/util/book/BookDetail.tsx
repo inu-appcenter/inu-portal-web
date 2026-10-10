@@ -158,7 +158,7 @@ const ButtonWrapper = styled.div`
   }
 
   button:nth-child(2) {
-    background-color: #ffc107;
+    background-color: rgb(255, 193, 7);
   }
 
   button:last-child {

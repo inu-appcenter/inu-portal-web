@@ -46,7 +46,7 @@ const IconsAddPlus = () => (
     <g transform="translate(3, 3)">
       <path
         d="M1 9H9M9 9H17M9 9V17M9 9V1"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -66,7 +66,7 @@ const IconsMagicWand = () => (
     <g transform="translate(1.5, 1.5)">
       <path
         d="M13 3V1M13 15V13M6 8H8M18 8H20M15.8 10.8L17 12M15.8 5.2L17 4M1 20L9 12M12 9L13 8M10.2 5.2L9 4"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -90,19 +90,19 @@ const IconsLock = () => (
         width="16"
         height="12"
         rx="4"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
       />
       <path
         d="M9 14L9 12"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M13 7V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5L5 7"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
       />
     </g>

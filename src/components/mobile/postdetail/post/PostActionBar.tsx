@@ -44,7 +44,7 @@ export default function PostActionBar({
   return (
     <ActionRow>
       <CommentCountGroup>
-        <Icon name="chat" size={20} color="#333D4B" />
+        <Icon name="chat" size={20} color="var(--gray-800)" />
         <span>댓글 {replyCount}</span>
       </CommentCountGroup>
 
@@ -62,7 +62,7 @@ export default function PostActionBar({
           />
         ) : null}
         <ShareBtn onClick={handleShare}>
-          <Icon name="share" size={24} color="#333D4B" />
+          <Icon name="share" size={24} color="var(--gray-800)" />
         </ShareBtn>
       </ActionButtonsGroup>
     </ActionRow>

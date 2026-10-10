@@ -299,7 +299,7 @@ const Icon = styled.img`
 
 const Title = styled.div`
   font-size: 14px;
-  color: #3b566e;
+  color: var(--text-primary);
   flex: 1;
   padding-left: 15px;
   line-height: 1.4;

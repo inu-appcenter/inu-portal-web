@@ -343,7 +343,7 @@ const MarkdownContainer = styled.div`
   }
 
   a {
-    color: #2b6cb0;
+    color: var(--interactive-primary);
     text-decoration: underline;
     font-weight: 500;
     word-break: break-all;
@@ -352,7 +352,7 @@ const MarkdownContainer = styled.div`
     gap: 2px;
 
     &:hover {
-      color: #1a4971;
+      color: rgb(26, 73, 113);
     }
   }
 

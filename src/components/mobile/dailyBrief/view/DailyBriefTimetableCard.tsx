@@ -176,7 +176,7 @@ export default function DailyBriefTimetableCard() {
             }}
             aria-label="시간표 편집 바로가기"
           >
-            <Icon name="edit-pencil-01" size={16} color="#8A92A0" />
+            <Icon name="edit-pencil-01" size={16} color="var(--gray-500)" />
           </EditButton>
         </CardHeader>
 
@@ -194,7 +194,7 @@ export default function DailyBriefTimetableCard() {
                 {todaySchedules.map((s) => s.title).join(", ")}
               </ScheduleTitleText>
             </ScheduleLeft>
-            <Icon name="chevron-right" size={14} color="#6b7280" />
+            <Icon name="chevron-right" size={14} color="var(--gray-600)" />
           </AcademicScheduleBanner>
         )}
 
@@ -222,11 +222,11 @@ export default function DailyBriefTimetableCard() {
             </BreakDescription>
             <BreakActionChips>
               <BreakChip onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
-                <Icon name="book" size={12} color="#0284C7" />
+                <Icon name="book" size={12} color="var(--interactive-primary)" />
                 <span>열람실 좌석 현황</span>
               </BreakChip>
               <BreakChip onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
-                <Icon name="users" size={12} color="#0284C7" />
+                <Icon name="users" size={12} color="var(--interactive-primary)" />
                 <span>이룸관 스터디룸</span>
               </BreakChip>
             </BreakActionChips>
@@ -350,7 +350,7 @@ const ScheduleLeft = styled.div`
 const ScheduleBadge = styled.span`
   font-size: 11px;
   font-weight: 700;
-  color: #0284c7;
+  color: var(--interactive-primary);
   background-color: var(--bg-brand);
   padding: 2px 6px;
   border-radius: 5px;
@@ -370,8 +370,8 @@ const SmartBreakBanner = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, rgb(240, 249, 255) 0%, rgb(224, 242, 254) 100%);
+  border: 1px solid rgb(186, 230, 253);
   border-radius: 16px;
   padding: 12px 14px;
   margin-top: 14px;
@@ -386,7 +386,7 @@ const BreakHeaderRow = styled.div`
 const BreakBadge = styled.span<{ $active?: boolean }>`
   font-size: 11.5px;
   font-weight: 800;
-  color: ${({ $active }) => ($active ? "#0369a1" : "#0284c7")};
+  color: ${({ $active }) => ($active ? "rgb(3, 105, 161)" : "var(--interactive-primary)")};
   background-color: var(--bg-base);
   padding: 3px 8px;
   border-radius: 6px;
@@ -396,7 +396,7 @@ const BreakBadge = styled.span<{ $active?: boolean }>`
 const BreakTimeRange = styled.span`
   font-size: 12.5px;
   font-weight: 700;
-  color: #0369a1;
+  color: rgb(3, 105, 161);
 `;
 
 const BreakDescription = styled.p`
@@ -432,7 +432,7 @@ const BreakChip = styled.button`
 
   &:hover {
     background: var(--bg-subtle);
-    border-color: #94a3b8;
+    border-color: var(--border-strong);
   }
 
   &:active {

@@ -398,7 +398,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <Edit2 size={14} />
                   </IconButton>
                   <IconButton onClick={(e) => handleDelete(e, room.id)} title="삭제">
-                    <Trash2 size={14} color="#ff4d4f" />
+                    <Trash2 size={14} color="var(--text-error)" />
                   </IconButton>
                 </ActionButtons>
               </>

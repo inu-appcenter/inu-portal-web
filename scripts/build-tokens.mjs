@@ -9,10 +9,11 @@
 // - 시맨틱(Alias) 색상은 var(--primitive) 참조를 유지해 출처가 드러나게 한다.
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import StyleDictionary from "style-dictionary";
 import { register, expandTypesMap } from "@tokens-studio/sd-transforms";
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TOKENS_DIR = path.join(ROOT, "tokens");
 const CSS_OUT = path.join(ROOT, "src/styles/variables.css");
 const TS_OUT = path.join(ROOT, "src/styles/tokens.ts");

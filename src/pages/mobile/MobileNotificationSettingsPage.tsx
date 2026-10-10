@@ -106,7 +106,7 @@ export default function MobileNotificationSettingsPage() {
                   수업 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -118,7 +118,7 @@ export default function MobileNotificationSettingsPage() {
                   오늘의 학교 및 학과 일정 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -130,7 +130,7 @@ export default function MobileNotificationSettingsPage() {
                   학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -142,7 +142,7 @@ export default function MobileNotificationSettingsPage() {
                   구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -157,7 +157,7 @@ export default function MobileNotificationSettingsPage() {
                   힐링존/열람실 빈자리 감시 및 LMS 과제, 좌석 연장 알림을 확인해요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
           </Box>
         </TitleContentArea>

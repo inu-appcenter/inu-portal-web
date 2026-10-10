@@ -116,7 +116,7 @@ const Info = styled.div`
 `;
 
 const CancelButton = styled.button`
-  background: #ff4d4f;
+  background: var(--text-error);
   color: var(--text-inverse);
   border: none;
   padding: 8px 12px;
@@ -128,7 +128,7 @@ const CancelButton = styled.button`
   max-width: 120px;
 
   &:hover {
-    background: #d9363e;
+    background: var(--red-600);
   }
 
   &:disabled {

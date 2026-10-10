@@ -42,7 +42,7 @@ const AccordionContainer = styled.div<{ $isDone: boolean }>`
   margin-bottom: 12px;
   border-radius: 12px;
   background: ${(props) => (props.$isDone ? "var(--bg-subtle)" : "var(--bg-brand)")};
-  border: 1px solid ${(props) => (props.$isDone ? "var(--border-default)" : "#bae0ff")};
+  border: 1px solid ${(props) => (props.$isDone ? "var(--border-default)" : "var(--blue-200)")};
   font-size: 13px;
   color: var(--text-secondary);
   transition: all 0.2s ease;
@@ -79,7 +79,7 @@ const StatusIconWrapper = styled.div<{ $status: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${(props) => (props.$status === "DONE" ? "#10b981" : "var(--text-brand)")};
+  color: ${(props) => (props.$status === "DONE" ? "var(--border-success)" : "var(--text-brand)")};
 
   .spinner {
     animation: ${rotateAnim} 1.2s linear infinite;
@@ -119,22 +119,22 @@ const ToolBadge = styled.span<{ $tool: string }>`
   font-weight: 600;
   background: ${(props) => {
     if (props.$tool.includes("INU_AI")) return "var(--bg-brand)";
-    if (props.$tool.includes("BUS")) return "#ecfdf5";
+    if (props.$tool.includes("BUS")) return "rgba(16, 185, 129, 0.1)";
     if (props.$tool.includes("CAFETERIA")) return "var(--bg-warn)";
     return "var(--bg-muted)";
   }};
   color: ${(props) => {
     if (props.$tool.includes("INU_AI")) return "var(--text-brand)";
-    if (props.$tool.includes("BUS")) return "#047857";
-    if (props.$tool.includes("CAFETERIA")) return "#c2410c";
+    if (props.$tool.includes("BUS")) return "var(--border-success)";
+    if (props.$tool.includes("CAFETERIA")) return "var(--text-warn)";
     return "var(--gray-700)";
   }};
   border: 1px solid
     ${(props) => {
-      if (props.$tool.includes("INU_AI")) return "#bfdbfe";
-      if (props.$tool.includes("BUS")) return "#a7f3d0";
-      if (props.$tool.includes("CAFETERIA")) return "#ffedd5";
-      return "#e2e8f0";
+      if (props.$tool.includes("INU_AI")) return "var(--blue-200)";
+      if (props.$tool.includes("BUS")) return "rgba(16, 185, 129, 0.25)";
+      if (props.$tool.includes("CAFETERIA")) return "var(--border-warn-subtle)";
+      return "var(--border-default)";
     }};
 `;
 
@@ -150,7 +150,7 @@ const ThoughtBox = styled.div`
   padding: 8px 10px;
   border-radius: 8px;
   background: var(--bg-subtle);
-  border-left: 3px solid #0958d9;
+  border-left: 3px solid var(--interactive-primary);
   color: var(--gray-700);
   margin-top: 6px;
   white-space: pre-wrap;
@@ -223,7 +223,7 @@ export const AgentProcessAccordion: React.FC<AgentProcessAccordionProps> = ({
             )}
           </StatusIconWrapper>
           <StatusLabel>
-            <Sparkles size={13} color="#0958d9" />
+            <Sparkles size={13} color="var(--interactive-primary)" />
             {getStatusText()}
           </StatusLabel>
         </HeaderLeft>

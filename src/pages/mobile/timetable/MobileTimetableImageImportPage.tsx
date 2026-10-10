@@ -604,7 +604,7 @@ export default function MobileTimetableImageImportPage() {
             >
               <DropzoneHeader>
                 <IconBox>
-                  <ImagePlus size={22} color="#ffffff" />
+                  <ImagePlus size={22} color="var(--text-inverse)" />
                 </IconBox>
                 <DropzoneTextGroup>
                   <DropzoneTitle>시간표 이미지 선택하기</DropzoneTitle>
@@ -804,7 +804,7 @@ export default function MobileTimetableImageImportPage() {
                             <Icon
                               name="chevron-down"
                               size={18}
-                              color={isCardCompleted ? "#0061ff" : "#e5484d"}
+                              color={isCardCompleted ? "var(--interactive-primary)" : "var(--text-error)"}
                             />
                           </SelectTrigger>
 
@@ -913,7 +913,7 @@ export default function MobileTimetableImageImportPage() {
                 );
               }}
             >
-              <School size={15} color="#0061ff" />
+              <School size={15} color="var(--interactive-primary)" />
               <span>포털에서 시간표 불러오기</span>
             </FloatingPortalCTA>
           )}
@@ -1039,7 +1039,7 @@ export default function MobileTimetableImageImportPage() {
                           </TimetableRowMeta>
                         </TimetableRowLeft>
                         {isSelected && (
-                          <Check size={20} color="#0061ff" strokeWidth={2.5} />
+                          <Check size={20} color="var(--interactive-primary)" strokeWidth={2.5} />
                         )}
                       </TimetableRowButton>
                     );
@@ -1516,7 +1516,7 @@ const ResultStatusBadge = styled.div<{ $completed: boolean }>`
   font-weight: 700;
   background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
   border: 1px solid ${({ $completed }) => ($completed ? "var(--border-brand-subtle)" : "var(--border-error-subtle)")};
-  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "#e5484d")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "var(--text-error)")};
 `;
 
 const ResultDescription = styled.p`
@@ -1597,7 +1597,7 @@ const CardStatusBadge = styled.span<{ $completed: boolean }>`
   font-size: 11px;
   font-weight: 700;
   background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
-  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "#e5484d")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "var(--text-error)")};
   white-space: nowrap;
 `;
 
@@ -1665,7 +1665,7 @@ const CandidateLabel = styled.div`
 const SelectWrapper = styled.div<{ $selected: boolean; $open: boolean }>`
   position: relative;
   z-index: ${({ $open }) => ($open ? 30 : 1)};
-  border: 1px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "#fca5a5")};
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "rgb(252, 165, 165)")};
   border-radius: 12px;
   background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
 `;
@@ -1770,7 +1770,7 @@ const OptionCheck = styled.div<{ $selected: boolean }>`
 
 const WarningText = styled.div`
   font-size: 13px;
-  color: #e5484d;
+  color: var(--text-error);
 `;
 
 // --- Fixed Bottom Area ---
@@ -2077,7 +2077,7 @@ function CourseEditModal({
           <ResultsSection>
             <ResultsSectionTitle>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <Search size={14} color="#0061ff" />
+                <Search size={14} color="var(--interactive-primary)" />
                 <span>검색된 개설 분반 ({searchResults.length}개)</span>
               </div>
               {isFetching && <SearchLoadingBadge>검색 중...</SearchLoadingBadge>}

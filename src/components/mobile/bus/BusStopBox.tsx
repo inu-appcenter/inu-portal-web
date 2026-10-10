@@ -121,7 +121,7 @@ const LabelGroup = styled.div`
 `;
 
 const SectionNameText = styled.span<{ $isRed: boolean }>`
-  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "inherit")};
+  color: ${({ $isRed }) => ($isRed ? "var(--red-500)" : "inherit")};
 `;
 
 const RefreshArea = styled.div`

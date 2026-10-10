@@ -100,16 +100,16 @@ const ToastCard = styled(motion.div)`
 
   /* 다중 라인일 경우 둥근 직사각형으로 자연스럽게 표시 */
   &:has(.multi-line) {
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     align-items: flex-start;
   }
 `;
 
 const ToastMessage = styled.div`
-  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
+  font-family: inherit;
+  font-size: var(--body-2-font-size);
+  font-weight: var(--label-2-font-weight);
+  line-height: var(--label-2-line-height);
   color: var(--text-inverse);
   white-space: pre-line;
   text-align: center;
@@ -122,10 +122,10 @@ const ToastActionButton = styled.button`
   padding: 0 0 0 4px;
   margin: 0;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--body-2-font-size);
   font-weight: 700;
-  line-height: 20px;
-  color: #60a5fa;
+  line-height: var(--label-2-line-height);
+  color: var(--blue-400);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;

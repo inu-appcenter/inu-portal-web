@@ -438,7 +438,7 @@ const KakaoMap = ({
 
   if (error) {
     return (
-      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "#dc3545", fontSize: "14px" }}>
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "var(--text-error)", fontSize: "14px" }}>
         지도를 불러오는 데 실패했습니다.
       </Container>
     );
@@ -467,7 +467,7 @@ const KakaoMap = ({
       )}
 
       <MyLocationButton onClick={handleMyLocationClick} $active={isTracking}>
-        <Navigation size={20} fill={isTracking ? "#3E69D1" : "none"} />
+        <Navigation size={20} fill={isTracking ? "var(--interactive-primary)" : "none"} />
       </MyLocationButton>
 
       {showHeadingHint && (
@@ -495,14 +495,14 @@ const MyLocationButton = styled.button<{ $active: boolean }>`
   width: 36px;
   height: 36px;
   background: var(--bg-base);
-  border: 1px solid #919191;
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  color: ${props => props.$active ? "#3E69D1" : "var(--gray-700)"};
+  color: ${props => props.$active ? "var(--interactive-primary)" : "var(--gray-700)"};
   
   &:active {
     background: var(--bg-muted);
@@ -537,7 +537,7 @@ const MyLocationMarker = styled.div`
 const MainDot = styled.div`
   width: 14px;
   height: 14px;
-  background: #FF4B4B;
+  background: var(--text-error);
   border: 2px solid var(--bg-base);
   border-radius: 50%;
   z-index: 2;

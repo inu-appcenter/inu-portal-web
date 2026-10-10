@@ -83,7 +83,7 @@ const ModalLoginImg = styled.img`
 `;
 
 const ModalContentWrapper = styled.div`
-  box-shadow: 0px 4px 4px 0px #00000040;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   font-size: 24px;
   font-weight: 700;
   line-height: 24px;
@@ -111,7 +111,7 @@ const ModalLoginBtn = styled.button`
   font-size: 20px;
   font-weight: 600;
   line-height: 20px;
-  background: linear-gradient(90deg, #6f84e2 0%, #7babe5 100%);
+  background: linear-gradient(90deg, var(--blue-400) 0%, var(--interactive-primary) 100%);
   border: none;
   color: var(--text-inverse);
   border-radius: 8px;

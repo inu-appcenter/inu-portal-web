@@ -935,9 +935,9 @@ const PortalDormitoryLabPage = () => {
               onClick={() => navigate(ROUTES.DORMITORY_CARD)}
               style={{
                 flex: 1,
-                backgroundColor: "#1d4ed8",
-                color: "#ffffff",
-                borderColor: "#1d4ed8",
+                backgroundColor: "rgb(29, 78, 216)",
+                color: "var(--text-inverse)",
+                borderColor: "rgb(29, 78, 216)",
                 fontWeight: 600,
               }}
             >
@@ -1716,8 +1716,8 @@ const PortalDormitoryLabPage = () => {
                   >
                     {isCopiedLogs ? (
                       <>
-                        <Check size={12} color="#10b981" />
-                        <span style={{ color: "#10b981" }}>복사 완료!</span>
+                        <Check size={12} color="var(--text-success)" />
+                        <span style={{ color: "var(--text-success)" }}>복사 완료!</span>
                       </>
                     ) : (
                       <>
@@ -1852,7 +1852,7 @@ const Breadcrumb = styled.div`
   box-sizing: border-box;
 
   .current {
-    color: #0055b8;
+    color: rgb(0, 85, 184);
     font-weight: 600;
   }
 `;
@@ -2116,7 +2116,7 @@ const PointChip = styled.div`
 
     &.merit { color: var(--text-brand); }
     &.demerit { color: var(--text-error); }
-    &.fixed { color: #d97706; }
+    &.fixed { color: rgb(217, 119, 6); }
   }
 `;
 
@@ -2150,7 +2150,7 @@ const TabChip = styled.button<{ active?: boolean }>`
   padding: 7px 11px;
   font-size: 12px;
   font-weight: ${({ active }) => (active ? "600" : "400")};
-  color: ${({ active }) => (active ? "#0055b8" : "var(--gray-600)")};
+  color: ${({ active }) => (active ? "rgb(0, 85, 184)" : "var(--gray-600)")};
   background-color: ${({ active }) => (active ? "var(--bg-brand)" : "var(--bg-base)")};
   border: 1px solid ${({ active }) => (active ? "var(--border-brand-subtle)" : "var(--border-default)")};
   border-radius: 18px;
@@ -2295,7 +2295,7 @@ const FetchInlineButton = styled.button`
   background-color: var(--bg-base);
   border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
-  color: #0055b8;
+  color: rgb(0, 85, 184);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 8px;
@@ -2381,7 +2381,7 @@ const DebugHeader = styled.div`
 
     &.running {
       background-color: var(--bg-brand);
-      color: #0284c7;
+      color: rgb(2, 132, 199);
     }
   }
 
@@ -2392,7 +2392,7 @@ const DebugHeader = styled.div`
 `;
 
 const LogConsoleBody = styled.div`
-  background-color: #0f172a;
+  background-color: rgb(15, 23, 42);
   padding: 10px 12px;
   width: 100%;
   box-sizing: border-box;
@@ -2405,7 +2405,7 @@ const LogToolbar = styled.div`
   justify-content: space-between;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid rgb(30, 41, 59);
   font-size: 11px;
 
   .log-meta {
@@ -2425,7 +2425,7 @@ const LogActionButton = styled.button`
   align-items: center;
   gap: 4px;
   background-color: var(--gray-900);
-  border: 1px solid #334155;
+  border: 1px solid rgb(51, 65, 85);
   color: var(--text-disabled);
   font-size: 11px;
   border-radius: 4px;
@@ -2473,7 +2473,7 @@ const LogLine = styled.div<{ level: string }>`
   }
 
   .stage {
-    color: #38bdf8;
+    color: rgb(56, 189, 248);
     margin-right: 4px;
     font-weight: 600;
   }
@@ -2483,11 +2483,11 @@ const LogLine = styled.div<{ level: string }>`
     font-weight: 700;
     color: ${({ level }) =>
       level === "error"
-        ? "#f87171"
+        ? "rgb(248, 113, 113)"
         : level === "warn"
-        ? "#fbbf24"
+        ? "rgb(251, 191, 36)"
         : level === "success"
-        ? "#34d399"
+        ? "rgb(52, 211, 153)"
         : "var(--text-tertiary)"};
   }
 
@@ -2557,6 +2557,6 @@ const MiniTable = styled.table`
   }
 
   .photo-val {
-    color: #059669;
+    color: var(--text-success);
   }
 `;

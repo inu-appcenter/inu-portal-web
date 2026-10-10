@@ -5,9 +5,9 @@ import Ripple from "./Ripple";
 interface ChipButtonProps {
   iconSrc?: string;
   iconComponent?: React.ElementType;
-  /** iconComponent 색상. 생략 시 기존 동작대로 브랜드 블루(#4071B9). */
+  /** iconComponent 색상. 생략 시 기본 동작대로 브랜드 블루. */
   iconColor?: string;
-  /** iconComponent 크기(px). 생략 시 기존 동작대로 20(react-icons 기본). */
+  /** iconComponent 크기(px). 생략 시 기본 동작대로 20(react-icons 기본). */
   iconSize?: number;
   title: string;
   isExternalLink?: boolean;
@@ -18,7 +18,7 @@ interface ChipButtonProps {
 const Chip = ({
   iconSrc,
   iconComponent: IconComponent,
-  iconColor = "#4071B9",
+  iconColor = "var(--branding-brand-blue)",
   iconSize = 20,
   title,
   isExternalLink,
@@ -74,8 +74,8 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
 
   background: ${({ $isAIButton }) =>
     $isAIButton
-      ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
-      : "#fff"};
+      ? "linear-gradient(270deg, var(--bg-brand) 0%, var(--blue-50) 67.31%, var(--border-warn-subtle) 100%)"
+      : "var(--bg-base)"};
   position: relative;
   overflow: hidden;
   outline: none;
@@ -83,7 +83,6 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
 
   border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
-  background: var(--bg-base);
 
   //box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 

@@ -99,7 +99,7 @@ export default function FoodRouletteModal({
             spread: 60,
             origin: { y: 0.45 },
             zIndex: 25000,
-            colors: ["#0061ff", "#ffc72c", "#ef4444", "#10b981", "#8b5cf6"],
+            colors: ["rgb(0, 97, 255)", "rgb(255, 199, 44)", "rgb(239, 68, 68)", "rgb(16, 185, 129)", "rgb(139, 92, 246)"],
             disableForReducedMotion: true,
           });
         } catch (e) {
@@ -751,7 +751,7 @@ export default function FoodRouletteModal({
                     textTransform: "none",
                     backgroundColor: "var(--interactive-primary)",
                     "&:hover": {
-                      backgroundColor: "#004ecc",
+                      backgroundColor: "var(--interactive-primary-press)",
                       boxShadow: "none",
                     },
                   }}
@@ -785,11 +785,11 @@ export default function FoodRouletteModal({
                         fontWeight: 600,
                         borderRadius: "8px",
                         backgroundColor: "var(--bg-brand)",
-                        color: "#7c3aed",
-                        border: "1px solid #ddd6fe",
+                        color: "rgb(124, 58, 237)",
+                        border: "1px solid rgb(221, 214, 254)",
                         "& .MuiChip-deleteIcon": {
-                          color: "#a78bfa",
-                          "&:hover": { color: "#7c3aed" },
+                          color: "rgb(167, 139, 250)",
+                          "&:hover": { color: "rgb(124, 58, 237)" },
                         },
                       }}
                     />
@@ -979,14 +979,14 @@ export default function FoodRouletteModal({
                               ? "var(--bg-brand)"
                               : "var(--bg-brand)",
                             color: corner.isCustom
-                              ? "#7c3aed"
+                              ? "rgb(124, 58, 237)"
                               : "var(--text-brand)",
                             borderColor: corner.isCustom
-                              ? "#8b5cf6"
+                              ? "rgb(139, 92, 246)"
                               : "var(--border-brand)",
                             "& .MuiChip-icon": {
                               color: corner.isCustom
-                                ? "#7c3aed"
+                                ? "rgb(124, 58, 237)"
                                 : "var(--text-brand)",
                             },
                           }
@@ -1192,7 +1192,7 @@ const MenuPriceTag = styled.span`
 const CustomWinnerHint = styled.p`
   margin: 0;
   font-size: 11px;
-  color: #7c3aed;
+  color: rgb(124, 58, 237);
   font-weight: 500;
   background-color: var(--bg-brand);
   border-radius: 6px;

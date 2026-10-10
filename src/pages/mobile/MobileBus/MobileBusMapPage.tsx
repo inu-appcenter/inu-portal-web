@@ -513,7 +513,7 @@ const FallbackCard = styled.div`
   border-radius: 24px;
   background: var(--bg-base);
   box-shadow: 0 12px 24px rgba(20, 35, 67, 0.08);
-  color: #35506d;
+  color: rgb(53, 80, 109);
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;

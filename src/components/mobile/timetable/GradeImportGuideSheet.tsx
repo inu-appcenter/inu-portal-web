@@ -272,7 +272,7 @@ function MockPasteBack() {
     <PhoneFrame>
       <StatusBar />
       <LightHeaderRow>
-        <Icon name="chevron-left" size={16} color="#333d4b" />
+        <Icon name="chevron-left" size={16} color="var(--gray-800)" />
         <span>성적 붙여넣기</span>
         <span style={{ width: 16 }} />
       </LightHeaderRow>
@@ -474,7 +474,7 @@ const PhoneFrame = styled.div`
   width: 240px;
   height: 440px;
   flex-shrink: 0;
-  border: 8px solid #1c1c1e;
+  border: 8px solid rgb(28, 28, 30);
   border-radius: 34px;
   overflow: hidden;
   position: relative;
@@ -560,7 +560,7 @@ const ImageCaption = styled.div`
 const NavyBar = styled.div`
   height: 30px;
   flex-shrink: 0;
-  background-color: #14336b;
+  background-color: rgb(20, 51, 107);
   color: var(--text-inverse);
   display: flex;
   align-items: center;
@@ -591,7 +591,7 @@ const Tab = styled.div<{ $active?: boolean }>`
   font-size: 10px;
   font-weight: ${({ $active }) => ($active ? 700 : 400)};
   color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
-  background-color: ${({ $active }) => ($active ? "#14336b" : "var(--gray-200)")};
+  background-color: ${({ $active }) => ($active ? "rgb(20, 51, 107)" : "var(--gray-200)")};
 `;
 
 const SectionBar = styled.div<{ $peek?: boolean }>`
@@ -668,7 +668,7 @@ const ScrollFade = styled.div`
   left: 0;
   right: 0;
   height: 36px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 90%);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--bg-base) 90%);
   pointer-events: none;
 `;
 
@@ -759,7 +759,7 @@ const ContextMenuBubble = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  background-color: #3a3a3c;
+  background-color: rgb(58, 58, 60);
   color: var(--text-inverse);
   border-radius: 8px;
   padding: 5px 6px;
@@ -860,8 +860,8 @@ const ResultToast = styled.div`
   margin: 6px 10px 8px;
   padding: 5px 0;
   border-radius: 8px;
-  background-color: #f0fdf4;
-  color: #16a34a;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: var(--border-success);
   font-size: 8.5px;
   font-weight: 600;
   flex-shrink: 0;

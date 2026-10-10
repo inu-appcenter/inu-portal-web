@@ -69,7 +69,7 @@ const Title = styled.div`
   line-height: 30px;
   text-align: start;
 
-  color: #324d97;
+  color: var(--interactive-primary);
   width: 100%;
   height: fit-content;
 
@@ -94,7 +94,7 @@ const Department = styled.div`
   font-size: 12px;
   line-height: 22px;
 
-  color: #6b87c4;
+  color: var(--interactive-focus);
 
   display: flex;
   flex-direction: row;

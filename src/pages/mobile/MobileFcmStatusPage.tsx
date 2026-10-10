@@ -143,7 +143,7 @@ const TokenValue = styled.div`
 
 const CopyButton = styled.button`
   align-self: flex-end;
-  background: #3b5bdb;
+  background: rgb(59, 91, 219);
   color: var(--text-inverse);
   border: none;
   padding: 6px 12px;
@@ -171,12 +171,12 @@ const StatusRow = styled.div`
 
 const StatusText = styled.span<{ $status?: "success" | "fail" }>`
   font-weight: 700;
-  color: ${(props) => (props.$status === "success" ? "#2b8a3e" : "#e03131")};
+  color: ${(props) => (props.$status === "success" ? "var(--text-success)" : "var(--text-error)")};
 `;
 
 const ErrorText = styled.div`
   background: var(--bg-error);
-  color: #e03131;
+  color: var(--text-error);
   padding: 8px;
   border-radius: 6px;
   font-size: 12px;

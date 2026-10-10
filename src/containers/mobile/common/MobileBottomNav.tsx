@@ -244,7 +244,7 @@ const Badge = styled.div`
   position: absolute;
   top: -4px;
   right: -6px;
-  background-color: #ff3b30;
+  background-color: var(--red-500);
   color: var(--text-inverse);
   font-size: 10px;
   font-weight: 700;

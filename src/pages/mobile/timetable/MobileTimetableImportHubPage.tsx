@@ -48,7 +48,7 @@ export default function MobileTimetableImportHubPage() {
         >
           <CardTopRow>
             <CardIconBox $highlight>
-              <School size={24} color="#0061ff" />
+              <School size={24} color="var(--interactive-primary)" />
             </CardIconBox>
             <BadgeRow>
               <RecommendBadge>추천</RecommendBadge>
@@ -82,7 +82,7 @@ export default function MobileTimetableImportHubPage() {
         >
           <CardTopRow>
             <CardIconBox>
-              <ScanLine size={24} color="#4e5968" />
+              <ScanLine size={24} color="var(--gray-600)" />
             </CardIconBox>
             <BadgeRow>
               <NormalBadge>캡처 인식</NormalBadge>

@@ -120,7 +120,7 @@ const HomeBackground = styled.div`
       rgba(221, 238, 255, 0.9) 0%,
       rgba(221, 238, 255, 0) 100%
     ),
-    linear-gradient(180deg, #f4fbff 0%, #edf6ff 48%, #f3f9ff 100%);
+    linear-gradient(180deg, var(--bg-subtle) 0%, var(--blue-50) 48%, var(--bg-subtle) 100%);
 `;
 
 const UpperBackground = styled.img`

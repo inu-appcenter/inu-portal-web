@@ -317,7 +317,7 @@ const Arrow = styled.div`
   right: 18px;
   height: 2px;
   transform: translateY(-50%);
-  background-color: #a1c3ff;
+  background-color: var(--blue-200);
   z-index: 0;
 `;
 
@@ -344,9 +344,9 @@ const Dot = styled.div<{ $current: boolean }>`
   height: 10px;
   border-radius: 50%;
   z-index: 1;
-  background-color: ${({ $current }) => ($current ? "#A1C3FF" : "var(--bg-base)")};
+  background-color: ${({ $current }) => ($current ? "var(--blue-200)" : "var(--bg-base)")};
   border: ${({ $current }) =>
-    $current ? "1.5px solid #A1C3FF" : "1.5px solid var(--border-brand-subtle)"};
+    $current ? "1.5px solid var(--blue-200)" : "1.5px solid var(--border-brand-subtle)"};
 `;
 
 const BusIcon = styled.img`
@@ -367,25 +367,25 @@ const InfoBox = styled.div`
   flex-direction: column;
   justify-content: center;
   background: var(--bg-base);
-  border: 1px solid #7aa7e5;
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
   z-index: 10;
 `;
 
 const LastBus = styled.span`
   font-weight: 500;
-  color: red;
+  color: var(--text-error);
 `;
 
 const StatusText = styled.span<{ $status?: BusStatus }>`
   color: ${({ $status }) => {
     switch ($status) {
       case "\uC5EC\uC720":
-        return "#006F1E";
+        return "var(--border-success)";
       case "\uBCF4\uD1B5":
-        return "#0E4D9D";
+        return "var(--text-brand)";
       case "\uD63C\uC7A1":
-        return "#D10000";
+        return "var(--text-error)";
       default:
         return "inherit";
     }
