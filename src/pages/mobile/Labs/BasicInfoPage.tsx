@@ -23,6 +23,8 @@ import { formatKoreanDateTime } from "@/utils/date";
 import { KeyRound, Smartphone } from "lucide-react";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import { secureStorage } from "@/utils/secureStorage";
+import { typography } from "@/styles/typography";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 
 interface InfoItemProps {
   title: string;
@@ -31,8 +33,8 @@ interface InfoItemProps {
 
 const InfoItem = ({ title, description }: InfoItemProps) => (
   <InfoItemWrapper>
-    <div className="title">{title}</div>
-    <div className="description">{description}</div>
+    <span className="title">{title}</span>
+    <span className="description">{description || "-"}</span>
   </InfoItemWrapper>
 );
 
@@ -161,9 +163,10 @@ const BasicInfoPage = () => {
           alert(`학적 정보를 가져오는 데 실패했어요: ${errText}`);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("학적 조회 실패:", error);
-      alert(error?.message || "학적 정보를 가져오는 중 오류가 발생했어요.");
+      const msg = error instanceof Error ? error.message : "학적 정보를 가져오는 중 오류가 발생했어요.";
+      alert(msg);
     } finally {
       setIsLoading(false);
       setLoadingMessage("");
@@ -223,8 +226,8 @@ const BasicInfoPage = () => {
   }
 
   return (
-    <MoreAppsPageWrapper>
-      <ContentSection>
+    <BasicInfoPageWrapper as="main">
+      <ContentSection as="section">
         <TitleContentArea description="인천대학교 포털 시스템에서 내 기본 학적 정보를 가져와요. 이 폰에서 직접 작업이 수행되며 서버에는 저장되지 않아요." />
 
         {!isMobileAppEnvironment() ? (
@@ -234,14 +237,15 @@ const BasicInfoPage = () => {
             <EmptyDesc>
               학적 정보 조회는 INTIP 모바일 앱 환경에서 제공돼요.
             </EmptyDesc>
-            <CapsuleButton
-              variant="brand"
-              style={{ marginTop: "12px", padding: "10px 20px", fontSize: "14px" }}
-              onClick={() => openIntipAppOrStore("basic-info")}
-            >
-              앱에서 보기
-            </CapsuleButton>
-            <FootnoteText style={{ marginTop: "12px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+            <CapsuleButtonWrapper>
+              <CapsuleButton
+                variant="brand"
+                onClick={() => openIntipAppOrStore("basic-info")}
+              >
+                앱에서 보기
+              </CapsuleButton>
+            </CapsuleButtonWrapper>
+            <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
           </EmptyCard>
         ) : !isPortalLinked && !isFetched ? (
           <EmptyCard>
@@ -250,132 +254,153 @@ const BasicInfoPage = () => {
             <EmptyDesc>
               마이페이지에서 포털 계정을 등록하면 학적 상태, 취득 학점, 성적 정보를 안전하게 가져와요.
             </EmptyDesc>
-            <CapsuleButton
-              variant="brand"
-              style={{ marginTop: "12px", padding: "10px 20px", fontSize: "14px" }}
-              onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
-            >
-              포털 계정 연동하기
-            </CapsuleButton>
-            <FootnoteText style={{ marginTop: "12px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+            <CapsuleButtonWrapper>
+              <CapsuleButton
+                variant="brand"
+                onClick={() => navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT)}
+              >
+                포털 계정 연동하기
+              </CapsuleButton>
+            </CapsuleButtonWrapper>
+            <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
           </EmptyCard>
         ) : isFetched ? (
           <>
-            <UpdateInfoText>
-              마지막 업데이트: {formatKoreanDateTime(lastUpdated)}
-            </UpdateInfoText>
-            <TitleContentArea title={"기본 인적 사항"}>
+            {lastUpdated && (
+              <UpdateInfoText>
+                마지막 업데이트: {formatKoreanDateTime(lastUpdated)}
+              </UpdateInfoText>
+            )}
+            <TitleContentArea title="기본 인적 사항">
               <Box>
                 <InfoGrid>
-                  <div>
+                  <InfoRowItem>
                     <InfoItem
                       title="성명"
-                      description={`${studentInfo?.koreanName} (${studentInfo?.englishName})`}
+                      description={
+                        studentInfo?.koreanName
+                          ? `${studentInfo.koreanName} (${studentInfo?.englishName || ""})`
+                          : "-"
+                      }
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="생년월일"
-                      description={studentInfo?.birthDate || ""}
+                      description={studentInfo?.birthDate || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="성별"
-                      description={studentInfo?.genderName || ""}
+                      description={studentInfo?.genderName || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="휴대전화"
-                      description={studentInfo?.mobilePhone || ""}
+                      description={studentInfo?.mobilePhone || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="국적"
-                      description={studentInfo?.nationalityName || ""}
+                      description={studentInfo?.nationalityName || "-"}
                     />
-                  </div>
+                  </InfoRowItem>
                 </InfoGrid>
               </Box>
             </TitleContentArea>
-            <TitleContentArea title={"소속 및 학적 상태"}>
+
+            <TitleContentArea title="소속 및 학적 상태">
               <Box>
                 <InfoGrid>
-                  <div>
+                  <InfoRowItem>
                     <InfoItem
                       title="학번"
-                      description={studentInfo?.studentId || ""}
+                      description={studentInfo?.studentId || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="학적상태"
-                      description={studentInfo?.enrollmentStatusName || ""}
+                      description={studentInfo?.enrollmentStatusName || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="과정"
-                      description={studentInfo?.courseName || ""}
+                      description={studentInfo?.courseName || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="단과대학"
                       description={studentInfo?.collegeName || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div className="grid-item">
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem className="grid-item">
                     <InfoItem
                       title="학과(전공)"
                       description={studentInfo?.majorName || "-"}
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="지도교수"
-                      description={studentInfo?.advisorProfessorName || ""}
+                      description={studentInfo?.advisorProfessorName || "-"}
                     />
-                  </div>
+                  </InfoRowItem>
                 </InfoGrid>
               </Box>
             </TitleContentArea>
-            <TitleContentArea title={"이수 및 성적 정보"}>
+
+            <TitleContentArea title="이수 및 성적 정보">
               <Box>
                 <InfoGrid>
-                  <div>
+                  <InfoRowItem>
                     <InfoItem
                       title="평균평점"
-                      description={`${studentInfo?.gradeAverage?.trim()} / 4.5`}
+                      description={
+                        studentInfo?.gradeAverage
+                          ? `${studentInfo.gradeAverage.trim()} / 4.5`
+                          : "-"
+                      }
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="취득학점"
-                      description={`${studentInfo?.acquiredCredits} 학점`}
+                      description={
+                        studentInfo?.acquiredCredits !== undefined
+                          ? `${studentInfo.acquiredCredits} 학점`
+                          : "-"
+                      }
                     />
-                    <Divider />
-                  </div>
-                  <div className="grid-item">
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem className="grid-item">
                     <InfoItem
                       title="이수학기"
-                      description={`${studentInfo?.completedSemesterCount} 학기`}
+                      description={
+                        studentInfo?.completedSemesterCount !== undefined
+                          ? `${studentInfo.completedSemesterCount} 학기`
+                          : "-"
+                      }
                     />
-                    <Divider />
-                  </div>
-                  <div>
+                    <Divider margin="0" />
+                  </InfoRowItem>
+                  <InfoRowItem>
                     <InfoItem
                       title="졸업예정"
                       description={
@@ -384,20 +409,12 @@ const BasicInfoPage = () => {
                           : "비대상"
                       }
                     />
-                  </div>
+                  </InfoRowItem>
                 </InfoGrid>
               </Box>
             </TitleContentArea>
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                marginTop: "16px",
-                gap: "12px",
-              }}
-            >
+            <ActionAreaContainer>
               <ActionButton
                 as="button"
                 onClick={handleMainAction}
@@ -405,18 +422,10 @@ const BasicInfoPage = () => {
               >
                 {isLoading ? (loadingMessage || "가져오는 중...") : "최신 정보 다시 가져오기"}
               </ActionButton>
-            </div>
+            </ActionAreaContainer>
           </>
         ) : (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginTop: "16px",
-              gap: "12px",
-            }}
-          >
+          <ActionAreaContainer>
             <ActionButton
               as="button"
               onClick={handleMainAction}
@@ -425,105 +434,125 @@ const BasicInfoPage = () => {
               {isLoading ? (loadingMessage || "가져오는 중...") : "포털에서 학적 정보 가져오기"}
             </ActionButton>
             <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
-          </div>
+          </ActionAreaContainer>
         )}
       </ContentSection>
-    </MoreAppsPageWrapper>
+    </BasicInfoPageWrapper>
   );
 };
 
 export default BasicInfoPage;
 
-const FootnoteText = styled.p`
-  margin: 8px 0 0;
-  font-size: 12.5px;
-  color: var(--text-tertiary);
-  text-align: center;
-  line-height: 1.4;
-`;
-
-const MoreAppsPageWrapper = styled.div`
+const BasicInfoPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 16px 16px 50px 16px;
+  gap: var(--space-5);
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   max-width: 600px;
   margin: 0 auto;
+  width: 100%;
   box-sizing: border-box;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
 `;
 
 const ContentSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
   width: 100%;
 `;
 
 const EmptyCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 32px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  gap: 8px;
+  gap: var(--space-2);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const EmptyTitle = styled.h3`
-  margin: 8px 0 0;
-  font-size: 16px;
-  font-weight: 700;
+  ${typography.heading2}
+  margin: 4px 0 0;
   color: var(--text-primary);
+  text-align: center;
 `;
 
 const EmptyDesc = styled.p`
-  margin: 0;
-  font-size: 13px;
+  ${typography.body2}
+  margin: 0 auto;
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: 1.5;
   max-width: 320px;
+  text-align: center;
+`;
+
+const CapsuleButtonWrapper = styled.div`
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const ActionAreaContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: var(--space-4);
+  gap: var(--space-3);
+  width: 100%;
+`;
+
+const FootnoteText = styled.p`
+  ${typography.caption1}
+  margin: 0;
+  color: var(--text-tertiary);
+  text-align: center;
 `;
 
 const UpdateInfoText = styled.div`
-  font-size: 12px;
+  ${typography.caption1}
   color: var(--text-tertiary);
   text-align: right;
   margin-top: -8px;
 `;
 
 const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   width: 100%;
+`;
 
-  .grid-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  @media (min-width: 480px) {
-    grid-template-columns: 1fr 1fr;
-
-    .grid-item:nth-last-child(-n + 2) > *:last-child {
-      display: none;
-    }
-  }
+const InfoRowItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;
 
 const InfoItemWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+
   .title {
+    ${typography.caption1}
     color: var(--text-tertiary);
-    font-size: 12px;
-    font-weight: 500;
   }
+
   .description {
+    ${typography.heading2}
     color: var(--text-primary);
-    font-size: 16px;
-    font-weight: 600;
   }
 `;

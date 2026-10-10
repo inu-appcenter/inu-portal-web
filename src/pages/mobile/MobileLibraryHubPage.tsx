@@ -460,9 +460,10 @@ export default function MobileLibraryHubPage() {
           res.errorMessage || "좌석 목록을 불러오지 못했습니다. 계정 연동 상태를 확인해 주세요."
         );
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("연동") || msg.includes("401") || msg.includes("인증")) {
         window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       } else {
         showAlert("좌석 조회 오류", "좌석 목록을 불러오는 중 오류가 발생했습니다.");
@@ -490,12 +491,13 @@ export default function MobileLibraryHubPage() {
           } else {
             showAlert("좌석 배정 실패", res.message || "좌석 배정에 실패했습니다.");
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error(e);
-          if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+          const msg = e instanceof Error ? e.message : "";
+          if (msg.includes("연동") || msg.includes("401") || msg.includes("인증")) {
             window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
           } else {
-            showAlert("좌석 배정 오류", e?.message || "좌석 배정 중 오류가 발생했습니다.");
+            showAlert("좌석 배정 오류", msg || "좌석 배정 중 오류가 발생했습니다.");
           }
         }
       },
@@ -614,9 +616,10 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("스터디룸 조회 안내", res.errorMessage || "스터디룸 정보를 불러오지 못했습니다.");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      if (e?.message?.includes("연동") || e?.message?.includes("401") || e?.message?.includes("인증")) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("연동") || msg.includes("401") || msg.includes("인증")) {
         window.dispatchEvent(new CustomEvent("openLibraryAccountModal"));
       } else {
         showAlert("스터디룸 조회 오류", "스터디룸 상세 정보를 불러오는 중 오류가 발생했습니다.");
@@ -699,8 +702,9 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("동반이용자 확인", res.message || "학산도서관 등록 이용자 정보와 일치하지 않습니다. 이름과 학번을 다시 확인해주세요.");
       }
-    } catch (e: any) {
-      showAlert("동반이용자 조회 오류", e?.message || "동반이용자 조회에 실패했습니다.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      showAlert("동반이용자 조회 오류", msg || "동반이용자 조회에 실패했습니다.");
     } finally {
       setIsSearchingCompanion(false);
     }
@@ -767,9 +771,10 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("예약 실패", res.message || "스터디룸 예약에 실패했습니다.");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      showAlert("예약 처리 오류", e?.message || "예약 처리 중 오류가 발생했습니다.");
+      const msg = e instanceof Error ? e.message : "";
+      showAlert("예약 처리 오류", msg || "예약 처리 중 오류가 발생했습니다.");
     } finally {
       setIsSubmittingBooking(false);
     }
@@ -806,8 +811,9 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("연장 실패", "좌석 연장에 실패했습니다.");
       }
-    } catch (e: any) {
-      showAlert("연장 오류", e?.message || "연장 처리 중 오류가 발생했습니다.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      showAlert("연장 오류", msg || "연장 처리 중 오류가 발생했습니다.");
     }
   };
 
@@ -838,8 +844,9 @@ export default function MobileLibraryHubPage() {
             }
           }
           await loadMyData();
-        } catch (e: any) {
-          showAlert("처리 오류", e?.message || "반납/취소 처리 중 오류가 발생했습니다.");
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : "";
+          showAlert("처리 오류", msg || "반납/취소 처리 중 오류가 발생했습니다.");
         }
       },
     });
@@ -856,8 +863,9 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("배정 확정 실패", res.message || "배정 확정에 실패했습니다.");
       }
-    } catch (e: any) {
-      showAlert("배정 확정 오류", e?.message || "배정 확정 중 오류가 발생했습니다.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      showAlert("배정 확정 오류", msg || "배정 확정 중 오류가 발생했습니다.");
     }
   };
 
@@ -877,8 +885,9 @@ export default function MobileLibraryHubPage() {
           } else {
             showAlert("취소 실패", "예약 취소에 실패했습니다.");
           }
-        } catch (e: any) {
-          showAlert("취소 오류", e?.message || "취소 중 오류가 발생했습니다.");
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : "";
+          showAlert("취소 오류", msg || "취소 중 오류가 발생했습니다.");
         }
       },
     });
@@ -894,8 +903,9 @@ export default function MobileLibraryHubPage() {
       } else {
         showAlert("체크인 실패", "입실 체크인에 실패했습니다.");
       }
-    } catch (e: any) {
-      showAlert("체크인 오류", e?.message || "체크인 중 오류가 발생했습니다.");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      showAlert("체크인 오류", msg || "체크인 중 오류가 발생했습니다.");
     }
   };
 
@@ -2057,14 +2067,15 @@ export default function MobileLibraryHubPage() {
 // ================= STYLES =================
 
 const Container = styled.div`
-  padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
+  box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {
     max-width: 1200px;
-    padding: 24px 0 80px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   }
 `;
 
@@ -2155,9 +2166,9 @@ const ToastMessage = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgb(240, 253, 244);
-  border: 1px solid rgb(187, 247, 208);
-  color: rgb(21, 128, 61);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-success);
+  color: var(--border-success);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13px;
@@ -2465,8 +2476,8 @@ const EmptyBox = styled.div`
   justify-content: center;
   padding: 36px 16px;
   background: var(--bg-muted);
-  border: 1px dashed var(--border-default);
-  border-radius: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
@@ -2547,8 +2558,9 @@ const FavBadge = styled.span<{ $isAvail: boolean }>`
   font-weight: 600;
   padding: 2px 5px;
   border-radius: 4px;
-  background: ${({ $isAvail }) => ($isAvail ? "rgb(220, 252, 231)" : "var(--bg-error)")};
-  color: ${({ $isAvail }) => ($isAvail ? "rgb(21, 128, 61)" : "var(--text-error)")};
+  background: ${({ $isAvail }) => ($isAvail ? "var(--bg-subtle)" : "var(--bg-error)")};
+  color: ${({ $isAvail }) => ($isAvail ? "var(--border-success)" : "var(--text-error)")};
+  border: 1px solid ${({ $isAvail }) => ($isAvail ? "var(--border-success)" : "var(--border-error)")};
 `;
 
 const FavBtnRow = styled.div`
@@ -2689,9 +2701,11 @@ const StudyOccupancyBadge = styled.span<{ $type: string }>`
   padding: 3px 7px;
   border-radius: 6px;
   background: ${({ $type }) =>
-    $type === "avail" ? "rgb(220, 252, 231)" : $type === "warning" ? "var(--yellow-100)" : "var(--bg-error)"};
+    $type === "avail" ? "var(--bg-subtle)" : $type === "warning" ? "var(--bg-warn)" : "var(--bg-error)"};
   color: ${({ $type }) =>
-    $type === "avail" ? "rgb(21, 128, 61)" : $type === "warning" ? "rgb(180, 83, 9)" : "var(--text-error)"};
+    $type === "avail" ? "var(--border-success)" : $type === "warning" ? "var(--text-warn)" : "var(--text-error)"};
+  border: 1px solid ${({ $type }) =>
+    $type === "avail" ? "var(--border-success)" : $type === "warning" ? "var(--border-warn)" : "var(--border-error)"};
 `;
 
 const QuotaBadge = styled.span`
@@ -2725,7 +2739,7 @@ const StudyPreviewSlot = styled.div<{ $type: string }>`
   flex: 1;
   border-radius: 3px;
   background: ${({ $type }) =>
-    $type === "avail" ? "rgb(134, 239, 172)" : $type === "occ" ? "rgb(252, 165, 165)" : "var(--gray-200)"};
+    $type === "avail" ? "var(--border-success)" : $type === "occ" ? "var(--text-error)" : "var(--gray-300)"};
 `;
 
 const StudyPreviewTimeLabels = styled.div`
@@ -2769,8 +2783,9 @@ const ActiveBadge = styled.span<{ $isTemp?: boolean }>`
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 6px;
-  background: ${({ $isTemp }) => ($isTemp ? "var(--yellow-100)" : "rgb(220, 252, 231)")};
-  color: ${({ $isTemp }) => ($isTemp ? "rgb(180, 83, 9)" : "rgb(21, 128, 61)")};
+  background: ${({ $isTemp }) => ($isTemp ? "var(--bg-warn)" : "var(--bg-subtle)")};
+  color: ${({ $isTemp }) => ($isTemp ? "var(--text-warn)" : "var(--border-success)")};
+  border: 1px solid ${({ $isTemp }) => ($isTemp ? "var(--border-warn)" : "var(--border-success)")};
 `;
 
 const SeatRoomTitle = styled.div`
@@ -2788,7 +2803,7 @@ const TempNoticeBox = styled.div`
   display: flex;
   gap: 10px;
   background: var(--bg-warn);
-  border: 1px solid rgb(254, 240, 138);
+  border: 1px solid var(--border-warn);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 12px;
@@ -2799,8 +2814,8 @@ const ExpiryBadge = styled.span<{ $urgent?: boolean }>`
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--yellow-100)")};
-  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "rgb(146, 64, 14)")};
+  background: ${({ $urgent }) => ($urgent ? "var(--bg-error)" : "var(--bg-warn)")};
+  color: ${({ $urgent }) => ($urgent ? "var(--text-error)" : "var(--text-warn)")};
 `;
 
 const NoticeBulletList = styled.ul`
@@ -2808,7 +2823,7 @@ const NoticeBulletList = styled.ul`
   padding: 0;
   list-style: none;
   font-size: 11.5px;
-  color: rgb(120, 53, 15);
+  color: var(--text-warn);
   line-height: 1.5;
 `;
 
@@ -3281,8 +3296,9 @@ const CompanionQuotaBadge = styled.span<{ $isSatisfied: boolean }>`
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 4px;
-  background: ${({ $isSatisfied }) => ($isSatisfied ? "rgb(220, 252, 231)" : "var(--bg-error)")};
-  color: ${({ $isSatisfied }) => ($isSatisfied ? "rgb(21, 128, 61)" : "var(--text-error)")};
+  background: ${({ $isSatisfied }) => ($isSatisfied ? "var(--bg-subtle)" : "var(--bg-error)")};
+  color: ${({ $isSatisfied }) => ($isSatisfied ? "var(--border-success)" : "var(--text-error)")};
+  border: 1px solid ${({ $isSatisfied }) => ($isSatisfied ? "var(--border-success)" : "var(--border-error)")};
 `;
 
 const CompanionInputRow = styled.div`

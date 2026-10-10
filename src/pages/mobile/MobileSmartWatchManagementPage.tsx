@@ -15,11 +15,12 @@ import Skeleton from "@/components/common/Skeleton";
 import Box from "@/components/common/Box";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import EmptyState from "@/components/common/EmptyState";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
+import { typography } from "@/styles/typography";
 import {
   Search,
   X,
-  Bell,
   Clock,
   Trash2,
   RefreshCw,
@@ -91,7 +92,7 @@ export default function MobileSmartWatchManagementPage() {
           setLocalJobs(localRes.data);
         }
       }
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("알림 목록 로드 실패:", e);
     } finally {
       setIsLoading(false);
@@ -99,7 +100,7 @@ export default function MobileSmartWatchManagementPage() {
   };
 
   useEffect(() => {
-    fetchAllJobs();
+    void fetchAllJobs();
   }, []);
 
   const handleConfirmCancel = async () => {
@@ -116,7 +117,7 @@ export default function MobileSmartWatchManagementPage() {
         );
       }
       setTargetJobToCancel(null);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("알림 취소 실패:", e);
       showAlert("알림 취소 오류", "알림 취소 처리에 실패했습니다.");
     } finally {
@@ -199,11 +200,21 @@ export default function MobileSmartWatchManagementPage() {
   const filteredPastJobs = pastJobs.filter(filterPredicate);
 
   return (
-    <Container>
-      <HubSection>
-        <HubCard onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
+    <Container as="main">
+      <HubSection as="section" aria-label="연관 서비스 바로가기">
+        <HubCard
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              navigate(ROUTES.SERVICES.LIBRARY);
+            }
+          }}
+        >
           <HubLeft>
-            <HubIconWrapper $bg="rgb(239, 246, 255)" $color="var(--primary)">
+            <HubIconWrapper $bg="var(--bg-brand)" $color="var(--interactive-primary)">
               <BookOpen size={18} />
             </HubIconWrapper>
             <HubContent>
@@ -211,12 +222,22 @@ export default function MobileSmartWatchManagementPage() {
               <HubDesc>열람실 잔여석 확인 및 빈자리 알림 신청</HubDesc>
             </HubContent>
           </HubLeft>
-          <ChevronRight size={18} color="var(--button-inactive)" />
+          <ChevronRight size={18} color="var(--text-disabled)" />
         </HubCard>
 
-        <HubCard onClick={() => navigate(ROUTES.SERVICES.LMS)}>
+        <HubCard
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate(ROUTES.SERVICES.LMS)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              navigate(ROUTES.SERVICES.LMS);
+            }
+          }}
+        >
           <HubLeft>
-            <HubIconWrapper $bg="rgb(240, 253, 244)" $color="var(--text-success)">
+            <HubIconWrapper $bg="var(--bg-subtle)" $color="var(--border-success)">
               <GraduationCap size={18} />
             </HubIconWrapper>
             <HubContent>
@@ -224,133 +245,162 @@ export default function MobileSmartWatchManagementPage() {
               <HubDesc>수강 강좌 및 과제 마감 일정 확인</HubDesc>
             </HubContent>
           </HubLeft>
-          <ChevronRight size={18} color="var(--button-inactive)" />
+          <ChevronRight size={18} color="var(--text-disabled)" />
         </HubCard>
       </HubSection>
 
-      <SectionHeader>
-        <SectionTitle>진행 중인 알림 ({filteredActiveJobs.length})</SectionTitle>
-        <RefreshButton onClick={fetchAllJobs} disabled={isLoading}>
-          <RefreshCw size={13} className={isLoading ? "spin" : ""} />
-          <span>새로고침</span>
-        </RefreshButton>
-      </SectionHeader>
+      <section aria-label="진행 중인 알림">
+        <SectionHeader>
+          <SectionTitle>진행 중인 알림 ({filteredActiveJobs.length})</SectionTitle>
+          <RefreshButton onClick={() => void fetchAllJobs()} disabled={isLoading}>
+            <RefreshCw size={13} className={isLoading ? "spin" : ""} />
+            <span>새로고침</span>
+          </RefreshButton>
+        </SectionHeader>
 
-      {/* 검색 및 필터 바 */}
-      {activeJobs.length > 0 && (
-        <FilterArea>
-          <SearchBox>
-            <Search size={16} color="var(--gray-500)" />
-            <SearchInput
-              type="text"
-              placeholder="알림 대상 또는 열람실/과목명 검색"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <ClearBtn onClick={() => setSearchQuery("")} type="button">
-                <X size={14} />
-              </ClearBtn>
-            )}
-          </SearchBox>
-          <ChipRow>
-            <FilterChip $active={filterType === "all"} onClick={() => setFilterType("all")}>
-              전체
-            </FilterChip>
-            <FilterChip $active={filterType === "library"} onClick={() => setFilterType("library")}>
-              도서관 좌석/스터디룸
-            </FilterChip>
-            <FilterChip $active={filterType === "assignment"} onClick={() => setFilterType("assignment")}>
-              과제 마감
-            </FilterChip>
-            <FilterChip $active={filterType === "server"} onClick={() => setFilterType("server")}>
-              서버 푸시
-            </FilterChip>
-            <FilterChip $active={filterType === "local"} onClick={() => setFilterType("local")}>
-              기기 알림
-            </FilterChip>
-          </ChipRow>
-        </FilterArea>
-      )}
+        {/* 검색 및 필터 바 */}
+        {activeJobs.length > 0 && (
+          <FilterArea>
+            <SearchBox>
+              <Search size={16} color="var(--text-tertiary)" />
+              <SearchInput
+                type="text"
+                placeholder="알림 대상 또는 열람실/과목명 검색"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="알림 검색"
+              />
+              {searchQuery && (
+                <ClearBtn onClick={() => setSearchQuery("")} type="button" aria-label="검색어 지우기">
+                  <X size={14} />
+                </ClearBtn>
+              )}
+            </SearchBox>
+            <ChipRow role="tablist" aria-label="알림 필터">
+              <FilterChip
+                type="button"
+                role="tab"
+                aria-selected={filterType === "all"}
+                $active={filterType === "all"}
+                onClick={() => setFilterType("all")}
+              >
+                전체
+              </FilterChip>
+              <FilterChip
+                type="button"
+                role="tab"
+                aria-selected={filterType === "library"}
+                $active={filterType === "library"}
+                onClick={() => setFilterType("library")}
+              >
+                도서관 좌석/스터디룸
+              </FilterChip>
+              <FilterChip
+                type="button"
+                role="tab"
+                aria-selected={filterType === "assignment"}
+                $active={filterType === "assignment"}
+                onClick={() => setFilterType("assignment")}
+              >
+                과제 마감
+              </FilterChip>
+              <FilterChip
+                type="button"
+                role="tab"
+                aria-selected={filterType === "server"}
+                $active={filterType === "server"}
+                onClick={() => setFilterType("server")}
+              >
+                서버 푸시
+              </FilterChip>
+              <FilterChip
+                type="button"
+                role="tab"
+                aria-selected={filterType === "local"}
+                $active={filterType === "local"}
+                onClick={() => setFilterType("local")}
+              >
+                기기 알림
+              </FilterChip>
+            </ChipRow>
+          </FilterArea>
+        )}
 
-      {isLoading ? (
-        <JobList>
-          {[1, 2].map((i) => (
-            <Box key={i} style={{ padding: "16px" }}>
-              <CardTop>
-                <Skeleton width="90px" height="20px" style={{ borderRadius: "6px" }} />
-                <Skeleton width="70px" height="16px" />
-              </CardTop>
-              <Skeleton width="180px" height="18px" style={{ margin: "10px 0 6px" }} />
-              <Skeleton width="220px" height="13px" />
-            </Box>
-          ))}
-        </JobList>
-      ) : !isMobileAppEnvironment() ? (
-        <EmptyBox>
-          <Smartphone size={32} color="var(--interactive-primary)" />
-          <EmptyText>INTIP 모바일 앱에서 이용할 수 있어요</EmptyText>
-          <EmptySubText>
-            도서관 빈자리 알림 및 과제 마감 리마인더는 INTIP 모바일 앱에서 제공돼요.
-          </EmptySubText>
-          <CapsuleButton
-            variant="brand"
-            style={{ marginTop: "8px", padding: "8px 16px", fontSize: "13px" }}
-            onClick={() => openIntipAppOrStore("smart-watch")}
-          >
-            앱에서 보기
-          </CapsuleButton>
-        </EmptyBox>
-      ) : activeJobs.length === 0 ? (
-        <EmptyBox>
-          <Bell size={28} color="var(--button-inactive)" />
-          <EmptyText>진행 중인 알림이 없어요</EmptyText>
-          <EmptySubText>
-            도서관 열람실이나 스터디룸, 과제 일정에서 빈자리 및 마감 알림을 등록해보세요.
-          </EmptySubText>
-        </EmptyBox>
-      ) : filteredActiveJobs.length === 0 ? (
-        <EmptyBox>
-          <Search size={28} color="var(--button-inactive)" />
-          <EmptyText>일치하는 알림이 없어요</EmptyText>
-          <EmptySubText>검색어나 필터 조건을 변경해보세요.</EmptySubText>
-        </EmptyBox>
-      ) : (
-        <JobList>
-          {filteredActiveJobs.map((job) => (
-            <Box key={`${job.source}_${job.id}`} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
-              <CardTop>
-                <BadgeGroup>
-                  <DomainBadge>{job.domainName}</DomainBadge>
-                  <SourceBadge $isServer={job.source === "SERVER"}>
-                    {job.source === "SERVER" ? <Cloud size={10} /> : <Smartphone size={10} />}
-                    <span>{job.source === "SERVER" ? "서버" : "기기"}</span>
-                  </SourceBadge>
-                </BadgeGroup>
-                {job.remainingMinutes !== undefined && (
-                  <RemainingTimeBadge>
-                    <Clock size={12} />
-                    <span>약 {job.remainingMinutes}분 남음</span>
-                  </RemainingTimeBadge>
-                )}
-              </CardTop>
-              <TargetName>{job.targetName}</TargetName>
-              <ConditionDesc>{job.conditionDesc}</ConditionDesc>
-              <CardFooter>
-                <NoticeText>{job.sourceDesc}</NoticeText>
-                <CancelButton onClick={() => setTargetJobToCancel(job)}>
-                  <Trash2 size={13} />
-                  <span>알림 취소</span>
-                </CancelButton>
-              </CardFooter>
-            </Box>
-          ))}
-        </JobList>
-      )}
+        {isLoading ? (
+          <JobList>
+            {[1, 2].map((i) => (
+              <Box key={i} style={{ padding: "16px" }}>
+                <CardTop>
+                  <Skeleton width="90px" height="20px" style={{ borderRadius: "6px" }} />
+                  <Skeleton width="70px" height="16px" />
+                </CardTop>
+                <Skeleton width="180px" height="18px" style={{ margin: "10px 0 6px" }} />
+                <Skeleton width="220px" height="13px" />
+              </Box>
+            ))}
+          </JobList>
+        ) : !isMobileAppEnvironment() ? (
+          <EmptyStateCard>
+            <EmptyStateContent>
+              <Smartphone size={32} color="var(--interactive-primary)" />
+              <EmptyStateTitle>INTIP 모바일 앱에서 이용할 수 있어요</EmptyStateTitle>
+              <EmptyStateDescription>
+                도서관 빈자리 알림 및 과제 마감 리마인더는 기기 백그라운드 환경이 지원되는 INTIP 모바일 앱에서 제공돼요.
+              </EmptyStateDescription>
+              <CapsuleButton
+                variant="brand"
+                style={{ marginTop: "12px", padding: "8px 20px" }}
+                onClick={() => openIntipAppOrStore("smart-watch")}
+              >
+                앱에서 열기
+              </CapsuleButton>
+            </EmptyStateContent>
+          </EmptyStateCard>
+        ) : activeJobs.length === 0 ? (
+          <EmptyStateCard>
+            <EmptyState padding="32px 0">진행 중인 알림이 없어요. 도서관이나 LMS 과제에서 알림을 등록해보세요.</EmptyState>
+          </EmptyStateCard>
+        ) : filteredActiveJobs.length === 0 ? (
+          <EmptyStateCard>
+            <EmptyState padding="32px 0">검색 조건과 일치하는 알림이 없어요.</EmptyState>
+          </EmptyStateCard>
+        ) : (
+          <JobList>
+            {filteredActiveJobs.map((job) => (
+              <Box key={`${job.source}_${job.id}`} style={{ padding: "16px", width: "100%", boxSizing: "border-box" }}>
+                <CardTop>
+                  <BadgeGroup>
+                    <DomainBadge>{job.domainName}</DomainBadge>
+                    <SourceBadge $isServer={job.source === "SERVER"}>
+                      {job.source === "SERVER" ? <Cloud size={11} /> : <Smartphone size={11} />}
+                      <span>{job.source === "SERVER" ? "서버" : "기기"}</span>
+                    </SourceBadge>
+                  </BadgeGroup>
+                  {job.remainingMinutes !== undefined && (
+                    <RemainingTimeBadge>
+                      <Clock size={12} />
+                      <span>약 {job.remainingMinutes}분 남음</span>
+                    </RemainingTimeBadge>
+                  )}
+                </CardTop>
+                <TargetName>{job.targetName}</TargetName>
+                <ConditionDesc>{job.conditionDesc}</ConditionDesc>
+                <CardFooter>
+                  <NoticeText>{job.sourceDesc}</NoticeText>
+                  <CancelButton type="button" onClick={() => setTargetJobToCancel(job)}>
+                    <Trash2 size={13} />
+                    <span>알림 취소</span>
+                  </CancelButton>
+                </CardFooter>
+              </Box>
+            ))}
+          </JobList>
+        )}
+      </section>
 
       {filteredPastJobs.length > 0 && (
-        <>
-          <SectionTitle style={{ marginTop: 28, marginBottom: 12 }}>
+        <PastSection as="section" aria-label="최근 완료된 알림">
+          <SectionTitle style={{ marginBottom: "12px" }}>
             최근 완료된 알림 ({filteredPastJobs.length})
           </SectionTitle>
           <JobList>
@@ -371,7 +421,7 @@ export default function MobileSmartWatchManagementPage() {
               );
             })}
           </JobList>
-        </>
+        </PastSection>
       )}
 
       <Modal
@@ -404,37 +454,42 @@ export default function MobileSmartWatchManagementPage() {
         }}
       />
 
-      <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+      <FootnoteText>기기 백그라운드 작업은 휴대폰 환경에 맞추어 안전하게 수행돼요.</FootnoteText>
     </Container>
   );
 }
 
 const Container = styled.div`
-  padding: 16px ${MOBILE_PAGE_GUTTER}px 40px;
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
   max-width: 600px;
   margin: 0 auto;
+  box-sizing: border-box;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 
   @media ${DESKTOP_MEDIA} {
     max-width: 1200px;
-    padding: 24px 0 40px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   }
 `;
 
+const PastSection = styled.div`
+  margin-top: var(--space-4);
+`;
+
 const FootnoteText = styled.p`
-  margin: 20px 0 0;
-  font-size: 12.5px;
+  margin: var(--space-4) 0 0;
+  ${typography.caption1}
   color: var(--text-tertiary);
   text-align: center;
-  line-height: 1.4;
 `;
 
 const HubSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-2);
   width: 100%;
   box-sizing: border-box;
 
@@ -451,16 +506,16 @@ const HubCard = styled.div`
   justify-content: space-between;
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
-  transition: transform 0.12s ease-in-out;
+  transition: transform 0.12s ease-in-out, background-color 0.12s ease;
 
   &:active {
     transform: scale(0.98);
-    background: var(--bg-muted);
+    background: var(--bg-subtle);
   }
 `;
 
@@ -473,7 +528,7 @@ const HubLeft = styled.div`
 const HubIconWrapper = styled.div<{ $bg: string; $color: string }>`
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: ${({ $bg }) => $bg};
   color: ${({ $color }) => $color};
   display: flex;
@@ -488,14 +543,14 @@ const HubContent = styled.div`
 `;
 
 const HubTitle = styled.div`
+  ${typography.heading2}
   font-size: 14px;
-  font-weight: 600;
   color: var(--text-primary);
 `;
 
 const HubDesc = styled.div`
-  font-size: 12px;
-  color: var(--text-secondary);
+  ${typography.caption1}
+  color: var(--text-tertiary);
   margin-top: 2px;
 `;
 
@@ -503,7 +558,7 @@ const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -512,7 +567,7 @@ const FilterArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: var(--space-3);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -523,7 +578,7 @@ const SearchBox = styled.div`
   gap: 8px;
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 9px 12px;
   width: 100%;
   box-sizing: border-box;
@@ -538,13 +593,13 @@ const SearchInput = styled.input`
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 13.5px;
+  ${typography.body2}
   color: var(--text-primary);
   outline: none;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-tertiary);
+    color: var(--text-disabled);
   }
 `;
 
@@ -557,7 +612,7 @@ const ClearBtn = styled.button`
   justify-content: center;
   color: var(--text-disabled);
   cursor: pointer;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 
   &:hover {
     color: var(--text-primary);
@@ -585,12 +640,11 @@ const FilterChip = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  font-size: 12.5px;
-  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  ${typography.label3}
   color: ${({ $active }) => ($active ? "var(--text-brand)" : "var(--text-secondary)")};
   background: ${({ $active }) => ($active ? "var(--bg-brand)" : "var(--bg-muted)")};
   border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: all 0.12s ease;
   white-space: nowrap;
@@ -600,9 +654,8 @@ const FilterChip = styled.button<{ $active: boolean }>`
   }
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 15px;
-  font-weight: 700;
+const SectionTitle = styled.h2`
+  ${typography.title4}
   color: var(--text-primary);
   margin: 0;
 `;
@@ -613,8 +666,8 @@ const RefreshButton = styled.button`
   gap: 4px;
   background: none;
   border: none;
-  font-size: 12px;
-  color: var(--text-secondary);
+  ${typography.label3}
+  color: var(--text-tertiary);
   cursor: pointer;
 
   .spin {
@@ -630,33 +683,39 @@ const RefreshButton = styled.button`
   }
 `;
 
-const EmptyBox = styled.div`
+const EmptyStateCard = styled(Box)`
+  padding: 32px 16px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+`;
+
+const EmptyStateContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
-  background: var(--bg-muted);
-  border: 1px dashed var(--border-default);
-  border-radius: 16px;
   text-align: center;
-  gap: 8px;
   width: 100%;
-  box-sizing: border-box;
+  gap: var(--space-2);
 `;
 
-const EmptyText = styled.div`
-  font-size: 14px;
-  font-weight: 600;
+const EmptyStateTitle = styled.div`
+  ${typography.heading2}
   color: var(--text-primary);
-  margin-top: 4px;
+  margin-top: var(--space-1);
+  text-align: center;
 `;
 
-const EmptySubText = styled.div`
-  font-size: 12px;
-  color: var(--text-secondary);
+const EmptyStateDescription = styled.div`
+  ${typography.body2}
+  color: var(--text-tertiary);
+  max-width: 320px;
   line-height: 1.5;
-  max-width: 280px;
+  text-align: center;
+  margin: 0 auto;
 `;
 
 const JobList = styled.div`
@@ -689,7 +748,7 @@ const BadgeGroup = styled.div`
 `;
 
 const DomainBadge = styled.span`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   color: var(--text-brand);
   background: var(--bg-brand);
@@ -701,33 +760,32 @@ const SourceBadge = styled.span<{ $isServer: boolean }>`
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   padding: 3px 7px;
   border-radius: 6px;
-  background: ${({ $isServer }) => ($isServer ? "rgb(240, 253, 244)" : "var(--bg-brand)")};
-  color: ${({ $isServer }) => ($isServer ? "var(--text-success)" : "rgb(124, 58, 237)")};
+  background: ${({ $isServer }) => ($isServer ? "var(--bg-subtle)" : "var(--bg-brand)")};
+  color: ${({ $isServer }) => ($isServer ? "var(--border-success)" : "var(--text-brand)")};
 `;
 
 const RemainingTimeBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  ${typography.caption1}
   font-weight: 600;
-  color: rgb(217, 119, 6);
+  color: var(--text-warn);
 `;
 
 const TargetName = styled.div`
-  font-size: 15px;
-  font-weight: 600;
+  ${typography.heading2}
   color: var(--text-primary);
   width: 100%;
   box-sizing: border-box;
 `;
 
 const ConditionDesc = styled.div`
-  font-size: 13px;
+  ${typography.body2}
   color: var(--text-secondary);
   margin-top: 4px;
   width: 100%;
@@ -746,7 +804,7 @@ const CardFooter = styled.div`
 `;
 
 const NoticeText = styled.span`
-  font-size: 11px;
+  ${typography.caption1}
   color: var(--text-disabled);
 `;
 
@@ -755,17 +813,17 @@ const CancelButton = styled.button`
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  font-size: 12px;
+  ${typography.label3}
   color: var(--text-error);
   background: var(--bg-error);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: opacity 0.15s ease;
 
   &:active {
-    background: var(--bg-error);
+    opacity: 0.8;
   }
 `;
 
@@ -776,28 +834,28 @@ const PastJobCard = styled.div`
   padding: 12px 16px;
   background: var(--bg-muted);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   width: 100%;
   box-sizing: border-box;
 `;
 
 const PastJobTitle = styled.div`
-  font-size: 13px;
-  font-weight: 600;
+  ${typography.heading3}
   color: var(--text-secondary);
 `;
 
 const PastJobTime = styled.div`
-  font-size: 11px;
+  ${typography.caption1}
   color: var(--text-disabled);
   margin-top: 2px;
 `;
 
 const StatusTag = styled.span<{ $status: string }>`
-  font-size: 11px;
+  ${typography.caption1}
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
-  background: ${({ $status }) => ($status === "NOTIFIED" ? "rgb(220, 252, 231)" : "var(--bg-muted)")};
-  color: ${({ $status }) => ($status === "NOTIFIED" ? "rgb(21, 128, 61)" : "var(--gray-600)")};
+  background: ${({ $status }) => ($status === "NOTIFIED" ? "var(--bg-subtle)" : "var(--bg-muted)")};
+  color: ${({ $status }) => ($status === "NOTIFIED" ? "var(--border-success)" : "var(--text-tertiary)")};
+  border: 1px solid ${({ $status }) => ($status === "NOTIFIED" ? "var(--border-success)" : "var(--border-default)")};
 `;

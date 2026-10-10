@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import ActionButton from "@/components/common/ActionButton";
+import EmptyState from "@/components/common/EmptyState";
+import CapsuleButton from "@/components/common/CapsuleButton";
 import { ROUTES } from "@/constants/routes";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import {
@@ -28,6 +30,8 @@ import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { formatKoreanDateTime } from "@/utils/date";
 import { secureStorage } from "@/utils/secureStorage";
+import { typography } from "@/styles/typography";
+import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import {
   Clock,
   Smartphone,
@@ -426,7 +430,31 @@ const PortalDormitoryLabPage = () => {
     }
   }, [isLabsFlagFetched, isLabsEnabled, navigate]);
 
-  const [fallbackAcademic, setFallbackAcademic] = useState<any>(null);
+  interface FallbackAcademicData extends Partial<DormitoryStudentInfo> {
+    name?: string;
+    korNm?: string;
+    englishName?: string;
+    stuno?: string;
+    gender?: string;
+    nationality?: string;
+    department?: string;
+    grade?: string;
+    phoneNumber?: string;
+    email?: string;
+    profNm?: string;
+    mrksAvg?: string;
+    cptnTmNm?: string;
+    entrDt?: string;
+    schregStGbn?: string;
+    grdtExpcYn?: string;
+    rrn?: string;
+    photoBase64?: string;
+    profile?: DormitoryStudentInfo["profile"];
+    rawFields?: Record<string, string>;
+    studentName?: string;
+  }
+
+  const [fallbackAcademic, setFallbackAcademic] = useState<FallbackAcademicData | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -435,11 +463,13 @@ const PortalDormitoryLabPage = () => {
         const cached = await secureStorage.getItem(STORAGE_KEY_DORMITORY_DATA);
         const cachedTime = localStorage.getItem(STORAGE_KEY_DORMITORY_UPDATED);
         const academicCached = await secureStorage.getItem("portal_student_info");
-        let academicParsed: any = null;
+        let academicParsed: FallbackAcademicData | null = null;
         if (academicCached) {
           try {
-            academicParsed = parseDormitoryStudentInfo(academicCached);
-          } catch {}
+            academicParsed = parseDormitoryStudentInfo(academicCached) as FallbackAcademicData;
+          } catch (err) {
+            void err;
+          }
         }
 
         if (!isMounted) return;
@@ -449,7 +479,6 @@ const PortalDormitoryLabPage = () => {
         if (cached) {
           const restored = parseDormitoryStudentInfo(cached);
 
-          // 만약 복원된 dormInfo의 studentName이나 rawFields가 비어있고 학적 캐시가 있으면 보강
           const hasValidRf = restored.rawFields && Object.keys(restored.rawFields).length > 0;
           if ((!restored.studentName || !hasValidRf) && academicParsed) {
             setDormInfo({
@@ -459,7 +488,7 @@ const PortalDormitoryLabPage = () => {
               studentId: restored.studentId || academicParsed.studentId,
               profile: restored.profile || academicParsed.profile,
               rawFields: hasValidRf ? restored.rawFields : academicParsed.rawFields,
-            });
+            } as DormitoryStudentInfo);
           } else {
             setDormInfo(restored);
           }
@@ -467,7 +496,7 @@ const PortalDormitoryLabPage = () => {
             setLastUpdated(cachedTime);
           }
         } else if (academicParsed) {
-          setDormInfo(academicParsed);
+          setDormInfo(academicParsed as DormitoryStudentInfo);
         }
       } catch (e) {
         console.warn("Dormitory cache load error:", e);
@@ -480,7 +509,6 @@ const PortalDormitoryLabPage = () => {
     };
   }, []);
 
-  // 새로고침 버튼을 눌렀을 때만 ERP 직접 조회 (진행 단계별 로깅)
   const loadDormitoryInfo = useCallback(async () => {
     startTimeRef.current = Date.now();
     setLogs([]);
@@ -507,7 +535,6 @@ const PortalDormitoryLabPage = () => {
       }
       addLog("AUTH_CHECK", "포털 계정 연동 확인 완료 (linked: true)", "success");
 
-      // 본인 학번 확인 및 사전 확보
       let myStudentId = resolveCurrentStudentId();
       if (!myStudentId) {
         addLog("ID_RESOLVE", "로컬에 학번 정보가 없어 학적 조회를 통해 본인 학번을 먼저 확인합니다...", "info");
@@ -534,7 +561,6 @@ const PortalDormitoryLabPage = () => {
       if (res.success && res.data) {
         const returnedId = res.data.profile?.studentId || res.data.studentId || "";
 
-        // 타인 데이터 노출 방지 안전장치 (Sanity Check)
         if (myStudentId && returnedId && returnedId !== myStudentId) {
           const warnMsg = `조회된 사생 학번(${returnedId})이 본인 학번(${myStudentId})과 일치하지 않습니다.`;
           addLog("SECURITY_ALERT", warnMsg, "error", "타인 정보 노출 방지를 위해 데이터를 거부했습니다.");
@@ -553,7 +579,6 @@ const PortalDormitoryLabPage = () => {
         );
 
         let finalDormData = res.data;
-        // 로컬에 기존 학적 사진이 있으면 병합
         try {
           const academicCached = await secureStorage.getItem("portal_student_info");
           if (academicCached) {
@@ -569,7 +594,9 @@ const PortalDormitoryLabPage = () => {
               };
             }
           }
-        } catch {}
+        } catch (err) {
+          void err;
+        }
 
         setDormInfo(finalDormData);
         const nowIso = new Date().toISOString();
@@ -589,14 +616,13 @@ const PortalDormitoryLabPage = () => {
           addLog("CACHE_WARN", "보안 스토리지 캐시 저장 실패", "warn", String(storageErr));
         }
 
-        // 학적 사진이 아직 없으면 백그라운드에서 학적 정보를 함께 조회하여 증명사진 동기화
         if (!finalDormData.photoBase64 && !finalDormData.profile?.photoBase64) {
           addLog("ACADEMIC_SYNC", "학적 증명사진 및 추가 정보를 확인하는 중...", "info");
           fetchAcademicInfoFromApp(false)
             .then((acRes) => {
               if (acRes.success && acRes.data) {
                 const rf = acRes.data.rawFields || {};
-                const photo = (acRes.data as any).photoBase64 || rf.phtFile2 || rf.phtFile1 || rf.phtFile;
+                const photo = (acRes.data as { photoBase64?: string }).photoBase64 || rf.phtFile2 || rf.phtFile1 || rf.phtFile;
                 void secureStorage.setItem("portal_student_info", acRes.data);
                 if (photo) {
                   setDormInfo((prev) => {
@@ -615,7 +641,9 @@ const PortalDormitoryLabPage = () => {
                 }
               }
             })
-            .catch(() => {});
+            .catch((err) => {
+              void err;
+            });
         }
       } else {
         const errMsg = res.errorMessage || "사생 정보 조회 중 오류가 발생했습니다.";
@@ -625,11 +653,11 @@ const PortalDormitoryLabPage = () => {
           "error",
           `ErrorCode: ${res.errorCode || "UNKNOWN"}`
         );
-        setShowLogs(true); // 실패 시 로그를 즉시 확인/복사할 수 있도록 자동 펼침
+        setShowLogs(true);
         alert(errMsg);
       }
-    } catch (e: any) {
-      const errMsg = e?.message || "사생 정보 조회 실패";
+    } catch (e: unknown) {
+      const errMsg = e instanceof Error ? e.message : "사생 정보 조회 실패";
       addLog("EXCEPTION", `예외 발생: ${errMsg}`, "error", String(e));
       setShowLogs(true);
       alert(errMsg);
@@ -640,7 +668,6 @@ const PortalDormitoryLabPage = () => {
     }
   }, [addLog]);
 
-  // 특정 탭(공공요금 또는 서약서) 단독 온디맨드 조회 (상세 로깅)
   const [tabLoading, setTabLoading] = useState<string | null>(null);
   const handleFetchTabSpecific = useCallback(
     async (tabType: "utility" | "pledge") => {
@@ -693,8 +720,8 @@ const PortalDormitoryLabPage = () => {
           setShowLogs(true);
           alert(errMsg);
         }
-      } catch (e: any) {
-        const errMsg = e?.message || "상세 내역 조회 실패";
+      } catch (e: unknown) {
+        const errMsg = e instanceof Error ? e.message : "상세 내역 조회 실패";
         addLog("TAB_EXCEPTION", `[${tabName}] 예외 발생: ${errMsg}`, "error", String(e));
         setShowLogs(true);
         alert(errMsg);
@@ -706,10 +733,8 @@ const PortalDormitoryLabPage = () => {
     [addLog]
   );
 
-
   const profile = dormInfo?.profile;
 
-  // 모든 데이터 소스로부터 필드 매핑
   const studentName =
     profile?.name ||
     dormInfo?.studentName ||
@@ -801,7 +826,6 @@ const PortalDormitoryLabPage = () => {
   const year = profile?.year || dormInfo?.appliedYear || dormInfo?.rawFields?.yy || "";
   const term = profile?.term || dormInfo?.appliedSemester || dormInfo?.rawFields?.tmGbn || "";
 
-  // 확장 학적/신원 필드
   const professorName =
     profile?.professorName ||
     dormInfo?.rawFields?.profNm ||
@@ -845,7 +869,6 @@ const PortalDormitoryLabPage = () => {
     fallbackAcademic?.rawFields?.rrn ||
     "";
 
-  // 프로필 이미지 소스 계산
   const profilePhotoSrc = useMemo(() => {
     const rawPhoto =
       profile?.photoBase64 ||
@@ -866,7 +889,6 @@ const PortalDormitoryLabPage = () => {
     return null;
   }, [profile, dormInfo, fallbackAcademic]);
 
-  // 원시 필드 목록 (profile, dormInfo, fallbackAcademic 종합)
   const rawEntries = useMemo(() => {
     let rf = profile?.rawFields || dormInfo?.rawFields;
     if (!rf || Object.keys(rf).length === 0) {
@@ -887,7 +909,7 @@ const PortalDormitoryLabPage = () => {
   const pledge = dormInfo?.pledge || null;
 
   return (
-    <Container>
+    <Container as="main">
       <Breadcrumb>
         <span>부속행정</span>
         <ChevronRight size={11} />
@@ -905,46 +927,40 @@ const PortalDormitoryLabPage = () => {
       >
         {!isMobileAppEnvironment() && (
           <WebFallbackCard>
-            <Smartphone size={28} />
+            <Smartphone size={28} color="var(--interactive-primary)" />
             <div className="title">모바일 앱 전용 기능</div>
             <div className="desc">
               학교 포털 ERP 연동은 INTIP 앱 내부의 보안 세션을 통해 안전하게 조회됩니다.
             </div>
-            <ActionButton
-              as="button"
+            <CapsuleButton
+              variant="brand"
               onClick={() => openIntipAppOrStore(ROUTES.LABS.PORTAL.DORMITORY)}
             >
               앱 열기
-            </ActionButton>
+            </CapsuleButton>
           </WebFallbackCard>
         )}
 
         <ActionBar>
-          <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+          <ButtonGroupRow>
             <ActionButton
               as="button"
               disabled={isLoading}
               onClick={loadDormitoryInfo}
-              style={{ flex: 1 }}
+              style={{ flex: 1, minWidth: 0 }}
             >
               <RefreshCw size={14} className={isLoading ? "spin" : ""} style={{ marginRight: 6 }} />
               {isLoading ? loadingMessage || "조회 중..." : "정보 새로고침"}
             </ActionButton>
-            <ActionButton
-              as="button"
+            <CapsuleButton
+              variant="brand"
               onClick={() => navigate(ROUTES.DORMITORY_CARD)}
-              style={{
-                flex: 1,
-                backgroundColor: "rgb(29, 78, 216)",
-                color: "var(--text-inverse)",
-                borderColor: "rgb(29, 78, 216)",
-                fontWeight: 600,
-              }}
+              style={{ flex: 1 }}
             >
               <CreditCard size={14} style={{ marginRight: 6 }} />
               모바일 사생증
-            </ActionButton>
-          </div>
+            </CapsuleButton>
+          </ButtonGroupRow>
           {lastUpdated && (
             <UpdatedTimeText>
               <Clock size={12} />
@@ -954,7 +970,7 @@ const PortalDormitoryLabPage = () => {
         </ActionBar>
 
         {/* 1. 상단 사생정보 카드 */}
-        <SectionBlock>
+        <SectionBlock as="section">
           <SectionHeader>
             <span className="title">사생정보</span>
             {year && term ? (
@@ -990,7 +1006,7 @@ const PortalDormitoryLabPage = () => {
               </IdentityWrapper>
             </ProfileTopArea>
 
-            {/* 상세 항목 리스트 (모바일 친화적인 키-값 그리드) */}
+            {/* 상세 항목 리스트 */}
             <InfoGrid>
               <InfoCell>
                 <span className="label">기숙사구분</span>
@@ -1047,60 +1063,76 @@ const PortalDormitoryLabPage = () => {
         </SectionBlock>
 
         {/* 2. 하단 7개 탭 네비게이션 */}
-        <SectionBlock>
+        <SectionBlock as="section">
           <TabsWrapper>
-            <TabsScrollContainer>
+            <TabsScrollContainer role="tablist" aria-label="기숙사 정보 탭">
               <TabChip
-                active={activeTab === "address"}
+                role="tab"
+                aria-selected={activeTab === "address"}
+                $active={activeTab === "address"}
                 onClick={() => setActiveTab("address")}
               >
                 <MapPin size={13} />
                 주소사항 ({addressList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "reward"}
+                role="tab"
+                aria-selected={activeTab === "reward"}
+                $active={activeTab === "reward"}
                 onClick={() => setActiveTab("reward")}
               >
                 <Award size={13} />
                 상벌점이력 ({rewardList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "inout"}
+                role="tab"
+                aria-selected={activeTab === "inout"}
+                $active={activeTab === "inout"}
                 onClick={() => setActiveTab("inout")}
               >
                 <LogIn size={13} />
                 입퇴사이력 ({inOutList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "apply"}
+                role="tab"
+                aria-selected={activeTab === "apply"}
+                $active={activeTab === "apply"}
                 onClick={() => setActiveTab("apply")}
               >
                 <ClipboardList size={13} />
                 신청이력 ({applyList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "payment"}
+                role="tab"
+                aria-selected={activeTab === "payment"}
+                $active={activeTab === "payment"}
                 onClick={() => setActiveTab("payment")}
               >
                 <CreditCard size={13} />
                 등록/환불 ({paymentList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "utility"}
+                role="tab"
+                aria-selected={activeTab === "utility"}
+                $active={activeTab === "utility"}
                 onClick={() => setActiveTab("utility")}
               >
                 <Zap size={13} />
                 공공요금 ({utilityList.length})
               </TabChip>
               <TabChip
-                active={activeTab === "pledge"}
+                role="tab"
+                aria-selected={activeTab === "pledge"}
+                $active={activeTab === "pledge"}
                 onClick={() => setActiveTab("pledge")}
               >
                 <FileCheck size={13} />
                 서약서 {pledge ? "(1)" : "(0)"}
               </TabChip>
               <TabChip
-                active={activeTab === "academic"}
+                role="tab"
+                aria-selected={activeTab === "academic"}
+                $active={activeTab === "academic"}
                 onClick={() => setActiveTab("academic")}
               >
                 <GraduationCap size={13} />
@@ -1138,30 +1170,7 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>조회된 주소 내역이 없습니다. (항목 안내 틀)</span>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailRow>
-                        <span className="k">우편번호</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">기본주소</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">상세주소</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">보호자 연락처</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyState padding="28px 0">조회된 주소 내역이 없습니다.</EmptyState>
                 )}
               </div>
             )}
@@ -1195,30 +1204,7 @@ const PortalDormitoryLabPage = () => {
                     })}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>부여된 상벌점 내역이 없습니다. (항목 안내 틀)</span>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">구분 (상점/벌점)</span>
-                        <span className="sub-text">부여일자 (-)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">상벌점명</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">부여 점수</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">사유</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyState padding="28px 0">부여된 상벌점 내역이 없습니다.</EmptyState>
                 )}
               </div>
             )}
@@ -1252,34 +1238,7 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>입퇴사 이력이 없습니다. (항목 안내 틀)</span>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">연도/학기 (기숙사구분)</span>
-                        <span className="sub-text">상태 (입사/퇴사)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">사생번호</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">호실정보</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">입사일자</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">퇴사일자</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyState padding="28px 0">입퇴사 이력이 없습니다.</EmptyState>
                 )}
               </div>
             )}
@@ -1317,30 +1276,7 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>기숙사 신청 내역이 없습니다. (항목 안내 틀)</span>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">연도/학기</span>
-                        <span className="sub-text">선발상태 (합격/불합격)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">신청구분</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">신청일자</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">거주기간</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyState padding="28px 0">기숙사 신청 내역이 없습니다.</EmptyState>
                 )}
               </div>
             )}
@@ -1402,46 +1338,7 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <Inbox size={15} />
-                      <span>등록금 납부 및 환불 내역이 없습니다. (항목 안내 틀)</span>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">구분 (등록/환불)</span>
-                        <span className="sub-text">일자 (-)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">학기</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">기숙사구분</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">총 납부금액</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">기숙사비(관리비)</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">식비</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">보증금</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">환불/입금계좌</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyState padding="28px 0">등록금 납부 및 환불 내역이 없습니다.</EmptyState>
                 )}
               </div>
             )}
@@ -1505,59 +1402,19 @@ const PortalDormitoryLabPage = () => {
                     ))}
                   </CardsList>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <div className="left-area">
-                        <Inbox size={15} />
-                        <span>공공요금 부과 내역이 없습니다. (항목 안내 틀)</span>
-                      </div>
-                      <FetchInlineButton
-                        disabled={tabLoading === "utility"}
-                        onClick={() => handleFetchTabSpecific("utility")}
-                      >
-                        <RefreshCw size={11} className={tabLoading === "utility" ? "spin" : ""} />
-                        {tabLoading === "utility" ? "조회 중..." : "상세 내역 불러오기"}
-                      </FetchInlineButton>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">사용월 (-)</span>
-                        <span className="sub-text">총 청구금액 (-)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">전기 (사용량 / 요금)</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">전기 지침 (전월 / 당월)</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">수도 (사용량 / 요금)</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">수도 지침 (전월 / 당월)</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">온수 / 난방 사용량</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">소계 / 시설분담금</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">납부상태 / 납부기한</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">납부 가상계좌</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyActionCard>
+                    <Inbox size={26} color="var(--text-tertiary)" />
+                    <span className="empty-title">공공요금 부과 내역이 없습니다</span>
+                    <span className="empty-desc">포털 시스템에서 공공요금 상세 내역을 가져올 수 있어요.</span>
+                    <CapsuleButton
+                      variant="brand"
+                      disabled={tabLoading === "utility"}
+                      onClick={() => handleFetchTabSpecific("utility")}
+                    >
+                      <RefreshCw size={13} className={tabLoading === "utility" ? "spin" : ""} style={{ marginRight: 6 }} />
+                      {tabLoading === "utility" ? "조회 중..." : "상세 내역 불러오기"}
+                    </CapsuleButton>
+                  </EmptyActionCard>
                 )}
               </div>
             )}
@@ -1588,39 +1445,19 @@ const PortalDormitoryLabPage = () => {
                     ) : null}
                   </DetailCard>
                 ) : (
-                  <CardsList>
-                    <EmptyBanner>
-                      <div className="left-area">
-                        <Inbox size={15} />
-                        <span>입사서약서 체결 내역이 없습니다. (항목 안내 틀)</span>
-                      </div>
-                      <FetchInlineButton
-                        disabled={tabLoading === "pledge"}
-                        onClick={() => handleFetchTabSpecific("pledge")}
-                      >
-                        <RefreshCw size={11} className={tabLoading === "pledge" ? "spin" : ""} />
-                        {tabLoading === "pledge" ? "조회 중..." : "서약서 내역 불러오기"}
-                      </FetchInlineButton>
-                    </EmptyBanner>
-                    <DetailCard style={{ opacity: 0.85 }}>
-                      <DetailCardHeader>
-                        <span className="status-pill neutral">서약서 서식</span>
-                        <span className="sub-text">동의일자 (-)</span>
-                      </DetailCardHeader>
-                      <DetailRow>
-                        <span className="k">동의여부</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">학생정보</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span className="k">서약서 내용</span>
-                        <span className="v text-muted">-</span>
-                      </DetailRow>
-                    </DetailCard>
-                  </CardsList>
+                  <EmptyActionCard>
+                    <Inbox size={26} color="var(--text-tertiary)" />
+                    <span className="empty-title">입사서약서 체결 내역이 없습니다</span>
+                    <span className="empty-desc">포털 시스템에서 서약서 상세 체결 정보를 불러올 수 있어요.</span>
+                    <CapsuleButton
+                      variant="brand"
+                      disabled={tabLoading === "pledge"}
+                      onClick={() => handleFetchTabSpecific("pledge")}
+                    >
+                      <RefreshCw size={13} className={tabLoading === "pledge" ? "spin" : ""} style={{ marginRight: 6 }} />
+                      {tabLoading === "pledge" ? "조회 중..." : "서약서 내역 불러오기"}
+                    </CapsuleButton>
+                  </EmptyActionCard>
                 )}
               </div>
             )}
@@ -1683,9 +1520,19 @@ const PortalDormitoryLabPage = () => {
           </TabBody>
         </SectionBlock>
 
-        {/* 4. 진행 진단 로그 콘솔 (타임스탬프 및 복사 기능) */}
-        <DebugSection>
-          <DebugHeader onClick={() => setShowLogs(!showLogs)}>
+        {/* 4. 진행 진단 로그 콘솔 */}
+        <DebugSection as="section">
+          <DebugHeader
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowLogs(!showLogs)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setShowLogs(!showLogs);
+              }
+            }}
+          >
             <div className="title">
               <Terminal size={13} />
               <span>진행 진단 로그 ({logs.length}건 기록)</span>
@@ -1716,8 +1563,8 @@ const PortalDormitoryLabPage = () => {
                   >
                     {isCopiedLogs ? (
                       <>
-                        <Check size={12} color="var(--text-success)" />
-                        <span style={{ color: "var(--text-success)" }}>복사 완료!</span>
+                        <Check size={12} color="var(--border-success)" />
+                        <span style={{ color: "var(--border-success)" }}>복사 완료!</span>
                       </>
                     ) : (
                       <>
@@ -1741,7 +1588,7 @@ const PortalDormitoryLabPage = () => {
               ) : (
                 <LogStream>
                   {logs.map((log) => (
-                    <LogLine key={log.id} level={log.level}>
+                    <LogLine key={log.id} $level={log.level}>
                       <span className="time">{log.timestamp}</span>
                       <span className="stage">[{log.stage}]</span>
                       <span className="level">[{log.level.toUpperCase()}]</span>
@@ -1758,9 +1605,19 @@ const PortalDormitoryLabPage = () => {
           )}
         </DebugSection>
 
-        {/* 5. 원시 파싱 데이터 토글 (정리된 디버그 뷰어) */}
-        <DebugSection>
-          <DebugHeader onClick={() => setShowRawFields(!showRawFields)}>
+        {/* 5. 원시 파싱 데이터 토글 */}
+        <DebugSection as="section">
+          <DebugHeader
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowRawFields(!showRawFields)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setShowRawFields(!showRawFields);
+              }
+            }}
+          >
             <div className="title">
               <Database size={13} />
               <span>원시 데이터 확인 ({rawEntries.length}개 필드)</span>
@@ -1829,65 +1686,76 @@ const PortalDormitoryLabPage = () => {
 export default PortalDormitoryLabPage;
 
 const Container = styled.div`
-  padding: 12px 16px 36px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(24px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-4);
   box-sizing: border-box;
   min-width: 0;
   overflow-x: hidden;
+
+  @media ${DESKTOP_MEDIA} {
+    max-width: 1200px;
+    padding: 24px 0 calc(32px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  }
 `;
 
 const Breadcrumb = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  ${typography.caption1}
   color: var(--text-tertiary);
   padding: 4px 6px;
   width: 100%;
   box-sizing: border-box;
 
   .current {
-    color: rgb(0, 85, 184);
+    color: var(--text-brand);
     font-weight: 600;
   }
 `;
 
 const WebFallbackCard = styled.div`
   background-color: var(--bg-base);
-  border: 1px dashed var(--border-strong);
-  border-radius: 14px;
-  padding: 20px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  gap: 8px;
-  color: var(--gray-600);
+  gap: var(--space-2);
   margin-top: 12px;
   width: 100%;
   box-sizing: border-box;
 
   .title {
-    font-size: 15px;
-    font-weight: 600;
+    ${typography.heading2}
     color: var(--text-primary);
+    text-align: center;
   }
 
   .desc {
-    font-size: 12px;
-    line-height: 1.4;
+    ${typography.body2}
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 4px;
+    max-width: 320px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
   }
 `;
 
 const ActionBar = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   margin-top: 10px;
   width: 100%;
   box-sizing: border-box;
@@ -1902,12 +1770,19 @@ const ActionBar = styled.div`
   }
 `;
 
+const ButtonGroupRow = styled.div`
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  align-items: stretch;
+`;
+
 const UpdatedTimeText = styled.div`
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
-  font-size: 11px;
+  ${typography.caption1}
   color: var(--text-tertiary);
   width: 100%;
   box-sizing: border-box;
@@ -1916,7 +1791,7 @@ const UpdatedTimeText = styled.div`
 const SectionBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
   margin-top: 4px;
   width: 100%;
   max-width: 100%;
@@ -1932,17 +1807,16 @@ const SectionHeader = styled.div`
   box-sizing: border-box;
 
   .title {
-    font-size: 15px;
-    font-weight: 700;
+    ${typography.heading2}
     color: var(--text-primary);
   }
 
   .term-badge {
-    font-size: 11px;
+    ${typography.caption1}
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: var(--radius-full);
     background-color: var(--bg-muted);
-    color: var(--gray-700);
+    color: var(--text-secondary);
     font-weight: 500;
   }
 `;
@@ -1953,9 +1827,8 @@ const CardContainer = styled.div`
   box-sizing: border-box;
   background-color: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 `;
 
 const ProfileTopArea = styled.div`
@@ -1964,7 +1837,7 @@ const ProfileTopArea = styled.div`
   gap: 14px;
   padding: 16px;
   background-color: var(--bg-base);
-  border-bottom: 1px solid var(--bg-base);
+  border-bottom: 1px solid var(--border-default);
   width: 100%;
   box-sizing: border-box;
 `;
@@ -1973,7 +1846,7 @@ const AvatarWrapper = styled.div`
   width: 76px;
   height: 98px;
   flex-shrink: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
   background-color: var(--bg-subtle);
   overflow: hidden;
@@ -1993,7 +1866,7 @@ const AvatarWrapper = styled.div`
     align-items: center;
     gap: 4px;
     color: var(--text-tertiary);
-    font-size: 10px;
+    ${typography.caption1}
   }
 `;
 
@@ -2011,20 +1884,19 @@ const IdentityWrapper = styled.div`
     flex-wrap: wrap;
 
     .name {
-      font-size: 17px;
-      font-weight: 700;
+      ${typography.title2}
       color: var(--text-primary);
     }
 
     .eng-name {
-      font-size: 12px;
-      color: var(--gray-600);
+      ${typography.caption1}
+      color: var(--text-tertiary);
     }
   }
 
   .student-id {
-    font-size: 12px;
-    color: var(--gray-700);
+    ${typography.body2}
+    color: var(--text-secondary);
     font-weight: 500;
   }
 
@@ -2035,9 +1907,9 @@ const IdentityWrapper = styled.div`
     margin-top: 4px;
 
     .tag {
-      font-size: 11px;
+      ${typography.caption1}
       padding: 2px 6px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       background-color: var(--bg-muted);
       color: var(--text-secondary);
 
@@ -2055,7 +1927,7 @@ const InfoGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 14px;
+  padding: 12px 16px;
   gap: 10px 14px;
 
   @media (max-width: 380px) {
@@ -2068,16 +1940,16 @@ const InfoCell = styled.div<{ fullWidth?: boolean }>`
   grid-column: ${({ fullWidth }) => (fullWidth ? "1 / -1" : "auto")};
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 
   .label {
-    font-size: 11px;
+    ${typography.caption1}
     color: var(--text-tertiary);
   }
 
   .value {
-    font-size: 13px;
+    ${typography.body2}
     color: var(--text-primary);
     font-weight: 500;
     word-break: break-all;
@@ -2090,9 +1962,9 @@ const PointBar = styled.div`
   width: 100%;
   box-sizing: border-box;
   gap: 8px;
-  padding: 10px 14px 14px;
+  padding: 12px 16px 14px;
   background-color: var(--bg-subtle);
-  border-top: 1px solid var(--bg-base);
+  border-top: 1px solid var(--border-default);
 `;
 
 const PointChip = styled.div`
@@ -2101,22 +1973,22 @@ const PointChip = styled.div`
   align-items: center;
   background-color: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 6px 4px;
   min-width: 0;
 
   .title {
-    font-size: 10px;
-    color: var(--gray-600);
+    ${typography.caption1}
+    color: var(--text-tertiary);
   }
 
   .score {
-    font-size: 15px;
+    ${typography.heading2}
     font-weight: 700;
 
     &.merit { color: var(--text-brand); }
     &.demerit { color: var(--text-error); }
-    &.fixed { color: rgb(217, 119, 6); }
+    &.fixed { color: var(--text-warn); }
   }
 `;
 
@@ -2142,21 +2014,25 @@ const TabsScrollContainer = styled.div`
   &::-webkit-scrollbar { display: none; }
 `;
 
-const TabChip = styled.button<{ active?: boolean }>`
+const TabChip = styled.button<{ $active?: boolean }>`
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 7px 11px;
-  font-size: 12px;
-  font-weight: ${({ active }) => (active ? "600" : "400")};
-  color: ${({ active }) => (active ? "rgb(0, 85, 184)" : "var(--gray-600)")};
-  background-color: ${({ active }) => (active ? "var(--bg-brand)" : "var(--bg-base)")};
-  border: 1px solid ${({ active }) => (active ? "var(--border-brand-subtle)" : "var(--border-default)")};
-  border-radius: 18px;
+  padding: 7px 12px;
+  ${typography.label3}
+  font-weight: ${({ $active }) => ($active ? "700" : "500")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--text-secondary)")};
+  background-color: ${({ $active }) => ($active ? "var(--text-primary)" : "var(--bg-muted)")};
+  border: 1px solid ${({ $active }) => ($active ? "transparent" : "var(--border-default)")};
+  border-radius: var(--radius-full);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--border-brand);
+  }
 `;
 
 const TabBody = styled.div`
@@ -2182,8 +2058,8 @@ const CardsList = styled.div`
 const DetailCard = styled.div`
   background-color: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2202,9 +2078,9 @@ const DetailCardHeader = styled.div`
   box-sizing: border-box;
 
   .status-pill {
-    font-size: 11px;
+    ${typography.caption1}
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
 
     &.merit {
@@ -2222,8 +2098,8 @@ const DetailCardHeader = styled.div`
   }
 
   .sub-text {
-    font-size: 11px;
-    color: var(--gray-600);
+    ${typography.caption1}
+    color: var(--text-tertiary);
 
     &.font-bold {
       font-weight: 600;
@@ -2236,13 +2112,13 @@ const DetailRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 12px;
+  ${typography.body2}
   width: 100%;
   box-sizing: border-box;
   gap: 8px;
 
   .k {
-    color: var(--gray-600);
+    color: var(--text-tertiary);
     flex-shrink: 0;
   }
 
@@ -2254,80 +2130,44 @@ const DetailRow = styled.div`
     &.font-bold {
       font-weight: 600;
     }
-
-    &.text-muted {
-      color: var(--text-tertiary);
-    }
   }
 `;
 
-const EmptyBanner = styled.div`
+const EmptyActionCard = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: var(--bg-subtle);
-  border-radius: 8px;
-  border: 1px dashed var(--border-strong);
-  font-size: 11px;
-  color: var(--gray-600);
-  font-weight: 500;
+  text-align: center;
+  gap: var(--space-2);
+  padding: 32px 16px;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   width: 100%;
   box-sizing: border-box;
 
-  .left-area {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .empty-title {
+    ${typography.heading3}
+    color: var(--text-primary);
   }
 
-  svg {
+  .empty-desc {
+    ${typography.caption1}
     color: var(--text-tertiary);
-    flex-shrink: 0;
-  }
-`;
-
-const FetchInlineButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-brand-subtle);
-  border-radius: 6px;
-  color: rgb(0, 85, 184);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 8px;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
-
-  &:hover:not(:disabled) {
-    background-color: var(--bg-brand);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .spin {
-    animation: spin 1s linear infinite;
+    margin-bottom: 4px;
   }
 `;
 
 const PledgeContentBox = styled.div`
   margin-top: 6px;
-  padding: 10px;
+  padding: 12px;
   background-color: var(--bg-subtle);
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: var(--radius-sm);
+  ${typography.caption1}
   line-height: 1.5;
-  color: var(--gray-700);
+  color: var(--text-secondary);
   white-space: pre-wrap;
-  max-height: 160px;
+  max-height: 180px;
   overflow-y: auto;
   width: 100%;
   box-sizing: border-box;
@@ -2336,7 +2176,7 @@ const PledgeContentBox = styled.div`
 const DebugSection = styled.div`
   margin-top: 12px;
   border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background-color: var(--bg-base);
   overflow: hidden;
   width: 100%;
@@ -2349,20 +2189,23 @@ const DebugHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 12px 14px;
   background-color: var(--bg-subtle);
   cursor: pointer;
   user-select: none;
   width: 100%;
   box-sizing: border-box;
 
+  &:focus-visible {
+    outline: 2px solid var(--border-brand);
+  }
+
   .title {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
-    color: var(--gray-600);
-    font-weight: 500;
+    ${typography.label3}
+    color: var(--text-secondary);
   }
 
   .log-badge {
@@ -2371,7 +2214,7 @@ const DebugHeader = styled.div`
     gap: 3px;
     font-size: 10px;
     padding: 1px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     font-weight: 600;
 
     &.error {
@@ -2381,19 +2224,19 @@ const DebugHeader = styled.div`
 
     &.running {
       background-color: var(--bg-brand);
-      color: rgb(2, 132, 199);
+      color: var(--text-brand);
     }
   }
 
   .toggle-hint {
-    font-size: 11px;
+    ${typography.caption1}
     color: var(--text-tertiary);
   }
 `;
 
 const LogConsoleBody = styled.div`
-  background-color: rgb(15, 23, 42);
-  padding: 10px 12px;
+  background-color: var(--gray-1000);
+  padding: 12px;
   width: 100%;
   box-sizing: border-box;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -2405,11 +2248,11 @@ const LogToolbar = styled.div`
   justify-content: space-between;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  border-bottom: 1px solid rgb(30, 41, 59);
+  border-bottom: 1px solid var(--gray-800);
   font-size: 11px;
 
   .log-meta {
-    color: var(--gray-600);
+    color: var(--gray-400);
     font-size: 10px;
   }
 
@@ -2425,10 +2268,10 @@ const LogActionButton = styled.button`
   align-items: center;
   gap: 4px;
   background-color: var(--gray-900);
-  border: 1px solid rgb(51, 65, 85);
-  color: var(--text-disabled);
+  border: 1px solid var(--gray-700);
+  color: var(--gray-200);
   font-size: 11px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 3px 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -2447,7 +2290,7 @@ const LogActionButton = styled.button`
 const LogEmptyNotice = styled.div`
   padding: 16px;
   text-align: center;
-  color: var(--gray-700);
+  color: var(--gray-500);
   font-size: 11px;
 `;
 
@@ -2461,19 +2304,19 @@ const LogStream = styled.div`
   scrollbar-width: thin;
 `;
 
-const LogLine = styled.div<{ level: string }>`
+const LogLine = styled.div<{ $level: string }>`
   font-size: 11px;
   line-height: 1.4;
   word-break: break-all;
 
   .time {
-    color: var(--gray-600);
+    color: var(--gray-500);
     margin-right: 6px;
     font-size: 10px;
   }
 
   .stage {
-    color: rgb(56, 189, 248);
+    color: var(--blue-300);
     margin-right: 4px;
     font-weight: 600;
   }
@@ -2481,14 +2324,14 @@ const LogLine = styled.div<{ level: string }>`
   .level {
     margin-right: 6px;
     font-weight: 700;
-    color: ${({ level }) =>
-      level === "error"
-        ? "rgb(248, 113, 113)"
-        : level === "warn"
-        ? "rgb(251, 191, 36)"
-        : level === "success"
-        ? "rgb(52, 211, 153)"
-        : "var(--text-tertiary)"};
+    color: ${({ $level }) =>
+      $level === "error"
+        ? "var(--red-500)"
+        : $level === "warn"
+        ? "var(--orange-500)"
+        : $level === "success"
+        ? "var(--green-500)"
+        : "var(--gray-400)"};
   }
 
   .msg {
@@ -2496,7 +2339,7 @@ const LogLine = styled.div<{ level: string }>`
   }
 
   .elapsed {
-    color: var(--gray-600);
+    color: var(--gray-500);
     margin-left: 6px;
     font-size: 10px;
   }
@@ -2504,8 +2347,8 @@ const LogLine = styled.div<{ level: string }>`
   .detail {
     margin-top: 2px;
     margin-left: 12px;
-    color: var(--text-disabled);
-    background-color: rgba(30, 41, 59, 0.7);
+    color: var(--gray-400);
+    background-color: rgba(255, 255, 255, 0.08);
     padding: 3px 6px;
     border-radius: 4px;
     font-size: 10px;
@@ -2528,15 +2371,15 @@ const MiniTable = styled.table`
 
   th {
     background-color: var(--bg-muted);
-    color: var(--gray-700);
-    padding: 4px 8px;
+    color: var(--text-secondary);
+    padding: 6px 8px;
     text-align: left;
     border-bottom: 1px solid var(--border-strong);
   }
 
   td {
-    padding: 4px 8px;
-    border-bottom: 1px solid var(--bg-base);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-default);
     font-family: monospace;
   }
 
@@ -2553,10 +2396,10 @@ const MiniTable = styled.table`
   }
 
   .empty-val {
-    color: var(--text-tertiary);
+    color: var(--text-disabled);
   }
 
   .photo-val {
-    color: var(--text-success);
+    color: var(--border-success);
   }
 `;
