@@ -11,11 +11,17 @@ import {
   mockGetPollParticipants,
   mockGetPollResult,
   mockGetPollRevision,
+  mockGetPollSendTargets,
   mockSharePoll,
   mockSubmitPoll,
   mockUpdatePoll,
 } from "@/mocks/mockSchedulePollStore";
+import { getMyChatRooms } from "@/apis/chat";
+import { getFriends } from "@/apis/friends";
+import { getBlockedUsers } from "@/apis/blocks";
 import useUserStore from "@/stores/useUserStore";
+import type { MyChatRoomResponseDto } from "@/types/chat";
+import type { FriendResponseDto } from "@/types/friends";
 import type { ApiResponse, PageResponse } from "@/types/common";
 import type {
   AddToTimetableResponse,
@@ -225,4 +231,35 @@ export const getMyPolls = async (
     ApiResponse<PageResponse<MyPollListItem>>
   >(`${BASE}/my`, { params: { filter, page, size: 20 } });
   return response.data.data;
+};
+
+export interface PollSendTargets {
+  chatRooms: MyChatRoomResponseDto[];
+  friends: FriendResponseDto[];
+}
+
+/**
+ * 보낼 곳 선택 시트의 [채팅방]·[친구] 탭 목록. 기존 API를 그대로 쓴다.
+ * 차단한 회원은 친구 탭에서 숨긴다(PRD 4-3).
+ */
+export const getPollSendTargets = async (): Promise<PollSendTargets> => {
+  if (isMockApiEnabled()) {
+    await mockDelay();
+    return mockGetPollSendTargets();
+  }
+  const [rooms, friends, blocks] = await Promise.all([
+    getMyChatRooms(),
+    getFriends(),
+    // 차단 목록을 못 받아도 시트는 열려야 한다. 차단 관계는 서버가 전송 시 다시 거른다.
+    getBlockedUsers().catch(() => null),
+  ]);
+  const blockedIds = new Set(
+    (blocks?.data ?? []).map((block) => block.blockedMemberId),
+  );
+  return {
+    chatRooms: rooms.data ?? [],
+    friends: (friends.data ?? []).filter(
+      (friend) => !blockedIds.has(friend.friendMemberId),
+    ),
+  };
 };

@@ -802,4 +802,99 @@ export const mixpanelTrack = {
       error_message: properties.errorMessage,
     });
   },
+  // ---- 시간 맞추기 (PRD v3.4 6-3 이벤트 로그) ----
+
+  pollCreate: (properties: {
+    pollId: number;
+    entry: "STANDALONE" | "CHAT";
+    isRecurring: boolean;
+    duration: string;
+    hasDeadline: boolean;
+  }) => {
+    trackEvent("poll_create", {
+      poll_id: properties.pollId,
+      entry: properties.entry,
+      is_recurring: properties.isRecurring,
+      duration: properties.duration,
+      has_deadline: properties.hasDeadline,
+    });
+  },
+
+  pollLinkOpen: (properties: {
+    pollId: number;
+    loggedIn: boolean;
+    hasTimetable: boolean | null;
+  }) => {
+    trackEvent("poll_link_open", {
+      poll_id: properties.pollId,
+      logged_in: properties.loggedIn,
+      has_timetable: properties.hasTimetable,
+    });
+  },
+
+  pollJoin: (properties: {
+    pollId: number;
+    joinSource: string;
+    isCreator: boolean;
+  }) => {
+    trackEvent("poll_join", {
+      poll_id: properties.pollId,
+      join_source: properties.joinSource,
+      is_creator: properties.isCreator,
+    });
+  },
+
+  pollOverlayToggleCourse: (pollId: number, included: boolean) => {
+    trackEvent("poll_overlay_toggle_course", { poll_id: pollId, included });
+  },
+
+  pollModeToggle: (pollId: number, toMode: string) => {
+    trackEvent("poll_mode_toggle", { poll_id: pollId, to_mode: toMode });
+  },
+
+  pollSubmit: (properties: {
+    pollId: number;
+    availableCount: number;
+    importedCount: number;
+    via: "SUBMIT" | "ANYTIME";
+    isUpdate: boolean;
+  }) => {
+    trackEvent("poll_submit", {
+      poll_id: properties.pollId,
+      available_count: properties.availableCount,
+      imported_count: properties.importedCount,
+      via: properties.via,
+      is_update: properties.isUpdate,
+    });
+  },
+
+  pollShare: (properties: {
+    pollId: number;
+    kind: "INVITE" | "RESULT";
+    version: number | null;
+    chatRoomCount: number;
+    friendCount: number;
+    external?: "SHARE_SHEET" | "COPY_LINK";
+  }) => {
+    trackEvent("poll_share", {
+      poll_id: properties.pollId,
+      kind: properties.kind,
+      version: properties.version,
+      chat_room_count: properties.chatRoomCount,
+      friend_count: properties.friendCount,
+      external: properties.external,
+    });
+  },
+
+  pollAddToTimetable: (pollId: number, version: number) => {
+    trackEvent("poll_add_to_timetable", { poll_id: pollId, version });
+  },
+
+  realNamePromptShown: (source: string) => {
+    trackEvent("real_name_prompt_shown", { source });
+  },
+
+  realNameSaved: (source: string) => {
+    trackEvent("real_name_saved", { source });
+  },
 };

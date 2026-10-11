@@ -24,6 +24,8 @@ import type {
   UpdatePollRequest,
 } from "@/types/schedulePolls";
 import type { PageResponse } from "@/types/common";
+import type { MyChatRoomResponseDto } from "@/types/chat";
+import type { FriendResponseDto } from "@/types/friends";
 import {
   POLL_MAX_PARTICIPANTS,
   buildPollColumns,
@@ -728,3 +730,43 @@ export const mockGetMyPolls = (
     empty: content.length === 0,
   };
 };
+
+const mockRoom = (
+  roomId: number,
+  title: string,
+  currentParticipants: number,
+  minutesAgo: number,
+): MyChatRoomResponseDto => ({
+  roomId,
+  title,
+  type: "PERSONAL",
+  lastMessage: "",
+  lastMessageTime: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+  unreadCount: 0,
+  senderName: "",
+  senderProfileImageNumber: (roomId % 8) + 1,
+  owner: false,
+  official: false,
+  currentParticipants,
+  friendAlias: null,
+  pushEnabled: true,
+  thumbnailUrl: null,
+});
+
+export const mockGetPollSendTargets = (): {
+  chatRooms: MyChatRoomResponseDto[];
+  friends: FriendResponseDto[];
+} => ({
+  chatRooms: [
+    mockRoom(25, "캡스톤 3조", 4, 12),
+    mockRoom(31, "야르렁", 4, 240),
+    mockRoom(44, "박민서", 2, 2880),
+  ],
+  friends: OTHER_MEMBERS.map((member, index) => ({
+    friendId: 500 + index,
+    friendMemberId: member.memberId,
+    nickname: member.displayName,
+    studentId: member.maskedStudentId,
+    fireId: index + 1,
+  })),
+});

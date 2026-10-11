@@ -102,6 +102,8 @@ import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
 import MobileUnifiedSearchPage from "@/pages/mobile/search/MobileUnifiedSearchPage";
+import SchedulePollCreatePage from "@/pages/mobile/schedulePoll/SchedulePollCreatePage";
+import SchedulePollInvitePage from "@/pages/mobile/schedulePoll/SchedulePollInvitePage";
 
 export const router = createBrowserRouter([
   {
@@ -193,6 +195,13 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
+
+          // 시간 맞추기(일정 조율)
+          { path: ROUTES.SCHEDULE_POLL.NEW, element: <SchedulePollCreatePage /> },
+          {
+            path: ROUTES.SCHEDULE_POLL.INVITE_PATTERN,
+            element: <SchedulePollInvitePage />,
+          },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },

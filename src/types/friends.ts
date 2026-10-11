@@ -19,6 +19,8 @@ export interface FriendResponseDto {
   fireId: number;
   friendAlias?: string;
   department?: string;
+  /** 실명(PRD v3.4 FR-090). 서버 반영 전에는 내려오지 않는다 */
+  realName?: string | null;
 }
 
 /**

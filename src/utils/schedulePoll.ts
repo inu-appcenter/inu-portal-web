@@ -343,3 +343,15 @@ export const namesFromMask = (
   participants
     .filter((p) => (mask >> p.index) & 1)
     .map((p) => p.displayName);
+
+/**
+ * 서버가 준 참여 링크를 지금 열려 있는 origin 기준으로 바꾼다.
+ * 배포 환경(운영 / test.pages.dev)에 따라 공유 링크가 달라져야 해서, 경로만 믿고 origin은 현재 값을 쓴다.
+ */
+export const resolvePollLink = (linkUrl: string): string => {
+  try {
+    return `${window.location.origin}${new URL(linkUrl).pathname}`;
+  } catch {
+    return linkUrl;
+  }
+};
