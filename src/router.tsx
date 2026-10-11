@@ -105,6 +105,8 @@ import MobileUnifiedSearchPage from "@/pages/mobile/search/MobileUnifiedSearchPa
 import SchedulePollCreatePage from "@/pages/mobile/schedulePoll/SchedulePollCreatePage";
 import SchedulePollInvitePage from "@/pages/mobile/schedulePoll/SchedulePollInvitePage";
 import SchedulePollInputPage from "@/pages/mobile/schedulePoll/SchedulePollInputPage";
+import SchedulePollStatusPage from "@/pages/mobile/schedulePoll/SchedulePollStatusPage";
+import SchedulePollResultPage from "@/pages/mobile/schedulePoll/SchedulePollResultPage";
 
 export const router = createBrowserRouter([
   {
@@ -206,6 +208,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.SCHEDULE_POLL.INPUT_PATTERN,
             element: <SchedulePollInputPage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.STATUS_PATTERN,
+            element: <SchedulePollStatusPage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.RESULT_PATTERN,
+            element: <SchedulePollResultPage />,
           },
 
           //전화번호부
