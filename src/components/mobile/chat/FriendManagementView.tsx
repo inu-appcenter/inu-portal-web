@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { getDisplayName } from "@/utils/displayName";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -369,13 +370,14 @@ export default function FriendManagementView({
       result = result.filter(
         (f) =>
           f.nickname.toLowerCase().includes(term) ||
+          getDisplayName(f).toLowerCase().includes(term) ||
           (f.friendAlias && f.friendAlias.toLowerCase().includes(term)) ||
           (f.studentId && f.studentId.includes(term)),
       );
     }
     return [...result].sort((a, b) => {
-      const nameA = a.friendAlias || a.nickname;
-      const nameB = b.friendAlias || b.nickname;
+      const nameA = a.friendAlias || getDisplayName(a);
+      const nameB = b.friendAlias || getDisplayName(b);
       return sortOrder === "asc"
         ? nameA.localeCompare(nameB)
         : nameB.localeCompare(nameA);
@@ -535,7 +537,8 @@ export default function FriendManagementView({
                   }}
                 />
               </ProfileArea>
-              <NameRow>{friend.friendAlias || friend.nickname}</NameRow>
+              {/* 별명 → 실명 → 닉네임 순 (표시명 규칙, FR-093) */}
+              <NameRow>{friend.friendAlias || getDisplayName(friend)}</NameRow>
               {isSelectionMode && (
                 <SelectionCheckbox $selected={isSelected}>
                   {isSelected && <CheckIcon size={16} color="#ffffff" />}
@@ -671,7 +674,7 @@ export default function FriendManagementView({
                   />
                 </ProfileArea>
                 <MyProfileInfo>
-                  <MyProfileName>{userInfo.nickname}</MyProfileName>
+                  <MyProfileName>{getDisplayName(userInfo)}</MyProfileName>
                   <MyProfileDepartment>
                     {userInfo.department || "학과 정보 없음"}
                   </MyProfileDepartment>

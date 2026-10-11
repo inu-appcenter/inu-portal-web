@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import { patchSchoolDepartment, putMembers } from "@/apis/members";
+import {
+  patchMemberRealName,
+  patchSchoolDepartment,
+  putMembers,
+} from "@/apis/members";
 import useUserStore from "@/stores/useUserStore";
 import {
   getSchoolDepartments,
@@ -24,6 +28,9 @@ import { consumePendingReturnPath } from "@/utils/pendingReturnPath";
 
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
+const MAX_REAL_NAME_LENGTH = 30;
+/** 실명: 2~30자, 한글·영문·공백 (API v3.4 3-13) */
+const REAL_NAME_PATTERN = /^[가-힣a-zA-Z ]{2,30}$/;
 
 const FORBIDDEN_KEYWORDS = [
   "알림", "공지", "알람", "운영자", "운영진", "관리자", "시스템", "스태프", "어드민",
@@ -43,6 +50,7 @@ export default function UserModify() {
   const [nickname, setNickname] = useState(() =>
     normalizeOptionalText(userInfo.nickname),
   );
+  const [realName, setRealName] = useState(() => userInfo.realName);
   const [fireId, setFireId] = useState(() =>
     normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
   );
@@ -68,7 +76,13 @@ export default function UserModify() {
       normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID),
     );
     setDepartmentCode(normalizeOptionalText(userInfo.departmentCode));
-  }, [userInfo.departmentCode, userInfo.fireId, userInfo.nickname]);
+    setRealName(userInfo.realName);
+  }, [
+    userInfo.departmentCode,
+    userInfo.fireId,
+    userInfo.nickname,
+    userInfo.realName,
+  ]);
 
   useEffect(() => {
     let isMounted = true;
@@ -115,8 +129,13 @@ export default function UserModify() {
   const hasImageChanged =
     selectedFireId !==
     normalizeProfileImageId(userInfo.fireId, DEFAULT_PROFILE_IMAGE_ID);
+  const trimmedRealName = realName.trim();
+  const hasRealNameChanged = trimmedRealName !== userInfo.realName;
   const hasChanges =
-    hasNicknameChanged || hasValidDepartmentChange || hasImageChanged;
+    hasNicknameChanged ||
+    hasValidDepartmentChange ||
+    hasImageChanged ||
+    hasRealNameChanged;
   // 약관 동의가 필요한 상태라면 변경사항이 없어도 저장(동의)할 수 있어야 한다.
   const canSubmit =
     (hasChanges || needsTermsAgreement) &&
@@ -152,6 +171,16 @@ export default function UserModify() {
       return;
     }
 
+    // 이름은 비워 두면 삭제(수집 동의 철회)이고, 적었다면 형식을 지켜야 한다.
+    if (
+      hasRealNameChanged &&
+      trimmedRealName &&
+      !REAL_NAME_PATTERN.test(trimmedRealName)
+    ) {
+      alert("이름은 한글·영문 2~30자로 입력해주세요.");
+      return;
+    }
+
     try {
       setIsSaving(true);
 
@@ -177,11 +206,27 @@ export default function UserModify() {
         updatedUserInfo = response.data;
       }
 
+      if (hasRealNameChanged) {
+        // 웹은 직접 입력만 지원한다(자동 입력은 앱 전용).
+        const response = await patchMemberRealName({
+          realName: trimmedRealName,
+          realNameSource: "MANUAL",
+        });
+        updatedUserInfo = {
+          ...updatedUserInfo,
+          ...(response.data ?? {}),
+          realName: trimmedRealName,
+          needsRealName: false,
+        };
+        if (trimmedRealName) mixpanelTrack.realNameSaved("MANUAL");
+      }
+
       // 믹스패널 트래킹: 어떤 필드가 수정되었는지 기록
       const updatedFields: string[] = [];
       if (hasNicknameChanged) updatedFields.push("nickname");
       if (hasValidDepartmentChange) updatedFields.push("department");
       if (hasImageChanged) updatedFields.push("profile_image");
+      if (hasRealNameChanged) updatedFields.push("real_name");
 
       if (updatedFields.length > 0) {
         mixpanelTrack.profileUpdated(updatedFields);
@@ -199,7 +244,8 @@ export default function UserModify() {
 
       alert("성공적으로 수정되었습니다.");
 
-      navigate("/mypage");
+      // 이름 설정으로 강제 이동되어 온 경우에는 원래 보던 화면으로 돌려보낸다.
+      navigate(consumePendingReturnPath() ?? "/mypage");
     } catch (error: any) {
       console.error("회원정보 수정 실패", error);
       const errorResponse = error.response?.data;
@@ -219,6 +265,29 @@ export default function UserModify() {
 
   return (
     <UserModifyWrapper>
+      <SectionCard>
+        <SectionTop>
+          <div>
+            <h3>이름</h3>
+            <p>
+              친구·채팅·시간 맞추기에서 닉네임 대신 보여요. 게시판에는 쓰이지
+              않아요.
+            </p>
+          </div>
+          <Counter>
+            {realName.length}/{MAX_REAL_NAME_LENGTH}
+          </Counter>
+        </SectionTop>
+
+        <StyledInput
+          value={realName}
+          onChange={(event) => setRealName(event.target.value)}
+          placeholder="실명을 입력해주세요 (비워 두면 닉네임으로 표시)"
+          maxLength={MAX_REAL_NAME_LENGTH}
+          autoComplete="name"
+        />
+      </SectionCard>
+
       <SectionCard>
         <SectionTop>
           <div>
