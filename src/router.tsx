@@ -107,6 +107,8 @@ import SchedulePollInvitePage from "@/pages/mobile/schedulePoll/SchedulePollInvi
 import SchedulePollInputPage from "@/pages/mobile/schedulePoll/SchedulePollInputPage";
 import SchedulePollStatusPage from "@/pages/mobile/schedulePoll/SchedulePollStatusPage";
 import SchedulePollResultPage from "@/pages/mobile/schedulePoll/SchedulePollResultPage";
+import SchedulePollJoinPage from "@/pages/mobile/schedulePoll/SchedulePollJoinPage";
+import SchedulePollListPage from "@/pages/mobile/schedulePoll/SchedulePollListPage";
 
 export const router = createBrowserRouter([
   {
@@ -200,7 +202,12 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
 
           // 시간 맞추기(일정 조율)
+          { path: ROUTES.SCHEDULE_POLL.LIST, element: <SchedulePollListPage /> },
           { path: ROUTES.SCHEDULE_POLL.NEW, element: <SchedulePollCreatePage /> },
+          {
+            path: ROUTES.SCHEDULE_POLL.JOIN_PATTERN,
+            element: <SchedulePollJoinPage />,
+          },
           {
             path: ROUTES.SCHEDULE_POLL.INVITE_PATTERN,
             element: <SchedulePollInvitePage />,

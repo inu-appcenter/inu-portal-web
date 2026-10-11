@@ -20,6 +20,7 @@ import TermsAgreement, {
   recordTermsAgreement,
 } from "@/components/common/TermsAgreement";
 import { ROUTES } from "@/constants/routes";
+import { consumePendingReturnPath } from "@/utils/pendingReturnPath";
 
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
 const MAX_NICKNAME_LENGTH = 10;
@@ -191,7 +192,8 @@ export default function UserModify() {
       if (needsTermsAgreement) {
         recordTermsAgreement();
         alert("설정이 완료되었습니다. INTIP을 시작해보세요!");
-        navigate(ROUTES.HOME, { replace: true });
+        // 시간 맞추기 참여 링크로 들어와 가입한 사람은 원래 조율로 돌려보낸다.
+        navigate(consumePendingReturnPath() ?? ROUTES.HOME, { replace: true });
         return;
       }
 

@@ -48,6 +48,14 @@ const OG_ROUTES: OgRoute[] = [
     description: "INTIP에서 친구를 맺고 공강을 비교해보세요!",
     image: "/og/friend-request.png",
   },
+  // 시간 맞추기 참여 링크 — ROUTES.SCHEDULE_POLL.JOIN_PATTERN
+  // 조율 제목은 서버만 알고 있어 문구는 고정이다. 전용 카드 이미지가 생기면 image를 바꾼다.
+  {
+    match: (url) => /^\/schedule-polls\/join\/[^/]+\/?$/.test(url.pathname),
+    title: "시간 맞추기 - INTIP",
+    description: "가능한 시간을 알려 주세요. 인팁 시간표를 불러와 한 번에 입력할 수 있어요!",
+    image: "/og/main.png",
+  },
   // 채팅방 — ROUTES.CHAT (`/chat/:roomId`). `/chat/list`, `/chat/create/...`는 방이 아니다.
   {
     match: (url) =>
