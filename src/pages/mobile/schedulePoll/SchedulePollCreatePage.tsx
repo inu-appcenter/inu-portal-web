@@ -493,6 +493,11 @@ const RangeRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+
+  /* 시작·끝 입력이 남는 폭을 똑같이 나눠 갖는다 */
+  & > div {
+    flex: 1 0 0;
+  }
 `;
 
 const Tilde = styled.span`
@@ -506,7 +511,7 @@ const Tilde = styled.span`
 const PickerField = styled.div<{ $disabled?: boolean }>`
   ${fieldBox}
   position: relative;
-  flex: 1 0 0;
+  flex-shrink: 0;
   min-width: 0;
   display: flex;
   align-items: center;
