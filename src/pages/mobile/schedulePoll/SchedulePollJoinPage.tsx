@@ -16,10 +16,7 @@ import {
 import { formatDeadline } from "@/utils/schedulePoll";
 import { getPollErrorCode } from "@/utils/schedulePollError";
 import { mixpanelTrack } from "@/utils/mixpanel";
-import {
-  clearPendingReturnPath,
-  setPendingReturnPath,
-} from "@/utils/pendingReturnPath";
+import { setPendingReturnPath } from "@/utils/pendingReturnPath";
 import { typography } from "@/styles/typography";
 
 /**
@@ -57,9 +54,10 @@ export default function SchedulePollJoinPage() {
   }, [preview, isLoggedIn]);
 
   // 비로그인으로 들어왔으면 가입·프로필 설정까지 마친 뒤에도 이 링크로 돌아오게 기억해 둔다.
+  // 로그인해 돌아온 직후에는 지우지 않는다. 학과 미등록이면 곧바로 프로필 설정으로 보내지고,
+  // 저장한 뒤 이 경로로 돌아와야 한다. 쓸 일이 없어진 경로는 RootLayout이 지운다.
   useEffect(() => {
-    if (isLoggedIn) clearPendingReturnPath();
-    else setPendingReturnPath(location.pathname);
+    if (!isLoggedIn) setPendingReturnPath(location.pathname);
   }, [isLoggedIn, location.pathname]);
 
   if (isLoading) {

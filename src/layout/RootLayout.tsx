@@ -10,7 +10,10 @@ import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
 import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
-import { setPendingReturnPath } from "@/utils/pendingReturnPath";
+import {
+  clearPendingReturnPath,
+  setPendingReturnPath,
+} from "@/utils/pendingReturnPath";
 import {
   getBootstrappedFcmToken,
   getFcmDeviceType,
@@ -96,7 +99,14 @@ export default function RootLayout() {
         setPendingReturnPath(`${location.pathname}${location.search}`);
         mixpanelTrack.realNamePromptShown("FORCED_REDIRECT");
         navigate(ROUTES.MYPAGE.PROFILE);
+        return;
       }
+    }
+
+    // 프로필 설정으로 보내질 일이 없는 화면에 있으면 기억해 둔 복귀 경로는 더 쓸 일이 없다.
+    // 남겨 두면 나중에 프로필을 저장할 때 엉뚱한 화면으로 간다(저장하지 않고 나간 경우 포함).
+    if (location.pathname !== ROUTES.MYPAGE.PROFILE) {
+      clearPendingReturnPath();
     }
   }, [location.pathname, location.search, navigate, tokenInfo.accessToken, userInfo]);
 
