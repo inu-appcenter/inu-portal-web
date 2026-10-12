@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import {
-  patchMemberRealName,
+  putMemberRealName,
   patchSchoolDepartment,
   putMembers,
 } from "@/apis/members";
@@ -161,12 +161,14 @@ export default function UserModify() {
       return;
     }
 
-    if (checkForbiddenNickname(trimmedNickname)) {
+    // 닉네임 규칙은 닉네임을 바꿀 때만 본다. 예전 규칙으로 만든 닉네임을 그대로 둔 채
+    // 이름·학과만 저장하려는 사람까지 막지 않기 위해서다.
+    if (hasNicknameChanged && checkForbiddenNickname(trimmedNickname)) {
       alert("사칭 방지를 위해 '알림', '운영진', '시스템' 등의 단어는 닉네임으로 설정할 수 없습니다.");
       return;
     }
 
-    if (nicknameLength > MAX_NICKNAME_LENGTH) {
+    if (hasNicknameChanged && nicknameLength > MAX_NICKNAME_LENGTH) {
       alert("닉네임은 10자를 초과할 수 없습니다.");
       return;
     }
@@ -208,13 +210,14 @@ export default function UserModify() {
 
       if (hasRealNameChanged) {
         // 웹은 직접 입력만 지원한다(자동 입력은 앱 전용).
-        const response = await patchMemberRealName({
-          realName: trimmedRealName,
-          realNameSource: "MANUAL",
-        });
+        // 지울 때(빈 문자열)는 출처 없이 보낸다.
+        await putMemberRealName(
+          trimmedRealName
+            ? { realName: trimmedRealName, realNameSource: "MANUAL" }
+            : { realName: "" },
+        );
         updatedUserInfo = {
           ...updatedUserInfo,
-          ...(response.data ?? {}),
           realName: trimmedRealName,
           needsRealName: false,
         };

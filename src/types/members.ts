@@ -38,11 +38,12 @@ export interface UserInfo {
 
 export type RealNameSource = "MANUAL" | "PORTAL_SCRAPE";
 
-/** PATCH /api/members — 실명 저장·삭제 (API v3.4 3-13) */
+/** PUT /api/members — 실명 저장·삭제 (API v3.4 3-13, 서버는 기존 PUT을 확장) */
 export interface UpdateRealNameRequest {
   /** 2~30자, 한글·영문·공백. 빈 문자열이면 삭제(동의 철회) */
   realName: string;
-  realNameSource: RealNameSource;
+  /** 실명을 넣을 때 필수. 지울 때는 생략 */
+  realNameSource?: RealNameSource;
   /** PORTAL_SCRAPE일 때 필수 */
   consentTermsVersion?: string;
 }
