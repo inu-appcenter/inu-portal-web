@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import styled from "styled-components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Icon from "@/components/common/Icon";
@@ -237,12 +237,25 @@ const SendTargetPicker = ({
           showToast(
             getPollErrorMessage(error, "보내지 못했어요"),
             // 코드가 없는 실패(네트워크 등)만 같은 요청을 다시 보낼 수 있다.
-            code ? undefined : { action: { text: "다시 시도", onClick: handleSend } },
+            code
+              ? undefined
+              : {
+                  action: {
+                    text: "다시 시도",
+                    onClick: () => handleSendRef.current(),
+                  },
+                },
           );
         },
       },
     );
   };
+
+  // 토스트의 '다시 시도'는 실패한 뒤 바꾼 선택으로 보내야 하므로 항상 최신 핸들러를 부른다.
+  const handleSendRef = useRef(handleSend);
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  });
 
   return (
     <Wrapper>

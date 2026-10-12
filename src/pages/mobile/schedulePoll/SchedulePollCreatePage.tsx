@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -211,12 +211,21 @@ export default function SchedulePollCreatePage() {
         },
         onError: (error) => {
           showToast(getPollErrorMessage(error, "시간 맞추기를 만들지 못했어요"), {
-            action: { text: "다시 시도", onClick: handleSubmit },
+            action: {
+              text: "다시 시도",
+              onClick: () => handleSubmitRef.current(),
+            },
           });
         },
       },
     );
   };
+
+  // 토스트의 '다시 시도'는 실패한 뒤 고친 조건으로 보내야 하므로 항상 최신 핸들러를 부른다.
+  const handleSubmitRef = useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  });
 
   return (
     <PollPage>

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import {
   Navigate,
@@ -15,7 +15,6 @@ import { ROUTES } from "@/constants/routes";
 import { getMyPollSubmission } from "@/apis/schedulePolls";
 import {
   POLL_INTERVAL,
-  pollKeys,
   refetchPollRevision,
   useMyPollSubmission,
   usePollDetail,
@@ -93,6 +92,12 @@ export default function SchedulePollInputPage() {
   const pollQuery = usePollDetail(pollId, { enabled: isLoggedIn });
   const submissionQuery = useMyPollSubmission(pollId, { enabled: isLoggedIn });
   const poll = pollQuery.data;
+  // 폼을 한 번 띄운 뒤에는 그때의 등록본으로 고정한다. 백그라운드 재조회나 조율 상태 변화로
+  // 폼을 다시 만들면 칠하던 내용이 사라지므로, '최신본 불러오기'를 고를 때만 바꿔 끼운다.
+  const [formSeed, setFormSeed] = useState<{
+    id: number;
+    submission: PollSubmission | null;
+  } | null>(null);
 
   const { semesters, isLoading: isSemestersLoading } = useSemesters();
   const { timeTables, isLoading: isTimeTablesLoading } = useTimeTables(
@@ -127,6 +132,32 @@ export default function SchedulePollInputPage() {
           ROUTES.LOGIN,
           `${location.pathname}${location.search}`,
         )}
+      />
+    );
+  }
+
+  /** 다른 기기에서 먼저 등록한 내용을 불러와 폼을 새로 만든다. */
+  const handleLoadLatest = async () => {
+    const latest = await submissionQuery.refetch();
+    if (latest.isError) {
+      showToast("최신 내용을 불러오지 못했어요. 잠시 후 다시 시도해 주세요");
+      return;
+    }
+    setFormSeed((prev) => ({
+      id: (prev?.id ?? 0) + 1,
+      submission: latest.data ?? null,
+    }));
+  };
+
+  if (formSeed && poll && shape) {
+    return (
+      <PollInputForm
+        key={formSeed.id}
+        poll={poll}
+        submission={formSeed.submission}
+        overlayItems={overlayItems}
+        hasPrimaryTimetable={primaryTimeTable != null}
+        onLoadLatest={handleLoadLatest}
       />
     );
   }
@@ -222,16 +253,9 @@ export default function SchedulePollInputPage() {
     );
   }
 
-  return (
-    <PollInputForm
-      // 다른 기기의 최신본을 불러오면 입력 상태를 처음부터 다시 만든다.
-      key={submission?.submissionRevision ?? 0}
-      poll={poll}
-      submission={submission}
-      overlayItems={overlayItems}
-      hasPrimaryTimetable={primaryTimeTable != null}
-    />
-  );
+  // 여기까지 왔으면 입력할 수 있는 조율이다. 지금 등록본으로 폼을 띄운다.
+  setFormSeed({ id: 0, submission });
+  return null;
 }
 
 interface PollInputFormProps {
@@ -239,6 +263,7 @@ interface PollInputFormProps {
   submission: PollSubmission | null;
   overlayItems: PollOverlayItem[];
   hasPrimaryTimetable: boolean;
+  onLoadLatest: () => void;
 }
 
 type ConfirmKind = "EMPTY" | "ANYTIME" | "CONFLICT" | null;
@@ -248,6 +273,7 @@ function PollInputForm({
   submission,
   overlayItems,
   hasPrimaryTimetable,
+  onLoadLatest,
 }: PollInputFormProps) {
   const pollId = poll.pollId;
   const navigate = useNavigate();
@@ -287,6 +313,8 @@ function PollInputForm({
     submission?.submissionRevision ?? null,
   );
   const attemptRef = useRef<{ id: string; payload: string } | null>(null);
+  // 충돌 뒤 덮어쓸 때 같은 방식(일반 등록·언제든 괜찮아요)으로 다시 보내기 위해 기억한다.
+  const lastViaRef = useRef<PollSubmitVia>("SUBMIT");
 
   const { data: revision } = usePollRevision(pollId, {
     intervalMs: POLL_INTERVAL.INPUT,
@@ -383,6 +411,7 @@ function PollInputForm({
   const submit = (via: PollSubmitVia, base: number | null = baseRevision) => {
     if (submitMutation.isPending || isClosed) return;
     setConfirm(null);
+    lastViaRef.current = via;
     const request = buildRequest(via, base);
 
     submitMutation.mutate(request, {
@@ -438,12 +467,21 @@ function PollInputForm({
             return;
           default:
             showToast(getPollErrorMessage(error, "등록하지 못했어요"), {
-              action: { text: "다시 시도", onClick: () => submit(via, base) },
+              action: {
+                text: "다시 시도",
+                onClick: () => submitRef.current(via),
+              },
             });
         }
       },
     });
   };
+
+  // 토스트의 '다시 시도'는 실패한 뒤 고친 내용으로 보내야 하므로 항상 최신 submit을 부른다.
+  const submitRef = useRef(submit);
+  useEffect(() => {
+    submitRef.current = submit;
+  });
 
   const handleSubmitClick = () => {
     if (countCells(availableCells) === 0) {
@@ -461,10 +499,10 @@ function PollInputForm({
     submit("ANYTIME");
   };
 
-  /** 다른 기기에서 먼저 등록한 내용을 불러온다. 부모가 key로 폼을 새로 만든다. */
+  /** 다른 기기에서 먼저 등록한 내용을 불러온다. 부모가 폼을 새로 만든다. */
   const handleLoadLatest = () => {
     setConfirm(null);
-    void queryClient.invalidateQueries({ queryKey: pollKeys.mySubmission(pollId) });
+    onLoadLatest();
   };
 
   /** 지금 입력한 내용으로 덮어쓴다. 최신 등록본 번호를 받아 그 위에 다시 등록한다. */
@@ -474,7 +512,7 @@ function PollInputForm({
       const latest = await getMyPollSubmission(pollId);
       const latestRevision = latest?.submissionRevision ?? null;
       setBaseRevision(latestRevision);
-      submit("SUBMIT", latestRevision);
+      submit(lastViaRef.current, latestRevision);
     } catch {
       showToast("최신 내용을 확인하지 못했어요. 잠시 후 다시 시도해 주세요");
       void refetchPollRevision(queryClient, pollId);
