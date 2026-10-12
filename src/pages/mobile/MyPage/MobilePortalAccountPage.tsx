@@ -5,12 +5,11 @@ import { useHeader } from "@/context/HeaderContext";
 import useUserStore from "@/stores/useUserStore";
 import {
   checkPortalAccountLinked,
-  savePortalAccount,
   deletePortalAccount,
   fetchAcademicInfoFromApp,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
-import { StudentInfo } from "@/types/portal";
+import type { StudentInfo } from "@/types/portal";
 import { secureStorage } from "@/utils/secureStorage";
 import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
 import { ROUTES } from "@/constants/routes";
@@ -18,19 +17,17 @@ import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
+import PortalAccountForm from "@/components/common/PortalAccountForm";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import {
   ShieldCheck,
   CheckCircle2,
-  Lock,
-  User,
   GraduationCap,
   BookOpen,
   FileText,
   RotateCcw,
   Trash2,
   ChevronRight,
-  AlertCircle,
   Smartphone,
 } from "lucide-react";
 
@@ -41,15 +38,9 @@ export default function MobilePortalAccountPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLinked, setIsLinked] = useState<boolean>(false);
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null);
-
-  // 등록/재등록 폼 상태
-  const [studentIdInput, setStudentIdInput] = useState<string>("");
-  const [passwordInput, setPasswordInput] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isRelinkMode, setIsRelinkMode] = useState<boolean>(false);
 
-  // 모달 상태
+  // 모달 및 토스트 상태
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -67,7 +58,6 @@ export default function MobilePortalAccountPage() {
   const loadStatus = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 보안 스토리지에 캐시된 학적 정보 확인
       const savedInfo = await secureStorage.getItem<StudentInfo>("portal_student_info");
       if (savedInfo) {
         setStudentInfo(savedInfo);
@@ -77,7 +67,6 @@ export default function MobilePortalAccountPage() {
         const linked = await checkPortalAccountLinked().catch(() => false);
         setIsLinked(linked);
         if (linked && !savedInfo) {
-          // 연동되어 있으나 로컬 학적 데이터가 없으면 백그라운드 갱신
           const academicRes = await fetchAcademicInfoFromApp().catch(() => null);
           if (academicRes?.success && academicRes.data) {
             const student = adaptAcademicInfoToStudentInfo(academicRes.data);
@@ -98,46 +87,13 @@ export default function MobilePortalAccountPage() {
     loadStatus();
   }, [loadStatus]);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!studentIdInput.trim() || !passwordInput.trim()) {
-      setErrorMessage("학번과 비밀번호를 모두 입력해 주세요.");
-      return;
+  const handleRegisterSuccess = (student?: StudentInfo) => {
+    if (student) {
+      setStudentInfo(student);
     }
-
-    if (!isMobileAppEnvironment()) {
-      setErrorMessage("포털 계정 연동은 INTIP 모바일 앱 환경에서만 지원돼요.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMessage("");
-
-    try {
-      const saveRes = await savePortalAccount(studentIdInput.trim(), passwordInput.trim());
-      if (saveRes.success) {
-        // 학적 정보 조회 시도하여 유효성 검증
-        const academicRes = await fetchAcademicInfoFromApp();
-        if (academicRes.success && academicRes.data) {
-          const student = adaptAcademicInfoToStudentInfo(academicRes.data);
-          setStudentInfo(student);
-          await secureStorage.setItem("portal_student_info", student);
-          localStorage.setItem("portal_info_last_updated", new Date().toISOString());
-        }
-
-        setIsLinked(true);
-        setIsRelinkMode(false);
-        setStudentIdInput("");
-        setPasswordInput("");
-        showToast("포털 계정이 성공적으로 연동되었어요.");
-      } else {
-        setErrorMessage(saveRes.errorMessage || "계정 연동에 실패했어요.");
-      }
-    } catch (err: any) {
-      setErrorMessage(err?.message || "오류가 발생했어요.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    setIsLinked(true);
+    setIsRelinkMode(false);
+    showToast("포털 계정이 성공적으로 등록되었어요.");
   };
 
   const handleUnlink = async () => {
@@ -152,8 +108,10 @@ export default function MobilePortalAccountPage() {
       setIsLinked(false);
       setIsRelinkMode(false);
       showToast("포털 계정 연동이 해제되었어요.");
-    } catch (e: any) {
-      alert(e?.message || "연동 해제 중 오류가 발생했어요.");
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "연동 해제 중 오류가 발생했어요.";
+      alert(message);
     }
   };
 
@@ -161,224 +119,168 @@ export default function MobilePortalAccountPage() {
     <PageWrapper>
       {toastMessage && (
         <ToastBanner>
-          <CheckCircle2 size={16} />
+          <CheckCircle2 size={16} color="var(--text-inverse)" />
           <span>{toastMessage}</span>
         </ToastBanner>
       )}
 
       {isLoading ? (
         <ContentContainer>
-          <Skeleton width="100%" height="160px" style={{ borderRadius: "20px" }} />
-          <Skeleton width="100%" height="220px" style={{ borderRadius: "20px" }} />
+          <Skeleton width="100%" height="180px" style={{ borderRadius: "var(--radius-xl)" }} />
+          <Skeleton width="100%" height="240px" style={{ borderRadius: "var(--radius-xl)" }} />
         </ContentContainer>
       ) : !isMobileAppEnvironment() ? (
-        /* ================= 0. 모바일 앱 환경 아닐 때 안내 화면 ================= */
+        /* 0. 모바일 앱 환경 아닐 때 안내 화면 */
         <ContentContainer>
-          <NotAppCard>
-            <Smartphone size={36} color="var(--interactive-primary)" />
-            <NotAppTitle>INTIP 모바일 앱 전용 기능이에요</NotAppTitle>
-            <NotAppDesc>
-              포털 계정 연동은 기기 보안 저장소(KeyStore)를 이용하므로 INTIP 모바일 앱 환경에서만 등록하고 이용할 수 있어요.
-            </NotAppDesc>
+          <SurfaceCard>
+            <IconCircle>
+              <Smartphone size={28} color="var(--interactive-primary)" />
+            </IconCircle>
+            <HeadlineTitle>INTIP 앱 전용 기능이에요</HeadlineTitle>
+            <HeadlineSubtitle>
+              포털 계정 등록은 기기 보안 영역을 사용하므로 INTIP 모바일 앱 환경에서만 등록하고 이용할 수 있어요.
+            </HeadlineSubtitle>
 
-            <UsageGuideBox style={{ width: "100%", boxSizing: "border-box", textAlign: "left" }}>
-              <UsageGuideTitle>연동 시 이용 가능한 기능</UsageGuideTitle>
-              <UsageGuideList>
-                <li>기본 학적 정보 (취득 학점, 성적, 학적 상태를 조회해요)</li>
-                <li>이러닝 LMS (과제 마감 알림과 수강 강좌를 확인해요)</li>
-                <li>학산도서관 (열람실 좌석 배정 및 스터디룸을 예약해요)</li>
-              </UsageGuideList>
-            </UsageGuideBox>
+            <FeatureListCard>
+              <FeatureListTitle>연동 시 이용할 수 있는 기능</FeatureListTitle>
+              <FeatureItem>기본 학적 정보 조회</FeatureItem>
+              <FeatureItem>이러닝(LMS) 과제 마감 알림과 강좌 확인</FeatureItem>
+              <FeatureItem>학산도서관 열람실 좌석 배정 및 스터디룸 예약</FeatureItem>
+            </FeatureListCard>
 
             <CapsuleButton
-              variant="brand"
-              style={{ marginTop: "16px", padding: "10px 20px", fontSize: "14px" }}
+              variant="primary"
+              fullWidth
               onClick={() => openIntipAppOrStore("mypage/portal")}
             >
-              앱 열기 및 설치
+              INTIP 앱 열기 및 설치
             </CapsuleButton>
-
-            <FootnoteText style={{ marginTop: "16px" }}>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
-          </NotAppCard>
+          </SurfaceCard>
         </ContentContainer>
       ) : isLinked && !isRelinkMode ? (
-        /* ================= 1. 연동 완료 상태 화면 ================= */
+        /* 1. 연동 완료 상태 화면 */
         <ContentContainer>
-          <StatusCard>
-            <StatusHeader>
-              <StatusBadge>
-                <CheckCircle2 size={16} />
-                <span>정상 연동됨</span>
-              </StatusBadge>
+          <SurfaceCard>
+            <StatusRow>
+              <ConnectedBadge>
+                <CheckCircle2 size={15} color="var(--green-500)" />
+                <span>정상 연결됨</span>
+              </ConnectedBadge>
               <SecurityTag>
-                <ShieldCheck size={14} />
-                <span>기기 보안 저장소 (KeyStore)</span>
+                <ShieldCheck size={14} color="var(--text-tertiary)" />
+                <span>기기 보안 저장소에 안전하게 보관 중</span>
               </SecurityTag>
-            </StatusHeader>
+            </StatusRow>
 
-            <AccountInfoSection>
-              <StudentTitle>
+            <UserInfoSection>
+              <UserName>
                 {studentInfo?.koreanName || userInfo.nickname || "학우"}님의 포털 계정
-              </StudentTitle>
-              <StudentDetailRow>
-                <DetailItem>
+              </UserName>
+              <InfoGrid>
+                <InfoItem>
                   <span className="label">학번</span>
-                  <span className="value">{studentInfo?.studentId || "등록됨"}</span>
-                </DetailItem>
+                  <span className="value">{studentInfo?.studentId || "등록 완료"}</span>
+                </InfoItem>
                 {studentInfo?.departmentName && (
-                  <DetailItem>
-                    <span className="label">소속</span>
+                  <InfoItem>
+                    <span className="label">학과</span>
                     <span className="value">{studentInfo.departmentName}</span>
-                  </DetailItem>
+                  </InfoItem>
                 )}
                 {studentInfo?.enrollmentStatusName && (
-                  <DetailItem>
+                  <InfoItem>
                     <span className="label">학적 상태</span>
                     <span className="value">{studentInfo.enrollmentStatusName}</span>
-                  </DetailItem>
+                  </InfoItem>
                 )}
-              </StudentDetailRow>
-            </AccountInfoSection>
+              </InfoGrid>
+            </UserInfoSection>
 
             <ActionButtonsRow>
-              <SubActionBtn onClick={() => setIsRelinkMode(true)}>
+              <SecondaryButton type="button" onClick={() => setIsRelinkMode(true)}>
                 <RotateCcw size={15} />
-                <span>계정 재등록</span>
-              </SubActionBtn>
-              <DangerActionBtn onClick={() => setIsUnlinkModalOpen(true)}>
+                <span>계정 다시 등록</span>
+              </SecondaryButton>
+              <DangerButton type="button" onClick={() => setIsUnlinkModalOpen(true)}>
                 <Trash2 size={15} />
                 <span>등록 해제</span>
-              </DangerActionBtn>
+              </DangerButton>
             </ActionButtonsRow>
-          </StatusCard>
+          </SurfaceCard>
 
-          {/* 원클릭 연동 서비스 안내 */}
-          <SectionTitle>자동 연동 서비스</SectionTitle>
-          <ServiceListCard>
-            <ServiceItem onClick={() => navigate(ROUTES.LABS.PORTAL.BASIC_INFO)}>
+          <SectionHeader>
+            <SectionTitle>자동 연동 서비스</SectionTitle>
+          </SectionHeader>
+
+          <ServiceListContainer>
+            <ServiceRow onClick={() => navigate(ROUTES.LABS.PORTAL.BASIC_INFO)}>
               <ServiceLeft>
-                <ServiceIcon $color="var(--interactive-primary)" $bg="rgb(239, 246, 255)">
+                <ServiceIconWrapper $bg="var(--bg-brand)">
                   <FileText size={18} color="var(--interactive-primary)" />
-                </ServiceIcon>
-                <ServiceText>
-                  <strong>기본 학적 정보 조회</strong>
-                  <span>취득학점, 이수학기, 성적 및 학적 상태</span>
-                </ServiceText>
+                </ServiceIconWrapper>
+                <ServiceTextGroup>
+                  <ServiceTitle>기본 학적 정보 조회</ServiceTitle>
+                  <ServiceSubtitle>취득 학점, 이수 학기, 성적 및 학적 상태</ServiceSubtitle>
+                </ServiceTextGroup>
               </ServiceLeft>
-              <ChevronRight size={18} color="var(--button-inactive)" />
-            </ServiceItem>
+              <ChevronRight size={18} color="var(--text-tertiary)" />
+            </ServiceRow>
 
-            <ServiceDivider />
+            <DividerLine />
 
-            <ServiceItem onClick={() => navigate(ROUTES.SERVICES.LMS)}>
+            <ServiceRow onClick={() => navigate(ROUTES.SERVICES.LMS)}>
               <ServiceLeft>
-                <ServiceIcon $color="var(--text-success)" $bg="rgb(240, 253, 244)">
-                  <GraduationCap size={18} color="var(--text-success)" />
-                </ServiceIcon>
-                <ServiceText>
-                  <strong>이러닝 (LMS)</strong>
-                  <span>수강 강좌, 출석 체크, 과제 마감 리마인더</span>
-                </ServiceText>
+                <ServiceIconWrapper $bg="var(--bg-muted)">
+                  <GraduationCap size={18} color="var(--text-primary)" />
+                </ServiceIconWrapper>
+                <ServiceTextGroup>
+                  <ServiceTitle>이러닝(LMS)</ServiceTitle>
+                  <ServiceSubtitle>수강 강좌, 출석 체크, 과제 마감 알림</ServiceSubtitle>
+                </ServiceTextGroup>
               </ServiceLeft>
-              <ChevronRight size={18} color="var(--button-inactive)" />
-            </ServiceItem>
+              <ChevronRight size={18} color="var(--text-tertiary)" />
+            </ServiceRow>
 
-            <ServiceDivider />
+            <DividerLine />
 
-            <ServiceItem onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
+            <ServiceRow onClick={() => navigate(ROUTES.SERVICES.LIBRARY)}>
               <ServiceLeft>
-                <ServiceIcon $color="var(--primary)" $bg="rgb(239, 246, 255)">
-                  <BookOpen size={18} color="var(--primary)" />
-                </ServiceIcon>
-                <ServiceText>
-                  <strong>학산도서관</strong>
-                  <span>열람실 잔여 좌석 배정 및 스터디룸 원클릭 예약</span>
-                </ServiceText>
+                <ServiceIconWrapper $bg="var(--bg-brand)">
+                  <BookOpen size={18} color="var(--interactive-primary)" />
+                </ServiceIconWrapper>
+                <ServiceTextGroup>
+                  <ServiceTitle>학산도서관</ServiceTitle>
+                  <ServiceSubtitle>열람실 잔여 좌석 배정 및 스터디룸 예약</ServiceSubtitle>
+                </ServiceTextGroup>
               </ServiceLeft>
-              <ChevronRight size={18} color="var(--button-inactive)" />
-            </ServiceItem>
-          </ServiceListCard>
+              <ChevronRight size={18} color="var(--text-tertiary)" />
+            </ServiceRow>
+          </ServiceListContainer>
 
-          <FootnoteText>이 폰에서 직접 작업이 수행돼요.</FootnoteText>
+          <NoticeFooter>
+            기기에서 직접 조회하며, 계정 비밀번호는 외부로 전송되지 않아요.
+          </NoticeFooter>
         </ContentContainer>
       ) : (
-        /* ================= 2. 미연동 또는 재등록 폼 화면 ================= */
+        /* 2. 미연동 또는 재등록 화면 */
         <ContentContainer>
-          <HeroCard>
-            <HeroTitle>
+          <TitleSection>
+            <HeadlineTitle>
               {isRelinkMode ? "포털 계정 다시 등록" : "포털 계정을 등록해 주세요"}
-            </HeroTitle>
-            <HeroSubtitle>
-              인천대학교 포털 계정(학번/비밀번호)을 등록하면 학적·LMS·도서관 기능을 바로 이용할 수 있어요.
-            </HeroSubtitle>
+            </HeadlineTitle>
+            <HeadlineSubtitle>
+              인천대학교 포털 계정을 등록하면 학적, 시간표, 이러닝(LMS), 도서관 정보를 바로 확인할 수 있어요.
+            </HeadlineSubtitle>
+          </TitleSection>
 
-            <UsageGuideBox>
-              <UsageGuideTitle>연동 시 이용 가능한 기능</UsageGuideTitle>
-              <UsageGuideList>
-                <li>기본 학적 정보 (취득 학점, 성적, 학적 상태를 조회해요)</li>
-                <li>이러닝 LMS (과제 마감 알림과 수강 강좌를 확인해요)</li>
-                <li>학산도서관 (열람실 좌석 배정 및 스터디룸을 예약해요)</li>
-              </UsageGuideList>
-            </UsageGuideBox>
-          </HeroCard>
-
-          <FormCard onSubmit={handleRegister}>
-            <InputGroup>
-              <InputLabel>포털 학번</InputLabel>
-              <InputWrap>
-                <User size={18} color="var(--gray-500)" />
-                <StyledInput
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="예: 202600000"
-                  value={studentIdInput}
-                  onChange={(e) => setStudentIdInput(e.target.value)}
-                  disabled={isSubmitting}
-                />
-              </InputWrap>
-            </InputGroup>
-
-            <InputGroup>
-              <InputLabel>포털 비밀번호</InputLabel>
-              <InputWrap>
-                <Lock size={18} color="var(--gray-500)" />
-                <StyledInput
-                  type="password"
-                  placeholder="포털 비밀번호 입력"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  disabled={isSubmitting}
-                />
-              </InputWrap>
-            </InputGroup>
-
-            {errorMessage && (
-              <ErrorBox>
-                <AlertCircle size={15} />
-                <span>{errorMessage}</span>
-              </ErrorBox>
-            )}
-
-            <ButtonGroupWrapper>
-              <CapsuleButton
-                type="submit"
-                variant="brand"
-                fullWidth
-                loading={isSubmitting}
-                disabled={!studentIdInput.trim() || !passwordInput.trim()}
-              >
-                {isSubmitting ? "기기 보안 영역에 저장 중..." : "포털 계정 연동하기"}
-              </CapsuleButton>
-
-              {isRelinkMode && (
-                <CancelTextBtn type="button" onClick={() => setIsRelinkMode(false)}>
-                  취소하고 돌아가기
-                </CancelTextBtn>
-              )}
-            </ButtonGroupWrapper>
-          </FormCard>
-
-          <FootnoteText>이 폰에서 직접 작업이 수행되며, 계정 정보는 서버로 전송되지 않아요.</FootnoteText>
+          <SurfaceCard>
+            <PortalAccountForm
+              mode="page"
+              isRelink={isRelinkMode}
+              onSuccess={handleRegisterSuccess}
+              onCancel={isRelinkMode ? () => setIsRelinkMode(false) : undefined}
+            />
+          </SurfaceCard>
         </ContentContainer>
       )}
 
@@ -387,7 +289,7 @@ export default function MobilePortalAccountPage() {
         isOpen={isUnlinkModalOpen}
         onClose={() => setIsUnlinkModalOpen(false)}
         title="포털 계정 연동을 해제할까요?"
-        description="연동을 해제하면 이 폰에 저장된 로그인 정보와 학적 데이터가 삭제되고, 이러닝 및 도서관 자동 연동이 중단돼요."
+        description="연동을 해제하면 이 기기에 저장된 로그인 정보가 삭제되고, 이러닝(LMS) 및 도서관 자동 연동이 중단돼요."
         primaryButton={{
           text: "연동 해제",
           variant: "danger",
@@ -401,8 +303,6 @@ export default function MobilePortalAccountPage() {
     </PageWrapper>
   );
 }
-
-// ================= STYLES =================
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -430,32 +330,98 @@ const ToastBanner = styled.div`
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--gray-900);
+  background: var(--text-primary);
   color: var(--text-inverse);
   padding: 12px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 13.5px;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   animation: fadeIn 0.2s ease-out;
 `;
 
-const StatusCard = styled.div`
+const SurfaceCard = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: var(--radius-xl);
+  padding: 22px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--elevation-1-shadow);
 `;
 
-const StatusHeader = styled.div`
+const TitleSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 4px 2px;
+`;
+
+const HeadlineTitle = styled.h2`
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+`;
+
+const HeadlineSubtitle = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+`;
+
+const IconCircle = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--bg-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin-bottom: 4px;
+`;
+
+const FeatureListCard = styled.div`
+  background: var(--bg-muted);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FeatureListTitle = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+`;
+
+const FeatureItem = styled.div`
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  position: relative;
+  padding-left: 12px;
+
+  &::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--interactive-primary);
+    font-weight: bold;
+  }
+`;
+
+const StatusRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -463,16 +429,16 @@ const StatusHeader = styled.div`
   gap: 8px;
 `;
 
-const StatusBadge = styled.div`
+const ConnectedBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgb(232, 248, 240);
-  color: rgb(27, 99, 61);
+  background: var(--bg-muted);
+  color: var(--text-primary);
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
 `;
 
 const SecurityTag = styled.div`
@@ -480,45 +446,47 @@ const SecurityTag = styled.div`
   align-items: center;
   gap: 4px;
   color: var(--text-tertiary);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
 `;
 
-const AccountInfoSection = styled.div`
+const UserInfoSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 0 4px;
+  gap: 12px;
+  padding: 4px 0;
 `;
 
-const StudentTitle = styled.h3`
+const UserName = styled.h3`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.2px;
 `;
 
-const StudentDetailRow = styled.div`
+const InfoGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   background: var(--bg-muted);
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
 `;
 
-const DetailItem = styled.div`
+const InfoItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 80px;
 
   .label {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 11.5px;
+    font-weight: 500;
     color: var(--text-tertiary);
   }
   .value {
-    font-size: 14px;
+    font-size: 14.5px;
     font-weight: 700;
     color: var(--text-primary);
   }
@@ -531,7 +499,7 @@ const ActionButtonsRow = styled.div`
   padding-top: 4px;
 `;
 
-const SubActionBtn = styled.button`
+const SecondaryButton = styled.button`
   flex: 1;
   display: flex;
   align-items: center;
@@ -540,8 +508,8 @@ const SubActionBtn = styled.button`
   background: var(--bg-muted);
   color: var(--text-secondary);
   border: 1px solid var(--border-default);
-  border-radius: 12px;
-  padding: 10px 0;
+  border-radius: var(--radius-md);
+  padding: 11px 0;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
@@ -553,7 +521,7 @@ const SubActionBtn = styled.button`
   }
 `;
 
-const DangerActionBtn = styled.button`
+const DangerButton = styled.button`
   flex: 1;
   display: flex;
   align-items: center;
@@ -562,251 +530,99 @@ const DangerActionBtn = styled.button`
   background: var(--bg-error);
   color: var(--text-error);
   border: 1px solid var(--border-error-subtle);
-  border-radius: 12px;
-  padding: 10px 0;
+  border-radius: var(--radius-md);
+  padding: 11px 0;
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 
   &:active {
-    background: var(--bg-error);
+    opacity: 0.8;
     transform: scale(0.98);
   }
 `;
 
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 8px 4px 0;
+`;
+
 const SectionTitle = styled.h4`
-  margin: 8px 0 0 4px;
+  margin: 0;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-secondary);
 `;
 
-const ServiceListCard = styled.div`
+const ServiceListContainer = styled.div`
   background: var(--bg-base);
   border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 8px 16px;
+  border-radius: var(--radius-xl);
+  padding: 4px 18px;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--elevation-1-shadow);
 `;
 
-const ServiceItem = styled.div`
+const ServiceRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
+  padding: 14px 0;
   cursor: pointer;
   transition: opacity 0.15s ease;
 
   &:active {
-    opacity: 0.7;
+    opacity: 0.65;
   }
 `;
 
 const ServiceLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 `;
 
-const ServiceIcon = styled.div<{ $color: string; $bg: string }>`
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+const ServiceIconWrapper = styled.div<{ $bg: string }>`
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
   background: ${({ $bg }) => $bg};
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 `;
 
-const ServiceText = styled.div`
+const ServiceTextGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2px;
-
-  strong {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
-  span {
-    font-size: 12px;
-    color: var(--text-tertiary);
-  }
 `;
 
-const ServiceDivider = styled.div`
+const ServiceTitle = styled.strong`
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+`;
+
+const ServiceSubtitle = styled.span`
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+`;
+
+const DividerLine = styled.div`
   height: 1px;
   background: var(--border-default);
   width: 100%;
 `;
 
-const FootnoteText = styled.p`
-  margin: 14px 4px 0;
+const NoticeFooter = styled.p`
+  margin: 12px 4px 0;
   font-size: 12.5px;
   color: var(--text-tertiary);
   text-align: center;
-  line-height: 1.4;
-`;
-
-const NotAppCard = styled.div`
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 32px 20px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-`;
-
-const NotAppTitle = styled.h3`
-  margin: 4px 0 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-primary);
-`;
-
-const NotAppDesc = styled.p`
-  margin: 0 0 8px;
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  max-width: 320px;
-`;
-
-const HeroCard = styled.div`
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 24px 20px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const HeroTitle = styled.h2`
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-`;
-
-const HeroSubtitle = styled.p`
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-`;
-
-const UsageGuideBox = styled.div`
-  background: var(--bg-muted);
-  border: 1px solid var(--border-default);
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
-`;
-
-const UsageGuideTitle = styled.div`
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-`;
-
-const UsageGuideList = styled.ul`
-  margin: 0;
-  padding-left: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  li {
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.4;
-  }
-`;
-
-const FormCard = styled.form`
-  background: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-`;
-
-const InputGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const InputLabel = styled.label`
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-`;
-
-const InputWrap = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--bg-muted);
-  border-radius: 12px;
-  padding: 0 14px;
-  height: 48px;
-`;
-
-const StyledInput = styled.input`
-  border: none;
-  background: transparent;
-  width: 100%;
-  font-size: 15px;
-  color: var(--text-primary);
-  outline: none;
-
-  &::placeholder {
-    color: var(--text-disabled);
-  }
-`;
-
-const ErrorBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-error);
-  background: var(--bg-error);
-  padding: 8px 12px;
-  border-radius: 8px;
-`;
-
-const ButtonGroupWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 8px;
-`;
-
-const CancelTextBtn = styled.button`
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  font-size: 13.5px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 0;
-
-  &:hover {
-    color: var(--text-secondary);
-  }
+  line-height: 1.45;
 `;
