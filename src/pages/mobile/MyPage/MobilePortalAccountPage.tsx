@@ -20,7 +20,6 @@ import Skeleton from "@/components/common/Skeleton";
 import PortalAccountForm from "@/components/common/PortalAccountForm";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import {
-  ShieldCheck,
   CheckCircle2,
   GraduationCap,
   BookOpen,
@@ -167,7 +166,6 @@ export default function MobilePortalAccountPage() {
                 <span>정상 연결됨</span>
               </ConnectedBadge>
               <SecurityTag>
-                <ShieldCheck size={14} color="var(--text-tertiary)" />
                 <span>기기 보안 저장소에 안전하게 보관 중</span>
               </SecurityTag>
             </StatusRow>
@@ -309,12 +307,12 @@ const PageWrapper = styled.div`
   min-height: 100svh;
   box-sizing: border-box;
   background: var(--bg-subtle);
-  padding: 16px ${MOBILE_PAGE_GUTTER}px 80px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} calc(40px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 
   @media ${DESKTOP_MEDIA} {
     max-width: 640px;
     margin: 0 auto;
-    padding: 24px 0 80px;
+    padding: 24px 0 calc(48px + var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
   }
 `;
 
@@ -444,7 +442,6 @@ const ConnectedBadge = styled.div`
 const SecurityTag = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
   color: var(--text-tertiary);
   font-size: 12px;
   font-weight: 500;
