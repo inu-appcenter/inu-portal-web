@@ -14,8 +14,8 @@ import DailyBriefHeader from "@/components/mobile/dailyBrief/view/DailyBriefHead
 import DailyBriefWeatherCard from "@/components/mobile/dailyBrief/view/DailyBriefWeatherCard";
 import DailyBriefNoticeCard from "@/components/mobile/dailyBrief/view/DailyBriefNoticeCard";
 import DailyBriefFortuneCard from "@/components/mobile/dailyBrief/view/DailyBriefFortuneCard";
-import DailyBriefLibraryCard from "@/components/mobile/dailyBrief/view/DailyBriefLibraryCard";
-import DailyBriefLmsCard from "@/components/mobile/dailyBrief/view/DailyBriefLmsCard";
+// import DailyBriefLibraryCard from "@/components/mobile/dailyBrief/view/DailyBriefLibraryCard";
+// import DailyBriefLmsCard from "@/components/mobile/dailyBrief/view/DailyBriefLmsCard";
 import DailyBriefInfoModal from "@/components/mobile/dailyBrief/view/DailyBriefInfoModal";
 import TodayTimetableWidget from "@/components/mobile/home/TodayTimetableWidget";
 import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
@@ -228,6 +228,12 @@ export default function MobileDailyBriefPage() {
     }, CARD_NAVIGATION_WINDOW_MS);
   };
 
+  // 도서관 및 이러닝 기능은 임시 비활성화하여 사용자에게 노출하지 않는다.
+  const visibleCards = useMemo(
+    () => brief.cards.filter((card) => card !== "library" && card !== "lms"),
+    [brief.cards],
+  );
+
   const renderCard = (cardType: DailyBriefCardType, index: number) => {
     let cardComponent: React.ReactNode = null;
     switch (cardType) {
@@ -240,8 +246,8 @@ export default function MobileDailyBriefPage() {
         );
         break;
       case "library":
-        cardComponent = <DailyBriefLibraryCard />;
-        break;
+        // 임시 비활성화
+        return null;
       case "weather":
         cardComponent = <DailyBriefWeatherCard />;
         break;
@@ -265,8 +271,8 @@ export default function MobileDailyBriefPage() {
         );
         break;
       case "lms":
-        cardComponent = <DailyBriefLmsCard />;
-        break;
+        // 임시 비활성화
+        return null;
       case "fortune":
         cardComponent = <DailyBriefFortuneCard />;
         break;
@@ -298,7 +304,7 @@ export default function MobileDailyBriefPage() {
         />
 
         <CardsStack onClickCapture={handleCardInteraction}>
-          {brief.cards.map((card, idx) => renderCard(card, idx))}
+          {visibleCards.map((card, idx) => renderCard(card, idx))}
         </CardsStack>
 
         <FloatingBottomActions>
