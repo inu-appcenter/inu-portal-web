@@ -28,7 +28,10 @@ import type {
   UpdatePollRequest,
 } from "@/types/schedulePolls";
 import { TIMETABLES_QUERY_KEY } from "@/hooks/useTimeTables";
-import { getPollErrorCode } from "@/utils/schedulePollError";
+import {
+  getPollErrorCode,
+  getPollErrorStatus,
+} from "@/utils/schedulePollError";
 
 // 시간 맞추기 쿼리. 명단·결과는 다른 사람의 행동으로 바뀌므로 서버 푸시 대신
 // 리비전 폴링으로 맞춘다(PRD FR-110~118). 채팅 STOMP는 메시지 전용이라 쓰지 않는다.
@@ -70,6 +73,21 @@ const invalidatePollDetails = (queryClient: QueryClient, pollId: number) => {
  * 리비전 캐시에 단조 증가하는 값만 반영한다(FR-113).
  * 느린 응답이 늦게 도착해도 캐시보다 작거나 같으면 버리고 기존 값을 돌려준다.
  */
+/** 오류가 난 뒤의 폴링 주기. 일시적인 실패에 서버를 몰아치지 않게 평소보다 늦춘다. */
+const POLL_ERROR_INTERVAL = 30_000;
+
+/** 다시 물어도 결과가 같은 거절(없는 조율·권한 없음 등)인지. 이때만 폴링을 멈춘다. */
+const isPermanentPollError = (error: unknown) => {
+  const status = getPollErrorStatus(error);
+  return (
+    status != null &&
+    status >= 400 &&
+    status < 500 &&
+    status !== 408 &&
+    status !== 429
+  );
+};
+
 const applyRevision = (
   queryClient: QueryClient,
   pollId: number,
@@ -102,6 +120,8 @@ interface UsePollRevisionOptions {
  * 리비전 폴링 (FR-110~114).
  * - 같은 조율은 쿼리 키 하나를 공유하므로 카드가 여러 개여도 요청은 1회만 나간다.
  * - CLOSED면 폴링을 멈추고, 탭·WebView가 숨겨지면 쉬었다가 돌아올 때 즉시 한 번 받는다.
+ * - 네트워크 오류·5xx는 주기를 늦춰 계속 묻는다. 포커스 이벤트가 없는 WebView에서는
+ *   한 번 멈추면 다시 켜질 계기가 없기 때문이다.
  */
 export const usePollRevision = (
   pollId: number | null | undefined,
@@ -116,10 +136,13 @@ export const usePollRevision = (
       applyRevision(queryClient, pollId!, await getPollRevision(pollId!)),
     enabled: isActive,
     staleTime: 0,
-    refetchInterval: (q) =>
-      q.state.data?.status === "CLOSED" || q.state.status === "error"
+    refetchInterval: (q) => {
+      if (q.state.data?.status === "CLOSED") return false;
+      if (q.state.status !== "error") return intervalMs;
+      return isPermanentPollError(q.state.error)
         ? false
-        : intervalMs,
+        : Math.max(intervalMs, POLL_ERROR_INTERVAL);
+    },
     refetchIntervalInBackground: false,
     // 전역 기본값이 false라 조율 쿼리에만 명시적으로 켠다(FR-112).
     refetchOnWindowFocus: true,
