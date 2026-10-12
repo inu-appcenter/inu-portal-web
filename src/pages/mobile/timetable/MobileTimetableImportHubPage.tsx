@@ -1,16 +1,24 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { School, ScanLine, ChevronRight } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
+import Modal from "@/components/common/Modal";
+import PortalAccountForm from "@/components/common/PortalAccountForm";
+import {
+  checkPortalAccountLinked,
+  isMobileAppEnvironment,
+} from "@/apis/mobileAgentBridge";
+import { openIntipAppOrStore } from "@/utils/appLauncher";
 
 export default function MobileTimetableImportHubPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const { activeTimetableId } = useTimetableStore();
+  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
 
   const targetTimetableId = useMemo(() => {
     const paramId = searchParams.get("id");
@@ -26,6 +34,35 @@ export default function MobileTimetableImportHubPage() {
     pageBgColor: "var(--bg-subtle)",
   });
 
+  const handlePortalImportClick = async () => {
+    if (!isMobileAppEnvironment()) {
+      if (
+        window.confirm(
+          "포털 시간표 가져오기는 INTIP 모바일 앱에서만 이용할 수 있어요. 앱을 열거나 설치할까요?",
+        )
+      ) {
+        openIntipAppOrStore("timetable/import");
+      }
+      return;
+    }
+
+    const isLinked = await checkPortalAccountLinked().catch(() => false);
+    if (isLinked) {
+      navigate(
+        `${ROUTES.TIMETABLE.PORTAL_IMPORT}${targetTimetableId ? `?id=${targetTimetableId}` : ""}`,
+      );
+    } else {
+      setIsPortalModalOpen(true);
+    }
+  };
+
+  const handlePortalAccountSuccess = () => {
+    setIsPortalModalOpen(false);
+    navigate(
+      `${ROUTES.TIMETABLE.PORTAL_IMPORT}${targetTimetableId ? `?id=${targetTimetableId}` : ""}`,
+    );
+  };
+
   return (
     <PageWrapper>
       <ScrollContainer>
@@ -40,11 +77,7 @@ export default function MobileTimetableImportHubPage() {
         <MethodCard
           type="button"
           $highlight
-          onClick={() => {
-            navigate(
-              `${ROUTES.TIMETABLE.PORTAL_IMPORT}${targetTimetableId ? `?id=${targetTimetableId}` : ""}`,
-            );
-          }}
+          onClick={handlePortalImportClick}
         >
           <CardTopRow>
             <CardIconBox $highlight>
@@ -102,6 +135,20 @@ export default function MobileTimetableImportHubPage() {
           </CardActionRow>
         </MethodCard>
       </ScrollContainer>
+
+      {/* 포털 계정 입력 모달 */}
+      <Modal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        title="포털 계정 등록"
+        description="시간표를 가져오려면 인천대학교 포털 계정이 필요해요."
+      >
+        <PortalAccountForm
+          mode="modal"
+          onSuccess={handlePortalAccountSuccess}
+          onCancel={() => setIsPortalModalOpen(false)}
+        />
+      </Modal>
     </PageWrapper>
   );
 }
