@@ -1,6 +1,7 @@
 import { Place } from "../DB";
 import {
   CafeIcon,
+  TumblerWasherIcon,
   getBuildingIcon,
   getRestaurantIcon,
   getRestIcon,
@@ -9,6 +10,7 @@ import InfoWindowSchool from "../utils/InfoWindowSchool";
 import InfoWindowRestroom from "../utils/InfoWindowRestroom";
 import InfoWindowCafe from "../utils/InfoWindowCafe";
 import InfoWindowRestaurant from "../utils/InfoWindowRestaurant";
+import InfoWindowTumbler from "../utils/InfoWindowTumbler";
 import { SchoolimageMap } from "@/resources/assets/photos/map/buildings";
 import { CafeimageMap } from "@/resources/assets/photos/map/cafes";
 import { RestaurantimageMap } from "@/resources/assets/photos/map/restaurants";
@@ -21,7 +23,7 @@ export const BOTTOM_SHEET_HEIGHT = {
   MAX: 1.0,
 } as const;
 
-export type TabType = "학교" | "휴게실" | "카페" | "식당";
+export type TabType = "학교" | "휴게실" | "카페" | "식당" | "텀블러";
 
 export const MAP_TAB_CONFIG: Record<TabType, {
   getIcon: (place: Place) => string;
@@ -60,5 +62,11 @@ export const MAP_TAB_CONFIG: Record<TabType, {
       return InfoWindowRestaurant(p, image);
     },
     getPlaceTitle: (p) => p.restaurantInfo?.name || "",
-  }
+  },
+  텀블러: {
+    getIcon: () => TumblerWasherIcon,
+    getMarkerId: (p) => p.location,
+    getInfoWindowHtml: (p) => InfoWindowTumbler(p),
+    getPlaceTitle: (p) => p.location,
+  },
 };

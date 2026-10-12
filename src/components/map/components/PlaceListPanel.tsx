@@ -9,7 +9,7 @@ import CafeInfoBox from "@/components/mobile/map/CafeInfoBox";
 import RestaurantInfoBox from "@/components/mobile/map/RestaurantInfoBox";
 
 import PlaceList from "./PlaceList";
-import { cafePlaces, places, restaurantPlaces, restPlaces } from "../DB.tsx";
+import { cafePlaces, places, restaurantPlaces, restPlaces, tumblerPlaces } from "../DB.tsx";
 import { setZoom } from "../utils/mapUtils.ts";
 import { BOTTOM_SHEET_HEIGHT, TabType } from "../constants/mapConfig";
 
@@ -69,6 +69,8 @@ const PlaceListPanel = ({
         return cafePlaces;
       case "식당":
         return restaurantPlaces;
+      case "텀블러":
+        return tumblerPlaces;
       default:
         return [];
     }

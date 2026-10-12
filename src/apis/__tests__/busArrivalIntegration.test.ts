@@ -5,8 +5,10 @@ import { toTime } from "../../components/mobile/bus/busArrivalUtils";
 describe("버스 도착 정보 실제 Dev 서버 연동 및 기능 테스트", () => {
   const TEST_BSTOP_ID = "164000395"; // 인천대입구역 2번출구
 
-  it("1. 실제 Dev 서버(/api/buses/arrivals)에서 버스 도착 목록을 정상 수신해야 한다", async () => {
-    const arrivals: BusArrivalItem[] = await getBusArrival(TEST_BSTOP_ID);
+  it(
+    "1. 실제 Dev 서버(/api/buses/arrivals)에서 버스 도착 목록을 정상 수신해야 한다",
+    async () => {
+      const arrivals: BusArrivalItem[] = await getBusArrival(TEST_BSTOP_ID);
 
     expect(Array.isArray(arrivals)).toBe(true);
     // 현재 운행 시간대이므로 실시간 또는 운행 버스 데이터가 1건 이상 수신되어야 함
@@ -16,7 +18,9 @@ describe("버스 도착 정보 실제 Dev 서버 연동 및 기능 테스트", (
     expect(firstItem.BSTOPID).toBe(TEST_BSTOP_ID);
     expect(firstItem.ROUTEID).toBeTruthy();
     expect(firstItem.ARRIVALESTIMATETIME).toBeDefined();
-  });
+    },
+    15000,
+  );
 
   it("2. 수신된 버스 데이터의 도착예정시간(초)이 toTime 유틸에 의해 올바르게 포맷팅되어야 한다", async () => {
     const arrivals: BusArrivalItem[] = await getBusArrival(TEST_BSTOP_ID);
@@ -33,7 +37,7 @@ describe("버스 도착 정보 실제 Dev 서버 연동 및 기능 테스트", (
         }
       }
     }
-  });
+  }, 15000);
 
   it("3. 과거 기록 기반 예측 버스인 경우(estimationNotice 또는 estimatedArrivalSeconds 존재 시) 분 단위로 안전하게 변환되어야 한다", async () => {
     // 가상의 과거 기록 기반 DTO 항목 시뮬레이션

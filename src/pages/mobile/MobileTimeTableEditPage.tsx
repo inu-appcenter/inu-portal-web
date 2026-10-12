@@ -145,6 +145,18 @@ const MobileTimeTableEditPage = () => {
   }, [timetables, activeTimetableId]);
   const timetable = activeTimetable?.events || [];
 
+  // 추가 요청을 보냈지만 아직 서버 재조회(invalidate)로 timetable 스토어에
+  // 반영되지 않은 courseOfferingId. 이 창구가 비어있으면 같은 강의를 빠르게
+  // 다시 눌렀을 때 addedCourseOfferingIds가 아직 갱신 전이라 중복 추가가
+  // 통과해버릴 수 있어, 성공 시 즉시 채우고 재조회가 끝나면 비운다.
+  const [pendingAddedOfferingIds, setPendingAddedOfferingIds] = useState<
+    Set<number>
+  >(new Set());
+
+  // 활성 시간표가 바뀌면 이전 시간표의 pending 상태가 새 시간표에 누수되지 않도록 초기화
+  useEffect(() => {
+    setPendingAddedOfferingIds(new Set());
+  }, [activeTimetableId]);
   const addedCourseOfferingIds = useMemo(() => {
     const set = new Set<number>();
     timetable.forEach((item) => {
@@ -152,8 +164,9 @@ const MobileTimeTableEditPage = () => {
         set.add(item.courseOfferingId);
       }
     });
+    pendingAddedOfferingIds.forEach((id) => set.add(id));
     return set;
-  }, [timetable]);
+  }, [timetable, pendingAddedOfferingIds]);
 
   const addedCourseIds = useMemo(() => {
     const set = new Set<string>();
@@ -163,6 +176,21 @@ const MobileTimeTableEditPage = () => {
       }
     });
     return set;
+  }, [timetable]);
+
+  // 재조회가 끝나 timetable에 실제로 반영된 courseOfferingId는 임시 표시가
+  // 필요 없으니 pending 목록에서 제거한다.
+  useEffect(() => {
+    setPendingAddedOfferingIds((prev) => {
+      if (prev.size === 0) return prev;
+      const realOfferingIds = new Set(
+        timetable.map((item) => item.courseOfferingId).filter(Boolean),
+      );
+      const next = new Set(
+        [...prev].filter((id) => !realOfferingIds.has(id)),
+      );
+      return next.size === prev.size ? prev : next;
+    });
   }, [timetable]);
 
   // 전공/영역·학년·이수구분·학점 필터.
@@ -309,6 +337,17 @@ const MobileTimeTableEditPage = () => {
     }
     if (createCourseItemMutation.isPending) return;
 
+    // 같은 강의(같은 개설강의) 중복 추가 선제 차단. addedCourseOfferingIds에는
+    // 아직 재조회가 끝나지 않은 pendingAddedOfferingIds도 합쳐져 있어, 추가
+    // 직후 빠르게 다시 눌러도 여기서 걸러진다.
+    const isExactDuplicate =
+      addedCourseOfferingIds.has(newCourse.id) ||
+      Boolean(newCourse.courseId && addedCourseIds.has(newCourse.courseId));
+    if (isExactDuplicate) {
+      showToast("이미 시간표에 추가된 강의입니다.");
+      return;
+    }
+
     // 1. 기존 강의와의 시간 충돌 검사 (과목명, 교수명, 분반, 요일, 시간)
     const conflicts = findConflictingCourseDetails(
       newCourse.schedules,
@@ -327,6 +366,8 @@ const MobileTimeTableEditPage = () => {
       return;
     }
 
+    setPendingAddedOfferingIds((prev) => new Set(prev).add(newCourse.id));
+
     // 2. 충돌이 없을 시 강의 추가 API 호출
     createCourseItemMutation.mutate(
       {
@@ -341,6 +382,11 @@ const MobileTimeTableEditPage = () => {
           });
         },
         onError: (error: any) => {
+          setPendingAddedOfferingIds((prev) => {
+            const next = new Set(prev);
+            next.delete(newCourse.id);
+            return next;
+          });
           showToast(error.response?.data?.msg || "강의 추가에 실패했습니다.");
         },
       },

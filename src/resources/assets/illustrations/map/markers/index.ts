@@ -11,4 +11,5 @@ export { default as open } from "./open.svg";
 export { default as publicRestroom } from "./public-restroom.svg";
 export { default as restaurant } from "./restaurant.svg";
 export { default as shower } from "./shower.svg";
+export { default as tumblerWasher } from "./tumbler-washer.svg";
 export { default as womanRestroom } from "./woman-restroom.svg";
