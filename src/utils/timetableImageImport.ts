@@ -88,7 +88,7 @@ export function preprocessBlockCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanv
   if (!ctx) return sourceCanvas;
 
   // 1. 흰색 배경 초기화
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "white";
   ctx.fillRect(0, 0, target.width, target.height);
 
   // 2. 이미지 확대 렌더링 (고품질 스무딩 적용)

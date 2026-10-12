@@ -92,7 +92,7 @@ export default function PostContentContainer({
 const OuterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   width: 100%;
 `;
 

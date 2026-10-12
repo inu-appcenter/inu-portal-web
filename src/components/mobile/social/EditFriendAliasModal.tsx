@@ -69,13 +69,13 @@ const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   font-family: Pretendard;
   font-size: 16px;
   box-sizing: border-box;
   outline: none;
 
   &:focus {
-    border-color: var(--border-brand, #5E92F0);
+    border-color: var(--border-brand);
   }
 `;

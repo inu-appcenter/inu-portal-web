@@ -41,7 +41,7 @@ export default function BusRouteMap({ path, stopMarker }: BusRouteMapProps) {
     const polyline = new window.kakao.maps.Polyline({
       path: linePath,
       strokeWeight: 4,
-      strokeColor: "#3E69D1",
+      strokeColor: "rgb(62, 105, 209)",
       strokeOpacity: 0.9,
       strokeStyle: "solid",
     });
@@ -106,7 +106,7 @@ const BusRouteMapWrapper = styled.div`
   width: 100%;
   border-radius: 20px;
   overflow: hidden;
-  background: #f8f9fa;
+  background: var(--bg-subtle);
 `;
 
 const LoadingText = styled.div`
@@ -118,6 +118,6 @@ const LoadingText = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6c757d;
+  color: var(--gray-600);
   font-size: 14px;
 `;

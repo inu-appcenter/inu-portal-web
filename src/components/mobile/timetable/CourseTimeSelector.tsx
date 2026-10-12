@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import DayChip, { DayChipProps } from "@/components/common/DayChip";
+import RollingTimeDisplay from "./RollingTimeDisplay";
 
 export interface CourseTimeSlot {
   id: string;
@@ -19,6 +20,28 @@ interface CourseTimeSelectorProps {
 }
 
 const DAYS = ["월", "화", "수", "목", "금", "토", "일"];
+
+const MAX_MINUTES = 23 * 60 + 59; // 하루 안에서 표현 가능한 마지막 시각
+const DEFAULT_DURATION_MINUTES = 90;
+
+const toMinutes = (time: string) => {
+  const [hour, minute] = time.split(":").map(Number);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return 0;
+  return hour * 60 + minute;
+};
+
+const toTimeString = (minutes: number) => {
+  const clamped = Math.min(Math.max(minutes, 0), MAX_MINUTES);
+  const hour = Math.floor(clamped / 60);
+  const minute = clamped % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+};
+
+// 시작/종료가 뒤집히지 않도록, 직전 슬롯이 갖고 있던 소요 시간을 유지한다
+const getDurationMinutes = (slot: CourseTimeSlot) => {
+  const duration = toMinutes(slot.endTime) - toMinutes(slot.startTime);
+  return duration > 0 ? duration : DEFAULT_DURATION_MINUTES;
+};
 
 const CourseTimeSelector = ({
   slot,
@@ -44,17 +67,38 @@ const CourseTimeSelector = ({
     });
   };
 
+  // 시작 시간을 옮기면 종료 시간도 같은 간격만큼 따라 옮긴다
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const duration = getDurationMinutes(slot);
+    const nextStartMinutes = Math.min(
+      toMinutes(e.target.value || "09:00"),
+      MAX_MINUTES - 1, // 종료 시간이 최소 1분 뒤에 올 자리를 남긴다
+    );
+
     onChange({
       ...slot,
-      startTime: e.target.value || "09:00",
+      startTime: toTimeString(nextStartMinutes),
+      endTime: toTimeString(nextStartMinutes + duration),
     });
   };
 
+  // 종료 시간을 시작 시간보다 앞으로 당기면 시작 시간을 같은 간격만큼 함께 당긴다
   const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const duration = getDurationMinutes(slot);
+    const nextEndMinutes = Math.max(toMinutes(e.target.value || "10:30"), 1);
+
+    if (nextEndMinutes > toMinutes(slot.startTime)) {
+      onChange({
+        ...slot,
+        endTime: toTimeString(nextEndMinutes),
+      });
+      return;
+    }
+
     onChange({
       ...slot,
-      endTime: e.target.value || "10:30",
+      startTime: toTimeString(Math.max(nextEndMinutes - duration, 0)),
+      endTime: toTimeString(nextEndMinutes),
     });
   };
 
@@ -83,11 +127,11 @@ const CourseTimeSelector = ({
           {/* 첫 일정은 삭제 불가 — 항상 최소 1개 슬롯이 남는다 */}
           {index > 0 && (
             <IconButton onClick={onRemove} type="button">
-              <Icon name="remove-minus" size={20} color="#8b95a1" />
+              <Icon name="remove-minus" size={20} color="var(--gray-500)" />
             </IconButton>
           )}
           <IconButton onClick={onAdd} type="button">
-            <Icon name="add-plus-sm" size={20} color="#8b95a1" />
+            <Icon name="add-plus-sm" size={20} color="var(--gray-500)" />
           </IconButton>
         </ActionButtons>
       </SelectorHeader>
@@ -109,7 +153,7 @@ const CourseTimeSelector = ({
       <TimeInputRow>
         <TimePickerField>
           <TimePickerLabel>시작 시간</TimePickerLabel>
-          <TimePickerDisplay>{slot.startTime}</TimePickerDisplay>
+          <RollingTimeDisplay value={slot.startTime} />
           <HiddenTimeInput
             type="time"
             value={slot.startTime}
@@ -120,7 +164,7 @@ const CourseTimeSelector = ({
 
         <TimePickerField>
           <TimePickerLabel>종료 시간</TimePickerLabel>
-          <TimePickerDisplay>{slot.endTime}</TimePickerDisplay>
+          <RollingTimeDisplay value={slot.endTime} />
           <HiddenTimeInput
             type="time"
             value={slot.endTime}
@@ -162,7 +206,7 @@ const SelectorHeader = styled.div`
 `;
 
 const Title = styled.h3`
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 16px;
   font-style: normal;
@@ -183,7 +227,7 @@ const ActionButtons = styled.div`
 
 const IconButton = styled.button`
   background: transparent;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
   width: 40px;
   height: 40px;
@@ -195,7 +239,7 @@ const IconButton = styled.button`
   transition: all 0.2s ease;
 
   &:active {
-    background-color: var(--bg-muted, #f8f9fb);
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -209,17 +253,17 @@ const StyledDayChip = styled(({ isSelected, ...props }: DayChipProps) => <DayChi
   border-radius: 999px;
 
   /* 비선택 상태 */
-  background-color: var(--bg-base, white) !important;
-  color: var(--text-primary, #333d4b) !important;
-  border: 1px solid var(--border-default, #e5e8eb) !important;
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
 
   /* 선택 상태 */
   ${({ isSelected }) =>
     isSelected &&
     `
-      background-color: var(--interactive-primary, #3b82f6) !important;
-      border: 1px solid var(--interactive-primary, #3b82f6) !important;
-      color: white !important;
+      background-color: var(--interactive-primary) !important;
+      border: 1px solid var(--interactive-primary) !important;
+      color: var(--text-inverse) !important;
     `}
 `;
 
@@ -237,7 +281,7 @@ const DayChipContainer = styled.div`
 
 const TimeInputRow = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 8px;
   width: 100%;
 `;
 
@@ -246,9 +290,9 @@ const TimePickerField = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-lg, 12px);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 8px 12px;
   height: 58px;
   box-sizing: border-box;
@@ -260,16 +304,8 @@ const TimePickerLabel = styled.span`
   font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 2px;
-  text-align: left;
-`;
-
-const TimePickerDisplay = styled.span`
-  font-family: 'Pretendard', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary, #333d4b);
   text-align: left;
 `;
 
@@ -278,9 +314,9 @@ const LocationField = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: var(--radius-lg, 12px);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   padding: 8px 12px;
   height: 58px;
   box-sizing: border-box;
@@ -294,14 +330,14 @@ const LocationInput = styled.input`
   padding: 0;
   width: 100%;
   box-sizing: border-box;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   font-family: 'Pretendard', sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
     font-weight: 400;
   }
 `;

@@ -256,29 +256,29 @@ const WriterRow = styled.div`
 const Category = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: #0e4d9d;
+  color: var(--interactive-primary);
   width: fit-content;
 
-  border-bottom: 2px solid #7aa7e5;
+  border-bottom: 2px solid var(--interactive-focus);
   padding-bottom: 2px;
 `;
 
 const Date = styled.div`
   font-size: 14px;
   font-weight: 700;
-  color: #7aa7e5;
+  color: var(--interactive-focus);
 `;
 
 const ListTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
-  color: #221112;
+  color: var(--text-primary);
 `;
 
 const GridTitle = styled.div`
   font-size: 15px;
   font-weight: 500;
-  color: #221112;
+  color: var(--text-primary);
   flex: 1;
   text-align: center;
   //background: red;
@@ -295,7 +295,7 @@ const Content = styled.div`
   flex: 1;
   font-size: 10px;
   font-weight: 500;
-  color: #888888;
+  color: var(--text-tertiary);
 `;
 
 const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
@@ -321,9 +321,9 @@ const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
   .writer {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     /* grid 모드일 때만 적용 */
@@ -340,9 +340,9 @@ const LikeCommentWriterWrapper = styled.div<{ viewMode: "grid" | "list" }>`
   .view {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     display: flex;
@@ -358,7 +358,7 @@ const TipsCardGridWrapper = styled.div`
   height: 140px;
   //width: 100%;
   width: 160px;
-  border: 2px solid #7aa7e5;
+  border: 2px solid var(--interactive-focus);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -383,7 +383,7 @@ const GridTopTopWrapper = styled.div`
 
 const GridLine = styled.div`
   width: 100%;
-  border: 1px solid #7aa7e5;
+  border: 1px solid var(--interactive-focus);
 `;
 
 const GridBottomWrapper = styled.div`
@@ -398,7 +398,7 @@ const TipsCardListWrapper = styled.div`
   height: fit-content;
   width: 100%;
   box-sizing: border-box;
-  border: 2px solid #7aa7e5;
+  border: 2px solid var(--interactive-focus);
   border-radius: 10px;
   display: flex;
 `;
@@ -410,13 +410,8 @@ const ListLeftWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  border-right: 2px solid #7aa7e5; // 오른쪽 경계선 추가
+  border-right: 2px solid var(--interactive-focus); // 오른쪽 경계선 추가
 `;
-
-// const ListLine = styled.div`
-//   height: 100%;
-//   border: 1px solid #7aa7e5;
-// `;
 
 const ListRightWrapper = styled.div`
   height: 100%;
@@ -434,7 +429,7 @@ const DeptNoticeCardListWrapper = styled.div`
   min-height: 80px;
   width: 100%;
   box-sizing: border-box;
-  border: 2px solid #7aa7e5;
+  border: 2px solid var(--interactive-focus);
   border-radius: 10px;
   box-sizing: border-box;
   padding: 8px;
@@ -466,9 +461,9 @@ const DateViewWrapper = styled.div`
   .view {
     font-size: 10px;
     font-weight: 500;
-    color: #303030;
+    color: var(--text-primary);
     padding: 2px 8px;
-    background-color: #ecf4ff;
+    background-color: var(--bg-brand);
     border-radius: 8px;
 
     display: flex;

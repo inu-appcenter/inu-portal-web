@@ -234,6 +234,6 @@ const EmptyState = styled.div`
   justify-content: center;
   align-items: center;
   height: 200px;
-  color: #888;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;

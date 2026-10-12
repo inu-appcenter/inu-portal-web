@@ -4,6 +4,13 @@ import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { login } from "@/apis/members";
+import {
+  savePortalAccount,
+  fetchAcademicInfoFromApp,
+  isMobileAppEnvironment,
+} from "@/apis/mobileAgentBridge";
+import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
+import { secureStorage } from "@/utils/secureStorage";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
 import TermsLinks from "@/components/common/TermsLinks";
@@ -46,8 +53,28 @@ export default function LoginForm() {
 
     try {
       setLoading(true);
-      const response = await login(studentId, password);
+      const trimmedId = studentId.trim();
+      const trimmedPassword = password.trim();
+
+      const response = await login(trimmedId, trimmedPassword);
       setTokenInfo(response.data);
+
+      // 모바일 앱 환경인 경우 기기 보안 KeyStore에 포털 계정 1회 자동 등록 및 학적 사전 캐싱
+      if (isMobileAppEnvironment()) {
+        try {
+          await savePortalAccount(trimmedId, trimmedPassword);
+          void fetchAcademicInfoFromApp().then((res) => {
+            if (res.success && res.data) {
+              const student = adaptAcademicInfoToStudentInfo(res.data);
+              void secureStorage.setItem("portal_student_info", student);
+              localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+            }
+          }).catch(() => {});
+        } catch (bridgeErr) {
+          console.debug("[LoginForm] auto portal account link error:", bridgeErr);
+        }
+      }
+
       setLoading(false);
 
       const redirectPath = getRedirectPath(location.search);
@@ -141,7 +168,7 @@ const Guide = styled.p`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const ButtonSection = styled.div`
@@ -180,9 +207,9 @@ const LoginButton = styled.button`
   padding: 12px 24px;
   box-sizing: border-box;
   border: none;
-  border-radius: var(--radius-full, 999px);
-  background: var(--blue-800, #003a99);
-  color: var(--text-inverse, #ffffff);
+  border-radius: var(--radius-full);
+  background: var(--blue-800);
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
@@ -191,8 +218,8 @@ const LoginButton = styled.button`
   transition: background 0.2s ease;
 
   &:disabled {
-    background: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #b0b8c1);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
   }
 `;

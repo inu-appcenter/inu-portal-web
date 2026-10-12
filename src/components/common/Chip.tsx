@@ -5,9 +5,9 @@ import Ripple from "./Ripple";
 interface ChipButtonProps {
   iconSrc?: string;
   iconComponent?: React.ElementType;
-  /** iconComponent 색상. 생략 시 기존 동작대로 브랜드 블루(#4071B9). */
+  /** iconComponent 색상. 생략 시 기본 동작대로 브랜드 블루. */
   iconColor?: string;
-  /** iconComponent 크기(px). 생략 시 기존 동작대로 20(react-icons 기본). */
+  /** iconComponent 크기(px). 생략 시 기본 동작대로 20(react-icons 기본). */
   iconSize?: number;
   title: string;
   isExternalLink?: boolean;
@@ -18,7 +18,7 @@ interface ChipButtonProps {
 const Chip = ({
   iconSrc,
   iconComponent: IconComponent,
-  iconColor = "#4071B9",
+  iconColor = "var(--branding-brand-blue)",
   iconSize = 20,
   title,
   isExternalLink,
@@ -74,16 +74,15 @@ const ChipWrapper = styled.button<{ $isAIButton?: boolean }>`
 
   background: ${({ $isAIButton }) =>
     $isAIButton
-      ? "linear-gradient(270deg, #EFFFF4 0%, #DEEFFF 67.31%, #FEEDFF 100%)"
-      : "#fff"};
+      ? "linear-gradient(270deg, var(--bg-brand) 0%, var(--blue-50) 67.31%, var(--border-warn-subtle) 100%)"
+      : "var(--bg-base)"};
   position: relative;
   overflow: hidden;
   outline: none;
   cursor: pointer;
 
-  border-radius: var(--radius-full, 999px);
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #fff);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
 
   //box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 
@@ -98,7 +97,7 @@ const ExternalLinkImg = styled(FontelloIcon).attrs({
   name: "link-external" as const,
   size: 11,
 })`
-  color: #969696;
+  color: var(--text-tertiary);
 `;
 
 const Icon = styled.img<{ $isAIButton?: boolean }>`
@@ -122,7 +121,7 @@ const ContentArea = styled.div`
   white-space: nowrap;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
   }

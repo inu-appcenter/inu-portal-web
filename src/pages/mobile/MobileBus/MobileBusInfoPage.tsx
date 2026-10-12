@@ -22,6 +22,7 @@ import {
 } from "@/utils/busUiPreference";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 const SHUTTLE_TABS = ["사범대 셔틀", "인천대입구 셔틀", "통학 셔틀"];
 const EMPTY_TABS: string[] = [];
@@ -93,9 +94,9 @@ export default function BusInfoPage() {
 
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const currentIndex = useMemo(() => {
     const idx = tabList.indexOf(selectedTab);
@@ -113,7 +114,7 @@ export default function BusInfoPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     resetScrollToTop();

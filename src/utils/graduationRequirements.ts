@@ -4,6 +4,7 @@ import {
   assignSubjectsToRequirements,
   resolveRequirement,
 } from "@/utils/requiredCourseMatch";
+import { matchRequiredMajorCourses } from "@/utils/requiredMajorCourses";
 import type {
   CreditProgress,
   DepartmentGraduationRequirement,
@@ -12,6 +13,7 @@ import type {
   GraduationRule,
   RequiredCourseProgress,
   RequiredCourseStatus,
+  RequiredMajorCourse,
 } from "@/types/graduation";
 
 /** 수집 데이터가 덮는 가장 이른 입학연도 */
@@ -95,20 +97,36 @@ export const resolveGraduationRule = (
 // --- 학과 특성에 따른 요건 면제 ---
 
 /**
- * SW 필수 교양을 면제로 보는 단과대학.
+ * SW 기초교양(컴퓨팅적사고와SW, 2026학번부터 AI사고와데이터리터러시) 이수 대상이 아닌 학과.
  *
- * 정보기술대학 학과들은 프로그래밍 교과가 전공에 들어 있어 SW 교양을 따로 듣지
- * 않는다. 학칙 표에는 SW가 그대로 적혀 있어 데이터는 원문대로 두고, 판정할 때만
- * 면제로 본다. (전공 과목을 SW 요건에 끌어다 쓰면 전공 학점이 이중으로 세여서
- * `allowMajor`로 푸는 방식은 쓰지 않는다.)
+ * 학칙 표에는 SW가 "(해당학과)"로만 적혀 있어 데이터에는 원문대로 두고, 판정할 때만
+ * 면제로 본다. 대상 학과는 기초교육원 「2026학년도 교양 교육과정표」의 이수 대상표를
+ * 따른다: 정보기술대학은 해당 없음(수강 제한), 공과·도시과학·생명과학기술대학은 일부
+ * 학과만, 사범대학은 수학교육과 제외. 학과 페이지(전자공학·바이오로봇)의 옛 학번 기준에도
+ * SW가 없어 전 학번에 같이 적용한다.
+ * (전공 과목을 SW 요건에 끌어다 쓰면 전공 학점이 이중으로 세여서 `allowMajor`로 푸는
+ * 방식은 쓰지 않는다.)
  */
 const SW_EXEMPT_COLLEGES = new Set(["정보기술대학"]);
+/** 단과대학 대부분이 면제인데 SW를 듣는 학과 */
+const SW_REQUIRED_DEPARTMENTS_BY_COLLEGE: Record<string, Set<string>> = {
+  공과대학: new Set(["SAFETY_ENGINEERING", "ENERGY_CHEMICAL"]),
+  도시과학대학: new Set(["URBAN_ADMINISTRATION", "URBAN_ARCHITECTURE"]),
+  생명과학기술대학: new Set(["BIOENGINEERING", "BIOENGINEERING_NANO"]),
+};
+const SW_EXEMPT_DEPARTMENTS = new Set(["MATH_EDUCATION"]);
 
 /** 그 학과가 SW 필수 교양을 면제받는지 */
 export const isSwRequirementExempt = (
   departmentCode: string | null | undefined,
-): boolean =>
-  SW_EXEMPT_COLLEGES.has(getCollegeByDepartmentCode(departmentCode));
+): boolean => {
+  if (!departmentCode) return false;
+  if (SW_EXEMPT_DEPARTMENTS.has(departmentCode)) return true;
+  const college = getCollegeByDepartmentCode(departmentCode);
+  if (SW_EXEMPT_COLLEGES.has(college)) return true;
+  const required = SW_REQUIRED_DEPARTMENTS_BY_COLLEGE[college];
+  return required ? !required.has(departmentCode) : false;
+};
 
 type SubjectKind = "MAJOR" | "GENERAL" | "OTHER";
 
@@ -119,8 +137,14 @@ type SubjectKind = "MAJOR" | "GENERAL" | "OTHER";
  * (서버가 실제로 쓰는 값은 courseFilterModel.ts의 SERVER_ISU_NAMES 참고.)
  * 옛 성적표에는 이전 명칭이 그대로 남아 있어 양쪽을 다 본다.
  */
+/** 과목명 대신 이수구분 이름이 적힌 필수 교양 요건. 이름으로 판정할 수 없다. */
+const DIVISION_REQUIREMENT_NAMES = new Set([
+  "기초교양",
+  "핵심교양",
+  "심화교양",
+]);
+
 const REQUIRED_MAJOR_ISU_NAMES = ["전공기초", "전공핵심", "전공필수"];
-const CORE_GENERAL_ISU_NAMES = ["핵심교양", "균형교양","교양필수"];
 
 /**
  * 이수구분(성적 붙여넣기로 들어온 과목에만 있다)이 있으면 그걸 우선한다.
@@ -140,15 +164,21 @@ const isRequiredMajor = (subject: EvaluatedSubject): boolean => {
   return REQUIRED_MAJOR_ISU_NAMES.some((name) => isuName.includes(name));
 };
 
-/** 핵심교양 이수영역. "-"처럼 영역이 비어 있는 행은 셀 수 없다. */
-const getCoreGeneralArea = (subject: EvaluatedSubject): string | null => {
+/**
+ * 핵심교양 과목인지. 현행은 이수구분 "핵심교양"(이수영역 "(핵심)인문" 등)이고,
+ * 2022학년도까지의 INU핵심교양은 이수구분 "교양필수"에 이수영역 "INU핵심창의융합"처럼 찍힌다.
+ * 이수영역은 "(핵심)"·"INU핵심"으로 시작하는 것만 본다 — 전공 과목의 이수영역 "전공핵심"이나
+ * 같은 "교양필수"의 기초교양은 핵심교양이 아니다.
+ */
+const isCoreGeneral = (subject: EvaluatedSubject): boolean => {
   const isuName = subject.isuName ?? "";
-  if (!CORE_GENERAL_ISU_NAMES.some((name) => isuName.includes(name))) {
-    return null;
-  }
+  if (isuName.includes("전공")) return false;
   const area = (subject.isuFldName ?? "").trim();
-  if (!area || area === "-") return null;
-  return area;
+  return (
+    isuName.includes("핵심교양") ||
+    area.startsWith("(핵심)") ||
+    area.startsWith("INU핵심")
+  );
 };
 
 const toStatus = (
@@ -191,6 +221,8 @@ export const evaluateGraduation = (
      * 규정 개정)까지 담지는 못하므로, 본인이 아는 값이 있으면 그쪽을 우선한다.
      */
     minTotalCredits?: number;
+    /** 그 학번 교육과정표의 전공필수 과목(loadRequiredMajorCourses). 없으면 판정하지 않는다. */
+    requiredMajorCourses?: RequiredMajorCourse[] | null;
   },
 ): GraduationEvaluation => {
   const passed = subjects.filter((subject) => subject.passed);
@@ -239,7 +271,7 @@ export const evaluateGraduation = (
     );
     if (!hasIsuName) {
       notices.push(
-        "전공기초·전공핵심(옛 전공필수) 학점은 성적 붙여넣기로 불러온 과목(이수구분 정보)만 자동으로 셀 수 있어요.",
+        "전공기초·전공핵심 학점은 성적 붙여넣기로 불러온 과목만 셀 수 있어요.",
       );
     }
   }
@@ -250,8 +282,22 @@ export const evaluateGraduation = (
   const skipStatus = (
     course: (typeof general.requiredGeneralCourses)[number],
   ): RequiredCourseStatus | null => {
-    if (swExempt && course.category === "SW") return "EXEMPT";
-    if (course.category === "기타") return "UNKNOWN";
+    // "SW(=전공필수 기계기초프로그래밍)"처럼 학과가 대체 과목을 정한 요건은 그대로 본다.
+    if (
+      swExempt &&
+      course.category === "SW" &&
+      !course.courseName.includes("전공")
+    ) {
+      return "EXEMPT";
+    }
+    // 과목명이 아니라 이수구분을 요건으로 적은 경우(예: 디자인학부 "기초교양 8학점")만 판정하지 않는다.
+    // 물리1·선형대수학처럼 과목명이 정해진 "기타" 요건은 이름으로 맞춘다.
+    if (
+      course.category === "기타" &&
+      DIVISION_REQUIREMENT_NAMES.has(course.courseName)
+    ) {
+      return "UNKNOWN";
+    }
     return null;
   };
 
@@ -267,8 +313,10 @@ export const evaluateGraduation = (
     resolved,
     passed,
     (requirement, subject) =>
-      // "SW(=전공필수 기계기초프로그래밍)"처럼 전공으로 대체되는 요건만 전공 과목까지 본다.
+      // "SW(=전공필수 기계기초프로그래밍)"처럼 전공으로 대체되는 요건과, 학과마다 전공기초로도
+      // 개설되는 과목명 요건("기타": 공업수학1 등)은 전공 과목까지 본다.
       requirement.course.courseName.includes("전공") ||
+      requirement.course.category === "기타" ||
       classifySubject(subject) !== "MAJOR",
   );
 
@@ -295,33 +343,37 @@ export const evaluateGraduation = (
 
   if (requiredCourses.some((course) => course.status === "UNKNOWN")) {
     notices.push(
-      "일부 필수 교양은 과목명만으로 판정할 수 없어 직접 확인이 필요해요.",
+      "'확인 필요' 과목은 과목명만으로 판단할 수 없어요. 직접 확인해 주세요.",
     );
   }
 
-  // 핵심교양은 학점이 아니라 이수영역 수로 본다. 이수영역은 성적 붙여넣기로
-  // 들어온 과목에만 있어, 없으면 판정하지 않고 안내만 한다.
+  const requiredMajorCourses = options?.requiredMajorCourses
+    ? matchRequiredMajorCourses(options.requiredMajorCourses, subjects)
+    : undefined;
+
+  if (requiredMajorCourses?.some((course) => !course.done)) {
+    notices.push(
+      "전공필수 과목은 학과 교육과정표 기준이에요. 택1 과목이나 이름이 바뀐 과목은 직접 확인해 주세요.",
+    );
+  }
+
+  // 핵심교양은 학점이 아니라 과목 수로 본다(영역 중복 가능). 이수구분은 성적
+  // 붙여넣기로 들어온 과목에만 있어, 없으면 판정하지 않고 안내만 한다.
   let coreGeneral: GraduationEvaluation["coreGeneral"];
   if (general.minCoreGeneralCount) {
-    const areas = [
-      ...new Set(
-        passed
-          .map(getCoreGeneralArea)
-          .filter((area): area is string => area !== null),
-      ),
-    ];
-    const unverifiable = areas.length === 0;
+    const courses = passed.filter(isCoreGeneral).map((subject) => subject.name);
+    const unverifiable = !subjects.some((subject) => !!subject.isuName);
 
     coreGeneral = {
       required: general.minCoreGeneralCount,
-      areas,
-      satisfied: areas.length >= general.minCoreGeneralCount,
+      courses,
+      satisfied: courses.length >= general.minCoreGeneralCount,
       unverifiable,
     };
 
     if (unverifiable) {
       notices.push(
-        `핵심교양은 ${general.minCoreGeneralCount}개 영역 이상 이수해야 해요. 성적 붙여넣기로 불러오면 이수영역까지 자동으로 확인해 드려요.`,
+        `핵심교양은 영역과 상관없이 ${general.minCoreGeneralCount}과목 이상 들어야 해요. 성적을 붙여넣으면 자동으로 확인해 드려요.`,
       );
     }
   }
@@ -331,7 +383,7 @@ export const evaluateGraduation = (
     options.minTotalCredits !== general.minTotalCredits
   ) {
     notices.push(
-      `총 취득학점은 직접 설정한 ${options.minTotalCredits}학점 기준으로 계산했어요. (학칙 기준 ${general.minTotalCredits}학점)`,
+      `직접 설정한 ${options.minTotalCredits}학점으로 계산했어요. (학교 기준 ${general.minTotalCredits}학점)`,
     );
   }
 
@@ -342,7 +394,7 @@ export const evaluateGraduation = (
 
   if (generalOverflow > 0) {
     notices.push(
-      `교양 상한(${general.maxGeneralCredits}학점)을 ${generalOverflow}학점 넘었어요. 초과분은 졸업학점에 안 들어갈 수 있어요.`,
+      `교양이 최대 ${general.maxGeneralCredits}학점을 ${generalOverflow}학점 넘었어요. 넘은 학점은 졸업학점에 들어가지 않을 수 있어요.`,
     );
   }
 
@@ -350,6 +402,7 @@ export const evaluateGraduation = (
     rule,
     credits,
     requiredCourses,
+    requiredMajorCourses,
     coreGeneral,
     generalOverflow,
     remainingTotalCredits: Math.max(0, minTotalCredits - totalEarned),

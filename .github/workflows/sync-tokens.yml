@@ -1,0 +1,52 @@
+name: Sync Design Tokens
+
+on:
+  push:
+    paths:
+      - 'tokens/**'
+      - 'scripts/build-tokens.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-commit-tokens:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build design tokens
+        run: npm run build:tokens
+
+      - name: Check for generated file changes
+        id: git-check
+        run: |
+          git status --porcelain src/styles/variables.css src/styles/tokens.ts
+          if [ -n "$(git status --porcelain src/styles/variables.css src/styles/tokens.ts)" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push token artifacts
+        if: steps:git-check.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/styles/variables.css src/styles/tokens.ts
+          git commit -m "chore(tokens): Figma Tokens Studio 변경에 따른 토큰 산출물 자동 빌드"
+          git push

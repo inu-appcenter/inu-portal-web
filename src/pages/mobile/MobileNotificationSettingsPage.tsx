@@ -12,7 +12,6 @@ import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
 import Icon from "@/components/common/Icon";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
-
 export default function MobileNotificationSettingsPage() {
   const navigate = useNavigate();
   const { userInfo, setUserInfo } = useUserStore();
@@ -81,6 +80,16 @@ export default function MobileNotificationSettingsPage() {
     navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=${tab}`);
   };
 
+  const handleSchoolNoticeClick = () => {
+    mixpanelTrack.mypageMenuClicked("알림설정 - 학교 공지 알리미");
+    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=school`);
+  };
+
+  const handleDeptNoticeClick = () => {
+    mixpanelTrack.mypageMenuClicked("알림설정 - 학과 공지 알리미");
+    navigate(`${ROUTES.BOARD.DEPT_SETTING}?tab=dept`);
+  };
+
   return (
     <PageWrapper>
       <ContentContainer>
@@ -97,7 +106,7 @@ export default function MobileNotificationSettingsPage() {
                   수업 시작 전 알림 및 당일 강의 목록 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
@@ -109,36 +118,51 @@ export default function MobileNotificationSettingsPage() {
                   오늘의 학교 및 학과 일정 브리핑을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
 
-            <SettingRow onClick={() => handleTabClick("school", "학교 공지 알리미")}>
+            <SettingRow onClick={handleSchoolNoticeClick}>
               <RowContent>
                 <RowTitle>학교 공지 알리미</RowTitle>
                 <RowDescription>
                   학교 공지 카테고리 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
 
             <Divider margin="0" />
 
-            <SettingRow onClick={() => handleTabClick("dept", "학과 공지 알리미")}>
+            <SettingRow onClick={handleDeptNoticeClick}>
               <RowContent>
                 <RowTitle>학과 공지 알리미</RowTitle>
                 <RowDescription>
                   구독 중인 학과 및 키워드 새 글 알림을 설정할 수 있어요.
                 </RowDescription>
               </RowContent>
-              <Icon name="chevron-right" size={20} color="#AEAEB2" />
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
+            </SettingRow>
+
+            <Divider margin="0" />
+
+            <SettingRow onClick={() => {
+              mixpanelTrack.mypageMenuClicked("알림설정 - 스마트 감시 관리");
+              navigate(ROUTES.MYPAGE.SMART_WATCH);
+            }}>
+              <RowContent>
+                <RowTitle>스마트 감시 & 리마인더</RowTitle>
+                <RowDescription>
+                  힐링존/열람실 빈자리 감시 및 LMS 과제, 좌석 연장 알림을 확인해요.
+                </RowDescription>
+              </RowContent>
+              <Icon name="chevron-right" size={20} color="var(--gray-400)" />
             </SettingRow>
           </Box>
         </TitleContentArea>
 
-        {/* 섹션 2: 기타 알림 */}
+        {/* 섹션 2: 일반 알림 */}
         <TitleContentArea
           title="일반 알림"
           description="채팅 등 서비스 기본 푸시 알림을 설정할 수 있어요."
@@ -202,7 +226,7 @@ const SettingRow = styled.div`
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   transition: background-color 0.2s ease;
 
   &:first-child {
@@ -216,7 +240,7 @@ const SettingRow = styled.div`
   }
 
   &:active {
-    background-color: #f8f9fa;
+    background-color: var(--bg-subtle);
   }
 `;
 
@@ -231,12 +255,12 @@ const RowContent = styled.div`
 const RowTitle = styled.div`
   font-size: 16px;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
 `;
 
 const RowDescription = styled.div`
   font-size: 13px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   line-height: 1.4;
 `;
 
@@ -244,3 +268,4 @@ const SwitchContainer = styled.div`
   display: flex;
   align-items: center;
 `;
+

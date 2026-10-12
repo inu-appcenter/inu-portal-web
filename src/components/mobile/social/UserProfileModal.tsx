@@ -47,7 +47,7 @@ const StyledContent = styled(Drawer.Content)`
   margin: 0 auto;
   width: 100%;
   max-width: 500px;
-  background-color: white;
+  background-color: var(--bg-base);
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   z-index: 6001;
@@ -85,7 +85,7 @@ const SheetHandle = styled.div`
   transform: translateX(-50%);
   width: 40px;
   height: 5px;
-  background-color: #E5E5EA;
+  background-color: var(--gray-200);
   border-radius: 3px;
   cursor: grab;
   &:active {
@@ -106,7 +106,7 @@ const IconButton = styled.button`
   justify-content: center;
   transition: all 0.2s;
   &:active {
-    background-color: #f2f2f7;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -119,7 +119,7 @@ const Body = styled.div`
 
 const LoadingArea = styled.div`
   padding: 40px 0;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 15px;
 `;
 
@@ -129,7 +129,7 @@ const ProfileImageWrapper = styled.div`
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 16px;
-  background-color: #f2f2f7;
+  background-color: var(--bg-muted);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
@@ -155,7 +155,7 @@ const NicknameArea = styled.div`
 const Nickname = styled.h2`
   font-size: 22px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -169,19 +169,19 @@ const EditAliasButton = styled.button`
   justify-content: center;
   border-radius: 50%;
   &:active {
-    background-color: #f2f2f7;
+    background-color: var(--bg-muted);
   }
 `;
 
 const Alias = styled.span`
   font-size: 16px;
   font-weight: 500;
-  color: #5e92f0;
+  color: var(--interactive-primary);
 `;
 
 const SubInfo = styled.p`
   font-size: 15px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
@@ -218,14 +218,14 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger
   transition: all 0.2s;
 
   background-color: ${({ $variant }) => {
-    if ($variant === "primary") return "#5E92F0";
-    if ($variant === "danger") return "#FFF5F5";
-    return "#F2F2F7";
+    if ($variant === "primary") return "var(--interactive-primary)";
+    if ($variant === "danger") return "var(--bg-error)";
+    return "var(--bg-muted)";
   }};
   color: ${({ $variant }) => {
-    if ($variant === "primary") return "white";
-    if ($variant === "danger") return "#FF3B30";
-    return "#3A3A3C";
+    if ($variant === "primary") return "var(--text-inverse)";
+    if ($variant === "danger") return "var(--text-error)";
+    return "var(--text-secondary)";
   }};
 
   &:active:not(:disabled) {
@@ -255,8 +255,8 @@ const CircleActionButton = styled.button`
   width: 48px;
   height: 48px;
   border-radius: 999px;
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background-color: var(--bg-brand, #eff6ff);
+  border: 1px solid var(--border-brand-subtle);
+  background-color: var(--bg-brand);
   cursor: pointer;
   outline: none;
   box-sizing: border-box;
@@ -264,50 +264,42 @@ const CircleActionButton = styled.button`
 
   &:active {
     transform: scale(0.95);
-    background-color: var(--border-brand-subtle, #d3e5ff);
+    background-color: var(--border-brand-subtle);
   }
 
   &.warn {
-    border: 1px solid var(--border-warn, #fee588);
-    background-color: var(--bg-warn, #fffaeb);
+    border: 1px solid var(--border-warn);
+    background-color: var(--bg-warn);
     
     &:active {
-      background-color: var(--border-warn, #fee588);
+      background-color: var(--border-warn);
     }
   }
 
   &.fav {
-    border: 1px solid var(--border-warn, #fee588);
-    background-color: var(--bg-warn, #fffaeb);
+    border: 1px solid var(--border-warn);
+    background-color: var(--bg-warn);
     
     &:active {
-      background-color: var(--border-warn, #fee588);
+      background-color: var(--border-warn);
     }
   }
 `;
 
 const AlarmIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="13" r="7.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 9V13L14 15" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 3L8 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M19 3L16 1.3" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M6 20L4.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M18 20L19.5 21.5" stroke="#B45309" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="12" cy="13" r="7.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 9V13L14 15" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 3L8 1.3" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 3L16 1.3" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 20L4.5 21.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M18 20L19.5 21.5" stroke="var(--text-warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 const ChatBubbleIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
-const ShareIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <polyline points="16 6 12 2 8 6" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="12" y1="2" x2="12" y2="15" stroke="#0061FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="var(--interactive-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -605,17 +597,6 @@ export default function UserProfileModal({
     }
   };
 
-  const handleShareProfile = () => {
-    if (!profile) return;
-    const targetFriendId = profile.friendId || friendId;
-    const shareUrl = `${window.location.origin}/mobile/friends?ids=${targetFriendId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert("프로필 링크가 클립보드에 복사되었습니다.");
-    }).catch(() => {
-      alert("링크 복사에 실패했습니다.");
-    });
-  };
-
   const isMe = isSelfProfile || userInfo?.nickname === profile?.nickname;
 
   const canManage =
@@ -653,7 +634,7 @@ export default function UserProfileModal({
                         }}
                         title="친구 삭제"
                       >
-                        <Icon name="user-remove" size={22} color="var(--text-tertiary, #8b95a1)" />
+                        <Icon name="user-remove" size={22} color="var(--text-tertiary)" />
                       </IconButton>
                     )}
                     <IconButton
@@ -664,7 +645,7 @@ export default function UserProfileModal({
                       }}
                       title="차단"
                     >
-                      <Ban size={22} color="var(--text-tertiary, #8b95a1)" />
+                      <Ban size={22} color="var(--text-tertiary)" />
                     </IconButton>
                   </>
                 )}
@@ -675,7 +656,7 @@ export default function UserProfileModal({
                   onClick={() => onOpenChange(false)}
                   title="닫기"
                 >
-                  <Icon name="close-md" size={22} color="var(--text-tertiary, #8b95a1)" />
+                  <Icon name="close-md" size={22} color="var(--text-tertiary)" />
                 </IconButton>
               </HeaderRight>
             </Header>
@@ -700,7 +681,7 @@ export default function UserProfileModal({
                       )}
                       {profile.friendStatus === "ACCEPTED" && (
                         <EditAliasButton onClick={handleEditAlias}>
-                          <Edit3 size={16} color="#8E8E93" />
+                          <Edit3 size={16} color="var(--text-tertiary)" />
                         </EditAliasButton>
                       )}
                     </NicknameArea>
@@ -745,16 +726,6 @@ export default function UserProfileModal({
                           <ChatBubbleIcon />
                         </CircleActionButton>
 
-                        <CircleActionButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShareProfile();
-                          }}
-                          title="이 프로필 공유하기"
-                        >
-                          <ShareIcon />
-                        </CircleActionButton>
-
                         {onToggleFavorite && (
                           <CircleActionButton
                             className={isFavorite ? "fav" : ""}
@@ -769,7 +740,7 @@ export default function UserProfileModal({
                             <Icon
                               name="star"
                               size={24}
-                              color={isFavorite ? "#FFC107" : "#0061FF"}
+                              color={isFavorite ? "rgb(255, 193, 7)" : "var(--interactive-primary)"}
                             />
                           </CircleActionButton>
                         )}
@@ -813,7 +784,7 @@ export default function UserProfileModal({
                             $variant="secondary"
                             disabled={deleteMutation.isPending}
                           >
-                            <UserCheck size={20} color="#8E8E93" />
+                            <UserCheck size={20} color="var(--text-tertiary)" />
                             요청 대기 중
                           </ActionButton>
                         )}
@@ -824,7 +795,7 @@ export default function UserProfileModal({
                             onClick={handleKick}
                             $variant="danger"
                           >
-                            <LogOut size={20} color="#FF3B30" />
+                            <LogOut size={20} color="var(--text-error)" />
                             강퇴
                           </ActionButton>
                         )}

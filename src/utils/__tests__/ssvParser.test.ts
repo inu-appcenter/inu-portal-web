@@ -1,0 +1,404 @@
+import { describe, it, expect } from "vitest";
+import {
+  parseAcademicBasicInfo,
+  parseTimetableList,
+  parseTimeInfo,
+  parseTlsnTimetableList,
+  parseFullAcademicReport,
+  parseDormitoryStudentInfo,
+} from "../ssvParser";
+
+describe("Academic SSV Parser (Web Centralized)", () => {
+  const RECORD_SEPARATOR = String.fromCharCode(30);
+  const UNIT_SEPARATOR = String.fromCharCode(31);
+
+  it("올바른 SSV 패킷으로부터 학적 기본 정보를 정상 파싱해야 한다", () => {
+    const mockSsv = [
+      "ErrorCode:int=0",
+      "ErrorMsg:String=SUCCESS",
+      "Dataset:DS_SREG101",
+      `_Column_${UNIT_SEPARATOR}stuno:string${UNIT_SEPARATOR}korNm:string${UNIT_SEPARATOR}hgNm:string${UNIT_SEPARATOR}schregStGbn:string${UNIT_SEPARATOR}acqHp:string${UNIT_SEPARATOR}mrksAvg:string${UNIT_SEPARATOR}mrksCptnTmCnt:string${UNIT_SEPARATOR}colgNm:string${UNIT_SEPARATOR}profNm:string`,
+      `N${UNIT_SEPARATOR}202101234${UNIT_SEPARATOR}홍길동${UNIT_SEPARATOR}컴퓨터공학부${UNIT_SEPARATOR}10${UNIT_SEPARATOR}98${UNIT_SEPARATOR}3.85${UNIT_SEPARATOR}5${UNIT_SEPARATOR}정보기술대학${UNIT_SEPARATOR}김교수`,
+    ].join(RECORD_SEPARATOR);
+
+    const result = parseAcademicBasicInfo(mockSsv);
+
+    expect(result.studentId).toBe("202101234");
+    expect(result.koreanName).toBe("홍길동");
+    expect(result.departmentName).toBe("컴퓨터공학부");
+    expect(result.enrollmentStatus).toBe("재학");
+    expect(result.acquiredCredits).toBe("98");
+    expect(result.gradeAverage).toBe("3.85");
+    expect(result.completedSemesterCount).toBe("5학기");
+    expect(result.collegeName).toBe("정보기술대학");
+    expect(result.advisorProfessorName).toBe("김교수");
+    expect(result.displayFields?.["지도교수"]).toBe("김교수 교수님");
+  });
+
+  it("ErrorCode가 0이 아니거나 세션 오류인 경우 예외를 발생시켜야 한다", () => {
+    const errorSsv =
+      "ErrorCode:int=-1" + RECORD_SEPARATOR + "ErrorMsg:String=Session expired";
+    expect(() => parseAcademicBasicInfo(errorSsv)).toThrow(
+      "인천대 학사 시스템(ERP) 응답 오류"
+    );
+  });
+
+  it("rawSsv envelope 객체를 정상 파싱하고 학과 코드 및 졸업유예/지도교수를 매핑해야 한다", () => {
+    const rawSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SREG101",
+      "_RowType_\u001fstuno\u001fkorNm\u001fhgCd\u001fschregStGbn\u001fflSchregModGbn\u001facqHp\u001fmrksAvg\u001fprofNm",
+      "N\u001f202001518\u001f배현준\u001f0000077\u001f70\u001f0701\u001f140\u001f4.24\u001f박문주",
+    ].join(RECORD_SEPARATOR);
+
+    const result = parseAcademicBasicInfo(JSON.stringify({ rawSsv }));
+    expect(result.studentId).toBe("202001518");
+    expect(result.koreanName).toBe("배현준");
+    expect(result.departmentName).toBe("컴퓨터공학부");
+    expect(result.collegeName).toBe("정보기술대학");
+    expect(result.enrollmentStatus).toBe("졸업유예");
+    expect(result.latestEnrollmentChange).toBe("졸업유예");
+    expect(result.acquiredCredits).toBe("140");
+    expect(result.gradeAverage).toBe("4.24");
+    expect(result.advisorProfessorName).toBe("박문주");
+    expect(result.displayFields?.["지도교수"]).toBe("박문주 교수님");
+  });
+
+  it("학생별 수강 시간표 SSV(DS_LIST)를 정상 파싱해야 한다", () => {
+    const timetableSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_LIST",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fdeptClsfCd\u001fstuno\u001ftimeInfo\u001fkorNm\u001fdelGbn\u001fscNm\u001fmodDttm\u001finptDttm\u001fyy\u001ftmGbn\u001fhaksuNo\u001frepeatGbn\u001fopenHgMjNm\u001fopenHySeqGbn\u001flsnTypeGbn\u001fprofNm",
+      "N\u001f전공심화\u001f3\u001f0000587\u001f202001518\u001f[07-304:금(1)(2)(3)]\u001f배현준\u001f신청\u001f자연어처리\u001f2025-08-18 14:00:19\u001f2025-08-18 14:00:19\u001f2025\u001f20\u001f0010925001\u001f-\u001f컴퓨터공학부\u001f3\u001fe-Learning\u001f신유현",
+      "N\u001f심화교양\u001f3\u001f0000587\u001f202001518\u001f[04-104:월(7-8A)(8B-9)]\u001f배현준\u001f신청\u001f디지털시대의모바일앱만들기\u001f2025-08-18 14:00:24\u001f2025-08-18 14:00:24\u001f2025\u001f20\u001f0011842001\u001f-\u001f교양\u001f전학년\u001f강의(이론)\u001f박승진",
+    ].join(RECORD_SEPARATOR);
+
+    const list = parseTimetableList(timetableSsv);
+    expect(list).toHaveLength(2);
+
+    const [nlp, mobile] = list;
+    expect(nlp.courseName).toBe("자연어처리");
+    expect(nlp.courseCode).toBe("0010925001");
+    expect(nlp.credits).toBe("3");
+    expect(nlp.professorName).toBe("신유현");
+    expect(nlp.courseType).toBe("전공심화");
+    expect(nlp.departmentName).toBe("컴퓨터공학부");
+    expect(nlp.lessonType).toBe("e-Learning");
+    expect(nlp.timeSlots).toHaveLength(1);
+    expect(nlp.timeSlots[0].day).toBe("금");
+    expect(nlp.timeSlots[0].building).toBe("7호관");
+    expect(nlp.timeSlots[0].room).toBe("304호");
+    expect(nlp.timeSlots[0].periods).toBe("(1)(2)(3)");
+
+    expect(mobile.courseName).toBe("디지털시대의모바일앱만들기");
+    expect(mobile.professorName).toBe("박승진");
+    expect(mobile.timeSlots[0].day).toBe("월");
+    expect(mobile.timeSlots[0].building).toBe("4호관");
+    expect(mobile.timeSlots[0].room).toBe("104호");
+  });
+
+  it("수강 취소(delGbn: 취소)된 과목은 시간표 목록에서 제외해야 한다", () => {
+    const timetableSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_LIST",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fdeptClsfCd\u001fstuno\u001ftimeInfo\u001fkorNm\u001fdelGbn\u001fscNm\u001fmodDttm\u001finptDttm\u001fyy\u001ftmGbn\u001fhaksuNo\u001frepeatGbn\u001fopenHgMjNm\u001fopenHySeqGbn\u001flsnTypeGbn\u001fprofNm",
+      "N\u001f전공심화\u001f3\u001f0000587\u001f202001518\u001f[07-304:금(1)(2)(3)]\u001f배현준\u001f신청\u001f자연어처리\u001f2025-08-18 14:00:19\u001f2025-08-18 14:00:19\u001f2025\u001f20\u001f0010925001\u001f-\u001f컴퓨터공학부\u001f3\u001fe-Learning\u001f신유현",
+      "N\u001f전공선택\u001f3\u001f0000587\u001f202001518\u001f[07-201:화(1)(2)(3)]\u001f배현준\u001f취소\u001f운영체제\u001f2025-08-18 14:00:20\u001f2025-08-18 14:00:20\u001f2025\u001f20\u001f0010926001\u001f-\u001f컴퓨터공학부\u001f3\u001f강의(이론)\u001f홍길동",
+      "N\u001f심화교양\u001f3\u001f0000587\u001f202001518\u001f[04-104:월(7-8A)(8B-9)]\u001f배현준\u001f신청\u001f디지털시대의모바일앱만들기\u001f2025-08-18 14:00:24\u001f2025-08-18 14:00:24\u001f2025\u001f20\u001f0011842001\u001f-\u001f교양\u001f전학년\u001f강의(이론)\u001f박승진",
+    ].join(RECORD_SEPARATOR);
+
+    const list = parseTimetableList(timetableSsv);
+    expect(list).toHaveLength(2);
+    expect(list.map((c) => c.courseName)).toEqual(["자연어처리", "디지털시대의모바일앱만들기"]);
+  });
+
+  it("timeInfo 포맷을 정확히 파싱해야 한다", () => {
+    const slots1 = parseTimeInfo("[07-304:금(1)(2)(3)]");
+    expect(slots1).toEqual([
+      {
+        day: "금",
+        periods: "(1)(2)(3)",
+        building: "7호관",
+        room: "304호",
+        rawLocation: "07-304",
+      },
+    ]);
+
+    const slots2 = parseTimeInfo("[04-104:월(7-8A)(8B-9)]");
+    expect(slots2[0].building).toBe("4호관");
+    expect(slots2[0].room).toBe("104호");
+    expect(slots2[0].day).toBe("월");
+
+    const empty = parseTimeInfo("");
+    expect(empty).toEqual([]);
+  });
+
+  it("개인학적조회 수강탭(DS_COUR760V2)의 시간표를 정상 파싱해야 한다", () => {
+    const tlsnSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_COUR760V2",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fdeptClsfCd\u001fscNm\u001fhour\u001fyy\u001fdeptClsfNm\u001ftmGbn\u001fhaksuNo\u001fprofEmpNm\u001flsnTypeGbn\u001fsuupTime",
+      "N\u001f23\u001f3\u001f0000587\u001f디지털시대의모바일앱만들기\u001f3\u001f2025\u001f대학\u001f20\u001f0011842001\u001f박승진\u001f강의(이론)\u001f[04-104:월(7-8A)(8B-9)]",
+      "N\u001f41\u001f3\u001f0000587\u001f자연어처리\u001f3\u001f2025\u001f대학\u001f20\u001f0010925001\u001f신유현\u001fe-Learning\u001f[07-304:금(1)(2)(3)]",
+    ].join(RECORD_SEPARATOR);
+
+    const items = parseTlsnTimetableList(tlsnSsv);
+    expect(items).toHaveLength(2);
+    expect(items[0].courseName).toBe("디지털시대의모바일앱만들기");
+    expect(items[0].professorName).toBe("박승진");
+    expect(items[0].courseType).toBe("교양선택");
+    expect(items[0].timeSlots[0].building).toBe("4호관");
+
+    expect(items[1].courseName).toBe("자연어처리");
+    expect(items[1].professorName).toBe("신유현");
+    expect(items[1].courseType).toBe("전공선택");
+  });
+
+  it("종합 학업 리포트(학기별 성적, 과목별 성적, 취득학점, 장학금)를 정상 파싱해야 한다", () => {
+    const semGradesSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR400V",
+      "_RowType_\u001fstuno\u001faplyHp\u001fpercentage\u001fsumAplyHp\u001facqHp\u001fhySeqGbn\u001fyy\u001ftotRank\u001fsumAcqHp\u001ftmGbn\u001favgMrks\u001fsumMrksAvg\u001fsumPercent",
+      "N\u001f202001518\u001f10\u001f98.30\u001f140\u001f10\u001f4\u001f2025\u001f14/92\u001f140\u001f20\u001f4.33\u001f4.24\u001f97.40",
+    ].join(RECORD_SEPARATOR);
+
+    const crsGradesSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR300V1",
+      "_RowType_\u001fcptnGbn\u001fhp\u001fstuno\u001fmrksGrdGbn\u001fscNm\u001fyy\u001ftmGbn\u001fscCd\u001fmrks\u001frepeatYn",
+      "N\u001f23\u001f3\u001f202001518\u001fA+\u001f디지털시대의모바일앱만들기\u001f2025\u001f20\u001f0011842\u001f4.50\u001fN",
+      "N\u001f41\u001f3\u001f202001518\u001fA0\u001f자연어처리\u001f2025\u001f20\u001f0010925\u001f4.00\u001fN",
+    ].join(RECORD_SEPARATOR);
+
+    const creditSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_SCOR300V2",
+      "_RowType_\u001fscoTot\u001fdetmTot\u001fscoMj\u001fscoCore\u001fscoDeep\u001fscoCul\u001fsco10\u001fsco11",
+      "N\u001f140\u001f130\u001f98\u001f28\u001f58\u001f42\u001f19\u001f2",
+      "Dataset:DS_SCOR300V3",
+      "_RowType_\u001fcptnFldGbnNm\u001fcptnGbnNm\u001fhp\u001fdetmHp",
+      "N\u001fINU핵심문제해결\u001f교양필수\u001f3\u001f3",
+    ].join(RECORD_SEPARATOR);
+
+    const scalSsv = [
+      "ErrorCode:int=0",
+      "Dataset:DS_ENRO020",
+      "_RowType_\u001fpayMthdGbn\u001fscalAmtNm\u001fyy\u001ftmGbn\u001fsumAmt\u001ftuitAmt\u001fentrAmt",
+      "N\u001f1\u001f학업우수(우수)\u001f2025\u001f20\u001f1544000\u001f1544000\u001f0",
+    ].join(RECORD_SEPARATOR);
+
+    const payload = {
+      studentId: "202001518",
+      semesterGradesSsv: semGradesSsv,
+      courseGradesSsv: crsGradesSsv,
+      creditSummarySsv: creditSsv,
+      scholarshipSsv: scalSsv,
+    };
+
+    const report = parseFullAcademicReport(payload);
+    expect(report.studentId).toBe("202001518");
+    expect(report.semesterGrades).toHaveLength(1);
+    expect(report.semesterGrades[0].averageScore).toBe("4.33");
+    expect(report.semesterGrades[0].percentage).toBe("98.30");
+    expect(report.semesterGrades[0].rank).toBe("14/92");
+    expect(report.semesterGrades[0].cumulativeAverageScore).toBe("4.24");
+
+    expect(report.courseGrades).toHaveLength(2);
+    expect(report.courseGrades[0].courseName).toBe("디지털시대의모바일앱만들기");
+    expect(report.courseGrades[0].grade).toBe("A+");
+    expect(report.courseGrades[0].score).toBe("4.50");
+
+    expect(report.creditSummary.totalCredits).toBe("140");
+    expect(report.creditSummary.majorCredits).toBe("98");
+    expect(report.creditSummary.generalCredits).toBe("42");
+
+    expect(report.generalEducationAreas).toHaveLength(1);
+    expect(report.generalEducationAreas[0].areaName).toBe("INU핵심문제해결");
+    expect(report.generalEducationAreas[0].isSatisfied).toBe(true);
+
+    expect(report.scholarships).toHaveLength(1);
+    expect(report.scholarships[0].scholarshipName).toBe("학업우수(우수)");
+    expect(report.scholarships[0].amount).toBe(1544000);
+    expect(report.totalScholarshipAmount).toBe(1544000);
+  });
+
+  describe("Dormitory SSV Parser", () => {
+    it("사생 배정 기본정보(DS_DMSD_INFO) 및 상벌점(DS_POINT_LIST)을 정상 파싱해야 한다", () => {
+      const dormInfoSsv = [
+        "ErrorCode:int=0",
+        "ErrorMsg:String=SUCCESS",
+        "Dataset:DS_DMSD_INFO",
+        `_RowType_\u001fyy\u001ftmGbnNm\u001fkorNm\u001fstuno\u001fdmtyNm\u001froomNo\u001fbedNo\u001froomTypeNm\u001fentyDt\u001fleavDt\u001fmealTypeNm\u001fmealAplyCnt\u001frwrdScore\u001fpnshScore\u001fscoreSum`,
+        `N\u001f2025\u001f2학기\u001f홍길동\u001f202001518\u001f제1기숙사\u001f305\u001fA\u001f2인실\u001f2025-08-25\u001f2025-12-20\u001f주7일식(조/석식)\u001f120\u001f3\u001f1\u001f2`,
+      ].join("\u001e");
+
+      const pointSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_POINT_LIST",
+        `_RowType_\u001fpointDt\u001fpointGbnNm\u001fpointVal\u001frsn\u001fyy\u001ftmGbnNm`,
+        `N\u001f2025-09-10\u001f상점\u001f2\u001f호실 청소 우수\u001f2025\u001f2학기`,
+        `N\u001f2025-10-01\u001f벌점\u001f-1\u001f점호 불참\u001f2025\u001f2학기`,
+        `N\u001f2025-10-15\u001f상점\u001f1\u001f기숙사 행사 도우미\u001f2025\u001f2학기`,
+      ].join("\u001e");
+
+      const result = parseDormitoryStudentInfo({
+        dormInfoSsv,
+        pointListSsv: pointSsv,
+      });
+
+      expect(result.appliedYear).toBe("2025");
+      expect(result.appliedSemester).toBe("2학기");
+      expect(result.dormitoryBuilding).toBe("제1기숙사");
+      expect(result.roomNumber).toBe("305");
+      expect(result.bedNumber).toBe("A");
+      expect(result.roomType).toBe("2인실");
+      expect(result.checkInDate).toBe("2025-08-25");
+      expect(result.checkOutDate).toBe("2025-12-20");
+      expect(result.mealType).toBe("주7일식(조/석식)");
+      expect(result.meritPoints).toBe(3);
+      expect(result.demeritPoints).toBe(1);
+      expect(result.totalPoints).toBe(2);
+
+      expect(result.pointsList).toHaveLength(3);
+      expect(result.pointsList[0].date).toBe("2025-09-10");
+      expect(result.pointsList[0].typeName).toBe("상점");
+      expect(result.pointsList[0].points).toBe(2);
+      expect(result.pointsList[0].reason).toBe("호실 청소 우수");
+
+      expect(result.pointsList[1].typeName).toBe("벌점");
+      expect(result.pointsList[1].points).toBe(1);
+    });
+
+    it("실제 사생정보조회(학생 - dmsm0120)의 상단 기본정보 및 7개 탭 데이터를 완벽히 파싱해야 한다", () => {
+      const RECORD_SEP = "\x1e";
+      const UNIT_SEP = "\x1f";
+
+      const mainInfoSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209",
+        `_RowType_${UNIT_SEP}nm${UNIT_SEP}engNm${UNIT_SEP}genGbn${UNIT_SEP}natGbn${UNIT_SEP}deptNm${UNIT_SEP}hySeqGbn${UNIT_SEP}dormGbn${UNIT_SEP}dormBdNm${UNIT_SEP}domstuNo${UNIT_SEP}handpNo${UNIT_SEP}email${UNIT_SEP}zipNo${UNIT_SEP}addr${UNIT_SEP}detaAddr${UNIT_SEP}ardScr1${UNIT_SEP}ardScr2${UNIT_SEP}ardScr3${UNIT_SEP}persNo${UNIT_SEP}yy${UNIT_SEP}tmGbn`,
+        `N${UNIT_SEP}배현준${UNIT_SEP}BAE HYUNJUN${UNIT_SEP}남${UNIT_SEP}대한민국${UNIT_SEP}컴퓨터공학부${UNIT_SEP}4학년${UNIT_SEP}생활원${UNIT_SEP}제1기숙사${UNIT_SEP}20251001${UNIT_SEP}010-1234-5678${UNIT_SEP}test@inu.ac.kr${UNIT_SEP}22012${UNIT_SEP}인천광역시 연수구${UNIT_SEP}아카데미로 119${UNIT_SEP}2${UNIT_SEP}1${UNIT_SEP}0${UNIT_SEP}202001518${UNIT_SEP}2025${UNIT_SEP}20`,
+      ].join(RECORD_SEP);
+
+      const tab01AddrSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB01",
+        `_RowType_${UNIT_SEP}zipNo${UNIT_SEP}addr${UNIT_SEP}detaAddr${UNIT_SEP}guardPsnHandpNo`,
+        `N${UNIT_SEP}22012${UNIT_SEP}인천광역시 연수구${UNIT_SEP}아카데미로 119${UNIT_SEP}010-9876-5432`,
+      ].join(RECORD_SEP);
+
+      const tab02RewardSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB02",
+        `_RowType_${UNIT_SEP}dormArdGbn${UNIT_SEP}ardNm${UNIT_SEP}ardResn${UNIT_SEP}ardScr${UNIT_SEP}impsDttm`,
+        `N${UNIT_SEP}상점${UNIT_SEP}청소우수${UNIT_SEP}호실 정리정돈 우수${UNIT_SEP}2${UNIT_SEP}2025-09-15 10:00`,
+      ].join(RECORD_SEP);
+
+      const tab03InOutSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB03",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormGbn${UNIT_SEP}domstuNo${UNIT_SEP}joinCoDt${UNIT_SEP}dormLeavdormDt${UNIT_SEP}dormLeavdormGbn`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}생활원${UNIT_SEP}20251001${UNIT_SEP}2025-08-25${UNIT_SEP}2025-12-20${UNIT_SEP}정규입사`,
+      ].join(RECORD_SEP);
+
+      const tab04ApplySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB04",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormJoinGbn${UNIT_SEP}dormPassGbn${UNIT_SEP}aplyDt${UNIT_SEP}frDttm${UNIT_SEP}toDttm`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}정규입사${UNIT_SEP}합격${UNIT_SEP}2025-07-10${UNIT_SEP}2025-08-25${UNIT_SEP}2025-12-20`,
+      ].join(RECORD_SEP);
+
+      const tab05PaySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB05",
+        `_RowType_${UNIT_SEP}yy${UNIT_SEP}tmGbn${UNIT_SEP}dormGbn${UNIT_SEP}gbn${UNIT_SEP}totAmt${UNIT_SEP}dormDt`,
+        `N${UNIT_SEP}2025${UNIT_SEP}20${UNIT_SEP}제1기숙사${UNIT_SEP}등록${UNIT_SEP}980000${UNIT_SEP}2025-07-25`,
+      ].join(RECORD_SEP);
+
+      const tab07UtilitySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209_TAB07",
+        `_RowType_${UNIT_SEP}useMm${UNIT_SEP}elQty${UNIT_SEP}elFee${UNIT_SEP}wtrwkQty${UNIT_SEP}wtrwkFee${UNIT_SEP}hotwatQty${UNIT_SEP}heatQty${UNIT_SEP}subTotFee${UNIT_SEP}totFee${UNIT_SEP}instRepartFee`,
+        `N${UNIT_SEP}2025-09${UNIT_SEP}120${UNIT_SEP}15000${UNIT_SEP}15${UNIT_SEP}8000${UNIT_SEP}5${UNIT_SEP}0${UNIT_SEP}23000${UNIT_SEP}28000${UNIT_SEP}5000`,
+      ].join(RECORD_SEP);
+
+      const tab07PledgeSsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DATA",
+        `_RowType_${UNIT_SEP}stuInfo${UNIT_SEP}consntYn${UNIT_SEP}consntDt${UNIT_SEP}docCtnt`,
+        `N${UNIT_SEP}202001518 배현준${UNIT_SEP}동의${UNIT_SEP}2025-08-25${UNIT_SEP}생활원 수칙을 준수합니다.`,
+      ].join(RECORD_SEP);
+
+      const result = parseDormitoryStudentInfo({
+        mainInfo: mainInfoSsv,
+        tab01Addr: tab01AddrSsv,
+        tab02Reward: tab02RewardSsv,
+        tab03InOut: tab03InOutSsv,
+        tab04Apply: tab04ApplySsv,
+        tab05Pay: tab05PaySsv,
+        tab07Utility: tab07UtilitySsv,
+        tab07Pledge: tab07PledgeSsv,
+      });
+
+      // 1. 프로필 검증
+      expect(result.profile).not.toBeNull();
+      expect(result.profile?.name).toBe("배현준");
+      expect(result.profile?.englishName).toBe("BAE HYUNJUN");
+      expect(result.profile?.gender).toBe("남");
+      expect(result.profile?.department).toBe("컴퓨터공학부");
+      expect(result.profile?.dormitoryBuilding).toBe("제1기숙사");
+      expect(result.profile?.meritPoints).toBe("2");
+      expect(result.profile?.demeritPoints).toBe("1");
+      expect(result.profile?.nonOffsetDemeritPoints).toBe("0");
+
+      // 2. 7개 탭 검증
+      expect(result.addressList).toHaveLength(1);
+      expect(result.addressList[0].guardianPhone).toBe("010-9876-5432");
+
+      expect(result.rewardList).toHaveLength(1);
+      expect(result.rewardList[0].name).toBe("청소우수");
+      expect(result.rewardList[0].score).toBe("2");
+
+      expect(result.inOutList).toHaveLength(1);
+      expect(result.inOutList[0].checkInDate).toBe("2025-08-25");
+
+      expect(result.applyList).toHaveLength(1);
+      expect(result.applyList[0].passStatus).toBe("합격");
+
+      expect(result.paymentList).toHaveLength(1);
+      expect(result.paymentList[0].amount).toBe("980000");
+
+      expect(result.utilityList).toHaveLength(1);
+      expect(result.utilityList[0].totalFee).toBe("28000");
+
+      expect(result.pledge).not.toBeNull();
+      expect(result.pledge?.consentStatus).toBe("동의");
+      expect(result.hasData).toBe(true);
+    });
+
+    it("데이터가 존재하지 않을 때 가짜 더미 데이터(구라핑)를 채우지 않고 빈 상태를 반환해야 한다", () => {
+      const emptySsv = [
+        "ErrorCode:int=0",
+        "Dataset:DS_DMTY209",
+        "_RowType_\x1fnm\x1fpersNo",
+        "Dataset:DS_DMTY209_TAB01",
+        "_RowType_\x1fzipNo",
+        "Dataset:DS_DMTY209_TAB02",
+        "_RowType_\x1fardNm",
+      ].join("\x1e");
+
+      const result = parseDormitoryStudentInfo(emptySsv);
+      expect(result.profile).toBeNull();
+      expect(result.addressList).toHaveLength(0);
+      expect(result.rewardList).toHaveLength(0);
+      expect(result.inOutList).toHaveLength(0);
+      expect(result.applyList).toHaveLength(0);
+      expect(result.paymentList).toHaveLength(0);
+      expect(result.utilityList).toHaveLength(0);
+      expect(result.pledge).toBeNull();
+      expect(result.hasData).toBe(false);
+    });
+  });
+});
+
+

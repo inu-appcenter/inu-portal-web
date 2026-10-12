@@ -27,8 +27,8 @@ const RestaurantInfoBox = ({ place }: { place: Place }) => {
 };
 
 const RestaurantInfoBoxWrapper = styled.div`
-  background: #ffffff;
-  border: 1px solid #c0c0c2;
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
 
   display: flex;
@@ -65,7 +65,7 @@ const Title = styled.div`
   line-height: 30px;
   text-align: start;
 
-  color: #324d97;
+  color: var(--interactive-primary);
   width: 100%;
   height: fit-content;
 

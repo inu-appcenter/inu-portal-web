@@ -92,6 +92,7 @@ export interface MyChatRoomResponseDto {
   unreadCount: number;
   senderName: string;
   senderProfileImageNumber: number;
+  participantProfileImageNumbers?: number[];
   owner: boolean;
   official: boolean;
   currentParticipants: number;

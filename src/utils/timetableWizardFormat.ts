@@ -93,3 +93,14 @@ export const toWishlistCourseCards = (
 
   return [...cards.values()];
 };
+
+/**
+ * 같은 학기에 같은 이름의 시간표가 있으면 서버가 저장을 거절한다. 마법사 결과 저장은
+ * 이름 입력 단계 없이 "마법사 A" 그대로 저장하므로, 겹치면 "마법사 A (2)"처럼 번호를 붙인다.
+ */
+export const pickUniqueTimetableName = (base: string, taken: Set<string>): string => {
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base} (${n})`)) n += 1;
+  return `${base} (${n})`;
+};

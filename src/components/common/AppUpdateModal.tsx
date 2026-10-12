@@ -6,7 +6,7 @@ interface AppUpdateModalProps {
 }
 
 const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=inu.appcenter.intip_android";
-const APP_STORE_URL = "https://apps.apple.com/app/id6503956321"; // iOS 앱 스토어 ID가 결정되면 수정 가능하도록 설정
+const APP_STORE_URL = "https://apps.apple.com/app/id6740070975?l=ko";
 
 export default function AppUpdateModal({ onUpdate }: AppUpdateModalProps) {
   const handleUpdate = () => {
@@ -58,7 +58,7 @@ const ModalOverlay = styled.div`
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--bg-subtle);
   z-index: 99999;
   display: flex;
   justify-content: center;
@@ -68,7 +68,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 24px;
   width: 100%;
   max-width: 380px;
@@ -85,8 +85,8 @@ const IconContainer = styled.div`
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background-color: #f1f3f5;
-  color: #495057;
+  background-color: var(--bg-muted);
+  color: var(--gray-700);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -96,14 +96,14 @@ const IconContainer = styled.div`
 const Title = styled.h2`
   font-size: 22px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
   margin: 0 0 16px 0;
 `;
 
 const Description = styled.p`
   font-size: 14px;
   line-height: 1.6;
-  color: #868e96;
+  color: var(--text-tertiary);
   margin: 0 0 32px 0;
   word-break: keep-all;
 `;
@@ -111,18 +111,18 @@ const Description = styled.p`
 const UpdateButton = styled.button`
   width: 100%;
   height: 52px;
-  background-color: #002d62; /* 인팁 메인 네이비 색상 계열 */
-  color: #ffffff;
+  background-color: var(--blue-800);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 14px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--heading-2-font-size);
+  font-weight: var(--heading-2-font-weight);
   cursor: pointer;
   outline: none;
   transition: transform 0.1s ease, background-color 0.2s ease;
 
   &:active {
     transform: scale(0.96); /* 토스식 눌림 피드백 적용 */
-    background-color: #001f44;
+    background-color: var(--blue-800);
   }
 `;

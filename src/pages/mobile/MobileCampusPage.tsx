@@ -310,7 +310,7 @@ const MapWrapper = styled.div`
     min-width: 0;
     border-radius: 28px;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--bg-base);
     border: 1px solid rgba(64, 113, 185, 0.1);
   }
 `;

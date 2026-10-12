@@ -3,17 +3,17 @@ import styled from "styled-components";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
-import { getOnlineTypeLabel } from "@/components/mobile/timetable/filter/courseFilterModel";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
-  "현 시점에는 제공되지 않아요. 원동력을 위해 학우 여러분의 많은 관심과 성원을 부탁드립니다!";
-const LECTURE_REVIEW_NOTICE_KEY = "lectureReviewEverytimeNoticeShown";
+  "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
 const LECTURE_REVIEW_NOTICE_MESSAGE =
   "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
@@ -51,6 +51,9 @@ export default function ClassDetailBottomSheet({
   const navigate = useNavigate();
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
+  const activeTimetable = timetables.find(
+    (timetable) => timetable.id === activeTimetableId,
+  );
 
   const isQueryEnabled =
     open && Boolean(selectedClass) && !selectedClass?.isCustom;
@@ -152,9 +155,8 @@ export default function ClassDetailBottomSheet({
       alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
       return;
     }
-    if (!localStorage.getItem(LECTURE_REVIEW_NOTICE_KEY)) {
+    if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
       alert(LECTURE_REVIEW_NOTICE_MESSAGE);
-      localStorage.setItem(LECTURE_REVIEW_NOTICE_KEY, "true");
     }
     window.open(lectureReviewUrl, "_blank", "noopener,noreferrer");
   };
@@ -163,7 +165,7 @@ export default function ClassDetailBottomSheet({
     .filter((e) => e.name === liveClass.name)
     .sort((a, b) => a.day - b.day || a.startTime - b.startTime);
 
-  const dotColor = colorMap.get(liveClass.name) || "var(--text-brand, #0061FF)";
+  const dotColor = colorMap.get(liveClass.name) || "var(--text-brand)";
 
   const gradeStr = offering?.hyName
     ? offering.hyName === "0"
@@ -185,14 +187,6 @@ export default function ClassDetailBottomSheet({
     "";
 
   const courseIdStr = offering?.subjectNumber || liveClass.courseId || "";
-
-  const onlineTypeStr = getOnlineTypeLabel(
-    offering?.ssupTypeName || liveClass.ssupTypeName,
-    offering?.ssupTypeCode || liveClass.ssupTypeCode,
-  );
-
-  const detailsList = [gradeStr, courseTypeStr, onlineTypeStr, courseIdStr].filter(Boolean);
-  const detailsText = detailsList.join("  ");
 
   const scheduleText = matchingClasses
     .filter((item) => !item.isUntimed)
@@ -216,7 +210,6 @@ export default function ClassDetailBottomSheet({
 
   const handleSaveMemo = () => {
     if (activeTimetableId === null) return;
-    const activeTimetable = timetables.find((t) => t.id === activeTimetableId);
     if (!activeTimetable) return;
 
     const updatedEvents = activeTimetable.events.map((e) => {
@@ -252,11 +245,15 @@ export default function ClassDetailBottomSheet({
                           <OwnerBadge>{liveClass.ownerName}</OwnerBadge>
                         )}
                       </TitleLine>
-                      <SubtitleLine>
-                        <ProfessorName>{professorName}</ProfessorName>
-                        <CreditText>{creditsVal}학점</CreditText>
-                        <EvaluationText>{evaluationVal}</EvaluationText>
-                      </SubtitleLine>
+                      {!isCustomCourse && (
+                        <CourseBadges>
+                          {professorName !== "-" && (
+                            <CourseBadge>{professorName}</CourseBadge>
+                          )}
+                          {creditsVal > 0 && <CourseBadge>{creditsVal}학점</CourseBadge>}
+                          {evaluationVal && <CourseBadge>{evaluationVal}</CourseBadge>}
+                        </CourseBadges>
+                      )}
                     </HeaderMain>
 
                     <HeaderActions>
@@ -286,28 +283,48 @@ export default function ClassDetailBottomSheet({
                   </CourseHeaderRow>
 
                   <DetailsSection>
-                    {detailsText && (
-                      <DetailsTextRow>{detailsText}</DetailsTextRow>
+                    {!isCustomCourse && (
+                      <DetailRow>
+                        <DetailLabel>학년</DetailLabel>
+                        <DetailValue>{gradeStr || "-"}</DetailValue>
+                      </DetailRow>
                     )}
-                    {scheduleText && (
-                      <DetailsTextRow>{scheduleText}</DetailsTextRow>
+                    {!isCustomCourse && (
+                      <DetailRow>
+                        <DetailLabel>이수구분</DetailLabel>
+                        <DetailValue>{courseTypeStr || "-"}</DetailValue>
+                      </DetailRow>
                     )}
-                    <RoomRow>
-                      <RoomText>{roomVal}</RoomText>
-                      <RoomMapButton
-                        type="button"
-                        onClick={() => {
-                          // 새 웹뷰로 열려도(멀티 웹뷰 앱) 값이 유실되지 않도록
-                          // router state가 아니라 URL 쿼리로 전달한다 (#274).
-                          navigate(
-                            `${ROUTES.BOARD.CAMPUS}?search=${encodeURIComponent(roomVal)}`,
-                          );
-                          onOpenChange(false);
-                        }}
-                      >
-                        <Icon name="image" size={16} />
-                      </RoomMapButton>
-                    </RoomRow>
+                    <DetailRow>
+                      <DetailLabel>시간</DetailLabel>
+                      <DetailValue>{scheduleText || "-"}</DetailValue>
+                    </DetailRow>
+                    <DetailRow>
+                      <DetailLabel>{isCustomCourse ? "장소" : "강의실"}</DetailLabel>
+                      <DetailValueWithIcon>
+                        {roomVal !== "-" && (
+                          <CampusMapButton
+                            type="button"
+                            aria-label="캠퍼스 지도에서 강의실 보기"
+                            onClick={() => {
+                              navigate(
+                                `${ROUTES.BOARD.CAMPUS}?search=${encodeURIComponent(roomVal)}`,
+                              );
+                              onOpenChange(false);
+                            }}
+                          >
+                            <CampusMapIconImg src={CampusMapIcon} alt="" />
+                          </CampusMapButton>
+                        )}
+                        <DetailValue>{roomVal}</DetailValue>
+                      </DetailValueWithIcon>
+                    </DetailRow>
+                    {!isCustomCourse && courseIdStr && (
+                      <DetailRow>
+                        <DetailLabel>학수번호</DetailLabel>
+                        <DetailValue>{courseIdStr}</DetailValue>
+                      </DetailRow>
+                    )}
                   </DetailsSection>
                 </ClassInfoContainer>
 
@@ -355,21 +372,21 @@ export default function ClassDetailBottomSheet({
                       </>
                     ) : hasMemo ? (
                       <>
-                        <FieldLabel
-                          style={{
-                            cursor: canEditMemo ? "pointer" : "default",
-                          }}
-                        >
-                          메모
-                        </FieldLabel>
-                        <FieldValue
-                          style={{
-                            cursor: canEditMemo ? "pointer" : "default",
-                            color: "var(--text-secondary, #333d4b)",
-                          }}
-                        >
-                          {liveClass.memo}
-                        </FieldValue>
+                        <DetailRow>
+                          <DetailLabel>메모</DetailLabel>
+                          <MemoEditButton
+                            type="button"
+                            aria-label="메모 수정"
+                            disabled={!canEditMemo}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (canEditMemo) setIsEditingMemo(true);
+                            }}
+                          >
+                            <Icon name="edit-pencil-01" size={24} />
+                          </MemoEditButton>
+                          <DetailValue>{liveClass.memo}</DetailValue>
+                        </DetailRow>
                       </>
                     ) : (
                       <AddMemoButton
@@ -383,6 +400,7 @@ export default function ClassDetailBottomSheet({
                 )}
               </ScrollableBody>
 
+              {!isCustomCourse && (
               <FooterSection>
                 <FooterButtonGroup>
                   <LectureReviewButton
@@ -394,13 +412,29 @@ export default function ClassDetailBottomSheet({
                   <SyllabusButton
                     type="button"
                     onClick={() => {
-                      alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                      // liveClass.courseOfferingId는 시간표 상세 응답에 이미 실려 오므로
+                      // (utils/timetable.ts) 이걸 우선 쓴다. offering?.id는 로컬 개설강의
+                      // 목록과의 조인 결과라 조회 조건(연도/학기)이 안 갖춰지면 비어 있을 수 있다.
+                      const syllabusOfferingId =
+                        liveClass.courseOfferingId ?? offering?.id;
+                      if (syllabusOfferingId === undefined) {
+                        alert(SYLLABUS_UNAVAILABLE_MESSAGE);
+                        return;
+                      }
+                      navigate(ROUTES.TIMETABLE.SYLLABUS, {
+                        state: {
+                          courseOfferingId: syllabusOfferingId,
+                          courseName: liveClass.name,
+                          professor: professorName,
+                        },
+                      });
                     }}
                   >
                     강의계획서
                   </SyllabusButton>
                 </FooterButtonGroup>
               </FooterSection>
+              )}
             </ContentArea>
           </SheetInner>
         </StyledContent>
@@ -412,7 +446,7 @@ export default function ClassDetailBottomSheet({
 const StyledOverlay = styled(Drawer.Overlay)`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-dim);
   backdrop-filter: blur(4px);
   z-index: 10010;
 `;
@@ -438,8 +472,8 @@ const StyledContent = styled(Drawer.Content)`
 const SheetInner = styled.div`
   background: var(--bg-base);
   width: 100%;
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
   overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 
@@ -450,8 +484,8 @@ const SheetInner = styled.div`
 `;
 
 const DragHeader = styled.div`
-  height: 20px;
-  padding: 16px 0;
+  height: 28px;
+  padding: 12px 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -460,14 +494,14 @@ const DragHeader = styled.div`
 `;
 
 const HandleBar = styled.div`
-  width: 40px;
-  height: 4px;
+  width: 32px;
+  height: 3px;
   border-radius: 2px;
-  background: var(--border-default, #e5e8eb);
+  background: var(--border-default);
 `;
 
 const ContentArea = styled.div`
-  padding: 12px 16px 16px;
+  padding: 8px 20px 20px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -480,7 +514,7 @@ const ScrollableBody = styled.div`
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   min-height: 0;
 
   &::-webkit-scrollbar {
@@ -493,37 +527,37 @@ const ScrollableBody = styled.div`
 const TitleLine = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const ColorDot = styled.div<{ $color: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+  width: 3px;
+  height: 20px;
+  border-radius: 999px;
   background-color: ${({ $color }) => $color};
   flex-shrink: 0;
 `;
 
 const ClassTitle = styled.h2`
   overflow: hidden;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   text-overflow: ellipsis;
   margin: 0;
   font-family: Pretendard, sans-serif;
   font-size: 20px;
   font-style: normal;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 28px;
 `;
 
 const OwnerBadge = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 10px;
+  padding: 3px 7px;
   border-radius: 999px;
-  background-color: var(--bg-muted, #f1f3f5);
-  color: var(--text-secondary, #333d4b);
+  background-color: var(--bg-muted);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
@@ -533,34 +567,23 @@ const OwnerBadge = styled.span`
 const InfoField = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
-  padding: 8px 20px;
+  gap: 4px;
+  padding: 4px 0 4px 12px;
 `;
 
 const FieldLabel = styled.span`
   overflow: hidden;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-overflow: ellipsis;
-  font-size: 12px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 16px;
-`;
-
-const FieldValue = styled.span`
-  display: block;
-  overflow: hidden;
-  color: var(--text-secondary, #333d4b);
-  text-overflow: ellipsis;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 1.6;
+  line-height: 22.4px;
+  white-space: nowrap;
 `;
 
 const FooterSection = styled.div`
-  padding-top: 48px;
+  padding-top: 28px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -569,14 +592,14 @@ const FooterSection = styled.div`
 
 const BaseFooterButton = styled.button`
   width: 100%;
-  padding: 12px 24px;
+  padding: 12px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-family: Pretendard, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-style: normal;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 24px;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -587,24 +610,24 @@ const BaseFooterButton = styled.button`
 `;
 
 const LectureReviewButton = styled(BaseFooterButton)`
-  border: 1px solid var(--border-warn-subtle, #fef3c7);
-  background: var(--bg-warn, #fffaeb);
-  color: var(--text-warn, #b58000);
+  border: 1px solid var(--border-warn-subtle);
+  background: var(--bg-warn);
+  color: var(--text-warn);
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    background: #fff4d1;
+    background: var(--yellow-100);
   }
 `;
 
 const SyllabusButton = styled(BaseFooterButton)`
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  background: var(--bg-brand, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  border: 1px solid var(--border-brand-subtle);
+  background: var(--bg-brand);
+  color: var(--text-brand);
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    background: #dfeeff;
+    background: var(--blue-100);
   }
 `;
 
@@ -620,54 +643,49 @@ const CourseHeaderRow = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  padding-right: 8px;
+  padding-right: 0;
 `;
 
 const HeaderMain = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 `;
 
-const SubtitleLine = styled.div`
+const CourseBadges = styled.div`
   display: flex;
-  gap: 12px;
-  padding-left: 20px;
+  gap: 6px;
+  padding-left: 0;
   align-items: center;
-  font-family: Pretendard, sans-serif;
-  font-size: 16px;
+`;
+
+const CourseBadge = styled.span`
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  font-size: 14px;
   font-weight: 500;
-  line-height: 24px;
-`;
-
-const ProfessorName = styled.span`
-  color: var(--text-secondary, #333d4b);
-`;
-
-const CreditText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-`;
-
-const EvaluationText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  line-height: 19.6px;
 `;
 
 const DeleteButton = styled.button`
-  background: var(--bg-error, #fff0f0);
-  border: 1px solid var(--border-error-subtle, #ffd8d8);
+  background: var(--bg-error);
+  border: none;
   border-radius: 999px;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-error, #ff4d4f);
+  color: var(--text-error);
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 0;
 
   &:active {
     transform: scale(0.95);
@@ -675,9 +693,9 @@ const DeleteButton = styled.button`
 `;
 
 const EditButton = styled(DeleteButton)`
-  background: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
+  color: var(--text-brand);
   margin-right: 8px;
 `;
 
@@ -689,50 +707,92 @@ const HeaderActions = styled.div`
 const DetailsSection = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: 20px;
+  gap: 12px;
+  padding-left: 12px;
   width: 100%;
 `;
 
-const DetailsTextRow = styled.div`
-  color: var(--text-tertiary, #8b95a1);
+const DetailRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 22.4px;
+  width: 100%;
+`;
+
+const DetailLabel = styled.span`
+  width: 56px;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
   font-family: Pretendard, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 28px;
+  line-height: 22.4px;
+  white-space: nowrap;
+`;
+
+const DetailValue = styled.span`
+  flex: 1;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22.4px;
   white-space: pre-wrap;
   word-break: break-word;
 `;
 
-const RoomRow = styled.div`
+const DetailValueWithIcon = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 `;
 
-const RoomText = styled.span`
-  color: var(--text-tertiary, #8b95a1);
-  font-family: Pretendard, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 28px;
-`;
-
-const RoomMapButton = styled.button`
-  background: var(--bg-muted, #f1f3f5);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 999px;
-  width: 28px;
-  height: 28px;
-  display: flex;
+const CampusMapButton = styled.button`
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary, #333d4b);
-  cursor: pointer;
+  width: 24px;
+  height: 24px;
   padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
   flex-shrink: 0;
 
   &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const CampusMapIconImg = styled.img`
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+`;
+
+const MemoEditButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:active:not(:disabled) {
     transform: scale(0.95);
   }
 `;
@@ -761,7 +821,7 @@ const MemoSaveLink = styled.button`
   font-family: Pretendard, sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -777,7 +837,7 @@ const AddMemoButton = styled.button`
   font-family: Pretendard, sans-serif;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
   margin: 0;
@@ -797,11 +857,11 @@ const SeamlessTextarea = styled.textarea`
   width: 100%;
   resize: none;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
-  line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  line-height: 18px;
+  color: var(--text-secondary);
   box-sizing: border-box;
   display: block;
   overflow: hidden;

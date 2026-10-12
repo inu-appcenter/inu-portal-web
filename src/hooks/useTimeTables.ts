@@ -6,19 +6,21 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import {
-  createTimeTable,
-  createTimeTableCourseItem,
-  createTimeTableCustomItem,
-  deleteTimeTable,
-  deleteTimeTableItem,
   getTimeTables,
   getTimeTablesBySemester,
   getTimeTableDetail,
-  updateTimeTableCustomItem,
+  createTimeTable,
+  createTimeTableCourseItem,
+  createTimeTableCustomItem,
   updateTimeTableName,
   updateTimeTablePrimary,
   updateTimeTableVisibility,
+  updateTimeTableCustomItem,
+  deleteTimeTable,
+  deleteTimeTableItem,
 } from "@/apis/timetables";
+import { syncTimetableToNative } from "@/apis/timetableNowBarBridge";
+import { useSemesters } from "@/hooks/useSemesters";
 import {
   getCurrentMemberId,
   TIMETABLES_QUERY_KEY,
@@ -148,7 +150,25 @@ export const useTimeTableDetail = (
   const updateTimetableEvents = useTimetableStore(
     (state) => state.updateTimetableEvents,
   );
+  const timetables = useTimetableStore((state) => state.timetables);
+  const { semesters } = useSemesters();
   const enabled = options?.enabled ?? true;
+
+  const currentOpenSemester = useMemo(
+    () => semesters.find((s) => s.status === "OPEN"),
+    [semesters],
+  );
+
+  const primaryTimeTable = useMemo(
+    () =>
+      timetables.find(
+        (t) =>
+          (t.isRepresentative || (t as any).isPrimary) &&
+          currentOpenSemester &&
+          t.semesterId === currentOpenSemester.id,
+      ),
+    [timetables, currentOpenSemester],
+  );
 
   const queryKey = useMemo(
     () =>
@@ -173,8 +193,12 @@ export const useTimeTableDetail = (
         query.data.id,
         mapDetailItemsToClassItems(query.data.items),
       );
+      // 오직 현재 학기(OPEN)의 대표 시간표(isPrimary)일 때만 모바일 앱 Now Bar로 동기화
+      if (primaryTimeTable && query.data.id === primaryTimeTable.id) {
+        void syncTimetableToNative(query.data.items);
+      }
     }
-  }, [query.data, updateTimetableEvents]);
+  }, [query.data, primaryTimeTable, updateTimetableEvents]);
 
   return {
     ...query,

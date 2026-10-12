@@ -20,6 +20,7 @@ import NearbyFriendInfoSheet from "@/components/mobile/social/NearbyFriendInfoSh
 import { useHistoryBackedOverlay } from "@/hooks/useHistoryBackedOverlay";
 import BlockedUsersModal from "@/components/mobile/chat/BlockedUsersModal";
 import SentRequestsModal from "@/components/mobile/chat/SentRequestsModal";
+import CapsuleButton from "@/components/common/CapsuleButton";
 
 export default function MobileFriendListPage() {
   const navigate = useNavigate();
@@ -201,9 +202,10 @@ export default function MobileFriendListPage() {
       setIsSelectionMode(false);
     } else {
       setIsSelectionMode(true);
+      setSelectedIds(filteredFriends.map((f) => f.friendId));
       closeAddMenu();
     }
-  }, [isSelectionMode, closeAddMenu]);
+  }, [isSelectionMode, filteredFriends, closeAddMenu]);
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.length === filteredFriends.length) {
@@ -301,7 +303,7 @@ export default function MobileFriendListPage() {
     title: isShareMode ? "시간표 공유 대상 선택" : "친구",
     hasback: true,
     immersive: true,
-    pageBgColor: "#f8f9fb",
+    pageBgColor: "var(--bg-subtle)",
     rightAreaNotCircle: true,
     rightArea: headerRight,
     subHeader: subHeader,
@@ -373,7 +375,7 @@ export default function MobileFriendListPage() {
                   onClick={() => setSelectedRoomId(room.roomId)}
                 >
                   <RoomItemCheckOverlay $isSelected={isSelected}>
-                    {isSelected && <Icon name="check" size={14} color="#ffffff" />}
+                    {isSelected && <Icon name="check" size={14} color="var(--text-inverse)" />}
                   </RoomItemCheckOverlay>
                   <ChatRoomListItemWrapper>
                     <ChatRoomListItem
@@ -404,11 +406,12 @@ export default function MobileFriendListPage() {
       )}
 
       {/* Floating Area (always rendered for animation) */}
-      <FloatingActionsOuter>
+      <FloatingActionsOuter $isMenuOpen={isAddMenuOpen}>
         <FloatingActionsWrapper>
           {/* Plus button - scale out when selection mode is active */}
           <PlusButtonWrapper
             $visible={!isSelectionMode && !isSearchActive && !isShareMode}
+            $isMenuOpen={isAddMenuOpen}
           >
             <AddFriendMenuCard
               open={isAddMenuOpen}
@@ -454,7 +457,9 @@ export default function MobileFriendListPage() {
 
           {/* Compare / Share button - slides up from bottom */}
           <CompareButtonArea $visible={isShareMode || isSelectionMode}>
-            <CompareFloatingButton
+            <CompareButton
+              variant="primary"
+              fullWidth
               onClick={handleCompareClick}
               disabled={
                 isShareMode
@@ -462,17 +467,6 @@ export default function MobileFriendListPage() {
                     ? selectedIds.length === 0 || chatMutation.isPending
                     : !selectedRoomId
                   : selectedIds.length === 0
-              }
-              className={
-                (
-                  isShareMode
-                    ? shareTab === "friends"
-                      ? selectedIds.length === 0
-                      : !selectedRoomId
-                    : selectedIds.length === 0
-                )
-                  ? "disabled"
-                  : ""
               }
             >
               {isShareMode
@@ -484,7 +478,7 @@ export default function MobileFriendListPage() {
                   ? "이 채팅방에 공유하기"
                   : "공유할 채팅방 선택"
                 : "시간표 비교하기"}
-            </CompareFloatingButton>
+            </CompareButton>
           </CompareButtonArea>
         </FloatingActionsWrapper>
       </FloatingActionsOuter>
@@ -502,12 +496,12 @@ const PageWrapper = styled.div<{ $isShareMode?: boolean }>`
     $isShareMode
       ? `calc(var(--header-height, 56px) + 12px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 90px)`
       : `calc(var(--header-height, 56px) + 16px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 80px)`};
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
 `;
 
 const FriendListContainer = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -531,18 +525,18 @@ const EmptyTitle = styled.h3`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   margin: 24px 0 8px 0;
   text-align: center;
 `;
 
-const FloatingActionsOuter = styled.div`
+const FloatingActionsOuter = styled.div<{ $isMenuOpen?: boolean }>`
   position: fixed;
   bottom: calc(var(--nav-height, 100px) + 0px);
   right: 0;
   left: 0;
   width: 100%;
-  z-index: 99;
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 99)};
   pointer-events: none;
   background: linear-gradient(
     180deg,
@@ -567,7 +561,7 @@ const FloatingActionsWrapper = styled.div`
   }
 `;
 
-const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
+const PlusButtonWrapper = styled.div<{ $visible: boolean; $isMenuOpen?: boolean }>`
   position: relative;
   display: flex;
   justify-content: flex-end;
@@ -575,6 +569,7 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
   pointer-events: ${({ $visible }) => ($visible ? "auto" : "none")};
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transform: ${({ $visible }) => ($visible ? "scale(1)" : "scale(0)")};
+  z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1002 : 1)};
   transition:
     transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
     opacity 0.25s ease,
@@ -584,9 +579,9 @@ const PlusButtonWrapper = styled.div<{ $visible: boolean }>`
 const FloatingActionButton = styled.button<{ $isTop: boolean }>`
   height: 48px;
   border-radius: 24px;
-  background-color: #5e92f0;
+  background-color: var(--interactive-primary);
   border: none;
-  box-shadow: 0 4px 12px rgba(94, 146, 240, 0.35);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
   cursor: pointer;
   z-index: 10;
 
@@ -612,7 +607,7 @@ const FloatingActionButton = styled.button<{ $isTop: boolean }>`
 const ButtonLabel = styled.span<{ $isTop: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-inverse);
   white-space: nowrap;
   overflow: hidden;
 
@@ -651,36 +646,28 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
-const CompareFloatingButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 56px;
-  border-radius: 999px;
-  background-color: var(--interactive-primary, #3b82f6);
-  border: none;
-  color: #ffffff;
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 32px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.16);
-  cursor: pointer;
-  outline: none;
+const CompareButton = styled(CapsuleButton)`
+  color: var(--text-inverse);
+  text-align: center;
 
-  &:disabled,
-  &.disabled {
-    background-color: var(--bg-disabled, #d1d6db);
-    color: var(--text-disabled, #8b95a1);
+  /* title-3 */
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 24px; /* 150% */
+  letter-spacing: -0.2px;
+  border-radius: 999px;
+  background: var(--interactive-primary);
+  height: 48px;
+  padding: 12px 24px;
+
+  &:disabled {
+    border-color: var(--border-default);
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
     cursor: not-allowed;
     box-shadow: none;
-    pointer-events: none;
-  }
-
-  &:active {
-    background-color: var(--interactive-primary-pressed, #2563eb);
-    transform: scale(0.98);
   }
 `;
 
@@ -698,13 +685,13 @@ const HeaderActionButton = styled.button`
   font-weight: 500;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   cursor: pointer;
   outline: none;
   padding: 0;
 
   &.cancel {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 
   &:active {
@@ -725,9 +712,9 @@ const SelectableRoomItemWrapper = styled.div<{ $isSelected: boolean }>`
   width: 100%;
   box-sizing: border-box;
   padding: 4px 16px 4px 16px;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "var(--bg-brand-subtle, #eff6ff)" : "transparent"};
+    $isSelected ? "var(--bg-brand)" : "transparent"};
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
 
@@ -741,9 +728,9 @@ const RoomItemCheckOverlay = styled.div<{ $isSelected: boolean }>`
   height: 22px;
   border-radius: 50%;
   border: 2px solid
-    ${({ $isSelected }) => ($isSelected ? "#0061ff" : "#c2c8d0")};
+    ${({ $isSelected }) => ($isSelected ? "var(--border-brand)" : "var(--border-strong)")};
   background-color: ${({ $isSelected }) =>
-    $isSelected ? "#0061ff" : "transparent"};
+    $isSelected ? "var(--interactive-primary)" : "transparent"};
   display: flex;
   align-items: center;
   justify-content: center;

@@ -383,12 +383,12 @@ const SectionTop = styled.div`
     margin: 0;
     font-size: 18px;
     font-weight: 800;
-    color: #1e355a;
+    color: var(--text-primary);
   }
 
   p {
     margin: 6px 0 0;
-    color: #6980a1;
+    color: var(--text-tertiary);
     font-size: 13px;
     line-height: 1.55;
   }
@@ -402,8 +402,8 @@ const Counter = styled.span`
   min-height: 30px;
   padding: 0 10px;
   border-radius: 999px;
-  background: #eff5ff;
-  color: #4274c4;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 12px;
   font-weight: 800;
 `;
@@ -413,11 +413,11 @@ const StyledInput = styled.input`
   padding: 15px 16px;
   box-sizing: border-box;
   border-radius: 16px;
-  color: #21324c;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
-  background: #f8fbff;
-  border: 1px solid #dce8f6;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-brand-subtle);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -425,17 +425,17 @@ const StyledInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #5e92f0;
-    box-shadow: 0 0 0 4px rgba(94, 146, 240, 0.12);
-    background: #ffffff;
+    border-color: var(--interactive-primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    background: var(--bg-base);
   }
 
   &::placeholder {
-    color: #9aa9bd;
+    color: var(--text-disabled);
   }
 
   &[readonly] {
-    color: #51657f;
+    color: var(--text-secondary);
     cursor: pointer;
   }
 `;
@@ -445,23 +445,23 @@ const DepartmentSelect = styled.select`
   padding: 15px 44px 15px 16px;
   box-sizing: border-box;
   border-radius: 16px;
-  color: #21324c;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 700;
-  background: #f8fbff;
-  border: 1px solid #dce8f6;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-brand-subtle);
   cursor: pointer;
 
   &:focus {
     outline: none;
-    border-color: #5e92f0;
-    box-shadow: 0 0 0 4px rgba(94, 146, 240, 0.12);
-    background: #ffffff;
+    border-color: var(--interactive-primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    background: var(--bg-base);
   }
 
   &:disabled {
     cursor: default;
-    color: #9aa9bd;
+    color: var(--text-disabled);
   }
 `;
 
@@ -471,7 +471,7 @@ const PreviewCard = styled.div`
   gap: 14px;
   padding: 14px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #eef5ff 0%, #f7fbff 100%);
+  background: linear-gradient(135deg, var(--bg-brand) 0%, var(--bg-subtle) 100%);
   border: 1px solid rgba(211, 225, 243, 0.95);
 `;
 
@@ -498,14 +498,14 @@ const PreviewText = styled.div`
   gap: 6px;
 
   strong {
-    color: #1e355a;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 800;
     word-break: break-all;
   }
 
   span {
-    color: #6e84a1;
+    color: var(--text-tertiary);
     font-size: 13px;
     line-height: 1.45;
     word-break: break-word;
@@ -551,14 +551,14 @@ const ImageOption = styled.button<{ $selected: boolean }>`
     width: 100%;
     height: 100%;
     border: 3px solid
-      ${({ $selected }) => ($selected ? "#7ea9f3" : "transparent")};
+      ${({ $selected }) => ($selected ? "var(--border-brand)" : "transparent")};
     border-radius: 50%;
     display: block;
     object-fit: cover;
     box-sizing: border-box;
     box-shadow: ${({ $selected }) =>
       $selected
-        ? "0 12px 22px rgba(94, 146, 240, 0.18)"
+        ? "0 12px 22px rgba(59, 130, 246, 0.18)"
         : "0 6px 14px rgba(15, 23, 42, 0.08)"};
     transition:
       border-color 0.18s ease,
@@ -587,8 +587,8 @@ const SubmitArea = styled.div`
 
 const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   box-sizing: border-box;
-  background: linear-gradient(135deg, #5e92f0 0%, #4a7fd0 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--blue-400) 0%, var(--interactive-primary) 100%);
+  color: var(--text-inverse);
   padding: 14px 18px;
   border-radius: 16px;
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
@@ -598,7 +598,7 @@ const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   font-size: 14px;
   font-weight: 800;
   text-align: center;
-  box-shadow: 0 8px 18px rgba(94, 146, 240, 0.24);
+  box-shadow: 0 8px 18px rgba(59, 130, 246, 0.24);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
@@ -606,13 +606,13 @@ const ActionButton = styled.button<{ $fullWidth?: boolean }>`
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-    box-shadow: 0 4px 12px rgba(94, 146, 240, 0.24);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.24);
   }
 
   &:disabled {
     cursor: default;
-    background: #dce8f6;
-    color: #9aa9bd;
+    background: var(--blue-100);
+    color: var(--text-disabled);
     box-shadow: none;
   }
 `;

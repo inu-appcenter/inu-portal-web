@@ -24,9 +24,9 @@ const LabelWrapper = styled.div`
   min-width: fit-content;
 
   border-radius: 50px;
-  background: #ecf4ff;
+  background: var(--bg-brand);
 
-  color: #2f3034;
+  color: var(--text-secondary);
   font-size: 10px;
   font-style: normal;
   font-weight: 400;

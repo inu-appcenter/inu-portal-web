@@ -284,7 +284,7 @@ export default function MobileCourseFilterPage() {
     hasback: true,
     showAlarm: false,
     onBack: headerConfig.onBack,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   // 초기화 핸들러
@@ -436,7 +436,7 @@ const PageWrapper = styled.div`
   height: calc(100vh - var(--header-height));
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
 `;
 
 const FixedBottomContainer = styled.div`

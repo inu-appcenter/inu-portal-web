@@ -14,8 +14,9 @@ import {
   Bell,
   Palette,
   Trash2,
-  ScanLine,
+  Download,
   MoreVertical,
+  School,
 } from "lucide-react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
@@ -58,7 +59,7 @@ const CaretDownIcon = () => (
   >
     <path
       d="M6 9L12 15L18 9"
-      stroke="#333D4B"
+      stroke="var(--gray-800)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -76,7 +77,7 @@ const UsersIcon = () => (
   >
     <path
       d="M31.5 29.9999C31.5 27.3875 28.9956 25.165 25.5 24.3413M22.5 30C22.5 26.6863 18.4706 24 13.5 24C8.52944 24 4.5 26.6863 4.5 30M22.5 19.5C25.8137 19.5 28.5 16.8137 28.5 13.5C28.5 10.1863 25.8137 7.5 22.5 7.5M13.5 19.5C10.1863 19.5 7.5 16.8137 7.5 13.5C7.5 10.1863 10.1863 7.5 13.5 7.5C16.8137 7.5 19.5 10.1863 19.5 13.5C19.5 16.8137 16.8137 19.5 13.5 19.5Z"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -94,7 +95,7 @@ const CalculatorIcon = () => (
   >
     <path
       d="M6.80128 29.8209L29.1989 7.42331M10.5342 16.1335V11.1562M10.5342 11.1562V6.179M10.5342 11.1562H5.55697M10.5342 11.1562H15.5115M20.4887 27.3323H30.4432"
-      stroke="#0061FF"
+      stroke="var(--interactive-primary)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -294,10 +295,10 @@ const MobileTimeTablePage = () => {
             navigate(`${ROUTES.TIMETABLE.EDIT}?id=${activeTimetable.id}`)
           }
         >
-          <Pencil size={22} color="#1C1C1E" />
+          <Pencil size={22} color="var(--text-primary)" />
         </IconButton>
         <IconButton onClick={() => setIsMenuSheetOpen(true)}>
-          <MoreVertical size={22} color="#1C1C1E" />
+          <MoreVertical size={22} color="var(--text-primary)" />
         </IconButton>
       </HeaderRightArea>
     );
@@ -330,14 +331,14 @@ const MobileTimeTablePage = () => {
 
     return [
       {
-        label: "시간표 이미지로 등록",
-        icon: <ScanLine size={20} />,
+        label: "시간표 및 성적 가져오기",
+        icon: <Download size={20} />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked(
-            "시간표 이미지로 등록",
+            "시간표 및 성적 가져오기",
             "헤더 메뉴",
           );
-          navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`);
+          navigate(`${ROUTES.TIMETABLE.IMPORT_HUB}?id=${activeTimetable.id}`);
         },
       },
       {
@@ -365,7 +366,7 @@ const MobileTimeTablePage = () => {
         icon: <Bell size={20} />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("강의 알림 설정", "헤더 메뉴");
-          navigate(`${ROUTES.MYPAGE.DAILY_BRIEF}?tab=timetable`);
+          navigate(ROUTES.LABS.ROUTINE);
         },
       },
       {
@@ -381,7 +382,7 @@ const MobileTimeTablePage = () => {
       },
       {
         label: "시간표 삭제",
-        icon: <Trash2 size={20} color="#FF3B30" />,
+        icon: <Trash2 size={20} color="var(--text-error)" />,
         onClick: () => {
           mixpanelTrack.timetableFeatureClicked("시간표 삭제", "헤더 메뉴");
           setIsDeleteModalOpen(true);
@@ -401,6 +402,8 @@ const MobileTimeTablePage = () => {
   useHeader({
     title: headerTitle,
     showAlarm: false,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=COURSE`,
     hasback: false,
     rightArea: headerRight,
     rightAreaNotCircle: true,
@@ -722,20 +725,24 @@ const MobileTimeTablePage = () => {
           {activeTimetable.events.length === 0 && (
             <ImageImportPrompt>
               <ImageImportPromptText>
-                <strong>다른 서비스에서 시간표를 가져올 수 있어요.</strong>
-                <span>수강신청 앱 또는 에브리타임에서 가져와 보세요.</span>
+                <strong>학교 포털에서 시간표를 가져올 수 있어요.</strong>
+                <span>수강신청 시간표와 성적 정보를 한 번에 등록해 보세요.</span>
               </ImageImportPromptText>
-              <ImageImportButton
+              <PortalImportButton
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  mixpanelTrack.timetableFeatureClicked(
+                    "포털에서 가져오기",
+                    "빈 시간표 프롬프트",
+                  );
                   navigate(
-                    `${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${activeTimetable.id}`,
-                  )
-                }
+                    `${ROUTES.TIMETABLE.IMPORT_HUB}?id=${activeTimetable.id}`,
+                  );
+                }}
               >
-                <ScanLine size={18} />
-                이미지로 가져오기
-              </ImageImportButton>
+                <School size={16} />
+                포털에서 가져오기
+              </PortalImportButton>
             </ImageImportPrompt>
           )}
           <TimetableGrid
@@ -753,11 +760,25 @@ const MobileTimeTablePage = () => {
               <NoTimetableDescription>
                 {currentSemesterLabel} 시간표를 만들어볼까요?
                 <br />
-                수강신청 앱이나 에브리타임에서 시간표를 가져올 수 있어요.
+                포털에서 시간표와 성적을 한 번에 가져오거나, 캡처 이미지로 등록할 수 있어요.
               </NoTimetableDescription>
             </NoTimetableTextGroup>
           </NoTimetableContent>
           <EmptyActionGroup>
+            <PortalImportActionButton
+              variant="brand"
+              fullWidth
+              leftIcon={<School size={20} />}
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "시간표 및 성적 가져오기",
+                  "등록된 시간표 없음",
+                );
+                navigate(ROUTES.TIMETABLE.IMPORT_HUB);
+              }}
+            >
+              시간표 및 성적 가져오기
+            </PortalImportActionButton>
             <EmptyActionButton
               variant="primary"
               fullWidth
@@ -770,7 +791,7 @@ const MobileTimeTablePage = () => {
                 setIsCreateModalOpen(true);
               }}
             >
-              시간표 생성하기
+              직접 시간표 생성하기
             </EmptyActionButton>
             <ImageImportActionButton
               variant="brand"
@@ -866,6 +887,21 @@ const MobileTimeTablePage = () => {
           eventsKey={timetableEvents}
         />
       )}
+
+      <TimeTableCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setCreateThenImport(false);
+        }}
+        initialSemester={displayedSemesterLabel}
+        onSuccess={(created) => {
+          if (createThenImport) {
+            navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
+          }
+        }}
+      />
+
     </MobileTimeTablePageWrapper>
   );
 };
@@ -901,7 +937,7 @@ const ScoreArea = styled.div`
   gap: 12px;
 
   .type1 {
-    color: #6b7280;
+    color: var(--gray-600);
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -953,7 +989,7 @@ const HeaderMainTitle = styled.span`
   font-size: 20px;
   line-height: 28px;
   letter-spacing: -0.2px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const HeaderTermWrapper = styled.div`
@@ -970,7 +1006,7 @@ const HeaderTermText = styled.span`
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -983,8 +1019,8 @@ const NoTimetableContainer = styled.div`
   width: 100%;
   height: 540px;
   border-radius: 20px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background: var(--bg-base);
   box-sizing: border-box;
   padding: 24px 20px;
 `;
@@ -996,9 +1032,9 @@ const ImageImportPrompt = styled.div`
   gap: 12px;
   margin-bottom: 12px;
   padding: 16px;
-  border: 1px solid #d7e6ff;
-  border-radius: 16px;
-  background: #f5f9ff;
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-brand);
 `;
 
 const ImageImportPromptText = styled.div`
@@ -1006,30 +1042,36 @@ const ImageImportPromptText = styled.div`
   min-width: 0;
   flex-direction: column;
   gap: 4px;
-  color: #333d4b;
-  font-size: 14px;
-  line-height: 20px;
+  color: var(--text-secondary);
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
 
   span {
-    color: #6b7684;
+    color: var(--text-tertiary);
     font-size: 13px;
     word-break: keep-all;
   }
 `;
 
-const ImageImportButton = styled.button`
+const PortalImportButton = styled.button`
   display: flex;
-  flex: 0 0 auto;
   align-items: center;
   gap: 6px;
-  padding: 10px 12px;
+  padding: 8px 14px;
   border: 0;
   border-radius: 10px;
-  background: #0061ff;
-  color: #ffffff;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition: all 0.15s ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
 `;
 
 const EmptyActionGroup = styled.div`
@@ -1037,7 +1079,7 @@ const EmptyActionGroup = styled.div`
   width: 100%;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 `;
 
 /* 빈 시간표 CTA는 공용 CapsuleButton(20px)보다 작은 heading-2(16px SemiBold)를
@@ -1045,14 +1087,19 @@ const EmptyActionGroup = styled.div`
    움직이므로 이 화면에서만 덮어쓴다. */
 const EmptyActionButton = styled(CapsuleButton)`
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: var(--heading-2-font-size);
   line-height: 1.4;
+`;
+
+const PortalImportActionButton = styled(EmptyActionButton)`
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
 `;
 
 /* 보조 CTA는 brand 팔레트(연한 파랑 배경 + 파란 글자)에 테두리를 더한 형태다.
    CapsuleButton의 brand variant에는 테두리가 없어 여기서만 얹는다. */
 const ImageImportActionButton = styled(EmptyActionButton)`
-  border-color: var(--border-brand-subtle, #d3e5ff);
+  border-color: var(--border-brand-subtle);
 `;
 
 const NoTimetableContent = styled.div`
@@ -1077,21 +1124,21 @@ const NoTimetableTextGroup = styled.div`
 `;
 
 const NoTimetableTitle = styled.h3`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 20px;
-  line-height: 32px;
-  color: var(--text-secondary, #333d4b);
+  font-family: inherit;
+  font-weight: var(--heading-1-font-weight);
+  font-size: var(--heading-1-font-size);
+  line-height: var(--heading-1-line-height);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
 
 const NoTimetableDescription = styled.p`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-secondary, #6b7684);
+  font-family: inherit;
+  font-weight: var(--body-2-font-weight);
+  font-size: var(--body-2-font-size);
+  line-height: var(--label-2-line-height);
+  color: var(--text-secondary);
   margin: 0;
   text-align: center;
 `;
@@ -1119,7 +1166,7 @@ const SimulatorCard = styled.button`
   width: 100%;
   border: none;
   border-radius: 20px;
-  background: var(--interactive-primary, #0061ff);
+  background: var(--interactive-primary);
   padding: 12px 8px 12px 12px;
   box-sizing: border-box;
   cursor: pointer;
@@ -1144,7 +1191,7 @@ const SimulatorCardTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-inverse, #ffffff);
+  color: var(--text-inverse);
 `;
 
 const SimulatorCardDescription = styled.span`
@@ -1152,12 +1199,12 @@ const SimulatorCardDescription = styled.span`
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-inverse, #ffffff);
+  color: var(--text-inverse);
 `;
 
 const MenuCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 12px;
   display: flex;
@@ -1170,7 +1217,7 @@ const MenuCard = styled.div`
   box-sizing: border-box;
 
   &:hover {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 
   &:active {
@@ -1191,7 +1238,7 @@ const MenuCardTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1211,7 +1258,7 @@ const MenuCardDescription = styled.p`
   font-weight: 400;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-secondary, #6b7684);
+  color: var(--text-secondary);
   margin: 0;
   width: 100%;
   word-break: keep-all;

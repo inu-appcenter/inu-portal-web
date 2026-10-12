@@ -283,7 +283,7 @@ const ItemContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-bottom: 0.5px solid #d6d6d6;
+  border-bottom: 0.5px solid var(--border-strong);
 `;
 
 const Header = styled.div`
@@ -301,14 +301,14 @@ const Icon = styled.img`
 
 const Title = styled.div`
   font-size: 14px;
-  color: #3b566e;
+  color: var(--text-primary);
   flex: 1;
   padding-left: 15px;
   line-height: 1.4;
 
   small {
     font-size: 12px;
-    color: #888;
+    color: var(--text-tertiary);
   }
 `;
 

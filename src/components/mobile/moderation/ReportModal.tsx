@@ -156,7 +156,7 @@ const FormArea = styled.div`
 const FieldLabel = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: var(--gray-600, #6b7684);
+  color: var(--gray-600);
 `;
 
 const ReasonList = styled.div`
@@ -183,11 +183,11 @@ const ReasonItem = styled.button<{ $selected: boolean }>`
     background-color 0.15s ease;
   border: 1px solid
     ${({ $selected }) =>
-      $selected ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+      $selected ? "var(--border-brand)" : "var(--border-default)"};
   background-color: ${({ $selected }) =>
-    $selected ? "var(--bg-brand, #eff6ff)" : "var(--bg-base, #ffffff)"};
+    $selected ? "var(--bg-brand)" : "var(--bg-base)"};
   color: ${({ $selected }) =>
-    $selected ? "var(--text-brand, #0061ff)" : "var(--gray-800, #333d4b)"};
+    $selected ? "var(--text-brand)" : "var(--gray-800)"};
   font-weight: ${({ $selected }) => ($selected ? 600 : 400)};
 `;
 
@@ -197,20 +197,20 @@ const DetailInput = styled.textarea`
   padding: 10px 12px;
   box-sizing: border-box;
   border-radius: 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-base, #ffffff);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-base);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--gray-800, #333d4b);
+  color: var(--gray-800);
   resize: none;
   outline: none;
 
   &::placeholder {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 
   &:focus {
-    border-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
   }
 `;

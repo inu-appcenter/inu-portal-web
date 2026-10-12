@@ -6,3 +6,5 @@ export { default as EvaluationButtonIcon } from "./evaluation-button.svg?react";
 export { default as sugangAppLogo } from "./sugang-app-logo.webp";
 export { default as sampleImagePicker } from "./sample-image-picker.webp";
 export { default as noTimetable } from "./no-timetable.webp";
+export { default as wizardGenerating } from "./wizard-generating.webp";
+export { default as wizardFailed } from "./wizard-failed.webp";

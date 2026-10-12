@@ -253,7 +253,7 @@ const HeaderArea = styled.div<{ $embedded: boolean }>`
 
 const LastUpdated = styled.span`
   font-size: 11px;
-  color: #888;
+  color: var(--text-tertiary);
 `;
 
 const RefreshButton = styled.button<{
@@ -267,7 +267,7 @@ const RefreshButton = styled.button<{
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ $isCooldown }) => ($isCooldown ? "#ccc" : "#666")};
+  color: ${({ $isCooldown }) => ($isCooldown ? "var(--text-disabled)" : "var(--gray-600)")};
   transition: color 0.2s;
 
   ${({ $isFetching }) =>
@@ -317,7 +317,7 @@ const Arrow = styled.div`
   right: 18px;
   height: 2px;
   transform: translateY(-50%);
-  background-color: #a1c3ff;
+  background-color: var(--blue-200);
   z-index: 0;
 `;
 
@@ -344,9 +344,9 @@ const Dot = styled.div<{ $current: boolean }>`
   height: 10px;
   border-radius: 50%;
   z-index: 1;
-  background-color: ${({ $current }) => ($current ? "#A1C3FF" : "#fff")};
+  background-color: ${({ $current }) => ($current ? "var(--blue-200)" : "var(--bg-base)")};
   border: ${({ $current }) =>
-    $current ? "1.5px solid #A1C3FF" : "1.5px solid #C7DAF5"};
+    $current ? "1.5px solid var(--blue-200)" : "1.5px solid var(--border-brand-subtle)"};
 `;
 
 const BusIcon = styled.img`
@@ -366,26 +366,26 @@ const InfoBox = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: #fff;
-  border: 1px solid #7aa7e5;
+  background: var(--bg-base);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 6px;
   z-index: 10;
 `;
 
 const LastBus = styled.span`
   font-weight: 500;
-  color: red;
+  color: var(--text-error);
 `;
 
 const StatusText = styled.span<{ $status?: BusStatus }>`
   color: ${({ $status }) => {
     switch ($status) {
       case "\uC5EC\uC720":
-        return "#006F1E";
+        return "var(--border-success)";
       case "\uBCF4\uD1B5":
-        return "#0E4D9D";
+        return "var(--text-brand)";
       case "\uD63C\uC7A1":
-        return "#D10000";
+        return "var(--text-error)";
       default:
         return "inherit";
     }
@@ -397,7 +397,7 @@ const Label = styled.div<{ $current?: boolean }>`
   top: 16px;
   font-size: 11px;
   font-weight: ${({ $current }) => ($current ? "700" : "500")};
-  color: ${({ $current }) => ($current ? "#2563eb" : "#475569")};
+  color: ${({ $current }) => ($current ? "var(--text-brand)" : "var(--gray-700)")};
   white-space: nowrap;
   text-align: center;
   pointer-events: none;

@@ -176,7 +176,7 @@ const HelloBusWrapper = styled.div`
 
 const Steps = styled.div`
   line-height: 1.6;
-  background-color: rgba(248, 248, 248, 1);
+  background-color: var(--bg-subtle);
   padding: 8px;
   padding-bottom: 80px;
   p {
@@ -211,11 +211,11 @@ const ImageSlider = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #ccc;
+    background: var(--gray-300);
     border-radius: 4px;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: #aaa;
+    background: var(--gray-400);
   }
 `;

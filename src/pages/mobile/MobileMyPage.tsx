@@ -98,6 +98,9 @@ export default function MobileMyPage() {
       case "프로필 수정":
         navigate(ROUTES.MYPAGE.PROFILE);
         break;
+      case "포털 계정 관리":
+        navigate(ROUTES.MYPAGE.PORTAL_ACCOUNT);
+        break;
       case "알림 설정":
         navigate(ROUTES.MYPAGE.NOTIFICATION);
         break;
@@ -166,7 +169,7 @@ export default function MobileMyPage() {
               <Icon
                 name="chevron-right"
                 size={24}
-                color="var(--text-tertiary, #8b95a1)"
+                color="var(--text-tertiary)"
               />
             </ProfileHeader>
             <Counters>
@@ -181,7 +184,7 @@ export default function MobileMyPage() {
                   <Icon
                     name={icon}
                     size={24}
-                    color="var(--text-brand, #0061ff)"
+                    color="var(--text-brand)"
                   />
                   <CounterLabel>{title}</CounterLabel>
                 </Counter>
@@ -260,7 +263,7 @@ const Page = styled.div`
   width: 100%;
   min-height: 100svh;
   box-sizing: border-box;
-  background: var(--bg-subtle, #f8f9fb);
+  background: var(--bg-subtle);
   padding-top: var(--header-height, 56px);
   padding-bottom: var(--nav-height, 100px);
 
@@ -285,8 +288,8 @@ const Body = styled.div`
 const Card = styled.div`
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
 `;
 
@@ -313,7 +316,7 @@ const ProfileHeader = styled.button`
   overflow: hidden;
 
   &.active-touch {
-    background: var(--bg-muted, #f1f3f5);
+    background: var(--bg-muted);
   }
 `;
 
@@ -321,9 +324,9 @@ const Avatar = styled.div`
   width: 60px;
   height: 60px;
   flex-shrink: 0;
-  border-radius: var(--radius-full, 999px);
+  border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--border-brand-subtle, #d3e5ff);
+  background: var(--border-brand-subtle);
 
   img {
     width: 100%;
@@ -345,7 +348,7 @@ const Nickname = styled.span`
   font-size: 20px;
   font-weight: 600;
   line-height: 1.4;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -355,7 +358,7 @@ const Department = styled.span`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -393,7 +396,7 @@ const CounterLabel = styled.span`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   white-space: nowrap;
 `;
 
@@ -416,7 +419,7 @@ const LoginCopy = styled.div`
   gap: 12px;
   padding: 0 8px;
   box-sizing: border-box;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   word-break: keep-all;
 `;
 
@@ -458,9 +461,9 @@ const LoginButton = styled.button`
   padding: 12px 24px;
   box-sizing: border-box;
   border: none;
-  border-radius: var(--radius-full, 999px);
-  background: var(--blue-800, #003a99);
-  color: var(--text-inverse, #ffffff);
+  border-radius: var(--radius-full);
+  background: var(--blue-800);
+  color: var(--text-inverse);
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
@@ -469,7 +472,7 @@ const LoginButton = styled.button`
   transition: background 0.2s ease;
 
   &:active {
-    background: var(--blue-700, #004fcc);
+    background: var(--blue-700);
   }
 `;
 
@@ -487,7 +490,7 @@ const TextAction = styled.button<{ $muted?: boolean }>`
   font-weight: 400;
   line-height: 1.6;
   color: ${({ $muted }) =>
-    $muted ? "var(--text-disabled, #b0b8c1)" : "var(--text-tertiary, #8b95a1)"};
+    $muted ? "var(--text-disabled)" : "var(--text-tertiary)"};
   cursor: pointer;
 
   &:active {

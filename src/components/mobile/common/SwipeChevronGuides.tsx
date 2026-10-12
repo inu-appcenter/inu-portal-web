@@ -44,7 +44,7 @@ const SwipeGuideLeft = styled.div`
   justify-content: center;
   z-index: 100;
   pointer-events: none;
-  color: rgba(94, 146, 240, 0.8);
+  color: rgba(59, 130, 246, 0.8);
   animation: bounceLeft 2s infinite ease-in-out;
 
   @keyframes bounceLeft {
@@ -69,7 +69,7 @@ const SwipeGuideRight = styled.div`
   justify-content: center;
   z-index: 100;
   pointer-events: none;
-  color: rgba(94, 146, 240, 0.8);
+  color: rgba(59, 130, 246, 0.8);
   animation: bounceRight 2s infinite ease-in-out;
 
   @keyframes bounceRight {

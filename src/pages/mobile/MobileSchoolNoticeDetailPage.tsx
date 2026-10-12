@@ -26,7 +26,7 @@ export default function MobileSchoolNoticeDetailPage() {
   useHeader({
     title: "공지사항",
     hasback: true,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   const {
@@ -243,7 +243,7 @@ export default function MobileSchoolNoticeDetailPage() {
                   onClick={() => handleAttachmentClick(file)}
                 >
                   <FileIconWrapper>
-                    <Icon name="file-document" size={20} color="var(--text-tertiary, #8b95a1)" />
+                    <Icon name="file-document" size={20} color="var(--text-tertiary)" />
                   </FileIconWrapper>
                   <FileInfo>
                     <FileName>{file.name}</FileName>
@@ -265,7 +265,7 @@ export default function MobileSchoolNoticeDetailPage() {
       {/* 3. 하단 플로팅 CTA 버튼 (공유 / 페이지 열기) */}
       <BottomFloatingCTA>
         <ShareButton type="button" aria-label="공유하기" onClick={handleShare}>
-          <Icon name="share" size={24} color="var(--text-secondary, #333d4b)" />
+          <Icon name="share" size={24} color="var(--text-secondary)" />
         </ShareButton>
         <StyledCapsuleButton variant="primary" onClick={handleOpenOriginalPage}>
           학교 홈페이지에서 보기
@@ -281,7 +281,7 @@ export default function MobileSchoolNoticeDetailPage() {
 
 const PageContainer = styled.div`
   min-height: 100svh;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -313,7 +313,7 @@ const HeaderBlock = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-bottom: 1px solid var(--border-strong, #d1d6db);
+  border-bottom: 1px solid var(--border-strong);
   padding-bottom: 20px;
   width: 100%;
 `;
@@ -324,8 +324,8 @@ const CategoryBadge = styled.div`
   justify-content: center;
   padding: 4px 12px;
   border-radius: 999px;
-  background: var(--bg-brand, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   width: fit-content;
 `;
 
@@ -334,7 +334,7 @@ const CategoryText = styled.p`
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   margin: 0;
   white-space: nowrap;
 `;
@@ -345,7 +345,7 @@ const NoticeTitle = styled.h1`
   font-weight: 700;
   line-height: 32px;
   letter-spacing: -0.2px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   word-break: break-word;
 `;
@@ -381,15 +381,15 @@ const MetaRow = styled.div`
 `;
 
 const MetaLabel = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const MetaValue = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const MetaValueTertiary = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const ArticleSection = styled.div`
@@ -408,7 +408,7 @@ const TorchAiSummaryCard = styled.div`
     rgb(230, 241, 255) 0%,
     rgb(235, 235, 255) 100%
   );
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 16px;
   padding: 12px;
   display: flex;
@@ -445,7 +445,7 @@ const AiSummaryTitle = styled.span`
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const AiDropdownIconWrapper = styled.div`
@@ -454,7 +454,7 @@ const AiDropdownIconWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const AiSummaryBody = styled.div`
@@ -469,7 +469,7 @@ const AiSummaryText = styled.p`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   word-break: break-word;
 `;
@@ -479,7 +479,7 @@ const AiDisclaimerText = styled.p`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   opacity: 0.5;
   margin: 0;
 `;
@@ -490,7 +490,7 @@ const BodyHtmlContent = styled.div`
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   word-break: break-word;
   overflow-wrap: break-word;
   width: 100%;
@@ -549,7 +549,7 @@ const BodyHtmlContent = styled.div`
     -webkit-overflow-scrolling: touch;
     white-space: pre-wrap;
     word-break: break-word;
-    background: var(--bg-muted, #f1f3f5);
+    background: var(--bg-muted);
     padding: 12px;
     border-radius: 8px;
     margin: 12px 0;
@@ -557,19 +557,19 @@ const BodyHtmlContent = styled.div`
 
   th,
   td {
-    border: 1px solid var(--border-default, #e5e8eb);
+    border: 1px solid var(--border-default);
     padding: 8px 12px;
     font-size: 14px;
     word-break: break-word;
   }
 
   th {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
     font-weight: 600;
   }
 
   a {
-    color: var(--interactive-primary, #0061ff);
+    color: var(--interactive-primary);
     text-decoration: underline;
     word-break: break-all;
   }
@@ -580,15 +580,15 @@ const BodyTextContent = styled.div`
   font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   word-break: break-word;
   white-space: pre-wrap;
 `;
 
 // 첨부파일 컨테이너 (Figma 2948:8557)
 const AttachmentsContainer = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -598,7 +598,7 @@ const AttachmentsContainer = styled.div`
 `;
 
 const AttachmentItem = styled.div`
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -611,7 +611,7 @@ const AttachmentItem = styled.div`
   }
 
   &:active {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -638,7 +638,7 @@ const FileName = styled.p`
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
   word-break: break-word;
 `;
@@ -648,7 +648,7 @@ const FileSize = styled.p`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
   white-space: nowrap;
 `;
@@ -678,8 +678,8 @@ const ShareButton = styled.button`
   width: 56px;
   height: 56px;
   border-radius: 999px;
-  background: var(--bg-muted, #f1f3f5);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -692,7 +692,7 @@ const ShareButton = styled.button`
 
   &:active {
     transform: scale(0.95);
-    background-color: var(--border-default, #e5e8eb);
+    background-color: var(--border-default);
   }
 `;
 
@@ -715,16 +715,16 @@ const ErrorContainer = styled.div`
 const ErrorText = styled.p`
   font-family: "Pretendard", sans-serif;
   font-size: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
 const BackButton = styled.button`
   padding: 10px 20px;
   border-radius: 999px;
-  background-color: var(--bg-muted, #f1f3f5);
-  border: 1px solid var(--border-default, #e5e8eb);
-  color: var(--text-secondary, #333d4b);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
   font-family: "Pretendard", sans-serif;
   font-size: 14px;
   font-weight: 500;

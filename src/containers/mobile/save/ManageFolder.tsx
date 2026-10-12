@@ -191,9 +191,9 @@ const FolderAddInput = styled.input`
   padding-left: 16px;
   height: 72px;
   border-radius: 10px;
-  background-color: #f9f9f9;
+  background-color: var(--bg-subtle);
   border: none;
-  box-shadow: 0px 2px 8px 0px #0000001a;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.1);
   font-size: 16px;
   font-weight: 500;
 `;
@@ -202,8 +202,8 @@ const AddButton = styled.button`
   width: 80px;
   height: 32px;
   border: none;
-  background-color: #9cafe2;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
@@ -235,7 +235,7 @@ const EditFolderWrapper = styled.div`
 const FolderEditInput = styled.input`
   flex-grow: 1;
   border-radius: 4px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-strong);
   padding-left: 4px;
 `;
 
@@ -244,8 +244,8 @@ const FolderName = styled.span`
 `;
 
 const EditButton = styled.div`
-  background-color: #9cafe2;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -255,8 +255,8 @@ const EditButton = styled.div`
 `;
 
 const DeleteButton = styled.div`
-  background-color: #9cafe2;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -266,8 +266,8 @@ const DeleteButton = styled.div`
 `;
 
 const SaveButton = styled.div`
-  background-color: #9cafe2;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -277,8 +277,8 @@ const SaveButton = styled.div`
 `;
 
 const CancelButton = styled.div`
-  background-color: #9cafe2;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border-radius: 4px;
   height: 24px;
   width: 36px;

@@ -32,11 +32,27 @@ const NotificationBell = ({ hasNew }: { hasNew: boolean }) => {
   };
 
   return (
-    <BellWrapper onClick={handleNotiBtnClick}>
+    <BellWrapper onClick={handleNotiBtnClick} aria-label="알림">
       <Ripple />
       <Icon name="bell" size={24} />
       {hasNew && <Badge />}
     </BellWrapper>
+  );
+};
+
+const SearchButton = ({ searchPath }: { searchPath?: string }) => {
+  const navigate = useNavigate();
+
+  const handleSearchBtnClick = () => {
+    mixpanelTrack.featureClicked("Search Button", "Header");
+    navigate(searchPath || ROUTES.UNIFIED_SEARCH);
+  };
+
+  return (
+    <SearchButtonWrapper onClick={handleSearchBtnClick} aria-label="통합 검색">
+      <Ripple />
+      <Icon name="search" size={24} />
+    </SearchButtonWrapper>
   );
 };
 
@@ -48,6 +64,21 @@ const BellWrapper = styled.div`
   cursor: pointer;
   pointer-events: auto;
   width: 100%;
+  min-width: 28px;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+`;
+
+const SearchButtonWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  width: 100%;
+  min-width: 28px;
   height: 100%;
   border-radius: 999px;
   overflow: hidden;
@@ -60,7 +91,7 @@ const Badge = styled.div`
   z-index: 1;
   width: 8px;
   height: 8px;
-  background-color: #ffd60a;
+  background-color: var(--yellow-400);
   border-radius: 50%;
   pointer-events: none;
 `;
@@ -81,6 +112,8 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       backPath,
       onBack,
       showAlarm,
+      showSearch,
+      searchPath,
       menuItems,
       rightArea,
       visible,
@@ -158,18 +191,19 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
             </TitleArea>
           )}
 
-          {(showAlarm || hasMenuItems || rightArea) && (
+          {(showAlarm || showSearch || hasMenuItems || rightArea) && (
             <IconBackgroundWrapper
               $isScrolled={isScrolled}
               $isCircle={
                 rightAreaNotCircle
                   ? false
-                  : [showAlarm, hasMenuItems, rightArea].filter(Boolean).length ===
-                    1
+                  : [showAlarm, showSearch, hasMenuItems, rightArea].filter(Boolean)
+                      .length === 1
               }
               $marginRight={MOBILE_PAGE_GUTTER}
             >
               {rightArea}
+              {showSearch && <SearchButton searchPath={searchPath} />}
               {showAlarm && <NotificationBell hasNew={hasUnreadNotification} />}
               {hasMenuItems && <TopRightDropdownMenu items={menuItems!} />}
             </IconBackgroundWrapper>
@@ -231,7 +265,7 @@ const MainHeaderWrapper = styled.div<{
   background: ${({ $isScrolled, $hasTitle, $noBlur }) =>
     $noBlur || $isScrolled || !$hasTitle
       ? "transparent"
-      : "var(--bg-blur, rgba(255, 255, 255, 0.6))"};
+      : "var(--bg-blur)"};
   backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
     $noBlur || $isScrolled || !$hasTitle ? "none" : "blur(10px)"};
   -webkit-backdrop-filter: ${({ $isScrolled, $hasTitle, $noBlur }) =>
@@ -316,7 +350,7 @@ const IconBackgroundWrapper = styled.div<{
     $isScrolled
       ? `
         background: rgba(255, 255, 255, 0.5);
-        border: 1px solid var(--border-default, #e5e8eb);
+        border: 1px solid var(--border-default);
         box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
@@ -390,7 +424,7 @@ const HeaderTitle = styled.div<{ $hasBack?: boolean }>`
   font-weight: ${({ $hasBack }) => ($hasBack ? "600" : "700")};
   line-height: 28px;
   letter-spacing: ${({ $hasBack }) => ($hasBack ? "0px" : "-0.2px")};
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const FloatingWrapper = styled.div`

@@ -191,7 +191,7 @@ const InputWrapper = styled.div`
     width: 100%;
     padding: 8px;
     font-size: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 4px;
   }
 `;
@@ -238,7 +238,7 @@ const ImagePreview = styled.div`
     width: 50px;
     height: 50px;
     object-fit: cover;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-strong);
     border-radius: 4px;
   }
 `;
@@ -261,11 +261,11 @@ const ButtonWrapper = styled.div`
   }
 
   button:first-child {
-    background-color: #007bff;
-    color: white;
+    background-color: var(--interactive-primary);
+    color: var(--text-inverse);
   }
 
   button:last-child {
-    background-color: #ccc;
+    background-color: var(--gray-300);
   }
 `;

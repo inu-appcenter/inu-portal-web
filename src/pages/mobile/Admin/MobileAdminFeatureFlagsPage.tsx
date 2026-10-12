@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
 import { RefreshCw, Settings2, Flag as FlagIcon } from "lucide-react";
 import Icon from "@/components/common/Icon";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 import {
@@ -169,14 +169,18 @@ export default function MobileAdminFeatureFlagsPage() {
           <SearchSpacer />
         </FlagsGrid>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="플래그 키를 검색하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
 
         {/* 생성 모달 */}
         <AdminModal
@@ -324,22 +328,22 @@ const CreateBtn = styled.button`
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background-color: #0f766e;
-  color: #fff;
+  background-color: rgb(15, 118, 110);
+  color: var(--text-inverse);
   border-radius: 12px;
   font-weight: 700;
   transition: all 0.2s;
-  &:hover { background-color: #0d9488; }
+  &:hover { background-color: rgb(13, 148, 136); }
 `;
 
 const RefreshBtn = styled.button`
   padding: 10px;
-  background-color: #fff;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-base);
+  color: var(--gray-600);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   transition: all 0.2s;
-  &:hover { background-color: #f8fafc; }
+  &:hover { background-color: var(--bg-subtle); }
   &:disabled { opacity: 0.7; }
 `;
 
@@ -362,7 +366,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
@@ -376,9 +380,9 @@ const FloatingSearchBar = styled.div`
 `;
 
 const FlagCard = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -416,8 +420,8 @@ const FlagIconBox = styled.div<{ $enabled: boolean }>`
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background-color: ${(props) => props.$enabled ? "#ecfdf5" : "#f1f5f9"};
-  color: ${(props) => props.$enabled ? "#059669" : "#94a3b8"};
+  background-color: ${(props) => props.$enabled ? "rgb(236, 253, 245)" : "var(--bg-muted)"};
+  color: ${(props) => props.$enabled ? "var(--text-success)" : "var(--text-tertiary)"};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -427,7 +431,7 @@ const FlagKey = styled.h4`
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   word-break: break-all;
   overflow-wrap: anywhere;
 `;
@@ -435,7 +439,7 @@ const FlagKey = styled.h4`
 const FlagDescription = styled.p`
   margin: 0;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--gray-600);
   line-height: 1.5;
   height: 42px;
   display: -webkit-box;
@@ -449,7 +453,7 @@ const FlagFooter = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--bg-base);
 `;
 
 const VisibilityIndicator = styled.div<{ $visible: boolean }>`
@@ -458,7 +462,7 @@ const VisibilityIndicator = styled.div<{ $visible: boolean }>`
   gap: 6px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: ${(props) => props.$visible ? "#0f766e" : "#94a3b8"};
+  color: ${(props) => props.$visible ? "rgb(15, 118, 110)" : "var(--text-tertiary)"};
 `;
 
 const SettingBtn = styled.button`
@@ -467,17 +471,17 @@ const SettingBtn = styled.button`
   gap: 6px;
   font-size: 0.8125rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
   padding: 6px 10px;
   border-radius: 8px;
-  &:hover { background-color: #f1f5f9; color: #0f172a; }
+  &:hover { background-color: var(--bg-muted); color: var(--text-primary); }
 `;
 
 const EmptyState = styled.div`
   grid-column: 1 / -1;
   padding: 60px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-weight: 500;
 `;
 
@@ -496,22 +500,22 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 0.875rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const Input = styled.input`
   padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 0.95rem;
-  &:focus { outline: none; border-color: #0f766e; }
+  &:focus { outline: none; border-color: rgb(15, 118, 110); }
 `;
 
 const ReadOnlyValue = styled.div`
   padding: 12px 14px;
   border-radius: 10px;
-  background-color: #f8fafc;
-  color: #64748b;
+  background-color: var(--bg-subtle);
+  color: var(--gray-600);
   font-family: monospace;
   font-weight: 700;
 `;
@@ -519,10 +523,10 @@ const ReadOnlyValue = styled.div`
 const TextArea = styled.textarea`
   padding: 12px 14px;
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   font-size: 0.95rem;
   resize: vertical;
-  &:focus { outline: none; border-color: #0f766e; }
+  &:focus { outline: none; border-color: rgb(15, 118, 110); }
 `;
 
 const ToggleRow = styled.div`
@@ -530,7 +534,7 @@ const ToggleRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background-color: #f8fafc;
+  background-color: var(--bg-subtle);
   border-radius: 12px;
 `;
 
@@ -539,12 +543,12 @@ const ToggleInfo = styled.div``;
 const ToggleTitle = styled.div`
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const ToggleDesc = styled.div`
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--gray-600);
   margin-top: 2px;
 `;
 
@@ -556,14 +560,14 @@ const ModalFooter = styled.div`
 const CancelBtn = styled.button`
   padding: 10px 20px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--gray-600);
 `;
 
 const PrimaryBtn = styled.button`
   padding: 10px 24px;
-  background-color: #0f766e;
-  color: #fff;
+  background-color: rgb(15, 118, 110);
+  color: var(--text-inverse);
   border-radius: 10px;
   font-weight: 700;
-  &:disabled { background-color: #94a3b8; }
+  &:disabled { background-color: var(--button-inactive); }
 `;

@@ -36,6 +36,6 @@ const ProfileImg = styled.img<{ $clickable: boolean }>`
   width: 30px;
   height: 30px;
   border-radius: 100%;
-  border: 2px solid #ccc;
+  border: 2px solid var(--border-strong);
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
 `;

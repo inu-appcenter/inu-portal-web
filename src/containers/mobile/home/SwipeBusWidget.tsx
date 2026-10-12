@@ -9,37 +9,7 @@ import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import Skeleton from "@/components/common/Skeleton";
 import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import type { BusData } from "@/types/bus";
-
-// 버스 노선 유형별 테마 컬러 매핑 함수
-function getBusColor(busNumber: string): string {
-  if (
-    [
-      "6",
-      "6-1",
-      "6-2",
-      "8",
-      "16",
-      "43-1",
-      "58",
-      "셔틀",
-      "순환41",
-      "순환42",
-      "순환43",
-    ].includes(busNumber)
-  ) {
-    return "#0e4d9d"; // 간선/지선 블루
-  }
-  if (["46", "41"].includes(busNumber)) {
-    return "#00a82f"; // 지선 그린
-  }
-  if (["1301", "9200", "9201", "M6724"].includes(busNumber)) {
-    return "#e60012"; // 광역 레드
-  }
-  if (busNumber.includes("급행")) {
-    return "#6f2a8c"; // 급행 보라
-  }
-  return "#0061ff"; // 기본 브랜드 블루
-}
+import { getBusToneColor } from "@/components/mobile/bus/busCircleTone";
 
 const BusIcon = ({ color }: { color: string }) => (
   <svg
@@ -263,7 +233,7 @@ function BusStopCard({
               arrivalTime = "정보 없음";
             }
 
-            const busColor = getBusColor(bus.number);
+            const busColor = getBusToneColor(bus.number);
 
             return (
               <BusInfoRow
@@ -288,7 +258,13 @@ function BusStopCard({
   );
 }
 
-export default function SwipeBusWidget() {
+export interface SwipeBusWidgetProps {
+  initialStopName?: string;
+  initialType?: "go-school" | "go-home" | string;
+  onNavigate?: () => void;
+}
+
+export default function SwipeBusWidget({ initialStopName, initialType, onNavigate }: SwipeBusWidgetProps = {}) {
   const navigate = useNavigate();
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
@@ -316,13 +292,27 @@ export default function SwipeBusWidget() {
     };
   }, []);
 
-  // 등교/하교 기준 시간대 판별 (14:00 이전 등교, 이후 하교)
-  const isMorning = useMemo(() => {
+  // 등교/하교 기준 시간대 또는 질의된 정류장 방향 판별
+  const resolvedType = useMemo(() => {
+    if (initialType === "go-home" || initialType === "go-school") {
+      return initialType;
+    }
+    if (initialStopName) {
+      const homeKeywords = ["정문", "공과대", "자연대", "공학", "본관", "기숙사", "대학본부", "솔찬"];
+      if (homeKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-home";
+      }
+      const schoolKeywords = ["송도역", "테크노", "지정단", "2번출구", "인입"];
+      if (schoolKeywords.some((k) => initialStopName.includes(k))) {
+        return "go-school";
+      }
+    }
     const now = new Date();
-    return now.getHours() < 14;
-  }, []);
+    return now.getHours() < 14 ? "go-school" : "go-home";
+  }, [initialType, initialStopName]);
 
-  const currentType = isMorning ? "go-school" : "go-home";
+  const currentType = resolvedType;
+  const isMorning = currentType === "go-school";
   const { tabs: dynamicTabs, stops: dynamicStops } = useDynamicBusRoutes(currentType);
 
   // 시간대 기준 정류장 데이터 구성 (순수 서버 API 데이터 기반)
@@ -356,6 +346,16 @@ export default function SwipeBusWidget() {
     : "swipe_bus_index_afternoon";
 
   const initialActiveIndex = useMemo(() => {
+    if (initialStopName && busStops.length > 0) {
+      const matchedIdx = busStops.findIndex(
+        (s) =>
+          s.stopName.includes(initialStopName) ||
+          initialStopName.includes(s.stopName) ||
+          s.sectionLabel.includes(initialStopName),
+      );
+      if (matchedIdx !== -1) return matchedIdx;
+    }
+
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved !== null) {
@@ -368,17 +368,26 @@ export default function SwipeBusWidget() {
       console.error("Failed to read bus swipe index", e);
     }
     return 0;
-  }, [busStops.length, storageKey]);
+  }, [busStops, initialStopName, storageKey]);
 
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
 
+  useEffect(() => {
+    if (swiperInstance && initialActiveIndex !== activeIndex) {
+      swiperInstance.slideTo(initialActiveIndex);
+      setActiveIndex(initialActiveIndex);
+    }
+  }, [initialActiveIndex, swiperInstance]);
+
   const handleCardClick = (type: string, category: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     navigate(getPreferredBusUiRoute(type, category));
   };
 
   const handleBusClick = (bus: BusData, stopName: string) => {
     if (isDraggingRef.current) return;
+    if (onNavigate) onNavigate();
     if (bus.number === "셔틀") {
       navigate(`${ROUTES.BUS.INFO}?type=shuttle&category=인천대입구 셔틀`);
     } else {
@@ -479,7 +488,7 @@ const WidgetContainer = styled.div`
   border-radius: 20px;
 
   /* 그림자는 overflow가 없는 WidgetContainer 구역에 단독 상시 적용하여 잘림 차단 */
-  box-shadow: 0px 4px 24px 0px #3B82F63D;
+  box-shadow: 0px 4px 24px 0px rgba(59, 130, 246, 0.24);
 
 
   will-change: transform;
@@ -530,7 +539,7 @@ const SwiperContainer = styled(Swiper)`
 `;
 
 const SlideContent = styled.div`
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -582,7 +591,7 @@ const PaginationDot = styled.button<{ $active: boolean }>`
   height: 6px;
   border-radius: 50%;
   background-color: ${(props) =>
-    props.$active ? "var(--text-brand, #0061ff)" : "rgba(0, 0, 0, 0.15)"};
+    props.$active ? "var(--text-brand)" : "rgba(0, 0, 0, 0.15)"};
   transition:
     transform 0.2s ease,
     background-color 0.2s ease;
@@ -602,7 +611,7 @@ const WidgetHeader = styled.div`
 `;
 
 const WidgetTitle = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 14px;
   font-style: normal;
   font-weight: 700;
@@ -613,7 +622,7 @@ const WidgetTitle = styled.span`
 `;
 
 const WidgetSubTitle = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -652,7 +661,7 @@ const BusLeftSection = styled.div`
 `;
 
 const BusNumber = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 15px;
   font-weight: 700;
   line-height: 20px;
@@ -664,7 +673,7 @@ const BusNumber = styled.span`
 const BusTime = styled.span`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
   text-align: right;
   flex-shrink: 0;
@@ -679,7 +688,7 @@ const SkeletonContainer = styled.div`
 
 const EmptyText = styled.span`
   font-size: 14px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-align: center;
   width: 100%;
 `;

@@ -48,6 +48,7 @@ import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserS
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
 import MobileAdminBusPage from "@/pages/mobile/Admin/MobileAdminBusPage";
+import MobileAdminSearchPage from "@/pages/mobile/Admin/MobileAdminSearchPage";
 
 import MobileSchoolNoticePage from "@/pages/mobile/MobileSchoolNoticePage";
 import MobileSchoolNoticeDetailPage from "@/pages/mobile/MobileSchoolNoticeDetailPage";
@@ -58,6 +59,7 @@ import MobileAlertPage from "@/pages/mobile/MobileAlertPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileTimeTableEditPage from "@/pages/mobile/MobileTimeTableEditPage";
 import MobileFriendListPage from "@/pages/mobile/MobileFriendListPage";
+import AgentPage from "@/pages/AgentPage";
 import MobileFriendQrPage from "@/pages/mobile/MobileFriendQrPage";
 import MobileFriendInvitePage from "@/pages/mobile/MobileFriendInvitePage";
 import MobileTimeTableComparePage from "@/pages/mobile/timetable/MobileTimeTableComparePage";
@@ -68,6 +70,8 @@ import MobileCourseFilterPage from "@/pages/mobile/timetable/MobileCourseFilterP
 import MobileTimetableWizardPage from "@/pages/mobile/timetable/MobileTimetableWizardPage";
 import MobileTimetableGroupWizardPage from "@/pages/mobile/timetable/MobileTimetableGroupWizardPage";
 import MobileTimetableImageImportPage from "@/pages/mobile/timetable/MobileTimetableImageImportPage";
+import MobileTimetableImportHubPage from "@/pages/mobile/timetable/MobileTimetableImportHubPage";
+import MobilePortalTimetableImportPage from "@/pages/mobile/timetable/MobilePortalTimetableImportPage";
 import MobileTimeTableListPage from "@/pages/mobile/timetable/MobileTimeTableListPage";
 import MobileGradeCalculatorPage from "@/pages/mobile/timetable/MobileGradeCalculatorPage";
 import MobileSyllabusPage from "@/pages/mobile/timetable/MobileSyllabusPage";
@@ -78,14 +82,26 @@ import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotific
 import MobileAdminChatPage from "@/pages/mobile/Admin/MobileAdminChatPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
+import LabsRoutinePage from "@/pages/mobile/Labs/LabsRoutinePage";
 import BasicInfoPage from "@/pages/mobile/Labs/BasicInfoPage";
+import PortalTimetableLabPage from "@/pages/mobile/Labs/PortalTimetableLabPage";
+import PortalDormitoryLabPage from "@/pages/mobile/Labs/PortalDormitoryLabPage";
+import MobileDormitoryCardPage from "@/pages/mobile/dormitory/MobileDormitoryCardPage";
 import Festival2026Page from "@/pages/mobile/Festival2026Page";
 import Festival2026DetailPage from "@/pages/mobile/Festival2026DetailPage";
 import ChattingPage from "@/pages/mobile/ChattingPage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 import CreatePersonalChatPage from "@/pages/mobile/CreatePersonalChatPage";
+import InviteChatMembersPage from "@/pages/mobile/InviteChatMembersPage";
 import MobileNotificationSettingsPage from "@/pages/mobile/MobileNotificationSettingsPage";
 import MobileDailyBriefSettingPage from "@/pages/mobile/MobileDailyBriefSettingPage";
+import MobileDailyBriefPage from "@/pages/mobile/MobileDailyBriefPage";
+import MobileSmartWatchManagementPage from "@/pages/mobile/MobileSmartWatchManagementPage";
+import MobilePortalAccountPage from "@/pages/mobile/MyPage/MobilePortalAccountPage";
+import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
+import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
+import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
+import MobileUnifiedSearchPage from "@/pages/mobile/search/MobileUnifiedSearchPage";
 
 export const router = createBrowserRouter([
   {
@@ -131,10 +147,11 @@ export const router = createBrowserRouter([
       // 2. 서브 페이지 (SubLayout) - RootLayout에 의해 슬라이드, 하단 탭바 숨김
       // ----------------------------------------------------------------
       {
-        element: <SubLayout showNav={false} backgroundColor="#fff" />,
+        element: <SubLayout showNav={false} backgroundColor="var(--bg-base)" />,
         children: [
           // 채팅
           { path: "/chat/:roomId", element: <ChattingPage /> },
+          { path: "/chat/:roomId/invite", element: <InviteChatMembersPage /> },
           { path: ROUTES.CHAT.CREATE_PERSONAL, element: <CreatePersonalChatPage /> },
         ],
       },
@@ -162,6 +179,14 @@ export const router = createBrowserRouter([
             element: <MobileTimetableGroupWizardPage />,
           },
           {
+            path: ROUTES.TIMETABLE.IMPORT_HUB,
+            element: <MobileTimetableImportHubPage />,
+          },
+          {
+            path: ROUTES.TIMETABLE.PORTAL_IMPORT,
+            element: <MobilePortalTimetableImportPage />,
+          },
+          {
             path: ROUTES.TIMETABLE.IMAGE_IMPORT,
             element: <MobileTimetableImageImportPage />,
           },
@@ -171,6 +196,10 @@ export const router = createBrowserRouter([
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },
+
+          // 통합 검색
+          { path: ROUTES.UNIFIED_SEARCH, element: <MobileUnifiedSearchPage /> },
+          { path: "/m/search", element: <MobileUnifiedSearchPage /> },
 
           //앱센터의 다른 앱
           { path: ROUTES.MORE_APPS.ROOT, element: <MoreAppsPage /> },
@@ -187,12 +216,38 @@ export const router = createBrowserRouter([
                 element: <LabsPage />,
               },
               {
+                /* 실제 경로: /labs/routine */
+                path: "routine",
+                element: <LabsRoutinePage />,
+              },
+              {
                 /* 실제 경로: /labs/portal/basic-info */
                 path: "portal/basic-info",
                 element: <BasicInfoPage />,
               },
+              {
+                /* 실제 경로: /labs/portal/timetable */
+                path: "portal/timetable",
+                element: <PortalTimetableLabPage />,
+              },
+              {
+                /* 실제 경로: /labs/portal/dormitory */
+                path: "portal/dormitory",
+                element: <PortalDormitoryLabPage />,
+              },
             ],
           },
+
+          // 스마트 캠퍼스 서비스 허브 (도서관, LMS)
+          {
+            path: ROUTES.SERVICES.LIBRARY,
+            element: <MobileLibraryHubPage />,
+          },
+          {
+            path: ROUTES.SERVICES.LMS,
+            element: <MobileLmsHubPage />,
+          },
+
           {
             path: ROUTES.PHONEBOOK.SEARCH,
             element: <MobilePhoneBookSearchPage />,
@@ -274,8 +329,15 @@ export const router = createBrowserRouter([
           { path: ROUTES.MYPAGE.COMMENTS, element: <MobileMyPageComment /> },
           { path: ROUTES.MYPAGE.DELETE, element: <MobileDeletePage /> },
           { path: ROUTES.MYPAGE.FCM, element: <MobileFcmStatusPage /> },
+          { path: ROUTES.MYPAGE.PORTAL_ACCOUNT, element: <MobilePortalAccountPage /> },
           { path: ROUTES.MYPAGE.NOTIFICATION, element: <MobileNotificationSettingsPage /> },
           { path: ROUTES.MYPAGE.DAILY_BRIEF, element: <MobileDailyBriefSettingPage /> },
+          { path: ROUTES.DAILY_BRIEF.ROOT, element: <MobileDailyBriefPage /> },
+          {
+            path: ROUTES.DAILY_BRIEF.ROUTINE_DETAIL_PATTERN,
+            element: <MobileRoutineDetailPage />,
+          },
+          { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
@@ -318,6 +380,10 @@ export const router = createBrowserRouter([
             path: ROUTES.ADMIN.BUS,
             element: <MobileAdminBusPage />,
           },
+          {
+            path: ROUTES.ADMIN.SEARCH,
+            element: <MobileAdminSearchPage />,
+          },
 
         ],
       },
@@ -333,9 +399,13 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        element: <FullscreenSubLayout backgroundColor="#ffffff" />,
+        element: <FullscreenSubLayout backgroundColor="var(--bg-base)" />,
         children: [
           { path: ROUTES.TIMETABLE.SIMULATOR, element: <MobileSugangSimulatorPage /> },
+          { path: "/agent", element: <AgentPage /> },
+          { path: "/assistant", element: <AgentPage /> },
+          { path: ROUTES.DORMITORY_CARD, element: <MobileDormitoryCardPage /> },
+          { path: ROUTES.LABS.PORTAL.DORMITORY_CARD, element: <MobileDormitoryCardPage /> },
         ],
       },
     ],

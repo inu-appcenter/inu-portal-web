@@ -453,11 +453,11 @@ const ScrapHeader = styled.div`
     gap: 8px;
 
     .AllScraps {
-      color: #969696;
+      color: var(--text-tertiary);
     }
 
     .total {
-      color: #0e4d9d;
+      color: var(--text-brand);
     }
   }
 
@@ -470,14 +470,14 @@ const ScrapHeader = styled.div`
     .edit {
       font-size: 14px;
       font-weight: 400;
-      color: #4071b9;
+      color: var(--text-brand);
     }
   }
 `;
 
 const ResetButton = styled.div`
   font-size: 12px;
-  color: #0e4d9d;
+  color: var(--text-brand);
 `;
 
 const Wrapper = styled.div`
@@ -555,9 +555,9 @@ const CheckBox = styled.div<{ checked: boolean }>`
   right: calc(5% + 4px);
   width: 16px;
   height: 16px;
-  border: 1px solid #4071b9;
+  border: 1px solid var(--border-brand);
   border-radius: 50%;
-  background-color: #fff;
+  background-color: var(--bg-base);
   z-index: 1;
 
   ${({ checked }) =>
@@ -571,7 +571,7 @@ const CheckBox = styled.div<{ checked: boolean }>`
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        background-color: #6F84E2;
+        background-color: var(--interactive-primary);
       }
     `}
 `;
@@ -604,7 +604,7 @@ const EditingButtons = styled.div`
 `;
 
 const Button = styled.div`
-  color: #4071b9;
+  color: var(--text-brand);
   font-size: 14px;
   font-weight: 400;
 `;
@@ -623,8 +623,8 @@ const DeleteButton = styled.div`
   width: 51px;
   height: 97px;
   border-radius: 10px;
-  background: linear-gradient(148.85deg, #d5e7fd 10.65%, #aabafe 89.35%);
-  border: 1px solid #7aa7e5;
+  background: linear-gradient(148.85deg, var(--blue-150) 10.65%, var(--blue-200) 89.35%);
+  border: 1px solid var(--blue-300);
   z-index: 10;
   transform: translateX(50%);
 

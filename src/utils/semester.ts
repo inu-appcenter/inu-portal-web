@@ -55,3 +55,36 @@ export const pickCurrentSemester = <T extends { status: Semester["status"] }>(
   semesters: T[],
 ): T | undefined =>
   semesters.find((s) => s.status === "OPEN") ?? semesters[0];
+
+/** 인천대 학사행정(ERP) tmGbn 코드로 변환 */
+export const termToTmGbn = (term: Term): string => {
+  switch (term) {
+    case "FIRST":
+      return "10";
+    case "SUMMER":
+      return "11";
+    case "SECOND":
+      return "20";
+    case "WINTER":
+      return "21";
+    default:
+      return "10";
+  }
+};
+
+/** 인천대 학사행정(ERP) tmGbn 코드를 Term으로 역변환 */
+export const tmGbnToTerm = (tmGbn: string): Term => {
+  switch (tmGbn) {
+    case "10":
+      return "FIRST";
+    case "11":
+      return "SUMMER";
+    case "20":
+      return "SECOND";
+    case "21":
+      return "WINTER";
+    default:
+      return "FIRST";
+  }
+};
+

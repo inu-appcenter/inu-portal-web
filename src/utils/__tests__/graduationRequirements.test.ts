@@ -39,10 +39,32 @@ describe("resolveGraduationRule", () => {
   });
 
   it("최신 규정만 수집된 학과는 가장 가까운 규정으로 대체하고 알린다", () => {
+    // 행정학과는 2020학번 이후 규정만 있다.
     const resolved = resolveGraduationRule("PUBLIC_ADMINISTRATION", 2019);
 
     expect(resolved?.exact).toBe(false);
-    expect(resolved?.rule.startYear).toBe(2023);
+    expect(resolved?.rule.startYear).toBe(2020);
+  });
+
+  it("폐강된 대학영어 대신 Academic English를 2023학번 이후 영어 요건으로 쓴다", () => {
+    // 대학영어1·2(0005058·0005059)는 2023학년도를 끝으로 개설되지 않는다.
+    for (const code of [
+      "KOREAN_EDUCATION",
+      "PHYSICAL_EDUCATION",
+      "CHEMISTRY",
+      "EARLY_CHILDHOOD_EDUCATION",
+    ]) {
+      const rule = resolveGraduationRule(code, 2024)!.rule;
+      const names = rule.generalRequirements.requiredGeneralCourses.map(
+        (course) => course.courseName,
+      );
+
+      expect(names).toContain("Academic English");
+      expect(names.some((name) => name.startsWith("대학영어1"))).toBe(false);
+      expect(names).not.toContain("대학영어");
+      expect(rule.generalRequirements.minCoreGeneralCount).toBe(3);
+      expect(rule.generalRequirements.minTotalCredits).toBe(130);
+    }
   });
 
   it("학과나 학번이 없으면 판정하지 않는다", () => {
@@ -140,6 +162,63 @@ describe("evaluateGraduation", () => {
     expect(sw?.status).toBe("MISSING");
   });
 
+  it("과목명이 정해진 기타 요건(물리1·선형대수학 등)은 이름으로 판정한다", () => {
+    const electronics = resolveGraduationRule("ELECTRONICS_ENGINEERING", 2024)!;
+    const evaluation = evaluateGraduation(
+      electronics.rule,
+      [
+        subject("물리(1)", 3, { isuName: "기초교양" }),
+        subject("선형대수학", 3, { isuName: "기초교양" }),
+      ],
+      electronics.departmentCode,
+    );
+    const statuses = Object.fromEntries(
+      evaluation.requiredCourses.map((course) => [
+        course.courseName,
+        course.status,
+      ]),
+    );
+
+    expect(statuses["물리1"]).toBe("DONE");
+    expect(statuses["물리2"]).toBe("MISSING");
+    expect(statuses["선형대수학"]).toBe("DONE");
+    expect(statuses["복소함수및벡터"]).toBe("MISSING");
+  });
+
+  it("번호 없는 짧은 과목명과 번호를 이어 적은 요건도 판정한다", () => {
+    const bioRobot2024 = resolveGraduationRule("BIO_ROBOTICS_ENGINEERING", 2024)!;
+    const bioRobot2023 = resolveGraduationRule("BIO_ROBOTICS_ENGINEERING", 2023)!;
+    const subjects = [
+      subject("물리(1)", 3, { isuName: "기초교양" }),
+      subject("물리(2)", 3, { isuName: "기초교양" }),
+      subject("공업수학1", 3, { isMajor: true, isuName: "전공기초" }),
+    ];
+    const status = (
+      rule: typeof bioRobot2024.rule,
+      courseName: string,
+    ) =>
+      evaluateGraduation(rule, subjects).requiredCourses.find(
+        (course) => course.courseName === courseName,
+      );
+
+    // "물리" 3학점 ← 물리(1)
+    expect(status(bioRobot2024.rule, "물리")?.status).toBe("DONE");
+    // "물리1,2" 6학점 ← 물리(1) + 물리(2)
+    expect(status(bioRobot2023.rule, "물리1,2")?.earnedCredits).toBe(6);
+    // 학과에 따라 전공기초로 개설되는 과목도 인정한다.
+    expect(status(bioRobot2023.rule, "공업수학1")?.status).toBe("DONE");
+  });
+
+  it("이수구분 이름이 적힌 요건은 판정하지 않고 확인 필요로 둔다", () => {
+    const design = resolveGraduationRule("DESIGN", 2024)!;
+    const evaluation = evaluateGraduation(design.rule, [], design.departmentCode);
+
+    expect(
+      evaluation.requiredCourses.find((course) => course.courseName === "기초교양")
+        ?.status,
+    ).toBe("UNKNOWN");
+  });
+
   it("전공필수로 대체되는 요건은 전공 과목으로도 채워진다", () => {
     // 기계공학과 SW 요건은 "SW(=전공필수 기계기초프로그래밍)"으로 적혀 있다.
     const mechanical = resolveGraduationRule("MECHANICAL_ENGINEERING", 2023)!;
@@ -191,7 +270,8 @@ describe("evaluateGraduation", () => {
     ).toBe(3);
   });
 
-  it("핵심교양은 학점이 아니라 이수영역 수로 센다", () => {
+  it("핵심교양은 영역 관계없이 과목 수로 센다", () => {
+    // 학칙: 6개 영역 중 영역 관계없이 3과목 이상, 영역 중복이수 가능
     const evaluation = evaluateGraduation(rule, [
       subject("서양철학의이해", 3, {
         isuName: "핵심교양",
@@ -201,21 +281,53 @@ describe("evaluateGraduation", () => {
         isuName: "핵심교양",
         isuFldName: "(핵심)인문",
       }),
-      subject("사회학개론", 3, {
-        isuName: "핵심교양",
-        isuFldName: "(핵심)사회",
-      }),
-      // 이수영역이 비어 있는 행("-")은 셀 수 없다.
       subject("스포츠와건강", 1, { isuName: "기초교양", isuFldName: "-" }),
     ]);
 
     expect(evaluation.coreGeneral?.required).toBe(3);
-    expect(evaluation.coreGeneral?.areas).toEqual(["(핵심)인문", "(핵심)사회"]);
+    expect(evaluation.coreGeneral?.courses).toEqual([
+      "서양철학의이해",
+      "논리와사고",
+    ]);
     expect(evaluation.coreGeneral?.satisfied).toBe(false);
     expect(evaluation.coreGeneral?.unverifiable).toBe(false);
   });
 
-  it("이수영역 정보가 없으면 핵심교양은 판정하지 않고 안내만 한다", () => {
+  it("2022학년도까지 이수한 INU핵심교양도 핵심교양으로 센다", () => {
+    // 옛 성적표: 이수구분 "교양필수", 이수영역 "INU핵심창의융합"
+    const evaluation = evaluateGraduation(rule, [
+      subject("디지털기술과미래", 3, {
+        isuName: "교양필수",
+        isuFldName: "INU핵심창의융합",
+      }),
+      subject("현대사회와빅데이터", 3, {
+        isuName: "교양필수",
+        isuFldName: "INU핵심문제해결",
+      }),
+      subject("사회학개론", 3, {
+        isuName: "핵심교양",
+        isuFldName: "(핵심)사회",
+      }),
+      // 같은 교양필수라도 이수영역에 "핵심"이 없으면 기초교양이다.
+      subject("대학영어", 2, { isuName: "교양필수", isuFldName: "학문의기초" }),
+      // 전공 과목의 이수영역 "전공핵심"은 핵심교양이 아니다.
+      subject("자료구조", 3, {
+        isMajor: true,
+        isuName: "전공핵심",
+        isuFldName: "전공핵심",
+      }),
+      subject("Java언어", 3, {
+        isMajor: true,
+        isuName: "전공기초",
+        isuFldName: "전공핵심",
+      }),
+    ]);
+
+    expect(evaluation.coreGeneral?.courses).toHaveLength(3);
+    expect(evaluation.coreGeneral?.satisfied).toBe(true);
+  });
+
+  it("이수구분 정보가 없으면 핵심교양은 판정하지 않고 안내만 한다", () => {
     const evaluation = evaluateGraduation(rule, [subject("서양철학의이해", 3)]);
 
     expect(evaluation.coreGeneral?.unverifiable).toBe(true);
@@ -231,7 +343,7 @@ describe("evaluateGraduation", () => {
 
     expect(evaluation.generalOverflow).toBe(5); // 상한 55학점
     expect(
-      evaluation.notices.some((notice) => notice.includes("교양 상한")),
+      evaluation.notices.some((notice) => notice.includes("최대 55학점")),
     ).toBe(true);
   });
 
@@ -280,7 +392,7 @@ describe("calculateRequiredAverageGpa", () => {
   });
 });
 
-describe("SW 필수 교양 면제 (정보기술대학)", () => {
+describe("SW 필수 교양 이수 대상", () => {
   const rule = resolveGraduationRule("COMPUTER_ENGINEERING", 2023)!.rule;
   const findSw = (evaluation: ReturnType<typeof evaluateGraduation>) =>
     evaluation.requiredCourses.find((course) => course.category === "SW");
@@ -293,11 +405,33 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     expect(isSwRequirementExempt("EMBEDDED_SYSTEM")).toBe(true);
   });
 
-  it("다른 단과대 학과와 빈 코드는 면제가 아니다", () => {
-    expect(isSwRequirementExempt("MECHANICAL_ENGINEERING")).toBe(false);
+  it("2026 교양 교육과정표의 이수 대상이 아닌 학과는 면제다", () => {
+    // 공과·도시과학·생명과학기술대학은 일부 학과만, 사범대학은 수학교육과 제외
+    expect(isSwRequirementExempt("MECHANICAL_ENGINEERING")).toBe(true);
+    expect(isSwRequirementExempt("URBAN_ENGINEERING")).toBe(true);
+    expect(isSwRequirementExempt("LIFE_SCIENCE")).toBe(true);
+    expect(isSwRequirementExempt("MATH_EDUCATION")).toBe(true);
+  });
+
+  it("이수 대상 학과와 빈 코드는 면제가 아니다", () => {
+    expect(isSwRequirementExempt("SAFETY_ENGINEERING")).toBe(false);
+    expect(isSwRequirementExempt("URBAN_ARCHITECTURE")).toBe(false);
+    expect(isSwRequirementExempt("BIOENGINEERING")).toBe(false);
+    expect(isSwRequirementExempt("KOREAN_EDUCATION")).toBe(false);
     expect(isSwRequirementExempt("BUSINESS_ADMINISTRATION")).toBe(false);
     expect(isSwRequirementExempt("")).toBe(false);
     expect(isSwRequirementExempt(null)).toBe(false);
+  });
+
+  it("수학교육과는 SW를 안 들어도 미이수로 잡지 않는다", () => {
+    const mathEducation = resolveGraduationRule("MATH_EDUCATION", 2024)!;
+    const evaluation = evaluateGraduation(
+      mathEducation.rule,
+      [],
+      mathEducation.departmentCode,
+    );
+
+    expect(findSw(evaluation)?.status).toBe("EXEMPT");
   });
 
   it("SW 과목을 안 들었어도 미이수로 잡지 않는다", () => {
@@ -325,7 +459,7 @@ describe("SW 필수 교양 면제 (정보기술대학)", () => {
     expect(sw?.matchedNames).toEqual([]);
   });
 
-  it("면제 학과가 아니면 SW 요건을 그대로 판정한다", () => {
+  it("학과가 전공 과목으로 대체한 SW 요건은 면제 학과여도 그대로 판정한다", () => {
     const mechanical = resolveGraduationRule("MECHANICAL_ENGINEERING", 2023)!;
     const evaluation = evaluateGraduation(
       mechanical.rule,
@@ -442,7 +576,8 @@ describe("필수 교양 매칭 (강의 카탈로그 기반)", () => {
   });
 
   it("요건이 지목한 대체 과목도 인정한다", () => {
-    const chemistry = resolveGraduationRule("CHEMISTRY", 2020)!;
+    // 화학과 학과 페이지의 2017~2018학번 기준: "글쓰기이론과실제 또는 공학작문및발표"
+    const chemistry = resolveGraduationRule("CHEMISTRY", 2018)!;
     const evaluation = evaluateGraduation(
       chemistry.rule,
       [subject("공학작문및발표", 2, { isuName: "교양선택" })],

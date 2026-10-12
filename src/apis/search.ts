@@ -74,3 +74,24 @@ export const getSearchFolderScrap = async (
   );
   return response.data;
 };
+
+// 통합 검색 (Elasticsearch Nori 기반 전 도메인 검색)
+export const getUnifiedSearch = async (
+  q: string,
+  tab: import("@/types/search").SearchTab = "ALL",
+  page: number = 1,
+  size: number = 10,
+): Promise<ApiResponse<import("@/types/search").UnifiedSearchResponse>> => {
+  const params: { [key: string]: string | number } = {
+    q,
+    tab,
+    page,
+    size,
+  };
+
+  const response = await axiosInstance.get<
+    ApiResponse<import("@/types/search").UnifiedSearchResponse>
+  >("/api/search/unified", { params });
+  return response.data;
+};
+

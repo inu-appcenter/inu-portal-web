@@ -130,14 +130,14 @@ const CardWrapper = styled.div`
   box-sizing: border-box;
   font-size: 15px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;
   }
 
   span {
-    color: #969696;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -182,7 +182,7 @@ const ModalWrapper = styled.div`
 `;
 
 const ModalTop = styled.div`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 10px;
   width: 100%;
   height: 96px;
@@ -193,18 +193,18 @@ const ModalTop = styled.div`
   span {
     height: 1px;
     width: 100%;
-    background-color: #d9d9d9;
+    background-color: var(--gray-300);
   }
 `;
 
 const Description = styled.div`
-  color: #757575;
+  color: var(--gray-600);
   font-size: 12px;
   font-weight: 600;
 `;
 
 const DeleteButton = styled.div`
-  color: #df5532;
+  color: var(--text-error);
   font-size: 16px;
   font-weight: 500;
   width: 100%;
@@ -212,7 +212,7 @@ const DeleteButton = styled.div`
 `;
 
 const ModalBottom = styled.div`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 10px;
   width: 100%;
   height: 48px;
@@ -220,7 +220,7 @@ const ModalBottom = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #0e4d9d;
+  color: var(--text-brand);
   font-size: 16px;
   font-weight: 500;
 `;

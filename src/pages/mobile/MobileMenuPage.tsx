@@ -17,11 +17,9 @@ import { cafeterias } from "@/resources/strings/cafeterias";
 import { useLocation, useNavigate } from "react-router-dom";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
-
-interface CafeteriaDetail {
-  구성원가: string;
-  칼로리: string;
-}
+import FoodRouletteFab from "@/components/mobile/cafeteria/FoodRouletteFab";
+import FoodRouletteModal from "@/components/mobile/cafeteria/FoodRouletteModal";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 interface CafeteriaListContentProps {
   cafeteria: string;
@@ -36,20 +34,14 @@ const CafeteriaListContent = ({
   weekDates,
   onDayChange,
 }: CafeteriaListContentProps) => {
-  const [cafeteriaDetail, setCafeteriaDetail] = useState<(CafeteriaDetail | null)[]>([]);
-  const [cafeteriaInfo, setCafeteriaInfo] = useState<(string | null)[]>([]);
+  const [cafeteriaMenus, setCafeteriaMenus] = useState<(string | null)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchCafeteriaData = async (date: number) => {
     try {
       setIsLoading(true);
       const response = await getCafeterias(cafeteria, date);
-      const processedData = response.data.map((info: string) =>
-        extractValues(info),
-      );
-      const infoData = response.data.map((info: string) => extractMenu(info));
-      setCafeteriaInfo(infoData);
-      setCafeteriaDetail(processedData);
+      setCafeteriaMenus(response.data);
       setIsLoading(false);
 
       const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
@@ -57,23 +49,6 @@ const CafeteriaListContent = ({
     } catch (error) {
       console.error("학식 메뉴 가져오기 실패", error);
     }
-  };
-
-  const extractValues = (input: string): CafeteriaDetail | null => {
-    const price = input.match(/([0-9,]+)원/);
-    const calory = input.match(/[0-9,]+kcal/);
-    if (price && calory) {
-      return {
-        구성원가: price[0],
-        칼로리: calory[0],
-      };
-    }
-    return null;
-  };
-
-  const extractMenu = (input: string): string | null => {
-    const match = input.match(/^(.*?)(?=\s[0-9,]+원|\s\"[0-9,]+원)/);
-    return match ? match[1].trim() : input;
   };
 
   useEffect(() => {
@@ -95,47 +70,39 @@ const CafeteriaListContent = ({
       />
       <CafeteriaInfoContainer
         title={cafeteria}
-        cafeteriaDetail={cafeteriaDetail}
-        cafeteriaInfo={cafeteriaInfo}
+        cafeteriaMenus={cafeteriaMenus}
         isLoading={isLoading}
       />
     </>
   );
 };
 
+const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
+  const weekDates = [];
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const currentDay = date.getDay();
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diffToMonday);
+
+  for (let i = 0; i < 7; i++) {
+    const weekDate = new Date(monday);
+    weekDate.setDate(monday.getDate() + i);
+    weekDates.push({
+      dayName: days[weekDate.getDay()],
+      date: `${weekDate.getDate()}`,
+    });
+  }
+  return weekDates;
+};
+
 export default function MobileMenuPage() {
   const [nowday, setNowDay] = useState(new Date().getDay());
-  const [weekDates, setWeekDates] = useState<
-    { dayName: string; date: string }[]
-  >([]);
-  const date = new Date();
+  const weekDates = useMemo(() => getWeekDates(new Date()), []);
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
   const selectedCafeteria = params.get("category") || "학생식당";
-
-  useEffect(() => {
-    setWeekDates(getWeekDates(date)); // 주의 날짜 설정
-  }, []);
-
-  const getWeekDates = (date: Date): { dayName: string; date: string }[] => {
-    const weekDates = [];
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    const currentDay = date.getDay();
-    const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
-    const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday);
-
-    for (let i = 0; i < 7; i++) {
-      const weekDate = new Date(monday);
-      weekDate.setDate(monday.getDate() + i);
-      weekDates.push({
-        dayName: days[weekDate.getDay()],
-        date: `${weekDate.getDate()}`,
-      });
-    }
-    return weekDates;
-  };
 
   const cafeteriaCategories = useMemo(
     () => cafeterias.map((cafeteria) => cafeteria.title),
@@ -143,9 +110,10 @@ export default function MobileMenuPage() {
   );
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [isRouletteOpen, setIsRouletteOpen] = useState(false);
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const currentIndex = useMemo(() => {
     const idx = cafeteriaCategories.indexOf(selectedCafeteria);
@@ -177,7 +145,7 @@ export default function MobileMenuPage() {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     resetScrollToTop();
@@ -185,6 +153,18 @@ export default function MobileMenuPage() {
     if (nextCategory && nextCategory !== selectedCafeteria) {
       const nextParams = new URLSearchParams(location.search);
       nextParams.set("category", nextCategory);
+      navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
+    }
+  };
+
+  const handleGoToCafeteria = (cafeteriaName: string) => {
+    const idx = cafeteriaCategories.indexOf(cafeteriaName);
+    if (idx !== -1) {
+      if (swiperRef) {
+        swiperRef.slideTo(idx);
+      }
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set("category", cafeteriaName);
       navigate(`${location.pathname}?${nextParams.toString()}`, { replace: true });
     }
   };
@@ -237,6 +217,16 @@ export default function MobileMenuPage() {
         hasSwiped={hasSwiped}
         currentIndex={currentIndex}
         totalSlides={cafeteriaCategories.length}
+      />
+
+      {/* 랜덤 학식 돌림판 플로팅 액션 버튼 (Google Material Fab) */}
+      <FoodRouletteFab onClick={() => setIsRouletteOpen(true)} />
+
+      {/* 랜덤 학식 돌림판 모달 */}
+      <FoodRouletteModal
+        isOpen={isRouletteOpen}
+        onClose={() => setIsRouletteOpen(false)}
+        onGoToCafeteria={handleGoToCafeteria}
       />
     </CafeteriaWrapper>
   );

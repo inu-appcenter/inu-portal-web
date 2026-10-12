@@ -12,6 +12,6 @@ export default Divider;
 const StyledDivider = styled.div<{ $margin: string }>`
   width: 100%;
   height: 1px;
-  background-color: #e4e4e6;
+  background-color: var(--gray-200);
   margin: ${({ $margin }) => $margin};
 `;

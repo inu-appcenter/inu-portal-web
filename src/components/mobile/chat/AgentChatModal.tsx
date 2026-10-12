@@ -1,0 +1,304 @@
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import styled, { keyframes } from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Maximize2, Loader2 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAgentBridge } from "@/hooks/useAgentBridge";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
+
+interface AgentChatModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const AgentChatModal: React.FC<AgentChatModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const initialLocationRef = useRef(location.pathname + location.search);
+  const [isIframeLoaded, setIsIframeLoaded] = useState(false);
+
+  const {
+    iframeRef,
+    isPortalModalOpen,
+    setIsPortalModalOpen,
+    sendClientContextToIframe,
+  } = useAgentBridge({ onClose });
+
+  const [authToken, setAuthToken] = useState<string>(() => {
+    try {
+      const fromStore = useUserStore.getState().tokenInfo?.accessToken;
+      if (fromStore) return fromStore;
+      const raw = localStorage.getItem("tokenInfo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.accessToken) return parsed.accessToken;
+      }
+    } catch {}
+    return (
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("accessToken") ||
+      ""
+    );
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      initialLocationRef.current = location.pathname + location.search;
+      setIsIframeLoaded(false);
+      // 모달 오픈 시 토큰 유효성 검사 및 필요시 자동 갱신
+      getValidAccessToken().then((freshToken) => {
+        if (freshToken && freshToken !== authToken) {
+          setAuthToken(freshToken);
+        }
+      });
+    }
+  }, [isOpen, authToken]);
+
+  useEffect(() => {
+    if (isOpen && initialLocationRef.current !== location.pathname + location.search) {
+      onClose();
+    }
+  }, [location.pathname, location.search, isOpen, onClose]);
+
+  const resolvedAgentUrl = useMemo(() => {
+    let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";
+    if (url.includes("localhost") && window.location.hostname && window.location.hostname !== "localhost") {
+      url = url.replace("localhost", window.location.hostname);
+    }
+    return url;
+  }, []);
+
+  const iframeSrc = `${resolvedAgentUrl}?token=${encodeURIComponent(authToken)}&client=INTIP`;
+
+  const handleFullscreen = () => {
+    onClose();
+    if (resolvedAgentUrl.startsWith("http://") || resolvedAgentUrl.startsWith("https://")) {
+      window.open(iframeSrc, "_blank", "noopener,noreferrer");
+    } else {
+      navigate("/agent");
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <ModalContainer>
+          <Backdrop
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+          <ModalWrapper
+            initial={{ scale: 0.95, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 15 }}
+            transition={{ type: "spring", stiffness: 450, damping: 35 }}
+          >
+            <HeaderControlBar>
+              <ControlButtons>
+                <MaximizeButton onClick={handleFullscreen} title="새 탭으로 열기">
+                  <Maximize2 size={16} />
+                </MaximizeButton>
+                <IconButton onClick={onClose} title="닫기">
+                  <X size={18} />
+                </IconButton>
+              </ControlButtons>
+            </HeaderControlBar>
+
+            {!isIframeLoaded && (
+              <LoadingOverlay>
+                <SpinIcon size={28} />
+                <LoadingText>챗불이 에이전트 불러오는 중...</LoadingText>
+              </LoadingOverlay>
+            )}
+
+            <IframeFrame
+              ref={iframeRef}
+              src={iframeSrc}
+              title="INU AI Campus Assistant"
+              allow="clipboard-write; clipboard-read"
+              onLoad={() => {
+                setIsIframeLoaded(true);
+                sendClientContextToIframe();
+              }}
+            />
+          </ModalWrapper>
+        </ModalContainer>
+      )}
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe(true);
+        }}
+      />
+    </AnimatePresence>
+  );
+};
+
+export default AgentChatModal;
+
+const ModalContainer = styled.div`
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    padding: 0;
+  }
+`;
+
+const Backdrop = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+`;
+
+const ModalWrapper = styled(motion.div)`
+  position: relative;
+  width: 92%;
+  max-width: 960px;
+  height: 90vh;
+  height: 90dvh;
+  background: var(--bg-base);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+    padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+    padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+    padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+`;
+
+const HeaderControlBar = styled.div`
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 20;
+  pointer-events: auto;
+
+  @media (max-width: 768px) {
+    top: calc(var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px)) + 12px);
+    right: calc(var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px)) + 14px);
+  }
+`;
+
+const ControlButtons = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const MaximizeButton = styled.button`
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 6px;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const IconButton = styled.button`
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 6px;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    transform: scale(1.05);
+  }
+`;
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-subtle);
+  z-index: 5;
+  gap: 12px;
+`;
+
+const SpinIcon = styled(Loader2)`
+  animation: ${spin} 1s linear infinite;
+  color: var(--text-brand);
+`;
+
+const LoadingText = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-600);
+`;
+
+const IframeFrame = styled.iframe`
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+`;
+

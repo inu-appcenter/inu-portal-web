@@ -28,11 +28,11 @@ const HowToBuyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: white;
+  color: var(--text-inverse);
   overflow-y: auto;
 
   .title-img {
-    border-bottom: 2px solid white;
+    border-bottom: 2px solid var(--bg-base);
     display: flex;
     justify-content: space-between;
   }

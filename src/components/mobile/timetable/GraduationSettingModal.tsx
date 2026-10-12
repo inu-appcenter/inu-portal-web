@@ -79,7 +79,7 @@ export default function GraduationSettingModal({
       isOpen={isOpen}
       onClose={onClose}
       title="졸업요건 설정"
-      description="학과와 학번을 고르면 이수해야 할 학점을 자동으로 채워드려요."
+      description="학과와 학번을 고르면 졸업에 필요한 학점을 자동으로 채워드려요."
       primaryButton={{
         text: "저장",
         variant: "brand",
@@ -172,18 +172,18 @@ const Field = styled.div`
 const FieldLabel = styled.label`
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const Select = styled.select`
   width: 100%;
   height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--border-default, #e5e8eb);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   font-size: 15px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   outline: none;
 `;
 
@@ -194,15 +194,15 @@ const TextInput = styled.input<{ $error?: boolean }>`
   box-sizing: border-box;
   border: 1px solid
     ${({ $error }) =>
-      $error ? "var(--border-error, #ef4444)" : "var(--border-default, #e5e8eb)"};
+      $error ? "var(--border-error)" : "var(--border-default)"};
   border-radius: 12px;
-  background-color: var(--bg-base, #ffffff);
+  background-color: var(--bg-base);
   font-size: 15px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   outline: none;
 
   &::placeholder {
-    color: var(--text-disabled, #b0b8c1);
+    color: var(--text-disabled);
   }
 `;
 
@@ -210,5 +210,5 @@ const FieldHelp = styled.span<{ $warn?: boolean }>`
   font-size: 12px;
   line-height: 16px;
   color: ${({ $warn }) =>
-    $warn ? "var(--text-error, #ef4444)" : "var(--text-tertiary, #8b95a1)"};
+    $warn ? "var(--text-error)" : "var(--text-tertiary)"};
 `;

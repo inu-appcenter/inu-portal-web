@@ -8,6 +8,9 @@ export const ROUTES = {
   MOBILE_HOME: "/m/home",
   HOME_V2: "/home/v2",
 
+  // 통합 검색
+  UNIFIED_SEARCH: "/search",
+
   // 횃불이 AI
   AI: {
     ROOT: "/ai",
@@ -31,6 +34,8 @@ export const ROUTES = {
     SYLLABUS: "/timetable/syllabus",
     WIZARD: "/timetable/wizard",
     WIZARD_GROUP: "/timetable/wizard-group",
+    IMPORT_HUB: "/timetable/import",
+    PORTAL_IMPORT: "/timetable/portal-import",
     IMAGE_IMPORT: "/timetable/image-import",
   },
 
@@ -58,9 +63,20 @@ export const ROUTES = {
   //실험실
   LABS: {
     ROOT: "/labs",
+    ROUTINE: "/labs/routine",
     PORTAL: {
       BASIC_INFO: "/labs/portal/basic-info",
+      TIMETABLE: "/labs/portal/timetable",
+      DORMITORY: "/labs/portal/dormitory",
+      DORMITORY_CARD: "/labs/portal/dormitory/card",
     },
+  },
+
+  // 스마트 캠퍼스 서비스 허브 (도서관, LMS 등)
+  SERVICES: {
+    ROOT: "/services",
+    LIBRARY: "/services/library",
+    LMS: "/services/lms",
   },
 
   // 마이페이지
@@ -73,7 +89,9 @@ export const ROUTES = {
     DELETE: "/mypage/delete",
     FCM: "/mypage/fcm",
     NOTIFICATION: "/mypage/notification",
+    PORTAL_ACCOUNT: "/mypage/portal",
     DAILY_BRIEF: "/mypage/notification/daily-brief",
+    SMART_WATCH: "/mypage/notification/smart-watch",
   },
 
   // 게시판 및 기능
@@ -117,6 +135,14 @@ export const ROUTES = {
     SHUTTLE_ROUTE: "/bus/shuttle",
   },
 
+  // 데일리 브리프
+  DAILY_BRIEF: {
+    ROOT: "/daily-brief",
+    SETTING: "/mypage/notification/daily-brief",
+    ROUTINE_DETAIL: (id: string | number) => `/daily-brief/routine/${id}`,
+    ROUTINE_DETAIL_PATTERN: "/daily-brief/routine/:id",
+  },
+
   // 채팅
   CHAT: {
     ROOT: "/chat",
@@ -126,6 +152,7 @@ export const ROUTES = {
 
   // 기타
   UNIDORM: "/unidorm",
+  DORMITORY_CARD: "/dormitory/card",
 
   // 관리자
   ADMIN: {
@@ -136,6 +163,7 @@ export const ROUTES = {
     FEATURE_FLAGS: "/admin/feature-flags",
     CHAT: "/admin/chat",
     BUS: "/admin/bus",
+    SEARCH: "/admin/search",
   },
 
 } as const;

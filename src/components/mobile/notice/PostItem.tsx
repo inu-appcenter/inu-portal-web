@@ -214,7 +214,7 @@ const Category = styled.div`
 `;
 
 const Title = styled.div<{ isEllipsis: boolean }>`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-family: Pretendard, sans-serif;
   font-size: 16px;
   font-style: normal;
@@ -232,7 +232,7 @@ const Title = styled.div<{ isEllipsis: boolean }>`
 `;
 
 const ContentLine = styled.div<{ isEllipsis: boolean }>`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-style: normal;
@@ -254,7 +254,7 @@ const InfoLine = styled.div`
   align-items: center;
 
   .writer {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     font-family: Pretendard, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -263,7 +263,7 @@ const InfoLine = styled.div`
   }
 
   .dot {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     font-family: Pretendard, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -272,7 +272,7 @@ const InfoLine = styled.div`
   }
 
   .date {
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
     font-family: Pretendard, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -293,7 +293,7 @@ const StatItem = styled.div<{ $variant?: TextVariant }>`
   display: flex;
   align-items: center;
 
-  color: var(--text-${(props) => props.$variant ?? "teritary"}, #8b95a1);
+  color: var(--text-${(props) => props.$variant ?? "tertiary"});
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-style: normal;
@@ -312,7 +312,7 @@ const ViewCount = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   font-style: normal;
@@ -327,7 +327,7 @@ const ThumbnailWrapper = styled.div`
   min-height: 76px;
   border-radius: 10px;
   overflow: hidden;
-  background-color: #e3e7ec;
+  background-color: var(--gray-200);
   display: flex;
   align-items: center;
   justify-content: center;

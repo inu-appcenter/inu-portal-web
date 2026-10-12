@@ -50,7 +50,7 @@ const InfoBoxWrapper = styled.div`
   left: 38.23px;
   top: 535.25px;
 
-  border: 0.871981px solid #a5a5a5;
+  border: 0.871981px solid var(--border-default);
   border-radius: 19.1836px;
 
   display: flex;
@@ -64,7 +64,7 @@ const IconBox = styled.div`
   left: 33px;
   top: 527.4px;
 
-  background: #4071b9;
+  background: var(--interactive-primary);
   border-radius: 50%;
 
   display: flex;
@@ -88,7 +88,7 @@ const TitleBox = styled.div`
   /* identical to box height */
   letter-spacing: 0.871981px;
 
-  color: #3b566e;
+  color: var(--text-secondary);
 `;
 const NumberBox = styled.div`
   height: fit-content;
@@ -99,7 +99,7 @@ const NumberBox = styled.div`
   line-height: 12px;
   letter-spacing: 0.871981px;
 
-  color: #0e4d9d;
+  color: var(--interactive-primary);
 `;
 
 export default RestInfoBox;

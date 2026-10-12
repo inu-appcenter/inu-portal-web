@@ -87,7 +87,7 @@ const AddItemWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
   padding: 20px;
-  background-color: #f9f9f9;
+  background-color: var(--bg-subtle);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
@@ -110,7 +110,7 @@ const AddItemWrapper = styled.div`
     select {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border-strong);
       border-radius: 4px;
     }
   }
@@ -118,15 +118,15 @@ const AddItemWrapper = styled.div`
   button {
     width: 100%;
     padding: 10px;
-    background-color: #007bff;
-    color: white;
+    background-color: var(--interactive-primary);
+    color: var(--text-inverse);
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
 
     &:hover {
-      background-color: #0056b3;
+      background-color: var(--interactive-primary-hover);
     }
   }
 `;

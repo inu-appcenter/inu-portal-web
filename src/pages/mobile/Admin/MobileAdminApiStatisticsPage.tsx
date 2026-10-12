@@ -9,17 +9,17 @@ import { ApiLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
-const METHOD_COLORS: Record<string, string> = {
-  GET: "#10b981",
-  POST: "#3b82f6",
-  PUT: "#f59e0b",
-  DELETE: "#ef4444",
-  PATCH: "#8b5cf6",
+const METHOD_COLORS: Record<string, { text: string; bg: string }> = {
+  GET: { text: "var(--text-success)", bg: "rgba(16, 185, 129, 0.12)" },
+  POST: { text: "var(--primary)", bg: "rgba(59, 130, 246, 0.12)" },
+  PUT: { text: "var(--state-warning)", bg: "rgba(245, 158, 11, 0.12)" },
+  DELETE: { text: "var(--text-error)", bg: "rgba(239, 68, 68, 0.12)" },
+  PATCH: { text: "rgb(139, 92, 246)", bg: "rgba(139, 92, 246, 0.12)" },
 };
 
 const MobileAdminApiStatisticsPage: React.FC = () => {
@@ -110,21 +110,21 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
             title="총 API 호출"
             value={totalCalls.toLocaleString()}
             icon={(size) => <Activity size={size} />}
-            color="#0f766e"
+            color="rgb(15, 118, 110)"
             description="오늘 발생한 총 요청"
           />
           <StatsDashboardCard
             title="가장 많이 호출됨"
             value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
             icon={(size) => <Zap size={size} />}
-            color="#f59e0b"
+            color="var(--state-warning)"
             description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
           />
           <StatsDashboardCard
             title="엔드포인트 개수"
             value={apiLogs.length}
             icon={(size) => <BarChart3 size={size} />}
-            color="#3b82f6"
+            color="var(--primary)"
             description="활성 API 경로 수"
           />
         </StatsGrid>
@@ -175,14 +175,18 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
           <SearchSpacer />
         </LogsSection>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="메소드 또는 엔드포인트를 검색하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
       </PageWrapper>
     </AdminLayout>
   );
@@ -205,17 +209,17 @@ const DateSelector = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff;
+  background: var(--bg-base);
   padding: 10px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  border: 1px solid var(--border-default);
+  color: var(--gray-600);
 
   input {
     border: none;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     outline: none;
     cursor: pointer;
     background: transparent;
@@ -266,14 +270,14 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
@@ -289,9 +293,9 @@ const FloatingSearchBar = styled.div`
 
 
 const TableContainer = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   overflow-x: auto;
   box-shadow: ${SOFT_CARD_SHADOW};
 `;
@@ -302,14 +306,14 @@ const Table = styled.table`
   text-align: left;
 
   thead {
-    background-color: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--bg-subtle);
+    border-bottom: 1px solid var(--border-default);
     
     th {
       padding: 12px 8px;
       font-size: 0.75rem;
       font-weight: 700;
-      color: #64748b;
+      color: var(--gray-600);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       
@@ -322,16 +326,16 @@ const Table = styled.table`
 
   tbody {
     tr {
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--bg-base);
       transition: background 0.2s;
-      &:hover { background-color: #f8fafc; }
+      &:hover { background-color: var(--bg-subtle); }
       &:last-child { border-bottom: none; }
     }
 
     td {
       padding: 12px 8px;
       font-size: 0.875rem;
-      color: #334155;
+      color: var(--text-secondary);
 
       @media ${DESKTOP_MEDIA} {
         padding: 16px 24px;
@@ -339,12 +343,12 @@ const Table = styled.table`
       }
     }
 
-    .rank { font-weight: 700; color: #94a3b8; white-space: nowrap; text-align: center; }
-    .uri { font-family: monospace; font-weight: 500; color: #0f172a; }
-    .count { font-weight: 800; color: #0f766e; text-align: right; 
-      small { font-weight: 500; color: #94a3b8; font-size: 0.75rem; }
+    .rank { font-weight: 700; color: var(--text-tertiary); white-space: nowrap; text-align: center; }
+    .uri { font-family: monospace; font-weight: 500; color: var(--text-primary); }
+    .count { font-weight: 800; color: rgb(15, 118, 110); text-align: right; 
+      small { font-weight: 500; color: var(--text-tertiary); font-size: 0.75rem; }
     }
-    .loading, .empty { text-align: center; padding: 60px; color: #94a3b8; }
+    .loading, .empty { text-align: center; padding: 60px; color: var(--text-tertiary); }
   }
 `;
 
@@ -353,16 +357,16 @@ const MethodBadge = styled.span<{ $method: string }>`
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 800;
-  background-color: ${props => METHOD_COLORS[props.$method] || "#64748b"}20;
-  color: ${props => METHOD_COLORS[props.$method] || "#64748b"};
+  background-color: ${props => METHOD_COLORS[props.$method]?.bg || "rgba(100, 116, 139, 0.12)"};
+  color: ${props => METHOD_COLORS[props.$method]?.text || "var(--gray-500)"};
   display: inline-block;
   min-width: 60px;
   text-align: center;
 `;
 
 const ErrorBox = styled.div`
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;

@@ -67,7 +67,7 @@ const TitleLineWrapper = styled.div<{ $clickable: boolean }>`
   height: fit-content;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 18px;
     font-style: normal;
     font-weight: 600;
@@ -80,6 +80,6 @@ const MoreIcon = styled.svg`
   flex: 0 0 auto;
   width: 8px;
   height: 16px;
-  color: #000;
+  color: var(--text-primary);
   display: block;
 `;

@@ -22,6 +22,8 @@ export interface HeaderConfig {
   backPath?: string;
   onBack?: () => void;
   showAlarm?: boolean;
+  showSearch?: boolean;
+  searchPath?: string;
   menuItems?: MenuItemType[];
   rightArea?: ReactNode; // 추가
   visible?: boolean;
@@ -49,6 +51,8 @@ const defaultHeaderConfig: HeaderConfig = {
   title: undefined,
   hasback: true,
   showAlarm: false,
+  showSearch: false,
+  searchPath: undefined,
   visible: true,
   subHeader: null,
   floatingSubHeader: false,
@@ -166,6 +170,8 @@ export const useHeader = (config?: HeaderConfig) => {
     hasback: config?.hasback,
     backPath: config?.backPath,
     showAlarm: config?.showAlarm,
+    showSearch: config?.showSearch,
+    searchPath: config?.searchPath,
     visible: config?.visible,
     floatingSubHeader: config?.floatingSubHeader,
     pageBgColor: config?.pageBgColor,

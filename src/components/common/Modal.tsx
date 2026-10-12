@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { effects } from "@/styles/effects";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -59,16 +60,20 @@ export default function Modal({
             }
           }}
         >
-          <HeaderContainer>
-            <Dialog.Title asChild>
-              <ModalTitle>{title}</ModalTitle>
-            </Dialog.Title>
-            {description && (
-              <Dialog.Description asChild>
-                <ModalDescription>{description}</ModalDescription>
-              </Dialog.Description>
-            )}
-          </HeaderContainer>
+          {title ? (
+            <HeaderContainer>
+              <Dialog.Title asChild>
+                <ModalTitle>{title}</ModalTitle>
+              </Dialog.Title>
+              {description && (
+                <Dialog.Description asChild>
+                  <ModalDescription>{description}</ModalDescription>
+                </Dialog.Description>
+              )}
+            </HeaderContainer>
+          ) : (
+            <Dialog.Title style={{ display: "none" }}>{title || "Modal"}</Dialog.Title>
+          )}
 
           {children && <ModalSlot>{children}</ModalSlot>}
 
@@ -124,10 +129,9 @@ const scaleUp = keyframes`
 const ModalOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
-  background-color: var(--bg-dim, rgba(0, 0, 0, 0.2));
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  z-index: 9999;
+  background-color: var(--bg-dim);
+  ${effects.dim}
+  z-index: 19999;
   animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 `;
 
@@ -136,19 +140,21 @@ const ModalContainer = styled(Dialog.Content)`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--bg-base, #ffffff);
-  border-radius: 32px;
+  background-color: var(--bg-base);
+  border-radius: var(--radius-2xl);
   width: calc(100% - 32px);
   max-width: 328px;
+  max-height: calc(100dvh - 40px);
   padding: 20px 16px 16px 16px;
   box-sizing: border-box;
-  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--elevation-1-shadow);
   display: flex;
   flex-direction: column;
   gap: 24px;
-  z-index: 10000;
+  z-index: 20000;
   outline: none;
   animation: ${scaleUp} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  overflow: hidden;
 `;
 
 const HeaderContainer = styled.div`
@@ -157,16 +163,17 @@ const HeaderContainer = styled.div`
   gap: 12px;
   width: 100%;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const ModalTitle = styled.h2`
   margin: 0;
-  font-size: 20px;
+  font-size: var(--heading-1-font-size);
   font-style: normal;
-  font-weight: 600;
-  line-height: 32px;
-  letter-spacing: 0;
-  color: var(--gray-800, #333d4b);
+  font-weight: var(--heading-1-font-weight);
+  line-height: var(--heading-1-line-height);
+  letter-spacing: var(--heading-1-letter-spacing);
+  color: var(--text-secondary);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -174,11 +181,11 @@ const ModalTitle = styled.h2`
 `;
 
 const ModalDescription = styled.div`
-  font-size: 14px;
+  font-size: var(--body-2-font-size);
   font-style: normal;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--gray-600, #6b7684);
+  font-weight: var(--body-2-font-weight);
+  line-height: var(--body-2-line-height);
+  color: var(--text-tertiary);
   text-align: center;
   word-break: keep-all;
   overflow-wrap: break-word;
@@ -191,13 +198,15 @@ const ModalSlot = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   box-sizing: border-box;
   gap: 12px;
-
-  /* 모달 내부 InputField/SelectContainer 등의 배경색을 피그마 사양인 흰색(var(--bg-base))으로 덮어씀 */
-  & > div {
-    background-color: var(--bg-base, #ffffff) !important;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;
 
@@ -207,6 +216,7 @@ const ButtonContainer = styled.div`
   width: 100%;
   box-sizing: border-box;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 const ModalButton = styled(CapsuleButton)`

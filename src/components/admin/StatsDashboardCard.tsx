@@ -23,7 +23,7 @@ const StatsDashboardCard: React.FC<StatsDashboardCardProps> = ({
   icon,
   trend,
   description,
-  color = "#0f766e",
+  color = "rgb(15, 118, 110)",
   onClick,
 }) => {
   return (
@@ -56,10 +56,10 @@ const StatsDashboardCard: React.FC<StatsDashboardCardProps> = ({
 export default StatsDashboardCard;
 
 const Card = styled.div<{ $isClickable: boolean }>`
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 12px;
   padding: 12px 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -83,7 +83,7 @@ const Card = styled.div<{ $isClickable: boolean }>`
     props.$isClickable &&
     `
       transform: translateY(-4px);
-      border-color: #cbd5e1;
+      border-color: var(--border-strong);
       box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.12);
     `}
   }
@@ -137,8 +137,8 @@ const TrendBadge = styled.div<{ $isUp: boolean }>`
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  background-color: ${(props) => (props.$isUp ? "#f0fdf4" : "#fef2f2")};
-  color: ${(props) => (props.$isUp ? "#16a34a" : "#dc2626")};
+  background-color: ${(props) => (props.$isUp ? "rgb(240, 253, 244)" : "rgb(254, 242, 242)")};
+  color: ${(props) => (props.$isUp ? "var(--text-success)" : "var(--text-error)")};
 `;
 
 const Body = styled.div`
@@ -155,7 +155,7 @@ const Body = styled.div`
 
 const Title = styled.h4`
   margin: 0;
-  color: #64748b;
+  color: var(--gray-600);
   font-size: 0.65rem;
   font-weight: 600;
 
@@ -165,7 +165,7 @@ const Title = styled.h4`
 `;
 
 const Value = styled.div`
-  color: #0f172a;
+  color: var(--text-primary);
   font-size: 1.125rem;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -178,7 +178,7 @@ const Value = styled.div`
 const Description = styled.p`
   display: none;
   margin: 4px 0 0;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.8125rem;
 
   @media ${DESKTOP_MEDIA} {

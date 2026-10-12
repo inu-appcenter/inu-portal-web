@@ -431,7 +431,7 @@ const KakaoMap = ({
 
   if (loading) {
     return (
-      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#6c757d", fontSize: "14px" }}>
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "var(--gray-600)", fontSize: "14px" }}>
         지도를 불러오는 중입니다...
       </Container>
     );
@@ -439,7 +439,7 @@ const KakaoMap = ({
 
   if (error) {
     return (
-      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#dc3545", fontSize: "14px" }}>
+      <Container style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-subtle)", color: "var(--text-error)", fontSize: "14px" }}>
         지도를 불러오는 데 실패했습니다.
       </Container>
     );
@@ -468,7 +468,7 @@ const KakaoMap = ({
       )}
 
       <MyLocationButton onClick={handleMyLocationClick} $active={isTracking}>
-        <Navigation size={20} fill={isTracking ? "#3E69D1" : "none"} />
+        <Navigation size={20} fill={isTracking ? "var(--interactive-primary)" : "none"} />
       </MyLocationButton>
 
       {showHeadingHint && (
@@ -495,18 +495,18 @@ const MyLocationButton = styled.button<{ $active: boolean }>`
   z-index: 10;
   width: 36px;
   height: 36px;
-  background: white;
-  border: 1px solid #919191;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  color: ${props => props.$active ? "#3E69D1" : "#555"};
+  color: ${props => props.$active ? "var(--interactive-primary)" : "var(--gray-700)"};
   
   &:active {
-    background: #f5f5f5;
+    background: var(--bg-muted);
   }
 `;
 
@@ -519,7 +519,7 @@ const HeadingHint = styled.div`
   padding: 10px 12px;
   border-radius: 14px;
   background: rgba(32, 53, 93, 0.92);
-  color: #ffffff;
+  color: var(--text-inverse);
   font-size: 12px;
   line-height: 1.45;
   box-shadow: 0 10px 24px rgba(25, 45, 85, 0.18);
@@ -538,8 +538,8 @@ const MyLocationMarker = styled.div`
 const MainDot = styled.div`
   width: 14px;
   height: 14px;
-  background: #FF4B4B;
-  border: 2px solid white;
+  background: var(--text-error);
+  border: 2px solid var(--bg-base);
   border-radius: 50%;
   z-index: 2;
   box-shadow: 0 0 5px rgba(0,0,0,0.3);

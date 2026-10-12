@@ -20,6 +20,32 @@ interface UserState {
   isLoading: boolean;
 }
 
+/**
+ * 로그아웃 또는 사용자 계정 전환 시 기기 로컬에 잔류하지 않아야 하는 포털/학적/생활원 캐시 키 목록
+ */
+export const PORTAL_CACHE_KEYS = [
+  "portal_student_info",
+  "portal_info_last_updated",
+  "portal_dormitory_student_info",
+  "portal_dormitory_student_info_last_updated",
+  "portal_lab_academic_report",
+  "portal_lab_timetable_list",
+  "portal_lab_timetable_last_updated",
+] as const;
+
+/**
+ * 포털 학적/생활원 캐시 일괄 삭제 (로그아웃 연쇄 소거)
+ */
+export const clearPortalCaches = () => {
+  try {
+    PORTAL_CACHE_KEYS.forEach((key) => {
+      safeLocalStorage.removeItem(key);
+    });
+  } catch (e) {
+    console.warn("[clearPortalCaches] Failed to clear portal cache:", e);
+  }
+};
+
 const handleUserAuthChange = (
   prevToken?: string | null,
   nextToken?: string | null,
@@ -30,6 +56,7 @@ const handleUserAuthChange = (
   if (prevMemberId !== nextMemberId) {
     useTimetableStore.getState().reloadTimetableCache(nextMemberId);
     queryClient.removeQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    clearPortalCaches();
   }
 };
 

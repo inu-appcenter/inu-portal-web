@@ -47,12 +47,12 @@ const CardWrapper = styled.div<{ $selected: boolean }>`
   ${({ $selected }) =>
     $selected
       ? css`
-          border: 2px solid var(--border-brand, #0061ff);
-          background: var(--bg-brand, #eff6ff);
+          border: 2px solid var(--border-brand);
+          background: var(--bg-brand);
         `
       : css`
-          border: 1px solid var(--border-default, #e5e8eb);
-          background: var(--bg-base, #fff);
+          border: 1px solid var(--border-default);
+          background: var(--bg-base);
         `}
 
   &:active {
@@ -70,14 +70,14 @@ const TextGroup = styled.div`
 const CardTitle = styled.span`
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   line-height: 24px;
 `;
 
 const CardDesc = styled.span`
   font-size: 13px;
   font-weight: 400;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   line-height: 18px;
 `;
 
@@ -102,11 +102,11 @@ const RadioCircle = styled.div<{ $selected: boolean }>`
   ${({ $selected }) =>
     $selected
       ? css`
-          background-color: var(--interactive-primary, #3b82f6);
+          background-color: var(--interactive-primary);
           border: none;
         `
       : css`
-          border: 2px solid var(--border-strong, #d1d6db);
+          border: 2px solid var(--border-strong);
           background-color: transparent;
         `}
 `;
@@ -115,5 +115,5 @@ const RadioDot = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
 `;

@@ -9,16 +9,16 @@ interface ChatPreviewWidgetProps {
 }
 
 const PASTEL_COLORS = [
-  "#FFF4BD", // 파스텔 노랑
-  "#E2F0D9", // 파스텔 초록
-  "#FFD9D9", // 파스텔 빨강
-  "#D9EFFF", // 파스텔 파랑
-  "#EADBFF", // 파스텔 보라
-  "#FFE5D0", // 파스텔 주황
+  "var(--time-table-color-yellow)",
+  "var(--time-table-color-lightgreen)",
+  "var(--time-table-color-red)",
+  "var(--time-table-color-skyblue)",
+  "var(--time-table-color-purple)",
+  "var(--time-table-color-orange)",
 ];
 
 const ChatPreviewWrapper = styled.div`
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 16px;
   width: 100%;
   min-height: 100px;
@@ -44,7 +44,7 @@ const MessageContent = styled.div<{ isRight: boolean }>`
 const SenderName = styled.span`
   font-size: 13px;
   font-weight: 600;
-  color: #3a3a3c;
+  color: var(--text-secondary);
   margin-bottom: 4px;
 `;
 
@@ -75,19 +75,19 @@ const Bubble = styled.div<{ backgroundColor: string; isRight: boolean }>`
   text-overflow: ellipsis;
 
   background-color: ${(props) => props.backgroundColor};
-  color: #1c1c1e;
+  color: var(--text-primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 `;
 
 const TimeText = styled.span`
   font-size: 11px;
-  color: #a1a1a6;
+  color: var(--text-tertiary);
   white-space: nowrap;
 `;
 
 const InfoText = styled.div`
   font-size: 14px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   text-align: center;
   padding: 20px 0;
 `;

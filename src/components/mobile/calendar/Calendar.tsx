@@ -38,7 +38,7 @@ const ChevronLeft = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path
       d="M15 6L9 12L15 18"
-      stroke="#333"
+      stroke="var(--text-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -50,7 +50,7 @@ const ChevronRight = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <path
       d="M9 18L15 12L9 6"
-      stroke="#333"
+      stroke="var(--text-primary)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -85,7 +85,7 @@ interface CalendarbarProps {
 
 export default function Calendar({
   mode = "monthly",
-  baseDate = new Date(),
+  baseDate,
 }: CalendarbarProps) {
   const { tokenInfo, userInfo } = useUserStore();
 
@@ -94,7 +94,16 @@ export default function Calendar({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const today = useMemo(() => new Date(), []);
-  const [currentDate, setCurrentDate] = useState(baseDate);
+  const [currentDate, setCurrentDate] = useState(() => (baseDate && !isNaN(baseDate.getTime()) ? baseDate : new Date()));
+
+  const baseDateTime = baseDate && !isNaN(baseDate.getTime()) ? baseDate.getTime() : null;
+
+  useEffect(() => {
+    if (baseDateTime !== null) {
+      setCurrentDate(new Date(baseDateTime));
+    }
+  }, [baseDateTime]);
+
   const [allLoadedEvents, setAllLoadedEvents] = useState<ScheduleEvent[]>([]);
   const [eventsByWeek, setEventsByWeek] = useState<
     {
@@ -563,7 +572,7 @@ const MonthDisplay = styled.h2`
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  color: #222;
+  color: var(--text-primary);
 `;
 
 const ArrowButton = styled.button`
@@ -575,7 +584,7 @@ const ArrowButton = styled.button`
   display: flex;
   align-items: center;
   &:hover {
-    background-color: #f0f0f0;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -592,7 +601,7 @@ const WeekdayCell = styled.div<{ $index: number }>`
   font-size: 13px;
   font-weight: 500;
   color: ${({ $index }) =>
-    $index === 0 ? "#F97171" : $index === 6 ? "#0A84FF" : "#4C4C4C"};
+    $index === 0 ? "var(--text-error)" : $index === 6 ? "var(--interactive-primary)" : "var(--gray-700)"};
 `;
 
 const CalendarBody = styled.div`
@@ -612,7 +621,7 @@ const WeekRow = styled.div<{ $maxRows: number }>`
 
 const DayCell = styled.div<{ $isCurrentMonth: boolean }>`
   padding: 4px 0;
-  background-color: #f9f9fb;
+  background-color: var(--bg-subtle);
   border-radius: 4px;
   opacity: ${({ $isCurrentMonth }) => ($isCurrentMonth ? 1 : 0.4)};
   text-align: center;
@@ -628,7 +637,7 @@ const TodayCircle = styled.div`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  background-color: #0a84ff;
+  background-color: var(--interactive-primary);
   z-index: 1;
 `;
 
@@ -641,7 +650,7 @@ const DateNumber = styled.div<{
   font-size: 14px;
   font-weight: ${({ $isToday }) => ($isToday ? "700" : "500")};
   line-height: 22px;
-  color: ${({ $isToday }) => ($isToday ? "#fff" : "#000")};
+  color: ${({ $isToday }) => ($isToday ? "var(--text-inverse)" : "var(--text-primary)")};
 `;
 
 const EventBar = styled.div<{
@@ -660,8 +669,8 @@ const EventBar = styled.div<{
   }};
   height: 20px;
   background-color: ${({ $type }) =>
-    $type === "dept" ? "#9AE1D9" : "#A4B6E6"};
-  color: black;
+    $type === "dept" ? "rgb(154, 225, 217)" : "rgb(164, 182, 230)"};
+  color: var(--text-primary);
   font-size: 11px;
   font-weight: 400;
   padding: 0 8px;
@@ -679,7 +688,7 @@ const EventBar = styled.div<{
 
 const EmptyMessage = styled.p`
   text-align: center;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 14px;
   margin: 20px 0;
   padding: 0 20px;

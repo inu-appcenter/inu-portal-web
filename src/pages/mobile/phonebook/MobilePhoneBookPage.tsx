@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import Box from "@/components/common/Box";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import {
@@ -180,6 +180,8 @@ const MobilePhoneBookPage = () => {
   useHeader({
     title: "INU 전화번호부",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=DIRECTORY`,
   });
 
   return (
@@ -292,14 +294,18 @@ const MobilePhoneBookPage = () => {
 
       <SearchSpacer />
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
+      <FloatingSearchBarContainer>
+        <FloatingSearchBar
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
+          onSearch={handleSearchSubmit}
           placeholder="검색어를 입력해주세요"
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
-      </FloatingSearchBar>
+      </FloatingSearchBarContainer>
     </MobilePhoneBookPageWrapper>
   );
 };
@@ -373,7 +379,7 @@ const BannerVisual = styled.div`
   flex: 0 0 auto;
   width: fit-content;
   height: 100%;
-  background: #fff;
+  background: var(--bg-base);
   border-top-left-radius: ${BANNER_PHONE_RADIUS};
   border-top-right-radius: ${BANNER_PHONE_RADIUS};
   overflow: hidden;
@@ -387,9 +393,9 @@ const BannerVisual = styled.div`
     content: "";
     position: absolute;
     inset: 0;
-    border-top: 3px solid #111;
-    border-left: 3px solid #111;
-    border-right: 3px solid #111;
+    border-top: 3px solid var(--text-primary);
+    border-left: 3px solid var(--text-primary);
+    border-right: 3px solid var(--text-primary);
     border-top-left-radius: ${BANNER_PHONE_RADIUS};
     border-top-right-radius: ${BANNER_PHONE_RADIUS};
     pointer-events: none;
@@ -451,25 +457,25 @@ const LogoInfoContent = styled(motion.div)`
 
   .sub-text {
     font-size: 14px;
-    color: #666;
+    color: var(--gray-600);
     margin: 0;
   }
 
   .main-title {
     font-size: 18px;
     font-weight: 500;
-    color: #333;
+    color: var(--text-secondary);
     line-height: 1.4;
     margin: 0;
     word-break: keep-all;
 
     span {
       font-weight: 700;
-      color: #2b6cb0;
+      color: rgb(43, 108, 176);
     }
 
     .highlight {
-      color: #4a90e2;
+      color: rgb(74, 144, 226);
     }
   }
 `;
@@ -501,14 +507,14 @@ const GuideItem = styled.div`
   .number {
     font-size: 16px;
     font-weight: 700;
-    color: #333;
+    color: var(--text-secondary);
     min-width: 20px;
   }
 
   .content {
     h3 {
       font-size: 16px;
-      color: #333;
+      color: var(--text-secondary);
       margin: 0 0 4px;
       font-weight: 500;
 
@@ -519,7 +525,7 @@ const GuideItem = styled.div`
 
     p {
       font-size: 14px;
-      color: #666;
+      color: var(--gray-600);
       margin: 0;
     }
   }
@@ -529,7 +535,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

@@ -9,6 +9,8 @@ import { useCreateTimeTable } from "@/hooks/useTimeTables";
 import { formatSemester } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
+import { School } from "lucide-react";
+
 export const getDefaultTimetableName = (
   semester: string,
   timetables: Timetable[],
@@ -32,6 +34,7 @@ interface TimeTableCreateModalProps {
   initialSemester?: string;
   onClose: () => void;
   onSuccess?: (created: TimeTable) => void;
+  onOpenPortalImport?: (semester?: string) => void;
 }
 
 export default function TimeTableCreateModal({
@@ -39,6 +42,7 @@ export default function TimeTableCreateModal({
   initialSemester,
   onClose,
   onSuccess,
+  onOpenPortalImport,
 }: TimeTableCreateModalProps) {
   const { timetables, setSemester, setActiveTimetable } = useTimetableStore();
   const { semesters } = useSemesters();
@@ -142,17 +146,53 @@ export default function TimeTableCreateModal({
         onChange={setModalName}
         placeholder="시간표 이름을 입력하세요"
       />
+
+      {onOpenPortalImport && (
+        <PortalShortcutButton
+          type="button"
+          onClick={() => {
+            const currentLabel = getSemesterLabel(modalSemesterId);
+            onClose();
+            onOpenPortalImport(currentLabel);
+          }}
+        >
+          <School size={16} color="var(--branding-brand-blue)" />
+          <span>포털에서 시간표 및 성적 바로 불러오기</span>
+        </PortalShortcutButton>
+      )}
     </Modal>
   );
 }
+
+const PortalShortcutButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  background-color: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: 10px;
+  color: var(--text-brand);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--blue-100);
+  }
+`;
 
 const SelectContainer = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg, 12px);
-  border: 1px solid var(--border-default, #e5e8eb);
-  background-color: var(--bg-base, #ffffff);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-base);
   padding: 8px 12px;
   min-height: 56px;
   transition: all 0.2s ease;
@@ -160,12 +200,12 @@ const SelectContainer = styled.div`
   box-sizing: border-box;
 
   &:focus-within {
-    border-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
   }
 `;
 
 const SelectLabel = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   margin-bottom: 4px;
   pointer-events: none;
   text-align: left;
@@ -182,7 +222,7 @@ const StyledSelect = styled.select`
   padding: 0;
   width: 100%;
   box-sizing: border-box;
-  color: var(--text-primary, #333d4b);
+  color: var(--text-primary);
   font-size: 16px;
   font-style: normal;
   font-weight: 400;

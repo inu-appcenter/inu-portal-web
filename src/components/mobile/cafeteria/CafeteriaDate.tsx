@@ -86,34 +86,34 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
   border: 1px solid
     ${({ $tone, $isActive }) => {
       if ($isActive && $tone === "sunday") {
-        return "#efc1c1";
+        return "rgb(239, 193, 193)";
       }
 
       if ($isActive && $tone === "saturday") {
-        return "#c3d2fb";
+        return "var(--blue-200)";
       }
 
       if ($isActive) {
-        return "#91aee4";
+        return "var(--interactive-focus)";
       }
 
-      return "#e3e8f1";
+      return "var(--border-subtle)";
     }};
   background:
     ${({ $tone, $isActive }) => {
       if ($isActive && $tone === "sunday") {
-        return "#fff6f6";
+        return "rgb(255, 246, 246)";
       }
 
       if ($isActive && $tone === "saturday") {
-        return "#f5f8ff";
+        return "var(--bg-subtle)";
       }
 
       if ($isActive) {
-        return "#eff4ff";
+        return "var(--bg-brand)";
       }
 
-      return "#fbfcfe";
+      return "var(--bg-base)";
     }};
   cursor: pointer;
   transition:
@@ -128,26 +128,26 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
     color:
       ${({ $tone, $isActive }) => {
         if ($isActive && $tone === "sunday") {
-          return "#e05656";
+          return "var(--text-error)";
         }
 
         if ($isActive && $tone === "saturday") {
-          return "#4d77e8";
+          return "var(--interactive-primary)";
         }
 
         if ($isActive) {
-          return "#5f78a7";
+          return "var(--gray-600)";
         }
 
         if ($tone === "sunday") {
-          return "#e05656";
+          return "var(--text-error)";
         }
 
         if ($tone === "saturday") {
-          return "#4d77e8";
+          return "var(--interactive-primary)";
         }
 
-        return "#6a7485";
+        return "var(--text-tertiary)";
       }};
   }
 
@@ -158,26 +158,26 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
     color:
       ${({ $tone, $isActive }) => {
         if ($isActive && $tone === "sunday") {
-          return "#cc4747";
+          return "var(--text-error)";
         }
 
         if ($isActive && $tone === "saturday") {
-          return "#3d67d7";
+          return "var(--interactive-primary-press)";
         }
 
         if ($isActive) {
-          return "#2f5fb8";
+          return "var(--interactive-primary-press)";
         }
 
         if ($tone === "sunday") {
-          return "#d64b4b";
+          return "var(--text-error)";
         }
 
         if ($tone === "saturday") {
-          return "#3f6fe4";
+          return "var(--interactive-primary)";
         }
 
-        return "#273142";
+        return "var(--text-primary)";
       }};
   }
 
@@ -185,34 +185,34 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
     border-color:
       ${({ $tone, $isActive }) => {
         if ($isActive && $tone === "sunday") {
-          return "#e7b2b2";
+          return "rgb(231, 178, 178)";
         }
 
         if ($isActive && $tone === "saturday") {
-          return "#b8cbfb";
+          return "var(--blue-200)";
         }
 
         if ($isActive) {
-          return "#85a5df";
+          return "var(--interactive-focus)";
         }
 
-        return "#ccd6e5";
+        return "var(--border-default)";
       }};
     background:
       ${({ $tone, $isActive }) => {
         if ($isActive && $tone === "sunday") {
-          return "#fff2f2";
+          return "rgb(255, 242, 242)";
         }
 
         if ($isActive && $tone === "saturday") {
-          return "#eef4ff";
+          return "var(--bg-brand)";
         }
 
         if ($isActive) {
-          return "#e8f0ff";
+          return "var(--bg-brand)";
         }
 
-        return "#ffffff";
+        return "var(--bg-base)";
       }};
   }
 

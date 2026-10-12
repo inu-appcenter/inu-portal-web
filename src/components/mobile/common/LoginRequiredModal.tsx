@@ -34,7 +34,7 @@ const LoginRequiredModal = ({ isOpen }: LoginRequiredModalProps) => {
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             <IconWrapper>
-              <LogIn size={48} color="#7a6dd0" />
+              <LogIn size={48} color="rgb(122, 109, 208)" />
             </IconWrapper>
             <Title>로그인이 필요해요</Title>
             <Description>
@@ -71,7 +71,7 @@ const Overlay = styled(motion.div)`
 `;
 
 const ModalContainer = styled(motion.div)`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   padding: 32px 24px;
   width: 100%;
@@ -86,7 +86,7 @@ const ModalContainer = styled(motion.div)`
 const IconWrapper = styled.div`
   width: 80px;
   height: 80px;
-  background-color: #f3f0ff;
+  background-color: rgb(243, 240, 255);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -97,13 +97,13 @@ const IconWrapper = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
 `;
 
 const Description = styled.p`
   font-size: 15px;
-  color: #666;
+  color: var(--gray-600);
   line-height: 1.6;
   margin: 0 0 28px 0;
   word-break: keep-all;
@@ -119,8 +119,8 @@ const ButtonGroup = styled.div`
 const LoginButton = styled.button`
   width: 100%;
   padding: 14px;
-  background-color: #7a6dd0;
-  color: white;
+  background-color: rgb(122, 109, 208);
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -137,8 +137,8 @@ const HomeButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: transparent;
-  color: #7a6dd0;
-  border: 1px solid #7a6dd0;
+  color: rgb(122, 109, 208);
+  border: 1px solid rgb(122, 109, 208);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
@@ -146,6 +146,6 @@ const HomeButton = styled.button`
   transition: background-color 0.2s;
 
   &:active {
-    background-color: #f3f0ff;
+    background-color: rgb(243, 240, 255);
   }
 `;

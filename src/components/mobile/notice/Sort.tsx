@@ -38,11 +38,11 @@ const DropBoxWrapper = styled.div`
     font-size: 14px;
     background-color: transparent;
     border: none;
-    color: black;
+    color: var(--text-primary);
     padding: 0;
   }
   .point {
-    color: #20559e;
+    color: var(--interactive-primary);
     font-weight: 800;
   }
 `;

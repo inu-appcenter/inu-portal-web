@@ -12,10 +12,10 @@ export default function SectionLabel({ text }: SectionLabelProps) {
 const Label = styled.span<{ $isRed: boolean }>`
   display: flex;
   justify-content: center;
-  color: #fff;
+  color: var(--text-inverse);
   font-size: 14px;
   font-weight: 500;
-  background-color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "#7aa7e5")};
+  background-color: ${({ $isRed }) => ($isRed ? "var(--red-500)" : "var(--interactive-primary)")};
   padding: 1px 8px;
   border-radius: 4px;
   align-items: center;

@@ -412,7 +412,7 @@ const Icon = styled.img`
   height: 48px;
   border-radius: 8px;
   object-fit: cover;
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
 `;
 
 const ContentArea = styled.div`
@@ -420,12 +420,12 @@ const ContentArea = styled.div`
   flex-direction: column;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
   }
   .description {
-    color: #969696;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
     text-overflow: ellipsis;

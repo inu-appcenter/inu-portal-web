@@ -89,6 +89,6 @@ const StopGroup = styled.div`
 const EmptyBox = styled.div`
   padding: 40px 20px;
   text-align: center;
-  color: #8c8c8c;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;

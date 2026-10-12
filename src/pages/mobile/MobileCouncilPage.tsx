@@ -94,7 +94,7 @@ const MobileCouncilPageWrapper = styled.div`
     right: 20px;
     bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     z-index: 999999;
-    color: white;
+    color: var(--text-inverse);
     background-color: rgba(64, 113, 185, 1);
     border-radius: 100%;
     width: 64px;

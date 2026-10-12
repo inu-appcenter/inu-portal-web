@@ -47,7 +47,7 @@ export function MenuItem({
         {image ? (
           <ItemImage src={image} alt="" $monochrome={monochromeImage} />
         ) : icon ? (
-          <Icon name={icon} size={24} color="var(--text-brand, #0061ff)" />
+          <Icon name={icon} size={24} color="var(--text-brand)" />
         ) : null}
       </IconSlot>
       <ItemBody>
@@ -60,7 +60,7 @@ export function MenuItem({
           <Icon
             name="chevron-right"
             size={24}
-            color="var(--text-tertiary, #8b95a1)"
+            color="var(--text-tertiary)"
           />
         </ItemInfo>
       </ItemBody>
@@ -74,8 +74,8 @@ export const MenuGroup = styled.div`
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   overflow: clip;
 `;
@@ -90,7 +90,7 @@ const ItemBody = styled.div`
   gap: 8px;
   padding: 12px 0;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--border-default, #e5e8eb);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const ItemRow = styled.button`
@@ -108,7 +108,7 @@ const ItemRow = styled.button`
   overflow: hidden;
 
   &.active-touch {
-    background: var(--bg-muted, #f1f3f5);
+    background: var(--bg-muted);
   }
 
   /* 마지막 행의 구분선은 카드 아래 테두리와 겹친다. */
@@ -148,7 +148,7 @@ const ItemTitle = styled.span`
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   word-break: keep-all;
 `;
 
@@ -156,7 +156,7 @@ const ItemDescription = styled.span`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: pre-line;
   word-break: keep-all;
 `;
@@ -173,6 +173,6 @@ const InfoText = styled.span`
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   white-space: nowrap;
 `;

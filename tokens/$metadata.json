@@ -1,0 +1,12 @@
+{
+  "tokenSetOrder": [
+    "global",
+    "Primitive Token/Value",
+    "Alias Token/Light",
+    "Timetable Theme/기본",
+    "Timetable Theme/파스텔웜",
+    "Timetable Theme/파스텔쿨",
+    "Timetable Theme/모노톤",
+    "Sizing/Value"
+  ]
+}

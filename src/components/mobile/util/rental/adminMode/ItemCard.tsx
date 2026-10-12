@@ -58,7 +58,7 @@ const ItemCard = ({
 export default ItemCard;
 
 const ItemCardWrapper = styled.div`
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   padding: 16px;
   border-radius: 8px;
   display: flex;
@@ -71,8 +71,8 @@ const ManageButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #28a745;
-  color: white;
+  background-color: var(--text-success);
+  color: var(--text-inverse);
   border: none;
   border-radius: 4px;
   padding: 8px 16px;
@@ -80,7 +80,7 @@ const ManageButton = styled.button`
   font-size: 14px;
 
   &:hover {
-    background-color: #218838;
+    background-color: var(--green-600);
   }
 
   &:focus {
@@ -100,7 +100,7 @@ const ItemName = styled.h3`
 
 const ItemCategory = styled.span`
   font-size: 14px;
-  color: #666;
+  color: var(--gray-600);
 `;
 
 const ItemQuantity = styled.span`
@@ -109,5 +109,5 @@ const ItemQuantity = styled.span`
 
 const ItemDeposit = styled.span`
   font-size: 16px;
-  color: #007bff;
+  color: var(--text-brand);
 `;

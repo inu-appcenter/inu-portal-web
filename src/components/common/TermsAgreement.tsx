@@ -151,10 +151,10 @@ const CheckBox = styled.span<{ $checked: boolean }>`
     border-color 0.15s ease;
   border: 1.5px solid
     ${({ $checked }) =>
-      $checked ? "var(--border-brand, #0061ff)" : "var(--border-default, #e5e8eb)"};
+      $checked ? "var(--border-brand)" : "var(--border-default)"};
   background-color: ${({ $checked }) =>
-    $checked ? "var(--border-brand, #0061ff)" : "var(--bg-base, #ffffff)"};
-  color: #ffffff;
+    $checked ? "var(--border-brand)" : "var(--bg-base)"};
+  color: var(--text-inverse);
 
   i {
     opacity: ${({ $checked }) => ($checked ? 1 : 0)};
@@ -165,10 +165,10 @@ const CheckLabel = styled.span`
   font-family: Pretendard, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 
   strong {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
     font-weight: 600;
   }
 `;
@@ -179,11 +179,11 @@ const PolicyNote = styled.p`
   font-family: Pretendard, sans-serif;
   font-size: 12px;
   line-height: 1.5;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   word-break: keep-all;
 
   strong {
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     font-weight: 600;
   }
 `;
@@ -198,11 +198,11 @@ const LinkRow = styled.div`
 const PolicyLink = styled.a`
   font-family: Pretendard, sans-serif;
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   text-decoration: underline;
 `;
 
 const Separator = styled.span`
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;

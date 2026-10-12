@@ -134,6 +134,8 @@ const MobileDeptNoticePage = () => {
   useHeader({
     title: currentDept ? `${currentDept} 공지사항` : "학과 공지사항",
     hasback: true,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=DEPT_NOTICE`,
     menuItems,
   });
 
@@ -239,7 +241,7 @@ const MobileDeptNoticePage = () => {
       {userInfo.department && (
         <FloatingActionButton
           text="공지 알리미 설정"
-          icon={<Icon name="bell" size={20} color="var(--text-secondary, #333d4b)" />}
+          icon={<Icon name="bell" size={20} color="var(--text-secondary)" />}
           onClick={() => {
             mixpanelTrack.notificationSettingsOpened(
               "Department Notice Page",
@@ -285,6 +287,6 @@ const TipsCardWrapper = styled.div`
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
-  color: #888;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;

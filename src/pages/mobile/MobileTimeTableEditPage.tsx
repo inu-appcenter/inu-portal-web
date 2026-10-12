@@ -28,11 +28,11 @@ import {
   mapCourseOfferingToCourseResult,
   mapFilterToOfferingFilters,
 } from "@/utils/courseSearchResult";
-import {
-  findConflictingClassItems,
-  formatConflictingClassItems,
-} from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { showToast } from "@/utils/toast";
+import {
+  findConflictingCourseDetails,
+} from "@/utils/timetable";
 
 // --- SVG Icons from Figma ---
 const IconsAddPlus = () => (
@@ -46,7 +46,7 @@ const IconsAddPlus = () => (
     <g transform="translate(3, 3)">
       <path
         d="M1 9H9M9 9H17M9 9V17M9 9V1"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -66,7 +66,7 @@ const IconsMagicWand = () => (
     <g transform="translate(1.5, 1.5)">
       <path
         d="M13 3V1M13 15V13M6 8H8M18 8H20M15.8 10.8L17 12M15.8 5.2L17 4M1 20L9 12M12 9L13 8M10.2 5.2L9 4"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -90,19 +90,19 @@ const IconsLock = () => (
         width="16"
         height="12"
         rx="4"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
       />
       <path
         d="M9 14L9 12"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
         d="M13 7V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5L5 7"
-        stroke="#1C1C1E"
+        stroke="var(--text-primary)"
         strokeWidth="2"
       />
     </g>
@@ -332,7 +332,7 @@ const MobileTimeTableEditPage = () => {
 
   const handleAddCourse = (newCourse: CourseResult) => {
     if (activeTimetableId === null) {
-      alert("활성화된 시간표가 없습니다.");
+      showToast("활성화된 시간표가 없습니다.");
       return;
     }
     if (createCourseItemMutation.isPending) return;
@@ -344,24 +344,31 @@ const MobileTimeTableEditPage = () => {
       addedCourseOfferingIds.has(newCourse.id) ||
       Boolean(newCourse.courseId && addedCourseIds.has(newCourse.courseId));
     if (isExactDuplicate) {
-      alert("이미 시간표에 추가된 강의입니다.");
+      showToast("이미 시간표에 추가된 강의입니다.");
       return;
     }
 
-    // 시간 충돌 선제 확인 — 과목명·교수명·요일·시간을 안내에 담는다.
-    const conflicts = findConflictingClassItems(
-      newCourse.schedules || [],
+    // 1. 기존 강의와의 시간 충돌 검사 (과목명, 교수명, 분반, 요일, 시간)
+    const conflicts = findConflictingCourseDetails(
+      newCourse.schedules,
       timetable,
+      offeringById,
     );
+
     if (conflicts.length > 0) {
-      alert(
-        `다음 시간표와 겹칩니다.\n${formatConflictingClassItems(conflicts)}`,
-      );
+      const conflictMsg = conflicts
+        .map(
+          (c) =>
+            `${c.courseName} 수업과 충돌합니다. (${c.day} ${c.time})`,
+        )
+        .join("\n");
+      showToast(conflictMsg, { duration: 3500 });
       return;
     }
 
     setPendingAddedOfferingIds((prev) => new Set(prev).add(newCourse.id));
 
+    // 2. 충돌이 없을 시 강의 추가 API 호출
     createCourseItemMutation.mutate(
       {
         timeTableId: activeTimetableId,
@@ -380,7 +387,7 @@ const MobileTimeTableEditPage = () => {
             next.delete(newCourse.id);
             return next;
           });
-          alert(error.response?.data?.msg || "강의 추가에 실패했습니다.");
+          showToast(error.response?.data?.msg || "강의 추가에 실패했습니다.");
         },
       },
     );
@@ -491,23 +498,38 @@ const MobileTimeTableEditPage = () => {
   const handleDelete = (id: number) => {
     if (activeTimetableId === null || deleteItemMutation.isPending) return;
     const target = timetable.find((item) => item.id === id);
-    if (target?.itemId === undefined) return;
+    if (!target || target.itemId === undefined) return;
+
+    const targetItemId = target.itemId;
+    const targetId = target.id;
+    const targetName = target.name;
+    const targetIsCustom = target.isCustom;
 
     deleteItemMutation.mutate(
-      { timeTableId: activeTimetableId, timeTableItemId: target.itemId },
+      { timeTableId: activeTimetableId, timeTableItemId: targetItemId },
       {
         onSuccess: () => {
           mixpanelTrack.timetableItemActionCompleted(
             "항목 삭제",
-            target.isCustom ? "직접 일정" : "강의",
+            targetIsCustom ? "직접 일정" : "강의",
             {
               semester: activeTimetable?.semester,
             },
           );
         },
-        onError: (error: any) => {
-          alert(
-            error.response?.data?.msg || "시간표 요소 삭제에 실패했습니다.",
+        onError: () => {
+          // 서버 오류 발생 시 강의는 삭제되지 않고 토스트로 재시도 안내 표시
+          showToast(
+            `서버 오류로 인해 '${targetName}' ${targetIsCustom ? "일정" : "강의"} 삭제에 실패했습니다.`,
+            {
+              duration: 4000,
+              action: {
+                text: "다시 시도",
+                onClick: () => {
+                  handleDelete(targetId);
+                },
+              },
+            },
           );
         },
       },
@@ -673,7 +695,7 @@ const ScoreArea = styled.div`
   gap: 12px;
 
   .type1 {
-    color: #6b7280;
+    color: var(--gray-600);
 
     font-size: 14px;
     font-style: normal;

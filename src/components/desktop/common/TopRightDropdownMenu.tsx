@@ -161,7 +161,7 @@ const furlAnimation = keyframes`
 const Dropdown = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   z-index: 1000;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 16px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   padding: 8px 0;
@@ -183,7 +183,7 @@ const MenuItem = styled.button`
   min-height: 48px;
   box-sizing: border-box;
   cursor: pointer;
-  color: #333D4B;
+  color: var(--text-secondary);
   font-size: 15px;
   line-height: 1.4;
   padding: 10px 16px;
@@ -208,7 +208,7 @@ const IconWrapper = styled.div`
   flex-shrink: 0;
   width: 24px;
   height: 24px;
-  color: #4E5968;
+  color: var(--gray-700);
 
   & > svg {
     width: 20px;

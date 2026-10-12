@@ -57,7 +57,7 @@ export default function SentRequestsModal({
           <Header>
             <Title>보낸 친구 요청 목록</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
           <ScrollArea>
@@ -109,7 +109,7 @@ const StyledContent = styled(Dialog.Content)`
   width: 90vw;
   max-width: 400px;
   height: 60vh;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   z-index: 2001;
   display: flex;
@@ -128,7 +128,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 18px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 

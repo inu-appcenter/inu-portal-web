@@ -1,6 +1,7 @@
 import axiosInstance from "@/apis/axiosInstance";
 
 export interface BusArrivalItem {
+  observedAt?: number;
   ARRIVALESTIMATETIME: string;
   BSTOPID: string;
   BUSID: string;
@@ -20,34 +21,30 @@ export interface BusArrivalItem {
 }
 
 export async function getBusArrival(bstopId: string): Promise<BusArrivalItem[]> {
-  try {
-    const response = await axiosInstance.get("/api/buses/arrivals", {
-      params: { bstopId },
-    });
+  const response = await axiosInstance.get("/api/buses/arrivals", {
+    params: { bstopId },
+  });
 
-    const dataList = response.data?.data ?? [];
-    return dataList.map((item: any) => ({
-      ARRIVALESTIMATETIME: String(item.arrivalEstimateTime ?? ""),
-      BSTOPID: String(item.bstopId ?? ""),
-      BUSID: String(item.busId ?? ""),
-      BUS_NUM_PLATE: String(item.busNumPlate ?? ""),
-      CONGESTION: String(item.congestion ?? ""),
-      DIRCD: String(item.dircd ?? ""),
-      LASTBUSYN: String(item.lastBusYn ?? ""),
-      LATEST_STOP_ID: String(item.latestStopId ?? ""),
-      LATEST_STOP_NAME: String(item.latestStopName ?? ""),
-      LOW_TP_CD: String(item.lowTpCd ?? ""),
-      REMAIND_SEAT: String(item.remaindSeat ?? ""),
-      REST_STOP_COUNT: String(item.restStopCount ?? ""),
-      ROUTEID: String(item.routeId ?? ""),
-      routeNo: item.routeNo,
-      estimatedArrivalSeconds: item.estimatedArrivalSeconds,
-      estimationNotice: item.estimationNotice,
-    }));
-  } catch (error) {
-    console.error("버스 도착 정보 백엔드 API 요청 실패", error);
-    return [];
-  }
+  const dataList = response.data?.data ?? [];
+  return dataList.map((item: any) => ({
+    observedAt: item.observedAt,
+    ARRIVALESTIMATETIME: String(item.arrivalEstimateTime ?? ""),
+    BSTOPID: String(item.bstopId ?? ""),
+    BUSID: String(item.busId ?? ""),
+    BUS_NUM_PLATE: String(item.busNumPlate ?? ""),
+    CONGESTION: String(item.congestion ?? ""),
+    DIRCD: String(item.dircd ?? ""),
+    LASTBUSYN: String(item.lastBusYn ?? ""),
+    LATEST_STOP_ID: String(item.latestStopId ?? ""),
+    LATEST_STOP_NAME: String(item.latestStopName ?? ""),
+    LOW_TP_CD: String(item.lowTpCd ?? ""),
+    REMAIND_SEAT: String(item.remaindSeat ?? ""),
+    REST_STOP_COUNT: String(item.restStopCount ?? ""),
+    ROUTEID: String(item.routeId ?? ""),
+    routeNo: item.routeNo,
+    estimatedArrivalSeconds: item.estimatedArrivalSeconds,
+    estimationNotice: item.estimationNotice,
+  }));
 }
 
 export async function getBusHistory(bstopId: string, targetDate?: string) {

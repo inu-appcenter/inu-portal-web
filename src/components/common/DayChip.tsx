@@ -17,31 +17,31 @@ const ChipButton = styled.button<{ $isSelected: boolean }>`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   cursor: pointer;
   box-sizing: border-box;
   transition: all 0.2s ease-in-out;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  font-size: 16px;
+  font-size: var(--label-1-font-size);
   font-style: normal;
-  font-weight: 500;
-  line-height: 24px;
+  font-weight: var(--label-1-font-weight);
+  line-height: var(--label-1-line-height);
   white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
 
   /* 비선택 상태 */
-  background-color: var(--bg-subtle, #f8f9fb);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
   color: var(--text-tertiary);
 
   /* 선택 상태 */
   ${({ $isSelected }) =>
     $isSelected &&
     `
-      background-color: var(--interactive-primary, #3b82f6);
-      border: 1px solid var(--interactive-primary, #3b82f6);
-      color: var(--text-inverse, #ffffff);
+      background-color: var(--interactive-primary);
+      border: 1px solid var(--interactive-primary);
+      color: var(--text-inverse);
     `}
 
   &:active {

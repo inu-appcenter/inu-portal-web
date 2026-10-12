@@ -31,8 +31,8 @@ const SchoolInfoBox = ({ place }: { place: Place }) => {
 };
 
 const SchoolInfoBoxWrapper = styled.div`
-  background: #ffffff;
-  border: 1px solid #c0c0c2;
+  background: var(--bg-base);
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
 
   display: flex;
@@ -69,7 +69,7 @@ const Title = styled.div`
   line-height: 30px;
   text-align: start;
 
-  color: #324d97;
+  color: var(--interactive-primary);
   width: 100%;
   height: fit-content;
 
@@ -94,7 +94,7 @@ const Department = styled.div`
   font-size: 12px;
   line-height: 22px;
 
-  color: #6b87c4;
+  color: var(--interactive-focus);
 
   display: flex;
   flex-direction: row;

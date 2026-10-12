@@ -14,7 +14,7 @@ const HIGHLIGHTS = [
   {
     icon: GraduationCap,
     title: "졸업요건 진단",
-    desc: "학과와 학번만 고르면 남은 학점과 아직 안 들은 필수 교양을 한눈에 알려드려요.",
+    desc: "학과와 학번만 고르면 남은 학점과 아직 안 들은 필수 과목을 한눈에 알려드려요.",
   },
   {
     icon: ClipboardPaste,
@@ -30,7 +30,7 @@ const HIGHLIGHTS = [
 
 /**
  * 학점계산기에 처음 들어왔을 때 한 번만 뜨는 기능 소개 시트.
- * 다시 보여줄지 여부는 `@/utils/gradeCalculatorIntro`의 플래그가 관리한다.
+ * 다시 보여줄지 여부는 `promotionSeenStorage`의 `GRADE_CALCULATOR_INTRO`가 관리한다.
  */
 export default function GradeCalculatorIntroSheet({
   open,
@@ -88,8 +88,8 @@ const NewBadge = styled.span`
   align-self: flex-start;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--bg-brand-subtle, #eff6ff);
-  color: var(--text-brand, #0061ff);
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.4px;
@@ -97,7 +97,7 @@ const NewBadge = styled.span`
 
 const Title = styled.h2`
   margin: 0;
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 22px;
   line-height: 1.35;
   font-weight: 700;
@@ -118,7 +118,7 @@ const HighlightItem = styled.div`
   gap: 12px;
   padding: 14px;
   border-radius: 16px;
-  background: var(--bg-subtle, #f2f4f6);
+  background: var(--bg-subtle);
 `;
 
 const HighlightIcon = styled.div`
@@ -129,8 +129,8 @@ const HighlightIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-brand, #0061ff);
-  background: var(--bg-base, #ffffff);
+  color: var(--text-brand);
+  background: var(--bg-base);
 `;
 
 const HighlightBody = styled.div`
@@ -140,14 +140,14 @@ const HighlightBody = styled.div`
 `;
 
 const HighlightTitle = styled.strong`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
 `;
 
 const HighlightText = styled.p`
   margin: 0;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.5;
   word-break: keep-all;
@@ -155,7 +155,7 @@ const HighlightText = styled.p`
 
 const Notice = styled.p`
   margin: 0;
-  color: var(--text-disabled, #b0b8c1);
+  color: var(--text-disabled);
   font-size: 12px;
   line-height: 1.5;
   word-break: keep-all;
@@ -179,7 +179,7 @@ const TextButton = styled.button`
   padding: 10px 12px;
   border: none;
   background: none;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

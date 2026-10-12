@@ -27,6 +27,7 @@ import useUserStore from "@/stores/useUserStore";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { resetScrollToTop } from "@/utils/scroll";
 import { markNoticesSeen } from "@/utils/noticeSeenStorage";
+import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 
 const SEARCH_MIN_QUERY_LENGTH = 2;
 const SEARCH_MIN_QUERY_MESSAGE = "검색어를 2글자 이상 입력해 주세요.";
@@ -99,7 +100,7 @@ const SchoolNoticeList = ({
         committedQuery ? (
           <EmptySearchContainer>
             <EmptyIconCircle>
-              <Icon name="search" size={32} color="var(--text-tertiary, #8b95a1)" />
+              <Icon name="search" size={32} color="var(--text-tertiary)" />
             </EmptyIconCircle>
             <EmptyTextGroup>
               <EmptyTitleRow>
@@ -164,9 +165,9 @@ const MobileSchoolNoticePage = () => {
   const committedQuery = params.get("query")?.trim() ?? "";
 
   const [swiperRef, setSwiperRef] = useState<SwiperClass | null>(null);
-  const [hasSwiped, setHasSwiped] = useState(() => {
-    return localStorage.getItem("has_swiped") === "true";
-  });
+  const [hasSwiped, setHasSwiped] = useState(() =>
+    promotionSeenStorage.has(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT),
+  );
 
   const { data: categoryResData } = useQuery({
     queryKey: ["categories", "school_notices"],
@@ -222,7 +223,7 @@ const MobileSchoolNoticePage = () => {
 
     if (!hasSwiped) {
       setHasSwiped(true);
-      localStorage.setItem("has_swiped", "true");
+      promotionSeenStorage.mark(SEEN_PROMOTIONS.CATEGORY_SWIPE_HINT);
     }
 
     if (nextCategory && nextCategory !== selectedCategory) {
@@ -265,6 +266,8 @@ const MobileSchoolNoticePage = () => {
   useHeader({
     title: committedQuery ? "검색 결과" : "학교 공지사항",
     showAlarm: false,
+    showSearch: true,
+    searchPath: `${ROUTES.UNIFIED_SEARCH}?tab=NOTICE`,
     hasback: true,
     onBack: committedQuery ? handleBackToAll : undefined,
     subHeader: !committedQuery ? subHeader : undefined,
@@ -322,7 +325,7 @@ const MobileSchoolNoticePage = () => {
 
       <FloatingActionButton
         text="공지 알리미 설정"
-        icon={<Icon name="bell" size={20} color="var(--text-secondary, #333d4b)" />}
+        icon={<Icon name="bell" size={20} color="var(--text-secondary)" />}
         onClick={() => {
           if (!tokenInfo.accessToken) {
             if (
@@ -396,7 +399,7 @@ const TipsCardWrapper = styled.div`
 const LoadingText = styled.h4`
   text-align: center;
   padding: 20px 0;
-  color: #888;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;
 
@@ -413,8 +416,8 @@ const EmptySearchContainer = styled.div`
 `;
 
 const EmptyIconCircle = styled.div`
-  background: var(--bg-disabled, #e5e8eb);
-  border-radius: 999px;
+  background: var(--bg-disabled);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,27 +439,28 @@ const EmptyTitleRow = styled.div`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: "Pretendard", sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  letter-spacing: -0.2px;
+  font-family: inherit;
+  font-size: var(--title-2-font-size);
+  font-weight: var(--title-2-font-weight);
+  line-height: var(--title-2-line-height);
+  letter-spacing: var(--title-2-letter-spacing);
 `;
 
 const EmptyQueryHighlight = styled.span`
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const EmptyTitleText = styled.span`
-  color: var(--text-primary, #191f28);
+  color: var(--text-primary);
 `;
 
 const EmptyDescription = styled.p`
-  font-family: "Pretendard", sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  font-family: inherit;
+  font-size: var(--label-2-font-size);
+  font-weight: var(--label-2-font-weight);
+  line-height: var(--label-2-line-height);
+  letter-spacing: var(--label-2-letter-spacing);
+  color: var(--text-tertiary);
   margin: 0;
 `;
 

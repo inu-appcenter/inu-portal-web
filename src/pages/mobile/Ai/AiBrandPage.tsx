@@ -54,7 +54,7 @@ const AppItem = ({
           <IconWrapper $isPreparing={isPreparing}>
             <IconComponent
               size={24}
-              color={isPreparing ? "#a0a0a0" : "#6d4dc7"}
+              color={isPreparing ? "var(--button-inactive)" : "rgb(109, 77, 199)"}
             />
           </IconWrapper>
         ) : null}
@@ -62,12 +62,12 @@ const AppItem = ({
           <TitleRow>
             <div
               className="title"
-              style={{ color: isPreparing ? "#8e8e93" : "#000" }}
+              style={{ color: isPreparing ? "var(--text-tertiary)" : "var(--text-primary)" }}
             >
               {title}
             </div>
             {isPreparing && (
-              <LuLock size={13} color="#8e8e93" style={{ flexShrink: 0 }} />
+              <LuLock size={13} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />
             )}
             {isExternal && (
               <ExternalIconImg name="link-external" size={14} label="외부 서비스" />
@@ -98,7 +98,7 @@ interface ServiceCategory {
 const AiBrandPage = () => {
   useHeader({ title: "횃불이 AI" });
   const navigate = useNavigate();
-  const { openChat } = useAIChatStore();
+  const { openAgent } = useAIChatStore();
 
   const categories: ServiceCategory[] = [
     {
@@ -110,7 +110,7 @@ const AiBrandPage = () => {
             "인천대학교 AI 챗봇 챗불이에게 학사 관련 질문을 해보세요. 학칙과 공지사항을 기반으로 궁금증을 해결해드려요.",
           iconSrc: ChatBulButtonImg,
           onClick: () => {
-            openChat();
+            openAgent();
           },
         },
         {
@@ -343,7 +343,7 @@ const IconWrapper = styled.div<{ $isPreparing?: boolean }>`
   height: 48px;
   border-radius: 8px;
   background-color: ${({ $isPreparing }) =>
-    $isPreparing ? "#f2f2f7" : "#f0ecfa"};
+    $isPreparing ? "var(--bg-muted)" : "rgb(240, 236, 250)"};
   flex-shrink: 0;
 `;
 
@@ -352,12 +352,12 @@ const ContentArea = styled.div`
   flex-direction: column;
 
   .title {
-    color: #000;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 600;
   }
   .description {
-    color: #969696;
+    color: var(--text-tertiary);
     font-size: 12px;
     font-weight: 500;
     text-overflow: ellipsis;
@@ -372,7 +372,7 @@ const TitleRow = styled.div`
 `;
 
 const ExternalIconImg = styled(FontelloIcon)`
-  color: #969696;
+  color: var(--text-tertiary);
   opacity: 0.55;
   flex-shrink: 0;
 `;

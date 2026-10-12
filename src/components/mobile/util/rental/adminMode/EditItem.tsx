@@ -154,7 +154,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   padding: 24px;
   border-radius: 12px;
   width: 420px;
@@ -176,7 +176,7 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 16px;
   width: 100%;
@@ -184,7 +184,7 @@ const Input = styled.input`
 
 const Select = styled.select`
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
   font-size: 16px;
   width: 100%;
@@ -210,17 +210,17 @@ const Button = styled.button`
 `;
 
 const CancelButton = styled(Button)`
-  background: #ccc;
+  background: var(--gray-300);
 `;
 
 const SaveButton = styled(Button)`
-  background: #007bff;
-  color: white;
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
 `;
 
 const DeleteButton = styled(Button)`
-  background: #dc3545;
-  color: white;
+  background: var(--red-500);
+  color: var(--text-inverse);
 `;
 
 export default EditItemModal;

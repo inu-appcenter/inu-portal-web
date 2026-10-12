@@ -47,8 +47,24 @@ export const WIZARD_SEARCH_DEFAULT_SNAP_INDEX = 1;
 
 export const WIZARD_MIN_CREDIT_SCALE = 12;
 export const WIZARD_MAX_CREDIT_SCALE = 21;
-const DEFAULT_MIN_CREDIT = 15;
-const DEFAULT_MAX_CREDIT = 18;
+const DEFAULT_TARGET_CREDIT = 18;
+/** "오차 범위 허용"을 켰을 때 목표 학점에서 벗어나도 되는 폭(시안: ±3) */
+export const WIZARD_CREDIT_TOLERANCE = 3;
+
+/** 목표 학점 + 오차 허용 여부를 생성기가 쓰는 학점 범위로 바꾼다 */
+export const getWizardCreditRange = (
+  targetCredit: number,
+  allowTolerance: boolean,
+): { minCredit: number; maxCredit: number } =>
+  allowTolerance
+    ? {
+        minCredit: Math.max(0, targetCredit - WIZARD_CREDIT_TOLERANCE),
+        maxCredit: targetCredit + WIZARD_CREDIT_TOLERANCE,
+      }
+    : { minCredit: targetCredit, maxCredit: targetCredit };
+
+const clampTargetCredit = (credit: number) =>
+  Math.min(WIZARD_MAX_CREDIT_SCALE, Math.max(WIZARD_MIN_CREDIT_SCALE, Math.round(credit)));
 
 /** 강의 검색 시트를 어떤 목적으로 열었는지. null이면 닫힌 상태다. */
 export type CourseSearchTarget = "wishlist" | "exclusion";
@@ -74,15 +90,17 @@ interface CourseSearchState {
 interface WizardState {
   step: WizardStep;
   semester: WizardSemesterSelection | null;
-  minCredit: number;
-  maxCredit: number;
+  /** 목표 학점(슬라이더 값). 생성기에 넘길 범위는 getWizardCreditRange로 파생한다 */
+  targetCredit: number;
+  /** 목표 학점에서 ±WIZARD_CREDIT_TOLERANCE까지 허용할지 */
+  allowCreditTolerance: boolean;
   wishlist: WizardWishlistItem[];
   preference: WizardPreferenceConditions;
   exclusion: WizardExclusionConditions;
   /** 생성 결과는 조건에서 파생되지만 계산 비용이 있어 보관한다. 조건이 바뀌면 즉시 버린다. */
   result: WizardGenerationResult | null;
   selectedCandidateId: string | null;
-  /** 상세 화면에서 "이 시간표 저장"을 눌러 저장 시트를 열었는지. 후보 선택과는 별개의 사실이다. */
+  /** 저장 시트("어떤 시간표를 저장할까요?")가 열렸는지. 결과·상세 화면이 함께 쓴다. 후보 선택과는 별개의 사실이다. */
   isSaveSheetOpen: boolean;
   search: CourseSearchState;
   /** 사용자 학과를 기본 전공 필터로 1회만 심었는지. 재진입 시 사용자의 선택을 덮지 않기 위함. */
@@ -95,7 +113,8 @@ interface WizardActions {
 
   // --- 기본 조건 (스텝 1) ---
   setSemester: (semester: WizardSemesterSelection) => void;
-  setCreditRange: (min: number, max: number) => void;
+  setTargetCredit: (credit: number) => void;
+  setAllowCreditTolerance: (allow: boolean) => void;
   addWishlistCourse: (course: WizardCourseOption) => void;
   removeWishlistCourse: (subjectNumber: string) => void;
   toggleWishlistRequired: (subjectNumber: string) => void;
@@ -156,8 +175,8 @@ const createInitialSearchState = (): CourseSearchState => ({
 const createInitialState = (): WizardState => ({
   step: "step1",
   semester: null,
-  minCredit: DEFAULT_MIN_CREDIT,
-  maxCredit: DEFAULT_MAX_CREDIT,
+  targetCredit: DEFAULT_TARGET_CREDIT,
+  allowCreditTolerance: true,
   wishlist: [],
   preference: { ...DEFAULT_PREFERENCE_CONDITIONS },
   exclusion: { ...DEFAULT_EXCLUSION_CONDITIONS },
@@ -179,9 +198,12 @@ const INVALIDATE_RESULT = {
 const clampSnapIndex = (index: number) =>
   Math.min(Math.max(Math.trunc(index), 0), WIZARD_SEARCH_SNAP_POINTS.length - 1);
 
-// 스텝1~3만 복원 대상. 생성중/결과/상세는 결과 데이터가 없으면 의미가 없으므로
-// 다시 만들기를 누르면 되는 스텝3으로 되돌린다.
-const RESTORABLE_STEPS: WizardStep[] = ["step1", "step2", "step3"];
+// 조건 단계만 복원 대상. 생성중/결과/상세는 결과 데이터가 없으면 의미가 없으므로
+// 다시 만들기를 누르면 되는 마지막 조건 단계로 되돌린다.
+// 새 시안(2026-09)은 강의선택 → 조건설정 2단계다. 예전 버전이 저장해 둔 "step3"(제외 조건)는
+// 더 이상 화면이 없으므로 복원할 때 마지막 조건 단계인 step2로 접는다.
+const RESTORABLE_STEPS: WizardStep[] = ["step1", "step2"];
+const LAST_CONDITION_STEP: WizardStep = "step2";
 
 const LEGACY_DRAFT_KEY = "timetableWizardDraft";
 
@@ -205,12 +227,11 @@ export const useTimetableWizardStore = create<TimetableWizardStore>()(
               },
         ),
 
-      setCreditRange: (min, max) =>
-        set({
-          minCredit: Math.max(WIZARD_MIN_CREDIT_SCALE, Math.min(min, max)),
-          maxCredit: Math.min(WIZARD_MAX_CREDIT_SCALE, Math.max(min, max)),
-          ...INVALIDATE_RESULT,
-        }),
+      setTargetCredit: (credit) =>
+        set({ targetCredit: clampTargetCredit(credit), ...INVALIDATE_RESULT }),
+
+      setAllowCreditTolerance: (allow) =>
+        set({ allowCreditTolerance: allow, ...INVALIDATE_RESULT }),
 
       addWishlistCourse: (course) =>
         set((state) =>
@@ -450,11 +471,11 @@ export const useTimetableWizardStore = create<TimetableWizardStore>()(
       // 부류의 버그가 그대로 되살아난다.
       partialize: (state) => ({
         // 생성중/결과/상세는 결과 데이터가 저장 대상이 아니라 복원해도 빈 화면이 된다.
-        // 조건을 다시 확인하고 재생성할 수 있는 스텝3으로 접어서 저장한다.
-        step: RESTORABLE_STEPS.includes(state.step) ? state.step : "step3",
+        // 조건을 다시 확인하고 재생성할 수 있는 마지막 조건 단계로 접어서 저장한다.
+        step: RESTORABLE_STEPS.includes(state.step) ? state.step : LAST_CONDITION_STEP,
         semester: state.semester,
-        minCredit: state.minCredit,
-        maxCredit: state.maxCredit,
+        targetCredit: state.targetCredit,
+        allowCreditTolerance: state.allowCreditTolerance,
         wishlist: state.wishlist,
         preference: state.preference,
         exclusion: state.exclusion,
@@ -462,14 +483,33 @@ export const useTimetableWizardStore = create<TimetableWizardStore>()(
         searchFilters: state.search.filters,
       }),
       merge: (persisted, current) => {
-        const saved = (persisted ?? {}) as Partial<WizardState> & {
-          searchFilters?: FilterState;
-        };
+        const { minCredit: legacyMinCredit, maxCredit: legacyMaxCredit, ...saved } =
+          (persisted ?? {}) as Partial<WizardState> & {
+            searchFilters?: FilterState;
+            // 이전 버전은 목표 학점을 min~max 범위로 저장했다
+            minCredit?: number;
+            maxCredit?: number;
+          };
+        const migratedCredit =
+          saved.targetCredit === undefined && legacyMaxCredit !== undefined
+            ? {
+                targetCredit: clampTargetCredit(
+                  ((legacyMinCredit ?? legacyMaxCredit) + legacyMaxCredit) / 2,
+                ),
+                allowCreditTolerance: legacyMinCredit !== legacyMaxCredit,
+              }
+            : {};
         return {
           ...current,
           ...saved,
-          step:
-            saved.step && RESTORABLE_STEPS.includes(saved.step) ? saved.step : "step1",
+          ...migratedCredit,
+          step: !saved.step
+            ? "step1"
+            : RESTORABLE_STEPS.includes(saved.step)
+              ? saved.step
+              : saved.step === "step3"
+                ? LAST_CONDITION_STEP
+                : "step1",
 
           // 저장 대상이 아닌 것들은 항상 초기값에서 시작한다
           result: null,

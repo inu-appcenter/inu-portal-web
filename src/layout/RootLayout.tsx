@@ -22,6 +22,8 @@ import AIChatFloatingButton from "@/components/common/AIChatFloatingButton";
 import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 import FeatureTourSheet from "@/components/common/FeatureTourSheet";
+import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
+import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
@@ -179,8 +181,11 @@ export default function RootLayout() {
     location.pathname === ROUTES.ROOT;
 
   const isChatRoom = location.pathname.startsWith("/chat/");
+  const isAgent =
+    location.pathname.startsWith("/agent") ||
+    location.pathname.startsWith("/assistant");
   const hasBottomNav = isMainTabPath(location.pathname);
-  const hideBottomFade = isChatRoom || hasBottomNav;
+  const hideBottomFade = isChatRoom || hasBottomNav || isAgent;
 
   return (
     <HeaderProvider>
@@ -197,6 +202,14 @@ export default function RootLayout() {
       <FeatureTourSheet
         enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
       />
+      {/* 앱 3.0.14+ 에서만, 최초 1회. 버전·확인 여부는 컴포넌트 안에서 판단하고
+          여러 시트가 겹치지 않도록 프로모션 큐가 한 번에 하나만 띄운다. */}
+      <LiveActivitySheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
+      <PortalAutoSyncSheet
+        enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
+      />
     </HeaderProvider>
   );
 }
@@ -207,7 +220,7 @@ const ScreenContainer = styled.div`
   margin: 0 auto;
   min-height: 100vh;
   position: relative;
-  background: var(--bg-subtle, #F8F9FB);
+  background: var(--bg-subtle);
 
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 

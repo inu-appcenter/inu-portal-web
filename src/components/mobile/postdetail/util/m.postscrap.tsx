@@ -88,8 +88,8 @@ export default function PostScrap({
     <ScrapContainer onClick={handleScrap}>
       <Bookmark
         size={24}
-        color={isScrapedState ? "#0061FF" : "#333D4B"}
-        fill={isScrapedState ? "#0061FF" : "none"}
+        color={isScrapedState ? "var(--interactive-primary)" : "var(--gray-800)"}
+        fill={isScrapedState ? "var(--interactive-primary)" : "none"}
       />
       <span>{scrapState}</span>
     </ScrapContainer>
@@ -108,6 +108,6 @@ const ScrapContainer = styled.div`
     font-size: 14px;
     font-weight: 400;
     line-height: 1.6;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;

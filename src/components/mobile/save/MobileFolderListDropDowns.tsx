@@ -133,12 +133,12 @@ const MobileFolderListDropDownsWrapper = styled.div`
   top: 30px;
   width: 207px;
   border-radius: 5px;
-  border: 0.5px solid #969696;
-  background-color: white;
+  border: 0.5px solid var(--border-default);
+  background-color: var(--bg-base);
 
   button {
     background-color: black;
-    color: white;
+    color: var(--text-inverse);
     display: block;
     margin: 0 auto;
     text-align: center;
@@ -162,7 +162,7 @@ const FolderListClose = styled.div`
   align-items: center;
   padding: 7px 8px;
   justify-content: space-between;
-  border-bottom: 0.5px solid #969696;
+  border-bottom: 0.5px solid var(--border-default);
 
   div {
     display: flex;
@@ -185,7 +185,7 @@ const FolderListClose = styled.div`
 const FolderListDropDownDetail = styled.div`
   font-size: 10px;
   font-weight: 800;
-  color: #656565;
+  color: var(--gray-600);
 `;
 
 const FolderListDetail = styled.div`
@@ -195,13 +195,13 @@ const FolderListDetail = styled.div`
 const ConfirmButton = styled.button`
   z-index: 1001;
   position: fixed;
-  background-color: #9cafe2;
+  background-color: var(--interactive-focus);
   left: 50%;
   bottom: calc(10% + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   width: 102px;
   height: 40px;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 10px;
   font-size: 20px;

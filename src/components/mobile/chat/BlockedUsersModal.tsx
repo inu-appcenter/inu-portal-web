@@ -58,7 +58,7 @@ export default function BlockedUsersModal({
               <Title>{title}</Title>
             </TitleArea>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
           <ScrollArea>
@@ -107,7 +107,7 @@ const StyledContent = styled(Dialog.Content)`
   width: 90vw;
   max-width: 400px;
   height: 60vh;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   z-index: 2001;
   display: flex;
@@ -133,7 +133,7 @@ const TitleArea = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -153,6 +153,6 @@ const ScrollArea = styled.div`
 const EmptyState = styled.div`
   padding: 60px 24px;
   text-align: center;
-  color: #969696;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;

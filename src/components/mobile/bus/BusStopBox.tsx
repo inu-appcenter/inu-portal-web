@@ -121,7 +121,7 @@ const LabelGroup = styled.div`
 `;
 
 const SectionNameText = styled.span<{ $isRed: boolean }>`
-  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "inherit")};
+  color: ${({ $isRed }) => ($isRed ? "var(--red-500)" : "inherit")};
 `;
 
 const RefreshArea = styled.div`
@@ -132,7 +132,7 @@ const RefreshArea = styled.div`
 
 const LastUpdated = styled.span`
   font-size: 11px;
-  color: #888;
+  color: var(--text-tertiary);
   font-weight: normal;
 `;
 
@@ -147,7 +147,7 @@ const RefreshButton = styled.button<{
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${(props) => (props.$isCooldown ? "#ccc" : "#666")};
+  color: ${(props) => (props.$isCooldown ? "var(--text-disabled)" : "var(--gray-600)")};
   transition: color 0.2s;
 
   ${(props) =>

@@ -12,6 +12,7 @@ import {
   Calendar,
   ChevronDown,
   Check,
+  School,
 } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import { useNavigate, useSearchParams, useBlocker } from "react-router-dom";
@@ -23,16 +24,19 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import BottomSheet from "@/components/common/BottomSheet";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { TERM_LABELS, TERM_ORDER } from "@/utils/semester";
+import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   useCreateTimeTableCourseItem,
   useTimeTables,
   syncTimeTableDetail,
 } from "@/hooks/useTimeTables";
 import { recognizeTimeTableImage } from "@/apis/timetables";
-import {
-  getCourseOfferingsPage,
-  searchCourseOfferings,
-} from "@/apis/courseOfferings";
+import { useCourses } from "@/hooks/useCourses";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
+import CourseResultList from "@/components/mobile/timetable/CourseResultList";
+import type { CourseResult } from "@/components/mobile/timetable/CourseResultList";
 import type { CourseOffering } from "@/types/courseOfferings";
 import type { Term, TimeTableDay } from "@/types/timetables";
 import {
@@ -41,7 +45,6 @@ import {
 } from "@/resources/assets/illustrations/timetable";
 import {
   findUniqueTitleOffering,
-  scoreOffering,
   type DetectedCourseGroup,
 } from "@/utils/timetableImageImport";
 
@@ -277,7 +280,7 @@ export default function MobileTimetableImageImportPage() {
     hasback: true,
     showAlarm: false,
     onBack: handleHeaderBack,
-    pageBgColor: "var(--bg-subtle, #f8f9fb)",
+    pageBgColor: "var(--bg-subtle)",
   });
 
   const handleStayOnPage = () => {
@@ -601,12 +604,12 @@ export default function MobileTimetableImageImportPage() {
             >
               <DropzoneHeader>
                 <IconBox>
-                  <ImagePlus size={22} color="#ffffff" />
+                  <ImagePlus size={22} color="var(--text-inverse)" />
                 </IconBox>
                 <DropzoneTextGroup>
                   <DropzoneTitle>시간표 이미지 선택하기</DropzoneTitle>
                   <DropzoneSubtitle>
-                    PNG, JPG 등 휴대폰 캡처 이미지를 선택해 주세요.
+                    수강신청 앱·에브리타임 캡처, 포털의 수강신청확인원 모두 괜찮아요.
                   </DropzoneSubtitle>
                 </DropzoneTextGroup>
               </DropzoneHeader>
@@ -621,6 +624,7 @@ export default function MobileTimetableImageImportPage() {
 
             <GuideSection>
               <GuideSectionTitle>이런 화면이 잘 인식돼요</GuideSectionTitle>
+              
               <GuideCard>
                 <GuideItem>
                   <GuideItemLeft>
@@ -640,10 +644,24 @@ export default function MobileTimetableImageImportPage() {
                 <GuideItem>
                   <GuideItemLeft>
                     <GuideItemTitle>에브리타임</GuideItemTitle>
-                    <GuideItemSubtitle>시간표 전체 화면</GuideItemSubtitle>
+                    <GuideItemSubtitle>시간표 전체 화면 캡처 (다크모드는 인식율이 낮아요)</GuideItemSubtitle>
+                  </GuideItemLeft>
+                </GuideItem>
+
+                <GuideDivider />
+
+                <GuideItem>
+                  <GuideItemLeft>
+                    <GuideItemTitle>인천대학교 포털</GuideItemTitle>
+                    <GuideItemSubtitle>
+                      수강신청확인원 화면 캡처
+                    </GuideItemSubtitle>
                   </GuideItemLeft>
                 </GuideItem>
               </GuideCard>
+              <GuideFootnote>
+                수강신청확인원은 인천대학교 포털에 로그인한 뒤 내려받을 수 있어요.
+              </GuideFootnote>
             </GuideSection>
           </IntroContainer>
         )}
@@ -786,7 +804,7 @@ export default function MobileTimetableImageImportPage() {
                             <Icon
                               name="chevron-down"
                               size={18}
-                              color={isCardCompleted ? "#0061ff" : "#e5484d"}
+                              color={isCardCompleted ? "var(--interactive-primary)" : "var(--text-error)"}
                             />
                           </SelectTrigger>
 
@@ -880,6 +898,26 @@ export default function MobileTimetableImageImportPage() {
       {/* 하단 고정 액션바 */}
       <FixedBottomArea>
         <FixedBottomContent>
+          {view === "intro" && (
+            <FloatingPortalCTA
+              type="button"
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "포털에서 시간표 불러오기",
+                  "이미지 등록 플로팅 버튼",
+                );
+                navigate(
+                  `${ROUTES.TIMETABLE.PORTAL_IMPORT}${
+                    targetTimetableId ? `?id=${targetTimetableId}` : ""
+                  }`,
+                );
+              }}
+            >
+              <School size={15} color="var(--interactive-primary)" />
+              <span>포털에서 시간표 불러오기</span>
+            </FloatingPortalCTA>
+          )}
+
           <FixedButtonRow>
             <CancelBottomButton
               variant="secondary"
@@ -941,15 +979,17 @@ export default function MobileTimetableImageImportPage() {
       />
 
       {/* 강의 정보 직접 수정 & 분반 실시간 검색 모달 */}
-      <CourseEditModal
-        isOpen={editingMatch !== null}
-        match={editingMatch}
-        year={year}
-        term={term}
-        onClose={() => setEditingMatch(null)}
-        onSelectOffering={handleSelectOffering}
-        onSaveManual={handleSaveManual}
-      />
+      {editingMatch && (
+        <CourseEditModal
+          key={editingMatch.group.id}
+          match={editingMatch}
+          year={year}
+          term={term}
+          onClose={() => setEditingMatch(null)}
+          onSelectOffering={handleSelectOffering}
+          onSaveManual={handleSaveManual}
+        />
+      )}
 
       {/* 등록 대상 시간표 선택 바텀시트 */}
       <BottomSheet
@@ -999,7 +1039,7 @@ export default function MobileTimetableImageImportPage() {
                           </TimetableRowMeta>
                         </TimetableRowLeft>
                         {isSelected && (
-                          <Check size={20} color="#0061ff" strokeWidth={2.5} />
+                          <Check size={20} color="var(--interactive-primary)" strokeWidth={2.5} />
                         )}
                       </TimetableRowButton>
                     );
@@ -1022,7 +1062,7 @@ const PageWrapper = styled.div`
   height: calc(100vh - var(--header-height, 56px));
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   position: relative;
   overflow: hidden;
 `;
@@ -1072,13 +1112,13 @@ const TargetTimetableBadge = styled.button`
   gap: 6px;
   align-self: flex-start;
   padding: 6px 12px;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border: 1px solid transparent;
   border-radius: 8px;
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
   line-height: 18px;
   cursor: pointer;
   transition:
@@ -1086,19 +1126,19 @@ const TargetTimetableBadge = styled.button`
     border-color 0.15s ease;
 
   &:hover {
-    background: #e5e8eb;
+    background: var(--gray-200);
   }
 
   &:active {
-    background: #d1d6db;
+    background: var(--gray-300);
   }
 
   svg.calendar {
-    color: #0061ff;
+    color: var(--text-brand);
   }
 
   svg.chevron {
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -1122,7 +1162,7 @@ const SheetTitle = styled.h2`
   font-family: Pretendard;
   font-size: 18px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -1130,7 +1170,7 @@ const SheetSubtitle = styled.p`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 400;
-  color: #8b95a1;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
@@ -1150,7 +1190,7 @@ const SemesterSectionTitle = styled.div`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
-  color: #6b7684;
+  color: var(--gray-600);
   padding: 0 4px;
 `;
 
@@ -1167,14 +1207,14 @@ const TimetableRowButton = styled.button<{ $selected: boolean }>`
   width: 100%;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1.5px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5e8eb")};
-  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#ffffff")};
+  border: 1.5px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-default)")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
 
   &:hover {
-    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f9fafb")};
+    background: ${({ $selected }) => ($selected ? "var(--blue-100)" : "var(--bg-subtle)")};
   }
 `;
 
@@ -1191,7 +1231,7 @@ const TimetableRowName = styled.div<{ $selected: boolean }>`
   font-family: Pretendard;
   font-size: 15px;
   font-weight: 600;
-  color: ${({ $selected }) => ($selected ? "#0061ff" : "#191f28")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-primary)")};
 `;
 
 const TimetableRowMeta = styled.div`
@@ -1200,24 +1240,24 @@ const TimetableRowMeta = styled.div`
   gap: 6px;
   font-family: Pretendard;
   font-size: 12px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const PrimaryBadge = styled.span`
   display: inline-flex;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #e5f0ff;
-  color: #0061ff;
+  background: var(--blue-100);
+  color: var(--text-brand);
   font-size: 11px;
   font-weight: 600;
 `;
 
 const DropzoneCard = styled.button`
   width: 100%;
-  border: 1.5px dashed #0061ff;
+  border: 1.5px dashed var(--border-brand);
   border-radius: 20px;
-  background: var(--bg-brand, #eff6ff);
+  background: var(--bg-brand);
   padding: 20px 16px 0 16px;
   display: flex;
   flex-direction: column;
@@ -1231,7 +1271,7 @@ const DropzoneCard = styled.button`
     border-color 0.2s;
 
   &:hover {
-    background: #e5f0ff;
+    background: var(--blue-100);
   }
 `;
 
@@ -1246,7 +1286,7 @@ const IconBox = styled.div`
   height: 40px;
   flex-shrink: 0;
   border-radius: 12px;
-  background: #0061ff;
+  background: var(--interactive-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1264,7 +1304,7 @@ const DropzoneTitle = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #0061ff;
+  color: var(--text-brand);
 `;
 
 const DropzoneSubtitle = styled.div`
@@ -1272,7 +1312,7 @@ const DropzoneSubtitle = styled.div`
   font-weight: 400;
   font-size: 12px;
   line-height: 18px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const SampleImageWrapper = styled.div`
@@ -1300,18 +1340,26 @@ const GuideSection = styled.div`
   gap: 12px;
 `;
 
+const GuideFootnote = styled.p`
+  font-family: Pretendard;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-tertiary);
+  margin: 0;
+`;
 const GuideSectionTitle = styled.h2`
   font-family: Pretendard;
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #333d4b;
+  color: var(--text-secondary);
   margin: 0;
 `;
 
 const GuideCard = styled.div`
-  background: #ffffff;
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -1343,14 +1391,14 @@ const GuideItemTitle = styled.span`
   font-weight: 600;
   font-size: 14px;
   line-height: 20px;
-  color: #333d4b;
+  color: var(--text-secondary);
 `;
 
 const AccuracyBadge = styled.span`
   padding: 2px 6px;
   border-radius: 999px;
-  background: #e8f2ff;
-  color: #0061ff;
+  background: var(--bg-brand);
+  color: var(--text-brand);
   font-size: 10px;
   font-weight: 700;
   line-height: 14px;
@@ -1361,12 +1409,12 @@ const GuideItemSubtitle = styled.span`
   font-weight: 400;
   font-size: 12px;
   line-height: 18px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const GuideDivider = styled.div`
   height: 1px;
-  background: var(--border-default, #f1f3f5);
+  background: var(--border-default);
   width: 100%;
 `;
 
@@ -1403,7 +1451,7 @@ const AnalyzingStatusText = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #333d4b;
+  color: var(--text-secondary);
   text-align: center;
 `;
 
@@ -1411,7 +1459,7 @@ const ProgressTrack = styled.div`
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: #e5e8eb;
+  background: var(--gray-200);
   overflow: hidden;
 `;
 
@@ -1419,7 +1467,7 @@ const ProgressBar = styled.div<{ $progress: number }>`
   width: ${({ $progress }) => `${Math.max(4, $progress)}%`};
   height: 100%;
   border-radius: inherit;
-  background: #0061ff;
+  background: var(--interactive-primary);
   transition: width 0.2s ease;
 `;
 
@@ -1428,7 +1476,7 @@ const ProgressPercent = styled.div`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #0061ff;
+  color: var(--text-brand);
   text-align: center;
 `;
 
@@ -1454,7 +1502,7 @@ const ResultTitle = styled.h2`
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
-  color: #191f28;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -1466,9 +1514,9 @@ const ResultStatusBadge = styled.div<{ $completed: boolean }>`
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  background: ${({ $completed }) => ($completed ? "#e8f2ff" : "#fff0f0")};
-  border: 1px solid ${({ $completed }) => ($completed ? "#d3e5ff" : "#ffd5d5")};
-  color: ${({ $completed }) => ($completed ? "#0061ff" : "#e5484d")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
+  border: 1px solid ${({ $completed }) => ($completed ? "var(--border-brand-subtle)" : "var(--border-error-subtle)")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "var(--text-error)")};
 `;
 
 const ResultDescription = styled.p`
@@ -1477,7 +1525,7 @@ const ResultDescription = styled.p`
   font-weight: 400;
   font-size: 13px;
   line-height: 20px;
-  color: #6b7684;
+  color: var(--gray-600);
   white-space: pre-line;
   word-break: keep-all;
 `;
@@ -1492,8 +1540,8 @@ const ResultCardsList = styled.div`
 const ResultCard = styled.div<{ $completed: boolean }>`
   padding: 16px;
   border-radius: 16px;
-  background: ${({ $completed }) => ($completed ? "#ffffff" : "#fffafa")};
-  border: 1px solid ${({ $completed }) => ($completed ? "#d3e5ff" : "#fecaca")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-base)" : "var(--bg-base)")};
+  border: 1px solid ${({ $completed }) => ($completed ? "var(--border-brand-subtle)" : "var(--border-error-subtle)")};
   box-sizing: border-box;
   transition:
     background 0.2s,
@@ -1520,11 +1568,11 @@ const CardCourseTitle = styled.span`
   font-weight: 600;
   font-size: 16px;
   line-height: 24px;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const CardDot = styled.span`
-  color: #6b7684;
+  color: var(--gray-600);
   font-size: 14px;
 `;
 
@@ -1533,7 +1581,7 @@ const CardProfessor = styled.span`
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const CardActionGroup = styled.div`
@@ -1548,8 +1596,8 @@ const CardStatusBadge = styled.span<{ $completed: boolean }>`
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
-  background: ${({ $completed }) => ($completed ? "#e8f2ff" : "#fff0f0")};
-  color: ${({ $completed }) => ($completed ? "#0061ff" : "#e5484d")};
+  background: ${({ $completed }) => ($completed ? "var(--bg-brand)" : "var(--bg-error)")};
+  color: ${({ $completed }) => ($completed ? "var(--text-brand)" : "var(--text-error)")};
   white-space: nowrap;
 `;
 
@@ -1557,8 +1605,8 @@ const RemoveButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #f1f3f5;
-  color: #8b95a1;
+  background: var(--bg-muted);
+  color: var(--text-tertiary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1567,8 +1615,8 @@ const RemoveButton = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: #e5e8eb;
-    color: #4e5968;
+    background: var(--gray-200);
+    color: var(--gray-700);
   }
 `;
 
@@ -1576,8 +1624,8 @@ const EditButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #f1f3f5;
-  color: #4e5968;
+  background: var(--bg-muted);
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1586,8 +1634,8 @@ const EditButton = styled.button`
   transition: background 0.15s;
 
   &:hover {
-    background: #e5e8eb;
-    color: #191f28;
+    background: var(--gray-200);
+    color: var(--text-primary);
   }
 `;
 
@@ -1596,7 +1644,7 @@ const CardScheduleText = styled.div`
   font-weight: 400;
   font-size: 13px;
   line-height: 19px;
-  color: #6b7684;
+  color: var(--gray-600);
   margin: 6px 0 12px;
 `;
 
@@ -1611,15 +1659,15 @@ const CandidateLabel = styled.div`
   font-weight: 500;
   font-size: 12px;
   line-height: 18px;
-  color: #6b7684;
+  color: var(--gray-600);
 `;
 
 const SelectWrapper = styled.div<{ $selected: boolean; $open: boolean }>`
   position: relative;
   z-index: ${({ $open }) => ($open ? 30 : 1)};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#fca5a5")};
+  border: 1px solid ${({ $selected }) => ($selected ? "var(--border-brand)" : "rgb(252, 165, 165)")};
   border-radius: 12px;
-  background: ${({ $selected }) => ($selected ? "#f5f9ff" : "#ffffff")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-base)")};
 `;
 
 const SelectTrigger = styled.button`
@@ -1639,7 +1687,7 @@ const TriggerText = styled.span<{ $placeholder: boolean }>`
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
-  color: ${({ $placeholder }) => ($placeholder ? "#8b95a1" : "#191f28")};
+  color: ${({ $placeholder }) => ($placeholder ? "var(--text-tertiary)" : "var(--text-primary)")};
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1651,8 +1699,8 @@ const CandidatePopover = styled(motion.div)<{ $openUpward: boolean }>`
   left: 0;
   right: 0;
   ${({ $openUpward }) => ($openUpward ? "bottom: calc(100% + 4px);" : "top: calc(100% + 4px);")}
-  background: #ffffff;
-  border: 1px solid #e5e8eb;
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   max-height: 200px;
@@ -1669,11 +1717,11 @@ const PopoverOption = styled.button<{ $selected: boolean }>`
   gap: 8px;
   padding: 10px;
   border-radius: 10px;
-  background: ${({ $selected }) => ($selected ? "#e8f2ff" : "transparent")};
+  background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "transparent")};
   cursor: pointer;
 
   &:hover {
-    background: ${({ $selected }) => ($selected ? "#e8f2ff" : "#f8f9fb")};
+    background: ${({ $selected }) => ($selected ? "var(--bg-brand)" : "var(--bg-subtle)")};
   }
 `;
 
@@ -1689,24 +1737,24 @@ const PopoverOptionText = styled.div`
     align-items: baseline;
     gap: 6px;
     font-size: 13px;
-    color: #191f28;
+    color: var(--text-primary);
 
     span {
       font-size: 11px;
-      color: #6b7684;
+      color: var(--gray-600);
       font-weight: 500;
     }
   }
 
   small {
     font-size: 11px;
-    color: #8b95a1;
+    color: var(--text-tertiary);
   }
 
   em {
     font-style: normal;
     font-size: 11px;
-    color: #4e5968;
+    color: var(--gray-700);
   }
 `;
 
@@ -1717,12 +1765,12 @@ const OptionCheck = styled.div<{ $selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ $selected }) => ($selected ? "#0061ff" : "transparent")};
+  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "transparent")};
 `;
 
 const WarningText = styled.div`
   font-size: 13px;
-  color: #e5484d;
+  color: var(--text-error);
 `;
 
 // --- Fixed Bottom Area ---
@@ -1755,12 +1803,44 @@ const FixedBottomContent = styled.div`
   pointer-events: auto;
 `;
 
-
 const FixedButtonRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
+`;
+
+const FloatingPortalCTA = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  background-color: var(--bg-base);
+  color: var(--interactive-primary);
+  border: 1px solid var(--border-brand);
+  box-shadow:
+    0 4px 12px rgba(0, 97, 255, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+  font-family: Pretendard;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background-color: var(--bg-brand);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 97, 255, 0.18);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 const CancelBottomButton = styled(CapsuleButton)`
@@ -1784,8 +1864,7 @@ const PrimaryBottomButton = styled(CapsuleButton)`
 // --- Course Edit Modal Component ---
 
 interface CourseEditModalProps {
-  isOpen: boolean;
-  match: Match | null;
+  match: Match;
   year: number;
   term: Term;
   onClose: () => void;
@@ -1801,7 +1880,6 @@ interface CourseEditModalProps {
 }
 
 function CourseEditModal({
-  isOpen,
   match,
   year,
   term,
@@ -1809,8 +1887,6 @@ function CourseEditModal({
   onSelectOffering,
   onSaveManual,
 }: CourseEditModalProps) {
-  if (!isOpen || !match) return null;
-
   const [title, setTitle] = useState(
     match.group.title === "인식 실패" ? "" : match.group.title,
   );
@@ -1825,95 +1901,77 @@ function CourseEditModal({
     match.group.blocks[0]?.endTime ?? "10:30",
   );
 
-  const [debouncedKeyword, setDebouncedKeyword] = useState(title);
-  const [searchResults, setSearchResults] = useState<CourseOffering[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [debouncedKeyword, setDebouncedKeyword] = useState(() => title.trim());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedKeyword(title.trim());
-    }, 200);
+    const timer = setTimeout(() => setDebouncedKeyword(title.trim()), 250);
     return () => clearTimeout(timer);
   }, [title]);
 
-  useEffect(() => {
-    let active = true;
-    const fetchOfferings = async () => {
-      setIsSearching(true);
-      try {
-        const promises: Promise<CourseOffering[]>[] = [];
-        if (debouncedKeyword.length >= 1) {
-          promises.push(searchCourseOfferings(year, term, debouncedKeyword));
-        }
-        if (professor.trim().length >= 2) {
-          promises.push(searchCourseOfferings(year, term, professor.trim()));
-        }
-        promises.push(
-          getCourseOfferingsPage(year, term, 0, 50)
-            .then((res) => res.content)
-            .catch(() => []),
-        );
+  // 검색은 시간표 편집 화면과 똑같이 서버 keyword 조회 + 무한 스크롤에 맡긴다.
+  // 예전에는 여기서 "그 학기 첫 50개"를 함께 받아 scoreOffering(OCR 매칭 점수)으로
+  // 재정렬했는데, 그 점수는 입력한 키워드를 모르고 강의명 유사도만 보기 때문에
+  // 학수번호·교수명으로 찾은 분반이 상위 15개 밖으로 밀려나 검색이 먹통처럼 보였다.
+  const hasKeyword = debouncedKeyword.length > 0;
+  const filters = useMemo(
+    () => ({ keyword: hasKeyword ? debouncedKeyword : undefined }),
+    [debouncedKeyword, hasKeyword],
+  );
+  const {
+    courseOfferings,
+    isFetching,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCourseOfferings(year, term, filters, { enabled: hasKeyword });
 
-        const results = await Promise.all(promises);
-        if (!active) return;
+  const { courses } = useCourses();
+  const courseById = useMemo(
+    () => new Map(courses.map((c) => [c.id, c])),
+    [courses],
+  );
+  const searchResults = useMemo(
+    () =>
+      courseOfferings.map((offering) =>
+        mapCourseOfferingToCourseResult(
+          offering,
+          courseById.get(offering.courseId),
+        ),
+      ),
+    [courseOfferings, courseById],
+  );
+  const offeringById = useMemo(
+    () => new Map(courseOfferings.map((offering) => [offering.id, offering])),
+    [courseOfferings],
+  );
 
-        const pool = new Map<number, CourseOffering>();
-        results.flat().forEach((offering) => {
-          pool.set(offering.id, offering);
-        });
+  // 순서는 서버가 준 그대로 두되, 인식된 요일/시간과 맞는 분반만 배지로 짚어 준다.
+  // (정렬로 끌어올리면 페이지가 추가될 때마다 목록이 뒤섞여 고르기가 더 어렵다.)
+  const highlightedIds = useMemo(() => {
+    const ids = new Set<number>();
+    courseOfferings.forEach((offering) => {
+      const matched = offering.meetings.some(
+        (meeting) =>
+          meeting.day === day &&
+          meeting.startTime.slice(0, 5) === startTime.slice(0, 5) &&
+          meeting.endTime.slice(0, 5) === endTime.slice(0, 5),
+      );
+      if (matched) ids.add(offering.id);
+    });
+    return ids;
+  }, [courseOfferings, day, startTime, endTime]);
 
-        const dummyGroup: DetectedCourseGroup = {
-          id: "temp",
-          title: title.trim() || match.group.title,
-          professor: professor.trim(),
-          rawText: "",
-          blocks: [
-            {
-              id: "temp-block",
-              crop: {} as any,
-              day,
-              startTime,
-              endTime,
-              rawText: "",
-              confidence: 100,
-            },
-          ],
-        };
+  const selectedIds = useMemo(
+    () => (match.selectedId != null ? new Set([match.selectedId]) : undefined),
+    [match.selectedId],
+  );
 
-        const sorted = [...pool.values()]
-          .map((offering) => ({
-            offering,
-            score: scoreOffering(dummyGroup, offering),
-          }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 15)
-          .map(({ offering }) => offering);
+  const isSearching = hasKeyword && isFetching && courseOfferings.length === 0;
 
-        setSearchResults(sorted);
-      } catch (err) {
-        console.warn("Live search failed:", err);
-      } finally {
-        if (active) setIsSearching(false);
-      }
-    };
-
-    fetchOfferings();
-    return () => {
-      active = false;
-    };
-  }, [
-    debouncedKeyword,
-    professor,
-    day,
-    startTime,
-    endTime,
-    year,
-    term,
-    match.group.title,
-  ]);
-
-  const handleSelect = (offering: CourseOffering) => {
-    onSelectOffering(match.group.id, offering);
+  const handleSelect = (course: CourseResult) => {
+    const offering = offeringById.get(course.id);
+    if (offering) onSelectOffering(match.group.id, offering);
   };
 
   const handleManualSave = () => {
@@ -1934,7 +1992,7 @@ function CourseEditModal({
           <div>
             <ModalSheetTitle>강의 정보 수정 & 분반 검색</ModalSheetTitle>
             <ModalSheetSubtitle>
-              과목명이나 교수명을 수정하면 개설 강좌가 검색됩니다.
+              과목명(또는 학수번호)을 수정하면 개설 분반이 검색됩니다.
             </ModalSheetSubtitle>
           </div>
           <ModalCloseButton type="button" onClick={onClose}>
@@ -1949,7 +2007,7 @@ function CourseEditModal({
             </FormLabel>
             <FormInput
               type="text"
-              placeholder="과목명을 입력해 주세요"
+              placeholder="과목명 또는 학수번호"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
@@ -2019,61 +2077,39 @@ function CourseEditModal({
           <ResultsSection>
             <ResultsSectionTitle>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <Search size={14} color="#0061ff" />
+                <Search size={14} color="var(--interactive-primary)" />
                 <span>검색된 개설 분반 ({searchResults.length}개)</span>
               </div>
-              {isSearching && (
-                <SearchLoadingBadge>검색 중...</SearchLoadingBadge>
-              )}
+              {isFetching && <SearchLoadingBadge>검색 중...</SearchLoadingBadge>}
             </ResultsSectionTitle>
 
             <OfferingsScrollList>
-              {searchResults.length > 0 ? (
-                searchResults.map((offering) => {
-                  const isSelected = match.selectedId === offering.id;
-                  const meetings = formatOfferingMeetings(offering);
-                  return (
-                    <OfferingItemCard
-                      key={offering.id}
-                      $selected={isSelected}
-                      onClick={() => handleSelect(offering)}
-                    >
-                      <OfferingMainInfo>
-                        <OfferingTitleRow>
-                          <OfferingCourseTitle>
-                            {offering.courseTitle}
-                          </OfferingCourseTitle>
-                          <OfferingBadge>
-                            {offering.deptName ||
-                              offering.isuName ||
-                              "개설"}
-                          </OfferingBadge>
-                        </OfferingTitleRow>
-                        <OfferingSubInfo>
-                          <span>{offering.professor || "교수 미정"}</span>
-                          <span>·</span>
-                          <span>{offering.subjectNumber}</span>
-                          {meetings && (
-                            <>
-                              <span>·</span>
-                              <span style={{ color: "#0061ff" }}>{meetings}</span>
-                            </>
-                          )}
-                        </OfferingSubInfo>
-                      </OfferingMainInfo>
-                      <SelectActionButton type="button" $selected={isSelected}>
-                        {isSelected ? "선택됨" : "선택"}
-                      </SelectActionButton>
-                    </OfferingItemCard>
-                  );
-                })
-              ) : (
-                <EmptyResultsText>
-                  {isSearching
-                    ? "일치하는 개설 강좌를 검색 중입니다..."
-                    : "일치하는 개설 강좌를 찾지 못했습니다. 과목명을 검색해 보세요."}
-                </EmptyResultsText>
-              )}
+              <CourseResultList
+                courses={searchResults}
+                expandedId={expandedId}
+                onToggleExpand={(id) =>
+                  setExpandedId((prev) => (prev === id ? null : id))
+                }
+                onAddCourse={handleSelect}
+                addedCourseOfferingIds={selectedIds}
+                addLabel="이 분반 선택"
+                addedLabel="선택됨"
+                showSecondaryActions={false}
+                highlightedIds={highlightedIds}
+                scrollExpandedIntoView
+                isLoading={isSearching}
+                hasNextPage={hasNextPage}
+                fetchNextPage={fetchNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                emptyTitle={
+                  hasKeyword ? "조회된 분반이 없습니다" : "과목명을 입력해 주세요"
+                }
+                emptyDescription={
+                  hasKeyword
+                    ? "과목명 일부만 입력하거나 학수번호로 검색해 보세요"
+                    : "강의명·영문명·학수번호로 검색할 수 있어요"
+                }
+              />
             </OfferingsScrollList>
           </ResultsSection>
         </ModalSheetBody>
@@ -2118,8 +2154,8 @@ const ModalBackdrop = styled.div`
 const ModalContentSheet = styled.div`
   width: 100%;
   max-width: 600px;
-  max-height: 85vh;
-  background: #ffffff;
+  max-height: 85dvh;
+  background: var(--bg-base);
   border-radius: 20px 20px 0 0;
   display: flex;
   flex-direction: column;
@@ -2142,57 +2178,63 @@ const ModalSheetHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   padding: 20px 20px 14px;
-  border-bottom: 1px solid #f2f4f6;
+  border-bottom: 1px solid var(--bg-base);
 `;
 
 const ModalSheetTitle = styled.h3`
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const ModalSheetSubtitle = styled.p`
   margin: 4px 0 0;
   font-size: 13px;
-  color: #8b95a1;
+  color: var(--text-tertiary);
 `;
 
 const ModalCloseButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f2f4f6;
+  background: var(--bg-muted);
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7684;
+  color: var(--gray-600);
   cursor: pointer;
   flex-shrink: 0;
 
   &:hover {
-    background: #e5e8eb;
+    background: var(--gray-200);
   }
 `;
 
+// 시트 안의 유일한 스크롤 영역. 결과 목록에 따로 max-height를 주면 스크롤러가
+// 두 겹이 되어 마지막 행의 펼침 영역(선택 버튼)이 안쪽 박스에 잘린다.
 const ModalSheetBody = styled.div`
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 16px 20px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 `;
 
 const FormGroup = styled.div`
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 `;
 
 const FormRow = styled.div`
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -2201,7 +2243,7 @@ const FormRow = styled.div`
 const FormLabel = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #4e5968;
+  color: var(--gray-700);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -2211,18 +2253,18 @@ const FormInput = styled.input`
   width: 100%;
   height: 44px;
   padding: 0 14px;
-  border: 1px solid #e5e8eb;
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   font-size: 14px;
-  color: #191f28;
-  background: #fdfdfe;
+  color: var(--text-primary);
+  background: var(--bg-base);
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
 
   &:focus {
-    border-color: #0061ff;
-    background: #ffffff;
+    border-color: var(--border-brand);
+    background: var(--bg-base);
   }
 `;
 
@@ -2237,9 +2279,9 @@ const DayChip = styled.button<{ $active: boolean }>`
   min-width: 40px;
   height: 38px;
   border-radius: 8px;
-  border: 1px solid ${({ $active }) => ($active ? "#0061ff" : "#e5e8eb")};
-  background: ${({ $active }) => ($active ? "#0061ff" : "#ffffff")};
-  color: ${({ $active }) => ($active ? "#ffffff" : "#4e5968")};
+  border: 1px solid ${({ $active }) => ($active ? "var(--border-brand)" : "var(--border-default)")};
+  background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-base)")};
+  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2251,6 +2293,7 @@ const ResultsSection = styled.div`
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
+  flex-shrink: 0;
 `;
 
 const ResultsSectionTitle = styled.div`
@@ -2259,100 +2302,17 @@ const ResultsSectionTitle = styled.div`
   justify-content: space-between;
   font-size: 13px;
   font-weight: 700;
-  color: #191f28;
+  color: var(--text-primary);
 `;
 
 const SearchLoadingBadge = styled.span`
   font-size: 11px;
-  color: #0061ff;
+  color: var(--text-brand);
   font-weight: 600;
 `;
 
 const OfferingsScrollList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 220px;
-  overflow-y: auto;
   padding-right: 2px;
-`;
-
-const OfferingItemCard = styled.div<{ $selected: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: ${({ $selected }) => ($selected ? "#f0f6ff" : "#f8f9fb")};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#e5484d")};
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    background: ${({ $selected }) => ($selected ? "#e5f0ff" : "#f1f3f5")};
-  }
-`;
-
-const OfferingMainInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-`;
-
-const OfferingTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-`;
-
-const OfferingCourseTitle = styled.span`
-  font-size: 14px;
-  font-weight: 700;
-  color: #191f28;
-`;
-
-const OfferingBadge = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #eef3ff;
-  color: #0061ff;
-`;
-
-const OfferingSubInfo = styled.div`
-  font-size: 12px;
-  color: #6b7684;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-`;
-
-const SelectActionButton = styled.button<{ $selected: boolean }>`
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 0;
-  font-size: 12px;
-  font-weight: 700;
-  background: ${({ $selected }) => ($selected ? "#0061ff" : "#ffffff")};
-  color: ${({ $selected }) => ($selected ? "#ffffff" : "#0061ff")};
-  border: 1px solid ${({ $selected }) => ($selected ? "#0061ff" : "#d3e5ff")};
-  cursor: pointer;
-  flex-shrink: 0;
-`;
-
-const EmptyResultsText = styled.div`
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 13px;
-  color: #8b95a1;
-  background: #f8f9fb;
-  border-radius: 10px;
-  line-height: 20px;
 `;
 
 const ModalSheetFooter = styled.div`
@@ -2360,7 +2320,7 @@ const ModalSheetFooter = styled.div`
   align-items: center;
   gap: 8px;
   padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid #f2f4f6;
-  background: #ffffff;
+  border-top: 1px solid var(--bg-base);
+  background: var(--bg-base);
 `;
 

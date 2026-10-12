@@ -184,7 +184,7 @@ const DesktopPanelShell = styled.aside`
 `;
 
 const PanelSurface = styled.div<{ $isDesktop: boolean }>`
-  background: #ffffff;
+  background: var(--bg-base);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -239,7 +239,7 @@ const HandleWrapper = styled.div`
 const HandleBar = styled.div`
   width: 40px;
   height: 4px;
-  background: #e5e5e5;
+  background: var(--gray-200);
   border-radius: 999px;
 `;
 
@@ -269,14 +269,14 @@ const DesktopPanelEyebrow = styled.span`
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7d94bb;
+  color: var(--text-tertiary);
 `;
 
 const DesktopPanelTitle = styled.h2`
   margin: 0;
   font-size: 28px;
   line-height: 1.2;
-  color: #20355d;
+  color: var(--text-primary);
 `;
 
 const ListViewport = styled.div<{

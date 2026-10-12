@@ -3,7 +3,7 @@
  * map/markers/의 named export 배럴 패턴을 따른다.
  *
  * - torchAiLogo: 마스코트 로고. 그라디언트·다색이라 icons/가 아닌 illustrations/.
- * - loadingSpinner: 단색(#3f30a0) SVG animate 스피너지만, 유일한 소비처인
+ * - loadingSpinner: 단색(3f30a0) SVG animate 스피너지만, 유일한 소비처인
  *   AiLoading.tsx(죽은 컴포넌트)가 `<img src>`로만 쓰고 색을 바꿔 쓸 일이 없어
  *   currentColor로 바꾸지 않았다(바꾸면 <img> 컨텍스트에서 currentColor가
  *   기본값(검정)으로 풀려 오히려 렌더가 깨진다). 고정 라스터처럼 취급.

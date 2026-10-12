@@ -53,7 +53,7 @@ const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   position: relative;
   /* This page has no MobileHeader (FullscreenSubLayout), so unlike most
      sub-pages it must pad its own top inset directly — the native shell no
@@ -78,7 +78,7 @@ const LoadingOverlay = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   z-index: 10;
 `;
 
@@ -90,8 +90,8 @@ const spin = keyframes`
 const Spinner = styled.div`
   width: 48px;
   height: 48px;
-  border: 4px solid var(--gray-100, #f1f3f5);
-  border-top: 4px solid var(--blue-600, #0061ff);
+  border: 4px solid var(--gray-100);
+  border-top: 4px solid var(--blue-600);
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
 `;
@@ -99,6 +99,6 @@ const Spinner = styled.div`
 const LoadingText = styled.p`
   margin-top: 16px;
   font-size: 15px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-weight: 500;
 `;

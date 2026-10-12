@@ -12,7 +12,7 @@ import {
 } from "@/resources/assets/icons/mobile-home/chip";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
-import { LuFlaskConical, LuPartyPopper } from "react-icons/lu";
+import { LuFlaskConical, LuPartyPopper, LuRepeat } from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { usePromotion } from "@/hooks/usePromotion";
@@ -68,12 +68,23 @@ const HomeChipGroup = () => {
     {
       id: "phonebook",
       iconComponent: CallInuIcon,
-      iconColor: "#4071B9",
+      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "INU 전화번호부",
       onClick: () => {
         mixpanelTrack.featureClicked("INU 전화번호부", "Home Chip");
         navigate(ROUTES.PHONEBOOK.ROOT);
+      },
+    },
+    {
+      id: "routine",
+      iconComponent: LuRepeat,
+      iconColor: "var(--interactive-primary)",
+      iconSize: 22,
+      title: "루틴",
+      onClick: () => {
+        mixpanelTrack.featureClicked("루틴", "Home Chip");
+        navigate(ROUTES.LABS.ROUTINE);
       },
     },
     {
@@ -86,7 +97,6 @@ const HomeChipGroup = () => {
       },
       isAIButton: true,
     },
-
     {
       id: "more-apps",
       iconSrc: AppcenterLogo_NoText,
@@ -111,7 +121,7 @@ const HomeChipGroup = () => {
     {
       id: "unidorm",
       iconComponent: UnidormIcon,
-      iconColor: "#0E4D9D",
+      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "유니돔",
       isExternalLink: true,

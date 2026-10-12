@@ -1,7 +1,11 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { AlertTriangle, Megaphone, Settings2 } from "lucide-react";
 import Icon from "@/components/common/Icon";
-import type { GraduationEvaluation } from "@/types/graduation";
+import type {
+  GraduationEvaluation,
+  RequiredMajorCourseProgress,
+} from "@/types/graduation";
 import type { ResolvedGraduationRule } from "@/utils/graduationRequirements";
 import { MAX_GPA } from "@/utils/graduationRequirements";
 import type { GraduationProfile } from "./GraduationSettingModal";
@@ -39,13 +43,14 @@ export default function GraduationRequirementCard({
   onEdit,
 }: GraduationRequirementCardProps) {
   const departmentTitle = findTitleOrCode(profile.departmentCode);
+  const [showDoneMajorCourses, setShowDoneMajorCourses] = useState(false);
 
 
   const emptyMessage = (() => {
     if (!profile.departmentCode || !profile.entryYear) {
-      return "학과와 학번을 설정하면 이수해야 할 학점과 남은 필수 과목을 알려드려요.";
+      return "학과와 학번을 설정하면 남은 학점과 필수 과목을 알려드려요.";
     }
-    return `아직 ${departmentTitle || "이 학과"}의 졸업요건 데이터가 없어요. 취득 학점은 직접 설정해 주세요.`;
+    return `${departmentTitle || "이 학과"} 졸업요건은 아직 준비 중이에요. 졸업 학점은 직접 설정할 수 있어요.`;
   })();
 
 
@@ -56,6 +61,37 @@ export default function GraduationRequirementCard({
   const requiredCourses = evaluation.requiredCourses.filter(
     (course) => course.status !== "EXEMPT",
   );
+  // 카드 상단 기준 안내는 하나만 띄운다: 다른 학번 기준으로 대체 > C(공통 기준) > B.
+  const ruleNotice = (() => {
+    if (!resolved.exact) {
+      const { startYear, endYear } = resolved.rule;
+      const range =
+        endYear >= 2099 ? `${startYear}학번 이후` : `${startYear}~${endYear}학번`;
+      return {
+        tone: "warn" as const,
+        text: `${profile.entryYear}학번 기준이 없어 가장 가까운 ${range} 기준으로 보여드려요. 다르다면 아래에서 제보해 주세요.`,
+      };
+    }
+    if (resolved.department.confidence === "C") {
+      return {
+        tone: "info" as const,
+        text: "학과 자료가 없어 학교 공통 기준으로 계산했어요. 정확한 기준은 학과 사무실에 확인해 주세요.",
+      };
+    }
+    if (resolved.department.confidence === "B") {
+      return {
+        tone: "info" as const,
+        text: "학과 홈페이지와 학교 공지를 바탕으로 정리한 기준이에요. 실제 졸업사정과 다를 수 있어요.",
+      };
+    }
+    return null;
+  })();
+  // 전공필수는 학과마다 10~30과목이라 남은 과목만 펼쳐 두고 이수한 과목은 접는다.
+  const { requiredMajorCourses } = evaluation;
+  const missingMajorCourses =
+    requiredMajorCourses?.filter((course) => !course.done) ?? [];
+  const doneMajorCourses =
+    requiredMajorCourses?.filter((course) => course.done) ?? [];
 
   return (
     <Card>
@@ -76,23 +112,10 @@ export default function GraduationRequirementCard({
             {profile.entryYear}학번 · {resolved.rule.track}
           </RuleSummary>
 
-          {!resolved.exact && (
-            <NoticeBox $tone="warn">
+          {ruleNotice && (
+            <NoticeBox $tone={ruleNotice.tone}>
               <AlertTriangle size={14} />
-              <span>
-                유니님의 정보로 올바른 졸업요건 정보를 찾지 못했어요. 아래 "졸업요건 변경 제보하기" 버튼을 눌러 제보해주세요!
-              </span>
-            </NoticeBox>
-          )}
-
-          {resolved.department.confidence !== "A" && (
-            <NoticeBox $tone="info">
-              <AlertTriangle size={14} />
-              <span>
-                {resolved.department.confidence === "C"
-                  ? "학과 자료를 확보하지 못해 대학 공통기준으로 추정한 값이에요. 학과 사무실에 꼭 확인해 주세요."
-                  : "학과 최신 공지 기준으로 수집한 값이라 실제 적용 규정과 다를 수 있어요."}
-              </span>
+              <span>{ruleNotice.text}</span>
             </NoticeBox>
           )}
 
@@ -158,22 +181,57 @@ export default function GraduationRequirementCard({
             </Section>
           )}
 
+          {requiredMajorCourses && requiredMajorCourses.length > 0 && (
+            <Section>
+              <SectionTitle>
+                전공필수 {doneMajorCourses.length} / {requiredMajorCourses.length}
+                과목
+              </SectionTitle>
+              {missingMajorCourses.length === 0 ? (
+                <SectionText>교육과정표의 전공필수 과목을 모두 들었어요.</SectionText>
+              ) : (
+                <CourseList>
+                  {missingMajorCourses.map((course) => (
+                    <MajorCourseRow key={course.courseName} course={course} />
+                  ))}
+                </CourseList>
+              )}
+              {doneMajorCourses.length > 0 && (
+                <ToggleButton
+                  type="button"
+                  onClick={() => setShowDoneMajorCourses((open) => !open)}
+                >
+                  {showDoneMajorCourses
+                    ? "이수한 과목 접기"
+                    : `이수한 ${doneMajorCourses.length}과목 보기`}
+                </ToggleButton>
+              )}
+              {showDoneMajorCourses && (
+                <CourseList>
+                  {doneMajorCourses.map((course) => (
+                    <MajorCourseRow key={course.courseName} course={course} />
+                  ))}
+                </CourseList>
+              )}
+            </Section>
+          )}
+
           {evaluation.coreGeneral && !evaluation.coreGeneral.unverifiable && (
             <Section>
               <SectionTitle>
-                핵심교양 {evaluation.coreGeneral.areas.length} /{" "}
-                {evaluation.coreGeneral.required}개 영역
+                핵심교양 {evaluation.coreGeneral.courses.length} /{" "}
+                {evaluation.coreGeneral.required}과목
               </SectionTitle>
               <AreaList>
-                {evaluation.coreGeneral.areas.map((area) => (
-                  <AreaTag key={area}>{area}</AreaTag>
+                {evaluation.coreGeneral.courses.map((course, index) => (
+                  <AreaTag key={`${course}-${index}`}>{course}</AreaTag>
                 ))}
               </AreaList>
               {!evaluation.coreGeneral.satisfied && (
                 <SectionText>
                   {evaluation.coreGeneral.required -
-                    evaluation.coreGeneral.areas.length}
-                  개 영역을 더 들어야 해요.
+                    evaluation.coreGeneral.courses.length}
+                  과목을 더 들어야 해요.
                 </SectionText>
               )}
             </Section>
@@ -228,15 +286,15 @@ export default function GraduationRequirementCard({
               target="_blank"
               rel="noopener noreferrer"
             >
-              <span>학과 졸업요건 안내 보기</span>
+              <span>졸업요건 출처 보기</span>
               <Icon name="link-external" size={12} />
             </SourceLink>
           )}
 
           <ReportSection>
             <ReportText>
-              졸업요건은 학사 개편이나 학과 공지에 따라 바뀔 수 있어요. 실제
-              규정과 다른 부분을 발견하면 알려주시면 반영할게요.
+              졸업요건은 학사 개편이나 학과 공지에 따라 바뀔 수 있어요. 실제와
+              다르면 알려주세요.
             </ReportText>
             <ReportButton
               href={REQUIREMENT_REPORT_FORM_URL}
@@ -253,9 +311,34 @@ export default function GraduationRequirementCard({
   );
 }
 
+/** 전공기초·전공핵심 태그는 "기초"·"핵심"으로 줄인다. */
+const MAJOR_DIVISION_LABELS: Record<RequiredMajorCourseProgress["division"], string> = {
+  전공기초: "기초",
+  전공핵심: "핵심",
+  전공필수: "필수",
+  전공심화: "심화",
+};
+
+function MajorCourseRow({ course }: { course: RequiredMajorCourseProgress }) {
+  return (
+    <CourseRow>
+      <CourseName>
+        <CategoryTag>{MAJOR_DIVISION_LABELS[course.division]}</CategoryTag>
+        <span>{course.courseName}</span>
+      </CourseName>
+      <CourseStatus $status={course.done ? "DONE" : "MISSING"}>
+        {course.done && <Icon name="check" size={14} />}
+        <span>
+          {course.done ? "이수" : `미이수 · ${course.credits}학점`}
+        </span>
+      </CourseStatus>
+    </CourseRow>
+  );
+}
+
 const Card = styled.div`
-  background-color: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   padding: 16px 20px;
   display: flex;
@@ -273,7 +356,7 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -286,7 +369,7 @@ const EditButton = styled.button`
   padding: 0;
   cursor: pointer;
   outline: none;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 
   span {
     font-size: 13px;
@@ -297,12 +380,12 @@ const EmptyText = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const RuleSummary = styled.div`
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const NoticeBox = styled.div<{ $tone: "warn" | "info" }>`
@@ -315,12 +398,12 @@ const NoticeBox = styled.div<{ $tone: "warn" | "info" }>`
   line-height: 18px;
   background-color: ${({ $tone }) =>
     $tone === "warn"
-      ? "var(--bg-warn-subtle, #fffaeb)"
-      : "var(--bg-subtle, #f8f9fb)"};
+      ? "var(--bg-warn)"
+      : "var(--bg-subtle)"};
   color: ${({ $tone }) =>
     $tone === "warn"
-      ? "var(--yellow-600, #b58000)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--yellow-600)"
+      : "var(--text-tertiary)"};
 
   svg {
     flex-shrink: 0;
@@ -348,22 +431,22 @@ const ProgressTop = styled.div`
 
 const ProgressLabel = styled.span`
   font-size: 13px;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const Muted = styled.span`
   font-size: 12px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 `;
 
 const ProgressValue = styled.span`
   font-size: 13px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   strong {
     font-size: 15px;
     font-weight: 700;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
   }
 `;
 
@@ -371,7 +454,7 @@ const ProgressTrack = styled.div`
   width: 100%;
   height: 6px;
   border-radius: 999px;
-  background-color: var(--bg-muted, #f1f3f5);
+  background-color: var(--bg-muted);
   overflow: hidden;
 `;
 
@@ -381,8 +464,8 @@ const ProgressFill = styled.div<{ $ratio: number; $satisfied: boolean }>`
   border-radius: 999px;
   background-color: ${({ $satisfied }) =>
     $satisfied
-      ? "var(--border-success, #22c55e)"
-      : "var(--interactive-primary, #3b82f6)"};
+      ? "var(--border-success)"
+      : "var(--interactive-primary)"};
   transition: width 0.3s ease;
 `;
 
@@ -390,8 +473,8 @@ const ProgressCaption = styled.span<{ $satisfied: boolean }>`
   font-size: 12px;
   color: ${({ $satisfied }) =>
     $satisfied
-      ? "var(--text-success, #15803d)"
-      : "var(--text-tertiary, #8b95a1)"};
+      ? "var(--border-success)"
+      : "var(--text-tertiary)"};
 `;
 
 const Section = styled.div`
@@ -399,24 +482,24 @@ const Section = styled.div`
   flex-direction: column;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const SectionTitle = styled.h4`
   margin: 0;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
 `;
 
 const SectionText = styled.p`
   margin: 0;
   font-size: 13px;
   line-height: 20px;
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
 
   strong {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
   }
 `;
 
@@ -429,9 +512,9 @@ const AreaList = styled.div`
 const AreaTag = styled.span`
   padding: 4px 8px;
   border-radius: 8px;
-  background-color: var(--bg-brand-subtle, #eff6ff);
+  background-color: var(--bg-brand);
   font-size: 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
 `;
 
 const CourseList = styled.div`
@@ -455,7 +538,7 @@ const CourseName = styled.div`
 
   span {
     font-size: 13px;
-    color: var(--text-secondary, #333d4b);
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -466,9 +549,9 @@ const CategoryTag = styled.span`
   flex-shrink: 0;
   padding: 2px 6px;
   border-radius: 6px;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   font-size: 11px !important;
-  color: var(--text-tertiary, #8b95a1) !important;
+  color: var(--text-tertiary) !important;
 `;
 
 const CourseStatus = styled.div<{ $status: string }>`
@@ -478,10 +561,20 @@ const CourseStatus = styled.div<{ $status: string }>`
   flex-shrink: 0;
   font-size: 12px;
   color: ${({ $status }) => {
-    if ($status === "DONE") return "var(--text-success, #15803d)";
-    if ($status === "MISSING") return "var(--text-error, #ef4444)";
-    return "var(--text-tertiary, #8b95a1)";
+    if ($status === "DONE") return "var(--border-success)";
+    if ($status === "MISSING") return "var(--text-error)";
+    return "var(--text-tertiary)";
   }};
+`;
+
+const ToggleButton = styled.button`
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-brand);
 `;
 
 const NoticeList = styled.ul`
@@ -494,7 +587,7 @@ const NoticeList = styled.ul`
   li {
     font-size: 12px;
     line-height: 18px;
-    color: var(--text-tertiary, #8b95a1);
+    color: var(--text-tertiary);
   }
 `;
 
@@ -503,14 +596,14 @@ const ReportSection = styled.div`
   flex-direction: column;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-default, #e5e8eb);
+  border-top: 1px solid var(--border-default);
 `;
 
 const ReportText = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 18px;
-  color: var(--text-warning, #ff4d00);
+  color: var(--text-warn);
 `;
 
 const ReportButton = styled.a`
@@ -520,9 +613,9 @@ const ReportButton = styled.a`
   gap: 6px;
   padding: 10px 12px;
   border-radius: 12px;
-  background-color: var(--bg-subtle, #f8f9fb);
+  background-color: var(--bg-subtle);
   font-size: 13px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   text-decoration: none;
 
   svg {
@@ -535,6 +628,6 @@ const SourceLink = styled.a`
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: var(--text-brand, #0061ff);
+  color: var(--text-brand);
   text-decoration: none;
 `;

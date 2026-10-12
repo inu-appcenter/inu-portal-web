@@ -33,7 +33,7 @@ const PopupContainer = styled.div`
   bottom: 100%;
   left: 8px;
   margin-bottom: 10px;
-  background: #ffffff;
+  background: var(--bg-base);
   border-radius: 18px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -64,7 +64,7 @@ const PopupContainer = styled.div`
 const HeaderTitle = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: #767676;
+  color: var(--gray-600);
   margin-bottom: 12px;
   padding-left: 2px;
 `;
@@ -74,17 +74,17 @@ const CommandItem = styled.div`
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  background-color: #ffffff;
+  background-color: var(--bg-base);
   border-radius: 12px;
   padding: 2px 2px;
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: #f7f9fc;
+    background-color: var(--bg-subtle);
   }
 
   &:active {
-    background-color: #f0f4f9;
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -92,7 +92,7 @@ const IconWrapper = styled.div`
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background-color: #ebf4ff;
+  background-color: var(--bg-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,14 +113,14 @@ const CommandInfo = styled.div`
 const CommandName = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   line-height: 1.2;
 `;
 
 const CommandDesc = styled.span`
   font-size: 13px;
   font-weight: 400;
-  color: #767676;
+  color: var(--gray-600);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

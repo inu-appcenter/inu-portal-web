@@ -9,7 +9,7 @@ import { getMemberLogs } from "@/apis/admin";
 import { MemberLogData, isAdminUser } from "@/types/admin";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive.ts";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsDashboardCard from "@/components/admin/StatsDashboardCard";
 import { ROUTES } from "@/constants/routes";
@@ -111,19 +111,19 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
             title="총 방문자"
             value={memberLog?.memberCount || 0}
             icon={(size) => <Icon name="users" size={size} />}
-            color="#0f766e"
+            color="rgb(15, 118, 110)"
           />
           <StatsDashboardCard
             title="로그인 유저"
             value={counts.login}
             icon={(size) => <UserCheck size={size} />}
-            color="#3b82f6"
+            color="var(--primary)"
           />
           <StatsDashboardCard
             title="비로그인 유저"
             value={counts.guest}
             icon={(size) => <Icon name="user-remove" size={size} />}
-            color="#64748b"
+            color="var(--gray-500)"
           />
         </StatsGrid>
 
@@ -134,22 +134,22 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
               <RatioInfo>
                 <RatioItem>
                   <RatioLabel>
-                    <ColorDot $color="#3b82f6" />
+                    <ColorDot $color="var(--primary)" />
                     <LabelText>로그인 유저</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="#3b82f6">{loginRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--primary)">{loginRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
                 <RatioItem>
                   <RatioLabel>
-                    <ColorDot $color="#cbd5e1" />
+                    <ColorDot $color="rgb(203, 213, 225)" />
                     <LabelText>비로그인</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="#94a3b8">{guestRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--button-inactive)">{guestRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
               </RatioInfo>
               <ProgressBar>
-                <ProgressFill $width={loginRatio} $color="#3b82f6" />
-                <ProgressFill $width={guestRatio} $color="#cbd5e1" />
+                <ProgressFill $width={loginRatio} $color="var(--primary)" />
+                <ProgressFill $width={guestRatio} $color="rgb(203, 213, 225)" />
               </ProgressBar>
             </DistributionCard>
           </VisualSection>
@@ -183,14 +183,18 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
           </ListSection>
         </Row>
 
-        <FloatingSearchBar>
-          <MobilePillSearchBar
+        <FloatingSearchBarContainer>
+          <FloatingSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onSubmit={() => { }}
+            onSubmit={() => {}}
+            onSearch={setSearchQuery}
             placeholder="검색어를 입력하세요."
+            isActive={true}
+            disableCollapse={true}
+            disableHistory={true}
           />
-        </FloatingSearchBar>
+        </FloatingSearchBarContainer>
       </PageWrapper>
     </AdminLayout>
   );
@@ -223,17 +227,17 @@ const DateSelector = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #fff;
+  background: var(--bg-base);
   padding: 10px 16px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  border: 1px solid var(--border-default);
+  color: var(--gray-600);
 
   input {
     border: none;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary);
     outline: none;
     cursor: pointer;
     background: transparent;
@@ -272,13 +276,13 @@ const SectionTitle = styled.h3`
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-secondary);
 `;
 
 const DistributionCard = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -307,7 +311,7 @@ const RatioLabel = styled.div`
 
 const LabelText = styled.span`
   font-weight: 700;
-  color: #475569;
+  color: var(--gray-700);
 `;
 
 const RatioValue = styled.span<{ $color: string }>`
@@ -325,7 +329,7 @@ const ColorDot = styled.div<{ $color: string }>`
 const ProgressBar = styled.div`
   height: 12px;
   border-radius: 6px;
-  background-color: #f1f5f9;
+  background-color: var(--bg-muted);
   display: flex;
   overflow: hidden;
 `;
@@ -353,7 +357,7 @@ const ListHeader = styled.div`
 `;
 
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));
@@ -367,9 +371,9 @@ const FloatingSearchBar = styled.div`
 `;
 
 const MemberList = styled.div`
-  background: #fff;
+  background: var(--bg-base);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   max-height: 500px;
   overflow-y: auto;
@@ -380,10 +384,10 @@ const MemberItem = styled.div`
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid var(--bg-base);
   transition: background 0.2s;
 
-  &:hover { background-color: #f8fafc; }
+  &:hover { background-color: var(--bg-subtle); }
   &:last-child { border-bottom: none; }
 `;
 
@@ -394,8 +398,8 @@ const MemberIcon = styled.div<{ $isUser: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${props => props.$isUser ? "#eff6ff" : "#f1f5f9"};
-  color: ${props => props.$isUser ? "#3b82f6" : "#64748b"};
+  background-color: ${props => props.$isUser ? "var(--bg-brand)" : "var(--bg-muted)"};
+  color: ${props => props.$isUser ? "var(--interactive-primary)" : "var(--gray-600)"};
 `;
 
 const MemberInfo = styled.div`
@@ -406,32 +410,32 @@ const MemberInfo = styled.div`
 const MemberId = styled.span`
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
 `;
 
 const MemberType = styled.span`
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-weight: 500;
 `;
 
 const LoadingMsg = styled.div`
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.9rem;
 `;
 
 const EmptyMsg = styled.div`
   padding: 40px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-tertiary);
   font-size: 0.9rem;
 `;
 
 const ErrorBox = styled.div`
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: var(--bg-error);
+  color: var(--text-error);
   padding: 12px 16px;
   border-radius: 12px;
   margin-bottom: 20px;

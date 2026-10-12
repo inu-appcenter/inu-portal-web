@@ -67,7 +67,7 @@ const MenuRow = styled.button`
   font-weight: 400;
   font-size: 16px;
   line-height: 1.6;
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   text-align: left;
 `;
 

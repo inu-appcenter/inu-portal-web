@@ -77,25 +77,25 @@ const ButtonWrapper = styled.div`
 `;
 
 const UserCancelButton = styled.button`
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
   border: none;
   padding: 10px 60px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #0e4d9d;
+  color: var(--interactive-primary);
   border-radius: 10px;
   box-sizing: border-box;
 `;
 
 const UserDeleteButton = styled.button`
-  background-color: #f0f0f0;
+  background-color: var(--bg-muted);
   border: none;
   padding: 10px 50px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #df5532;
+  color: var(--text-error);
   border-radius: 10px;
   box-sizing: border-box;
 `;
@@ -114,7 +114,7 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: white;
+  background: var(--bg-base);
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -129,21 +129,21 @@ const ModalButtons = styled.div`
 `;
 
 const CancelButton = styled.button`
-  background-color: #ccc;
+  background-color: var(--gray-300);
   border: none;
   padding: 10px 20px;
   cursor: pointer;
   font-size: 14px;
-  color: #333;
+  color: var(--text-secondary);
   border-radius: 5px;
 `;
 
 const ConfirmButton = styled.button`
-  background-color: #df5532;
+  background-color: var(--text-error);
   border: none;
   padding: 10px 20px;
   cursor: pointer;
   font-size: 14px;
-  color: white;
+  color: var(--text-inverse);
   border-radius: 5px;
 `;

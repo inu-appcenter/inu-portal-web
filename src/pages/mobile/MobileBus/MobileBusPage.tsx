@@ -96,7 +96,7 @@ const LeadSurface = styled.div`
   gap: 12px;
   padding: 20px 20px 22px;
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), #f4f8ff);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgb(244, 248, 255));
   border: 1px solid rgba(14, 77, 157, 0.1);
   box-shadow:
     0 12px 28px rgba(15, 37, 71, 0.06),
@@ -143,7 +143,7 @@ const LeadIconBubble = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #ffffff, #ebf3ff);
+  background: linear-gradient(180deg, var(--bg-base), rgb(235, 243, 255));
   border: 1px solid rgba(14, 77, 157, 0.08);
   box-shadow: 0 8px 18px rgba(41, 79, 140, 0.08);
 
@@ -164,7 +164,7 @@ const LeadTitle = styled.h1`
   line-height: 1.28;
   font-weight: 800;
   letter-spacing: -0.04em;
-  color: #18335f;
+  color: rgb(24, 51, 95);
   position: relative;
   z-index: 1;
   word-break: keep-all;

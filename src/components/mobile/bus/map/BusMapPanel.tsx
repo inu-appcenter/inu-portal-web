@@ -53,7 +53,7 @@ export default function BusMapPanel({
   const previousSnapRef = useRef<string | number | null>(snap);
   const refreshCooldownTimeoutsRef = useRef<Record<string, number>>({});
   const liveBuses = selectedStop?.supportsLiveArrival ? selectedStop.buses : [];
-  const { busArrivalList, isLoading, isFetching, refetch, lastUpdated } =
+  const { busArrivalList, isLoading, isFetching, isError, refetch, lastUpdated } =
     useBusArrival(selectedStop?.bstopId ?? "", liveBuses);
   const [cooldownsByStopKey, setCooldownsByStopKey] = useState<
     Record<string, boolean>
@@ -316,6 +316,18 @@ export default function BusMapPanel({
                 ref={busListRef}
                 data-vaul-no-drag={isDesktop ? undefined : ""}
               >
+                {isError && (
+                  <ErrorNoticeCard>
+                    <ErrorNoticeText>실시간 버스 정보를 불러오지 못했어요</ErrorNoticeText>
+                    <ErrorRetryButton
+                      type="button"
+                      onClick={handleRefresh}
+                      disabled={isSelectedStopCooldown || isFetching}
+                    >
+                      다시 시도
+                    </ErrorRetryButton>
+                  </ErrorNoticeCard>
+                )}
                 {isLoading
                   ? selectedStop.busSections.map((section) => (
                       <BusSection key={section.id}>
@@ -609,10 +621,8 @@ function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
     if (isEstimatedArrivalInfo(bus)) {
       const seconds = bus.arrivalInfo.seconds;
       if (typeof seconds === "number") {
-        if (seconds < 60) {
-          return "곧 도착";
-        }
-        return `${Math.floor(seconds / 60)}분`;
+        const minutes = Math.max(1, Math.round(seconds / 60));
+        return `약 ${minutes}분`;
       }
       return bus.arrivalInfo.time.replace(/\s*\d+초$/, "");
     }
@@ -624,7 +634,11 @@ function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
 
 function isEstimatedArrivalInfo(bus: BusData) {
   const stationText = getArrivalStationText(bus.arrivalInfo);
-  return stationText === "시간표 기반" || stationText === "통계 추정";
+  return (
+    stationText === "시간표 기반" ||
+    stationText === "통계 추정" ||
+    stationText === "과거 기록 기반"
+  );
 }
 
 function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
@@ -644,7 +658,7 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
   }
 
   if (isEstimatedArrivalInfo(bus)) {
-    return "예상 시간표";
+    return "⏱️ 이전 기록 기반";
   }
 
   if (!stationText && !status && !isLastBus) {
@@ -726,7 +740,7 @@ const StopSwitcherDock = styled.div`
 `;
 
 const PanelSurface = styled.div<{ $isDesktop: boolean }>`
-  background: #ffffff;
+  background: var(--bg-base);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -769,7 +783,7 @@ const HandleBar = styled.div`
   width: 42px;
   height: 4px;
   border-radius: 999px;
-  background: #d9e3f5;
+  background: var(--blue-100);
 `;
 
 const PanelHeader = styled.div`
@@ -790,7 +804,7 @@ const PanelTitle = styled.h2`
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
-  color: #20355d;
+  color: var(--text-primary);
   word-break: keep-all;
   min-width: 0;
 `;
@@ -799,7 +813,7 @@ const PanelDescription = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #516a86;
+  color: var(--text-secondary);
   white-space: pre-wrap;
   word-break: keep-all;
 `;
@@ -816,8 +830,8 @@ const SortSelect = styled.select`
   -webkit-appearance: none;
   border: 1px solid rgba(133, 164, 210, 0.45);
   border-radius: 999px;
-  background: #ffffff;
-  color: #35506d;
+  background: var(--bg-base);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -826,14 +840,14 @@ const SortSelect = styled.select`
 
   &:focus {
     outline: none;
-    border-color: #7da8ea;
+    border-color: var(--interactive-primary);
   }
 `;
 
 const SortChevron = styled(Icon)`
   position: absolute;
   right: 10px;
-  color: #7a889d;
+  color: var(--text-tertiary);
   pointer-events: none;
 `;
 
@@ -856,9 +870,9 @@ const TimetableTriggerBtn = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background-color: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: var(--border-success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -866,7 +880,7 @@ const TimetableTriggerBtn = styled.button`
   transition: all 0.15s;
 
   &:hover {
-    background-color: #dcfce7;
+    background-color: rgba(16, 185, 129, 0.2);
   }
 `;
 
@@ -875,7 +889,7 @@ const CardTimetableActionRow = styled.div`
   justify-content: flex-end;
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px dashed #e2e8f0;
+  border-top: 1px dashed var(--border-default);
 `;
 
 const CardTimetableBtn = styled.button`
@@ -883,22 +897,22 @@ const CardTimetableBtn = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
+  background-color: var(--bg-brand);
+  color: var(--text-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background-color: #dbeafe;
+    background-color: var(--blue-100);
   }
 `;
 
 const LastUpdatedText = styled.span`
   font-size: 11px;
-  color: #70839d;
+  color: var(--text-tertiary);
 `;
 
 const RefreshButton = styled.button<{
@@ -913,7 +927,7 @@ const RefreshButton = styled.button<{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #70839d;
+  color: var(--text-tertiary);
   cursor: pointer;
   padding: 0;
 
@@ -976,7 +990,7 @@ const BusSectionHeading = styled.div<{ $isRed: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
-  color: ${({ $isRed }) => ($isRed ? "#d64a3a" : "#1f5fbc")};
+  color: ${({ $isRed }) => ($isRed ? "var(--red-500)" : "var(--interactive-primary)")};
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
@@ -996,10 +1010,10 @@ const BusCardItem = styled.div<{ $selected: boolean }>`
   width: 100%;
   flex-shrink: 0;
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--bg-base);
   overflow: hidden;
   box-shadow: inset 0 0 0 ${({ $selected }) => ($selected ? "2px" : "1px")}
-    ${({ $selected }) => ($selected ? "#5e92f0" : "rgba(14, 77, 157, 0.08)")};
+    ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "rgba(14, 77, 157, 0.08)")};
   transition:
     box-shadow 0.18s ease,
     transform 0.18s ease;
@@ -1032,7 +1046,7 @@ const BusCardButtonInnerWrapper = styled.div`
 const RouteDescription = styled.div`
   font-size: 12px;
   font-weight: 600;
-  color: #0e4d9d;
+  color: var(--text-brand);
   word-break: keep-all;
 `;
 
@@ -1063,16 +1077,16 @@ const ArrivalTime = styled.span<{ $isEstimated?: boolean }>`
   font-weight: 500;
   font-size: 15px;
   line-height: 1.2;
-  color: ${({ $isEstimated }) => ($isEstimated ? "#6b7280" : "#202020")};
+  color: ${({ $isEstimated }) => ($isEstimated ? "var(--gray-600)" : "var(--text-primary)")};
   white-space: nowrap;
 `;
 
 const StatusBadge = styled.span`
   font-size: 12px;
-  color: #666666;
+  color: var(--gray-600);
   font-weight: 400;
   border-radius: 2px;
-  border: 0.5px solid #cecece;
+  border: 0.5px solid var(--border-strong);
   padding: 2px 4px;
   word-break: keep-all;
   min-width: 0;
@@ -1084,11 +1098,11 @@ const ChevronIcon = styled.span<{ $selected: boolean }>`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: ${({ $selected }) => ($selected ? "#5e92f0" : "#8ca0bb")};
+  color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--border-strong)")};
 `;
 
 const BusNoticeText = styled.div<{ $hasRouteProgress: boolean }>`
-  color: #4f6482;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.55;
@@ -1100,11 +1114,11 @@ const StatusText = styled.span<{ $status?: string }>`
   color: ${({ $status }) => {
     switch ($status) {
       case "여유":
-        return "#006f1e";
+        return "var(--border-success)";
       case "보통":
-        return "#0e4d9d";
+        return "var(--text-brand)";
       case "혼잡":
-        return "#d10000";
+        return "var(--text-error)";
       default:
         return "inherit";
     }
@@ -1113,12 +1127,12 @@ const StatusText = styled.span<{ $status?: string }>`
 
 const LastBus = styled.span`
   font-weight: 500;
-  color: #d10000;
+  color: var(--text-error);
 `;
 
 const SkeletonCard = styled.div`
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--bg-base);
   flex-shrink: 0;
   padding: 20px;
   box-sizing: border-box;
@@ -1147,8 +1161,42 @@ const EmptyPanelMessage = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: #6c819d;
+  color: var(--text-tertiary);
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;
+`;
+
+const ErrorNoticeCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin: 0 0 10px 0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  gap: 8px;
+`;
+
+const ErrorNoticeText = styled.span`
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+`;
+
+const ErrorRetryButton = styled.button`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--interactive-primary);
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--blue-50);
+  }
 `;

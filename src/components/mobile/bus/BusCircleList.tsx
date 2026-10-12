@@ -19,7 +19,7 @@ export default function BusCircleList({ busList }: Props) {
 }
 
 const BusCircleListWrapper = styled.div`
-  background-color: #e8f0fe;
+  background-color: var(--bg-brand);
   border-radius: 12px;
   padding: 12px 16px;
   //margin-bottom: 24px;

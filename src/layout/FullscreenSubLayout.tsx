@@ -7,7 +7,7 @@ interface FullscreenSubLayoutProps {
 }
 
 export default function FullscreenSubLayout({
-  backgroundColor = "#ffffff",
+  backgroundColor = "var(--bg-base)",
 }: FullscreenSubLayoutProps) {
   const outlet = useOutlet();
   const location = useLocation();

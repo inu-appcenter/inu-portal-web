@@ -181,7 +181,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
 `;
 
 const StyledContent = styled(Dialog.Content)`
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 20px;
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.15),
@@ -220,13 +220,13 @@ const HeaderContainer = styled.div`
 const StyledTitle = styled(Dialog.Title)`
   margin: 0;
   font-weight: 600;
-  color: #1c1c1e;
+  color: var(--text-primary);
   font-size: 24px;
 
   .day {
     font-size: 16px;
     margin-left: 8px;
-    color: #8e8e93;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -237,7 +237,7 @@ const Title = styled(Dialog.Title)`
   flex-direction: row;
   align-items: center;
   font-weight: 500;
-  color: #1c1c1e;
+  color: var(--text-primary);
 
   img,
   svg {
@@ -262,14 +262,14 @@ const EventListContainer = styled.div`
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #e5e5ea;
+    background-color: var(--gray-200);
     border-radius: 2px;
   }
 `;
 
 const EmptyMessage = styled.p`
   text-align: center;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   font-size: 14px;
   margin: auto 0;
   padding: 0 20px;

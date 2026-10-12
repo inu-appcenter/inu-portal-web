@@ -11,7 +11,7 @@ import {
 import Box from "@/components/common/Box";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
 import {
@@ -367,14 +367,18 @@ const MobilePhoneBookSearchPage = () => {
 
       <SearchSpacer />
 
-      <FloatingSearchBar>
-        <MobilePillSearchBar
+      <FloatingSearchBarContainer>
+        <FloatingSearchBar
           value={inputValue}
           onChange={setInputValue}
           onSubmit={handleSearchSubmit}
+          onSearch={handleSearchSubmit}
           placeholder={SEARCH_PLACEHOLDER}
+          isActive={true}
+          disableCollapse={true}
+          disableHistory={true}
         />
-      </FloatingSearchBar>
+      </FloatingSearchBarContainer>
     </PageWrapper>
   );
 };
@@ -547,8 +551,8 @@ const ResultIconCircle = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  background: #c9ced8;
-  color: #fff;
+  background: var(--gray-300);
+  color: var(--text-inverse);
   flex-shrink: 0;
 `;
 
@@ -563,7 +567,7 @@ const ResultTitle = styled.h3`
   margin: 0;
   font-size: 14px;
   font-weight: 800;
-  color: #2456ad;
+  color: rgb(36, 86, 173);
   line-height: 1.35;
   word-break: keep-all;
 `;
@@ -572,7 +576,7 @@ const ResultSubtitle = styled.p`
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
-  color: #1f2937;
+  color: var(--text-primary);
   word-break: keep-all;
 `;
 
@@ -581,7 +585,7 @@ const ResultPhone = styled.p`
   font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
-  color: #111827;
+  color: var(--text-primary);
   word-break: break-word;
 `;
 
@@ -589,7 +593,7 @@ const ResultArrow = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #98a2b3;
+  color: var(--text-tertiary);
 `;
 
 const SkeletonCard = styled.div`
@@ -601,7 +605,7 @@ const SkeletonCard = styled.div`
 
   div {
     border-radius: 999px;
-    background: linear-gradient(90deg, #eef2f8 0%, #f7f9fc 50%, #eef2f8 100%);
+    background: linear-gradient(90deg, rgb(238, 242, 248) 0%, rgb(247, 249, 252) 50%, rgb(238, 242, 248) 100%);
     background-size: 200% 100%;
     animation: pulse 1.4s ease-in-out infinite;
   }
@@ -650,8 +654,8 @@ const LoadMoreButton = styled.button`
   border: none;
   border-radius: 14px;
   padding: 14px 16px;
-  background: #eef4ff;
-  color: #2f5fb3;
+  background: var(--bg-brand);
+  color: rgb(47, 95, 179);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
@@ -666,7 +670,7 @@ const LoadMoreButton = styled.button`
 
 const EmptyState = styled.div`
   font-size: 14px;
-  color: #888;
+  color: var(--text-tertiary);
   text-align: center;
   padding: 24px 0;
 `;
@@ -675,7 +679,7 @@ const SearchSpacer = styled.div`
   height: 88px;
 `;
 
-const FloatingSearchBar = styled.div`
+const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
   bottom: calc(28px + env(safe-area-inset-bottom, 0px));

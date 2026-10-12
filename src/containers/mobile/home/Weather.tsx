@@ -24,14 +24,14 @@ const getTemperatureValue = (temperature: string) =>
   temperature.replace(/\s+/g, "").replace(/[°℃]|C$/gi, "");
 
 const NIGHT_GRADIENT =
-  "linear-gradient(90deg, #374d7c 4.5%, #0b2143 52.5%, #000306 100%)";
+  "linear-gradient(90deg, rgb(55, 77, 124) 4.5%, rgb(11, 33, 67) 52.5%, rgb(0, 3, 6) 100%)";
 
 const DAY_GRADIENTS: Record<SkyConditionName, string> = {
-  맑음: "linear-gradient(90deg, #b5f1fb 0%, #8ce3d6 100%)",
-  구름: "linear-gradient(90deg, #fff7f0 0%, #85b3f2 100%)",
-  눈: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-  진눈깨비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
-  비: "linear-gradient(90deg, #a5c7f4 0%, #3b82ca 100%)",
+  맑음: "linear-gradient(90deg, rgb(181, 241, 251) 0%, rgb(140, 227, 214) 100%)",
+  구름: "linear-gradient(90deg, rgb(255, 247, 240) 0%, rgb(133, 179, 242) 100%)",
+  눈: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
+  진눈깨비: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
+  비: "linear-gradient(90deg, rgb(165, 199, 244) 0%, rgb(59, 130, 202) 100%)",
 };
 
 export default function WeatherForm() {
@@ -185,8 +185,8 @@ const Info = styled.div`
     min-width: 0;
     margin: 0;
     padding: 0 0 4px;
-    border-bottom: 2px solid #fff;
-    color: white;
+    border-bottom: 2px solid var(--bg-base);
+    color: var(--text-inverse);
     line-height: 1;
     white-space: nowrap;
   }
@@ -209,7 +209,7 @@ const Info = styled.div`
     align-items: center;
     gap: 6px;
     margin: 0;
-    color: white;
+    color: var(--text-inverse);
     font-size: clamp(12px, 2.1vw, 16px);
     font-weight: 400;
     line-height: 1.25;
@@ -224,7 +224,7 @@ const Info = styled.div`
 
   .location {
     margin: 0;
-    color: white;
+    color: var(--text-inverse);
     font-size: clamp(20px, 3.2vw, 26px);
     font-weight: 400;
     line-height: 1.15;

@@ -296,5 +296,34 @@ export const updateAdminBusServiceStatus = async (enabled: boolean) => {
   return response.data;
 };
 
+// 검색 엔진 색인 관리 API
+export const reindexAllSearch = async (
+  recreate: boolean = false,
+): Promise<ApiResponse<number>> => {
+  try {
+    const response = await tokenInstance.post<ApiResponse<number>>(
+      `/api/search/admin/reindex?recreate=${recreate}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error("전체 재색인 요청 실패:", error);
+    throw new Error("전체 데이터 재색인에 실패했습니다.");
+  }
+};
+
+export const reindexSearchDomain = async (
+  domain: string,
+): Promise<ApiResponse<number>> => {
+  try {
+    const response = await tokenInstance.post<ApiResponse<number>>(
+      `/api/search/admin/reindex/${domain}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`도메인(${domain}) 재색인 요청 실패:`, error);
+    throw new Error(`${domain} 도메인 재색인에 실패했습니다.`);
+  }
+};
+
 
 

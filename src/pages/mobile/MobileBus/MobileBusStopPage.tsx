@@ -74,7 +74,7 @@ export default function MobileBusStopPage() {
 const EmptyText = styled.div`
   padding: 40px 0;
   text-align: center;
-  color: #8c8c8c;
+  color: var(--text-tertiary);
   font-size: 14px;
 `;
 

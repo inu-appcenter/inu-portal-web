@@ -39,7 +39,7 @@ const AiTitleWrapper = styled.div`
     }
   }
   button {
-    color: white;
+    color: var(--text-inverse);
     border: none;
     background-color: transparent;
     font-size: 18px;
@@ -62,18 +62,18 @@ const AiTitleWrapper = styled.div`
 // `;
 
 const AiTitle1 = styled.span`
-  color: white; /* 기본 텍스트 색상 */
+  color: var(--text-inverse); /* 기본 텍스트 색상 */
 `;
 
 const AiTitle2 = styled.span`
   background: linear-gradient(
     270deg,
-    #ffe5ae 24.95%,
-    #fed2a7 30.62%,
-    #fdc1a1 38.27%,
-    #fb9291 47.42%,
-    #d192c0 54.6%,
-    #9892ff 63.63%
+    rgb(255, 229, 174) 24.95%,
+    rgb(254, 210, 167) 30.62%,
+    rgb(253, 193, 161) 38.27%,
+    rgb(251, 146, 145) 47.42%,
+    rgb(209, 146, 192) 54.6%,
+    rgb(152, 146, 255) 63.63%
   );
   -webkit-background-clip: text;
   background-clip: text;

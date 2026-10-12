@@ -77,7 +77,7 @@ const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
   box-sizing: border-box;
   white-space: nowrap;
   border-bottom: 2px solid
-    ${({ isSelected }) => (isSelected ? "#0E4D9D" : "#B5B5B5")};
+    ${({ isSelected }) => (isSelected ? "var(--interactive-primary)" : "var(--border-subtle)")};
   font-style: normal;
   font-weight: 600;
   font-size: 15px;
@@ -87,7 +87,7 @@ const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
 
   text-align: center;
   color: ${({ isSelected }) =>
-    isSelected ? "#0E4D9D" : "#B5B5B5"}; /* 회색 계열로 변경 */
+    isSelected ? "var(--interactive-primary)" : "var(--text-disabled)"}; /* 회색 계열로 변경 */
   cursor: pointer;
 `;
 

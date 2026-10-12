@@ -4,7 +4,7 @@ import Icon from "@/components/common/Icon";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { requestFriend, searchFriend } from "@/apis/friends";
-import MobilePillSearchBar from "@/components/mobile/common/MobilePillSearchBar";
+import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import { FriendResponseDto } from "@/types/friends";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -85,7 +85,7 @@ export default function AddFriendModal({
           <Header>
             <Title>친구 추가</Title>
             <CloseButton onClick={() => onOpenChange(false)}>
-              <Icon name="close-md" size={24} color="#1C1C1E" />
+              <Icon name="close-md" size={24} color="var(--text-primary)" />
             </CloseButton>
           </Header>
 
@@ -126,15 +126,21 @@ export default function AddFriendModal({
               )}
             </ResultArea>
 
-            <MobilePillSearchBar
-              value={nicknameInput}
-              onChange={(val) => {
-                setNicknameInput(val);
-                if (searchResult) setSearchResult(null);
-              }}
-              onSubmit={handleSearch}
-              placeholder="닉네임을 입력하세요."
-            />
+            <SearchBarContainer>
+              <FloatingSearchBar
+                value={nicknameInput}
+                onChange={(val) => {
+                  setNicknameInput(val);
+                  if (searchResult) setSearchResult(null);
+                }}
+                onSubmit={handleSearch}
+                onSearch={handleSearch}
+                placeholder="닉네임을 입력하세요."
+                isActive={true}
+                disableCollapse={true}
+                disableHistory={true}
+              />
+            </SearchBarContainer>
           </Content>
         </StyledContent>
       </Dialog.Portal>
@@ -158,7 +164,7 @@ const StyledContent = styled(Dialog.Content)`
   transform: translate(-50%, -50%);
   width: 90vw;
   max-width: 400px;
-  background-color: white;
+  background-color: var(--bg-base);
   border-radius: 24px;
   z-index: 2001;
   display: flex;
@@ -181,7 +187,7 @@ const Header = styled.div`
 const Title = styled.h2`
   font-size: 20px;
   font-weight: 700;
-  color: #1c1c1e;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -207,7 +213,7 @@ const Content = styled.div`
 
 const Description = styled.p`
   font-size: 14px;
-  color: #8e8e93;
+  color: var(--text-tertiary);
   margin: 0;
   line-height: 1.5;
 `;
@@ -221,7 +227,7 @@ const ResultArea = styled.div`
 
 const EmptyResult = styled.div`
   text-align: center;
-  color: #c7c7cc;
+  color: var(--text-disabled);
   font-size: 14px;
   padding: 20px 0;
 `;
@@ -230,8 +236,8 @@ const SubmitButton = styled.button`
   margin-top: 12px;
   width: 100%;
   padding: 14px;
-  background-color: #5e92f0;
-  color: white;
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 15px;
@@ -244,8 +250,8 @@ const SubmitButton = styled.button`
   transition: all 0.2s;
 
   &:disabled {
-    background-color: #e5e5ea;
-    color: #8e8e93;
+    background-color: var(--bg-disabled);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
 
@@ -254,3 +260,10 @@ const SubmitButton = styled.button`
     opacity: 0.9;
   }
 `;
+
+const SearchBarContainer = styled.div`
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 12px;
+`;
+

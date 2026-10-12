@@ -12,8 +12,33 @@ import type { PromotionDefinition } from "./types";
  */
 export const PROMOTIONS = {
   /**
+   * 수업 15분 전부터 잠금화면·다이내믹 아일랜드(안드로이드는 상단 알림바)에
+   * 실시간 수업 카드를 띄우는 기능 소개 시트. 앱 3.0.14+ 최초 1회.
+   * iOS는 첫 카드가 뜰 때 시스템 허용 팝업이 나오므로, 그보다 먼저 보여줘야
+   * "허용"을 누르라는 안내가 의미가 있다. 그래서 다른 시트보다 우선한다.
+   */
+  LIVE_ACTIVITY: {
+    id: "live-activity-intro",
+    location: "Live Activity Sheet",
+    priority: 120,
+    maxImpressions: 1,
+  },
+  /**
+   * 앱에서 포털·도서관·이러닝 정보를 자동으로 불러오는 기능 소개 시트.
+   * 이 기능이 들어간 앱(3.0.14+)에서만 의미가 있어서, 그 버전으로 처음 들어온
+   * 사람에게 신규 기능 안내보다 먼저 한 번만 보여준다.
+   * "봤는지"는 `promotionSeenStorage`(PORTAL_AUTO_SYNC_INTRO)가 판정한다.
+   */
+  PORTAL_AUTO_SYNC: {
+    id: "portal-auto-sync-intro",
+    location: "Portal Auto Sync Sheet",
+    priority: 110,
+    maxImpressions: 1,
+  },
+  /**
    * 최초 진입 시 신규 기능을 한 번에 소개하는 시트.
-   * 우선순위를 가장 높게 둬서, 이게 뜬 세션에는 다른 툴팁이 겹치지 않는다.
+   * 위의 앱 기능 소개 시트들 다음으로 우선순위를 높게 둬서, 이게 뜬 세션에는
+   * 다른 툴팁이 겹치지 않는다.
    * 실수로 닫은 사람을 위해 사흘 뒤 한 번만 더 기회를 준다.
    */
   FEATURE_TOUR: {

@@ -1,0 +1,378 @@
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import styled, { keyframes } from "styled-components";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import { useAgentBridge, AIState } from "@/hooks/useAgentBridge";
+import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import useUserStore from "@/stores/useUserStore";
+import { getValidAccessToken } from "@/apis/tokenInstance";
+
+interface AgentFloatingBottomSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const AgentFloatingBottomSheet: React.FC<AgentFloatingBottomSheetProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const location = useLocation();
+  const initialLocationRef = useRef(location.pathname + location.search);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // 내부 브릿지 훅
+  const {
+    iframeRef,
+    isPortalModalOpen,
+    setIsPortalModalOpen,
+    sendClientContextToIframe,
+    aiState,
+    setAiState,
+    sendHostCommand,
+  } = useAgentBridge({
+    onClose: () => {
+      onClose();
+    },
+  });
+
+  // 부모 isOpen 상태 변경 시 처리
+  useEffect(() => {
+    if (isOpen) {
+      initialLocationRef.current = location.pathname + location.search;
+      const isRestoring = sessionStorage.getItem("INTIP_AGENT_SHOULD_RESTORE") === "true";
+      if (isRestoring) {
+        sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+        const prevState = (sessionStorage.getItem("INTIP_AGENT_PREV_STATE") || "expanded") as AIState;
+        setAiState(prevState);
+        sendHostCommand("RESUME", prevState);
+      } else {
+        setAiState("listening");
+        sendHostCommand("TRIGGER_OPEN");
+      }
+    } else {
+      setAiState("closed");
+      sendHostCommand("FORCE_CLOSE");
+      // 만약 게시물 이동(RESUME_ON_BACK) 중이 아니라 사용자가 직접 시트를 닫은 것이라면 복원 플래그 정리
+      if (sessionStorage.getItem("INTIP_AGENT_RESUME_ON_BACK") !== "true") {
+        sessionStorage.removeItem("INTIP_AGENT_SHOULD_RESTORE");
+        sessionStorage.removeItem("INTIP_AGENT_PREV_STATE");
+      }
+    }
+  }, [isOpen, sendHostCommand, setAiState]);
+
+  // 페이지 이동 시 자동 닫기 (단, 에이전트 내 링크 이동 시에는 위에서 이미 onClose를 처리함)
+  useEffect(() => {
+    if (isOpen && initialLocationRef.current !== location.pathname + location.search) {
+      onClose();
+    }
+  }, [location.pathname, location.search, isOpen, onClose]);
+
+  const [authToken, setAuthToken] = useState<string>(() => {
+    try {
+      const fromStore = useUserStore.getState().tokenInfo?.accessToken;
+      if (fromStore) return fromStore;
+      const raw = localStorage.getItem("tokenInfo");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.accessToken) return parsed.accessToken;
+      }
+    } catch {}
+    return (
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("token") ||
+      sessionStorage.getItem("accessToken") ||
+      ""
+    );
+  });
+
+  // 모달 오픈 시 토큰 유효성 검사 및 필요시 자동 갱신
+  useEffect(() => {
+    if (isOpen) {
+      getValidAccessToken().then((freshToken) => {
+        if (freshToken && freshToken !== authToken) {
+          setAuthToken(freshToken);
+        }
+      });
+    }
+  }, [isOpen, authToken]);
+
+  const resolvedAgentUrl = useMemo(() => {
+    let url = import.meta.env.VITE_AGENT_WEB_URL || "https://inu-agent.inuappcenter.kr";
+    if (url.includes("localhost") && window.location.hostname && window.location.hostname !== "localhost") {
+      url = url.replace("localhost", window.location.hostname);
+    }
+    return url;
+  }, []);
+
+  const iframeSrc = useMemo(() => {
+    return `${resolvedAgentUrl}?token=${encodeURIComponent(authToken)}&client=INTIP&mode=floating`;
+  }, [resolvedAgentUrl, authToken]);
+
+  // 바텀시트 상태별 높이 계산
+  const getSheetHeight = useCallback((state: AIState): string => {
+    switch (state) {
+      case "listening":
+      case "recognized":
+        return "105px";
+      case "thinking":
+        return "240px";
+      case "answering":
+        return "min(920px, 92dvh)";
+      case "expanded":
+        return "100dvh";
+      case "closed":
+      default:
+        return "105px";
+    }
+  }, []);
+
+  const effectiveState = isOpen ? (aiState === "closed" ? "listening" : aiState) : "closed";
+  const currentHeight = getSheetHeight(effectiveState);
+  const isAmbientGlowActive =
+    isOpen &&
+    (effectiveState === "listening" || effectiveState === "recognized" || effectiveState === "thinking");
+  const isExpanded = effectiveState === "expanded";
+
+  // 드래그 제스처 핸들러 (Half ↔ Full)
+  const dragStartYRef = useRef<number>(0);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    dragStartYRef.current = e.clientY;
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const deltaY = e.clientY - dragStartYRef.current;
+
+    if (deltaY < -40) {
+      // 위로 드래그 -> 전체화면 확장
+      setAiState("expanded");
+      sendHostCommand("SET_EXPANDED");
+    } else if (deltaY > 50) {
+      // 아래로 드래그 -> 전체화면이면 Half로 축소, Half면 닫기
+      if (aiState === "expanded") {
+        setAiState("answering");
+        sendHostCommand("SET_HALF");
+      } else {
+        onClose();
+      }
+    }
+  };
+
+  const scrimPointerStartRef = useRef<{ x: number; y: number; time: number }>({ x: 0, y: 0, time: 0 });
+
+  const handleScrimPointerDown = (e: React.PointerEvent) => {
+    scrimPointerStartRef.current = { x: e.clientX, y: e.clientY, time: Date.now() };
+  };
+
+  const handleScrimPointerUp = (e: React.PointerEvent) => {
+    if (isDragging) return;
+    const dx = Math.abs(e.clientX - scrimPointerStartRef.current.x);
+    const dy = Math.abs(e.clientY - scrimPointerStartRef.current.y);
+    const dt = Date.now() - scrimPointerStartRef.current.time;
+
+    // 드래그가 끝난 위치가 바깥이더라도 드래그 동작 중에는 닫히지 않고, 순수 클릭(12px 이내, 500ms 이내)일 때만 닫기
+    if (dx < 12 && dy < 12 && dt < 500) {
+      onClose();
+    }
+  };
+
+  const hasBeenOpenedRef = useRef(false);
+  if (isOpen) {
+    hasBeenOpenedRef.current = true;
+  }
+  const hasBeenOpenedOnce = hasBeenOpenedRef.current || isOpen;
+
+  return (
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* 1. 배경 딤 (Scrim) */}
+            <Scrim
+              $active={true}
+              $state={aiState}
+              onPointerDown={handleScrimPointerDown}
+              onPointerUp={handleScrimPointerUp}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+
+            {/* 2. 하단 에지 라이팅 (Ambient Edge Glow) */}
+            <AmbientEdgeGlow
+              $active={true}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: isAmbientGlowActive ? 1 : 0, y: isAmbientGlowActive ? 0 : 20 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* 3. 플로팅 시트 컨테이너 (한 번 열린 후에는 iframe을 언마운트하지 않고 유지하여 대화 세션 완전 보존) */}
+      {hasBeenOpenedOnce && (
+        <SheetContainer
+          id="ai-sheet-container"
+          $height={currentHeight}
+          $isExpanded={isExpanded}
+          $isDragging={isDragging}
+          initial={false}
+          animate={{
+            opacity: isOpen ? 1 : 0,
+            y: isOpen ? 0 : 20,
+            scale: isOpen ? 1 : 0.98,
+          }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{
+            visibility: isOpen ? "visible" : "hidden",
+            pointerEvents: isOpen ? (isDragging ? "none" : "auto") : "none",
+          }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+        >
+          {/* Child iframe */}
+          <IframeWrapper $isDragging={isDragging}>
+            <StyledIframe
+              ref={iframeRef}
+              src={iframeSrc}
+              title="INU AI Campus Assistant Floating Sheet"
+              allow="clipboard-write; clipboard-read; microphone"
+              onLoad={() => {
+                sendClientContextToIframe();
+              }}
+            />
+          </IframeWrapper>
+        </SheetContainer>
+      )}
+
+      {/* 학적/포털 연동 계정 모달 */}
+      <PortalAccountModal
+        isOpen={isPortalModalOpen}
+        onClose={() => setIsPortalModalOpen(false)}
+        onSuccess={() => {
+          setIsPortalModalOpen(false);
+          sendClientContextToIframe(true);
+        }}
+      />
+    </>
+  );
+};
+
+export default AgentFloatingBottomSheet;
+
+/* --- Animations & Styled Components --- */
+
+const pulseGlow = keyframes`
+  0% {
+    opacity: 0.6;
+    transform: scaleX(0.96) translateY(0);
+    filter: blur(24px) saturate(1.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.04) translateY(-3px);
+    filter: blur(32px) saturate(2);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scaleX(0.96) translateY(0);
+    filter: blur(24px) saturate(1.4);
+  }
+`;
+
+const Scrim = styled(motion.div)<{ $active: boolean; $state: AIState }>`
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: 9990;
+  pointer-events: ${({ $active }) => ($active ? "auto" : "none")};
+`;
+
+const AmbientEdgeGlow = styled(motion.div)<{ $active: boolean }>`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: linear-gradient(
+    90deg,
+    rgb(0, 242, 254) 0%,
+    rgb(79, 172, 254) 25%,
+    rgb(127, 0, 255) 50%,
+    rgb(225, 0, 255) 75%,
+    rgb(255, 8, 68) 100%
+  );
+  border-radius: 9999px 9999px 0 0;
+  z-index: 9995;
+  pointer-events: none;
+  animation: ${pulseGlow} 2.5s infinite ease-in-out;
+`;
+
+const SheetContainer = styled(motion.div)<{
+  $height: string;
+  $isExpanded: boolean;
+  $isDragging: boolean;
+}>`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 100%;
+  max-width: ${({ $isExpanded }) => ($isExpanded ? "100%" : "680px")};
+  height: ${({ $height }) => $height};
+  background: ${({ $isExpanded }) => ($isExpanded ? "var(--bg-subtle)" : "transparent")};
+  border-radius: ${({ $isExpanded }) => ($isExpanded ? "0" : "28px 28px 0 0")};
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  will-change: height, opacity;
+  transition: height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.25s ease;
+  box-sizing: border-box;
+  touch-action: none;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    ${({ $isExpanded }) =>
+      $isExpanded
+        ? `
+      padding-top: var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px));
+      padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+      padding-left: var(--native-safe-area-inset-left, env(safe-area-inset-left, 0px));
+      padding-right: var(--native-safe-area-inset-right, env(safe-area-inset-right, 0px));
+      background-color: var(--bg-subtle);
+    `
+        : `
+      padding-bottom: var(--native-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+      background-color: transparent;
+    `}
+  }
+`;
+
+const IframeWrapper = styled.div<{ $isDragging: boolean }>`
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: transparent;
+  pointer-events: ${({ $isDragging }) => ($isDragging ? "none" : "auto")};
+`;
+
+const StyledIframe = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  display: block;
+`;

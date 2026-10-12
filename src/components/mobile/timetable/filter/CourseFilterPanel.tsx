@@ -181,14 +181,14 @@ const CourseFilterPanel = ({
                     >
                       <span>{chip}</span>
                       <XIconWrapper>
-                        <Icon name="close-md" size={12} color="var(--text-brand, #0061ff)" />
+                        <Icon name="close-md" size={12} color="var(--text-brand)" />
                       </XIconWrapper>
                     </ChipItem>
                   ))}
                 </ChipsScrollWrapper>
               </CategoryTextWrapper>
               <ChevronWrapper>
-                <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
+                <Icon name="chevron-right" size={20} color="var(--gray-400)" />
               </ChevronWrapper>
               <Ripple />
             </CategoryItemRow>
@@ -206,13 +206,13 @@ const CourseFilterPanel = ({
           <BreadcrumbItem $active={!majorLevel1}>전공/영역</BreadcrumbItem>
           {majorLevel1 && (
             <>
-              <Icon name="chevron-right" size={16} color="var(--gray-400, #b0b8c1)" />
+              <Icon name="chevron-right" size={16} color="var(--gray-400)" />
               <BreadcrumbItem $active={!majorLevel2}>{majorLevel1}</BreadcrumbItem>
             </>
           )}
           {majorLevel2 && (
             <>
-              <Icon name="chevron-right" size={16} color="var(--gray-400, #b0b8c1)" />
+              <Icon name="chevron-right" size={16} color="var(--gray-400)" />
               <BreadcrumbItem $active>{majorLevel2}</BreadcrumbItem>
             </>
           )}
@@ -233,10 +233,10 @@ const CourseFilterPanel = ({
                 >
                   <OptionLabel>{m.name}</OptionLabel>
                   {m.hasChevron ? (
-                    <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
+                    <Icon name="chevron-right" size={20} color="var(--gray-400)" />
                   ) : (
                     isSelected && (
-                      <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
+                      <Icon name="check" size={20} color="var(--border-brand)" />
                     )
                   )}
                   <Ripple />
@@ -264,14 +264,14 @@ const CourseFilterPanel = ({
                       size={24}
                       color={
                         isPinned
-                          ? "var(--yellow-400, #ffc021)"
-                          : "var(--gray-300, #d1d6db)"
+                          ? "var(--yellow-400)"
+                          : "var(--gray-300)"
                       }
-                      fill={isPinned ? "var(--yellow-400, #ffc021)" : "none"}
+                      fill={isPinned ? "var(--yellow-400)" : "none"}
                     />
                   </FavoriteStarButton>
                   <OptionLabel>{college}</OptionLabel>
-                  <Icon name="chevron-right" size={20} color="var(--gray-400, #b0b8c1)" />
+                  <Icon name="chevron-right" size={20} color="var(--gray-400)" />
                   <Ripple />
                 </OptionItemRow>
               );
@@ -288,7 +288,7 @@ const CourseFilterPanel = ({
                 <OptionItemRow key={subName} onClick={() => handleSelectMajor(subName)}>
                   <OptionLabel style={{ paddingLeft: "8px" }}>{subName}</OptionLabel>
                   {isSelected && (
-                    <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
+                    <Icon name="check" size={20} color="var(--border-brand)" />
                   )}
                   <Ripple />
                 </OptionItemRow>
@@ -313,15 +313,15 @@ const CourseFilterPanel = ({
                       size={24}
                       color={
                         isPinned
-                          ? "var(--yellow-400, #ffc021)"
-                          : "var(--gray-300, #d1d6db)"
+                          ? "var(--yellow-400)"
+                          : "var(--gray-300)"
                       }
-                      fill={isPinned ? "var(--yellow-400, #ffc021)" : "none"}
+                      fill={isPinned ? "var(--yellow-400)" : "none"}
                     />
                   </FavoriteStarButton>
                   <OptionLabel>{dept}</OptionLabel>
                   {isSelected && (
-                    <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
+                    <Icon name="check" size={20} color="var(--border-brand)" />
                   )}
                   <Ripple />
                 </OptionItemRow>
@@ -341,7 +341,7 @@ const CourseFilterPanel = ({
             <OptionItemRow key={option} onClick={() => handleSelectSort(option)}>
               <OptionLabel style={{ paddingLeft: "8px" }}>{option}</OptionLabel>
               {filters.sort === option && (
-                <Icon name="check" size={20} color="var(--border-brand, #0061ff)" />
+                <Icon name="check" size={20} color="var(--border-brand)" />
               )}
               <Ripple />
             </OptionItemRow>
@@ -549,8 +549,8 @@ const PanelBottomSpacer = styled.div`
 `;
 
 const CategoriesContainer = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   overflow: hidden;
   display: flex;
@@ -610,7 +610,7 @@ const CategoryTextWrapper = styled.div`
     background: linear-gradient(
       90deg,
       rgba(255, 255, 255, 0) 0%,
-      var(--bg-base, #ffffff) 100%
+      var(--bg-base) 100%
     );
     pointer-events: none;
     z-index: 2;
@@ -618,7 +618,7 @@ const CategoryTextWrapper = styled.div`
 `;
 
 const CategoryLabel = styled.span`
-  color: var(--text-secondary, #333d4b);
+  color: var(--text-secondary);
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
@@ -641,8 +641,8 @@ const ChipsScrollWrapper = styled.div`
 `;
 
 const ChipItem = styled.div`
-  background: var(--bg-brand-subtle, #eff6ff);
-  border: 1px solid var(--border-brand-subtle, #d3e5ff);
+  background: var(--bg-brand);
+  border: 1px solid var(--border-brand-subtle);
   border-radius: 999px;
   padding: 4px 8px 4px 12px;
   display: inline-flex;
@@ -658,7 +658,7 @@ const ChipItem = styled.div`
   }
 
   span {
-    color: var(--text-brand, #0061ff);
+    color: var(--text-brand);
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
@@ -680,7 +680,7 @@ const XIconWrapper = styled.div`
 
   &:hover {
     opacity: 1;
-    background-color: var(--blue-100, #dbeafe);
+    background-color: var(--blue-100);
   }
 `;
 
@@ -695,14 +695,14 @@ const BreadcrumbRow = styled.div`
 
 const BreadcrumbItem = styled.span<{ $active?: boolean }>`
   color: ${({ $active }) =>
-    $active ? "var(--text-secondary, #333d4b)" : "var(--text-tertiary, #8b95a1)"};
+    $active ? "var(--text-secondary)" : "var(--text-tertiary)"};
   font-size: 15px;
   font-weight: ${({ $active }) => ($active ? "600" : "400")};
 `;
 
 const OptionsCard = styled.div`
-  background: var(--bg-base, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
   border-radius: 20px;
   overflow: hidden;
   display: flex;
@@ -730,7 +730,7 @@ const OptionItemRow = styled.div`
 `;
 
 const OptionLabel = styled.span`
-  color: var(--gray-900, #191f28);
+  color: var(--gray-900);
   font-size: 16px;
   font-weight: 400;
   flex: 1;
@@ -751,7 +751,7 @@ const FavoriteStarButton = styled.button`
   transition: background-color 0.2s;
 
   &:active {
-    background-color: var(--bg-muted, #f1f3f5);
+    background-color: var(--bg-muted);
   }
 `;
 
@@ -769,8 +769,8 @@ const CheckboxInput = styled.input`
   width: 20px;
   height: 20px;
   border-radius: 4px;
-  border: 1.5px solid var(--gray-400, #b0b8c1);
-  background-color: var(--bg-base, #ffffff);
+  border: 1.5px solid var(--gray-400);
+  background-color: var(--bg-base);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -780,8 +780,8 @@ const CheckboxInput = styled.input`
   transition: all 0.2s;
 
   &:checked {
-    border-color: var(--border-brand, #0061ff);
-    background-color: var(--border-brand, #0061ff);
+    border-color: var(--border-brand);
+    background-color: var(--interactive-primary);
   }
 
   &:checked::after {
@@ -791,7 +791,7 @@ const CheckboxInput = styled.input`
     top: 2px;
     width: 5px;
     height: 10px;
-    border: solid #ffffff;
+    border: solid var(--bg-base);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
@@ -822,7 +822,7 @@ const ToggleSwitchWrapper = styled.label`
 `;
 
 const ToggleLabel = styled.span`
-  color: var(--text-tertiary, #8b95a1);
+  color: var(--text-tertiary);
   font-size: 13px;
 `;
 
@@ -830,7 +830,7 @@ const SwitchInput = styled.input`
   width: 36px;
   height: 20px;
   appearance: none;
-  background-color: var(--gray-300, #d1d6db);
+  background-color: var(--gray-300);
   border-radius: 999px;
   position: relative;
   cursor: pointer;
@@ -838,7 +838,7 @@ const SwitchInput = styled.input`
   transition: background-color 0.2s;
 
   &:checked {
-    background-color: var(--border-brand, #0061ff);
+    background-color: var(--interactive-primary);
   }
 
   &::before {
@@ -847,7 +847,7 @@ const SwitchInput = styled.input`
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: #ffffff;
+    background-color: var(--bg-base);
     top: 2px;
     left: 2px;
     transition: transform 0.2s;
@@ -862,6 +862,6 @@ const TimetableGridContainer = styled.div`
   width: 100%;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--bg-base, #ffffff);
+  background: var(--bg-base);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
