@@ -15,7 +15,8 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
+import Modal from "@/components/common/Modal";
+import PortalAccountForm from "@/components/common/PortalAccountForm";
 import {
   checkPortalAccountLinked,
   fetchStudentTimetableFromApp,
@@ -82,6 +83,7 @@ export default function MobilePortalTimetableImportPage() {
 
   const [step, setStep] = useState<ImportStep>("SELECT_SEMESTER");
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
   const [selectedSemesterIds, setSelectedSemesterIds] = useState<number[]>([]);
   const [semesterGroups, setSemesterGroups] = useState<SemesterCourseGroup[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -280,7 +282,7 @@ export default function MobilePortalTimetableImportPage() {
           courses: resolved,
           isExpanded: true,
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`${sem.label} 처리 오류:`, err);
       }
     }
@@ -313,12 +315,17 @@ export default function MobilePortalTimetableImportPage() {
       return;
     }
 
+    setIsConsentModalOpen(true);
+  };
+
+  const handleConfirmConsentAndFetch = async () => {
+    setIsConsentModalOpen(false);
     await executeFetchAllTimetables();
   };
 
   const handlePortalAccountSuccess = () => {
     setIsPortalModalOpen(false);
-    executeFetchAllTimetables();
+    setIsConsentModalOpen(true);
   };
 
   const toggleCourseSelect = (groupIndex: number, courseIndex: number) => {
@@ -424,9 +431,13 @@ export default function MobilePortalTimetableImportPage() {
               body: { courseOfferingId: item.offering.id },
             });
             totalAdded += 1;
-          } catch (error: any) {
-            const status = error.response?.status;
-            const msg = String(error.response?.data?.msg ?? "");
+          } catch (error: unknown) {
+            const errObj =
+              typeof error === "object" && error !== null
+                ? (error as { response?: { status?: number; data?: { msg?: string } } })
+                : undefined;
+            const status = errObj?.response?.status;
+            const msg = String(errObj?.response?.data?.msg ?? "");
             if (
               status === 409 ||
               msg.includes("중복") ||
@@ -473,9 +484,17 @@ export default function MobilePortalTimetableImportPage() {
       });
 
       setStep("ASK_GRADE_IMPORT");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("시간표 일괄 등록 중 오류:", err);
-      alert(err?.response?.data?.msg || err?.message || "강의 등록에 실패했어요.");
+      const isAxiosError = (
+        e: unknown,
+      ): e is { response?: { data?: { msg?: string } } } =>
+        typeof e === "object" && e !== null && "response" in e;
+      const apiMsg = isAxiosError(err) ? err.response?.data?.msg : undefined;
+      const errorMsg =
+        apiMsg ||
+        (err instanceof Error ? err.message : "강의 등록에 실패했어요.");
+      alert(errorMsg);
       setStep("REVIEW");
     }
   };
@@ -508,9 +527,11 @@ export default function MobilePortalTimetableImportPage() {
         subjectsCount: saveResult.subjectsCount,
       });
       setStep("GRADE_SUCCESS");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("성적 불러오기 오류:", err);
-      alert(err?.message || "성적 정보를 불러오지 못했습니다.");
+      const errorMsg =
+        err instanceof Error ? err.message : "성적 정보를 불러오지 못했습니다.";
+      alert(errorMsg);
       handleSkipGrade();
     }
   };
@@ -989,10 +1010,35 @@ export default function MobilePortalTimetableImportPage() {
         </FixedBottomContent>
       </FixedBottomArea>
 
-      <PortalAccountModal
+      {/* 계정 미연동 시 띄우는 포털 계정 등록 모달 */}
+      <Modal
         isOpen={isPortalModalOpen}
         onClose={() => setIsPortalModalOpen(false)}
-        onSuccess={handlePortalAccountSuccess}
+        title="포털 계정 등록"
+        description="시간표를 가져오려면 인천대학교 포털 계정이 필요해요."
+      >
+        <PortalAccountForm
+          mode="modal"
+          onSuccess={handlePortalAccountSuccess}
+          onCancel={() => setIsPortalModalOpen(false)}
+        />
+      </Modal>
+
+      {/* 시간표 데이터 서버 등록 동의 모달 */}
+      <Modal
+        isOpen={isConsentModalOpen}
+        onClose={() => setIsConsentModalOpen(false)}
+        title="시간표를 INTIP 서버에 등록할까요?"
+        description="포털에서 가져온 시간표 정보를 INTIP 시간표에 등록하여 편리하게 조회할 수 있어요. 포털 비밀번호는 외부로 전송되지 않으며 이 기기에서만 안전하게 사용돼요."
+        primaryButton={{
+          text: "동의하고 가져오기",
+          variant: "primary",
+          onClick: handleConfirmConsentAndFetch,
+        }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsConsentModalOpen(false),
+        }}
       />
     </PageWrapper>
   );
