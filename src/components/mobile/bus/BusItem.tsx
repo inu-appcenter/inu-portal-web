@@ -56,9 +56,10 @@ export default function BusItem({
                   <LabelWrapper>
                     <StatusInfo>
                       {stationText === "시간표 기반" ||
-                      stationText === "통계 추정" ? (
+                      stationText === "통계 추정" ||
+                      stationText === "과거 기록 기반" ? (
                         <span style={{ color: "var(--interactive-primary)", fontWeight: 600 }}>
-                          ⏱️ 시간표 기반
+                          ⏱️ 이전 기록 기반
                         </span>
                       ) : (
                         <>

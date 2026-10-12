@@ -34,11 +34,12 @@ export default function useBusArrival(
   );
   const stableBusList = useMemo(() => busList, [busListIdentityKey]);
 
-  const { data, dataUpdatedAt, isLoading, refetch, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isLoading, refetch, isFetching, isError, error } = useQuery({
     queryKey: ["busArrival", bstopId, busKey],
     queryFn: () => getBusArrival(bstopId),
     refetchInterval: 30 * 1000,
     staleTime: 30 * 1000,
+    retry: 1,
     enabled: enabled && !!bstopId && stableBusList.length > 0,
   });
 
@@ -100,12 +101,13 @@ export default function useBusArrival(
       const seconds = Math.max(0, rawSeconds - elapsedSeconds);
 
       if (isEstimated) {
+        const estMinutes = Math.max(1, Math.round(seconds / 60));
         return {
           ...bus,
           arrivalInfo: {
-            time: toTime(seconds),
+            time: `약 ${estMinutes}분`,
             seconds,
-            station: "시간표 기반",
+            station: "과거 기록 기반",
             status: "보통" as const,
             isLastBus: false,
           },
@@ -142,10 +144,20 @@ export default function useBusArrival(
 
           const nextSeconds = info.seconds - 1;
 
+          // 과거 운행 이력 기반 예측 버스는 초 단위 카운트다운을 수행하지 않고 분 단위 상태 유지
+          if (info.station === "시간표 기반" || info.station === "과거 기록 기반" || info.station === "통계 추정") {
+            return bus;
+          }
+
+          // 0초 이하로 떨어져도 다음 서버 폴링 전까지 강제로 '도착정보 없음'으로 증발시키지 않고 '곧 도착' 유지
           if (nextSeconds <= 0) {
             return {
               ...bus,
-              arrivalInfo: { time: "도착정보 없음", seconds: 0, isLastBus: false },
+              arrivalInfo: {
+                ...info,
+                seconds: 0,
+                time: "곧 도착",
+              },
             };
           }
 
@@ -172,6 +184,8 @@ export default function useBusArrival(
     busArrivalList,
     isLoading: isLoading && busArrivalList.length === 0,
     isFetching,
+    isError,
+    error,
     refetch: handleManualRefetch,
     lastUpdated,
   };
