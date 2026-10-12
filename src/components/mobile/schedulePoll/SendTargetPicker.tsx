@@ -249,7 +249,7 @@ const SendTargetPicker = ({
       <ExternalRow>
         <ExternalButton type="button" onClick={handleExternalShare}>
           <Icon name="share" size={18} />
-          <span>카카오톡 등으로 공유</span>
+          <span>공유하기</span>
         </ExternalButton>
         <ExternalButton type="button" onClick={handleCopyLink}>
           <Icon name="link-angled" size={18} />
