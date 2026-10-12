@@ -229,4 +229,7 @@ export type PollErrorCode =
   | "RESULT_STALE"
   | "RESULT_NOT_READY"
   | "NO_PRIMARY_TIMETABLE"
-  | "ONE_TIME_NOT_SUPPORTED";
+  | "ONE_TIME_NOT_SUPPORTED"
+  // 명세에는 없고 서버가 추가한 코드: 내 시간표에 추가할 때 기존 수업·일정과 겹침
+  | "TIMETABLE_CONFLICT"
+  | "INTERNAL_ERROR";

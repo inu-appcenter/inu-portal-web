@@ -42,11 +42,32 @@ import type {
   UpdatePollRequest,
 } from "@/types/schedulePolls";
 import { getPollErrorCode, getPollErrorStatus } from "@/utils/schedulePollError";
+import {
+  forgetKnownPoll,
+  getKnownPollIds,
+  rememberKnownPoll,
+} from "@/utils/schedulePollStorage";
 
 // 시간 맞추기(일정 조율) API. 명세: API v3.4.
 // 오류는 axios 에러 그대로 던지고, 호출부가 `getPollErrorCode`로 code를 읽어 분기한다.
 
 const BASE = "/api/schedule-polls";
+
+// 서버는 결과가 아직 없을 때 조회·리비전의 resultVersion을 0으로 내려 준다(제출 응답은 null).
+// 화면은 "결과 없음 = null" 하나로만 다루도록 여기서 맞춘다.
+const withResultVersion = <T extends { resultVersion: number | null }>(
+  data: T,
+): T => (data.resultVersion ? data : { ...data, resultVersion: null });
+
+const currentMemberId = () => useUserStore.getState().userInfo.id;
+
+/** 내가 만들었거나 참여한 조율을 이 기기에 기억해 둔다('내 조율 목록' API가 생기기 전까지). */
+const rememberIfMine = (poll: PollDetail) => {
+  const memberId = currentMemberId();
+  if (memberId && (poll.isHost || poll.myStatus === "SUBMITTED")) {
+    rememberKnownPoll(memberId, poll.pollId);
+  }
+};
 
 /** 조율 생성. 개설자는 이 시점에 참여자가 아니다(등록해야 참여자). */
 export const createPoll = async (
@@ -60,6 +81,8 @@ export const createPoll = async (
     BASE,
     request,
   );
+  const memberId = currentMemberId();
+  if (memberId) rememberKnownPoll(memberId, response.data.data.pollId);
   return response.data.data;
 };
 
@@ -72,7 +95,9 @@ export const getPoll = async (pollId: number): Promise<PollDetail> => {
   const response = await tokenInstance.get<ApiResponse<PollDetail>>(
     `${BASE}/${pollId}`,
   );
-  return response.data.data;
+  const poll = withResultVersion(response.data.data);
+  rememberIfMine(poll);
+  return poll;
 };
 
 /** 폴링용 경량 응답. */
@@ -84,7 +109,7 @@ export const getPollRevision = async (pollId: number): Promise<PollRevision> => 
   const response = await tokenInstance.get<ApiResponse<PollRevision>>(
     `${BASE}/${pollId}/revision`,
   );
-  return response.data.data;
+  return withResultVersion(response.data.data);
 };
 
 /** 링크 미리보기. 비로그인으로도 부를 수 있고, 참여 처리는 하지 않는다. */
@@ -227,10 +252,52 @@ export const getMyPolls = async (
     await mockDelay();
     return mockGetMyPolls(filter);
   }
-  const response = await tokenInstance.get<
-    ApiResponse<PageResponse<MyPollListItem>>
-  >(`${BASE}/my`, { params: { filter, page, size: 20 } });
-  return response.data.data;
+  // 서버에 '내 조율 목록' API(명세 3-12)가 아직 없다. 이 기기에서 만들었거나 참여한
+  // 조율을 하나씩 조회해 목록을 만든다. 다른 기기에서 참여한 조율은 보이지 않는다.
+  void page;
+  const memberId = currentMemberId();
+  const ids = memberId ? getKnownPollIds(memberId) : [];
+  const settled = await Promise.allSettled(ids.map((id) => getPoll(id)));
+  const content: MyPollListItem[] = [];
+  settled.forEach((result, index) => {
+    if (result.status === "rejected") {
+      if (memberId && getPollErrorCode(result.reason) === "POLL_NOT_FOUND") {
+        forgetKnownPoll(memberId, ids[index]);
+      }
+      return;
+    }
+    const poll = result.value;
+    if ((poll.status === "CLOSED") !== (filter === "CLOSED")) return;
+    content.push({
+      pollId: poll.pollId,
+      title: poll.title,
+      status: poll.status,
+      isHost: poll.isHost,
+      myStatus: poll.myStatus,
+      participantCount: poll.participantCount,
+      deadlineAt: poll.deadlineAt,
+      updatedAt: poll.closedAt ?? poll.deadlineAt ?? "",
+    });
+  });
+  // 전부 실패했으면(네트워크 등) 빈 목록 대신 오류로 알린다.
+  const firstFailure = settled.find((result) => result.status === "rejected");
+  if (ids.length > 0 && content.length === 0 && firstFailure) {
+    const allFailed = settled.every((result) => result.status === "rejected");
+    if (allFailed && getPollErrorCode(firstFailure.reason) !== "POLL_NOT_FOUND") {
+      throw firstFailure.reason;
+    }
+  }
+  return {
+    totalPages: 1,
+    totalElements: content.length,
+    size: content.length,
+    content,
+    number: 0,
+    numberOfElements: content.length,
+    first: true,
+    last: true,
+    empty: content.length === 0,
+  };
 };
 
 export interface PollSendTargets {
