@@ -34,11 +34,12 @@ export default function useBusArrival(
   );
   const stableBusList = useMemo(() => busList, [busListIdentityKey]);
 
-  const { data, dataUpdatedAt, isLoading, refetch, isFetching } = useQuery({
+  const { data, dataUpdatedAt, isLoading, refetch, isFetching, isError, error } = useQuery({
     queryKey: ["busArrival", bstopId, busKey],
     queryFn: () => getBusArrival(bstopId),
     refetchInterval: 30 * 1000,
     staleTime: 30 * 1000,
+    retry: 1,
     enabled: enabled && !!bstopId && stableBusList.length > 0,
   });
 
@@ -183,6 +184,8 @@ export default function useBusArrival(
     busArrivalList,
     isLoading: isLoading && busArrivalList.length === 0,
     isFetching,
+    isError,
+    error,
     refetch: handleManualRefetch,
     lastUpdated,
   };

@@ -53,7 +53,7 @@ export default function BusMapPanel({
   const previousSnapRef = useRef<string | number | null>(snap);
   const refreshCooldownTimeoutsRef = useRef<Record<string, number>>({});
   const liveBuses = selectedStop?.supportsLiveArrival ? selectedStop.buses : [];
-  const { busArrivalList, isLoading, isFetching, refetch, lastUpdated } =
+  const { busArrivalList, isLoading, isFetching, isError, refetch, lastUpdated } =
     useBusArrival(selectedStop?.bstopId ?? "", liveBuses);
   const [cooldownsByStopKey, setCooldownsByStopKey] = useState<
     Record<string, boolean>
@@ -316,6 +316,18 @@ export default function BusMapPanel({
                 ref={busListRef}
                 data-vaul-no-drag={isDesktop ? undefined : ""}
               >
+                {isError && (
+                  <ErrorNoticeCard>
+                    <ErrorNoticeText>실시간 버스 정보를 불러오지 못했어요</ErrorNoticeText>
+                    <ErrorRetryButton
+                      type="button"
+                      onClick={handleRefresh}
+                      disabled={isSelectedStopCooldown || isFetching}
+                    >
+                      다시 시도
+                    </ErrorRetryButton>
+                  </ErrorNoticeCard>
+                )}
                 {isLoading
                   ? selectedStop.busSections.map((section) => (
                       <BusSection key={section.id}>
@@ -609,10 +621,8 @@ function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
     if (isEstimatedArrivalInfo(bus)) {
       const seconds = bus.arrivalInfo.seconds;
       if (typeof seconds === "number") {
-        if (seconds < 60) {
-          return "곧 도착";
-        }
-        return `${Math.floor(seconds / 60)}분`;
+        const minutes = Math.max(1, Math.round(seconds / 60));
+        return `약 ${minutes}분`;
       }
       return bus.arrivalInfo.time.replace(/\s*\d+초$/, "");
     }
@@ -624,7 +634,11 @@ function getBusDisplayTime(bus: BusData, supportsLiveArrival: boolean) {
 
 function isEstimatedArrivalInfo(bus: BusData) {
   const stationText = getArrivalStationText(bus.arrivalInfo);
-  return stationText === "시간표 기반" || stationText === "통계 추정";
+  return (
+    stationText === "시간표 기반" ||
+    stationText === "통계 추정" ||
+    stationText === "과거 기록 기반"
+  );
 }
 
 function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
@@ -644,7 +658,7 @@ function renderBusStatus(bus: BusData, supportsLiveArrival: boolean) {
   }
 
   if (isEstimatedArrivalInfo(bus)) {
-    return "예상 시간표";
+    return "⏱️ 이전 기록 기반";
   }
 
   if (!stationText && !status && !isLastBus) {
@@ -1151,4 +1165,38 @@ const EmptyPanelMessage = styled.div`
   font-size: 14px;
   line-height: 1.6;
   word-break: keep-all;
+`;
+
+const ErrorNoticeCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin: 0 0 10px 0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  gap: 8px;
+`;
+
+const ErrorNoticeText = styled.span`
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+`;
+
+const ErrorRetryButton = styled.button`
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--interactive-primary);
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--blue-50);
+  }
 `;
