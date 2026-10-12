@@ -252,9 +252,24 @@ export const getMyPolls = async (
     await mockDelay();
     return mockGetMyPolls(filter);
   }
-  // 서버에 '내 조율 목록' API(명세 3-12)가 아직 없다. 이 기기에서 만들었거나 참여한
-  // 조율을 하나씩 조회해 목록을 만든다. 다른 기기에서 참여한 조율은 보이지 않는다.
-  void page;
+  try {
+    const response = await tokenInstance.get<
+      ApiResponse<PageResponse<MyPollListItem>>
+    >(`${BASE}/my`, { params: { filter, page, size: 20 } });
+    return response.data.data;
+  } catch (error) {
+    // 목록 API(명세 3-12)가 아직 없는 서버에서는 `/my`가 `/{pollId}`로 잡혀 400·404가 난다.
+    // 그때만 이 기기에 기억해 둔 조율로 목록을 만든다. 서버에 배포되면 이 대체 경로는 지운다.
+    const status = getPollErrorStatus(error);
+    if (status !== 400 && status !== 404) throw error;
+  }
+  return getKnownPolls(filter);
+};
+
+/** 이 기기에서 만들었거나 참여한 조율을 하나씩 조회해 만든 목록. 다른 기기에서 참여한 조율은 없다. */
+const getKnownPolls = async (
+  filter: MyPollFilter,
+): Promise<PageResponse<MyPollListItem>> => {
   const memberId = currentMemberId();
   const ids = memberId ? getKnownPollIds(memberId) : [];
   const settled = await Promise.allSettled(ids.map((id) => getPoll(id)));
