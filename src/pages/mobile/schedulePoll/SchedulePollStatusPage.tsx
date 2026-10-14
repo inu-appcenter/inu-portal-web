@@ -253,9 +253,12 @@ export default function SchedulePollStatusPage() {
                 <Avatar src={DEFAULT_AVATAR} alt="" />
                 <ParticipantText>
                   <ParticipantName>{participant.displayName}</ParticipantName>
-                  <ParticipantCaption>
-                    {participant.maskedStudentId}
-                  </ParticipantCaption>
+                  {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
+                  {participant.maskedStudentId !== participant.displayName && (
+                    <ParticipantCaption>
+                      {participant.maskedStudentId}
+                    </ParticipantCaption>
+                  )}
                 </ParticipantText>
                 {participant.isHost ? (
                   <PollBadge $tone="brand">개설자</PollBadge>
