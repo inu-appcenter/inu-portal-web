@@ -134,7 +134,10 @@ function PollInviteCard({ pollId }: { pollId: number }) {
 
   const goTo = (path: string) => stop(() => navigate(path));
   let footer: { label: string; onClick?: (event: MouseEvent) => void };
-  if (isClosed) {
+  if (card.isLoading || !card.poll) {
+    // 조율 상태를 모르는 동안에는 어디로도 보내지 않는다(불러오지 못한 카드 포함).
+    footer = { label: card.isLoading ? "불러오는 중이에요" : "시간 맞추기를 열 수 없어요" };
+  } else if (isClosed) {
     footer =
       isParticipant && hasResult
         ? { label: "최종 결과 보기", onClick: goTo(ROUTES.SCHEDULE_POLL.RESULT(pollId)) }
@@ -334,7 +337,7 @@ function PollResultCard({ data, fallbackText }: PollResultCardProps) {
               ? "추가하는 중…"
               : "내 시간표에 추가"}
         </AddButton>
-      ) : !isParticipant && card.status !== "CLOSED" && !card.isLoading ? (
+      ) : card.poll && !isParticipant && card.status !== "CLOSED" && !card.isLoading ? (
         <FooterButton
           as="button"
           $muted={false}

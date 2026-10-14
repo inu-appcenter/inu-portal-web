@@ -159,7 +159,11 @@ const PollPaintGrid = ({
       startX: event.clientX,
       startY: event.clientY,
       base: painted,
-      value: !painted[cellIndex(shape, start.column, start.row)],
+      // 포함한 수업 칸은 칠한 값과 무관하게 '안 되는 시간'이다. 거기서 끌기 시작하면
+      // 모드에 맞춰 '되는 시간'으로 만드는 쪽(가능 모드는 칠하기, 불가능 모드는 지우기)이다.
+      value: blocked[cellIndex(shape, start.column, start.row)]
+        ? mode === "AVAILABLE"
+        : !painted[cellIndex(shape, start.column, start.row)],
       dragging: false,
       isTouch,
       timer: null,

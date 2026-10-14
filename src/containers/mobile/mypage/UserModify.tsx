@@ -259,7 +259,12 @@ export default function UserModify() {
       if (isForbiddenCode) {
         alert("사칭 방지를 위해 '알림', '운영진', '시스템' 등의 단어는 닉네임으로 설정할 수 없습니다.");
       } else {
-        alert(errorResponse?.message || "회원정보 수정에 실패했습니다.");
+        // 회원 API는 사유를 msg로 내려 준다(예: 실명 형식 오류).
+        alert(
+          errorResponse?.message ||
+            errorResponse?.msg ||
+            "회원정보 수정에 실패했습니다.",
+        );
       }
     } finally {
       setIsSaving(false);
