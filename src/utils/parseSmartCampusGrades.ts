@@ -165,6 +165,8 @@ const parseLine = (line: string): ParsedGradeRow | null => {
     note,
     // "재수강성적취소" - 재수강해서 이 회차 성적이 무효가 된 행("성적폐기사유" 열).
     voided: note !== null && (note.includes("취소") || note.includes("폐기")),
+    // 호출부(parseSmartCampusGrades)가 표 제목에서 읽은 학기로 덮어쓴다.
+    semester: null,
   };
 };
 
@@ -187,6 +189,11 @@ export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
   // 연도·학기가 있어서(그것도 내가 보고 있는 학기가 아니다) 제목 쪽을 우선한다.
   let titleSemester: ParsedGradeSheet["detectedSemester"] = null;
   let fallbackSemester: ParsedGradeSheet["detectedSemester"] = null;
+  // "전체 성적 조회"처럼 여러 학기의 "N년 M학기 과목별 성적" 표를 한 번에 붙여넣으면
+  // 제목 줄이 여러 번 나온다. 이후 과목 행은 가장 최근에 지나친 제목의 학기에 속한다고
+  // 본다 — 그래야 학기별로 나눠 한 번에 저장할 수 있다.
+  let currentSemester: ParsedGradeSheet["detectedSemester"] = null;
+  const semestersSeen = new Set<string>();
 
   lines.forEach((line, index) => {
     const semesterMatch = SEMESTER_TITLE_RE.exec(line);
@@ -197,8 +204,10 @@ export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
       };
       if (COURSE_TABLE_TITLE_RE.test(line)) {
         titleSemester ??= semester;
+        currentSemester = semester;
       } else {
         fallbackSemester ??= semester;
+        currentSemester ??= semester;
       }
       // 제목·요약 줄은 과목 행이 아니다.
       return;
@@ -209,7 +218,10 @@ export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
 
     const row = parseLine(line);
     if (row) {
-      rows.push(row);
+      rows.push({ ...row, semester: currentSemester });
+      if (currentSemester) {
+        semestersSeen.add(`${currentSemester.year}-${currentSemester.term}`);
+      }
       return;
     }
 
@@ -221,6 +233,7 @@ export const parseSmartCampusGrades = (input: string): ParsedGradeSheet => {
   return {
     rows,
     detectedSemester: titleSemester ?? fallbackSemester,
+    hasMultipleSemesters: semestersSeen.size > 1,
     skippedLines,
   };
 };
