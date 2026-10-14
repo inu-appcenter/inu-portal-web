@@ -23,7 +23,8 @@ export default function UserInfo({ clickable = true }: UserInfoProps) {
           <ProfileImage fireId={userInfo.fireId} clickable={clickable} />
         </ImageWrapper>
         <TextSection>
-          <Nickname>{userInfo.nickname}</Nickname>
+          <Nickname>{userInfo.realName || userInfo.nickname}</Nickname>
+          {userInfo.realName && <SubNickname>{userInfo.nickname}</SubNickname>}
           <Department>{userInfo.department || "학과 정보 없음"}</Department>
         </TextSection>
       </ProfileSection>
@@ -97,6 +98,11 @@ const Nickname = styled.div`
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
+`;
+
+const SubNickname = styled.div`
+  font-size: 12px;
+  color: var(--text-tertiary);
 `;
 
 const Department = styled.div`

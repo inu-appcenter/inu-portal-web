@@ -7,6 +7,7 @@ import {
   MembersReplies,
   Notification,
   TokenInfo,
+  UpdateRealNameRequest,
   UserInfoInput,
 } from "@/types/members";
 import { Post } from "@/types/posts";
@@ -238,6 +239,21 @@ export const patchMemberNickname = async (
   const response = await tokenInstance.patch<ApiResponse<void>>(
     "/api/members/nickname",
     { nickname },
+  );
+  return response.data;
+};
+
+/**
+ * 실명 저장·삭제 (API v3.4 3-13). 서버는 기존 `PUT /api/members`를 확장했고,
+ * 보낸 칸만 바뀌므로 닉네임·횃불이는 건드리지 않는다. 응답 data는 회원 ID다.
+ * 빈 문자열을 보내면 실명을 지운다(수집 동의 철회).
+ */
+export const putMemberRealName = async (
+  request: UpdateRealNameRequest,
+): Promise<ApiResponse<number>> => {
+  const response = await tokenInstance.put<ApiResponse<number>>(
+    "/api/members",
+    request,
   );
   return response.data;
 };

@@ -11,6 +11,9 @@ import ImageModal from "@/components/mobile/chat/ImageModal";
 import ImageUploadModal from "@/components/mobile/chat/ImageUploadModal";
 import MemberListDrawer from "@/components/mobile/chat/MemberListDrawer";
 import TimetableShareCard from "@/components/mobile/chat/TimetableShareCard";
+import SchedulePollCard from "@/components/mobile/chat/SchedulePollCard";
+import { isSchedulePollMessage } from "@/utils/schedulePollMessage";
+import { usePollEntryEnabled } from "@/hooks/usePollAuth";
 import ChatItemBot from "@/components/mobile/chat/ChatItemBot";
 import ChatSlashCommandPopup from "@/components/mobile/chat/ChatSlashCommandPopup";
 import ChatPlusMenu from "@/components/mobile/chat/ChatPlusMenu";
@@ -242,6 +245,8 @@ export default function ChattingPage() {
   });
   const members = membersRes?.data || [];
 
+  const isSchedulePollEnabled = usePollEntryEnabled();
+
   const handleFindFreeTime = () => {
     mixpanelTrack.chatRoomMenuClicked("공강 맞추기", roomId ?? "");
     const params = new URLSearchParams();
@@ -252,6 +257,15 @@ export default function ChattingPage() {
 
   const handleFindMeetingTime = () => {
     mixpanelTrack.chatRoomMenuClicked("회의 시간 맞추기", roomId ?? "");
+    // 시간 맞추기(일정 조율)가 열려 있으면 이 방을 시작한 채팅방으로 넘겨 조율을 만든다(FR-002).
+    if (isSchedulePollEnabled) {
+      navigate(
+        roomId
+          ? `${ROUTES.SCHEDULE_POLL.NEW}?roomId=${roomId}`
+          : ROUTES.SCHEDULE_POLL.NEW,
+      );
+      return;
+    }
     const params = new URLSearchParams();
     params.set("tab", "meeting");
     if (roomId) params.set("roomId", roomId);
@@ -1762,7 +1776,9 @@ const ChatItemOtherPerson = ({
               alignItems: "flex-start",
             }}
           >
-            {isTimetableShare ? (
+            {isSchedulePollMessage(message) ? (
+              <SchedulePollCard message={message} />
+            ) : isTimetableShare ? (
               <TimetableShareCard
                 extraData={message.extraData}
                 content={message.content}
@@ -1879,7 +1895,9 @@ const ChatItemMy = ({
               alignItems: "flex-end",
             }}
           >
-            {isTimetableShare ? (
+            {isSchedulePollMessage(message) ? (
+              <SchedulePollCard message={message} />
+            ) : isTimetableShare ? (
               <TimetableShareCard
                 extraData={message.extraData}
                 content={message.content}

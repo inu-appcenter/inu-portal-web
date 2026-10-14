@@ -9,7 +9,11 @@ import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
 import useUserStore from "@/stores/useUserStore";
 import ScrollBarStyles from "@/styles/ScrollBarStyles";
-import { trackPageView } from "@/utils/mixpanel";
+import { mixpanelTrack, trackPageView } from "@/utils/mixpanel";
+import {
+  clearPendingReturnPath,
+  setPendingReturnPath,
+} from "@/utils/pendingReturnPath";
 import {
   getBootstrappedFcmToken,
   getFcmDeviceType,
@@ -83,8 +87,28 @@ export default function RootLayout() {
 
     if (location.pathname === ROUTES.LOGIN) {
       navigate(ROUTES.HOME);
+      return;
     }
-  }, [location.pathname, navigate, tokenInfo.accessToken, userInfo]);
+
+    // 닉네임이 학번 그대로이고 실명이 없는 회원은 이름 설정 화면으로 한 번만 보낸다(FR-091).
+    // 대상 판정은 서버가 내려 주는 needsRealName만 따른다 — 서버에서 끄면 여기도 꺼진다.
+    if (userInfo.needsRealName && location.pathname !== ROUTES.MYPAGE.PROFILE) {
+      const promptedKey = `intipRealNamePrompted:${userInfo.id}`;
+      if (safeLocalStorage.getItem(promptedKey) !== "1") {
+        safeLocalStorage.setItem(promptedKey, "1");
+        setPendingReturnPath(`${location.pathname}${location.search}`);
+        mixpanelTrack.realNamePromptShown("FORCED_REDIRECT");
+        navigate(ROUTES.MYPAGE.PROFILE);
+        return;
+      }
+    }
+
+    // 프로필 설정으로 보내질 일이 없는 화면에 있으면 기억해 둔 복귀 경로는 더 쓸 일이 없다.
+    // 남겨 두면 나중에 프로필을 저장할 때 엉뚱한 화면으로 간다(저장하지 않고 나간 경우 포함).
+    if (location.pathname !== ROUTES.MYPAGE.PROFILE) {
+      clearPendingReturnPath();
+    }
+  }, [location.pathname, location.search, navigate, tokenInfo.accessToken, userInfo]);
 
   useEffect(() => {
     const initialToken = getBootstrappedFcmToken();
