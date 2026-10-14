@@ -213,10 +213,13 @@ const SendTargetPicker = ({
       },
       {
         onSuccess: (response) => {
-          addPollSharedRoomIds(
-            pollId,
-            response.results.map((result) => result.chatRoomId),
-          );
+          // 결과 공유 때 미리 골라 줄 대상은 '참여 요청 카드를 보낸 방'뿐이다.
+          if (kind === "INVITE") {
+            addPollSharedRoomIds(
+              pollId,
+              response.results.map((result) => result.chatRoomId),
+            );
+          }
           mixpanelTrack.pollShare({
             pollId,
             kind,

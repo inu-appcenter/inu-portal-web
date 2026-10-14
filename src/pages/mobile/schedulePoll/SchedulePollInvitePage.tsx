@@ -11,7 +11,10 @@ import {
   PollPage,
   PollPrimaryButton,
 } from "@/components/mobile/schedulePoll/PollUi";
-import { resolvePollLink } from "@/utils/schedulePoll";
+import {
+  formatShareResultMessage,
+  resolvePollLink,
+} from "@/utils/schedulePoll";
 import { getPollErrorMessage } from "@/utils/schedulePollError";
 import { showToast } from "@/utils/toast";
 
@@ -70,7 +73,7 @@ export default function SchedulePollInvitePage() {
           kind="INVITE"
           preselectedRoomIds={preselectedRoomIds}
           onSent={(response) => {
-            showToast(`${response.results.length}곳에 참여 요청을 보냈어요`);
+            showToast(formatShareResultMessage(response.results, "참여 요청"));
             goToInput();
           }}
           onSkip={goToInput}

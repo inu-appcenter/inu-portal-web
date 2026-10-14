@@ -32,6 +32,7 @@ import {
   formatColumnName,
   formatColumnsSummary,
   formatDuration,
+  formatShareResultMessage,
   getPollGridShape,
   minutesToTime,
   namesFromMask,
@@ -419,7 +420,7 @@ function PollResultView({
           // 참여 요청 카드를 보낸 방을 미리 골라 둔다.
           preselectedRoomIds={getPollSharedRoomIds(pollId)}
           onSent={(response) => {
-            showToast(`${response.results.length}곳에 결과를 공유했어요`);
+            showToast(formatShareResultMessage(response.results, "결과"));
             setIsShareOpen(false);
           }}
           onStale={() => {

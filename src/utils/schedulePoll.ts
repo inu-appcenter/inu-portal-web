@@ -355,3 +355,19 @@ export const resolvePollLink = (linkUrl: string): string => {
     return linkUrl;
   }
 };
+
+/**
+ * 카드 전송 결과 안내 문구. 같은 방에 같은 카드를 다시 보내면 서버가 새로 보내지 않고
+ * 기존 메시지를 돌려주므로(created=false), 실제로 새로 간 곳만 센다.
+ */
+export const formatShareResultMessage = (
+  results: { created: boolean }[],
+  what: "참여 요청" | "결과",
+): string => {
+  const sent = results.filter((result) => result.created).length;
+  const skipped = results.length - sent;
+  const verb = what === "결과" ? "공유했어요" : "보냈어요";
+  if (sent === 0) return `이미 ${what}${what === "결과" ? "를" : "을"} 보낸 곳이에요`;
+  const base = `${sent}곳에 ${what}${what === "결과" ? "를" : "을"} ${verb}`;
+  return skipped > 0 ? `${base} (${skipped}곳은 이미 보냄)` : base;
+};

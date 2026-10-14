@@ -1,3 +1,4 @@
+import useUserStore from "@/stores/useUserStore";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 // 시간 맞추기에서 서버가 아직 알려 주지 않는 값을 이 기기에 기억해 둔다.
@@ -7,9 +8,13 @@ import { safeLocalStorage } from "@/utils/safeStorage";
 //   목록 화면을 이 기기에서 연 조율로 채우기 위해
 // 서버가 조회 응답에 내려 주게 되면 이 파일은 지운다.
 
-const sharedRoomsKey = (pollId: number) => `intipPollSharedRooms:${pollId}`;
+// 한 기기를 여러 계정이 쓸 수 있어 모든 키에 회원 ID를 넣는다.
+const currentMemberId = () => useUserStore.getState().userInfo.id || 0;
+
+const sharedRoomsKey = (pollId: number) =>
+  `intipPollSharedRooms:${currentMemberId()}:${pollId}`;
 const timetableAddedKey = (pollId: number, version: number) =>
-  `intipPollTimetableAdded:${pollId}:${version}`;
+  `intipPollTimetableAdded:${currentMemberId()}:${pollId}:${version}`;
 
 const knownPollsKey = (memberId: number) => `intipPollKnown:${memberId}`;
 const MAX_KNOWN_POLLS = 50;

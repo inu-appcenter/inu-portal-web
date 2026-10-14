@@ -30,6 +30,7 @@ import {
 import {
   formatColumnName,
   formatDeadline,
+  formatShareResultMessage,
   resolvePollLink,
   toDateKey,
   toOffsetIsoString,
@@ -38,7 +39,6 @@ import {
   getPollErrorCode,
   getPollErrorMessage,
 } from "@/utils/schedulePollError";
-import { getPollSharedRoomIds } from "@/utils/schedulePollStorage";
 import { showToast } from "@/utils/toast";
 import { DEFAULT_PROFILE_IMAGE_ID } from "@/utils/userInfo";
 import { typography } from "@/styles/typography";
@@ -375,9 +375,8 @@ export default function SchedulePollStatusPage() {
         linkUrl={resolvePollLink(poll.linkUrl)}
         shareText={`[INTIP] ${poll.title} — 가능한 시간을 알려 주세요`}
         kind="INVITE"
-        preselectedRoomIds={getPollSharedRoomIds(pollId)}
         onSent={(response) => {
-          showToast(`${response.results.length}곳에 참여 요청을 보냈어요`);
+          showToast(formatShareResultMessage(response.results, "참여 요청"));
           setIsInviteOpen(false);
         }}
       />
