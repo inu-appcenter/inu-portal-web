@@ -428,6 +428,9 @@ export const recognizeTimeTableImage = async (
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    // Vision AI 분석은 수 초~수십 초가 걸릴 수 있어 넉넉히 잡되, 서버가
+    // 죽거나 응답이 없는 경우까지 무한정 기다리지 않도록 상한을 둔다.
+    timeout: 45000,
   });
 
   return response.data.data ?? [];
