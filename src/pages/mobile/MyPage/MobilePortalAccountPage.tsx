@@ -18,6 +18,20 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import PortalAccountForm from "@/components/common/PortalAccountForm";
+import BottomSheet from "@/components/common/BottomSheet";
+import Switch from "@/components/common/Switch";
+import PortalSyncTermDetail from "@/components/common/PortalSyncTermDetail";
+import WizardBottomCTA from "@/components/mobile/timetable/wizard/ui/WizardBottomCTA";
+import {
+  getPortalSyncTerm,
+  type PortalSyncTermKey,
+} from "@/constants/portalSyncTerms";
+import {
+  clearPortalSyncConsent,
+  requestPortalSyncConsent,
+  setAiAcademicConsent,
+  usePortalSyncConsentStore,
+} from "@/utils/portalSyncConsent";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
 import {
   CheckCircle2,
@@ -29,6 +43,25 @@ import {
   ChevronRight,
   Smartphone,
 } from "lucide-react";
+
+/** 연결 해제 시 함께 지우는, 포털에서 불러와 이 휴대폰에 둔 정보 */
+const PORTAL_CACHE_KEYS = [
+  "portal_student_info",
+  "portal_info_last_updated",
+  "portal_dormitory_student_info",
+  "portal_dormitory_student_info_last_updated",
+  "portal_dormitory_last_updated",
+  "portal_lab_academic_report",
+  "portal_lab_timetable_list",
+  "portal_lab_timetable_last_updated",
+];
+
+const formatAgreedDate = (iso: string) => {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime())
+    ? ""
+    : `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
+};
 
 export default function MobilePortalAccountPage() {
   const navigate = useNavigate();
@@ -42,6 +75,13 @@ export default function MobilePortalAccountPage() {
   // 모달 및 토스트 상태
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // 동의 상세 시트. enableAi면 AI 활용을 켜기 전에 상세를 보여주고 동의를 받는다.
+  const [termSheet, setTermSheet] = useState<{
+    key: PortalSyncTermKey;
+    enableAi?: boolean;
+  } | null>(null);
+  const consent = usePortalSyncConsentStore((s) => s.consent);
 
   useHeader({
     title: "포털 계정 관리",
@@ -101,8 +141,9 @@ export default function MobilePortalAccountPage() {
       if (isMobileAppEnvironment()) {
         await deletePortalAccount().catch(() => {});
       }
-      secureStorage.removeItem("portal_student_info");
-      localStorage.removeItem("portal_info_last_updated");
+      PORTAL_CACHE_KEYS.forEach((key) => secureStorage.removeItem(key));
+      // 연결을 해제하면 동의도 철회한 것으로 보고, 다시 연결할 때 새로 받는다.
+      clearPortalSyncConsent();
       setStudentInfo(null);
       setIsLinked(false);
       setIsRelinkMode(false);
@@ -255,8 +296,64 @@ export default function MobilePortalAccountPage() {
             </ServiceRow>
           </ServiceListContainer>
 
+          <SectionHeader>
+            <SectionTitle>동의 내용</SectionTitle>
+          </SectionHeader>
+
+          <ServiceListContainer>
+            <ServiceRow
+              onClick={() =>
+                consent
+                  ? setTermSheet({ key: "portal" })
+                  : void requestPortalSyncConsent()
+              }
+            >
+              <ServiceTextGroup>
+                <ServiceTitle>포털 정보 불러오기</ServiceTitle>
+                <ServiceSubtitle>
+                  {consent
+                    ? `${formatAgreedDate(consent.agreedAt)} 동의함`
+                    : "동의가 필요해요"}
+                </ServiceSubtitle>
+              </ServiceTextGroup>
+              <ChevronRight size={18} color="var(--text-tertiary)" />
+            </ServiceRow>
+
+            <DividerLine />
+
+            <ServiceRow
+              onClick={() => setTermSheet({ key: "ai" })}
+            >
+              <ServiceTextGroup>
+                <ServiceTitle>AI 채팅 학적 활용 (선택)</ServiceTitle>
+                <ServiceSubtitle>
+                  {consent?.aiAgreedAt
+                    ? `${formatAgreedDate(consent.aiAgreedAt)} 동의함`
+                    : "학적 요약을 AI 채팅 답변에 써요"}
+                </ServiceSubtitle>
+              </ServiceTextGroup>
+              <SwitchSlot onClick={(e) => e.stopPropagation()}>
+                <Switch
+                  checked={Boolean(consent?.aiAgreedAt)}
+                  onCheckedChange={(next) => {
+                    if (!consent) {
+                      void requestPortalSyncConsent();
+                      return;
+                    }
+                    if (next) {
+                      setTermSheet({ key: "ai", enableAi: true });
+                    } else {
+                      setAiAcademicConsent(false);
+                      showToast("AI 채팅에 학적을 쓰지 않아요.");
+                    }
+                  }}
+                />
+              </SwitchSlot>
+            </ServiceRow>
+          </ServiceListContainer>
+
           <NoticeFooter>
-            기기에서 직접 조회하며, 계정 비밀번호는 외부로 전송되지 않아요.
+            불러온 정보는 이 휴대폰에만 보관하고, 계정 비밀번호는 외부로 전송되지 않아요.
           </NoticeFooter>
         </ContentContainer>
       ) : (
@@ -287,7 +384,7 @@ export default function MobilePortalAccountPage() {
         isOpen={isUnlinkModalOpen}
         onClose={() => setIsUnlinkModalOpen(false)}
         title="포털 계정 연동을 해제할까요?"
-        description="연동을 해제하면 이 기기에 저장된 로그인 정보가 삭제되고, 이러닝(LMS) 및 도서관 자동 연동이 중단돼요."
+        description="연동을 해제하면 이 기기에 저장된 포털 계정과 불러온 정보가 지워지고, 이러닝(LMS)·도서관 연동과 동의도 함께 중단돼요."
         primaryButton={{
           text: "연동 해제",
           variant: "danger",
@@ -298,6 +395,33 @@ export default function MobilePortalAccountPage() {
           onClick: () => setIsUnlinkModalOpen(false),
         }}
       />
+
+      {/* 동의 상세 */}
+      <BottomSheet
+        open={termSheet !== null}
+        onOpenChange={(open) => {
+          if (!open) setTermSheet(null);
+        }}
+        handle="compact"
+      >
+        {termSheet && (
+          <TermSheetContent>
+            <PortalSyncTermDetail term={getPortalSyncTerm(termSheet.key)} />
+            <WizardBottomCTA
+              placement="sheet"
+              onClick={() => {
+                if (termSheet.enableAi) {
+                  setAiAcademicConsent(true);
+                  showToast("AI 채팅에 학적 요약을 활용해요.");
+                }
+                setTermSheet(null);
+              }}
+            >
+              {termSheet.enableAi ? "동의하고 켜기" : "확인"}
+            </WizardBottomCTA>
+          </TermSheetContent>
+        )}
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -622,4 +746,17 @@ const NoticeFooter = styled.p`
   color: var(--text-tertiary);
   text-align: center;
   line-height: 1.45;
+`;
+
+const SwitchSlot = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+`;
+
+const TermSheetContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
 `;
