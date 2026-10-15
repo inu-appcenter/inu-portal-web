@@ -87,6 +87,7 @@ export interface DailyBriefSettings {
   timetablePreAlertEnabled: boolean; // 수업 시작 전 알림 활성화 여부
   timetablePreAlertMethod?: PreClassAlertMethod; // 수업 시작 전 알림 방식 ("NOW_BAR" | "PUSH")
   timetablePreAlertMinutes: number; // 수업 n분 전
+  timetablePreAlertOngoingEnabled?: boolean; // 수업 중에도 실시간 알림 유지 여부 (기본: false)
   timetableDailyBriefEnabled: boolean; // 당일 강의 묶음 알림 활성화 여부
   timetableDailyBriefTime: string; // "HH:mm" 포맷 (예: "08:00")
 
@@ -104,6 +105,7 @@ export const DEFAULT_DAILY_BRIEF_SETTINGS: DailyBriefSettings = {
   timetablePreAlertEnabled: true,
   timetablePreAlertMethod: "NOW_BAR",
   timetablePreAlertMinutes: 10,
+  timetablePreAlertOngoingEnabled: false,
   timetableDailyBriefEnabled: true,
   timetableDailyBriefTime: "08:00",
   scheduleAlertEnabled: true,

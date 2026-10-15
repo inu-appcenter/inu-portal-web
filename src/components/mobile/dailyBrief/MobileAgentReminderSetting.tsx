@@ -337,6 +337,7 @@ export default function MobileAgentReminderSetting() {
   // 수업 시작 전 알림 통합 임시 상태
   const [tempPreClassMinutes, setTempPreClassMinutes] = useState<number>(10);
   const [tempPreClassMethod, setTempPreClassMethod] = useState<"NOW_BAR" | "PUSH">("NOW_BAR");
+  const [tempPreClassOngoingEnabled, setTempPreClassOngoingEnabled] = useState<boolean>(false);
 
   const [tempScheduleAmpm, setTempScheduleAmpm] = useState<"AM" | "PM">("AM");
   const [tempScheduleHour, setTempScheduleHour] = useState("08");
@@ -364,6 +365,7 @@ export default function MobileAgentReminderSetting() {
             briefRes.data.timetablePreAlertEnabled &&
             (briefRes.data.timetablePreAlertMethod ?? "NOW_BAR") === "NOW_BAR",
           leadTimeMinutes: briefRes.data.timetablePreAlertMinutes ?? 10,
+          ongoingEnabled: briefRes.data.timetablePreAlertOngoingEnabled ?? false,
         }).catch(() => {});
       }
     } catch (error) {
@@ -414,6 +416,7 @@ export default function MobileAgentReminderSetting() {
       setTimetableNowBarSettings({
         enabled: next && currentMethod === "NOW_BAR",
         leadTimeMinutes: currentMinutes,
+        ongoingEnabled: dailyBriefSettings.timetablePreAlertOngoingEnabled ?? false,
       }).catch(() => {});
       trackEvent("[Daily Brief] 수업 시작 전 알림 토글", { enabled: next });
       notifyRoutineUpdated();
@@ -472,6 +475,7 @@ export default function MobileAgentReminderSetting() {
   const handleOpenPreClassModal = () => {
     setTempPreClassMethod(dailyBriefSettings.timetablePreAlertMethod ?? "NOW_BAR");
     setTempPreClassMinutes(dailyBriefSettings.timetablePreAlertMinutes ?? 10);
+    setTempPreClassOngoingEnabled(dailyBriefSettings.timetablePreAlertOngoingEnabled ?? false);
     setIsPreClassModalOpen(true);
   };
 
@@ -482,20 +486,24 @@ export default function MobileAgentReminderSetting() {
       timetablePreAlertEnabled: true,
       timetablePreAlertMethod: tempPreClassMethod,
       timetablePreAlertMinutes: tempPreClassMinutes,
+      timetablePreAlertOngoingEnabled: tempPreClassOngoingEnabled,
     }));
     try {
       await updateDailyBriefSettings({
         timetablePreAlertEnabled: true,
         timetablePreAlertMethod: tempPreClassMethod,
         timetablePreAlertMinutes: tempPreClassMinutes,
+        timetablePreAlertOngoingEnabled: tempPreClassOngoingEnabled,
       });
       setTimetableNowBarSettings({
         enabled: tempPreClassMethod === "NOW_BAR",
         leadTimeMinutes: tempPreClassMinutes,
+        ongoingEnabled: tempPreClassOngoingEnabled,
       }).catch(() => {});
       trackEvent("[Daily Brief] 수업 시작 전 알림 설정 변경", {
         method: tempPreClassMethod,
         minutes: tempPreClassMinutes,
+        ongoingEnabled: tempPreClassOngoingEnabled,
       });
       notifyRoutineUpdated();
     } catch (e) {
@@ -759,7 +767,7 @@ export default function MobileAgentReminderSetting() {
                       </RowMainTitle>
                       <RowSubTitle>
                         {(dailyBriefSettings.timetablePreAlertMethod ?? "NOW_BAR") === "NOW_BAR"
-                          ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 실시간 카드 (Now Bar)`
+                          ? `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 실시간 카드 (${dailyBriefSettings.timetablePreAlertOngoingEnabled ? "수업 전 및 수업 중" : "수업 전"})`
                           : `수업 시작 ${dailyBriefSettings.timetablePreAlertMinutes ?? 10}분 전 • 일반 푸시 알림`}
                       </RowSubTitle>
                     </TextContentWrapper>
@@ -1095,9 +1103,22 @@ export default function MobileAgentReminderSetting() {
                 </MethodTitleWrapper>
               </MethodCardHeader>
               <MethodDescription>
-                수업 전부터 종료 시까지 잠금화면과 상단바에 강의실 위치와 실시간 카운트다운을 표시해요.
+                수업 시작 전 잠금화면과 상단바에 강의실 위치와 실시간 카운트다운을 표시해요.
               </MethodDescription>
             </MethodCard>
+
+            {tempPreClassMethod === "NOW_BAR" && (
+              <SubOptionContainer>
+                <SubOptionTextWrapper>
+                  <SubOptionTitle>수업 중에도 계속 표시</SubOptionTitle>
+                  <SubOptionDesc>수업이 시작된 후에도 끝날 때까지 남은 시간을 확인해요</SubOptionDesc>
+                </SubOptionTextWrapper>
+                <Switch
+                  checked={tempPreClassOngoingEnabled}
+                  onCheckedChange={setTempPreClassOngoingEnabled}
+                />
+              </SubOptionContainer>
+            )}
 
             <MethodCard
               $selected={tempPreClassMethod === "PUSH"}
@@ -1693,3 +1714,33 @@ const MethodDescription = styled.div`
   line-height: 1.45;
   padding-left: 28px;
 `;
+
+const SubOptionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 12px 18px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+`;
+
+const SubOptionTextWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-right: 12px;
+`;
+
+const SubOptionTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const SubOptionDesc = styled.div`
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.35;
+`;
+

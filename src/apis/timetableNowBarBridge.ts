@@ -3,6 +3,7 @@ import type { TimeTableDetailItem } from "@/types/timetables";
 export interface TimetableNowBarSettings {
   enabled: boolean;
   leadTimeMinutes: number;
+  ongoingEnabled?: boolean;
 }
 
 export interface BridgeActionResult<T = any> {
