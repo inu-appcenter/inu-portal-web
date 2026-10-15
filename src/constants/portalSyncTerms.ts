@@ -6,6 +6,8 @@
  * PORTAL_SYNC_CONSENT_VERSION을 올린다.
  * - 불러오는 정보: apis/mobileAgentBridge.ts의 fetch*FromApp, apis/lms.ts, apis/library.ts
  * - AI로 보내는 정보: mobileAgentBridge.ts의 toAnonymousAcademicContext, resolveClientContext
+ * - AI 서버 쪽 약속(가명 기기 ID, 로그 미보관, 학습·사람 검토 없음)은 inu-portal-server의
+ *   InuChatAiService·AgentService와 맞아야 한다(inu-portal-server#522, #523).
  */
 
 export type PortalSyncTermKey = "portal" | "ai";
@@ -106,19 +108,35 @@ export const PORTAL_SYNC_TERMS: readonly PortalSyncTerm[] = [
       },
       {
         label: "보내지 않는 정보",
-        lines: ["이름, 학번, 생년월일, 연락처, 포털 비밀번호"],
+        lines: [
+          "이름, 학번, 생년월일, 연락처, 포털 비밀번호",
+          "내 계정도 알 수 없도록, 계정 대신 임의의 값으로 바꿔 보내요.",
+        ],
       },
       {
         label: "보내는 곳",
-        lines: ["학교 전산원 내부 서버에서 운영하는 인팁 AI"],
+        lines: [
+          "학교 전산원 내부 서버에서 인팁이 직접 운영하는 AI 모델(Gemma)",
+          "외부 AI 회사로는 보내지 않아요.",
+        ],
       },
       {
         label: "보내는 때",
         lines: ["이 동의를 켠 상태로 AI 채팅에 메시지를 보낼 때"],
       },
       {
+        label: "AI 학습·검토",
+        lines: [
+          "AI 학습에 쓰지 않아요.",
+          "사람이 대화 내용을 보거나 검토하지 않아요.",
+        ],
+      },
+      {
         label: "보관 기간",
-        lines: ["답변을 만드는 데만 쓰고 저장하지 않아요."],
+        lines: [
+          "답변을 만드는 데만 쓰고 저장하지 않아요.",
+          "서버 기록(로그)에도 대화 내용과 학적 정보는 남기지 않아요.",
+        ],
       },
       {
         label: "동의하지 않으면",
