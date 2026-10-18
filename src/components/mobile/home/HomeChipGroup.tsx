@@ -12,7 +12,12 @@ import {
 } from "@/resources/assets/icons/mobile-home/chip";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
-import { LuFlaskConical, LuPartyPopper, LuRepeat } from "react-icons/lu";
+import {
+  LuCalendarClock,
+  LuFlaskConical,
+  LuPartyPopper,
+  LuRepeat,
+} from "react-icons/lu";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import { usePromotion } from "@/hooks/usePromotion";
@@ -20,6 +25,7 @@ import { PROMOTIONS } from "@/utils/promotion/registry";
 import { ROUTES } from "@/constants/routes";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { usePollEntryEnabled } from "@/hooks/usePollAuth";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
@@ -29,6 +35,8 @@ const HomeChipGroup = () => {
   const { enabled: isFestivalEnabled } = useFeatureFlag(
     FEATURE_FLAG_KEYS.FESTIVAL,
   );
+
+  const isSchedulePollEnabled = usePollEntryEnabled();
 
   const {
     isVisible: isFestivalTooltipVisible,
@@ -64,6 +72,18 @@ const HomeChipGroup = () => {
         navigate(ROUTES.FESTIVAL2026);
       },
       isActive: isFestivalEnabled,
+    },
+    {
+      id: "schedule-poll",
+      iconComponent: LuCalendarClock,
+      iconColor: "#4071B9",
+      iconSize: 22,
+      title: "시간 맞추기",
+      onClick: () => {
+        mixpanelTrack.featureClicked("시간 맞추기", "Home Chip");
+        navigate(ROUTES.SCHEDULE_POLL.LIST);
+      },
+      isActive: isSchedulePollEnabled,
     },
     {
       id: "phonebook",

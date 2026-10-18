@@ -102,6 +102,13 @@ import MobileLibraryHubPage from "@/pages/mobile/MobileLibraryHubPage";
 import MobileLmsHubPage from "@/pages/mobile/MobileLmsHubPage";
 import MobileRoutineDetailPage from "@/pages/mobile/MobileRoutineDetailPage";
 import MobileUnifiedSearchPage from "@/pages/mobile/search/MobileUnifiedSearchPage";
+import SchedulePollCreatePage from "@/pages/mobile/schedulePoll/SchedulePollCreatePage";
+import SchedulePollInvitePage from "@/pages/mobile/schedulePoll/SchedulePollInvitePage";
+import SchedulePollInputPage from "@/pages/mobile/schedulePoll/SchedulePollInputPage";
+import SchedulePollStatusPage from "@/pages/mobile/schedulePoll/SchedulePollStatusPage";
+import SchedulePollResultPage from "@/pages/mobile/schedulePoll/SchedulePollResultPage";
+import SchedulePollJoinPage from "@/pages/mobile/schedulePoll/SchedulePollJoinPage";
+import SchedulePollListPage from "@/pages/mobile/schedulePoll/SchedulePollListPage";
 
 export const router = createBrowserRouter([
   {
@@ -193,6 +200,30 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.LIST, element: <MobileTimeTableListPage /> },
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
+
+          // 시간 맞추기(일정 조율)
+          { path: ROUTES.SCHEDULE_POLL.LIST, element: <SchedulePollListPage /> },
+          { path: ROUTES.SCHEDULE_POLL.NEW, element: <SchedulePollCreatePage /> },
+          {
+            path: ROUTES.SCHEDULE_POLL.JOIN_PATTERN,
+            element: <SchedulePollJoinPage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.INVITE_PATTERN,
+            element: <SchedulePollInvitePage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.INPUT_PATTERN,
+            element: <SchedulePollInputPage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.STATUS_PATTERN,
+            element: <SchedulePollStatusPage />,
+          },
+          {
+            path: ROUTES.SCHEDULE_POLL.RESULT_PATTERN,
+            element: <SchedulePollResultPage />,
+          },
 
           //전화번호부
           { path: ROUTES.PHONEBOOK.ROOT, element: <MobilePhoneBookPage /> },

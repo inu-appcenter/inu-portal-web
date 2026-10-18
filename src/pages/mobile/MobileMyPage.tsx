@@ -161,7 +161,11 @@ export default function MobileMyPage() {
                 <ProfileImage fireId={userInfo.fireId} clickable={false} />
               </Avatar>
               <ProfileText>
-                <Nickname>{userInfo.nickname}</Nickname>
+                {/* 실명이 있으면 실명을 앞세우고 닉네임은 보조로 내린다(FR-094) */}
+                <Nickname>{userInfo.realName || userInfo.nickname}</Nickname>
+                {userInfo.realName && (
+                  <SubNickname>{userInfo.nickname}</SubNickname>
+                )}
                 <Department>
                   {userInfo.department || "학과 정보 없음"}
                 </Department>
@@ -349,6 +353,15 @@ const Nickname = styled.span`
   font-weight: 600;
   line-height: 1.4;
   color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const SubNickname = styled.span`
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-tertiary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

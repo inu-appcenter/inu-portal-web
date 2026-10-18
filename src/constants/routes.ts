@@ -48,6 +48,23 @@ export const ROUTES = {
     INVITE_PATTERN: "/friend/invite/:code",
   },
 
+  // 시간 맞추기(일정 조율)
+  SCHEDULE_POLL: {
+    LIST: "/schedule-polls",
+    NEW: "/schedule-polls/new",
+    // 참여 링크. 앱 딥링크·functions/_middleware.ts 의 OG 태그 주입 경로와 맞춰져 있다.
+    JOIN: (token: string) => `/schedule-polls/join/${token}`,
+    JOIN_PATTERN: "/schedule-polls/join/:token",
+    STATUS: (pollId: string | number) => `/schedule-polls/${pollId}`,
+    STATUS_PATTERN: "/schedule-polls/:pollId",
+    INVITE: (pollId: string | number) => `/schedule-polls/${pollId}/invite`,
+    INVITE_PATTERN: "/schedule-polls/:pollId/invite",
+    INPUT: (pollId: string | number) => `/schedule-polls/${pollId}/input`,
+    INPUT_PATTERN: "/schedule-polls/:pollId/input",
+    RESULT: (pollId: string | number) => `/schedule-polls/${pollId}/result`,
+    RESULT_PATTERN: "/schedule-polls/:pollId/result",
+  },
+
   //전화번호부
   PHONEBOOK: {
     ROOT: "/phonebook",

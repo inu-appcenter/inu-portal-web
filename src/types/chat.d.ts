@@ -14,6 +14,9 @@ export type MessageType =
   | "TEXT"
   | "IMAGE"
   | "TIMETABLE_SHARE"
+  // 시간 맞추기 카드. extraData는 ID만 담고 본문은 조회 API로 그린다(types/schedulePolls).
+  | "SCHEDULE_POLL_INVITE"
+  | "SCHEDULE_POLL_RESULT"
   | "BOT_QUESTION"
   | "BOT_ANSWER";
 
