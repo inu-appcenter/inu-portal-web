@@ -1,4 +1,5 @@
 import { ROUTES } from "@/constants/routes";
+import { SAFE_AREA } from "@/styles/safeArea";
 import styled from "styled-components";
 // import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
 import { intipLogoWordmark as intipLogo } from "@/resources/assets/illustrations/brand";
@@ -156,6 +157,12 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
         $contained={contained}
         $visible={true}
       >
+        <TopEdgeFadeBackdrop
+          $isScrolled={isScrolled}
+          $hasSubHeader={Boolean(subHeader)}
+          aria-hidden="true"
+          data-testid="top-scroll-edge-fade"
+        />
         <MainHeaderWrapper
           $isScrolled={isScrolled}
           $hasBack={(hasback && !!title) ?? false}
@@ -226,7 +233,52 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
 
 MobileHeader.displayName = "MobileHeader";
 
+export function computeTopFadeHeight(hasSubHeader: boolean): string {
+  return hasSubHeader
+    ? `calc(126px + ${SAFE_AREA.TOP} + 24px)`
+    : `calc(64px + ${SAFE_AREA.TOP} + 24px)`;
+}
+
 export default MobileHeader;
+
+
+const TopEdgeFadeBackdrop = styled.div<{
+  $isScrolled: boolean;
+  $hasSubHeader: boolean;
+}>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: ${({ $hasSubHeader }) => computeTopFadeHeight($hasSubHeader)};
+  pointer-events: none;
+  z-index: 1;
+  opacity: ${({ $isScrolled }) => ($isScrolled ? 1 : 0)};
+  transform: translateZ(0);
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  ${({ $hasSubHeader }) =>
+    $hasSubHeader
+      ? `
+        background: linear-gradient(
+          180deg,
+          rgba(248, 249, 251, 0.96) 0%,
+          rgba(248, 249, 251, 0.96) calc(${SAFE_AREA.TOP} + 48px),
+          rgba(248, 249, 251, 0.60) calc(${SAFE_AREA.TOP} + 96px),
+          rgba(248, 249, 251, 0) 100%
+        );
+      `
+      : `
+        background: linear-gradient(
+          180deg,
+          rgba(248, 249, 251, 0.96) 0%,
+          rgba(248, 249, 251, 0.96) ${SAFE_AREA.TOP},
+          rgba(248, 249, 251, 0.60) calc(${SAFE_AREA.TOP} + 36px),
+          rgba(248, 249, 251, 0) 100%
+        );
+      `}
+`;
 
 const MobileHeaderWrapper = styled.header<{
   $visible: boolean;
@@ -312,7 +364,7 @@ const MainHeaderWrapper = styled.div<{
 
 const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   display: flex;
   justify-content: flex-start;
