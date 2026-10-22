@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ShieldCheck } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
@@ -389,7 +390,7 @@ const FixedFooterContent = styled.div`
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 24px calc(24px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   pointer-events: auto;
 `;

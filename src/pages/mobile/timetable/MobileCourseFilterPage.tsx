@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { RotateCcw } from "lucide-react";
 import { useNavigate, useBlocker, useBeforeUnload } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -441,7 +442,7 @@ const PageWrapper = styled.div`
 
 const FixedBottomContainer = styled.div`
   position: fixed;
-  bottom: 32px;
+  bottom: calc(32px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: 100%;

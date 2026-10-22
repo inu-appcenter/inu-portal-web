@@ -4,6 +4,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueries } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
 import { getChatRoomPrimaryTimeTables, getFriendPrimaryTimeTableDetail } from "@/apis/timetables";
@@ -1201,8 +1202,8 @@ const PageWrapper = styled.div<{ $isFreeTab?: boolean; $snapHeight?: number }>`
   padding: 0 0
     ${({ $isFreeTab, $snapHeight }) =>
       $isFreeTab && typeof $snapHeight === "number"
-        ? `calc(${$snapHeight * 100}dvh + 24px)`
-        : "calc(var(--nav-height, 0px) + 24px)"};
+        ? `calc(${$snapHeight * 100}dvh + 32px + ${SAFE_AREA.BOTTOM})`
+        : `calc(36px + ${SAFE_AREA.BOTTOM})`};
 `;
 
 const ContentArea = styled.div`
@@ -1467,7 +1468,7 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  padding-bottom: calc(144px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + ${SAFE_AREA.BOTTOM});
 
   /* 스크롤 영역의 높이를 snap 높이에 따라 동적으로 묶어줌 */
   max-height: ${({ $snapHeight }) =>
@@ -1484,7 +1485,7 @@ const ScrollableBody = styled.div<{ $snapHeight?: number }>`
 const FloatingShareButton = styled.button`
   position: fixed;
   right: 20px;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   z-index: 10001;
   pointer-events: auto !important;
   width: 56px;

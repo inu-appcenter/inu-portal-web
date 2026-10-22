@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getNoticeDetail } from "@/apis/notices";
@@ -294,7 +295,7 @@ const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px 16px calc(112px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 16px calc(112px + ${SAFE_AREA.BOTTOM});
   padding-top: 0;
   width: 100%;
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
@@ -304,7 +305,7 @@ const ContentWrapper = styled.div`
 
   @media ${DESKTOP_MEDIA} {
     padding: 32px ${DESKTOP_GUTTER}
-      calc(120px + env(safe-area-inset-bottom, 0px));
+      calc(120px + ${SAFE_AREA.BOTTOM});
     gap: 28px;
   }
 `;
@@ -656,7 +657,7 @@ const FileSize = styled.p`
 // 하단 플로팅 CTA (Figma 2932:13959)
 const BottomFloatingCTA = styled.div`
   position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
@@ -668,7 +669,7 @@ const BottomFloatingCTA = styled.div`
   pointer-events: none;
 
   @media ${DESKTOP_MEDIA} {
-    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(32px + ${SAFE_AREA.BOTTOM});
     width: calc(100% - 48px);
   }
 `;

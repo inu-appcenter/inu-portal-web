@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/common/Icon";
 import { useHeader } from "@/context/HeaderContext";
@@ -647,13 +648,13 @@ const AddGroupButton = styled.button`
 `;
 
 const BottomActionsSpacer = styled.div`
-  height: 80px;
+  height: calc(80px + ${SAFE_AREA.BOTTOM});
   flex-shrink: 0;
 `;
 
 const FixedBottomContainer = styled.div`
   position: fixed;
-  bottom: 32px;
+  bottom: calc(32px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: 100%;

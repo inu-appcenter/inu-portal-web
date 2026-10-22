@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import styled, { keyframes, css } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
@@ -343,7 +344,7 @@ const PageBackground = styled.div`
 const ContentContainer = styled.div`
   width: 100%;
   max-width: 480px;
-  padding: 16px 20px 90px 20px;
+  padding: 16px 20px calc(90px + ${SAFE_AREA.BOTTOM}) 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -400,7 +401,7 @@ const AnimatedCardItem = styled.div<{
 
 const FloatingBottomActions = styled.div`
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   right: 20px;
   display: flex;
   align-items: center;

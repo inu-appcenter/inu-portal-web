@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import {
   AlertCircle,
   Check,
@@ -1085,7 +1086,7 @@ const FixedBottomContent = styled.div`
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

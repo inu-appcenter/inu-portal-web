@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ImagePlus,
@@ -1795,7 +1796,7 @@ const FixedBottomContent = styled.div`
   width: 100%;
   max-width: 768px;
   margin: 0 auto;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -2319,7 +2320,7 @@ const ModalSheetFooter = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: 14px 20px calc(14px + ${SAFE_AREA.BOTTOM});
   border-top: 1px solid var(--bg-base);
   background: var(--bg-base);
 `;

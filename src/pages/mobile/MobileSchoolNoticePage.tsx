@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useHeader } from "@/context/HeaderContext";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
@@ -467,7 +468,7 @@ const EmptyDescription = styled.p`
 const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(28px + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);
   width: calc(100% - 32px);
   display: flex;

@@ -3,6 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import Icon from "@/components/common/Icon";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 import {
   searchCollegeOfficeContacts,
@@ -682,7 +683,7 @@ const SearchSpacer = styled.div`
 const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(28px + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 120;
