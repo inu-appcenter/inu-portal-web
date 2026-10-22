@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ClipboardPaste } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -452,7 +453,7 @@ const SheetFooter = styled.div`
   flex-shrink: 0;
   display: flex;
   gap: 8px;
-  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 20px calc(20px + ${SAFE_AREA.BOTTOM});
   border-top: 1px solid var(--border-default);
 `;
 

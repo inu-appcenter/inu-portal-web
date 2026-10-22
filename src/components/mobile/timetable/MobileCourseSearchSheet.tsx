@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
@@ -500,7 +501,7 @@ const SheetContentWrapper = styled.div`
 
 const FloatingActionsContainer = styled.div`
   position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 40px);

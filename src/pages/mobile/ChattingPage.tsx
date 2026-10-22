@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"; // useNavigate import 추가
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useChat } from "@/hooks/useChat";
@@ -1171,7 +1172,7 @@ const ChattingWrapper = styled.div`
   flex-direction: column-reverse;
   overflow-y: auto;
   padding-top: 76px;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(68px + ${SAFE_AREA.BOTTOM});
   padding-left: 16px;
   padding-right: 16px;
   box-sizing: border-box;
@@ -1291,7 +1292,7 @@ const FloatingInputContainer = styled.div`
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0 16px calc(12px + env(safe-area-inset-bottom, 0px)) 16px;
+  padding: 0 16px calc(12px + ${SAFE_AREA.BOTTOM}) 16px;
   box-sizing: border-box;
 
   @media (min-width: 768px) {
@@ -2017,7 +2018,7 @@ const NewMessageBanner = styled.div`
   }
 
   position: absolute;
-  bottom: calc(68px + env(safe-area-inset-bottom, 0px)); /* FloatingInputContainer 위에 플로팅 */
+  bottom: calc(68px + ${SAFE_AREA.BOTTOM}); /* FloatingInputContainer 위에 플로팅 */
   left: 50%;
   transform: translateX(-50%);
   z-index: 101;

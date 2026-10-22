@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { Calendar, Activity, Zap, BarChart3 } from "lucide-react";
 
 import useUserStore from "@/stores/useUserStore.ts";
@@ -280,7 +281,7 @@ const SearchSpacer = styled.div`
 const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(28px + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 100;

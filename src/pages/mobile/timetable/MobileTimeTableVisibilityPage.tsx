@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 import OptionCard from "@/components/mobile/common/OptionCard";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useTimetableStore } from "@/stores/useTimetableStore";
@@ -160,7 +161,7 @@ const FixedFooterContent = styled.div`
   max-width: 768px;
   margin: 0 auto;
   padding: 16px ${MOBILE_PAGE_GUTTER}
-    calc(24px + env(safe-area-inset-bottom, 0px));
+    calc(24px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   pointer-events: auto;
 `;

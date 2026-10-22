@@ -1,6 +1,7 @@
 import MobileCouncilHeader from "@/components/mobile/council/MobileCouncilHeader";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import UploadNotice from "@/components/mobile/council/UploadNotice";
 import NoticeList from "@/components/mobile/council/NoticeList";
 import UploadPetition from "@/components/mobile/council/UploadPetition";
@@ -92,7 +93,7 @@ const MobileCouncilPageWrapper = styled.div`
   .upload-button {
     position: fixed;
     right: 20px;
-    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(100px + ${SAFE_AREA.BOTTOM});
     z-index: 999999;
     color: var(--text-inverse);
     background-color: rgba(64, 113, 185, 1);

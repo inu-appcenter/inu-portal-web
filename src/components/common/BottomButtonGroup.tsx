@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Ripple from "./Ripple";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 // 버튼 설정 인터페이스
 export interface ButtonConfig {
@@ -104,7 +105,7 @@ const ButtonGroupContainer = styled.div<ContainerProps>`
 
   padding-bottom: ${props =>
     props.$position === "fixed"
-      ? `calc(${props.$paddingVal} + env(safe-area-inset-bottom, 0px))`
+      ? `calc(${props.$paddingVal} + ${SAFE_AREA.BOTTOM})`
       : props.$paddingVal};
 `;
 
@@ -140,7 +141,7 @@ const GroupButton = styled.button<ButtonProps>`
 `;
 
 const Spacer = styled.div<{ $height: string }>`
-  height: calc(${props => props.$height} + env(safe-area-inset-bottom, 0px));
+  height: calc(${props => props.$height} + ${SAFE_AREA.BOTTOM});
   width: 100%;
   visibility: hidden;
   pointer-events: none;

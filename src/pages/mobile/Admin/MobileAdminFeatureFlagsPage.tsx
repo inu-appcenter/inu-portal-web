@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { RefreshCw, Settings2, Flag as FlagIcon } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
@@ -369,7 +370,7 @@ const SearchSpacer = styled.div`
 const FloatingSearchBarContainer = styled.div`
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(28px + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);
   width: calc(100% - 32px);
   z-index: 100;

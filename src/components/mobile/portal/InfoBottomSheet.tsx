@@ -1,5 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import Icon from "@/components/common/Icon";
 import type { ReactNode } from "react";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
@@ -132,7 +133,7 @@ const Title = styled.h2`
 const BodySection = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 0 20px calc(28px + env(safe-area-inset-bottom, 0px));
+  padding: 0 20px calc(28px + ${SAFE_AREA.BOTTOM});
 
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;

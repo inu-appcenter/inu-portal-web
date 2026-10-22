@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios, { AxiosError } from "axios";
@@ -240,7 +241,7 @@ export default function ReplyInput({
 
 const StyledReplyInput = styled.div`
   position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(16px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);

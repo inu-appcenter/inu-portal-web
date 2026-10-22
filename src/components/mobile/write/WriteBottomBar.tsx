@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Icon from "@/components/common/Icon";
 import AnonymousCheck from "@/components/mobile/write/AnonymousCheck";
 import { DESKTOP_CONTENT_MAX_WIDTH, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 interface WriteBottomBarProps {
   anonymous: boolean;
@@ -77,7 +78,7 @@ const BottomBarWrapper = styled.div`
   max-width: ${DESKTOP_CONTENT_MAX_WIDTH};
   background: var(--bg-base);
   border-top: 1px solid var(--border-default);
-  padding: 12px ${MOBILE_PAGE_GUTTER} calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 12px ${MOBILE_PAGE_GUTTER} calc(12px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   display: flex;
   align-items: center;

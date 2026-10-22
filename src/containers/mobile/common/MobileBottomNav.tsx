@@ -14,6 +14,7 @@ import useUserStore from "@/stores/useUserStore";
 import TooltipMessage from "@/components/common/TooltipMessage";
 import { usePromotion } from "@/hooks/usePromotion";
 import { PROMOTIONS } from "@/utils/promotion/registry";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 const NAV_ITEMS: {
   to: string;
@@ -170,7 +171,7 @@ export default function MobileBottomNav() {
 export const BOTTOM_PADDING = 6;
 export const BOTTOM_NAV_CONTENT_HEIGHT = 62;
 export const BOTTOM_NAV_HEIGHT = BOTTOM_NAV_CONTENT_HEIGHT + BOTTOM_PADDING;
-export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px)))`;
+export const BOTTOM_NAV_SAFE_HEIGHT = `calc(${BOTTOM_NAV_CONTENT_HEIGHT}px + max(${BOTTOM_PADDING}px, ${SAFE_AREA.BOTTOM}))`;
 
 const NavContainer = styled.div`
   position: relative;
@@ -198,7 +199,7 @@ const NavItemsContainer = styled.nav`
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
   padding-top: 0px;
-  padding-bottom: max(${BOTTOM_PADDING}px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: max(${BOTTOM_PADDING}px, ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
 `;
 

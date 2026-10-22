@@ -4,6 +4,7 @@ import { Drawer } from "vaul";
 import Icon from "@/components/common/Icon";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { effects } from "@/styles/effects";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 export interface BottomSheetProps {
   open: boolean;
@@ -180,7 +181,7 @@ const SheetInner = styled.div`
   width: 100%;
   border-top: 1px solid var(--border-default);
   overflow: hidden;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(16px + ${SAFE_AREA.BOTTOM});
 
   display: flex;
   flex-direction: column;

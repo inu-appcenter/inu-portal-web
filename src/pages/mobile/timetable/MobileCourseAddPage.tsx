@@ -7,6 +7,7 @@ import CourseTimeSelector, {
   CourseTimeSlot,
 } from "@/components/mobile/timetable/CourseTimeSelector";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import {
@@ -378,11 +379,11 @@ const StyledInputField = styled(InputField)`
 
 const SubmitButtonContainer = styled.div`
   position: fixed;
-  bottom: 32px;
+  bottom: 0;
   left: 0;
   right: 0;
   padding: 16px ${MOBILE_PAGE_GUTTER}
-    calc(16px + env(safe-area-inset-bottom, 0px));
+    calc(16px + ${SAFE_AREA.BOTTOM});
   z-index: 100;
   max-width: 768px;
   margin: 0 auto;
