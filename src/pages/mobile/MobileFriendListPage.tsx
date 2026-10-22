@@ -539,12 +539,6 @@ const FloatingActionsOuter = styled.div<{ $isMenuOpen?: boolean }>`
   width: 100%;
   z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 99)};
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 45%,
-    rgba(248, 249, 251, 0.85) 100%
-  );
 `;
 
 const FloatingActionsWrapper = styled.div`
