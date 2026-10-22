@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { isMainTabPath } from "@/constants/routes";
 import { SAFE_AREA } from "@/styles/safeArea";
-import { BOTTOM_NAV_SAFE_HEIGHT } from "@/containers/mobile/common/MobileBottomNav";
 
 interface BottomScrollEdgeFadeProps {
   /**
@@ -16,13 +15,15 @@ interface BottomScrollEdgeFadeProps {
  * 하단 스크롤 엣지 페이드 효과를 적용하지 않을 예외 경로 판별 함수
  */
 export function isBottomEdgeFadeExcluded(pathname: string): boolean {
-  // 1. 채팅방 (메시지 목록 독립 내부 스크롤 뷰 및 하단 입력창 고정)
+  // 1. 바텀 네비게이션 바가 있는 메인 화면들 (홈, 시간표, 채팅 목록, 마이페이지, 버스, 저장 등)
+  if (isMainTabPath(pathname)) return true;
+  // 2. 채팅방 (메시지 목록 독립 내부 스크롤 뷰 및 하단 입력창 고정)
   if (pathname.startsWith("/chat/")) return true;
-  // 2. 모의 수강신청 시뮬레이터 (전체화면 풀스크린 iframe 웹뷰)
+  // 3. 모의 수강신청 시뮬레이터 (전체화면 풀스크린 iframe 웹뷰)
   if (pathname.startsWith("/timetable/simulator")) return true;
-  // 3. AI 에이전트 / 어시스턴트
+  // 4. AI 에이전트 / 어시스턴트
   if (pathname.startsWith("/agent") || pathname.startsWith("/assistant")) return true;
-  // 4. 모바일 기숙사/학생증 전체화면 카드 (일반 및 실험실 경로 포함)
+  // 5. 모바일 기숙사/학생증 전체화면 카드 (일반 및 실험실 경로 포함)
   if (pathname.includes("/dormitory/card")) return true;
   return false;
 }
@@ -61,10 +62,11 @@ export function computeScrollFadeState({
 /**
  * 갤럭시(One UI) 스타일의 동적 하단 스크롤 엣지 페이드 컴포넌트
  *
+ * - 바텀 네비게이션 바가 없는 서브페이지 화면에서 동작
  * - 스크롤 가능한 컨텐츠가 존재할 때만 은은한 하단 엣지 페이드 노출
  * - 스크롤이 최하단에 도달하면 자연스럽게 fade-out (opacity: 0)
  * - 스크롤할 내용이 없거나 짧은 페이지에서는 자동으로 숨김
- * - 바텀 네비게이션 유무에 따라 위치(bottom) 및 높이를 정밀 계산
+ * - 바텀 네비게이션 바가 있는 메인 화면(홈, 시간표, 채팅, 마이페이지 등)은 완전 제외
  */
 export default function BottomScrollEdgeFade({ hidden = false }: BottomScrollEdgeFadeProps) {
   const location = useLocation();
@@ -72,7 +74,6 @@ export default function BottomScrollEdgeFade({ hidden = false }: BottomScrollEdg
   const rafIdRef = useRef<number | null>(null);
 
   const isExcluded = hidden || isBottomEdgeFadeExcluded(location.pathname);
-  const isMainTab = isMainTabPath(location.pathname);
 
   useEffect(() => {
     if (isExcluded) {
@@ -144,7 +145,6 @@ export default function BottomScrollEdgeFade({ hidden = false }: BottomScrollEdg
 
   return (
     <FadeContainer
-      $isMainTab={isMainTab}
       $isVisible={isVisible}
       aria-hidden="true"
       data-testid="bottom-scroll-edge-fade"
@@ -152,40 +152,24 @@ export default function BottomScrollEdgeFade({ hidden = false }: BottomScrollEdg
   );
 }
 
-const FadeContainer = styled.div<{ $isMainTab: boolean; $isVisible: boolean }>`
+const FadeContainer = styled.div<{ $isVisible: boolean }>`
   position: fixed;
+  bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
+  height: calc(44px + ${SAFE_AREA.BOTTOM});
   pointer-events: none;
   z-index: 45;
   opacity: ${({ $isVisible }) => ($isVisible ? 1 : 0)};
   transform: translateZ(0);
   transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
-  ${({ $isMainTab }) =>
-    $isMainTab
-      ? `
-        /* 바텀 네비가 있는 메인 탭: 바텀 네비 바로 위에 안착 */
-        bottom: ${BOTTOM_NAV_SAFE_HEIGHT};
-        height: 40px;
-        background: linear-gradient(
-          180deg,
-          rgba(248, 249, 251, 0) 0%,
-          rgba(248, 249, 251, 0.4) 40%,
-          rgba(248, 249, 251, 0.9) 100%
-        );
-      `
-      : `
-        /* 바텀 네비가 없는 일반 서브페이지: 화면 최하단 + Safe Area 연동 */
-        bottom: 0;
-        height: calc(44px + ${SAFE_AREA.BOTTOM});
-        background: linear-gradient(
-          180deg,
-          rgba(248, 249, 251, 0) 0%,
-          rgba(248, 249, 251, 0.45) 30%,
-          rgba(248, 249, 251, 0.95) calc(100% - ${SAFE_AREA.BOTTOM}),
-          rgba(248, 249, 251, 0.95) 100%
-        );
-      `}
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0) 0%,
+    rgba(248, 249, 251, 0.45) 30%,
+    rgba(248, 249, 251, 0.95) calc(100% - ${SAFE_AREA.BOTTOM}),
+    rgba(248, 249, 251, 0.95) 100%
+  );
 `;
