@@ -22,8 +22,8 @@ export function isBottomEdgeFadeExcluded(pathname: string): boolean {
   if (pathname.startsWith("/timetable/simulator")) return true;
   // 3. AI 에이전트 / 어시스턴트
   if (pathname.startsWith("/agent") || pathname.startsWith("/assistant")) return true;
-  // 4. 모바일 기숙사/학생증 전체화면 카드
-  if (pathname.startsWith("/dormitory/card")) return true;
+  // 4. 모바일 기숙사/학생증 전체화면 카드 (일반 및 실험실 경로 포함)
+  if (pathname.includes("/dormitory/card")) return true;
   return false;
 }
 

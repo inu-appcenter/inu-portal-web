@@ -23,6 +23,7 @@ describe("BottomScrollEdgeFade 로직 및 엣지 케이스 단위 검증", () =>
 
     it("모바일 기숙사/학생증 카드는 풀스크린 뷰이므로 예외로 처리되어야 한다", () => {
       expect(isBottomEdgeFadeExcluded("/dormitory/card")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/labs/portal/dormitory/card")).toBe(true);
     });
 
     it("일반 메인 탭 및 서브페이지는 예외가 아니므로 false를 반환해야 한다", () => {
