@@ -168,8 +168,9 @@ const FadeContainer = styled.div<{ $isVisible: boolean }>`
   background: linear-gradient(
     180deg,
     rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 30%,
-    rgba(248, 249, 251, 0.95) calc(100% - ${SAFE_AREA.BOTTOM}),
-    rgba(248, 249, 251, 0.95) 100%
+    rgba(248, 249, 251, 0.25) 25%,
+    rgba(248, 249, 251, 0.55) 50%,
+    rgba(248, 249, 251, 0.85) 75%,
+    rgba(248, 249, 251, 1) 100%
   );
 `;

@@ -233,7 +233,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
 MobileHeader.displayName = "MobileHeader";
 
 export function computeTopFadeHeight(): string {
-  return `calc(${SAFE_AREA.TOP} + 16px)`;
+  return `calc(${SAFE_AREA.TOP} + 32px)`;
 }
 
 export default MobileHeader;
@@ -256,8 +256,10 @@ const TopEdgeFadeBackdrop = styled.div<{
 
   background: linear-gradient(
     180deg,
-    rgba(248, 249, 251, 0.96) 0%,
-    rgba(248, 249, 251, 0.96) ${SAFE_AREA.TOP},
+    rgba(248, 249, 251, 1) 0%,
+    rgba(248, 249, 251, 0.85) 25%,
+    rgba(248, 249, 251, 0.55) 50%,
+    rgba(248, 249, 251, 0.25) 75%,
     rgba(248, 249, 251, 0) 100%
   );
 `;
