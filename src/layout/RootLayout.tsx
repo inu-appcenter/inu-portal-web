@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { getMembers, postApiLogs, postFcmToken } from "@/apis/members";
-import { ROUTES, isMainTabPath } from "@/constants/routes";
+import { ROUTES } from "@/constants/routes";
 import { HeaderProvider } from "@/context/HeaderContext";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import useAppStateStore from "@/stores/useAppStateStore";
@@ -30,6 +30,7 @@ import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
 import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
 import SafeAreaDebugOverlay from "@/components/common/SafeAreaDebugOverlay";
+import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 
@@ -205,12 +206,6 @@ export default function RootLayout() {
     location.pathname === ROUTES.HOME_V2 ||
     location.pathname === ROUTES.ROOT;
 
-  const isChatRoom = location.pathname.startsWith("/chat/");
-  const isAgent =
-    location.pathname.startsWith("/agent") ||
-    location.pathname.startsWith("/assistant");
-  const hasBottomNav = isMainTabPath(location.pathname);
-  const hideBottomFade = isChatRoom || hasBottomNav || isAgent;
 
   return (
     <HeaderProvider>
@@ -222,7 +217,7 @@ export default function RootLayout() {
       <ScreenContainer>
         {outlet}
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
-        {!hideBottomFade && <GlobalBottomFadeOverlay aria-hidden="true" />}
+        <BottomScrollEdgeFade />
       </ScreenContainer>
       {/* 딥링크로 특정 화면에 들어온 사람을 가로막지 않도록 홈에서만 띄운다. */}
       <FeatureTourSheet
@@ -256,19 +251,4 @@ const ScreenContainer = styled.div`
   }
 `;
 
-const GlobalBottomFadeOverlay = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 45%,
-    rgba(248, 249, 251, 0.85) 100%
-  );
-  pointer-events: none;
-  z-index: 50;
-`;
+
