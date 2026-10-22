@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { Sheet, SheetRef } from "react-modal-sheet";
 import { useTransform } from "motion/react";
 import {
@@ -723,7 +724,7 @@ const SheetContentWrapper = styled.div`
 
 const FloatingActionsContainer = styled.div`
   position: fixed;
-  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 40px);
@@ -1097,7 +1098,7 @@ const OverlayHeaderSpacer = styled.div`
 const OverlayActions = styled.div`
   display: flex;
   gap: 12px;
-  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 20px calc(20px + ${SAFE_AREA.BOTTOM});
   flex-shrink: 0;
   background: var(--bg-base);
   border-top: 1px solid var(--border-default);

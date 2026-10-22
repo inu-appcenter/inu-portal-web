@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Icon from "@/components/common/Icon";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 import {
   APP_STORE_URL,
@@ -46,7 +47,7 @@ export default function AppInstallBanner() {
     const root = document.documentElement;
     root.style.setProperty(
       "--native-safe-area-inset-top",
-      `calc(env(safe-area-inset-top, 0px) + ${INSTALL_BANNER_HEIGHT}px)`,
+      `calc(${SAFE_AREA.TOP} + ${INSTALL_BANNER_HEIGHT}px)`,
     );
     // 인라인 값을 지우면 CommonStyles의 `:root` 정의로 되돌아간다.
     return () => {
@@ -106,8 +107,8 @@ const Banner = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  height: calc(env(safe-area-inset-top, 0px) + ${INSTALL_BANNER_HEIGHT}px);
-  padding: env(safe-area-inset-top, 0px) 12px 0;
+  height: calc(${SAFE_AREA.TOP} + ${INSTALL_BANNER_HEIGHT}px);
+  padding: ${SAFE_AREA.TOP} 12px 0;
   box-sizing: border-box;
   background: var(--bg-base);
   border-bottom: 1px solid var(--border-default);

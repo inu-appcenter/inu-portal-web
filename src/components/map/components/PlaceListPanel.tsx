@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { Drawer } from "vaul";
 
 import Tab from "@/components/mobile/map/Tab.tsx";
@@ -248,7 +249,7 @@ const PlaceListPanelWrapper = styled.div<{ $isDesktop: boolean }>`
   padding: ${({ $isDesktop }) =>
     $isDesktop
       ? "24px 24px 20px"
-      : "0 16px calc(16px + env(safe-area-inset-bottom, 0px))"};
+      : `0 16px calc(16px + ${SAFE_AREA.BOTTOM})`};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

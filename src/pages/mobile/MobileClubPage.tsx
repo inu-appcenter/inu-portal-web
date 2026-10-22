@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { Club } from "@/types/club";
 import { getClubs } from "@/apis/club";
 import { useEffect, useMemo, useState } from "react";
@@ -368,7 +369,7 @@ const MobileClubPageWrapper = styled.div`
   .upload-button {
     position: sticky;
     right: 20px;
-    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(100px + ${SAFE_AREA.BOTTOM});
     z-index: 9999;
     color: var(--text-inverse);
     background-color: rgba(64, 113, 185, 1);

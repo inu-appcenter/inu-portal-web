@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useEffect, useState } from "react";
 import {
   putMemberRealName,
@@ -656,7 +657,7 @@ const SubmitArea = styled.div`
   width: 100%;
   box-sizing: border-box;
   /* 내부 여백은 유지하여 버튼이 벽에 붙지 않게 함 */
-  padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 20px calc(16px + ${SAFE_AREA.BOTTOM});
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);

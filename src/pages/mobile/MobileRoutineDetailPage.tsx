@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Modal from "@/components/common/Modal";
@@ -3381,7 +3382,7 @@ const PageWrapper = styled.div`
 
 const ScrollContainer = styled.div`
   flex: 1;
-  padding: 16px 20px 120px 20px;
+  padding: 16px 20px calc(120px + ${SAFE_AREA.BOTTOM}) 20px;
   display: flex;
   flex-direction: column;
   gap: 26px;
@@ -3742,7 +3743,7 @@ const ChipDeleteBtn = styled.button`
 // Floating Actions
 const FloatingActionPill = styled.div`
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-base);
@@ -3783,7 +3784,7 @@ const PillActionButton = styled.button`
 
 const EditFloatingPill = styled.div`
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-base);

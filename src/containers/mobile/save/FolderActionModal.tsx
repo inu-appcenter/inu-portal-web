@@ -1,5 +1,6 @@
 // FolderActionModal.tsx
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 interface FolderActionModalProps {
   onAddFolder: () => void;
@@ -56,7 +57,7 @@ const ModalWrapper = styled.div`
   z-index: 1001;
   width: 100%;
   padding: 16px;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(80px + ${SAFE_AREA.BOTTOM});
   min-height: 120px;
   background-color: var(--bg-base);
   border-radius: 20px 20px 0 0;

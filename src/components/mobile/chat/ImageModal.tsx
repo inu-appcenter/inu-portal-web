@@ -1,5 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ArrowLeft, Download } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { getMobilePlatform } from "@/utils/getMobilePlatform";
@@ -339,7 +340,7 @@ const FooterBar = styled.div<{ $show: boolean }>`
   justify-content: center;
   align-items: center;
   padding: 24px 0;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   z-index: 20005;
   box-sizing: border-box;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);

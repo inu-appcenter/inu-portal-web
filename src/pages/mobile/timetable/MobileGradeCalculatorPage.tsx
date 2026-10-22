@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
@@ -1912,7 +1913,7 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 24px 16px calc(112px + env(safe-area-inset-bottom, 0px));
+  padding: 24px 16px calc(112px + ${SAFE_AREA.BOTTOM});
   gap: 16px;
 `;
 
@@ -1924,14 +1925,8 @@ const FloatingSaveArea = styled.div`
   z-index: 1000;
   display: flex;
   justify-content: center;
-  padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 16px calc(24px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 45%,
-    rgba(248, 249, 251, 0.85) 100%
-  );
 `;
 
 // 1. 요약 카드 스타일

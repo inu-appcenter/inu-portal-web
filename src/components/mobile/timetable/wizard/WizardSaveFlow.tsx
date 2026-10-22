@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import CapsuleButton from "@/components/common/CapsuleButton";
@@ -338,6 +339,6 @@ const SelectBox = styled.select`
 `;
 
 const SaveButtonWrap = styled.div`
-  padding: 16px 4px calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 4px calc(8px + ${SAFE_AREA.BOTTOM});
   flex-shrink: 0;
 `;

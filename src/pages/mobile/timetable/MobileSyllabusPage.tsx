@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useHeader } from "@/context/HeaderContext";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -1170,7 +1171,7 @@ const BottomCTAContainer = styled.div`
   right: 0;
   z-index: 100;
   width: 100%;
-  padding: 48px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 48px 24px calc(24px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   display: flex;
   gap: 12px;

@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { ReactNode } from "react";
 import Ripple from "./Ripple";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 interface FloatingActionButtonProps {
   text: string;
@@ -31,7 +32,7 @@ export default FloatingActionButton;
 const FixedButtonWrapper = styled.div<{ $bottom: string }>`
   position: fixed;
   bottom: ${({ $bottom }) =>
-    `calc(${$bottom} + env(safe-area-inset-bottom, 0px))`};
+    `calc(${$bottom} + ${SAFE_AREA.BOTTOM})`};
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;

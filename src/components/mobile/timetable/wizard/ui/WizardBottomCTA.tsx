@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { buttonReset } from "./tokens";
 import { typography } from "@/styles/typography";
 import { effects } from "@/styles/effects";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 interface WizardBottomCTAProps {
   children: React.ReactNode;
@@ -61,7 +62,7 @@ export default WizardBottomCTA;
 
 const ScrollSpacer = styled.div`
   flex-shrink: 0;
-  height: calc(96px + env(safe-area-inset-bottom, 0px));
+  height: calc(96px + ${SAFE_AREA.BOTTOM});
 `;
 
 const FixedBar = styled.div`
@@ -73,13 +74,7 @@ const FixedBar = styled.div`
   max-width: 768px;
   transform: translateX(-50%);
   box-sizing: border-box;
-  /* 그라데이션이 버튼 위로 번지는 높이만큼 위 여백을 둔다 (Figma Bottom_Gradient 120px) */
-  padding: 48px 16px calc(16px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(
-    to bottom,
-    rgba(248, 249, 251, 0) 16%,
-    var(--bg-subtle) 50%
-  );
+  padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   pointer-events: none;
 
   & > * {

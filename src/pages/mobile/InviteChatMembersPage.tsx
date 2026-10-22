@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
@@ -165,13 +166,12 @@ const FixedFooter = styled.div`
   left: 0;
   z-index: 100;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(248, 249, 251, 0), rgba(248, 249, 251, 0.9) 45%);
 `;
 
 const FixedFooterContent = styled.div`
   max-width: 768px;
   margin: 0 auto;
-  padding: 16px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 24px calc(24px + ${SAFE_AREA.BOTTOM});
   pointer-events: auto;
 `;
 

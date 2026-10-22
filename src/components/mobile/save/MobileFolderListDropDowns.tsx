@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { like as ListImg } from "@/resources/assets/icons/mypage";
 import Icon from "@/components/common/Icon";
 import fileImg from "@/resources/assets/illustrations/mypage/folder.svg";
@@ -197,7 +198,7 @@ const ConfirmButton = styled.button`
   position: fixed;
   background-color: var(--interactive-focus);
   left: 50%;
-  bottom: calc(10% + env(safe-area-inset-bottom, 0px));
+  bottom: calc(10% + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);
   width: 102px;
   height: 40px;

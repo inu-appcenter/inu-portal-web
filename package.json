@@ -16,6 +16,7 @@
     "build:tokens": "node scripts/build-tokens.mjs",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "assets:audit": "node scripts/assets-audit.mjs",
+    "verify:safe-area": "node scripts/verify-safe-area.mjs",
     "test": "npx vitest run",
     "preview": "vite preview"
   },

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import Icon from "@/components/common/Icon";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSemesters } from "@/hooks/useSemesters";
@@ -574,6 +575,6 @@ const SkippedList = styled.ul`
 
 const SheetFooter = styled.div`
   flex-shrink: 0;
-  padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 20px calc(20px + ${SAFE_AREA.BOTTOM});
   border-top: 1px solid var(--border-default);
 `;

@@ -1,5 +1,6 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Crown } from "lucide-react";
 import Icon from "@/components/common/Icon";
@@ -406,9 +407,9 @@ const StyledContent = styled(Dialog.Content)`
   flex-direction: column;
   outline: none;
   padding: calc(
-      12px + var(--native-safe-area-inset-top, env(safe-area-inset-top, 0px))
+      12px + ${SAFE_AREA.TOP}
     )
-    12px calc(16px + env(safe-area-inset-bottom, 0px));
+    12px calc(16px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   animation: ${contentShow} 250ms cubic-bezier(0.16, 1, 0.3, 1);

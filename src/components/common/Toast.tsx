@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { AnimatePresence, motion } from "framer-motion";
 import { useToastStore, type ToastItem } from "@/stores/useToastStore";
 
@@ -66,7 +67,7 @@ export default function ToastContainer() {
 
 const ToastViewport = styled.div`
   position: fixed;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(28px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   z-index: 99999;

@@ -1,5 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -475,7 +476,7 @@ const SheetInner = styled.div`
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: ${SAFE_AREA.BOTTOM};
 
   display: flex;
   flex-direction: column;

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -538,12 +539,6 @@ const FloatingActionsOuter = styled.div<{ $isMenuOpen?: boolean }>`
   width: 100%;
   z-index: ${({ $isMenuOpen }) => ($isMenuOpen ? 1001 : 99)};
   pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 45%,
-    rgba(248, 249, 251, 0.85) 100%
-  );
 `;
 
 const FloatingActionsWrapper = styled.div`
@@ -554,7 +549,7 @@ const FloatingActionsWrapper = styled.div`
   align-items: flex-end;
   pointer-events: none;
   box-sizing: border-box;
-  padding: 32px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 32px 24px calc(24px + ${SAFE_AREA.BOTTOM});
 
   & > * {
     pointer-events: auto;

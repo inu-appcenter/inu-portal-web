@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { pencilWhite as pencil } from "@/resources/assets/icons/posts";
 import LoginModal from "@/components/desktop/common/LoginModal";
 import { useState } from "react";
@@ -51,7 +52,7 @@ export default function FloatingWriteButton({
 // 스타일은 그대로 유지
 const WriteButtonWrapper = styled.button`
   position: fixed;
-  bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(30px + ${SAFE_AREA.BOTTOM});
   right: 15px;
   width: 55px;
   height: 55px;
