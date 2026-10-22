@@ -159,7 +159,6 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
       >
         <TopEdgeFadeBackdrop
           $isScrolled={isScrolled}
-          $hasSubHeader={Boolean(subHeader)}
           aria-hidden="true"
           data-testid="top-scroll-edge-fade"
         />
@@ -233,10 +232,8 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
 
 MobileHeader.displayName = "MobileHeader";
 
-export function computeTopFadeHeight(hasSubHeader: boolean): string {
-  return hasSubHeader
-    ? `calc(126px + ${SAFE_AREA.TOP} + 24px)`
-    : `calc(64px + ${SAFE_AREA.TOP} + 24px)`;
+export function computeTopFadeHeight(): string {
+  return `calc(${SAFE_AREA.TOP} + 16px)`;
 }
 
 export default MobileHeader;
@@ -244,40 +241,25 @@ export default MobileHeader;
 
 const TopEdgeFadeBackdrop = styled.div<{
   $isScrolled: boolean;
-  $hasSubHeader: boolean;
 }>`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  height: ${({ $hasSubHeader }) => computeTopFadeHeight($hasSubHeader)};
+  height: ${computeTopFadeHeight()};
   pointer-events: none;
   z-index: 1;
   opacity: ${({ $isScrolled }) => ($isScrolled ? 1 : 0)};
   transform: translateZ(0);
   transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
-  ${({ $hasSubHeader }) =>
-    $hasSubHeader
-      ? `
-        background: linear-gradient(
-          180deg,
-          rgba(248, 249, 251, 0.96) 0%,
-          rgba(248, 249, 251, 0.96) calc(${SAFE_AREA.TOP} + 48px),
-          rgba(248, 249, 251, 0.60) calc(${SAFE_AREA.TOP} + 96px),
-          rgba(248, 249, 251, 0) 100%
-        );
-      `
-      : `
-        background: linear-gradient(
-          180deg,
-          rgba(248, 249, 251, 0.96) 0%,
-          rgba(248, 249, 251, 0.96) ${SAFE_AREA.TOP},
-          rgba(248, 249, 251, 0.60) calc(${SAFE_AREA.TOP} + 36px),
-          rgba(248, 249, 251, 0) 100%
-        );
-      `}
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 0.96) 0%,
+    rgba(248, 249, 251, 0.96) ${SAFE_AREA.TOP},
+    rgba(248, 249, 251, 0) 100%
+  );
 `;
 
 const MobileHeaderWrapper = styled.header<{
