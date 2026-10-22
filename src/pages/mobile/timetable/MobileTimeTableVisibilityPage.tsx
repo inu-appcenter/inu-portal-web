@@ -146,12 +146,6 @@ const FixedFooter = styled.div`
   left: 0;
   right: 0;
   width: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.45) 45%,
-    rgba(255, 255, 255, 0.85) 100%
-  );
   z-index: 100;
   pointer-events: none;
 `;

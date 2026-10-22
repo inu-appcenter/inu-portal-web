@@ -157,15 +157,10 @@ const FixedBar = styled.div`
   max-width: 768px;
   transform: translateX(-50%);
   box-sizing: border-box;
-  padding: 48px 16px calc(16px + ${SAFE_AREA.BOTTOM});
+  padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: linear-gradient(
-    to bottom,
-    rgba(248, 249, 251, 0) 16%,
-    var(--bg-subtle) 50%
-  );
   pointer-events: none;
 
   & > * {

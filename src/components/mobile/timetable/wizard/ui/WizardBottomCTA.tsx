@@ -74,13 +74,7 @@ const FixedBar = styled.div`
   max-width: 768px;
   transform: translateX(-50%);
   box-sizing: border-box;
-  /* 그라데이션이 버튼 위로 번지는 높이만큼 위 여백을 둔다 (Figma Bottom_Gradient 120px) */
-  padding: 48px 16px calc(16px + ${SAFE_AREA.BOTTOM});
-  background: linear-gradient(
-    to bottom,
-    rgba(248, 249, 251, 0) 16%,
-    var(--bg-subtle) 50%
-  );
+  padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   pointer-events: none;
 
   & > * {

@@ -1927,12 +1927,6 @@ const FloatingSaveArea = styled.div`
   justify-content: center;
   padding: 12px 16px calc(24px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
-  background: linear-gradient(
-    180deg,
-    rgba(248, 249, 251, 0) 0%,
-    rgba(248, 249, 251, 0.45) 45%,
-    rgba(248, 249, 251, 0.85) 100%
-  );
 `;
 
 // 1. 요약 카드 스타일
