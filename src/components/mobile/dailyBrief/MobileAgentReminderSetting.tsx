@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Swiper as SwiperClass } from "swiper";
 import "swiper/css";
@@ -1447,7 +1448,7 @@ const RowRightAction = styled.div`
 
 const FloatingNavPill = styled.nav`
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.94);

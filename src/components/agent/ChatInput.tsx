@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { ArrowRight, Square } from "lucide-react";
 import { COLORS } from "./colors";
 
 const InputWrapper = styled.div`
   position: absolute;
-  bottom: max(20px, env(safe-area-inset-bottom));
+  bottom: max(20px, ${SAFE_AREA.BOTTOM});
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 40px);

@@ -1,5 +1,6 @@
 import { Drawer } from "vaul";
 import styled from "styled-components";
+import { safeBottom } from "@/styles/safeArea";
 import { useState, useEffect } from "react";
 import EditFriendAliasModal from "./EditFriendAliasModal";
 import Modal from "@/components/common/Modal";
@@ -54,7 +55,7 @@ const StyledContent = styled(Drawer.Content)`
   display: flex;
   flex-direction: column;
   outline: none;
-  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-bottom: ${safeBottom(20)};
 `;
 
 const Header = styled.div`

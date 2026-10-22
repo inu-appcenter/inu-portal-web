@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled, { css, keyframes } from "styled-components";
+import { SAFE_AREA } from "@/styles/safeArea";
 import { useNavigate } from "react-router-dom";
 import { Drawer } from "vaul";
 import { RotateCw, Calendar } from "lucide-react";
@@ -972,7 +973,7 @@ const BusList = styled.div`
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(64px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
 
   & > * {

@@ -3,6 +3,7 @@ import styled, { css } from "styled-components";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { typography } from "@/styles/typography";
 import { effects } from "@/styles/effects";
+import { SAFE_AREA } from "@/styles/safeArea";
 
 // 시간 맞추기 화면들이 함께 쓰는 틀 (Figma INTIP / 짭투밋 5970:19857).
 
@@ -143,7 +144,7 @@ const BottomSpacer = styled.div<{ $withCaption: boolean }>`
   flex-shrink: 0;
   height: calc(
     ${({ $withCaption }) => ($withCaption ? 124 : 96)}px +
-      env(safe-area-inset-bottom, 0px)
+      ${SAFE_AREA.BOTTOM}
   );
 `;
 
@@ -156,7 +157,7 @@ const FixedBar = styled.div`
   max-width: 768px;
   transform: translateX(-50%);
   box-sizing: border-box;
-  padding: 48px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 48px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   display: flex;
   flex-direction: column;
   gap: 12px;
