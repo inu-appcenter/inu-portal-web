@@ -19,6 +19,7 @@ import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
 } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { DepartmentNotice } from "@/types/notices";
 import { ScheduleEvent, toScheduleEvent } from "@/types/schedules";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -274,7 +275,7 @@ const TipsCardWrapper = styled.div`
   flex-direction: column;
   width: 100%;
   margin: 0;
-  padding: 0 0 20px 0;
+  padding: 0 0 ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

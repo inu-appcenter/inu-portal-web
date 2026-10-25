@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMembersPosts } from "@/apis/members";
 import styled from "styled-components";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import Card from "@/containers/mobile/mypage/Card";
 import Empty from "@/components/mobile/mypage/Empty";
 import { Post } from "@/types/posts";
@@ -42,5 +43,5 @@ export default function MobileMyPagePost() {
 
 const MobileMyPagePostWrapper = styled.div`
   width: 100%;
-  
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
 `;

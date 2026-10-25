@@ -7,6 +7,7 @@ import { useDynamicBusRoutes } from "@/hooks/useDynamicBusRoutes";
 import BusStopMap from "@/components/mobile/bus/BusStopMap.tsx";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { useEffect } from "react";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import Skeleton from "@/components/common/Skeleton";
@@ -83,7 +84,7 @@ const MobileBusStopPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 0 ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   width: 100%;
   box-sizing: border-box;
 

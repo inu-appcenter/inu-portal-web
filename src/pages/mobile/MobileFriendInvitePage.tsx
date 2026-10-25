@@ -5,6 +5,7 @@ import Icon from "@/components/common/Icon";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { acceptInvite, getInvitePreview } from "@/apis/friends";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
@@ -208,7 +209,7 @@ export default function MobileFriendInvitePage() {
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 24px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 24px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const StatusBlock = styled.div`

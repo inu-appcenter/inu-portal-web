@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getMembersReplies } from "@/apis/members";
 import { MembersReplies } from "@/types/members";
 import styled from "styled-components";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import Empty from "@/components/mobile/mypage/Empty";
 import CardComment from "@/containers/mobile/mypage/CardComment";
 import MobileHeader from "../../containers/mobile/common/MobileHeader.tsx";
@@ -42,5 +43,5 @@ export default function MobileMyPageComment() {
 
 const MobileMyPageCommentWrapper = styled.div`
   width: 100%;
-  
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
 `;

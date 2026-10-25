@@ -5,6 +5,7 @@ import useUserStore from "@/stores/useUserStore";
 import { hasAgreedToTerms } from "@/components/common/TermsAgreement";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 
 export default function MobileProfilePage() {
   const { userInfo } = useUserStore();
@@ -42,7 +43,7 @@ const ContentShell = styled.div`
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
-  padding: 16px 16px 32px;
+  padding: 16px 16px ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

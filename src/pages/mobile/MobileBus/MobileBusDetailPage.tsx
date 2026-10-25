@@ -9,6 +9,7 @@ import useBusStopNavigate from "../../../hooks/useBusStopNavigate.ts";
 import { useHeader } from "@/context/HeaderContext";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import type { BusData } from "@/types/bus";
 import { useEffect } from "react";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -84,7 +85,8 @@ const MobileBusDetailPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
   width: 100%;
 `;
 

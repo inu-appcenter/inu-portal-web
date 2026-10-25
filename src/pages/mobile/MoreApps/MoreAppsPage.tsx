@@ -8,6 +8,7 @@ import { getAllBoardsContents } from "@/apis/appcenter";
 import { appcenterBanner } from "@/resources/assets/illustrations/banner";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import Skeleton from "@/components/common/Skeleton";
 import Ripple from "@/components/common/Ripple";
@@ -146,7 +147,7 @@ const MoreAppsPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 16px;
+  padding: 0 16px ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const AppItemWrapper = styled.div`

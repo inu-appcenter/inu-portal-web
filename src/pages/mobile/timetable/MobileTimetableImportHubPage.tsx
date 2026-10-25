@@ -5,6 +5,7 @@ import { School, ScanLine, ChevronRight } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { ROUTES } from "@/constants/routes";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import Modal from "@/components/common/Modal";
 import PortalAccountForm from "@/components/common/PortalAccountForm";
 import {
@@ -165,7 +166,7 @@ const PageWrapper = styled.div`
 const ScrollContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 32px;
+  padding: 16px 20px ${PAGE_BOTTOM_SAFE_PADDING};
   display: flex;
   flex-direction: column;
   gap: 16px;

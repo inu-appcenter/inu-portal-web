@@ -10,6 +10,7 @@ import {
 } from "@/resources/assets/illustrations/ai";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { ROUTES } from "@/constants/routes";
 import { useNavigate } from "react-router-dom";
@@ -300,7 +301,7 @@ const AiBrandPageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 16px 40px;
+  padding: 0 16px ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const AppItemWrapper = styled.div<{ $isPreparing?: boolean }>`
