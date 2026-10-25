@@ -6,6 +6,7 @@ import Icon from "@/components/common/Icon";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { getMyInviteCode, refreshMyInviteCode } from "@/apis/friends";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
@@ -181,7 +182,7 @@ const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 8px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const QrCard = styled.div`

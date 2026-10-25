@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { useEffect, useState } from "react";
 import { useHeader } from "@/context/HeaderContext";
 
@@ -104,7 +105,7 @@ export default function MobileFcmStatusPage() {
 }
 
 const Container = styled.div`
-  padding: 20px;
+  padding: 20px 20px ${PAGE_BOTTOM_SAFE_PADDING};
   //background-color: var(--bg-subtle);
   min-height: calc(100vh - 100px);
 `;

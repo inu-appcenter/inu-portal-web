@@ -1,7 +1,7 @@
 import MobileCouncilHeader from "@/components/mobile/council/MobileCouncilHeader";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { SAFE_AREA } from "@/styles/safeArea";
+import { SAFE_AREA, PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import UploadNotice from "@/components/mobile/council/UploadNotice";
 import NoticeList from "@/components/mobile/council/NoticeList";
 import UploadPetition from "@/components/mobile/council/UploadPetition";
@@ -118,7 +118,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100%;
   padding: 0 ${MOBILE_PAGE_GUTTER};
-  padding-bottom: 32px;
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

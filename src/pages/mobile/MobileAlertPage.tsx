@@ -6,6 +6,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 import Box from "@/components/common/Box";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getAlerts, readNotification } from "@/apis/members";
@@ -257,7 +258,7 @@ export default MobileAlertPage;
 
 const MobileAlertPageWrapper = styled.div`
   width: 100%;
-  padding: 0 16px;
+  padding: 0 16px ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const TipsListContainerWrapper = styled.div`
