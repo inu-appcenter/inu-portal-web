@@ -302,12 +302,12 @@ const WidgetContainer = styled.div`
   
   will-change: transform;
   
-  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease;
               
   transform: scale(1.0);
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.975);
   }
 
   &.swiping {

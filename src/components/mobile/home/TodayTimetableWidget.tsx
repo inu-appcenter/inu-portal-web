@@ -232,10 +232,10 @@ const TodayTimetableCard = styled.div`
   flex-direction: column;
   gap: 16px;
   cursor: pointer;
-  transition: transform 0.15s ease-in-out;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease;
 
   &:active {
-    transform: scale(0.99);
+    transform: scale(0.975);
   }
 `;
 
