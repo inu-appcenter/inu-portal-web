@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { wizardGenerating } from "@/resources/assets/illustrations/timetable";
 import { WizardBottomCTA } from "@/components/mobile/timetable/wizard/ui";
 import { typography } from "@/styles/typography";
+import { subtleFadeIn, motionTokens } from "@/styles/motion";
 
 interface WizardGeneratingScreenProps {
   onCancel: () => void;
@@ -31,7 +32,7 @@ const WizardGeneratingScreen = ({ onCancel }: WizardGeneratingScreenProps) => {
         <Illustration src={wizardGenerating} alt="" />
         <Copy>
           <Title>시간표를 조합하는 중</Title>
-          <Subtitle>{ROTATING_SUBTITLES[subtitleIndex]}</Subtitle>
+          <Subtitle key={subtitleIndex}>{ROTATING_SUBTITLES[subtitleIndex]}</Subtitle>
         </Copy>
       </Loading>
       <WizardBottomCTA onClick={onCancel}>취소</WizardBottomCTA>
@@ -86,4 +87,9 @@ const Subtitle = styled.p`
   color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.6;
+  animation: ${subtleFadeIn} 0.25s ${motionTokens.easeOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
