@@ -13,6 +13,7 @@ import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import SlidingNumber from "@/components/common/SlidingNumber";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
 import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalculatorIntroSheet";
 import GraduationRequirementCard from "@/components/mobile/timetable/GraduationRequirementCard";
@@ -255,7 +256,12 @@ const getUniqueCourseEvents = (events: ClassItem[]): ClassItem[] => {
  * 계절학기는 "학기"를 떼서 각 줄을 30px 아래로 낮췄다. 학기 수가 많을 때는
  * 글자 크기를 한 단계 더 낮춘다.
  */
-const CustomXAxisTick = (props: any) => {
+const CustomXAxisTick = (props: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+  visibleTicksCount?: number;
+}) => {
   const { x, y, payload, visibleTicksCount } = props;
   if (!payload || !payload.value) return null;
 
@@ -439,9 +445,9 @@ export default function MobileGradeCalculatorPage() {
       alert(
         `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러와 학점 계산기를 최신 정보로 업데이트했어요!`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("포털 성적 연동 실패:", err);
-      alert(err?.message || "포털 성적을 불러오는 중 오류가 발생했습니다.");
+      alert(err instanceof Error ? err.message : "포털 성적을 불러오는 중 오류가 발생했습니다.");
     } finally {
       setIsFetchingPortalGrades(false);
     }
@@ -834,7 +840,7 @@ export default function MobileGradeCalculatorPage() {
   const handleUpdateSubject = (
     id: string,
     field: keyof Subject,
-    value: any,
+    value: Subject[keyof Subject],
   ) => {
     const updated = currentSubjects.map((sub) => {
       if (sub.id === id) {
@@ -1345,21 +1351,27 @@ export default function MobileGradeCalculatorPage() {
           <StatBox>
             <StatLabel>전체 평점</StatLabel>
             <StatValueWrapper>
-              <StatValueText>{overallStats.gpa.toFixed(2)}</StatValueText>
+              <StatValueText>
+                <SlidingNumber value={overallStats.gpa.toFixed(2)} />
+              </StatValueText>
               <StatMaxText>/ 4.5</StatMaxText>
             </StatValueWrapper>
           </StatBox>
           <StatBox>
             <StatLabel>전공 평점</StatLabel>
             <StatValueWrapper>
-              <StatValueText>{overallStats.majorGpa.toFixed(2)}</StatValueText>
+              <StatValueText>
+                <SlidingNumber value={overallStats.majorGpa.toFixed(2)} />
+              </StatValueText>
               <StatMaxText>/ 4.5</StatMaxText>
             </StatValueWrapper>
           </StatBox>
           <StatBox>
             <StatLabel>취득 학점</StatLabel>
             <StatValueWrapper>
-              <StatValueText>{overallStats.acquiredCredits}</StatValueText>
+              <StatValueText>
+                <SlidingNumber value={overallStats.acquiredCredits} />
+              </StatValueText>
               <TargetCreditsButton onClick={handleEditTargetCredits}>
                 <span className="target-limit">/ {targetCredits}</span>
                 <Icon name="edit-pencil-01" size={12} className="pencil-icon" />

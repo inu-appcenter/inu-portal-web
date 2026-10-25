@@ -2,6 +2,8 @@ import { useState } from "react";
 import styled from "styled-components";
 import { AlertTriangle, Megaphone, Settings2 } from "lucide-react";
 import Icon from "@/components/common/Icon";
+import SlidingNumber from "@/components/common/SlidingNumber";
+import { motionTokens } from "@/styles/motion";
 import type {
   GraduationEvaluation,
   RequiredMajorCourseProgress,
@@ -133,7 +135,7 @@ export default function GraduationRequirementCard({
                       {progress.unverifiable && <Muted> (참고)</Muted>}
                     </ProgressLabel>
                     <ProgressValue>
-                      <strong>{progress.earned}</strong>
+                      <strong><SlidingNumber value={progress.earned} /></strong>
                       <span> / {progress.required}</span>
                     </ProgressValue>
                   </ProgressTop>
@@ -466,7 +468,11 @@ const ProgressFill = styled.div<{ $ratio: number; $satisfied: boolean }>`
     $satisfied
       ? "var(--border-success)"
       : "var(--interactive-primary)"};
-  transition: width 0.3s ease;
+  transition: width ${motionTokens.duration.gentle} ${motionTokens.easeOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none !important;
+  }
 `;
 
 const ProgressCaption = styled.span<{ $satisfied: boolean }>`
