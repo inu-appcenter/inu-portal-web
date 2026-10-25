@@ -22,6 +22,7 @@ import { markNoticesSeen } from "@/utils/noticeSeenStorage";
 import SchoolNoticeItem from "@/components/mobile/notice/SchoolNoticeItem";
 import DeptNoticeItem from "@/components/mobile/notice/DeptNoticeItem";
 import ScheduleModal from "@/components/mobile/calendar/ScheduleModal";
+import { subtleFadeIn } from "@/styles/motion";
 
 interface NoticeTabWidgetProps {
   activeTab: "school" | "dept";
@@ -287,6 +288,7 @@ const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
+  animation: ${subtleFadeIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
   > :last-child {
     border-bottom: none;
@@ -301,6 +303,7 @@ const MessageContainer = styled.div`
   padding: 32px 20px;
   gap: 8px;
   width: 100%;
+  animation: ${subtleFadeIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 `;
 
@@ -333,6 +336,7 @@ const EmptyContainer = styled.div`
   justify-content: center;
   padding: 48px 20px;
   width: 100%;
+  animation: ${subtleFadeIn} 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 `;
 

@@ -119,7 +119,12 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
   transition:
     border-color 0.18s ease,
     background-color 0.18s ease,
-    color 0.18s ease;
+    color 0.18s ease,
+    transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:active {
+    transform: scale(0.95);
+  }
 
   .day-name {
     font-size: 10px;
