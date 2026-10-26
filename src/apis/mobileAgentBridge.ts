@@ -1,6 +1,10 @@
 import useUserStore from "@/stores/useUserStore";
 import { secureStorage } from "@/utils/secureStorage";
 import {
+  hasAiAcademicConsent,
+  requestPortalSyncConsent,
+} from "@/utils/portalSyncConsent";
+import {
   parseAcademicBasicInfo,
   parseTimetableList,
   parseTlsnTimetableList,
@@ -123,9 +127,40 @@ export function isMobileAppEnvironment(): boolean {
 }
 
 /**
- * 모바일 네이티브 브릿지로 액션 요청을 전송하고 응답을 기다리는 헬퍼
+ * 휴대폰이 학교 포털·이러닝·도서관에 대신 접속하는(스크래핑) 브릿지 액션.
+ * [필수] 포털 정보 불러오기 동의가 없으면 보내지 않는다.
+ * 계정 확인·삭제처럼 학교 시스템에 접속하지 않는 액션은 넣지 않는다.
  */
-function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 15000): Promise<AgentActionResult<T>> {
+const PORTAL_SYNC_ACTIONS = new Set([
+  'savePortalAccount',
+  'fetchAcademicInfo',
+  'executeAgentAction',
+  'saveLibraryAccount',
+  'saveLmsAccount',
+  'registerLocalWatchJob',
+  'startLibrarySeatSession',
+  'startLmsDeadlineOngoing',
+]);
+
+/**
+ * 모바일 네이티브 브릿지로 액션 요청을 전송하고 응답을 기다리는 헬퍼.
+ * 스크래핑 액션은 동의가 없으면 동의 시트를 띄우고, 동의하지 않으면 보내지 않는다.
+ */
+async function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 15000): Promise<AgentActionResult<T>> {
+  if (PORTAL_SYNC_ACTIONS.has(type) && isMobileAppEnvironment()) {
+    const agreed = await requestPortalSyncConsent();
+    if (!agreed) {
+      return {
+        success: false,
+        errorCode: 'CONSENT_REQUIRED',
+        errorMessage: '포털 정보 불러오기에 동의해야 이용할 수 있어요.',
+      };
+    }
+  }
+  return dispatchBridgeAction<T>(type, payload, timeoutMs);
+}
+
+function dispatchBridgeAction<T>(type: string, payload: unknown, timeoutMs: number): Promise<AgentActionResult<T>> {
   return new Promise((resolve) => {
     if (!isMobileAppEnvironment()) {
       resolve({
@@ -793,7 +828,9 @@ export async function cancelLmsDeadlineOngoingBridge(): Promise<AgentActionResul
 }
 
 /**
- * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집
+ * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집.
+ * [선택] AI 채팅 학적 활용에 동의한 경우에만 학적 요약과 이러닝 일정을 싣는다.
+ * 동의 문구(constants/portalSyncTerms.ts)에 적힌 정보만 보내야 한다.
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {
   const isApp = isMobileAppEnvironment();
@@ -803,6 +840,8 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
     return context;
   }
 
+  const aiConsented = hasAiAcademicConsent();
+
   try {
     const [portalLinked, lmsLinked] = await Promise.all([
       checkPortalAccountLinked(),
@@ -811,14 +850,19 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
     const tasks: Promise<any>[] = [];
 
-    // 포털 계정이 연동되어 있으면 실시간 최신 학적 정보를 모바일 앱 브릿지로 조회
-    if (portalLinked) {
+    if (portalLinked && !aiConsented) {
+      context.portal = {
+        linked: true,
+        academicErrorCode: 'AI_CONSENT_REQUIRED',
+        academicErrorMessage: 'AI 채팅 학적 활용에 동의하지 않았어요. 마이페이지 > 포털 계정 관리에서 켤 수 있어요.',
+      };
+    } else if (portalLinked) {
+      // 이름·학번 등 식별 정보는 보내지 않고 비식별 요약만 싣는다.
       context.portal = { linked: true };
       tasks.push(
         fetchAcademicInfoFromApp()
           .then((res) => {
             if (res?.success && res.data) {
-              context.academicDisplay = toSanitizedAcademicDisplay(res.data);
               context.academic = toAnonymousAcademicContext(res.data);
               try {
                 const cachedData = {
@@ -850,7 +894,7 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
     }
 
     // LMS 계정이 연동되어 있으면 과제 일정 수집 (최대 2.5초 대기)
-    if (lmsLinked) {
+    if (lmsLinked && aiConsented) {
       const nowSec = Math.floor(Date.now() / 1000);
       tasks.push(
         Promise.race([

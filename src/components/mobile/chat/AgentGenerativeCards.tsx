@@ -49,6 +49,7 @@ import {
   StudyRoomDetail,
 } from "@/apis/library";
 import { registerLocalWatchJobInApp } from "@/apis/mobileAgentBridge";
+import { secureStorage } from "@/utils/secureStorage";
 
 interface Props {
   component?: UiComponent | null;
@@ -1641,10 +1642,22 @@ const AcademicInfoCard: React.FC<{
 }> = ({ data }) => {
   if (!data) return null;
 
+  // AI 서버에는 이름·학번을 보내지 않으므로, 이 휴대폰에 불러와 둔 학적에서 채운다.
+  const localStudent = secureStorage.getItemSync<{
+    koreanName?: string;
+    studentId?: string;
+  }>("portal_student_info");
+
   const koreanName =
-    data.koreanName || data.name || data.studentName || data.korNm || "학우님";
+    data.koreanName ||
+    data.name ||
+    data.studentName ||
+    data.korNm ||
+    localStudent?.koreanName ||
+    "학우님";
   const studentId =
     data.studentId ||
+    localStudent?.studentId ||
     data.id ||
     data.stdNo ||
     data.hakbeon ||
