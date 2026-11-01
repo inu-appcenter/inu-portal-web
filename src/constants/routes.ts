@@ -109,6 +109,11 @@ export const ROUTES = {
     PORTAL_ACCOUNT: "/mypage/portal",
     DAILY_BRIEF: "/mypage/notification/daily-brief",
     SMART_WATCH: "/mypage/notification/smart-watch",
+    // 의견 보내기(건의사항)
+    SUGGESTION_LIST: "/mypage/suggestion",
+    SUGGESTION_WRITE: "/mypage/suggestion/write",
+    SUGGESTION_DETAIL: (id: number | string) => `/mypage/suggestion/${id}`,
+    SUGGESTION_DETAIL_PATTERN: "/mypage/suggestion/:id",
   },
 
   // 게시판 및 기능
@@ -181,6 +186,9 @@ export const ROUTES = {
     CHAT: "/admin/chat",
     BUS: "/admin/bus",
     SEARCH: "/admin/search",
+    SUGGESTIONS: "/admin/suggestions",
+    SUGGESTION_DETAIL: (id: number | string) => `/admin/suggestions/${id}`,
+    SUGGESTION_DETAIL_PATTERN: "/admin/suggestions/:id",
   },
 
 } as const;

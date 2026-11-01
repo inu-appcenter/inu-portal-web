@@ -897,4 +897,61 @@ export const mixpanelTrack = {
   realNameSaved: (source: string) => {
     trackEvent("real_name_saved", { source });
   },
+
+  // --- 건의사항(의견 보내기). 본문·사진 내용은 속성에 넣지 않는다. ---
+
+  suggestionFormOpened: (location: string) => {
+    trackEvent("suggestion_form_opened", { location });
+  },
+
+  suggestionSubmitted: (properties: {
+    category: string;
+    imageCount: number;
+    success: boolean;
+    failureReason?: string;
+  }) => {
+    trackEvent("suggestion_submitted", {
+      category: properties.category,
+      image_count: properties.imageCount,
+      success: properties.success,
+      failure_reason: properties.failureReason,
+    });
+  },
+
+  suggestionListViewed: (total: number) => {
+    trackEvent("suggestion_list_viewed", { total });
+  },
+
+  suggestionDetailViewed: (properties: {
+    suggestionId: number;
+    category: string;
+    status: string;
+    imageCount: number;
+  }) => {
+    trackEvent("suggestion_detail_viewed", {
+      suggestion_id: properties.suggestionId,
+      category: properties.category,
+      status: properties.status,
+      image_count: properties.imageCount,
+    });
+  },
+
+  suggestionDeleted: (suggestionId: number, isAdmin: boolean) => {
+    trackEvent("suggestion_deleted", {
+      suggestion_id: suggestionId,
+      is_admin: isAdmin,
+    });
+  },
+
+  adminSuggestionStatusChanged: (
+    suggestionId: number,
+    fromStatus: string,
+    toStatus: string,
+  ) => {
+    trackEvent("admin_suggestion_status_changed", {
+      suggestion_id: suggestionId,
+      from_status: fromStatus,
+      to_status: toStatus,
+    });
+  },
 };

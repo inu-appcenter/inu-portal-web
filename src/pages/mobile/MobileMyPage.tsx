@@ -110,6 +110,16 @@ export default function MobileMyPage() {
       case "문의하기":
         window.open(SUPPORT_FORM_URL);
         break;
+      case "의견 보내기":
+        if (!isLoggedIn) {
+          navigate(
+            `${ROUTES.LOGIN}?redirect=${encodeURIComponent(ROUTES.MYPAGE.SUGGESTION_WRITE)}`,
+          );
+          break;
+        }
+        mixpanelTrack.suggestionFormOpened("mypage");
+        navigate(ROUTES.MYPAGE.SUGGESTION_WRITE);
+        break;
       case "개발자에게 메일 보내기":
         // 부적절한 콘텐츠·악성 사용자 신고를 위한 개발자 직통 연락처
         window.location.href = SUPPORT_MAILTO;

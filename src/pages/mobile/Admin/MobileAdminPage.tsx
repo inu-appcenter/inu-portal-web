@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { Activity, Flag, ArrowRight, Bot, Bus, Search } from "lucide-react";
+import { Activity, Flag, ArrowRight, Bot, Bus, Search, MessageSquare } from "lucide-react";
 
 import Icon from "@/components/common/Icon";
 import { ROUTES } from "@/constants/routes";
@@ -87,6 +87,14 @@ const MobileAdminPage = () => {
       description: "Elasticsearch 인덱스 재생성, 동의어 반영 및 백필",
       icon: (size: number) => <Search size={size} color="var(--text-inverse)" />,
       color: "rgb(2, 132, 199)",
+      isExternal: false,
+    },
+    {
+      label: "건의사항 관리",
+      path: ROUTES.ADMIN.SUGGESTIONS,
+      description: "사용자 의견 확인, 처리 상태 변경 및 삭제",
+      icon: (size: number) => <MessageSquare size={size} color="var(--text-inverse)" />,
+      color: "rgb(16, 185, 129)",
       isExternal: false,
     },
   ];
