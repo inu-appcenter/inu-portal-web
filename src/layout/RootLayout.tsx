@@ -188,6 +188,17 @@ export default function RootLayout() {
     void apiCount();
   }, []);
 
+  // 온보딩 마지막 단계: 신규 가입 계정의 첫 홈 진입. 로그인 시 isNewMember로 남긴 표시가 있을 때만
+  // 보낸다(기존 사용자에게 소급 발생하지 않도록). 약관·학과 설정을 마쳐야 홈에 머문다.
+  useEffect(() => {
+    if (location.pathname !== ROUTES.HOME || userInfo.id === 0) return;
+    if (!userInfo.department) return;
+    const key = `intipOnboardingPending:${userInfo.id}`;
+    if (safeLocalStorage.getItem(key) !== "1") return;
+    safeLocalStorage.removeItem(key);
+    mixpanelTrack.onboardingFirstHomeViewed();
+  }, [location.pathname, userInfo.id, userInfo.department]);
+
   // 전역 페이지 뷰 추적
   useEffect(() => {
     trackPageView(location.pathname);

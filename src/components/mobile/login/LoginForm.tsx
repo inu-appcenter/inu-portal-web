@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -15,6 +15,9 @@ import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
 import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
+import { identifyUser, mixpanelTrack } from "@/utils/mixpanel";
+import { getMemberIdFromToken } from "@/utils/token";
+import { safeLocalStorage } from "@/utils/safeStorage";
 import { loginMascotFace } from "@/resources/assets/illustrations/login";
 
 function getRedirectPath(search: string) {
@@ -34,6 +37,8 @@ export default function LoginForm() {
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
+  // 리디자인된 로그인 화면에서 "진입 → 로그인 완료"까지 걸린 시간 측정용
+  const mountedAtRef = useRef(Date.now());
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
@@ -51,13 +56,39 @@ export default function LoginForm() {
       return;
     }
 
+    const attemptStartedAt = Date.now();
     try {
       setLoading(true);
       const trimmedId = studentId.trim();
       const trimmedPassword = password.trim();
 
+      mixpanelTrack.loginAttempted();
       const response = await login(trimmedId, trimmedPassword);
       setTokenInfo(response.data);
+
+      // 사용자 식별을 가입 이벤트보다 먼저 한다. identify가 가입 전 익명 이벤트와
+      // 가입 후 사용자를 하나로 잇고, sign_up도 이 사용자의 이벤트로 남는다.
+      const memberId = getMemberIdFromToken(response.data.accessToken);
+      if (memberId) {
+        identifyUser(memberId);
+      }
+      // 구버전 서버는 isNewMember를 내려 주지 않는다(undefined → 가입 이벤트 생략).
+      const isNewMember =
+        typeof response.data.isNewMember === "boolean"
+          ? response.data.isNewMember
+          : null;
+      mixpanelTrack.loginSucceeded({
+        isNewMember,
+        durationMs: Date.now() - attemptStartedAt,
+        timeOnScreenMs: Date.now() - mountedAtRef.current,
+      });
+      if (isNewMember === true) {
+        mixpanelTrack.signUp();
+        // 온보딩 퍼널의 마지막 단계(첫 홈 진입)를 이 계정에서만 재도록 표시를 남긴다.
+        if (memberId) {
+          safeLocalStorage.setItem(`intipOnboardingPending:${memberId}`, "1");
+        }
+      }
 
       // 모바일 앱 환경인 경우 기기 보안 KeyStore에 포털 계정 1회 자동 등록 및 학적 사전 캐싱
       if (isMobileAppEnvironment()) {
@@ -83,6 +114,18 @@ export default function LoginForm() {
     } catch (error) {
       console.error("로그인 실패", error);
       setLoading(false);
+
+      mixpanelTrack.loginFailed({
+        reason: !axios.isAxiosError(error)
+          ? "unknown"
+          : !error.response
+            ? "network_error"
+            : error.response.status === 401
+              ? "invalid_credentials"
+              : "server_error",
+        status: axios.isAxiosError(error) ? error.response?.status : undefined,
+        durationMs: Date.now() - attemptStartedAt,
+      });
 
       if (axios.isAxiosError(error) && error.response) {
         switch (error.response.status) {

@@ -3,6 +3,11 @@ import { getMobilePlatform } from "./getMobilePlatform";
 
 const MIXPANEL_TOKEN = import.meta.env.VITE_MIXPANEL_TOKEN;
 
+/** 현재 배포된 UI 세대. 리디자인(로그인·마이페이지)이 반영된 빌드부터 "v2". */
+export const DESIGN_VERSION = "v2";
+
+const FEATURE_FIRST_USED_PREFIX = "intipFeatureFirstUsed";
+
 /**
  * Mixpanel 초기화
  */
@@ -20,6 +25,10 @@ export const initMixpanel = () => {
     mixpanel.register({
       platform: getMobilePlatform(),
       service_name: "INTIP",
+      // 리디자인(로그인 d481d1e5, 마이페이지 a19c48b7) 배포 전후 비교용. 이벤트 단위 ui_version은
+      // 버스 신/구 UI 전환에서 이미 쓰고 있어 겹치지 않도록 design_version으로 둔다.
+      // 이후 전면 개편이 있을 때 이 값만 올리면 코호트가 갈린다.
+      design_version: DESIGN_VERSION,
     });
   } else {
     if (import.meta.env.DEV) {
@@ -45,12 +54,79 @@ export const trackEvent = (
 /**
  * 사용자 식별
  */
-export const identifyUser = (userId: string, traits?: Record<string, any>) => {
+export const identifyUser = (
+  userId: string,
+  traits?: Record<string, unknown>,
+  traitsOnce?: Record<string, unknown>,
+) => {
   if (MIXPANEL_TOKEN) {
-    mixpanel.identify(userId);
+    // 같은 사용자로 반복 호출돼도 안전하다. 익명 이벤트와의 병합은 identify가 처음
+    // 불리는 시점에 일어나므로, 가입(sign_up) 이벤트는 반드시 identify 뒤에 보낸다.
+    if (mixpanel.get_property("$user_id") !== userId) {
+      mixpanel.identify(userId);
+    }
     if (traits) {
       mixpanel.people.set(traits);
     }
+    if (traitsOnce) {
+      mixpanel.people.set_once(traitsOnce);
+    }
+  }
+};
+
+/**
+ * 학번(문자열)에서 입학연도(앞 4자리)를 뽑는다. 학번 전체는 개인정보라 이벤트·프로필에 넣지 않는다.
+ */
+export const getStudentYear = (studentId?: string | null): number | undefined => {
+  const match = /^(\d{4})/.exec(studentId ?? "");
+  return match ? Number(match[1]) : undefined;
+};
+
+/**
+ * 가입일(joinedAt)로 코호트 키를 만든다. month: YYYY-MM, week: YYYY-Www(ISO 주차).
+ * 서버가 내려 준 값의 날짜 부분(YYYY-MM-DD)을 그대로 쓰므로 기기 시간대에 흔들리지 않는다.
+ */
+export const getSignupCohort = (
+  joinedAt?: string | null,
+): { month: string; week: string } | undefined => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(joinedAt ?? "");
+  if (!match) return undefined;
+  const [, y, m, d] = match;
+  const date = new Date(Date.UTC(Number(y), Number(m) - 1, Number(d)));
+  if (Number.isNaN(date.getTime())) return undefined;
+
+  // ISO 8601 주차: 해당 주의 목요일이 속한 연도 기준
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const isoYear = date.getUTCFullYear();
+  const yearStart = Date.UTC(isoYear, 0, 1);
+  const week = Math.ceil(((date.getTime() - yearStart) / 86400000 + 1) / 7);
+
+  return {
+    month: `${y}-${m}`,
+    week: `${isoYear}-W${String(week).padStart(2, "0")}`,
+  };
+};
+
+/**
+ * 계정별 "최초 사용" 이벤트. 로컬 플래그(계정별)로 1회만 보내고 people에도 set_once로 남긴다.
+ * identify 전(비로그인)에는 계정을 알 수 없으므로 보내지 않는다.
+ */
+export const trackFeatureFirstUsed = (featureName: string) => {
+  if (!MIXPANEL_TOKEN) return;
+  try {
+    const userId = mixpanel.get_property("$user_id");
+    if (!userId) return;
+    const key = `${FEATURE_FIRST_USED_PREFIX}:${userId}:${featureName}`;
+    if (localStorage.getItem(key) === "1") return;
+    localStorage.setItem(key, "1");
+    trackEvent("feature_first_used", { feature_name: featureName });
+    mixpanel.people.set_once({
+      [`first_used_${featureName}`.replace(/[^\w$]+/g, "_")]:
+        new Date().toISOString(),
+    });
+  } catch {
+    // 스토리지 차단 환경에서는 측정만 포기한다.
   }
 };
 
@@ -100,6 +176,7 @@ export const mixpanelTrack = {
       feature_name: featureName,
       location: location,
     });
+    trackFeatureFirstUsed(featureName);
   },
 
   // --- 2. 기능별 핵심 액션 (Core Actions) ---
@@ -350,6 +427,83 @@ export const mixpanelTrack = {
     });
   },
 
+  // --- 가입·온보딩·활성화 ---
+
+  /**
+   * 신규 가입. 서버 로그인 응답의 isNewMember가 true일 때만 1회 호출한다.
+   */
+  signUp: (properties?: { studentYear?: number }) => {
+    trackEvent("sign_up", {
+      method: "school_portal",
+      student_year: properties?.studentYear,
+    });
+  },
+
+  loginAttempted: () => {
+    trackEvent("login_attempted");
+  },
+
+  loginSucceeded: (properties: {
+    isNewMember: boolean | null;
+    durationMs: number;
+    timeOnScreenMs: number;
+  }) => {
+    trackEvent("login_succeeded", {
+      // null = 서버가 필드를 내려 주지 않음(구버전 서버)
+      is_new_member: properties.isNewMember,
+      request_duration_ms: properties.durationMs,
+      time_on_screen_ms: properties.timeOnScreenMs,
+    });
+  },
+
+  loginFailed: (properties: {
+    reason: "invalid_credentials" | "server_error" | "network_error" | "unknown";
+    status?: number;
+    durationMs: number;
+  }) => {
+    trackEvent("login_failed", {
+      reason: properties.reason,
+      http_status: properties.status,
+      request_duration_ms: properties.durationMs,
+    });
+  },
+
+  /** 약관 동의 + 학과 설정을 마친 온보딩 완료 */
+  onboardingProfileCompleted: (properties: {
+    hasDepartment: boolean;
+    hasRealName: boolean;
+    nicknameChanged: boolean;
+  }) => {
+    trackEvent("onboarding_profile_completed", {
+      terms_agreed: true,
+      has_department: properties.hasDepartment,
+      has_real_name: properties.hasRealName,
+      nickname_changed: properties.nicknameChanged,
+    });
+  },
+
+  /** 계정별 첫 홈 진입 */
+  onboardingFirstHomeViewed: () => {
+    trackEvent("onboarding_first_home_viewed");
+  },
+
+  /**
+   * 서비스 전반 공통 "생성" 이벤트. 서비스별 기존 이벤트는 그대로 두고 이 이벤트를 함께 보낸다.
+   * 본문·제목 같은 사용자 입력은 넣지 않는다(개수·공개 여부 등 메타데이터만).
+   */
+  contentCreated: (
+    service: string,
+    contentType: string,
+    properties?: Record<string, unknown>,
+  ) => {
+    trackEvent("content_created", {
+      service,
+      content_type: contentType,
+      ...properties,
+    });
+    trackFeatureFirstUsed(`${service}_${contentType}_create`);
+  },
+
   /**
    * 게시판 내 인터랙션 (글쓰기, 댓글, 좋아요, 스크랩)
    */
@@ -363,6 +517,13 @@ export const mixpanelTrack = {
       board_type: boardType,
       category: category,
     });
+    if (actionType === "Write") {
+      mixpanelTrack.contentCreated("tips", "post", { category });
+    } else if (actionType === "Comment") {
+      mixpanelTrack.contentCreated("tips", "comment", {
+        is_reply: category === "Re-Reply",
+      });
+    }
   },
 
   /**
@@ -454,6 +615,10 @@ export const mixpanelTrack = {
     }
 
     trackEvent("[공지알리미] 키워드 추가", properties);
+    mixpanelTrack.contentCreated("notice_alert", "keyword", {
+      notice_type: noticeType,
+      is_excluded: isExcluded,
+    });
   },
 
   /**
@@ -727,6 +892,12 @@ export const mixpanelTrack = {
       item_type: itemType,
       ...properties,
     });
+    if (actionType === "강의 추가" || actionType === "직접 일정 추가") {
+      mixpanelTrack.contentCreated(
+        "timetable",
+        actionType === "강의 추가" ? "timetable_course" : "timetable_custom_item",
+      );
+    }
   },
 
   /**
@@ -817,6 +988,9 @@ export const mixpanelTrack = {
       is_recurring: properties.isRecurring,
       duration: properties.duration,
       has_deadline: properties.hasDeadline,
+    });
+    mixpanelTrack.contentCreated("schedule_poll", "poll", {
+      entry: properties.entry,
     });
   },
 

@@ -1,7 +1,7 @@
 import { TokenInfo, UserInfo, UserInfoInput } from "@/types/members";
 import { normalizeUserInfo } from "@/utils/userInfo";
 import { create } from "zustand";
-import { identifyUser } from "@/utils/mixpanel";
+import { getSignupCohort, getStudentYear, identifyUser } from "@/utils/mixpanel";
 import { bridgeChannel } from "@/utils/bridgeChannel";
 import { broadcastSync } from "@/stores/middleware/broadcastSync";
 import { safeLocalStorage } from "@/utils/safeStorage";
@@ -124,12 +124,22 @@ const useUserStore = create<UserState>()(
 
       // Mixpanel 사용자 식별
       if (normalized.id) {
-        identifyUser(String(normalized.id), {
-          nickname: normalized.nickname,
-          department: normalized.department,
-          memberId: normalized.id,
-          role: normalized.role,
-        });
+        const cohort = getSignupCohort(normalized.joinedAt);
+        identifyUser(
+          String(normalized.id),
+          {
+            nickname: normalized.nickname,
+            department: normalized.department,
+            memberId: normalized.id,
+            role: normalized.role,
+            // 학번 전체는 넣지 않고 입학연도만 남긴다.
+            student_year: getStudentYear(normalized.studentId),
+            joined_at: normalized.joinedAt,
+            signup_cohort_month: cohort?.month,
+            signup_cohort_week: cohort?.week,
+          },
+          { first_seen: new Date().toISOString() },
+        );
       }
     },
   })),
