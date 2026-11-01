@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -38,7 +38,10 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   // 리디자인된 로그인 화면에서 "진입 → 로그인 완료"까지 걸린 시간 측정용
-  const mountedAtRef = useRef(Date.now());
+  const mountedAtRef = useRef(0);
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
 
   const isActive = studentId.trim() !== "" && password.trim() !== "";
 
