@@ -5,6 +5,7 @@ import Modal from "@/components/common/Modal";
 import { postReplyReport, postReports } from "@/apis/reports";
 import { reportsReasons } from "@/resources/strings/reportsReasons";
 import useHiddenContentStore from "@/stores/useHiddenContentStore";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export type ReportTarget =
   | { type: "POST"; postId: number }
@@ -60,6 +61,10 @@ export default function ReportModal({
       } else {
         await postReports(target.postId, selectedReason, detail.trim());
       }
+      mixpanelTrack.contentCreated("moderation", "report", {
+        target_type: target.type === "REPLY" ? "reply" : "post",
+        reason: selectedReason,
+      });
       // 신고한 콘텐츠는 검토 결과를 기다리지 않고 내 화면에서 즉시 숨긴다.
       if (target.type === "REPLY") {
         hideReply(target.replyId);

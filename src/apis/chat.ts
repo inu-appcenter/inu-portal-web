@@ -15,6 +15,7 @@ import {
 import axiosInstance from "@/apis/axiosInstance";
 import { ApiResponse, PageResponse } from "@/types/common";
 import { MemberProfileResponseDto } from "@/types/members";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // 채팅방 생성
 export const createChatRoom = async (
@@ -205,6 +206,9 @@ export const createPersonalChatRoom = async (
     "/api/chat-rooms/personal",
     { targetFriendIds, title, adminMode },
   );
+  mixpanelTrack.contentCreated("chat", "personal_chat_room", {
+    member_count: targetFriendIds.length,
+  });
   return response.data;
 };
 
@@ -317,5 +321,9 @@ export const createDirectPersonalChatRoom = async (
   const response = await tokenInstance.post<CreateChatRoomResponse>(
     `/api/chat-rooms/${roomId}/members/${chatRoomMemberId}/personal`,
   );
+  mixpanelTrack.contentCreated("chat", "personal_chat_room", {
+    member_count: 1,
+    from_room: true,
+  });
   return response.data;
 };

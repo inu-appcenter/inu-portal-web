@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function UploadPetition({
   onUploaded,
@@ -64,6 +65,10 @@ export default function UploadPetition({
         alert("청원이 수정되었습니다!");
       } else {
         await postPetitions(title, content, isPrivate, selectedImages);
+        mixpanelTrack.contentCreated("council", "petition", {
+          is_private: isPrivate,
+          image_count: selectedImages.length,
+        });
         alert("청원이 등록되었습니다!");
       }
       resetForm();
