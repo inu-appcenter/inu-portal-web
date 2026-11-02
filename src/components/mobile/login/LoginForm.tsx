@@ -17,6 +17,7 @@ import TermsLinks from "@/components/common/TermsLinks";
 import useUserStore from "@/stores/useUserStore";
 import { loginMascotFace } from "@/resources/assets/illustrations/login";
 import FreshmanAuthModal from "@/components/mobile/login/FreshmanAuthModal";
+import { getAcademicYear } from "@/utils/academicYear";
 
 function getRedirectPath(search: string) {
   const redirect = new URLSearchParams(search).get("redirect");
@@ -108,7 +109,7 @@ export default function LoginForm() {
           type="text"
           inputMode="numeric"
           autoComplete="username"
-          placeholder="202600000"
+          placeholder={`${getAcademicYear()}00000`}
           value={studentId}
           onChange={setStudentId}
           onKeyDown={handleKeyPress}
@@ -145,7 +146,7 @@ export default function LoginForm() {
           type="button"
           onClick={() => setIsFreshmanModalOpen(true)}
         >
-          2026학년도 신입생이신가요?
+          {`${getAcademicYear()}학년도 신입생이신가요?`}
         </FreshmanLinkButton>
 
         {/* 약관 동의는 로그인 후 최초 프로필 설정 화면에서 명시적으로 받는다. */}

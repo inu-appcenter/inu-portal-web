@@ -6,6 +6,7 @@ import { freshmanLogin } from "@/apis/members";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
+import { getAcademicYear } from "@/utils/academicYear";
 
 interface FreshmanAuthModalProps {
   isOpen: boolean;
@@ -97,8 +98,7 @@ export default function FreshmanAuthModal({
         </Header>
 
         <Description>
-          아직 포털 계정이 발급되지 않은 2026학년도 신입생은 수험번호와 생년월일로
-          미리 서비스를 이용할 수 있어요.
+          {`아직 포털 계정이 발급되지 않은 ${getAcademicYear()}학년도 신입생은 수험번호와 생년월일로 미리 서비스를 이용할 수 있어요.`}
         </Description>
 
         <FormSection>

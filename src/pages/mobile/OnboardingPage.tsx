@@ -24,6 +24,7 @@ import {
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import InputField from "@/components/common/InputField";
+import { getAcademicYear } from "@/utils/academicYear";
 
 const TOTAL_STEPS = 6;
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
@@ -142,7 +143,7 @@ export default function OnboardingPage() {
             });
             if (mergeRes.data.merged) {
               setMergedNotice(
-                "2026학년도 신입생 전산망으로 작성했던 이전 활동 내역(시간표, 글, 스크랩 등)이 현재 학번 계정으로 모두 통합되었어요.",
+                `${getAcademicYear()}학년도 신입생 전산망으로 작성했던 이전 활동 내역(시간표, 글, 스크랩 등)이 현재 학번 계정으로 모두 통합되었어요.`,
               );
             }
           } catch (mergeErr) {
