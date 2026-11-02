@@ -79,6 +79,10 @@ import MobilePhoneBookPage from "@/pages/mobile/phonebook/MobilePhoneBookPage";
 import MobilePhoneBookDetailPage from "@/pages/mobile/phonebook/MobilePhoneBookDetailPage";
 import MobilePhoneBookSearchPage from "@/pages/mobile/phonebook/MobilePhoneBookSearchPage";
 import MobileAdminNotificationPage from "@/pages/mobile/Admin/MobileAdminNotificationPage";
+import MobileSuggestionWritePage from "@/pages/mobile/Suggestion/MobileSuggestionWritePage";
+import MobileSuggestionListPage from "@/pages/mobile/Suggestion/MobileSuggestionListPage";
+import MobileSuggestionDetailPage from "@/pages/mobile/Suggestion/MobileSuggestionDetailPage";
+import MobileAdminSuggestionPage from "@/pages/mobile/Admin/MobileAdminSuggestionPage";
 import MobileAdminChatPage from "@/pages/mobile/Admin/MobileAdminChatPage";
 import MoreAppsPage from "@/pages/mobile/MoreApps/MoreAppsPage";
 import LabsPage from "@/pages/mobile/Labs/LabsPage";
@@ -369,6 +373,9 @@ export const router = createBrowserRouter([
             element: <MobileRoutineDetailPage />,
           },
           { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_LIST, element: <MobileSuggestionListPage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_WRITE, element: <MobileSuggestionWritePage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_DETAIL_PATTERN, element: <MobileSuggestionDetailPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
@@ -414,6 +421,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.SEARCH,
             element: <MobileAdminSearchPage />,
+          },
+          {
+            path: ROUTES.ADMIN.SUGGESTIONS,
+            element: <MobileAdminSuggestionPage />,
+          },
+          {
+            path: ROUTES.ADMIN.SUGGESTION_DETAIL_PATTERN,
+            element: <MobileSuggestionDetailPage admin />,
           },
 
         ],
