@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 import styled from "styled-components";
 import useUserStore from "@/stores/useUserStore";
 import {
@@ -13,10 +15,15 @@ export default function AcademicSyncBanner() {
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  // 학생이 아니거나 이미 학적 인증이 완료되었거나 닫았으면 숨김
+  const location = useLocation();
+
+  // 온보딩 중이거나 로그인 화면이거나 학생이 아니거나 이미 학적 인증이 완료되었거나 닫았으면 숨김
   if (
     dismissed ||
     userInfo.id === 0 ||
+    userInfo.needsOnboarding ||
+    location.pathname === ROUTES.ONBOARDING ||
+    location.pathname === ROUTES.LOGIN ||
     userInfo.memberType !== "STUDENT" ||
     userInfo.isAcademicVerified
   ) {
@@ -97,6 +104,8 @@ export default function AcademicSyncBanner() {
 
 const BannerContainer = styled.div`
   width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   background-color: var(--brand-subtle, #e8f3ff);
   border-bottom: 1px solid rgba(49, 130, 246, 0.15);
   padding: 12px 16px;
