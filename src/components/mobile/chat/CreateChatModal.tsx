@@ -13,6 +13,7 @@ import {
   checkedCheckbox,
   uncheckedCheckbox,
 } from "@/resources/assets/icons/posts";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
@@ -72,6 +73,11 @@ export default function CreateChatModal({
         thumbnail || undefined,
       );
       const roomId = response.data?.id || response.id;
+      mixpanelTrack.contentCreated("chat", "open_chat_room", {
+        max_capacity: maxCapacity,
+        is_anonymous: isAnonymous,
+        has_thumbnail: !!thumbnail,
+      });
       onOpenChange(false);
       navigate(`${ROUTES.CHAT.ROOT}/${roomId}`);
     } catch (error) {

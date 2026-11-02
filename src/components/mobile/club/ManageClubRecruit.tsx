@@ -5,6 +5,7 @@ import { Club } from "@/types/club";
 
 import styled from "styled-components";
 import { postClubRecruit, putClubRecruit } from "@/apis/club";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function ManageClubRecruit({
   onUploaded,
@@ -70,6 +71,9 @@ export default function ManageClubRecruit({
           isrecruiting,
           selectedImages,
         );
+        mixpanelTrack.contentCreated("club", "recruit_notice", {
+          image_count: selectedImages.length,
+        });
         alert("모집공고가 등록되었습니다!");
       }
       resetForm();

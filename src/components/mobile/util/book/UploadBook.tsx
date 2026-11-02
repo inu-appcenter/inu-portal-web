@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function UploadBook({
   onUploaded,
@@ -64,6 +65,9 @@ export default function UploadBook({
         alert("책이 수정되었습니다!");
       } else {
         await postBooks(name, author, content, Number(price), selectedImages);
+        mixpanelTrack.contentCreated("util", "book", {
+          image_count: selectedImages.length,
+        });
         alert("책이 등록되었습니다!");
       }
       resetForm();
