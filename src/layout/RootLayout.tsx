@@ -29,7 +29,6 @@ import FeatureTourSheet from "@/components/common/FeatureTourSheet";
 import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
 import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
-import AcademicSyncBanner from "@/components/common/AcademicSyncBanner";
 import SafeAreaDebugOverlay from "@/components/common/SafeAreaDebugOverlay";
 import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
 import { safeLocalStorage } from "@/utils/safeStorage";
@@ -223,7 +222,6 @@ export default function RootLayout() {
       {/* 앱 미설치 iOS 사용자용 설치 유도 배너. 노출 조건은 컴포넌트 안에서
           판단하고, 해당 없으면 아무것도 렌더하지 않는다. */}
       <AppInstallBanner />
-      <AcademicSyncBanner />
       <SafeAreaDebugOverlay />
       <ScreenContainer>
         {outlet}

@@ -15,6 +15,7 @@ import CommunityWidget from "@/components/mobile/community/CommunityWidget";
 import SwipeMenuWidget from "@/containers/mobile/home/SwipeMenuWidget";
 import SwipeBusWidget from "@/containers/mobile/home/SwipeBusWidget";
 import TodayTimetableWidget from "@/components/mobile/home/TodayTimetableWidget";
+import AcademicSyncBanner from "@/components/common/AcademicSyncBanner";
 import HomeChipGroup from "@/components/mobile/home/HomeChipGroup";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import YoutubeWidget from "@/components/mobile/home/YoutubeWidget";
@@ -119,6 +120,7 @@ export default function MobileHomePageV2() {
             </GreetingChevron>
           </DailyBriefGreetingEntry>
 
+          <AcademicSyncBanner />
           <TodayTimetableWidget />
 
           <GridWidgets>

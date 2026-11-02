@@ -104,22 +104,22 @@ export default function AcademicSyncBanner() {
 
 const BannerContainer = styled.div`
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
   background-color: var(--brand-subtle, #e8f3ff);
-  border-bottom: 1px solid rgba(49, 130, 246, 0.15);
-  padding: 12px 16px;
+  border: 1px solid rgba(49, 130, 246, 0.18);
+  border-radius: 18px;
+  padding: 14px 16px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  animation: slideDown 0.25s ease-out;
+  margin-bottom: 12px;
+  animation: fadeIn 0.2s ease-out;
 
-  @keyframes slideDown {
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(-8px);
+      transform: translateY(-4px);
     }
     to {
       opacity: 1;
