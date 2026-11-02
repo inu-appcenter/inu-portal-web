@@ -124,13 +124,16 @@ export const resolveGradeCourses = async (
     );
   });
 
-  // 2단계: 남은 행만 개설강의를 조회한다.
-  const semester = options.semester;
-  if (!semester) return results;
-
+  // 2단계: 남은 행만 개설강의를 조회한다. 행 자신의 학기(여러 학기를 한 번에 붙여넣은
+  // 경우 표 제목에서 읽은 값)를 우선하고, 없으면 옵션으로 받은 기본 학기를 쓴다.
+  const fallbackSemester = options.semester;
   const pending = results
     .map((result, i) => ({ result, i }))
-    .filter(({ result }) => result.matchStatus !== "MATCHED_BY_TITLE");
+    .filter(
+      ({ result, i }) =>
+        result.matchStatus !== "MATCHED_BY_TITLE" &&
+        (rows[i].semester ?? fallbackSemester) !== null,
+    );
   if (pending.length === 0) return results;
 
   let cursor = 0;
@@ -138,6 +141,8 @@ export const resolveGradeCourses = async (
     while (cursor < pending.length) {
       const { i } = pending[cursor];
       cursor += 1;
+      const semester = rows[i].semester ?? fallbackSemester;
+      if (!semester) continue;
       const resolved = await resolveByOfferingCode(
         rows[i],
         candidatesByRow[i],
