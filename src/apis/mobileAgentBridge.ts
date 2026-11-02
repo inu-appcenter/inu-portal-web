@@ -900,3 +900,23 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
 
   return context;
 }
+
+/**
+ * 신입생 전산망 외부 로그인을 통한 신입생 본인인증 실행
+ */
+export async function requestFreshmanAuth(
+  examNo: string,
+  name: string,
+  birthDate: string
+): Promise<AgentActionResult<{
+  userNm: string;
+  persNo: string;
+  deptNm: string;
+  deptTtNm: string;
+  userGbn: string;
+  encStr: string;
+  examNo: string;
+  birthDate: string;
+}>> {
+  return sendBridgeAction('requestFreshmanAuth', { examNo, name, birthDate }, 45000);
+}

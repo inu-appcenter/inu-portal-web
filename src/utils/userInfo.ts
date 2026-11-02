@@ -35,5 +35,10 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
     nearbyVisibility: !!userInfo?.nearbyVisibility,
     realName: normalizeOptionalText(userInfo?.realName).trim(),
     needsRealName: !!userInfo?.needsRealName,
+    memberType: userInfo?.memberType ?? 'STUDENT',
+    onboardingCompleted: userInfo?.onboardingCompleted ?? true,
+    needsOnboarding: userInfo?.needsOnboarding ?? false,
+    isAcademicVerified: !!userInfo?.isAcademicVerified,
+    examNo: normalizeOptionalText(userInfo?.examNo),
   };
 };

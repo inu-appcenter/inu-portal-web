@@ -9,6 +9,11 @@ import {
   TokenInfo,
   UpdateRealNameRequest,
   UserInfoInput,
+  FreshmanLoginRequest,
+  OnboardingRequest,
+  MergeFreshmanRequest,
+  MergeFreshmanResponse,
+  SyncAcademicRequest,
 } from "@/types/members";
 import { Post } from "@/types/posts";
 
@@ -254,6 +259,50 @@ export const putMemberRealName = async (
   const response = await tokenInstance.put<ApiResponse<number>>(
     "/api/members",
     request,
+  );
+  return response.data;
+};
+
+// 신입생 로그인/가입
+export const freshmanLogin = async (
+  payload: FreshmanLoginRequest,
+): Promise<ApiResponse<TokenInfo>> => {
+  const response = await axiosInstance.post<ApiResponse<TokenInfo>>(
+    `/api/members/freshman-login`,
+    payload,
+  );
+  return response.data;
+};
+
+// 온보딩 완료
+export const postOnboarding = async (
+  payload: OnboardingRequest,
+): Promise<ApiResponse<UserInfoInput>> => {
+  const response = await tokenInstance.post<ApiResponse<UserInfoInput>>(
+    `/api/members/onboarding`,
+    payload,
+  );
+  return response.data;
+};
+
+// 3월 신입생 계정 강제 통합 감지 및 병합
+export const checkMergeFreshman = async (
+  payload: MergeFreshmanRequest,
+): Promise<ApiResponse<MergeFreshmanResponse>> => {
+  const response = await tokenInstance.post<ApiResponse<MergeFreshmanResponse>>(
+    `/api/members/check-merge-freshman`,
+    payload,
+  );
+  return response.data;
+};
+
+// 사후 공식 학적 동기화
+export const syncOfficialAcademic = async (
+  payload: SyncAcademicRequest,
+): Promise<ApiResponse<UserInfoInput>> => {
+  const response = await tokenInstance.post<ApiResponse<UserInfoInput>>(
+    `/api/members/sync-academic`,
+    payload,
   );
   return response.data;
 };

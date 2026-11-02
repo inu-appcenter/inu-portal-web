@@ -19,6 +19,11 @@ export interface UserInfoInput {
   realName?: string | null;
   /** 닉네임이 학번 그대로이고 실명이 없으면 true. 조건은 서버가 계산한다 */
   needsRealName?: boolean | null;
+  memberType?: MemberType | null;
+  onboardingCompleted?: boolean | null;
+  needsOnboarding?: boolean | null;
+  isAcademicVerified?: boolean | null;
+  examNo?: string | null;
 }
 
 export interface UserInfo {
@@ -34,9 +39,48 @@ export interface UserInfo {
   /** 실명. 없으면 빈 문자열 */
   realName: string;
   needsRealName: boolean;
+  memberType?: MemberType;
+  onboardingCompleted?: boolean;
+  needsOnboarding?: boolean;
+  isAcademicVerified?: boolean;
+  examNo?: string;
 }
 
+export type MemberType = "STUDENT" | "FACULTY" | "FRESHMAN";
+
 export type RealNameSource = "MANUAL" | "PORTAL_SCRAPE";
+
+export interface OnboardingRequest {
+  nickname: string;
+  fireId: number;
+  realName?: string;
+  realNameSource?: RealNameSource;
+  departmentCode?: string;
+  isAcademicVerified?: boolean;
+}
+
+export interface FreshmanLoginRequest {
+  examNo: string;
+  name: string;
+  birthDate: string;
+  deptNm?: string;
+}
+
+export interface MergeFreshmanRequest {
+  koreanName: string;
+  birthDate: string;
+  departmentName?: string;
+}
+
+export interface MergeFreshmanResponse {
+  merged: boolean;
+  examNo?: string;
+}
+
+export interface SyncAcademicRequest {
+  realName: string;
+  departmentCode?: string;
+}
 
 /** PUT /api/members — 실명 저장·삭제 (API v3.4 3-13, 서버는 기존 PUT을 확장) */
 export interface UpdateRealNameRequest {
