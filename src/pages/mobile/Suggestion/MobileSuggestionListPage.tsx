@@ -15,15 +15,18 @@ export default function MobileSuggestionListPage() {
   // 헤더 설정에 들어가는 요소라 매 렌더 새로 만들면 헤더 갱신이 무한 반복된다.
   const rightArea = useMemo(
     () => (
-      <NewButton
-        type="button"
-        onClick={() => {
-          mixpanelTrack.suggestionFormOpened("list_header");
-          navigate(ROUTES.MYPAGE.SUGGESTION_WRITE);
-        }}
-      >
-        새 의견
-      </NewButton>
+      // 헤더 우측 영역은 직속 자식의 배경·여백을 !important로 지운다 → 한 겹 감싸 알약 배경을 살린다.
+      <span>
+        <NewButton
+          type="button"
+          onClick={() => {
+            mixpanelTrack.suggestionFormOpened("list_header");
+            navigate(ROUTES.MYPAGE.SUGGESTION_WRITE);
+          }}
+        >
+          새 의견
+        </NewButton>
+      </span>
     ),
     [navigate],
   );
@@ -53,10 +56,18 @@ const Page = styled.div`
 
 const NewButton = styled.button`
   ${typography.label2}
-  padding: 0 4px;
+  height: 40px;
+  /* 래퍼의 좌우 패딩(12px)을 상쇄해 헤더 가장자리에 맞춘다 */
+  margin: 0 -12px;
+  padding: 0 16px;
   border: none;
-  background: transparent;
+  border-radius: 999px;
+  background: var(--bg-brand);
   color: var(--text-brand);
   white-space: nowrap;
   cursor: pointer;
+
+  &:active {
+    background: var(--blue-100);
+  }
 `;
