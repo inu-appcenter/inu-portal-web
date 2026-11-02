@@ -29,6 +29,7 @@ import FeatureTourSheet from "@/components/common/FeatureTourSheet";
 import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
 import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
+import AcademicSyncBanner from "@/components/common/AcademicSyncBanner";
 import SafeAreaDebugOverlay from "@/components/common/SafeAreaDebugOverlay";
 import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
 import { safeLocalStorage } from "@/utils/safeStorage";
@@ -71,6 +72,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!tokenInfo.accessToken || userInfo.id === 0) {
+      return;
+    }
+
+    // 온보딩이 완료되지 않은 회원(신규 가입자, 닉네임이 학번인 기존 회원 등)은
+    // 6단계 온보딩 화면으로 강제 이동하여 학적 연동, 닉네임, 프로필 캐릭터를 설정하도록 한다.
+    if (userInfo.needsOnboarding) {
+      if (location.pathname !== ROUTES.ONBOARDING) {
+        navigate(ROUTES.ONBOARDING, { replace: true });
+      }
       return;
     }
 
@@ -213,6 +223,7 @@ export default function RootLayout() {
       {/* 앱 미설치 iOS 사용자용 설치 유도 배너. 노출 조건은 컴포넌트 안에서
           판단하고, 해당 없으면 아무것도 렌더하지 않는다. */}
       <AppInstallBanner />
+      <AcademicSyncBanner />
       <SafeAreaDebugOverlay />
       <ScreenContainer>
         {outlet}

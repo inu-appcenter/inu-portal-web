@@ -36,6 +36,7 @@ import MobileMyPageComment from "@/pages/mobile/MobileMyPageComment";
 import MobileDeletePage from "@/pages/mobile/MobileDelete";
 import MobileFcmStatusPage from "@/pages/mobile/MobileFcmStatusPage";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
+import OnboardingPage from "@/pages/mobile/OnboardingPage";
 import MobileBusInfoPage from "@/pages/mobile/MobileBus/MobileBusInfoPage";
 import MobileBusDetailPage from "@/pages/mobile/MobileBus/MobileBusDetailPage";
 import MobileBusStopPage from "@/pages/mobile/MobileBus/MobileBusStopPage";
@@ -165,8 +166,9 @@ export const router = createBrowserRouter([
       {
         element: <SubLayout showNav={false} backgroundColor="transparent" />,
         children: [
-          // 로그인
+          // 로그인 및 온보딩
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+          { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
