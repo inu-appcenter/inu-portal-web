@@ -97,7 +97,7 @@ export const PollPrimaryButton = styled.button`
   flex: 1 0 0;
   min-width: 0;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   ${effects.elevation1}
 
   &:active:not(:disabled) {

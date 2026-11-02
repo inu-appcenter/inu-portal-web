@@ -724,7 +724,7 @@ const WarningBannerText = styled.p`
 
 const LaunchButton = styled.button`
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: var(--radius-sm);
   padding: 6px 10px;

@@ -167,7 +167,7 @@ export default function EditChatModal({
               label: isLoading ? "수정 중..." : "수정하기",
               onClick: handleUpdate,
               backgroundColor: "var(--interactive-primary)",
-              textColor: "var(--text-inverse)",
+              textColor: "var(--text-on-brand)",
               disabled: isLoading,
             }}
             padding="16px 24px 24px"

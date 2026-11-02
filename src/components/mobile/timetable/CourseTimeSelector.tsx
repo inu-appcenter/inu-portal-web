@@ -263,7 +263,7 @@ const StyledDayChip = styled(({ isSelected, ...props }: DayChipProps) => <DayChi
     `
       background-color: var(--interactive-primary) !important;
       border: 1px solid var(--interactive-primary) !important;
-      color: var(--text-inverse) !important;
+      color: var(--text-on-brand) !important;
     `}
 `;
 

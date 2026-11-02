@@ -274,7 +274,7 @@ const AcceptedBadge = styled.div`
   border-radius: 999px;
   border: 2px solid var(--bg-base);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -323,7 +323,7 @@ const PrimaryButton = styled.button`
   border: none;
   border-radius: 999px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-family: Pretendard;
   font-size: 16px;
   font-weight: 600;

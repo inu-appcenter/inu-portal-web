@@ -376,7 +376,7 @@ export default function MobileFriendListPage() {
                   onClick={() => setSelectedRoomId(room.roomId)}
                 >
                   <RoomItemCheckOverlay $isSelected={isSelected}>
-                    {isSelected && <Icon name="check" size={14} color="var(--text-inverse)" />}
+                    {isSelected && <Icon name="check" size={14} color="var(--text-on-brand)" />}
                   </RoomItemCheckOverlay>
                   <ChatRoomListItemWrapper>
                     <ChatRoomListItem
@@ -602,7 +602,7 @@ const FloatingActionButton = styled.button<{ $isTop: boolean }>`
 const ButtonLabel = styled.span<{ $isTop: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   white-space: nowrap;
   overflow: hidden;
 
@@ -642,7 +642,7 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
 `;
 
 const CompareButton = styled(CapsuleButton)`
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-align: center;
 
   /* title-3 */

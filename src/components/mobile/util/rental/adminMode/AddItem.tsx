@@ -119,7 +119,7 @@ const AddItemWrapper = styled.div`
     width: 100%;
     padding: 10px;
     background-color: var(--interactive-primary);
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
     border: none;
     border-radius: 4px;
     cursor: pointer;

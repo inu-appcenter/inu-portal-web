@@ -718,7 +718,7 @@ export default function MobileTimeTableComparePage() {
       day: slot.day,
       startTime: slot.startTime,
       endTime: slot.endTime,
-      color: "var(--time-table-color-available-time)",
+      color: "var(--feature-timetable-available)",
     }));
   }, [freeSlotsList]);
 
@@ -1167,7 +1167,7 @@ export default function MobileTimeTableComparePage() {
         }}
         data-vaul-no-drag=""
       >
-        <Icon name="paper-plane" size={24} color="var(--text-inverse)" />
+        <Icon name="paper-plane" size={24} color="var(--text-on-brand)" />
       </FloatingShareButton>
 
       {/* 7. 공유 확인 모달 */}
@@ -1359,7 +1359,7 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
       $isSelected ? "var(--border-brand)" : "transparent"};
   background: ${({ $isSelected }) =>
     $isSelected
-      ? "var(--time-table-color-available-time)"
+      ? "var(--feature-timetable-available)"
       : "transparent"};
 
   border-radius: 12px;
@@ -1375,7 +1375,7 @@ const SlotItem = styled.div<{ $isSelected?: boolean }>`
   &.good {
     background: ${({ $isSelected }) =>
       $isSelected
-        ? "var(--time-table-color-available-time)"
+        ? "var(--feature-timetable-available)"
         : "var(--bg-warn)"};
   }
 `;
@@ -1492,7 +1492,7 @@ const FloatingShareButton = styled.button`
   height: 56px;
   border-radius: 50%;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   display: flex;
   align-items: center;

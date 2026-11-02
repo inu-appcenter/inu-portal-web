@@ -644,6 +644,6 @@ const InviteLinkButton = styled.button`
   padding: 0 24px;
   border-radius: 999px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   ${typography.heading3}
 `;

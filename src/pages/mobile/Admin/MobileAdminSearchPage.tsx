@@ -47,7 +47,7 @@ const DOMAIN_LIST: DomainItem[] = [
     id: "dept-notices",
     name: "학과 공지사항",
     description: "단과대 및 각 학과별 맞춤 공지 데이터",
-    icon: (size) => <Building2 size={size} color="var(--text-inverse)" />,
+    icon: (size) => <Building2 size={size} color="var(--text-on-brand)" />,
     color: "var(--text-brand)",
   },
   {

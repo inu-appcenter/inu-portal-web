@@ -109,7 +109,7 @@ const Button = styled.button`
   margin-top: 20px;
   padding: 10px 20px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 5px;
   cursor: pointer;

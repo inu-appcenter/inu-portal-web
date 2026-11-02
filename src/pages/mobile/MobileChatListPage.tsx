@@ -1035,7 +1035,7 @@ const FloatingActionButton = styled.button<{ $isTop: boolean }>`
 const ButtonLabel = styled.span<{ $isTop: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   white-space: nowrap;
   overflow: hidden;
 
@@ -1113,7 +1113,7 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
 `;
 
 const CompareButton = styled(CapsuleButton)`
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-align: center;
 
   /* title-3 */

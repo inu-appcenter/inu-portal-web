@@ -1169,7 +1169,7 @@ const PrimaryActionBtn = styled.button`
   gap: 6px;
   padding: 8px 12px;
   ${typography.label3}
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: var(--interactive-primary);
   border: none;
   border-radius: var(--radius-sm);

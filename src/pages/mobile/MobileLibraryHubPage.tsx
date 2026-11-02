@@ -1982,7 +1982,7 @@ export default function MobileLibraryHubPage() {
             <PrivacyAgreeContainer onClick={() => setIsPrivacyAgreed((prev) => !prev)}>
               <PrivacyAgreeLabel>
                 <CustomCheckbox $checked={isPrivacyAgreed}>
-                  {isPrivacyAgreed && <Check size={11} color="var(--text-inverse)" strokeWidth={3} />}
+                  {isPrivacyAgreed && <Check size={11} color="var(--text-on-brand)" strokeWidth={3} />}
                 </CustomCheckbox>
                 <span>
                   동반이용자 개인정보 수집 및 이용 동의 <span style={{ color: "var(--text-error)" }}>*필수</span>
@@ -2325,7 +2325,7 @@ const PrimaryActionBtn = styled.button`
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: var(--interactive-primary);
   border: none;
   border-radius: 10px;
@@ -2941,7 +2941,7 @@ const SmallActionBtn = styled.button<{ $danger?: boolean }>`
   border: none;
   cursor: pointer;
   background: ${({ $danger }) => ($danger ? "var(--bg-error)" : "var(--interactive-primary)")};
-  color: ${({ $danger }) => ($danger ? "var(--text-error)" : "var(--text-inverse)")};
+  color: ${({ $danger }) => ($danger ? "var(--text-error)" : "var(--text-on-brand)")};
 `;
 
 // 바텀시트 공용 스타일
@@ -3325,7 +3325,7 @@ const CompanionAddBtn = styled.button`
   border-radius: 8px;
   border: none;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;

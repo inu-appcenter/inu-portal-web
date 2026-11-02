@@ -228,7 +228,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowRoom(!showRoom)}>
                 <SelectionControl $selected={showRoom}>
                   {showRoom && (
-                    <Icon name="check" size={14} color="var(--text-inverse)" />
+                    <Icon name="check" size={14} color="var(--text-on-brand)" />
                   )}
                 </SelectionControl>
                 <CheckboxText>강의실</CheckboxText>
@@ -237,7 +237,7 @@ export default function TimetableThemeBottomSheet({
               <CheckboxLabel onClick={() => setShowProfessor(!showProfessor)}>
                 <SelectionControl $selected={showProfessor}>
                   {showProfessor && (
-                    <Icon name="check" size={14} color="var(--text-inverse)" />
+                    <Icon name="check" size={14} color="var(--text-on-brand)" />
                   )}
                 </SelectionControl>
                 <CheckboxText>교수명</CheckboxText>
