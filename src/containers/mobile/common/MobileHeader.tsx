@@ -168,7 +168,7 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
           $hasTitle={hasTitle}
           $noBlur={Boolean(noBlur)}
         >
-          {title ? (
+          {hasback || title ? (
             <TitleArea>
               {hasback && (
                 <IconBackgroundWrapper
@@ -178,12 +178,14 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
                   <BackButton onClick={handleBack} />
                 </IconBackgroundWrapper>
               )}
-              <TitleWrapper
-                $isScrolled={isScrolled}
-                $hasBack={hasback ?? false}
-              >
-                <HeaderTitle $hasBack={hasback ?? false}>{title}</HeaderTitle>
-              </TitleWrapper>
+              {title && (
+                <TitleWrapper
+                  $isScrolled={isScrolled}
+                  $hasBack={hasback ?? false}
+                >
+                  <HeaderTitle $hasBack={hasback ?? false}>{title}</HeaderTitle>
+                </TitleWrapper>
+              )}
             </TitleArea>
           ) : (
             <TitleArea>
