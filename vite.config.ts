@@ -62,7 +62,8 @@ export default defineConfig({
             id.includes("react-router-dom") ||
             id.includes("@tanstack/react-query") ||
             id.includes("/axios/") ||
-            id.includes("\\axios\\")
+            id.includes("\\axios\\") ||
+            id.includes("use-sync-external-store")
           ) {
             return "vendor-react";
           }
