@@ -3,7 +3,7 @@ import { SAFE_AREA } from "@/styles/safeArea";
 import styled from "styled-components";
 // import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
 import { intipLogoWordmark as intipLogo } from "@/resources/assets/illustrations/brand";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
 import { useCustomNavigate } from "@/hooks/useCustomNavigate";
 
@@ -128,6 +128,15 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     const navigate = useCustomNavigate();
     const { hasUnreadNotification } = useUnreadNotification();
     const hasMenuItems = (menuItems?.length ?? 0) > 0;
+    const location = useLocation();
+    const currentPath = targetPath || location.pathname;
+    const isHome =
+      currentPath === ROUTES.ROOT ||
+      currentPath === ROUTES.HOME ||
+      currentPath === ROUTES.MOBILE_HOME ||
+      currentPath === ROUTES.HOME_V2 ||
+      currentPath === ROUTES.MOBILE_ROOT;
+    const shouldShowBack = Boolean(hasback) && !isHome;
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -164,13 +173,24 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
         />
         <MainHeaderWrapper
           $isScrolled={isScrolled}
-          $hasBack={(hasback && !!title) ?? false}
+          $hasBack={shouldShowBack}
           $hasTitle={hasTitle}
           $noBlur={Boolean(noBlur)}
         >
-          {hasback || title ? (
+          {isHome ? (
             <TitleArea>
-              {hasback && (
+              <TitleWrapper $isScrolled={isScrolled} $hasBack={false}>
+                <img
+                  className="logo"
+                  onClick={handleLogoClick}
+                  src={intipLogo}
+                  alt="INTIP"
+                />
+              </TitleWrapper>
+            </TitleArea>
+          ) : (
+            <TitleArea>
+              {shouldShowBack && (
                 <IconBackgroundWrapper
                   $isScrolled={isScrolled}
                   $isCircle={true}
@@ -181,21 +201,11 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
               {title && (
                 <TitleWrapper
                   $isScrolled={isScrolled}
-                  $hasBack={hasback ?? false}
+                  $hasBack={shouldShowBack}
                 >
-                  <HeaderTitle $hasBack={hasback ?? false}>{title}</HeaderTitle>
+                  <HeaderTitle $hasBack={shouldShowBack}>{title}</HeaderTitle>
                 </TitleWrapper>
               )}
-            </TitleArea>
-          ) : (
-            <TitleArea>
-              <TitleWrapper $isScrolled={isScrolled} $hasBack={false}>
-                <img
-                  className="logo"
-                  onClick={handleLogoClick}
-                  src={intipLogo}
-                />
-              </TitleWrapper>
             </TitleArea>
           )}
 
