@@ -11,14 +11,17 @@ import FullscreenSubLayout from "@/layout/FullscreenSubLayout";
 import SubLayout from "@/layout/SubLayout";
 import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 
-// Main Tab Pages (정적 임포트 유지)
+// Critical Path Pages (첫 진입 화면 정적 임포트 유지)
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
-import MobileBusPage from "@/pages/mobile/MobileBus/MobileBusPage";
-import MobileSavePage from "@/pages/mobile/MobileSavePage";
-import MobileMyPage from "@/pages/mobile/MobileMyPage";
-import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
-import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
+
+import { TAB_IMPORTERS } from "@/utils/tabImporters";
+
+const MobileTimeTablePage = lazyWithRetry(TAB_IMPORTERS.timetable);
+const MobileBusPage = lazyWithRetry(TAB_IMPORTERS.bus);
+const MobileChatListPage = lazyWithRetry(TAB_IMPORTERS.chat);
+const MobileMyPage = lazyWithRetry(TAB_IMPORTERS.mypage);
+const MobileSavePage = lazyWithRetry(TAB_IMPORTERS.save);
 
 // Lazy-loaded Sub Pages
 const AiPage = lazyWithRetry(() => import("@/pages/desktop/AiPage"));

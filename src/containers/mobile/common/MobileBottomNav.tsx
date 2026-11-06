@@ -15,12 +15,14 @@ import TooltipMessage from "@/components/common/TooltipMessage";
 import { usePromotion } from "@/hooks/usePromotion";
 import { PROMOTIONS } from "@/utils/promotion/registry";
 import { SAFE_AREA } from "@/styles/safeArea";
+import { prefetchTab, TabKey } from "@/utils/tabImporters";
 
 const NAV_ITEMS: {
   to: string;
   icon: FontelloIconName;
   label: string;
   key?: string;
+  tabKey?: TabKey;
 }[] = [
   {
     to: ROUTES.HOME,
@@ -31,22 +33,26 @@ const NAV_ITEMS: {
     to: ROUTES.TIMETABLE.ROOT,
     icon: "timetable",
     label: "시간표",
+    tabKey: "timetable",
   },
   {
     to: ROUTES.BUS.ROOT,
     icon: "bus",
     label: "인입런",
+    tabKey: "bus",
   },
   {
     to: ROUTES.CHAT.LIST,
     icon: "chat",
     label: "채팅",
     key: "chat",
+    tabKey: "chat",
   },
   {
     to: ROUTES.MYPAGE.ROOT,
     icon: "my",
     label: "마이페이지",
+    tabKey: "mypage",
   },
 ];
 
@@ -126,6 +132,8 @@ export default function MobileBottomNav() {
             <Fragment key={item.to}>
               <NavItemButton
                 onClick={() => handleNavClick(item.to, item.label)}
+                onMouseEnter={() => item.tabKey && prefetchTab(item.tabKey)}
+                onTouchStart={() => item.tabKey && prefetchTab(item.tabKey)}
                 type="button"
               >
                 {isActive && (
