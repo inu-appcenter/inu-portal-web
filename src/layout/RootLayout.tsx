@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -31,6 +31,7 @@ import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
 import SafeAreaDebugOverlay from "@/components/common/SafeAreaDebugOverlay";
 import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
+import RouteLoadingSpinner from "@/components/common/RouteLoadingSpinner";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 
@@ -215,7 +216,9 @@ export default function RootLayout() {
       <AppInstallBanner />
       <SafeAreaDebugOverlay />
       <ScreenContainer>
-        {outlet}
+        <Suspense fallback={<RouteLoadingSpinner />}>
+          {outlet}
+        </Suspense>
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
         <BottomScrollEdgeFade />
       </ScreenContainer>
