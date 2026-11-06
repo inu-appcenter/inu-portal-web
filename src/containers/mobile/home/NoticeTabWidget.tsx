@@ -316,7 +316,7 @@ const MessageText = styled.span`
 
 const ActionButton = styled.button`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 50px;
   padding: 6px 16px;

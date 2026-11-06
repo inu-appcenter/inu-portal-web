@@ -2957,7 +2957,7 @@ export default function MobileRoutineDetailPage() {
                   >
                     <Ripple color="rgba(37, 99, 235, 0.1)" />
                     <CustomCheckCircle $checked={isSelected}>
-                      {isSelected && <Check size={12} color="var(--text-inverse)" strokeWidth={3.5} />}
+                      {isSelected && <Check size={12} color="var(--text-on-brand)" strokeWidth={3.5} />}
                     </CustomCheckCircle>
                     <DeptNameText $checked={isSelected}>
                       {dept.name}
@@ -3092,7 +3092,7 @@ export default function MobileRoutineDetailPage() {
                 >
                   <Ripple color="rgba(37, 99, 235, 0.1)" />
                   <CustomCheckCircle $checked={isSub}>
-                    {isSub && <Check size={12} color="var(--text-inverse)" strokeWidth={3.5} />}
+                    {isSub && <Check size={12} color="var(--text-on-brand)" strokeWidth={3.5} />}
                   </CustomCheckCircle>
                   <CheckboxLabel $checked={isSub}>{cat}</CheckboxLabel>
                 </CheckboxCard>
@@ -4187,7 +4187,7 @@ const AmPmToggle = styled.div`
 const AmPmButton = styled.button<{ $active: boolean }>`
   border: none;
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "transparent")};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-600)")};
   font-weight: 700;
   font-size: 13.5px;
   padding: 8px 14px;
@@ -4234,7 +4234,7 @@ const DayCircleButton = styled.button<{ $active: boolean }>`
   border-radius: 50%;
   border: none;
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-600)")};
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;

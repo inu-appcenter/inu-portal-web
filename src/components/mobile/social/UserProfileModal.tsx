@@ -224,7 +224,7 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" | "danger
     return "var(--bg-muted)";
   }};
   color: ${({ $variant }) => {
-    if ($variant === "primary") return "var(--text-inverse)";
+    if ($variant === "primary") return "var(--text-on-brand)";
     if ($variant === "danger") return "var(--text-error)";
     return "var(--text-secondary)";
   }};

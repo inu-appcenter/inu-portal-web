@@ -262,7 +262,7 @@ const ButtonWrapper = styled.div`
 
   button:first-child {
     background-color: var(--interactive-primary);
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
   }
 
   button:last-child {

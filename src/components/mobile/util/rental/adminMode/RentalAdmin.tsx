@@ -54,7 +54,7 @@ const ButtonGroup = styled.div`
 
 const Button = styled.button`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   padding: 12px 20px;
   font-size: 16px;
   border: none;

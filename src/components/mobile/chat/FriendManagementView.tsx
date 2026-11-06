@@ -541,7 +541,7 @@ export default function FriendManagementView({
               <NameRow>{friend.friendAlias || getDisplayName(friend)}</NameRow>
               {isSelectionMode && (
                 <SelectionCheckbox $selected={isSelected}>
-                  {isSelected && <CheckIcon size={16} color="var(--text-inverse)" />}
+                  {isSelected && <CheckIcon size={16} color="var(--text-on-brand)" />}
                 </SelectionCheckbox>
               )}
             </RowHeader>

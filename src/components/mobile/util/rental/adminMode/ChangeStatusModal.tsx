@@ -115,7 +115,7 @@ const ConfirmCancelButtonWrapper = styled.div`
 
 const ConfirmButton = styled.button`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: 1px solid var(--border-brand);
   border-radius: 4px;
   padding: 10px 20px;

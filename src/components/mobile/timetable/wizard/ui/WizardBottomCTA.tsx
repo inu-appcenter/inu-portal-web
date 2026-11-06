@@ -99,7 +99,7 @@ const Button = styled.button`
   justify-content: center;
   border-radius: 999px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   white-space: nowrap;
   ${effects.elevation1}
   transition:

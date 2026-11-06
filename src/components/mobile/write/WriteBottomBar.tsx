@@ -116,7 +116,7 @@ const ImageBadge = styled.span`
   top: -2px;
   right: -4px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 10px;
   font-weight: 700;
   width: 16px;

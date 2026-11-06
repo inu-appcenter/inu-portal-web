@@ -450,7 +450,7 @@ const CountBadge = styled.span<{ $isTop: boolean }>`
   background: ${({ $isTop }) =>
     $isTop ? "var(--interactive-primary)" : "var(--bg-brand)"};
   color: ${({ $isTop }) =>
-    $isTop ? "var(--text-inverse)" : "var(--text-brand)"};
+    $isTop ? "var(--text-on-brand)" : "var(--text-brand)"};
   font-size: 12px;
   line-height: 16px;
   white-space: nowrap;
@@ -469,7 +469,7 @@ const FooterButton = styled.div<{ $muted: boolean }>`
   background: ${({ $muted }) =>
     $muted ? "var(--bg-muted)" : "var(--interactive-primary)"};
   color: ${({ $muted }) =>
-    $muted ? "var(--text-tertiary)" : "var(--text-inverse)"};
+    $muted ? "var(--text-tertiary)" : "var(--text-on-brand)"};
   cursor: ${({ $muted }) => ($muted ? "default" : "pointer")};
   font: inherit;
 
@@ -541,7 +541,7 @@ const AddButton = styled.button`
   border: none;
   border-radius: 12px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;

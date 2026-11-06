@@ -1535,7 +1535,7 @@ const TabButton = styled.button<{ active: boolean }>`
   font-weight: 600;
   cursor: pointer;
   background-color: ${({ active }) => (active ? "var(--interactive-primary)" : "var(--bg-muted)")};
-  color: ${({ active }) => (active ? "var(--text-inverse)" : "var(--gray-700)")};
+  color: ${({ active }) => (active ? "var(--text-on-brand)" : "var(--gray-700)")};
   transition: all 0.2s;
   white-space: nowrap;
 
@@ -1587,7 +1587,7 @@ const SyncButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 8px;
   font-size: 15px;
@@ -2033,7 +2033,7 @@ const TabBadge = styled.span`
 
 const RouteNoBadge = styled.span`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
@@ -2246,7 +2246,7 @@ const SearchInput = styled.input`
 const SearchSubmitBtn = styled.button`
   padding: 10px 16px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -2315,7 +2315,7 @@ const SelectStopBtn = styled.button`
   gap: 4px;
   padding: 6px 10px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 4px;
   font-size: 12px;

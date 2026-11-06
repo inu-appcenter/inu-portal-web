@@ -605,7 +605,7 @@ export default function MobileTimetableImageImportPage() {
             >
               <DropzoneHeader>
                 <IconBox>
-                  <ImagePlus size={22} color="var(--text-inverse)" />
+                  <ImagePlus size={22} color="var(--text-on-brand)" />
                 </IconBox>
                 <DropzoneTextGroup>
                   <DropzoneTitle>시간표 이미지 선택하기</DropzoneTitle>
@@ -2276,7 +2276,7 @@ const DayChip = styled.button<{ $active: boolean }>`
   border-radius: 8px;
   border: 1px solid ${({ $active }) => ($active ? "var(--border-brand)" : "var(--border-default)")};
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-base)")};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-700)")};
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

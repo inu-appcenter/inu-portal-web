@@ -100,7 +100,7 @@ export default function TimetableShareCard({
 
       <FooterButton>
         <span>공강 시간 확인하러 가기</span>
-        <Icon name="chevron-right" size={16} color="var(--text-inverse)" />
+        <Icon name="chevron-right" size={16} color="var(--text-on-brand)" />
       </FooterButton>
     </CardContainer>
   );
@@ -195,7 +195,7 @@ const CountBadge = styled.div<{ $isTop?: boolean }>`
   border-radius: 999px;
   background: ${({ $isTop }) => ($isTop ? "var(--interactive-primary)" : "var(--bg-brand)")};
   border: ${({ $isTop }) => ($isTop ? "none" : "1px solid var(--border-brand-subtle)")};
-  color: ${({ $isTop }) => ($isTop ? "var(--text-inverse)" : "var(--text-brand)")};
+  color: ${({ $isTop }) => ($isTop ? "var(--text-on-brand)" : "var(--text-brand)")};
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -226,7 +226,7 @@ const FooterButton = styled.div`
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
     user-select: none;
   }
 `;
