@@ -21,7 +21,13 @@ export function lazyWithRetry<P = Record<string, unknown>>(
     } catch (error) {
       if (!hasRetried && typeof window !== "undefined") {
         window.sessionStorage.setItem(CHUNK_RELOAD_KEY, "true");
-        window.location.reload();
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set("_reload", String(Date.now()));
+          window.location.replace(url.toString());
+        } catch {
+          window.location.reload();
+        }
         return new Promise(() => {});
       }
 

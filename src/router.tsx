@@ -18,6 +18,7 @@ import MobileSavePage from "@/pages/mobile/MobileSavePage";
 import MobileMyPage from "@/pages/mobile/MobileMyPage";
 import MobileTimeTablePage from "@/pages/mobile/MobileTimeTablePage";
 import MobileChatListPage from "@/pages/mobile/MobileChatListPage";
+import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
 
 // Lazy-loaded Sub Pages
 const AiPage = lazyWithRetry(() => import("@/pages/desktop/AiPage"));
@@ -40,7 +41,7 @@ const MobileMyPageLike = lazyWithRetry(() => import("@/pages/mobile/MobileMyPage
 const MobileMyPageComment = lazyWithRetry(() => import("@/pages/mobile/MobileMyPageComment"));
 const MobileDeletePage = lazyWithRetry(() => import("@/pages/mobile/MobileDelete"));
 const MobileFcmStatusPage = lazyWithRetry(() => import("@/pages/mobile/MobileFcmStatusPage"));
-const MobileLoginPage = lazyWithRetry(() => import("@/pages/mobile/MobileLoginPage"));
+
 const MobileBusInfoPage = lazyWithRetry(() => import("@/pages/mobile/MobileBus/MobileBusInfoPage"));
 const MobileBusDetailPage = lazyWithRetry(() => import("@/pages/mobile/MobileBus/MobileBusDetailPage"));
 const MobileBusStopPage = lazyWithRetry(() => import("@/pages/mobile/MobileBus/MobileBusStopPage"));
