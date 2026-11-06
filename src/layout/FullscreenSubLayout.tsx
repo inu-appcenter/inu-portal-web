@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect } from "react";
+import { Suspense, useEffect, useLayoutEffect } from "react";
 import { useOutlet, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import RouteLoadingSpinner from "@/components/common/RouteLoadingSpinner";
 
 interface FullscreenSubLayoutProps {
   backgroundColor?: string;
@@ -39,7 +40,13 @@ export default function FullscreenSubLayout({
     };
   }, []);
 
-  return <LayoutContainer $backgroundColor={backgroundColor}>{outlet}</LayoutContainer>;
+  return (
+    <LayoutContainer $backgroundColor={backgroundColor}>
+      <Suspense fallback={<RouteLoadingSpinner />}>
+        {outlet}
+      </Suspense>
+    </LayoutContainer>
+  );
 }
 
 const LayoutContainer = styled.div<{ $backgroundColor: string }>`

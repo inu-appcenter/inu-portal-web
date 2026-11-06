@@ -1,4 +1,10 @@
-export default function RouteLoadingSpinner() {
+interface RouteLoadingSpinnerProps {
+  minHeight?: string | number;
+}
+
+export default function RouteLoadingSpinner({
+  minHeight = "60vh",
+}: RouteLoadingSpinnerProps) {
   return (
     <div
       style={{
@@ -6,7 +12,8 @@ export default function RouteLoadingSpinner() {
         alignItems: "center",
         justifyContent: "center",
         width: "100%",
-        minHeight: "100dvh",
+        minHeight,
+        flex: 1,
       }}
     >
       <div
