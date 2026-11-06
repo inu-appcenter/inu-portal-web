@@ -15,13 +15,13 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
 
-import { TAB_IMPORTERS } from "@/utils/tabImporters";
+import { TAB_COMPONENTS } from "@/utils/tabImporters";
 
-const MobileTimeTablePage = lazyWithRetry(TAB_IMPORTERS.timetable);
-const MobileBusPage = lazyWithRetry(TAB_IMPORTERS.bus);
-const MobileChatListPage = lazyWithRetry(TAB_IMPORTERS.chat);
-const MobileMyPage = lazyWithRetry(TAB_IMPORTERS.mypage);
-const MobileSavePage = lazyWithRetry(TAB_IMPORTERS.save);
+const MobileTimeTablePage = TAB_COMPONENTS.timetable;
+const MobileBusPage = TAB_COMPONENTS.bus;
+const MobileChatListPage = TAB_COMPONENTS.chat;
+const MobileMyPage = TAB_COMPONENTS.mypage;
+const MobileSavePage = TAB_COMPONENTS.save;
 
 // Lazy-loaded Sub Pages
 const AiPage = lazyWithRetry(() => import("@/pages/desktop/AiPage"));

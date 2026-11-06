@@ -4,7 +4,7 @@ interface NetworkInformationLike {
   saveData?: boolean;
 }
 
-function shouldSkipPrefetch(): boolean {
+export function shouldSkipPrefetch(): boolean {
   if (typeof navigator === "undefined") return true;
   const connection = (navigator as unknown as { connection?: NetworkInformationLike }).connection;
   return Boolean(connection?.saveData);
