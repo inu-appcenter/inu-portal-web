@@ -11,14 +11,16 @@ describe("prefetch utilities", () => {
     });
   });
 
-  it("prefetchNow는 factory 함수를 호출해야 한다", () => {
+  it("prefetchNow는 factory 함수를 호출하고 Promise를 반환해야 한다", async () => {
     const factory = vi.fn().mockResolvedValue({ default: () => null });
-    prefetchNow(factory);
+    const promise = prefetchNow(factory);
     expect(factory).toHaveBeenCalledTimes(1);
+    await expect(promise).resolves.toBeDefined();
 
     // 중복 호출 방지 검증
-    prefetchNow(factory);
+    const secondPromise = prefetchNow(factory);
     expect(factory).toHaveBeenCalledTimes(1);
+    await expect(secondPromise).resolves.toBeUndefined();
   });
 
   it("idlePrefetch는 requestIdleCallback을 통해 실행되어야 한다", () => {

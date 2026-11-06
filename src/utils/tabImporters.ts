@@ -1,4 +1,4 @@
-import { idlePrefetch, prefetchNow } from "@/utils/prefetch";
+import { prefetchNow } from "@/utils/prefetch";
 
 export const TAB_IMPORTERS = {
   timetable: () => import("@/pages/mobile/MobileTimeTablePage"),
@@ -10,15 +10,24 @@ export const TAB_IMPORTERS = {
 
 export type TabKey = keyof typeof TAB_IMPORTERS;
 
+const TAB_ORDER: TabKey[] = ["timetable", "bus", "chat", "mypage", "save"];
+
+let hasStartedPrefetch = false;
+
 /**
- * 첫 렌더링 완료 후 브라우저 유휴 시간에 바텀바 탭 청크 순차 사전 로드
+ * 첫 렌더링 완료 후 빠른 직렬 체이닝으로 바텀바 탭 청크 순차 사전 로드
+ * - 홈 초기 렌더링 및 주요 API 요청 안정화를 위해 300ms 후 시작
+ * - 5개를 한 번에 받지 않고 하나가 완료되면 다음 탭을 즉시 요청하여 대역폭 분산
  */
-export function prefetchMainTabs(): void {
-  idlePrefetch(TAB_IMPORTERS.timetable, 1500);
-  idlePrefetch(TAB_IMPORTERS.bus, 2000);
-  idlePrefetch(TAB_IMPORTERS.chat, 2500);
-  idlePrefetch(TAB_IMPORTERS.mypage, 3000);
-  idlePrefetch(TAB_IMPORTERS.save, 3500);
+export async function prefetchMainTabs(): Promise<void> {
+  if (hasStartedPrefetch) return;
+  hasStartedPrefetch = true;
+
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  for (const key of TAB_ORDER) {
+    await prefetchNow(TAB_IMPORTERS[key]);
+  }
 }
 
 /**
@@ -26,6 +35,7 @@ export function prefetchMainTabs(): void {
  */
 export function prefetchTab(key: TabKey): void {
   if (TAB_IMPORTERS[key]) {
-    prefetchNow(TAB_IMPORTERS[key]);
+    void prefetchNow(TAB_IMPORTERS[key]);
   }
 }
+

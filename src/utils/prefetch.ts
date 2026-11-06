@@ -13,19 +13,15 @@ function shouldSkipPrefetch(): boolean {
 /**
  * 탭 클릭 직전(호버, 터치 시작)에 모듈을 즉시 비동기 로드
  */
-export function prefetchNow(factory: () => Promise<unknown>): void {
-  if (shouldSkipPrefetch()) return;
-  if (prefetchedSet.has(factory)) return;
+export function prefetchNow(factory: () => Promise<unknown>): Promise<unknown> {
+  if (shouldSkipPrefetch()) return Promise.resolve();
+  if (prefetchedSet.has(factory)) return Promise.resolve();
   prefetchedSet.add(factory);
 
-  try {
-    void factory().catch(() => {
-      // 사전 로딩 실패 시 실제 진입 시점에 lazyWithRetry가 다시 시도하도록 세트에서 제거
-      prefetchedSet.delete(factory);
-    });
-  } catch {
+  return factory().catch(() => {
+    // 사전 로딩 실패 시 실제 진입 시점에 lazyWithRetry가 다시 시도하도록 세트에서 제거
     prefetchedSet.delete(factory);
-  }
+  });
 }
 
 /**
