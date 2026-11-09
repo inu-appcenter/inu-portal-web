@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
@@ -25,6 +26,7 @@ import {
   PollNotice,
   PollPage,
   PollPrimaryButton,
+  PollSecondaryButton,
 } from "@/components/mobile/schedulePoll/PollUi";
 import type { PollResult } from "@/types/schedulePolls";
 import {
@@ -55,6 +57,12 @@ const HEAT_LEVELS = [
   "var(--blue-400)",
   "var(--interactive-primary)",
 ];
+
+/** '김유니님만 안 돼요' / '김유니, 최유리님이 안 돼요' */
+const describeUnavailable = (names: string[]) =>
+  names.length === 1
+    ? `${names[0]}님만 안 돼요`
+    : `${names.join(", ")}님이 안 돼요`;
 
 const heatColor = (count: number, total: number) => {
   if (count <= 0 || total <= 0) return "var(--bg-base)";
@@ -220,7 +228,9 @@ function PollResultView({
     row: number;
   } | null>(null);
   const cell = focusedCell?.version === result.version ? focusedCell : null;
-  const [isShareOpen, setIsShareOpen] = useState(false);
+  // 추천만 공유 / 이 시간으로 정하기. 둘 다 같은 결과 공유 API로 채팅방에 보낸다.
+  const [shareMode, setShareMode] = useState<"RECOMMEND" | "DECIDE" | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const top = result.candidates[0];
   const selected =
@@ -231,6 +241,13 @@ function PollResultView({
     : top.allAvailable
       ? `${total}명 모두 되는 시간이에요`
       : `최대 ${top.availableCount}명이 되는 시간이에요`;
+
+  const selectedLabel = selected
+    ? formatColumnName(
+        result.columns.find((c) => c.key === selected.key),
+        selected.key,
+      )
+    : "";
 
   const unavailableNames = (mask: number) =>
     result.participants
@@ -259,7 +276,77 @@ function PollResultView({
           )}
         </Heading>
 
+        <Section>
+          <SectionTitle>
+            추천 시간 <SectionHint>눌러서 하나를 골라요</SectionHint>
+          </SectionTitle>
+          {result.candidates.length === 0 ? (
+            <EmptyCandidates>
+              {formatDuration(result.durationMode, result.durationMin)} 연속으로
+              겹치는 시간이 없어요. 일정을 조금 넓혀 다시 등록해 보세요.
+            </EmptyCandidates>
+          ) : (
+            <CandidateList role="radiogroup" aria-label="추천 시간">
+              {result.candidates.map((candidate) => {
+                const isSelected = candidate.rank === selected?.rank;
+                return (
+                  <CandidateCard
+                    key={candidate.rank}
+                    as="button"
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    $selected={isSelected}
+                    onClick={() =>
+                      setSelection({
+                        version: result.version,
+                        rank: candidate.rank,
+                      })
+                    }
+                  >
+                    <CandidateHead>
+                      <CandidateDay>
+                        {formatColumnName(
+                          result.columns.find((c) => c.key === candidate.key),
+                          candidate.key,
+                        )}
+                      </CandidateDay>
+                      <CandidateTime>
+                        {candidate.start} ~ {candidate.end}
+                      </CandidateTime>
+                      <PollBadge
+                        $tone={candidate.allAvailable ? "brand" : "neutral"}
+                      >
+                        {candidate.availableCount}/{total}명
+                      </PollBadge>
+                    </CandidateHead>
+                    {isSelected ? (
+                      <NameChips>
+                        {namesFromMask(
+                          candidate.availableMask,
+                          result.participants,
+                        ).map((name) => (
+                          <NameChip key={name}>{name}</NameChip>
+                        ))}
+                      </NameChips>
+                    ) : (
+                      !candidate.allAvailable && (
+                        <CandidateCaption>
+                          {describeUnavailable(
+                            unavailableNames(candidate.availableMask),
+                          )}
+                        </CandidateCaption>
+                      )
+                    )}
+                  </CandidateCard>
+                );
+              })}
+            </CandidateList>
+          )}
+        </Section>
+
         <GridSection>
+          <SectionTitle>{formatColumnsSummary(result.columns)}</SectionTitle>
           <PollGridFrame
             shape={shape}
             renderColumn={(column) =>
@@ -328,92 +415,62 @@ function PollResultView({
           </CellPanel>
         </GridSection>
 
-        <Section>
-          <SectionTitle>추천 시간</SectionTitle>
-          {result.candidates.length === 0 ? (
-            <EmptyCandidates>
-              {formatDuration(result.durationMode, result.durationMin)} 연속으로
-              겹치는 시간이 없어요. 일정을 조금 넓혀 다시 등록해 보세요.
-            </EmptyCandidates>
-          ) : (
-            <CandidateList role="radiogroup" aria-label="추천 시간">
-              {result.candidates.map((candidate) => {
-                const isSelected = candidate.rank === selected?.rank;
-                return (
-                  <CandidateCard
-                    key={candidate.rank}
-                    as="button"
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    $selected={isSelected}
-                    onClick={() =>
-                      setSelection({
-                        version: result.version,
-                        rank: candidate.rank,
-                      })
-                    }
-                  >
-                    <CandidateHead>
-                      <CandidateDay>
-                        {formatColumnName(
-                          result.columns.find((c) => c.key === candidate.key),
-                          candidate.key,
-                        )}
-                      </CandidateDay>
-                      <CandidateTime>
-                        {candidate.start} ~ {candidate.end}
-                      </CandidateTime>
-                      <PollBadge
-                        $tone={candidate.allAvailable ? "brand" : "neutral"}
-                      >
-                        {candidate.availableCount}/{total}명
-                      </PollBadge>
-                    </CandidateHead>
-                    <NameChips>
-                      {namesFromMask(
-                        candidate.availableMask,
-                        result.participants,
-                      ).map((name) => (
-                        <NameChip key={name} $available>
-                          {name}
-                        </NameChip>
-                      ))}
-                      {unavailableNames(candidate.availableMask).map((name) => (
-                        <NameChip key={name} $available={false}>
-                          {name}
-                        </NameChip>
-                      ))}
-                    </NameChips>
-                  </CandidateCard>
-                );
-              })}
-            </CandidateList>
-          )}
-        </Section>
       </PollBody>
 
       <PollBottomBar>
+        <PollSecondaryButton
+          type="button"
+          disabled={!selected || total < 2}
+          onClick={() => setShareMode("RECOMMEND")}
+        >
+          추천만 공유
+        </PollSecondaryButton>
         <PollPrimaryButton
           type="button"
           disabled={!selected || total < 2}
-          onClick={() => setIsShareOpen(true)}
+          onClick={() => setIsConfirmOpen(true)}
         >
-          채팅방에 공유하기
+          이 시간으로 정하기
         </PollPrimaryButton>
       </PollBottomBar>
 
+      <Modal
+        isOpen={isConfirmOpen && Boolean(selected)}
+        onClose={() => setIsConfirmOpen(false)}
+        title="이 시간으로 정할까요?"
+        description={
+          selected ? (
+            <>
+              {selectedLabel} {selected.start} ~ {selected.end}
+              <br />
+              정하면 채팅방에 알려요
+            </>
+          ) : undefined
+        }
+        secondaryButton={{ text: "취소", onClick: () => setIsConfirmOpen(false) }}
+        primaryButton={{
+          text: "정하기",
+          onClick: () => {
+            setIsConfirmOpen(false);
+            setShareMode("DECIDE");
+          },
+        }}
+      />
+
       {selected && (
         <SendTargetSheet
-          open={isShareOpen}
-          onOpenChange={setIsShareOpen}
-          title="결과 공유"
+          open={shareMode !== null}
+          onOpenChange={(open) => {
+            if (!open) setShareMode(null);
+          }}
+          title={shareMode === "DECIDE" ? "정한 시간 알리기" : "추천 시간 공유"}
           pollId={pollId}
           linkUrl={linkUrl}
-          shareText={`[INTIP] ${title} — ${formatColumnName(
-            result.columns.find((c) => c.key === selected.key),
-            selected.key,
-          )} ${selected.start}~${selected.end} (${total}명 기준)`}
+          shareText={
+            shareMode === "DECIDE"
+              ? `[INTIP] ${title} — ${selectedLabel} ${selected.start}~${selected.end}로 정했어요`
+              : `[INTIP] ${title} — 추천 시간 ${selectedLabel} ${selected.start}~${selected.end} (${total}명 기준)`
+          }
           kind="RESULT"
           resultVersion={result.version}
           candidateRank={selected.rank}
@@ -421,11 +478,11 @@ function PollResultView({
           preselectedRoomIds={getPollSharedRoomIds(pollId)}
           onSent={(response) => {
             showToast(formatShareResultMessage(response.results, "결과"));
-            setIsShareOpen(false);
+            setShareMode(null);
           }}
           onStale={() => {
             // 그사이 결과가 바뀌었다. 최신 결과를 받아 다시 고르게 한다.
-            setIsShareOpen(false);
+            setShareMode(null);
             onStale();
           }}
         />
@@ -554,7 +611,7 @@ const CandidateList = styled.div`
 
 const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
   ${buttonReset}
-  padding: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -565,8 +622,7 @@ const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
       : "1px solid var(--border-default)"};
   /* 테두리 두께가 바뀌어도 내용이 밀리지 않게 한다 */
   margin: ${({ $selected }) => ($selected ? "-1px" : "0")};
-  background: ${({ $selected }) =>
-    $selected ? "var(--bg-brand)" : "var(--bg-base)"};
+  background: var(--bg-base);
 `;
 
 const CandidateHead = styled.div`
@@ -590,20 +646,28 @@ const CandidateTime = styled.span`
 `;
 
 const NameChips = styled.div`
-  padding-left: 60px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 6px;
 `;
 
-const NameChip = styled.span<{ $available: boolean }>`
-  padding: 4px 9px;
+const NameChip = styled.span`
+  padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid
-    ${({ $available }) =>
-      $available ? "var(--border-brand-subtle)" : "var(--border-default)"};
+  border: 1px solid var(--border-default);
   background: var(--bg-base);
-  color: ${({ $available }) =>
-    $available ? "var(--text-brand)" : "var(--text-disabled)"};
+  color: var(--text-secondary);
+  ${typography.label3}
+`;
+
+const CandidateCaption = styled.span`
+  color: var(--text-tertiary);
+  ${typography.caption1}
+`;
+
+const SectionHint = styled.span`
+  margin-left: 4px;
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;

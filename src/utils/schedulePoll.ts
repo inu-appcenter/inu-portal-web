@@ -65,7 +65,10 @@ export const columnWeekday = (key: string): number => {
   return POLL_DAYS.indexOf(key as PollDay);
 };
 
-/** 조건으로 열 목록을 만든다. 정기는 선택한 요일(월→일), 일회성은 시작일~종료일 전부. */
+/**
+ * 조건으로 열 목록을 만든다. 정기는 선택한 요일(월→일), 일회성은 시작일~종료일 중
+ * 고른 요일의 날짜만(요일을 안 보냈으면 전부).
+ */
 export const buildPollColumns = (input: {
   isRecurring: boolean;
   days: PollDay[] | null;
@@ -87,6 +90,8 @@ export const buildPollColumns = (input: {
     cursor <= end && columns.length < POLL_MAX_ONE_TIME_DAYS;
     cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1)
   ) {
+    const day = POLL_DAYS[(cursor.getDay() + 6) % 7];
+    if (input.days && input.days.length > 0 && !input.days.includes(day)) continue;
     columns.push({
       key: toDateKey(cursor),
       label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${WEEKDAY_LABELS[(cursor.getDay() + 6) % 7]})`,

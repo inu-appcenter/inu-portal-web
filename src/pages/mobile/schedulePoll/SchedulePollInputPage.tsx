@@ -25,18 +25,11 @@ import { useLeaveConfirm } from "@/hooks/useLeaveConfirm";
 import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
-import {
-  WizardCheckbox,
-  WizardToggle,
-} from "@/components/mobile/timetable/wizard/ui";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
-import PollPaintGrid, {
-  type PollPaintMode,
-} from "@/components/mobile/schedulePoll/PollPaintGrid";
+import PollPaintGrid from "@/components/mobile/schedulePoll/PollPaintGrid";
 import {
   PollBody,
   PollBottomBar,
-  PollCard,
   PollNotice,
   PollPage,
   PollPrimaryButton,
@@ -46,18 +39,19 @@ import type {
   PollDetail,
   PollJoinSource,
   PollSubmission,
-  PollSubmitVia,
   SubmitPollRequest,
 } from "@/types/schedulePolls";
 import {
   buildOverlayItems,
+  cellIndex,
   cellsToRanges,
   countCells,
-  formatDeadline,
+  createEmptyCells,
   formatDuration,
-  fullRangeCells,
   getPollGridShape,
+  isDateKey,
   overlayBlockedCells,
+  parseDateKey,
   rangesToCells,
   type PollOverlayItem,
 } from "@/utils/schedulePoll";
@@ -266,7 +260,26 @@ interface PollInputFormProps {
   onLoadLatest: () => void;
 }
 
-type ConfirmKind = "EMPTY" | "ANYTIME" | "CONFLICT" | null;
+type ConfirmKind = "EMPTY" | "UNPAINTED" | "CONFLICT" | null;
+
+const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+
+/** 안 칠한 열들을 '11월 9일 – 11일 중 3일' / '월·수요일'처럼 한 줄로 적는다. */
+const describeColumns = (keys: string[], labels: string[]) => {
+  if (keys.length === 0) return "";
+  if (!isDateKey(keys[0])) return `${labels.join("·")}요일`;
+  const first = parseDateKey(keys[0]);
+  const last = parseDateKey(keys[keys.length - 1]);
+  const head = `${first.getMonth() + 1}월 ${first.getDate()}일`;
+  if (keys.length === 1) return `${head} (${WEEKDAY_LABELS[first.getDay()]})`;
+  const tail =
+    first.getMonth() === last.getMonth()
+      ? `${last.getDate()}일`
+      : `${last.getMonth() + 1}월 ${last.getDate()}일`;
+  return keys.length === 2
+    ? `${head}, ${tail}`
+    : `${head} – ${tail} 중 ${keys.length}일`;
+};
 
 function PollInputForm({
   poll,
@@ -283,28 +296,12 @@ function PollInputForm({
     searchParams.get("src") === "CHAT_CARD" ? "CHAT_CARD" : "LINK";
 
   const shape = useMemo(() => getPollGridShape(poll), [poll]);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-  // 데이터는 '가능 칸 집합' 하나다. 모드는 붓과 표시만 바꾼다(FR-032).
-  const [mode, setMode] = useState<PollPaintMode>("AVAILABLE");
+  // 칠한 칸 = 되는 시간. 처음엔 빈 상태로 시작한다(미리 칠해 두면 확인 없이 등록돼 부풀려진다).
   const [painted, setPainted] = useState<boolean[]>(() =>
     rangesToCells(shape, submission?.available ?? []),
   );
-  const [includedItemIds, setIncludedItemIds] = useState<Set<string>>(
-    () =>
-      new Set(
-        overlayItems
-          .filter(
-            (item) =>
-              item.courseOfferingId != null &&
-              submission?.importedCourseOfferingIds.includes(
-                item.courseOfferingId,
-              ),
-          )
-          .map((item) => item.id),
-      ),
-  );
-  // 시간표 오버레이는 자동으로 켠다(PRD 7장 "입력 부담 최소화").
-  const [isOverlayVisible, setIsOverlayVisible] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
   const [isClosedLocally, setIsClosedLocally] = useState(false);
@@ -313,8 +310,6 @@ function PollInputForm({
     submission?.submissionRevision ?? null,
   );
   const attemptRef = useRef<{ id: string; payload: string } | null>(null);
-  // 충돌 뒤 덮어쓸 때 같은 방식(일반 등록·언제든 괜찮아요)으로 다시 보내기 위해 기억한다.
-  const lastViaRef = useRef<PollSubmitVia>("SUBMIT");
 
   const { data: revision } = usePollRevision(pollId, {
     intervalMs: POLL_INTERVAL.INPUT,
@@ -323,81 +318,67 @@ function PollInputForm({
   const leaveConfirm = useLeaveConfirm(isDirty && !submitMutation.isPending);
 
   const isClosed = isClosedLocally || revision?.status === "CLOSED";
-  const participantCount = revision?.participantCount ?? poll.participantCount;
-  const deadlineAt = revision ? revision.deadlineAt : poll.deadlineAt;
 
-  const blocked = useMemo(
-    () => overlayBlockedCells(shape, overlayItems, includedItemIds),
-    [shape, overlayItems, includedItemIds],
-  );
-
-  /** 지금 화면 상태가 뜻하는 가능 칸. 포함한 수업은 모드와 무관하게 뺀다. */
-  const availableCells = useMemo(
+  /** 대표 시간표 수업이 덮는 칸. '수업 빼고 다 칠하기'에서 비워 둔다. */
+  const classCells = useMemo(
     () =>
-      painted.map(
-        (on, index) => (mode === "AVAILABLE" ? on : !on) && !blocked[index],
+      overlayBlockedCells(
+        shape,
+        overlayItems,
+        new Set(overlayItems.map((item) => item.id)),
       ),
-    [painted, mode, blocked],
+    [shape, overlayItems],
+  );
+  const hasClasses = overlayItems.length > 0;
+  const paintedCount = countCells(painted);
+
+  /** 하나도 안 칠한 열 index. 등록할 때 한 번만 알려 준다. */
+  const unpaintedColumns = useMemo(
+    () =>
+      shape.columns
+        .map((_column, column) => column)
+        .filter((column) => {
+          for (let row = 0; row < shape.rowCount; row += 1) {
+            if (painted[cellIndex(shape, column, row)]) return false;
+          }
+          return true;
+        }),
+    [shape, painted],
   );
 
-  const handleToggleMode = (toUnavailable: boolean) => {
-    const nextMode: PollPaintMode = toUnavailable ? "UNAVAILABLE" : "AVAILABLE";
-    // 이미 칠한 내용이 있으면 가능 칸 집합은 그대로 두고 표시만 뒤집는다.
-    // 아무것도 안 칠했으면 '안 되는 시간만 칠하기'(나머지는 전부 가능)로 바로 쓸 수 있게 빈 채로 둔다.
-    if (painted.some(Boolean)) {
-      setPainted((prev) => prev.map((on, index) => !on && !blocked[index]));
-    }
-    setMode(nextMode);
+  const updatePainted = (next: boolean[]) => {
+    setPainted(next);
     setIsDirty(true);
-    mixpanelTrack.pollModeToggle(pollId, nextMode);
   };
 
-  const handleToggleItem = (itemId: string) => {
-    const willInclude = !includedItemIds.has(itemId);
-    setIncludedItemIds((prev) => {
-      const next = new Set(prev);
-      if (willInclude) next.add(itemId);
-      else next.delete(itemId);
-      return next;
+  /** 되돌리기 알림을 띄우며 칠한 칸을 한 번에 바꾼다. */
+  const replaceWithUndo = (next: boolean[], message: string) => {
+    const before = painted;
+    updatePainted(next);
+    showToast(message, {
+      action: { text: "되돌리기", onClick: () => setPainted(before) },
     });
-    if (willInclude) {
-      // 수업 칸은 불가능으로 고정되므로 그 위에 칠해 둔 내용은 지운다.
-      const item = overlayItems.find((candidate) => candidate.id === itemId);
-      const itemCells = item
-        ? overlayBlockedCells(shape, [item], new Set([itemId]))
-        : [];
-      setPainted((prev) => prev.map((on, index) => on && !itemCells[index]));
-    }
-    setIsDirty(true);
-    mixpanelTrack.pollOverlayToggleCourse(pollId, willInclude);
   };
 
-  const handleResetItems = () => {
-    setIncludedItemIds(new Set());
-    setIsDirty(true);
+  const handleFillAll = () => {
+    // 이미 칠한 칸은 그대로 두고 합친다. 수업 칸은 비워 둔다.
+    replaceWithUndo(
+      painted.map((on, index) => on || !classCells[index]),
+      hasClasses ? "수업 빼고 다 칠했어요" : "다 칠했어요",
+    );
   };
 
-  const buildRequest = (
-    via: PollSubmitVia,
-    base: number | null,
-  ): SubmitPollRequest => {
-    const isAnytime = via === "ANYTIME";
+  const handleReset = () => {
+    replaceWithUndo(createEmptyCells(shape), "모두 지웠어요");
+  };
+
+  const buildRequest = (base: number | null): SubmitPollRequest => {
     const request: Omit<SubmitPollRequest, "clientSubmissionId"> = {
       baseSubmissionRevision: base,
-      via,
-      available: cellsToRanges(
-        shape,
-        isAnytime ? fullRangeCells(shape) : availableCells,
-      ),
-      // 수업 시간은 available에서 이미 뺐다. ID는 다시 들어왔을 때 오버레이를 그리는 용도다.
-      importedCourseOfferingIds: isAnytime
-        ? []
-        : overlayItems
-            .filter(
-              (item) =>
-                includedItemIds.has(item.id) && item.courseOfferingId != null,
-            )
-            .map((item) => item.courseOfferingId as number),
+      via: "SUBMIT",
+      available: cellsToRanges(shape, painted),
+      // 수업을 따로 넣지 않는다. 칠하지 않은 칸이 곧 안 되는 시간이다.
+      importedCourseOfferingIds: [],
       ...(base === null ? { joinSource } : {}),
     };
     // 같은 내용의 재시도(네트워크 실패)는 같은 멱등 키를, 내용이 바뀌면 새 키를 쓴다(FR-116).
@@ -408,11 +389,10 @@ function PollInputForm({
     return { ...request, clientSubmissionId: attemptRef.current.id };
   };
 
-  const submit = (via: PollSubmitVia, base: number | null = baseRevision) => {
+  const submit = (base: number | null = baseRevision) => {
     if (submitMutation.isPending || isClosed) return;
     setConfirm(null);
-    lastViaRef.current = via;
-    const request = buildRequest(via, base);
+    const request = buildRequest(base);
 
     submitMutation.mutate(request, {
       onSuccess: (response) => {
@@ -426,11 +406,9 @@ function PollInputForm({
         }
         mixpanelTrack.pollSubmit({
           pollId,
-          availableCount: request.available.length
-            ? countCells(rangesToCells(shape, request.available))
-            : 0,
-          importedCount: request.importedCourseOfferingIds?.length ?? 0,
-          via,
+          availableCount: paintedCount,
+          importedCount: 0,
+          via: "SUBMIT",
           isUpdate: !response.isFirstSubmission,
         });
         // 응답을 받은 뒤에만 등록 완료로 표시한다(낙관적 표시 금지).
@@ -469,7 +447,7 @@ function PollInputForm({
             showToast(getPollErrorMessage(error, "등록하지 못했어요"), {
               action: {
                 text: "다시 시도",
-                onClick: () => submitRef.current(via),
+                onClick: () => submitRef.current(),
               },
             });
         }
@@ -484,19 +462,24 @@ function PollInputForm({
   });
 
   const handleSubmitClick = () => {
-    if (countCells(availableCells) === 0) {
+    if (paintedCount === 0) {
       setConfirm("EMPTY");
       return;
     }
-    submit("SUBMIT");
-  };
-
-  const handleAnytimeClick = () => {
-    if (includedItemIds.size > 0) {
-      setConfirm("ANYTIME");
+    if (unpaintedColumns.length > 0) {
+      setConfirm("UNPAINTED");
       return;
     }
-    submit("ANYTIME");
+    submit();
+  };
+
+  /** [칠하러 가기]: 안 칠한 첫 날짜가 보이게 그리드를 밀어 준다. */
+  const handleGoPaint = () => {
+    setConfirm(null);
+    const target = gridRef.current?.querySelector<HTMLElement>(
+      `[data-poll-column="${unpaintedColumns[0]}"]`,
+    );
+    target?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   };
 
   /** 다른 기기에서 먼저 등록한 내용을 불러온다. 부모가 폼을 새로 만든다. */
@@ -512,7 +495,7 @@ function PollInputForm({
       const latest = await getMyPollSubmission(pollId);
       const latestRevision = latest?.submissionRevision ?? null;
       setBaseRevision(latestRevision);
-      submit(lastViaRef.current, latestRevision);
+      submit(latestRevision);
     } catch {
       showToast("최신 내용을 확인하지 못했어요. 잠시 후 다시 시도해 주세요");
       void refetchPollRevision(queryClient, pollId);
@@ -520,128 +503,78 @@ function PollInputForm({
   };
 
   const isLocked = isClosed || submitMutation.isPending;
+  const unpaintedText = describeColumns(
+    unpaintedColumns.map((column) => shape.columns[column].key),
+    unpaintedColumns.map((column) => shape.columns[column].label),
+  );
 
   return (
     <PollPage>
-      <PollBody>
-        <MetaLine>
-          <span>
-            {participantCount}명 참여 · 최대 {poll.maxParticipants}명
-          </span>
-          {deadlineAt && <span>마감 {formatDeadline(deadlineAt)}</span>}
-        </MetaLine>
-
+      <PollBody $gap={12}>
         {isClosed && (
           <ClosedBanner role="status">
             종료된 시간 맞추기예요. 입력한 내용은 등록되지 않아요.
           </ClosedBanner>
         )}
 
-        {hasPrimaryTimetable ? (
-          <OverlayCard
-            as="button"
-            type="button"
-            role="checkbox"
-            aria-checked={isOverlayVisible}
-            onClick={() => setIsOverlayVisible((prev) => !prev)}
-          >
-            <CardText>
-              <CardTitle>내 시간표 표시</CardTitle>
-              <CardDescription>
-                수업을 누르면 그 시간은 불가능으로 들어가요
-              </CardDescription>
-            </CardText>
-            <WizardCheckbox checked={isOverlayVisible} />
-          </OverlayCard>
-        ) : (
-          <OverlayCard
-            as="button"
+        {!hasPrimaryTimetable && (
+          <ImportBanner
             type="button"
             onClick={() => navigate(ROUTES.TIMETABLE.IMPORT_HUB)}
           >
-            <CardText>
-              <CardTitle>시간표 불러오기</CardTitle>
-              <CardDescription>
-                시간표를 불러오면 수업을 한 번 눌러 불가능 시간으로 넣을 수 있어요
-              </CardDescription>
-            </CardText>
-            <CardAction>불러오기</CardAction>
-          </OverlayCard>
+            <span>시간표를 불러오면 수업이 회색으로 표시돼요</span>
+            <ImportAction>불러오기</ImportAction>
+          </ImportBanner>
         )}
 
-        <ModeHint>
-          <ModeText>
-            <ModeTitle id="poll-mode-label">
-              {mode === "AVAILABLE"
-                ? "되는 시간을 칠해 주세요"
-                : "안 되는 시간을 칠해 주세요"}
-            </ModeTitle>
-            <ModeDescription>
-              {formatDuration(poll.durationMode, poll.durationMin)} 연속으로 비는
-              시간을 찾아요
-            </ModeDescription>
-          </ModeText>
-          <ModeToggle>
-            <span>안 되는 시간 칠하기</span>
-            <WizardToggle
-              checked={mode === "UNAVAILABLE"}
-              onCheckedChange={handleToggleMode}
-              disabled={isLocked}
-              aria-label="안 되는 시간 칠하기 모드"
-            />
-          </ModeToggle>
-        </ModeHint>
+        <GuideHeader>
+          <TitleRow>
+            <GuideTitle>되는 시간을 칠해 주세요</GuideTitle>
+            <Legend>
+              <LegendItem>
+                <Swatch $color="var(--blue-300)" />
+                돼요
+              </LegendItem>
+              {hasClasses && (
+                <LegendItem>
+                  <Swatch $color="var(--bg-disabled)" />
+                  수업
+                </LegendItem>
+              )}
+            </Legend>
+          </TitleRow>
+          <TitleRow>
+            <GuideDescription>
+              꾹 눌러 끌면 칠해지고, 칠한 칸에서 끌면 지워져요
+            </GuideDescription>
+            <ResetButton
+              type="button"
+              disabled={isLocked || paintedCount === 0}
+              onClick={handleReset}
+            >
+              <ResetIcon aria-hidden>↻</ResetIcon>
+              초기화
+            </ResetButton>
+          </TitleRow>
+        </GuideHeader>
 
-        <GridSection>
+        <div ref={gridRef}>
           <PollPaintGrid
             shape={shape}
             painted={painted}
-            mode={mode}
-            blocked={blocked}
-            overlayItems={isOverlayVisible ? overlayItems : []}
-            includedItemIds={includedItemIds}
+            overlayItems={overlayItems}
             disabled={isLocked}
-            onPaintedChange={(next) => {
-              setPainted(next);
-              setIsDirty(true);
-            }}
-            onToggleItem={handleToggleItem}
+            onPaintedChange={updatePainted}
           />
-          {/* 범례는 항상 보여 준다(모드 혼동 방지) */}
-          <Legend>
-            <LegendItem>
-              <Swatch $color="var(--bg-disabled)" />
-              불러온 수업
-            </LegendItem>
-            <LegendItem>
-              <Swatch
-                $color={mode === "AVAILABLE" ? "var(--blue-200)" : "var(--red-80)"}
-              />
-              직접 칠한 시간({mode === "AVAILABLE" ? "가능" : "불가능"})
-            </LegendItem>
-            {includedItemIds.size > 0 && (
-              <ResetButton
-                type="button"
-                disabled={isLocked}
-                onClick={handleResetItems}
-              >
-                수업 초기화
-              </ResetButton>
-            )}
-          </Legend>
-          <GestureHint>
-            칸을 누르거나, 길게 누른 뒤 끌어서 한 번에 칠할 수 있어요
-          </GestureHint>
-        </GridSection>
+        </div>
+        <GestureHint>
+          {formatDuration(poll.durationMode, poll.durationMin)} 연속으로 비는 시간을 찾아요
+        </GestureHint>
       </PollBody>
 
       <PollBottomBar>
-        <PollSecondaryButton
-          type="button"
-          disabled={isLocked}
-          onClick={handleAnytimeClick}
-        >
-          언제든 괜찮아요
+        <PollSecondaryButton type="button" disabled={isLocked} onClick={handleFillAll}>
+          {hasClasses ? "수업 빼고 다 칠하기" : "다 칠하기"}
         </PollSecondaryButton>
         <PollPrimaryButton
           type="button"
@@ -659,18 +592,18 @@ function PollInputForm({
       <Modal
         isOpen={confirm === "EMPTY"}
         onClose={() => setConfirm(null)}
-        title="가능한 시간이 없어요"
-        description="이대로 등록하면 모든 시간이 불가능으로 들어가요."
+        title="칠한 시간이 없어요"
+        description="이대로 등록하면 모든 시간이 안 되는 시간으로 들어가요."
         secondaryButton={{ text: "다시 입력", onClick: () => setConfirm(null) }}
-        primaryButton={{ text: "그대로 등록", onClick: () => submit("SUBMIT") }}
+        primaryButton={{ text: "그대로 등록", onClick: () => submit() }}
       />
       <Modal
-        isOpen={confirm === "ANYTIME"}
+        isOpen={confirm === "UNPAINTED"}
         onClose={() => setConfirm(null)}
-        title="언제든 괜찮아요로 등록할까요?"
-        description="불러온 수업 시간까지 포함해 범위 전체를 가능으로 등록해요."
-        secondaryButton={{ text: "취소", onClick: () => setConfirm(null) }}
-        primaryButton={{ text: "전체 가능으로 등록", onClick: () => submit("ANYTIME") }}
+        title={`${unpaintedText}을 아직 안 칠했어요`}
+        description="그대로 등록하면 그날은 안 되는 시간으로 들어가요."
+        secondaryButton={{ text: "그대로 등록", onClick: () => submit() }}
+        primaryButton={{ text: "칠하러 가기", onClick: handleGoPaint }}
       />
       <Modal
         isOpen={confirm === "CONFLICT"}
@@ -698,15 +631,6 @@ function PollInputForm({
   );
 }
 
-const MetaLine = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 0 4px;
-  color: var(--text-tertiary);
-  ${typography.caption1}
-`;
-
 const ClosedBanner = styled.div`
   padding: 12px 14px;
   border-radius: 12px;
@@ -716,110 +640,83 @@ const ClosedBanner = styled.div`
   ${typography.label2}
 `;
 
-const OverlayCard = styled(PollCard)`
+const ImportBanner = styled.button`
   ${buttonReset}
-  padding: 12px;
+  width: 100%;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  text-align: left;
-  border: 1px solid var(--border-default);
-  background: var(--bg-base);
-`;
-
-const CardText = styled.span`
-  flex: 1 0 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const CardTitle = styled.span`
-  color: var(--text-secondary);
-  ${typography.heading3}
-  line-height: 1.6;
-`;
-
-const CardDescription = styled.span`
-  color: var(--text-tertiary);
-  ${typography.caption1}
-`;
-
-const CardAction = styled.span`
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--bg-brand);
-  color: var(--text-brand);
+  color: var(--text-secondary);
+  text-align: left;
   ${typography.label3}
 `;
 
-const ModeHint = styled.div`
-  padding: 10px;
+const ImportAction = styled.span`
+  flex-shrink: 0;
+  color: var(--text-brand);
+  ${typography.label3}
+  font-weight: 700;
+`;
+
+const GuideHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 4px 0;
+`;
+
+const TitleRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 `;
 
-const ModeText = styled.div`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const ModeTitle = styled.span`
+const GuideTitle = styled.h2`
+  margin: 0;
   color: var(--text-primary);
   ${typography.heading2}
 `;
 
-const ModeDescription = styled.span`
-  color: var(--text-tertiary);
+const GuideDescription = styled.p`
+  margin: 0;
+  min-width: 0;
+  color: var(--text-secondary);
   ${typography.caption1}
-`;
-
-const ModeToggle = styled.div`
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  color: var(--text-tertiary);
-  ${typography.caption1}
-`;
-
-const GridSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 `;
 
 const Legend = styled.div`
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 `;
 
 const LegendItem = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--text-secondary);
-  ${typography.label3}
+  ${typography.caption1}
 `;
 
 const Swatch = styled.span<{ $color: string }>`
-  width: 14px;
-  height: 10px;
-  border-radius: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   background: ${({ $color }) => $color};
 `;
 
 const ResetButton = styled.button`
   ${buttonReset}
-  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   color: var(--text-brand);
   ${typography.label3}
 
@@ -828,8 +725,14 @@ const ResetButton = styled.button`
   }
 `;
 
+const ResetIcon = styled.span`
+  font-size: 14px;
+  line-height: 1;
+`;
+
 const GestureHint = styled.p`
   margin: 0;
+  padding: 0 4px;
   color: var(--text-tertiary);
   ${typography.caption1}
 `;

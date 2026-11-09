@@ -10,9 +10,13 @@ import {
 
 /** 30분 칸 높이 (Figma TimeTable_Grid: 1시간 40px) */
 export const POLL_ROW_HEIGHT = 20;
-const TIME_LABEL_WIDTH = 20;
-/** 이 너비보다 좁아지면 열을 줄이지 않고 가로 스크롤한다(일회성 최대 14일) */
-const MIN_COLUMN_WIDTH = 44;
+const TIME_LABEL_WIDTH = 24;
+/**
+ * 한 화면에 보이는 열 수. 이보다 많으면 날짜를 한 줄로 이어 가로 스크롤하고,
+ * 다음 열이 반 칸 보이게 해서 옆으로 이어진다는 걸 알려 준다(Figma 가로 스크롤안 ①).
+ */
+const VISIBLE_COLUMNS = 7;
+const PEEK_COLUMNS = 0.5;
 
 const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
@@ -37,22 +41,48 @@ const PollGridFrame = forwardRef<HTMLDivElement, PollGridFrameProps>(
       return { hour: Math.floor(minutes / 60), onTheHour: minutes % 60 === 0 };
     });
 
+    // 날짜 열에서 주가 바뀌는 곳(직전 열보다 요일이 앞서는 곳)에 진한 선을 긋는다.
+    const weekStarts = shape.columns.map((column, index) => {
+      if (index === 0 || !isDateKey(column.key)) return false;
+      const prev = shape.columns[index - 1].key;
+      return (
+        isDateKey(prev) &&
+        (parseDateKey(column.key).getDay() + 6) % 7 <=
+          (parseDateKey(prev).getDay() + 6) % 7
+      );
+    });
+
     return (
       <Scroller className={className}>
-        <Table $minWidth={TIME_LABEL_WIDTH + shape.columns.length * MIN_COLUMN_WIDTH}>
+        <Table
+          style={
+            shape.columns.length > VISIBLE_COLUMNS
+              ? {
+                  width: `calc(${TIME_LABEL_WIDTH}px + (100% - ${TIME_LABEL_WIDTH}px) * ${
+                    shape.columns.length / (VISIBLE_COLUMNS + PEEK_COLUMNS)
+                  })`,
+                }
+              : undefined
+          }
+        >
           <HeaderRow>
             <Corner />
-            {shape.columns.map((column) => {
+            {shape.columns.map((column, index) => {
               const dated = isDateKey(column.key);
               const date = dated ? parseDateKey(column.key) : null;
               return (
-                <HeaderCell key={column.key} $tall={dated}>
+                <HeaderCell
+                  key={column.key}
+                  $tall={dated}
+                  $weekStart={weekStarts[index]}
+                  $muted={date?.getDay() === 0 || date?.getDay() === 6}
+                >
                   {date ? (
                     <>
-                      <span>{WEEKDAY_LABELS[(date.getDay() + 6) % 7]}</span>
                       <DateLabel>
                         {date.getMonth() + 1}/{date.getDate()}
                       </DateLabel>
+                      <span>{WEEKDAY_LABELS[(date.getDay() + 6) % 7]}</span>
                     </>
                   ) : (
                     <span>{column.label}</span>
@@ -74,7 +104,13 @@ const PollGridFrame = forwardRef<HTMLDivElement, PollGridFrameProps>(
             </TimeColumn>
             <Columns ref={ref} {...bodyProps}>
               {shape.columns.map((column, index) => (
-                <Column key={column.key}>{renderColumn(index)}</Column>
+                <Column
+                  key={column.key}
+                  data-poll-column={index}
+                  $weekStart={weekStarts[index]}
+                >
+                  {renderColumn(index)}
+                </Column>
               ))}
             </Columns>
           </Body>
@@ -108,8 +144,8 @@ const Scroller = styled.div`
   -webkit-overflow-scrolling: touch;
 `;
 
-const Table = styled.div<{ $minWidth: number }>`
-  min-width: ${({ $minWidth }) => $minWidth}px;
+const Table = styled.div`
+  min-width: 100%;
   display: flex;
   flex-direction: column;
 `;
@@ -120,6 +156,9 @@ const HeaderRow = styled.div`
 `;
 
 const Corner = styled.div`
+  position: sticky;
+  left: 0;
+  z-index: 2;
   flex-shrink: 0;
   width: ${TIME_LABEL_WIDTH}px;
   box-sizing: border-box;
@@ -128,7 +167,11 @@ const Corner = styled.div`
   border-bottom: 1px solid var(--border-default);
 `;
 
-const HeaderCell = styled.div<{ $tall: boolean }>`
+const HeaderCell = styled.div<{
+  $tall: boolean;
+  $weekStart: boolean;
+  $muted: boolean;
+}>`
   flex: 1 0 0;
   min-width: 0;
   height: ${({ $tall }) => ($tall ? 36 : 20)}px;
@@ -140,7 +183,9 @@ const HeaderCell = styled.div<{ $tall: boolean }>`
   background: var(--bg-base);
   border-right: 1px solid var(--border-default);
   border-bottom: 1px solid var(--border-default);
-  color: var(--text-tertiary);
+  border-left: ${({ $weekStart }) =>
+    $weekStart ? "1px solid var(--border-strong)" : "none"};
+  color: ${({ $muted }) => ($muted ? "var(--text-disabled)" : "var(--text-tertiary)")};
   text-align: center;
   white-space: nowrap;
   ${typography.label3}
@@ -151,7 +196,7 @@ const HeaderCell = styled.div<{ $tall: boolean }>`
 `;
 
 const DateLabel = styled.span`
-  color: var(--text-secondary);
+  ${typography.caption1}
 `;
 
 const Body = styled.div`
@@ -159,7 +204,12 @@ const Body = styled.div`
   align-items: flex-start;
 `;
 
+// 시간 열은 왼쪽에 고정하고, 밑으로 지나가는 열이 있다는 걸 그림자로 보여 준다.
 const TimeColumn = styled.div`
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
   flex-shrink: 0;
   width: ${TIME_LABEL_WIDTH}px;
 `;
@@ -183,8 +233,10 @@ const Columns = styled.div`
   display: flex;
 `;
 
-const Column = styled.div`
+const Column = styled.div<{ $weekStart: boolean }>`
   position: relative;
+  border-left: ${({ $weekStart }) =>
+    $weekStart ? "1px solid var(--border-strong)" : "none"};
   flex: 1 0 0;
   min-width: 0;
 

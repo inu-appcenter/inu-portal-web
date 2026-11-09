@@ -260,13 +260,10 @@ export default function SchedulePollStatusPage() {
                     </ParticipantCaption>
                   )}
                 </ParticipantText>
-                {participant.isHost ? (
-                  <PollBadge $tone="brand">개설자</PollBadge>
-                ) : (
-                  <SubmittedAt>
-                    {formatSubmittedAt(participant.submittedAt)}
-                  </SubmittedAt>
-                )}
+                <SubmittedAt>
+                  {participant.isHost && "개설자 · "}
+                  {formatSubmittedAt(participant.submittedAt)}
+                </SubmittedAt>
               </ParticipantRow>
             ))}
           </ParticipantList>
@@ -282,7 +279,7 @@ export default function SchedulePollStatusPage() {
             </SectionHeader>
             {!isClosed && (
               <SectionHint>
-                새로 등록하거나 수정하면 결과가 바뀔 수 있어요
+                사람이 더 들어오면 결과가 바뀔 수 있어요
               </SectionHint>
             )}
             {result.candidates.length > 0 ? (
@@ -332,9 +329,11 @@ export default function SchedulePollStatusPage() {
 
       <PollBottomBar
         caption={
-          !isClosed && isParticipant && !hasResult
-            ? "2명 이상 모이면 결과를 볼 수 있어요"
-            : undefined
+          isClosed || !isParticipant
+            ? undefined
+            : hasResult && result
+              ? `지금까지 등록한 ${result.participants.length}명 기준으로 보여 줘요`
+              : "2명 이상 모이면 결과를 볼 수 있어요"
         }
       >
         {isClosed ? (
@@ -475,17 +474,15 @@ const MetaRow = styled.div`
 const InviteButton = styled.button<{ $emphasized: boolean }>`
   ${buttonReset}
   flex-shrink: 0;
-  height: 36px;
-  padding: 0 16px;
+  height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid
-    ${({ $emphasized }) =>
-      $emphasized ? "var(--border-brand)" : "var(--border-default)"};
+  border: 1px solid var(--border-brand);
   background: ${({ $emphasized }) =>
     $emphasized ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $emphasized }) =>
-    $emphasized ? "var(--text-inverse)" : "var(--text-secondary)"};
-  ${typography.label2}
+    $emphasized ? "var(--text-inverse)" : "var(--text-brand)"};
+  ${typography.label3}
 `;
 
 const InviteCard = styled.div`
@@ -583,7 +580,7 @@ const SectionTitle = styled.h3`
 const SectionHint = styled.p`
   margin: 0;
   padding: 0 8px;
-  color: var(--text-warn);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
