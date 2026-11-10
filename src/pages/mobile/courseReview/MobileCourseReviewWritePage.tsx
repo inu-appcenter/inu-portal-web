@@ -354,19 +354,22 @@ export default function MobileCourseReviewWritePage() {
         </CountRow>
       </FormSection>
 
-      {/* 5. 하단 고정 제출 CTA */}
+      {/* 5. 하단 순수 플로팅 제출 CTA */}
       <BottomActionWrapper>
-        <ButtonContainer>
+        <FloatingButtonContainer>
           <CapsuleButton
             variant="primary"
             fullWidth
             disabled={!isFormValid || createMutation.isPending}
             loading={createMutation.isPending}
             onClick={handleSubmit}
+            style={{
+              boxShadow: "0 6px 20px rgba(49, 130, 246, 0.35)",
+            }}
           >
             강의평 등록하기
           </CapsuleButton>
-        </ButtonContainer>
+        </FloatingButtonContainer>
       </BottomActionWrapper>
     </PageWrapper>
   );
@@ -377,12 +380,11 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  min-height: 100vh;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 40px);
+  padding: 0 ${MOBILE_PAGE_GUTTER} calc(90px + env(safe-area-inset-bottom, 0px));
   gap: 16px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(var(--nav-height, 100px) + 60px);
+    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
@@ -577,11 +579,11 @@ const BottomActionWrapper = styled.div`
   z-index: 100;
 `;
 
-const ButtonContainer = styled.div`
+const FloatingButtonContainer = styled.div`
   width: 100%;
   max-width: 440px;
-  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 0 20px calc(16px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   pointer-events: auto;
-  background: var(--bg-base, #f9fafb);
+  background: transparent;
 `;

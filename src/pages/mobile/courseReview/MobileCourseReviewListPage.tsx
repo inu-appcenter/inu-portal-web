@@ -5,7 +5,6 @@ import { useHeader } from "@/context/HeaderContext";
 import TabUpper from "@/components/common/TabUpper";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Skeleton from "@/components/common/Skeleton";
-import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -60,6 +59,45 @@ export default function MobileCourseReviewListPage() {
       });
     return Array.from(set);
   }, [courseOfferings, courseId]);
+
+  // 해당 과목의 개설강좌 목록
+  const matchingOfferings = useMemo(() => {
+    return courseOfferings.filter((o) => o.courseId === courseId);
+  }, [courseOfferings, courseId]);
+
+  // 선택된 교수 또는 첫 번째 개설강좌
+  const selectedOffering = useMemo(() => {
+    if (selectedProfessorTab !== "all") {
+      return (
+        matchingOfferings.find((o) => o.professor?.trim() === selectedProfessorTab) ||
+        matchingOfferings[0]
+      );
+    }
+    return matchingOfferings[0];
+  }, [matchingOfferings, selectedProfessorTab]);
+
+  const targetOfferingId = selectedOffering?.id;
+  const professorDisplay =
+    selectedProfessorTab !== "all"
+      ? `${selectedProfessorTab} 교수`
+      : availableProfessors.length > 0
+        ? `${availableProfessors.join(", ")} 교수`
+        : "-";
+
+  const handleSyllabusClick = () => {
+    if (!targetOfferingId) {
+      alert("개설강의 정보가 없어 강의계획서를 열 수 없어요.");
+      return;
+    }
+    navigate(ROUTES.TIMETABLE.SYLLABUS, {
+      state: {
+        courseOfferingId: targetOfferingId,
+        courseName: courseTitle,
+        professor: selectedOffering?.professor || (selectedProfessorTab !== "all" ? selectedProfessorTab : undefined),
+        courseId,
+      },
+    });
+  };
 
   // TabUpper 용 탭 아이템
   const professorTabs = useMemo(() => {
@@ -145,7 +183,49 @@ export default function MobileCourseReviewListPage() {
 
   return (
     <PageWrapper>
-      {/* 1. 상단 교수별 필터 탭 (공용 TabUpper) */}
+      {/* 1. 과목 기본 정보 카드 (교수, 학점, 이수구분, 학과 + 강의계획서 바로가기) */}
+      <CourseInfoCard>
+        <CourseInfoHeader>
+          <CourseTitleArea>
+            <CourseMainTitle>{courseTitle}</CourseMainTitle>
+            <ProfessorText>{professorDisplay}</ProfessorText>
+          </CourseTitleArea>
+          {targetOfferingId && (
+            <SyllabusLinkButton type="button" onClick={handleSyllabusClick}>
+              강의계획서 보기 ›
+            </SyllabusLinkButton>
+          )}
+        </CourseInfoHeader>
+        <MetaChipRow>
+          {currentCourse?.credit && (
+            <MetaChip>{currentCourse.credit}학점</MetaChip>
+          )}
+          {(currentCourse?.completionDivisionName || selectedOffering?.isuName) && (
+            <MetaChip>
+              {currentCourse?.completionDivisionName || selectedOffering?.isuName}
+            </MetaChip>
+          )}
+          {(currentCourse?.departmentName || selectedOffering?.deptName) && (
+            <MetaChip>
+              {currentCourse?.departmentName || selectedOffering?.deptName}
+            </MetaChip>
+          )}
+          {(currentCourse?.targetGradeName || selectedOffering?.hyName) && (
+            <MetaChip>
+              {currentCourse?.targetGradeName
+                ? currentCourse.targetGradeName.includes("학년")
+                  ? currentCourse.targetGradeName
+                  : `${currentCourse.targetGradeName}학년`
+                : `${selectedOffering?.hyName}학년`}
+            </MetaChip>
+          )}
+          {selectedOffering?.gradeEvaluationName && (
+            <MetaChip>{selectedOffering.gradeEvaluationName}</MetaChip>
+          )}
+        </MetaChipRow>
+      </CourseInfoCard>
+
+      {/* 2. 상단 교수별 필터 탭 (공용 TabUpper) */}
       {availableProfessors.length > 1 && (
         <TabArea>
           <TabUpper
@@ -156,7 +236,7 @@ export default function MobileCourseReviewListPage() {
         </TabArea>
       )}
 
-      {/* 2. 컴팩트 평점 요약 카드 (상세 통계는 바텀시트로 분리하여 호흡 조절) */}
+      {/* 3. 컴팩트 평점 요약 카드 (상세 통계는 바텀시트로 분리하여 호흡 조절) */}
       <SummaryCard>
         {isSummaryLoading ? (
           <Skeleton width="100%" height={90} style={{ borderRadius: "16px" }} />
@@ -191,7 +271,7 @@ export default function MobileCourseReviewListPage() {
         )}
       </SummaryCard>
 
-      {/* 3. 리뷰 리스트 본문 */}
+      {/* 4. 리뷰 리스트 본문 */}
       <ListArea>
         {isReviewsLoading ? (
           <SkeletonWrapper>
@@ -217,10 +297,9 @@ export default function MobileCourseReviewListPage() {
         )}
       </ListArea>
 
-      {/* 4. 하단 고정 작성 CTA (공용 CapsuleButton + 하단 페이드) */}
+      {/* 5. 하단 플로팅 작성 CTA (주변 배경 박스 없이 버튼만 플로팅) */}
       <BottomActionWrapper>
-        <BottomScrollEdgeFade />
-        <ButtonContainer>
+        <FloatingButtonContainer>
           <CapsuleButton
             variant="primary"
             fullWidth
@@ -228,7 +307,7 @@ export default function MobileCourseReviewListPage() {
           >
             이 강의 후기 작성하기
           </CapsuleButton>
-        </ButtonContainer>
+        </FloatingButtonContainer>
       </BottomActionWrapper>
 
       {/* 5. 평가 분석 상세 바텀시트 (공용 BottomSheet로 정보 분산) */}
@@ -285,12 +364,86 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  min-height: 100vh;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
+  padding: 0 ${MOBILE_PAGE_GUTTER} calc(80px + env(safe-area-inset-bottom, 0px));
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(var(--nav-height, 100px) + 40px);
+    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
   }
+`;
+
+const CourseInfoCard = styled.div`
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const CourseInfoHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const CourseTitleArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const CourseMainTitle = styled.h2`
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+`;
+
+const ProfessorText = styled.span`
+  font-size: 13px;
+  color: var(--text-secondary);
+`;
+
+const SyllabusLinkButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-subtle, #f2f4f6);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:active {
+    transform: scale(0.96);
+  }
+`;
+
+const MetaChipRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const MetaChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: var(--bg-subtle, #f2f4f6);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
 `;
 
 const TabArea = styled.div`
@@ -384,7 +537,7 @@ const ListArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-bottom: 80px;
+  padding-bottom: 24px;
 `;
 
 const SkeletonWrapper = styled.div`
@@ -399,19 +552,22 @@ const BottomActionWrapper = styled.div`
   left: 0;
   right: 0;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  padding: 0 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
   pointer-events: none;
   z-index: 100;
 `;
 
-const ButtonContainer = styled.div`
+const FloatingButtonContainer = styled.div`
   width: 100%;
   max-width: 440px;
-  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
   pointer-events: auto;
-  background: var(--bg-base, #f9fafb);
+
+  button {
+    box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35);
+  }
 `;
 
 const ReportDialogOverlay = styled.div`
