@@ -21,3 +21,18 @@
 ## 제약
 
 - 이 프로젝트는 React 18 고정. react-native / react-native-webview가 의존성 트리에 나타나면 안 된다.
+
+## 프론트엔드 서브페이지(SubLayout) 3대 레이아웃/스타일 불변 원칙
+
+1. **상단 헤더 여백 이중 적용 금지 (`padding-top: 0` 필수)**
+   - `SubLayout`의 `ContentArea`에서 이미 `--header-height + 12px` 만큼의 `padding-top`을 자동으로 적용하고 있습니다.
+   - 개별 서브페이지의 최상단 래퍼(`PageWrapper` 등)에서 `calc(var(--header-height) + ...)`나 임의의 상단 마진/패딩을 추가하면 상단 여백이 2배로 벌어져 콘텐츠가 비정상적으로 밑에서 시작합니다. 서브페이지 최상단 패딩은 반드시 `padding: 0 ...`으로 시작하세요 (`src/pages/mobile/timetable/MobileSyllabusPage.tsx` 참고).
+
+2. **페이지 배경색 개별 하드코딩 금지 및 전역 레이아웃 위임**
+   - 페이지 배경색은 `RootLayout` 및 `SubLayout`(`LayoutContainer`)에서 전역 테마 토큰(`var(--bg-muted)`, `var(--bg-base)` 등)으로 일괄 관리합니다.
+   - 개별 페이지의 최상단 컨테이너에 `background: var(--bg-base)` 등을 이중으로 덧칠하지 마세요. 특정 페이지에만 전용 배경색이 필요하다면 `useHeader({ pageBgColor })`를 통해 선언하세요.
+
+3. **하단 고정 CTA(Bottom Floating Button) 규격: `z-index: 100` 및 페이드 제외 필수**
+   - 전역 레이아웃(`RootLayout`)에 스크롤 엣지 페이드 효과(`BottomScrollEdgeFade`, `z-index: 45`)가 동작하고 있습니다.
+   - 하단 고정 CTA 컨테이너(`BottomActionWrapper`, `FixedBottomCTA` 등)는 반드시 **`z-index: 100`** 이상을 주어야 하단 그라디언트에 덮이지 않습니다.
+   - 또한 `src/components/common/BottomScrollEdgeFade.tsx`의 `isBottomEdgeFadeExcluded` 함수에 해당 페이지 경로를 제외 항목으로 등록하여 불필요한 하단 페이드 오버레이가 생기지 않도록 하세요.
