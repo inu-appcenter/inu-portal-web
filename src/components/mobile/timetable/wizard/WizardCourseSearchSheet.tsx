@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import styled from "styled-components";
 import { SAFE_AREA } from "@/styles/safeArea";
 import { Sheet, SheetRef } from "react-modal-sheet";
@@ -69,31 +68,39 @@ const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
-const LECTURE_REVIEW_NOTICE_MESSAGE =
-  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
 const SHEET_TITLES: Record<"wishlist" | "exclusion", string> = {
   wishlist: "듣고 싶은 강의 선택",
   exclusion: "빼고 싶은 강의 선택",
 };
 
-const openLectureReview = (professor: string) => {
-  const professorName = professor?.trim() || "";
-  if (!professorName) {
-    alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+const openLectureReview = (
+  row: CourseRow,
+  navigate: (path: string, options?: any) => void,
+) => {
+  if (row.courseId) {
+    navigate(ROUTES.COURSE.REVIEW(row.courseId), {
+      state: {
+        courseName: row.title,
+        professorName: row.professor?.trim() !== "-" ? row.professor.trim() : undefined,
+      },
+    });
     return;
   }
 
-  if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
-    alert(LECTURE_REVIEW_NOTICE_MESSAGE);
+  const professorName = row.professor?.trim() || "";
+  if (professorName && professorName !== "-") {
+    const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
   }
 
-  const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
-  window.open(url, "_blank", "noopener,noreferrer");
+  alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
 };
 
 interface CourseRow {
   offeringId: number;
+  courseId: number;
   subjectNumber: string;
   title: string;
   professor: string;
@@ -134,6 +141,7 @@ export const buildCourseRow = (
 
   return {
     offeringId: offering.id,
+    courseId: offering.courseId,
     subjectNumber: offering.subjectNumber,
     title: option.title,
     professor: offering.professor ?? "-",
@@ -465,7 +473,7 @@ const WizardCourseSearchSheet = () => {
                               <SecondaryActionButton
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  openLectureReview(row.professor);
+                                  openLectureReview(row, navigate);
                                 }}
                               >
                                 <MessagesSquare size={20} />

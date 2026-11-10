@@ -10,6 +10,7 @@ import EmptyState from "@/components/common/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useSyllabus } from "@/hooks/useSyllabus";
 import type { SyllabusContent } from "@/types/syllabus";
 
@@ -148,6 +149,31 @@ const MobileSyllabusPage = () => {
     [content],
   );
   const objectiveLines = useMemo(() => splitLines(content?.수업목표), [content]);
+
+  const { courseOfferings } = useCourseOfferings();
+  const currentOffering = useMemo(
+    () => courseOfferings.find((o) => o.id === courseOfferingId),
+    [courseOfferings, courseOfferingId],
+  );
+
+  const handleReviewClick = () => {
+    const targetCourseId = currentOffering?.courseId;
+    if (targetCourseId) {
+      navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
+        state: {
+          courseName,
+          professorName: professor !== "-" ? professor : undefined,
+        },
+      });
+      return;
+    }
+    if (professor && professor !== "-") {
+      const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professor)}&condition=professor`;
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+    alert("해당 강의의 강의평 정보를 찾을 수 없어요.");
+  };
 
   const handleAddToTimetable = () => {
     alert(`"${courseName}" 과목이 시간표에 추가되었습니다.`);
@@ -601,7 +627,7 @@ const MobileSyllabusPage = () => {
       <BottomCTAContainer>
         <CapsuleButton
           variant="secondary"
-          onClick={() => alert("강의평 페이지 준비 중입니다.")}
+          onClick={handleReviewClick}
           style={{ width: "116px", flexShrink: 0 }}
         >
           강의평

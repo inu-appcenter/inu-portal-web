@@ -4,19 +4,17 @@ import { SAFE_AREA } from "@/styles/safeArea";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useCourseReviewSummary } from "@/hooks/useCourseReviews";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
-const LECTURE_REVIEW_NOTICE_MESSAGE =
-  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
 interface ClassDetailBottomSheetProps {
   open: boolean;
@@ -147,19 +145,31 @@ export default function ClassDetailBottomSheet({
   const evaluationVal =
     offering?.gradeEvaluationName || liveClass.evaluation || "";
 
-  const lectureReviewUrl =
-    professorName && professorName !== "-"
-      ? `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`
-      : "";
+  const targetCourseId = course?.id || liveClass?.numericCourseId;
+  const { data: reviewSummary } = useCourseReviewSummary(
+    targetCourseId,
+    professorName && professorName !== "-" ? professorName : undefined,
+    { enabled: isQueryEnabled && Boolean(targetCourseId) },
+  );
+
   const handleLectureReviewClick = () => {
-    if (!lectureReviewUrl) {
-      alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+    if (targetCourseId) {
+      onOpenChange(false);
+      navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
+        state: {
+          courseName: liveClass.name,
+          professorName:
+            professorName && professorName !== "-" ? professorName : undefined,
+        },
+      });
       return;
     }
-    if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
-      alert(LECTURE_REVIEW_NOTICE_MESSAGE);
+    if (professorName && professorName !== "-") {
+      const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
     }
-    window.open(lectureReviewUrl, "_blank", "noopener,noreferrer");
+    alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
   };
 
   const matchingClasses = allEvents
@@ -408,7 +418,9 @@ export default function ClassDetailBottomSheet({
                     type="button"
                     onClick={handleLectureReviewClick}
                   >
-                    강의평
+                    {reviewSummary && reviewSummary.totalReviews > 0
+                      ? `강의평 ★${reviewSummary.averageRating.toFixed(1)}`
+                      : "강의평"}
                   </LectureReviewButton>
                   <SyllabusButton
                     type="button"

@@ -3,10 +3,10 @@ import styled from "styled-components";
 import { MessagesSquare, SearchX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
-import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
+import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import {
   getOnlineTypeLabel,
   getEnrollmentLabel,
@@ -22,6 +22,7 @@ export interface CourseResult {
   isMajor: boolean;
   credits: number;
   courseId: string;
+  numericCourseId?: number;
   remarks?: string;
   // 서버 수강인원/정원 데이터가 아직 동기화되지 않아 null일 수 있음 - null이면 배지 자체를 숨김
   enrolledCount: number | null;
@@ -40,22 +41,33 @@ export interface CourseResult {
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
   "개설강의 정보가 없어 강의계획서를 열 수 없어요.";
-const LECTURE_REVIEW_NOTICE_MESSAGE =
-  "현 시점에는 에브리타임 강의평 페이지로 이동해요. 다음학기부터 강의평 서비스가 제공될 예정이에요.";
 
-const openLectureReview = (professor: string) => {
-  const professorName = professor?.trim() || "";
-  if (!professorName) {
-    alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
+const openLectureReview = (
+  course: CourseResult,
+  navigate: (path: string, options?: any) => void,
+  courseOfferings: any[],
+) => {
+  const offering = courseOfferings.find((o) => o.id === course.id);
+  const targetCourseId = course.numericCourseId || offering?.courseId;
+
+  if (targetCourseId) {
+    navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
+      state: {
+        courseName: course.name,
+        professorName: course.professor?.trim() || undefined,
+      },
+    });
     return;
   }
 
-  if (promotionSeenStorage.markIfFirst(SEEN_PROMOTIONS.LECTURE_REVIEW_NOTICE)) {
-    alert(LECTURE_REVIEW_NOTICE_MESSAGE);
+  const professorName = course.professor?.trim() || "";
+  if (professorName) {
+    const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
   }
 
-  const url = `https://everytime.kr/lecture/search?keyword=${encodeURIComponent(professorName)}&condition=professor`;
-  window.open(url, "_blank", "noopener,noreferrer");
+  alert("교수명 정보가 없어 강의평을 바로 찾을 수 없어요.");
 };
 
 export interface CourseResultListProps {
@@ -130,6 +142,7 @@ const CourseResultList = ({
   emptyDescription = "검색어나 필터 조건을 변경해 보세요",
 }: CourseResultListProps) => {
   const navigate = useNavigate();
+  const { courseOfferings } = useCourseOfferings();
   const listRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -285,7 +298,7 @@ const CourseResultList = ({
                           <SecondaryActionButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              openLectureReview(course.professor);
+                              openLectureReview(course, navigate, courseOfferings);
                             }}
                           >
                             <MessagesSquare size={20} />

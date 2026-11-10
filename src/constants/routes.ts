@@ -39,6 +39,14 @@ export const ROUTES = {
     IMAGE_IMPORT: "/timetable/image-import",
   },
 
+  // 교과목 및 강의평
+  COURSE: {
+    REVIEW: (courseId: string | number) => `/course/${courseId}/reviews`,
+    REVIEW_PATTERN: "/course/:courseId/reviews",
+    REVIEW_WRITE: (courseId: string | number) => `/course/${courseId}/reviews/write`,
+    REVIEW_WRITE_PATTERN: "/course/:courseId/reviews/write",
+  },
+
   // 친구
   FRIEND: {
     LIST: "/friend/list",
