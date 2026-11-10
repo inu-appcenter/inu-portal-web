@@ -25,6 +25,8 @@ export function isBottomEdgeFadeExcluded(pathname: string): boolean {
   if (pathname.startsWith("/agent") || pathname.startsWith("/assistant")) return true;
   // 5. 모바일 기숙사/학생증 전체화면 카드 (일반 및 실험실 경로 포함)
   if (pathname.includes("/dormitory/card")) return true;
+  // 6. 강의평 목록 및 작성 (하단 고정 CTA 버튼 전용 영역)
+  if (pathname.includes("/reviews")) return true;
   return false;
 }
 

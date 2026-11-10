@@ -286,11 +286,10 @@ const PageWrapper = styled.div`
   box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  padding: calc(var(--header-height, 56px) + 12px) ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
-  background: var(--bg-base, #f9fafb);
+  padding: 0 ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
 
   @media ${DESKTOP_MEDIA} {
-    padding: calc(var(--header-height, 56px) + 16px) 0 calc(var(--nav-height, 100px) + 40px);
+    padding: 0 0 calc(var(--nav-height, 100px) + 40px);
   }
 `;
 
@@ -403,7 +402,7 @@ const BottomActionWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   pointer-events: none;
-  z-index: 10;
+  z-index: 100;
 `;
 
 const ButtonContainer = styled.div`
