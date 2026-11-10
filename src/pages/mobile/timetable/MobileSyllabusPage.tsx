@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useCourses } from "@/hooks/useCourses";
 import { useSyllabus } from "@/hooks/useSyllabus";
 import type { SyllabusContent } from "@/types/syllabus";
 
@@ -76,6 +77,7 @@ interface SyllabusLocationState {
   courseOfferingId?: number;
   courseName?: string;
   professor?: string;
+  courseId?: number;
 }
 
 // --- 메인 페이지 컴포넌트 ---
@@ -156,8 +158,19 @@ const MobileSyllabusPage = () => {
     [courseOfferings, courseOfferingId],
   );
 
+  const { courses } = useCourses();
+  const stateCourseId = state.courseId ? Number(state.courseId) : undefined;
+  const paramCourseId = searchParams.get("courseId") ? Number(searchParams.get("courseId")) : undefined;
+
+  const matchedCourse = useMemo(() => {
+    if (!courseName || courseName === "-") return null;
+    const clean = courseName.trim();
+    return courses.find((c) => c.title?.trim() === clean);
+  }, [courses, courseName]);
+
+  const targetCourseId = stateCourseId || paramCourseId || currentOffering?.courseId || matchedCourse?.id;
+
   const handleReviewClick = () => {
-    const targetCourseId = currentOffering?.courseId;
     if (targetCourseId) {
       navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
         state: {

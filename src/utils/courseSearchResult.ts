@@ -40,6 +40,7 @@ export const mapCourseOfferingToCourseResult = (
     isMajor,
     credits,
     courseId: offering.subjectNumber,
+    numericCourseId: offering.courseId ?? (course?.id ? Number(course.id) : undefined),
     remarks: offering.note || course?.content,
     enrolledCount: offering.enrolledCount,
     capacity: offering.capacity,

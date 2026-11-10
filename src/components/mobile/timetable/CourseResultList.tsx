@@ -7,6 +7,7 @@ import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
 import { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useCourses } from "@/hooks/useCourses";
 import {
   getOnlineTypeLabel,
   getEnrollmentLabel,
@@ -46,9 +47,11 @@ const openLectureReview = (
   course: CourseResult,
   navigate: (path: string, options?: any) => void,
   courseOfferings: any[],
+  allCourses: any[] = [],
 ) => {
   const offering = courseOfferings.find((o) => o.id === course.id);
-  const targetCourseId = course.numericCourseId || offering?.courseId;
+  const matchedCourse = allCourses.find((c) => c.title?.trim() === course.name?.trim());
+  const targetCourseId = course.numericCourseId || offering?.courseId || matchedCourse?.id;
 
   if (targetCourseId) {
     navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
@@ -143,6 +146,7 @@ const CourseResultList = ({
 }: CourseResultListProps) => {
   const navigate = useNavigate();
   const { courseOfferings } = useCourseOfferings();
+  const { courses: allCourses } = useCourses();
   const listRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -298,7 +302,7 @@ const CourseResultList = ({
                           <SecondaryActionButton
                             onClick={(e) => {
                               e.stopPropagation();
-                              openLectureReview(course, navigate, courseOfferings);
+                              openLectureReview(course, navigate, courseOfferings, allCourses);
                             }}
                           >
                             <MessagesSquare size={20} />
@@ -311,11 +315,14 @@ const CourseResultList = ({
                                 alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                                 return;
                               }
+                              const matchedCourse = allCourses.find((c) => c.title?.trim() === course.name?.trim());
+                              const targetCourseId = course.numericCourseId || matchedCourse?.id;
                               navigate(ROUTES.TIMETABLE.SYLLABUS, {
                                 state: {
                                   courseOfferingId: course.id,
                                   courseName: course.name,
                                   professor: course.professor,
+                                  courseId: targetCourseId,
                                 },
                               });
                             }}

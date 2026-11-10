@@ -58,10 +58,10 @@ export default function ClassDetailBottomSheet({
     open && Boolean(selectedClass) && !selectedClass?.isCustom;
   const { courses } = useCourses(undefined, { enabled: isQueryEnabled });
   const { courseOfferings } = useCourseOfferings(
+    activeTimetable?.year,
+    activeTimetable?.term,
     undefined,
-    undefined,
-    undefined,
-    { enabled: isQueryEnabled },
+    { enabled: isQueryEnabled && Boolean(activeTimetable?.year && activeTimetable?.term) },
   );
 
   const courseById = useMemo(
@@ -145,7 +145,17 @@ export default function ClassDetailBottomSheet({
   const evaluationVal =
     offering?.gradeEvaluationName || liveClass.evaluation || "";
 
-  const targetCourseId = course?.id || liveClass?.numericCourseId;
+  const matchedCourseByName = useMemo(() => {
+    if (!liveClass?.name) return null;
+    const cleanName = liveClass.name.trim();
+    return courses.find((c) => c.title?.trim() === cleanName);
+  }, [courses, liveClass?.name]);
+
+  const targetCourseId =
+    course?.id ||
+    liveClass?.numericCourseId ||
+    offering?.courseId ||
+    matchedCourseByName?.id;
   const { data: reviewSummary } = useCourseReviewSummary(
     targetCourseId,
     professorName && professorName !== "-" ? professorName : undefined,
@@ -439,6 +449,7 @@ export default function ClassDetailBottomSheet({
                           courseOfferingId: syllabusOfferingId,
                           courseName: liveClass.name,
                           professor: professorName,
+                          courseId: targetCourseId,
                         },
                       });
                     }}
