@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { IoCloseCircle, IoChevronForward, IoCalendarOutline, IoCallOutline, IoMailOutline, IoThumbsUpOutline, IoBookmarkOutline } from "react-icons/io5";
 
 import { getUnifiedSearch } from "@/apis/search";
+import { useCourses } from "@/hooks/useCourses";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import HighlightText from "@/components/common/HighlightText";
@@ -47,6 +48,7 @@ const DEFAULT_SECTION_ORDER: SearchTab[] = [
 export default function MobileUnifiedSearchPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { courses } = useCourses();
 
   const searchParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -585,38 +587,65 @@ export default function MobileUnifiedSearchPage() {
                               )}
                             </SectionHeader>
                             <ItemList>
-                              {data.courses.items.map((item) => (
-                                <ResultItem
-                                  key={`course-${item.id}`}
-                                  onClick={() => {
-                                    const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
-                                    navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
-                                      state: {
-                                        courseOfferingId: item.id,
-                                        courseName: item.title,
-                                        professor: item.professor,
-                                      },
-                                    });
-                                  }}
-                                >
-                                  <Ripple />
-                                  <ItemMeta>
-                                    {item.subjectNumber && (
-                                      <CategoryTag>{item.subjectNumber}</CategoryTag>
+                              {data.courses.items.map((item) => {
+                                const matchedCourse = courses.find(
+                                  (c) => c.title?.trim() === item.title?.trim()
+                                );
+                                const targetCourseId = matchedCourse?.id;
+
+                                return (
+                                  <ResultItem
+                                    key={`course-${item.id}`}
+                                    onClick={() => {
+                                      const query = `?id=${item.id}&name=${encodeURIComponent(item.title)}${item.professor ? `&professor=${encodeURIComponent(item.professor)}` : ""}`;
+                                      navigate(`${ROUTES.TIMETABLE.SYLLABUS}${query}`, {
+                                        state: {
+                                          courseOfferingId: item.id,
+                                          courseName: item.title,
+                                          professor: item.professor,
+                                          courseId: targetCourseId,
+                                        },
+                                      });
+                                    }}
+                                  >
+                                    <Ripple />
+                                    <ItemMeta>
+                                      {item.subjectNumber && (
+                                        <CategoryTag>{item.subjectNumber}</CategoryTag>
+                                      )}
+                                      {item.isuName && <MetaText>{item.isuName}</MetaText>}
+                                      {item.credit && <MetaText>{item.credit}학점</MetaText>}
+                                    </ItemMeta>
+                                    <CourseTitleRow>
+                                      <ItemTitle style={{ marginBottom: 0 }}>
+                                        <HighlightText text={item.title} />
+                                      </ItemTitle>
+                                      {targetCourseId && (
+                                        <ReviewShortcutButton
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
+                                              state: {
+                                                courseId: targetCourseId,
+                                                courseTitle: item.title,
+                                                professor: item.professor,
+                                              },
+                                            });
+                                          }}
+                                        >
+                                          강의평 보기 ›
+                                        </ReviewShortcutButton>
+                                      )}
+                                    </CourseTitleRow>
+                                    {item.professor && (
+                                      <MetaText style={{ marginTop: 4 }}>
+                                        교수: <HighlightText text={item.professor} />
+                                      </MetaText>
                                     )}
-                                    {item.isuName && <MetaText>{item.isuName}</MetaText>}
-                                    {item.credit && <MetaText>{item.credit}학점</MetaText>}
-                                  </ItemMeta>
-                                  <ItemTitle>
-                                    <HighlightText text={item.title} />
-                                  </ItemTitle>
-                                  {item.professor && (
-                                    <MetaText>
-                                      교수: <HighlightText text={item.professor} />
-                                    </MetaText>
-                                  )}
-                                </ResultItem>
-                              ))}
+                                  </ResultItem>
+                                );
+                              })}
                             </ItemList>
                           </SectionCard>
                         );
@@ -921,6 +950,34 @@ const CategoryTag = styled.span`
 const MetaText = styled.span`
   font-size: 12px;
   color: var(--text-tertiary);
+`;
+
+const CourseTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+`;
+
+const ReviewShortcutButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-subtle, #f2f4f6);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:active {
+    transform: scale(0.96);
+  }
 `;
 
 const ItemTitle = styled.h4`

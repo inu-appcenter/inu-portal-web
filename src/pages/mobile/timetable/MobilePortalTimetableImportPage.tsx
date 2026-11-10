@@ -12,6 +12,7 @@ import {
   GraduationCap,
   CheckCircle2,
   Info,
+  BookOpen,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -866,6 +867,42 @@ export default function MobilePortalTimetableImportPage() {
               </TimetableSuccessTextBox>
             </TimetableSuccessSummaryCard>
 
+            {/* 당해 학기 연동 시: 강의평 미리보기 및 기능 알림 배너 */}
+            <ReviewPreviewBanner>
+              <ReviewPreviewIconCircle>
+                <BookOpen size={18} color="var(--interactive-primary)" />
+              </ReviewPreviewIconCircle>
+              <ReviewPreviewTextGroup>
+                <ReviewPreviewTitle>
+                  이번 학기 담은 과목들의 강의평을 확인해보세요
+                </ReviewPreviewTitle>
+                <ReviewPreviewDesc>
+                  시험 출제 유형, 과제량, 선배들의 수강 조언을 미리 살펴볼 수 있어요.
+                </ReviewPreviewDesc>
+              </ReviewPreviewTextGroup>
+              <ReviewPreviewActionButton
+                type="button"
+                onClick={() => {
+                  const firstCourse = semesterGroups[0]?.courses?.find(
+                    (c) => c.isSelected && c.offering?.courseId
+                  );
+                  if (firstCourse?.offering?.courseId) {
+                    navigate(ROUTES.COURSE.REVIEW(firstCourse.offering.courseId), {
+                      state: {
+                        courseId: firstCourse.offering.courseId,
+                        courseTitle: firstCourse.offering.courseTitle || firstCourse.rawItem?.courseName,
+                        professor: firstCourse.offering.professor || undefined,
+                      },
+                    });
+                  } else {
+                    navigate(ROUTES.TIMETABLE.ROOT);
+                  }
+                }}
+              >
+                강의평 둘러보기 ›
+              </ReviewPreviewActionButton>
+            </ReviewPreviewBanner>
+
             <PromptBadge>
               <Sparkles size={16} color="var(--interactive-primary)" />
               <span>성적 연동</span>
@@ -913,6 +950,44 @@ export default function MobilePortalTimetableImportPage() {
               총 <strong>{gradeResult.semestersCount}개 학기</strong>,{" "}
               <strong>{gradeResult.subjectsCount}개 과목</strong> 성적이 학점 계산기에 안전하게 저장되었어요.
             </SuccessDesc>
+
+            {/* 지난 학기 성적 연동 완료 시: 수강생 인증 리뷰 작성 유도 배너 */}
+            <ReviewPromptBanner>
+              <ReviewPromptTextGroup>
+                <ReviewPromptBadge>수강생 인증</ReviewPromptBadge>
+                <ReviewPromptTitle>
+                  수강 완료한 과목의 후기를 남겨보세요
+                </ReviewPromptTitle>
+                <ReviewPromptDesc>
+                  후배들을 위해 솔직한 팁을 공유해주세요. 작성한 후기에는 수강생 인증 뱃지가 함께 표시돼요!
+                </ReviewPromptDesc>
+              </ReviewPromptTextGroup>
+              <ReviewPromptButton
+                type="button"
+                onClick={() => {
+                  const targetCourse = semesterGroups[0]?.courses?.find(
+                    (c) => c.offering?.courseId
+                  );
+                  if (targetCourse?.offering?.courseId) {
+                    navigate(
+                      ROUTES.COURSE.REVIEW_WRITE(targetCourse.offering.courseId),
+                      {
+                        state: {
+                          courseId: targetCourse.offering.courseId,
+                          courseTitle: targetCourse.offering.courseTitle || targetCourse.rawItem?.courseName,
+                          professor: targetCourse.offering.professor || undefined,
+                          isVerified: true,
+                        },
+                      }
+                    );
+                  } else {
+                    navigate(ROUTES.TIMETABLE.CALCULATOR);
+                  }
+                }}
+              >
+                첫 수강후기 쓰기 ›
+              </ReviewPromptButton>
+            </ReviewPromptBanner>
           </GradeSuccessContent>
         )}
       </ScrollContainer>
@@ -1695,6 +1770,134 @@ const FeatureTextDesc = styled.div`
   font-size: 12px;
   color: var(--text-tertiary);
   line-height: 1.4;
+`;
+
+const ReviewPreviewBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  box-sizing: border-box;
+`;
+
+const ReviewPreviewIconCircle = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-brand, #e8f3ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const ReviewPreviewTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+`;
+
+const ReviewPreviewTitle = styled.div`
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+`;
+
+const ReviewPreviewDesc = styled.div`
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+`;
+
+const ReviewPreviewActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-subtle, #f2f4f6);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:active {
+    transform: scale(0.96);
+  }
+`;
+
+const ReviewPromptBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-default, #e5e8eb);
+  box-sizing: border-box;
+  text-align: left;
+`;
+
+const ReviewPromptTextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const ReviewPromptBadge = styled.span`
+  align-self: flex-start;
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-brand, #e8f3ff);
+  color: var(--interactive-primary, #3182f6);
+  font-size: 11.5px;
+  font-weight: 700;
+`;
+
+const ReviewPromptTitle = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+`;
+
+const ReviewPromptDesc = styled.div`
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+`;
+
+const ReviewPromptButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--interactive-primary, #3182f6);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+
+  &:active {
+    transform: scale(0.98);
+  }
 `;
 
 const GradeSuccessContent = styled.div`
