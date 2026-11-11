@@ -31,7 +31,7 @@ export default function MobileCourseReviewSearchPage() {
   const { semesters } = useSemesters();
   const defaultSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
 
-  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(() => defaultSemester?.id ?? null);
   const [isSemesterSheetOpen, setIsSemesterSheetOpen] = useState(false);
 
   useEffect(() => {
@@ -51,13 +51,15 @@ export default function MobileCourseReviewSearchPage() {
     : "학기 선택";
 
   // 헤더 설정: 상단 헤더에 학기 선택 드롭다운 배치
+  const headerTitle = useMemo(() => (
+    <HeaderSemesterButton type="button" onClick={() => setIsSemesterSheetOpen(true)}>
+      <span>{currentSemesterLabel}</span>
+      <ChevronDown size={18} color="var(--text-primary)" />
+    </HeaderSemesterButton>
+  ), [currentSemesterLabel]);
+
   useHeader({
-    title: (
-      <HeaderSemesterButton type="button" onClick={() => setIsSemesterSheetOpen(true)}>
-        <span>{currentSemesterLabel}</span>
-        <ChevronDown size={18} color="var(--text-primary)" />
-      </HeaderSemesterButton>
-    ),
+    title: headerTitle,
     showAlarm: false,
     hasback: true,
   });

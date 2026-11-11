@@ -123,7 +123,7 @@ export default function ClassDetailBottomSheet({
       setMemoInput(liveClass.memo || "");
       setIsEditingMemo(false);
     }
-  }, [selectedClass, allEvents]);
+  }, [selectedClass, allEvents, liveClass]);
 
   useEffect(() => {
     if (isEditingMemo && memoInputRef.current) {
@@ -134,16 +134,14 @@ export default function ClassDetailBottomSheet({
     }
   }, [isEditingMemo]);
 
-  if (!liveClass) return null;
-
   const professorName =
-    liveClass.professor?.trim() || offering?.professor?.trim() || "-";
+    liveClass?.professor?.trim() || offering?.professor?.trim() || "-";
 
   const creditsVal =
-    liveClass.credits ?? offering?.credit ?? course?.credit ?? 0;
+    liveClass?.credits ?? offering?.credit ?? course?.credit ?? 0;
 
   const evaluationVal =
-    offering?.gradeEvaluationName || liveClass.evaluation || "";
+    offering?.gradeEvaluationName || liveClass?.evaluation || "";
 
   const matchedCourseByName = useMemo(() => {
     if (!liveClass?.name) return null;
@@ -156,11 +154,14 @@ export default function ClassDetailBottomSheet({
     liveClass?.numericCourseId ||
     offering?.courseId ||
     matchedCourseByName?.id;
+
   const { data: reviewSummary } = useCourseReviewSummary(
     targetCourseId,
     professorName && professorName !== "-" ? professorName : undefined,
     { enabled: isQueryEnabled && Boolean(targetCourseId) },
   );
+
+  if (!liveClass) return null;
 
   const handleLectureReviewClick = () => {
     if (targetCourseId) {
