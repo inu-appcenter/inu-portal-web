@@ -117,3 +117,16 @@ export const getMyCourseReviews = async (): Promise<CourseReview[]> => {
   );
   return response.data.data;
 };
+
+/**
+ * 최근 등록된 강의평 피드 조회
+ */
+export const getRecentCourseReviews = async (
+  limit = 10,
+): Promise<CourseReview[]> => {
+  const response = await tokenInstance.get<ApiResponse<CourseReview[]>>(
+    "/api/course-reviews/recent",
+    { params: { limit } },
+  );
+  return response.data.data;
+};

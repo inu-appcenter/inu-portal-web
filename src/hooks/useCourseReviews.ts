@@ -8,6 +8,7 @@ import {
   toggleCourseReviewLike,
   reportCourseReview,
   getMyCourseReviews,
+  getRecentCourseReviews,
 } from "@/apis/courseReview";
 import type {
   CourseReviewCreateRequest,
@@ -18,6 +19,7 @@ import type {
 export const COURSE_REVIEWS_QUERY_KEY = ["courseReviews"] as const;
 export const COURSE_REVIEW_SUMMARY_QUERY_KEY = ["courseReviewSummary"] as const;
 export const MY_COURSE_REVIEWS_QUERY_KEY = ["myCourseReviews"] as const;
+export const RECENT_COURSE_REVIEWS_QUERY_KEY = ["recentCourseReviews"] as const;
 
 export const useCourseReviews = (
   courseId: number | undefined,
@@ -136,5 +138,20 @@ export const useMyCourseReviews = (options?: { enabled?: boolean }) => {
     queryFn: getMyCourseReviews,
     enabled,
     staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useRecentCourseReviews = (
+  limit = 10,
+  options?: { enabled?: boolean },
+) => {
+  const enabled = options?.enabled ?? true;
+
+  return useQuery({
+    queryKey: [...RECENT_COURSE_REVIEWS_QUERY_KEY, limit],
+    queryFn: () => getRecentCourseReviews(limit),
+    enabled,
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
   });
 };

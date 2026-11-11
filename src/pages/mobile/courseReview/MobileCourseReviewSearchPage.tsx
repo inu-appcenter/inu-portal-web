@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
-import { SlidersHorizontal, ChevronDown, Check } from "lucide-react";
+import { SlidersHorizontal, ChevronDown, Check, Search } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useHeader } from "@/context/HeaderContext";
+import TabUpper from "@/components/common/TabUpper";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -20,12 +21,32 @@ import EmptyState from "@/components/common/EmptyState";
 import Skeleton from "@/components/common/Skeleton";
 import BottomSheet from "@/components/common/BottomSheet";
 import FloatingSearchBar, { FloatingSearchBarRef } from "@/components/mobile/common/FloatingSearchBar";
+import MyEnrolledCoursesSection from "@/components/mobile/courseReview/MyEnrolledCoursesSection";
+import RecentReviewsFeedSection from "@/components/mobile/courseReview/RecentReviewsFeedSection";
 import type { Term } from "@/types/timetables";
 
 export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  // 상단 탭: 둘러보기(기본) vs 전체 강의
+  const [activeTab, setActiveTab] = useState<string>("discovery");
+  const keyword = searchParams.get("courseQuery") || "";
+
+  useEffect(() => {
+    if (keyword.trim()) {
+      setActiveTab("all");
+    }
+  }, [keyword]);
+
+  const tabs = useMemo(
+    () => [
+      { id: "discovery", label: "둘러보기" },
+      { id: "all", label: "전체 강의" },
+    ],
+    [],
+  );
 
   // 학기 목록 및 선택
   const { semesters } = useSemesters();
@@ -66,7 +87,6 @@ export default function MobileCourseReviewSearchPage() {
 
   // 검색바 활성 상태
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
-  const keyword = searchParams.get("courseQuery") || "";
 
   // 필터 스토어 연동 (시간표 편집과 100% 동일)
   const effectiveFilter = useEffectiveCourseFilters();
@@ -126,62 +146,97 @@ export default function MobileCourseReviewSearchPage() {
   const isLoading = isOfferingsLoading || isCoursesLoading;
 
   return (
-    <PageWrapper>
-      {/* 강좌 목록 영역 */}
-      <ListContainer>
-        {isLoading ? (
-          <SkeletonWrapper>
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} height="88px" variant="card" />
-            ))}
-          </SkeletonWrapper>
-        ) : filteredResults.length > 0 ? (
-          <CourseResultList
-            courses={filteredResults}
-            expandedId={expandedId}
-            onToggleExpand={handleToggleExpand}
-            hasNextPage={hasNextPage}
-            fetchNextPage={fetchNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-          />
-        ) : (
-          <EmptyStateWrapper>
-            <EmptyState>
-              <EmptyTextGroup>
-                <strong>{keyword ? "검색 결과가 없어요" : "조건에 맞는 강의가 없어요"}</strong>
-                <span>
-                  {keyword
-                    ? "검색어를 확인하거나 필터 조건을 변경해 보세요."
-                    : "하단 필터에서 다른 학과나 이수구분을 선택해 보세요."}
-                </span>
-              </EmptyTextGroup>
-            </EmptyState>
-          </EmptyStateWrapper>
-        )}
-      </ListContainer>
+    <PageWrapper $isAllTab={activeTab === "all"}>
+      {/* 상단 탭 (둘러보기 vs 전체 강의) */}
+      <TabWrapper>
+        <TabUpper
+          tabs={tabs}
+          activeTabId={activeTab}
+          onChange={setActiveTab}
+        />
+      </TabWrapper>
 
-      {/* 시간표 편집과 동일한 하단 플로팅 검색바 & 필터 버튼 */}
-      {createPortal(
-        <FloatingActionsContainer>
-          <FilterButton
-            $isHidden={isSearchActive}
-            $isZeroCount={activeFilterCount === 0}
-            onClick={() => navigate(ROUTES.TIMETABLE.FILTER)}
+      {activeTab === "discovery" ? (
+        <DiscoveryContent>
+          {/* 1. 검색 유도 바 (터치 시 전체 강의 탭 전환 및 검색 활성화) */}
+          <MiniSearchTrigger
+            type="button"
+            onClick={() => {
+              setActiveTab("all");
+              setTimeout(() => searchBarRef.current?.focus(), 50);
+            }}
           >
-            <SlidersHorizontal size={20} />
-            {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
-          </FilterButton>
+            <Search size={18} color="var(--text-caption, #8b95a1)" />
+            <MiniSearchPlaceholder>어떤 강의의 후기가 궁금한가요?</MiniSearchPlaceholder>
+          </MiniSearchTrigger>
 
-          <FloatingSearchBar
-            ref={searchBarRef}
-            placeholder="교과목명, 교수명 검색"
-            onSearch={(query) => console.log("강의평 검색 실행:", query)}
-            onActiveChange={setIsSearchActive}
-            searchParamKey="courseQuery"
+          {/* 2. 내 수강 강의 섹션 */}
+          <MyEnrolledCoursesSection
+            currentYear={currentYear}
+            currentTerm={currentTerm}
           />
-        </FloatingActionsContainer>,
-        document.body
+
+          {/* 3. 최근 등록된 강의평 피드 */}
+          <RecentReviewsFeedSection />
+        </DiscoveryContent>
+      ) : (
+        /* 전체 강좌 목록 영역 */
+        <ListContainer>
+          {isLoading ? (
+            <SkeletonWrapper>
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} height="88px" variant="card" />
+              ))}
+            </SkeletonWrapper>
+          ) : filteredResults.length > 0 ? (
+            <CourseResultList
+              courses={filteredResults}
+              expandedId={expandedId}
+              onToggleExpand={handleToggleExpand}
+              hasNextPage={hasNextPage}
+              fetchNextPage={fetchNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+            />
+          ) : (
+            <EmptyStateWrapper>
+              <EmptyState>
+                <EmptyTextGroup>
+                  <strong>{keyword ? "검색 결과가 없어요" : "조건에 맞는 강의가 없어요"}</strong>
+                  <span>
+                    {keyword
+                      ? "검색어를 확인하거나 필터 조건을 변경해 보세요."
+                      : "하단 필터에서 다른 학과나 이수구분을 선택해 보세요."}
+                  </span>
+                </EmptyTextGroup>
+              </EmptyState>
+            </EmptyStateWrapper>
+          )}
+        </ListContainer>
       )}
+
+      {/* 전체 강의 탭에서만 활성화되는 하단 플로팅 검색바 & 필터 버튼 */}
+      {activeTab === "all" &&
+        createPortal(
+          <FloatingActionsContainer>
+            <FilterButton
+              $isHidden={isSearchActive}
+              $isZeroCount={activeFilterCount === 0}
+              onClick={() => navigate(ROUTES.TIMETABLE.FILTER)}
+            >
+              <SlidersHorizontal size={20} />
+              {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
+            </FilterButton>
+
+            <FloatingSearchBar
+              ref={searchBarRef}
+              placeholder="교과목명, 교수명 검색"
+              onSearch={(query) => console.log("강의평 검색 실행:", query)}
+              onActiveChange={setIsSearchActive}
+              searchParamKey="courseQuery"
+            />
+          </FloatingActionsContainer>,
+          document.body,
+        )}
 
       {/* 학기 선택 바텀시트 */}
       <BottomSheet
@@ -215,17 +270,57 @@ export default function MobileCourseReviewSearchPage() {
   );
 }
 
-const PageWrapper = styled.div`
+const PageWrapper = styled.div<{ $isAllTab: boolean }>`
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 20px calc(90px + ${SAFE_AREA.BOTTOM});
-  gap: 12px;
+  padding: 0 20px
+    ${({ $isAllTab }) => ($isAllTab ? `calc(90px + ${SAFE_AREA.BOTTOM})` : `calc(40px + ${SAFE_AREA.BOTTOM})`)};
+  gap: 16px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(90px + ${SAFE_AREA.BOTTOM});
+    padding: 0 0
+      ${({ $isAllTab }) => ($isAllTab ? `calc(90px + ${SAFE_AREA.BOTTOM})` : `calc(40px + ${SAFE_AREA.BOTTOM})`)};
   }
+`;
+
+const TabWrapper = styled.div`
+  margin: 0 -20px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-divider, #f2f4f6);
+`;
+
+const DiscoveryContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+`;
+
+const MiniSearchTrigger = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  background: var(--bg-surface, #ffffff);
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:active {
+    background: var(--bg-base, #f9fafb);
+    border-color: var(--border-strong, #b0b8c1);
+  }
+`;
+
+const MiniSearchPlaceholder = styled.span`
+  font-size: 14px;
+  color: var(--text-caption, #8b95a1);
 `;
 
 const HeaderSemesterButton = styled.button`
