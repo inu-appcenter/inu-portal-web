@@ -62,6 +62,14 @@ const openLectureReview = (
   const targetCourseId = course.numericCourseId || offering?.courseId || matchedCourse?.id;
 
   if (targetCourseId) {
+    try {
+      sessionStorage.setItem("COURSE_REVIEWS_SCROLL_Y", String(window.scrollY));
+      sessionStorage.setItem("COURSE_REVIEWS_TARGET_ID", String(course.id));
+      sessionStorage.setItem("COURSE_REVIEWS_EXPANDED_ID", String(course.id));
+    } catch {
+      // ignore
+    }
+
     const termNum =
       offering?.term === "SECOND"
         ? 2
