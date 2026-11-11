@@ -62,13 +62,22 @@ export default function MobileCourseReviewWritePage() {
 
   // 기본 학기 계산 (전달받은 state 우선, 없으면 현재 학기)
   const defaultSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
-  const initialYear =
-    Number((location.state as any)?.year) ||
-    defaultSemester?.year ||
-    2026;
+  const rawYear = (location.state as any)?.year;
+  const initialYear = Number(rawYear) || defaultSemester?.year || 2026;
+
+  const rawTerm = (location.state as any)?.term;
   const initialTerm =
-    Number((location.state as any)?.term) ||
-    (defaultSemester?.term === "SECOND" ? 2 : 1);
+    typeof rawTerm === "number" && !isNaN(rawTerm)
+      ? rawTerm
+      : rawTerm === "SECOND" || rawTerm === "2" || rawTerm === 2
+        ? 2
+        : rawTerm === "FIRST" || rawTerm === "1" || rawTerm === 1
+          ? 1
+          : defaultSemester?.term === "SECOND"
+            ? 2
+            : 1;
+
+  const courseOfferingId = (location.state as any)?.courseOfferingId;
 
   // 폼 상태
   const [professor, setProfessor] = useState<string>(initialProfessor);
@@ -132,6 +141,7 @@ export default function MobileCourseReviewWritePage() {
 
     createMutation.mutate(
       {
+        courseOfferingId,
         professor,
         year,
         term,
@@ -149,7 +159,12 @@ export default function MobileCourseReviewWritePage() {
           navigate(ROUTES.COURSE.REVIEW(courseId), { replace: true });
         },
         onError: (err: any) => {
-          alert(err.response?.data?.msg || "강의평 등록에 실패했습니다.");
+          console.error("강의평 등록 실패:", err.response?.data || err);
+          const serverMsg =
+            err.response?.data?.msg ||
+            err.response?.data?.message ||
+            (err.response?.status === 400 ? "입력값을 다시 확인해주세요." : "강의평 등록에 실패했습니다.");
+          alert(serverMsg);
         },
       },
     );
@@ -266,10 +281,10 @@ export default function MobileCourseReviewWritePage() {
           <ChipRadioRow>
             <ChipRadio
               type="button"
-              $selected={assignmentAmount === "MANY"}
-              onClick={() => setAssignmentAmount("MANY")}
+              $selected={assignmentAmount === "FEW"}
+              onClick={() => setAssignmentAmount("FEW")}
             >
-              많음
+              적음
             </ChipRadio>
             <ChipRadio
               type="button"
@@ -280,10 +295,10 @@ export default function MobileCourseReviewWritePage() {
             </ChipRadio>
             <ChipRadio
               type="button"
-              $selected={assignmentAmount === "FEW"}
-              onClick={() => setAssignmentAmount("FEW")}
+              $selected={assignmentAmount === "MANY"}
+              onClick={() => setAssignmentAmount("MANY")}
             >
-              적음
+              많음
             </ChipRadio>
           </ChipRadioRow>
         </FieldBlock>
@@ -293,10 +308,10 @@ export default function MobileCourseReviewWritePage() {
           <ChipRadioRow>
             <ChipRadio
               type="button"
-              $selected={teamProject === "MANY"}
-              onClick={() => setTeamProject("MANY")}
+              $selected={teamProject === "NONE"}
+              onClick={() => setTeamProject("NONE")}
             >
-              많음
+              없음
             </ChipRadio>
             <ChipRadio
               type="button"
@@ -307,10 +322,10 @@ export default function MobileCourseReviewWritePage() {
             </ChipRadio>
             <ChipRadio
               type="button"
-              $selected={teamProject === "NONE"}
-              onClick={() => setTeamProject("NONE")}
+              $selected={teamProject === "MANY"}
+              onClick={() => setTeamProject("MANY")}
             >
-              없음
+              많음
             </ChipRadio>
           </ChipRadioRow>
         </FieldBlock>
@@ -320,10 +335,10 @@ export default function MobileCourseReviewWritePage() {
           <ChipRadioRow>
             <ChipRadio
               type="button"
-              $selected={examCount === "TWICE"}
-              onClick={() => setExamCount("TWICE")}
+              $selected={examCount === "REPLACEMENT"}
+              onClick={() => setExamCount("REPLACEMENT")}
             >
-              2회 (중간+기말)
+              과제대체
             </ChipRadio>
             <ChipRadio
               type="button"
@@ -334,10 +349,10 @@ export default function MobileCourseReviewWritePage() {
             </ChipRadio>
             <ChipRadio
               type="button"
-              $selected={examCount === "REPLACEMENT"}
-              onClick={() => setExamCount("REPLACEMENT")}
+              $selected={examCount === "TWICE"}
+              onClick={() => setExamCount("TWICE")}
             >
-              과제대체
+              2회 (중간+기말)
             </ChipRadio>
           </ChipRadioRow>
         </FieldBlock>

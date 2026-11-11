@@ -173,31 +173,34 @@ export default function MyEnrolledCoursesSection({
         </HeaderActionText>
       </SectionHeader>
 
-      <HorizontalScrollRow>
-        {enrolledCourses.map((item) => (
-          <CourseCard key={item.id} onClick={() => handleCourseClick(item)}>
-            <CardTopRow>
-              <CardCourseName title={item.name}>{item.name}</CardCourseName>
-              {item.credits > 0 && <CreditBadge>{item.credits}학점</CreditBadge>}
-            </CardTopRow>
+      <ScrollContainerWrapper>
+        <HorizontalScrollRow>
+          {enrolledCourses.map((item) => (
+            <CourseCard key={item.id} onClick={() => handleCourseClick(item)}>
+              <CardTopRow>
+                <CardCourseName title={item.name}>{item.name}</CardCourseName>
+                {item.credits > 0 && <CreditBadge>{item.credits}학점</CreditBadge>}
+              </CardTopRow>
 
-            <CardMiddleRow>
-              <CardProfessorText>
-                {item.professor ? `${item.professor} 교수` : "교수 정보 없음"}
-              </CardProfessorText>
-            </CardMiddleRow>
+              <CardMiddleRow>
+                <CardProfessorText>
+                  {item.professor ? `${item.professor} 교수` : "교수 정보 없음"}
+                </CardProfessorText>
+              </CardMiddleRow>
 
-            <CardBottomRow>
-              <WriteActionButton
-                type="button"
-                onClick={(e) => handleWriteClick(e, item)}
-              >
-                후기 쓰기 ✎
-              </WriteActionButton>
-            </CardBottomRow>
-          </CourseCard>
-        ))}
-      </HorizontalScrollRow>
+              <CardBottomRow>
+                <WriteActionButton
+                  type="button"
+                  onClick={(e) => handleWriteClick(e, item)}
+                >
+                  후기 쓰기 ✎
+                </WriteActionButton>
+              </CardBottomRow>
+            </CourseCard>
+          ))}
+        </HorizontalScrollRow>
+        <RightFadeOverlay aria-hidden="true" />
+      </ScrollContainerWrapper>
     </SectionWrapper>
   );
 }
@@ -253,26 +256,47 @@ const HeaderActionText = styled.button`
   }
 `;
 
+const ScrollContainerWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const RightFadeOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -20px;
+  width: 32px;
+  background: linear-gradient(
+    to right,
+    rgba(249, 250, 251, 0) 0%,
+    var(--bg-base, #f9fafb) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+`;
+
 const HorizontalScrollRow = styled.div`
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding: 4px 2px 8px;
+  padding: 4px 20px 8px 20px;
   margin: 0 -20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     display: none;
   }
   scrollbar-width: none;
+
+  &::after {
+    content: "";
+    flex: 0 0 4px;
+  }
 `;
 
 const CourseCard = styled.div`
   flex: 0 0 200px;
-  scroll-snap-align: start;
   background: var(--bg-surface, #ffffff);
   border: 1px solid var(--border-default, #e5e8eb);
   border-radius: 16px;
