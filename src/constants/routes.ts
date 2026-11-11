@@ -41,6 +41,7 @@ export const ROUTES = {
 
   // 교과목 및 강의평
   COURSE: {
+    HOME: "/course/reviews",
     REVIEW: (courseId: string | number) => `/course/${courseId}/reviews`,
     REVIEW_PATTERN: "/course/:courseId/reviews",
     REVIEW_WRITE: (courseId: string | number) => `/course/${courseId}/reviews/write`,

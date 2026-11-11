@@ -103,6 +103,24 @@ const CalculatorIcon = () => (
   </svg>
 );
 
+const CourseReviewIcon = () => (
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 36 36"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M18 4.5L22.17 12.95L31.5 14.31L24.75 20.89L26.34 30.18L18 25.8L9.66 30.18L11.25 20.89L4.5 14.31L13.83 12.95L18 4.5Z"
+      stroke="var(--interactive-primary)"
+      strokeWidth="2.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const ChevronRightIcon = () => (
   <svg
     width="24"
@@ -864,6 +882,27 @@ const MobileTimeTablePage = () => {
               예상 학점을 계산해 보고
               <br />
               졸업 요건도 확인해 보세요.
+            </MenuCardDescription>
+          </MenuCard>
+        </ButtonRow>
+
+        <ButtonRow>
+          <MenuCard
+            onClick={() => {
+              mixpanelTrack.timetableFeatureClicked("강의평 둘러보기", "시간표 홈");
+              navigate(ROUTES.COURSE.HOME);
+            }}
+          >
+            <MenuCardTitleRow>
+              <MenuCardTitle>강의평 둘러보기</MenuCardTitle>
+              <IconSlot>
+                <CourseReviewIcon />
+              </IconSlot>
+            </MenuCardTitleRow>
+            <MenuCardDescription>
+              과목별 평점과 선배들의
+              <br />
+              솔직한 후기를 찾아보세요.
             </MenuCardDescription>
           </MenuCard>
         </ButtonRow>

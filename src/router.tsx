@@ -85,6 +85,7 @@ const MobileGradeCalculatorPage = lazyWithRetry(() => import("@/pages/mobile/tim
 const MobileSyllabusPage = lazyWithRetry(() => import("@/pages/mobile/timetable/MobileSyllabusPage"));
 const MobileCourseReviewListPage = lazyWithRetry(() => import("@/pages/mobile/courseReview/MobileCourseReviewListPage"));
 const MobileCourseReviewWritePage = lazyWithRetry(() => import("@/pages/mobile/courseReview/MobileCourseReviewWritePage"));
+const MobileCourseReviewSearchPage = lazyWithRetry(() => import("@/pages/mobile/courseReview/MobileCourseReviewSearchPage"));
 const MobilePhoneBookPage = lazyWithRetry(() => import("@/pages/mobile/phonebook/MobilePhoneBookPage"));
 const MobilePhoneBookDetailPage = lazyWithRetry(() => import("@/pages/mobile/phonebook/MobilePhoneBookDetailPage"));
 const MobilePhoneBookSearchPage = lazyWithRetry(() => import("@/pages/mobile/phonebook/MobilePhoneBookSearchPage"));
@@ -210,6 +211,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.TIMETABLE.CALCULATOR, element: <MobileGradeCalculatorPage /> },
           { path: ROUTES.TIMETABLE.SYLLABUS, element: <MobileSyllabusPage /> },
           // 강의평
+          { path: ROUTES.COURSE.HOME, element: <MobileCourseReviewSearchPage /> },
           { path: ROUTES.COURSE.REVIEW_PATTERN, element: <MobileCourseReviewListPage /> },
           { path: ROUTES.COURSE.REVIEW_WRITE_PATTERN, element: <MobileCourseReviewWritePage /> },
 
