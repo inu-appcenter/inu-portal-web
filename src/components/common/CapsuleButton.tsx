@@ -124,14 +124,14 @@ const StyledButton = styled.button<{
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  box-shadow: var(--elevation-1-shadow);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
   font-family: inherit;
   text-align: center;
-  font-size: var(--heading-1-font-size);
+  font-size: 15px;
   font-style: normal;
-  font-weight: var(--heading-1-font-weight);
-  line-height: var(--heading-1-line-height);
+  font-weight: 600;
+  line-height: 20px;
 
   ${({ $variant }) => getVariantStyles($variant)}
 

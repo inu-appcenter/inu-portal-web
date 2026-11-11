@@ -404,9 +404,6 @@ export default function MobileCourseReviewWritePage() {
             disabled={!isFormValid || createMutation.isPending}
             loading={createMutation.isPending}
             onClick={handleSubmit}
-            style={{
-              boxShadow: "0 6px 20px rgba(49, 130, 246, 0.35)",
-            }}
           >
             강의평 등록하기
           </CapsuleButton>
@@ -421,11 +418,11 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(90px + env(safe-area-inset-bottom, 0px));
+  padding: 0 ${MOBILE_PAGE_GUTTER} calc(140px + env(safe-area-inset-bottom, 0px));
   gap: 16px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
+    padding: 0 0 calc(140px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
@@ -672,4 +669,8 @@ const FloatingButtonContainer = styled.div`
   box-sizing: border-box;
   pointer-events: auto;
   background: transparent;
+
+  button {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
 `;

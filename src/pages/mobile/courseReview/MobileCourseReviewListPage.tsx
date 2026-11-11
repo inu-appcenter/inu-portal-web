@@ -323,7 +323,7 @@ export default function MobileCourseReviewListPage() {
             fullWidth
             onClick={handleWriteClick}
           >
-            이 강의 후기 작성하기
+            {reviews.length === 0 ? "첫 후기 작성하기" : "이 강의 후기 작성하기"}
           </CapsuleButton>
         </FloatingButtonContainer>
       </BottomActionWrapper>
@@ -382,10 +382,10 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(80px + env(safe-area-inset-bottom, 0px));
+  padding: 0 ${MOBILE_PAGE_GUTTER} calc(110px + env(safe-area-inset-bottom, 0px));
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(90px + env(safe-area-inset-bottom, 0px));
+    padding: 0 0 calc(110px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
@@ -584,7 +584,7 @@ const FloatingButtonContainer = styled.div`
   pointer-events: auto;
 
   button {
-    box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 `;
 

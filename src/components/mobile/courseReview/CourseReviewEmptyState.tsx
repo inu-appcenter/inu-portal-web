@@ -1,17 +1,15 @@
 import styled from "styled-components";
 import EmptyState from "@/components/common/EmptyState";
-import CapsuleButton from "@/components/common/CapsuleButton";
 
 interface CourseReviewEmptyStateProps {
   courseName?: string;
   professorName?: string;
-  onWriteClick: () => void;
+  onWriteClick?: () => void;
 }
 
 export default function CourseReviewEmptyState({
   courseName = "이 강의",
   professorName,
-  onWriteClick,
 }: CourseReviewEmptyStateProps) {
   const handleEverytimeSearch = () => {
     const keyword =
@@ -24,7 +22,7 @@ export default function CourseReviewEmptyState({
   };
 
   return (
-    <EmptyState padding="56px 20px">
+    <EmptyState padding="48px 20px">
       <ContentWrapper>
         <EmptyTitle>아직 등록된 강의평이 없어요</EmptyTitle>
         <EmptyDescription>
@@ -33,14 +31,9 @@ export default function CourseReviewEmptyState({
           첫 번째 후기를 남겨 후배들에게 도움을 주세요!
         </EmptyDescription>
 
-        <ButtonGroup>
-          <CapsuleButton variant="primary" fullWidth onClick={onWriteClick}>
-            첫 후기 작성하기
-          </CapsuleButton>
-          <EverytimeButton type="button" onClick={handleEverytimeSearch}>
-            에브리타임에서 관련 후기 검색하기 ›
-          </EverytimeButton>
-        </ButtonGroup>
+        <EverytimeButton type="button" onClick={handleEverytimeSearch}>
+          에브리타임에서 관련 후기 검색하기 ›
+        </EverytimeButton>
       </ContentWrapper>
     </EmptyState>
   );
@@ -74,15 +67,6 @@ const EmptyDescription = styled.p`
   text-align: center;
 `;
 
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  gap: 12px;
-  margin-top: 12px;
-`;
-
 const EverytimeButton = styled.button`
   background: none;
   border: none;
@@ -91,7 +75,8 @@ const EverytimeButton = styled.button`
   font-weight: 500;
   text-decoration: underline;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 8px 12px;
+  margin-top: 8px;
   transition: color 0.15s ease;
 
   &:hover {
