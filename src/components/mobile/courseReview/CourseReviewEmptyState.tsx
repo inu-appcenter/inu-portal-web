@@ -28,7 +28,7 @@ export default function CourseReviewEmptyState({
         <EmptyDescription>
           {courseName} 수업을 들어보셨다면
           <br />
-          첫 번째 후기를 남겨 후배들에게 도움을 주세요!
+          첫 번째 후기를 남겨보세요.
         </EmptyDescription>
 
         <EverytimeButton type="button" onClick={handleEverytimeSearch}>

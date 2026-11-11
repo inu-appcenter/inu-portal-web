@@ -140,8 +140,8 @@ export default function MyEnrolledCoursesSection({
           <SectionTitle>내 수강 강의</SectionTitle>
         </SectionHeader>
         <GuideCard onClick={() => navigate(ROUTES.LOGIN)}>
-          <GuideTitle>로그인하고 내 수업 강의평 확인하기</GuideTitle>
-          <GuideDesc>내가 듣는 수업의 후기를 한눈에 확인하고 바로 후기를 남겨보세요.</GuideDesc>
+          <GuideTitle>로그인하고 수강 강의 확인하기</GuideTitle>
+          <GuideDesc>시간표에 등록된 수업들의 강의평을 모아볼 수 있어요.</GuideDesc>
         </GuideCard>
       </SectionWrapper>
     );
@@ -155,7 +155,7 @@ export default function MyEnrolledCoursesSection({
         </SectionHeader>
         <GuideCard onClick={() => navigate(ROUTES.TIMETABLE.ROOT)}>
           <GuideTitle>시간표에 강의를 담아보세요</GuideTitle>
-          <GuideDesc>시간표를 등록하면 수강 중인 수업들의 강의평을 한눈에 모아볼 수 있어요.</GuideDesc>
+          <GuideDesc>수업을 등록하면 내 강의평을 모아볼 수 있어요.</GuideDesc>
         </GuideCard>
       </SectionWrapper>
     );

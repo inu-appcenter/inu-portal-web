@@ -22,7 +22,6 @@ export default function RecentReviewsFeedSection() {
     <SectionWrapper>
       <SectionHeader>
         <SectionTitle>최근 등록된 강의평</SectionTitle>
-        <SectionSubtitle>학우들이 남긴 생생한 후기</SectionSubtitle>
       </SectionHeader>
 
       <FeedList>
@@ -34,7 +33,7 @@ export default function RecentReviewsFeedSection() {
         ) : !recentReviews || recentReviews.length === 0 ? (
           <EmptyFeedBox>
             <EmptyFeedTitle>아직 등록된 강의평이 없어요</EmptyFeedTitle>
-            <EmptyFeedDesc>첫 번째 강의평을 작성해 다른 학우들에게 도움을 주세요!</EmptyFeedDesc>
+            <EmptyFeedDesc>가장 먼저 후기를 남겨보세요.</EmptyFeedDesc>
           </EmptyFeedBox>
         ) : (
           recentReviews.map((review) => (
@@ -127,11 +126,6 @@ const SectionTitle = styled.h3`
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
-`;
-
-const SectionSubtitle = styled.span`
-  font-size: 12px;
-  color: var(--text-caption, #8b95a1);
 `;
 
 const FeedList = styled.div`
