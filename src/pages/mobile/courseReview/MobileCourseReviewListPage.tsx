@@ -13,6 +13,7 @@ import {
   useCourseReviewSummary,
   useToggleCourseReviewLike,
   useReportCourseReview,
+  useMyCourseReviews,
 } from "@/hooks/useCourseReviews";
 import CourseReviewCard from "@/components/mobile/courseReview/CourseReviewCard";
 import CourseReviewStatsBottomSheet from "@/components/mobile/courseReview/CourseReviewStatsBottomSheet";
@@ -111,6 +112,9 @@ export default function MobileCourseReviewListPage() {
   // 리뷰 목록 및 요약 통계 쿼리
   const queryProfessor =
     selectedProfessorTab === "all" ? undefined : selectedProfessorTab;
+
+  const { data: myReviews = [] } = useMyCourseReviews({ enabled: isLoggedIn });
+  const myReviewIds = useMemo(() => new Set(myReviews.map((r) => r.id)), [myReviews]);
 
   const { data: reviewsPage, isLoading: isReviewsLoading } = useCourseReviews(
     courseId,
@@ -303,15 +307,19 @@ export default function MobileCourseReviewListPage() {
             onWriteClick={handleWriteClick}
           />
         ) : (
-          reviews.map((review) => (
-            <CourseReviewCard
-              key={review.id}
-              review={review}
-              showProfessor={selectedProfessorTab === "all"}
-              onLikeToggle={handleLikeToggle}
-              onReportClick={(id) => setReportReviewId(id)}
-            />
-          ))
+          reviews.map((review) => {
+            const isMine = Boolean(review.isMyReview || myReviewIds.has(review.id));
+            const enrichedReview = isMine ? { ...review, isMyReview: true } : review;
+            return (
+              <CourseReviewCard
+                key={review.id}
+                review={enrichedReview}
+                showProfessor={selectedProfessorTab === "all"}
+                onLikeToggle={handleLikeToggle}
+                onReportClick={(id) => setReportReviewId(id)}
+              />
+            );
+          })
         )}
       </ListArea>
 
