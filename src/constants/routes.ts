@@ -179,6 +179,7 @@ export const ROUTES = {
   // 관리자
   ADMIN: {
     ROOT: "/admin",
+    STATS: "/admin/stats",
     USER_STAT: "/admin/userstatistics",
     API_STAT: "/admin/apistatistics",
     USER_NOTIFICATIION: "/admin/usernotification",
