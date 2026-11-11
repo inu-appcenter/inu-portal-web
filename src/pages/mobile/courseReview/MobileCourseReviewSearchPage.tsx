@@ -25,20 +25,51 @@ import MyEnrolledCoursesSection from "@/components/mobile/courseReview/MyEnrolle
 import RecentReviewsFeedSection from "@/components/mobile/courseReview/RecentReviewsFeedSection";
 import type { Term } from "@/types/timetables";
 
+const TAB_STORAGE_KEY = "COURSE_REVIEWS_ACTIVE_TAB";
+const SCROLL_STORAGE_KEY = "COURSE_REVIEWS_SCROLL_Y";
+const EXPANDED_STORAGE_KEY = "COURSE_REVIEWS_EXPANDED_ID";
+
 export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
 
-  // 상단 탭: 둘러보기(기본) vs 전체 강의
-  const [activeTab, setActiveTab] = useState<string>("discovery");
+  // 상단 탭: 둘러보기(기본) vs 전체 강의 (URL 파라미터 및 세션 스토리지 복원)
+  const [activeTab, setActiveTabState] = useState<string>(() => {
+    const fromUrl = searchParams.get("tab");
+    if (fromUrl === "all" || fromUrl === "discovery") return fromUrl;
+    const fromSession = sessionStorage.getItem(TAB_STORAGE_KEY);
+    if (fromSession === "all" || fromSession === "discovery") return fromSession;
+    return "discovery";
+  });
+
+  const setActiveTab = useCallback(
+    (newTab: string) => {
+      setActiveTabState(newTab);
+      sessionStorage.setItem(TAB_STORAGE_KEY, newTab);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (newTab === "discovery") {
+            next.delete("tab");
+          } else {
+            next.set("tab", newTab);
+          }
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const keyword = searchParams.get("courseQuery") || "";
 
   useEffect(() => {
     if (keyword.trim()) {
       setActiveTab("all");
     }
-  }, [keyword]);
+  }, [keyword, setActiveTab]);
 
   const tabs = useMemo(
     () => [
@@ -137,13 +168,57 @@ export default function MobileCourseReviewSearchPage() {
     return list;
   }, [searchResults, keyword]);
 
-  // 아코디언 펼침 상태
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  // 아코디언 펼침 상태 (세션 스토리지 복원)
+  const [expandedId, setExpandedId] = useState<number | null>(() => {
+    const saved = sessionStorage.getItem(EXPANDED_STORAGE_KEY);
+    return saved ? Number(saved) : null;
+  });
+
   const handleToggleExpand = useCallback((id: number) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+    setExpandedId((prev) => {
+      const next = prev === id ? null : id;
+      if (next !== null) {
+        sessionStorage.setItem(EXPANDED_STORAGE_KEY, String(next));
+      } else {
+        sessionStorage.removeItem(EXPANDED_STORAGE_KEY);
+      }
+      return next;
+    });
   }, []);
 
   const isLoading = isOfferingsLoading || isCoursesLoading;
+
+  // 스크롤 위치 저장 (스크롤 시 세션 스토리지 기록)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        sessionStorage.setItem(SCROLL_STORAGE_KEY, String(window.scrollY));
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // 상세/계획서 페이지에서 뒤로가기로 복귀했을 때 스크롤 복원
+  const isRestoredRef = useRef(false);
+  useEffect(() => {
+    if (isLoading) return;
+
+    const savedY = sessionStorage.getItem(SCROLL_STORAGE_KEY);
+    if (!savedY || isRestoredRef.current) return;
+
+    const top = Number(savedY);
+    if (!isNaN(top) && top > 0) {
+      isRestoredRef.current = true;
+      const timer = setTimeout(() => {
+        window.scrollTo({ top, behavior: "instant" });
+      }, 70);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, activeTab]);
 
   return (
     <PageWrapper $isAllTab={activeTab === "all"}>
