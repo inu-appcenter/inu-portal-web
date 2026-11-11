@@ -18,7 +18,7 @@ export default function CourseReviewStatsBottomSheet({
   const total = summary.totalReviews;
 
   return (
-    <BottomSheet open={open} onOpenChange={onOpenChange} maxHeight="85vh">
+    <BottomSheet open={open} onOpenChange={onOpenChange} maxHeight="85vh" handle="compact">
       <SheetInner>
         <HeaderArea>
           <SheetTitle>상세 평가 분석</SheetTitle>
@@ -119,7 +119,7 @@ function RatioItem({ label, percent }: { label: string; percent: number }) {
 const SheetInner = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 12px 20px 32px;
+  padding: 4px 16px 16px;
   overflow-y: auto;
   box-sizing: border-box;
 `;
@@ -128,12 +128,12 @@ const HeaderArea = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 `;
 
 const SheetTitle = styled.h3`
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text-primary);
 `;
@@ -147,12 +147,12 @@ const SheetSubtitle = styled.p`
 const SectionContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 `;
 
 const SectionTitle = styled.h4`
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-secondary);
 `;
@@ -160,7 +160,7 @@ const SectionTitle = styled.h4`
 const DistributionList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const DistributionRow = styled.div`
@@ -205,14 +205,18 @@ const CountLabel = styled.span`
 const Divider = styled.div`
   height: 1px;
   background: var(--border-divider, #e5e8eb);
-  margin: 20px 0;
+  margin: 14px 0;
 `;
 
 const MetricBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 5px;
+  margin-bottom: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const MetricLabel = styled.span`
@@ -224,7 +228,7 @@ const MetricLabel = styled.span`
 const RatioGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 `;
 
 const RatioRow = styled.div`

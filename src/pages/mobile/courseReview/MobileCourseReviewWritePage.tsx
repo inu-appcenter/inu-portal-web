@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { ChevronDown } from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
@@ -273,12 +274,12 @@ export default function MobileCourseReviewWritePage() {
             type="button"
             onClick={() => setIsSemesterSheetOpen(true)}
           >
-            <ReadOnlyLabel>수강 학기 (변경 가능)</ReadOnlyLabel>
+            <ReadOnlyLabel>수강 학기</ReadOnlyLabel>
             <SelectableValueRow>
               <ReadOnlyValue>
                 {year}년 {currentTermLabel}
               </ReadOnlyValue>
-              <ChangeBadge>변경</ChangeBadge>
+              <ChevronDown size={18} color="var(--text-secondary)" />
             </SelectableValueRow>
           </SelectableInfoItem>
           <ReadOnlyInfoItem>
@@ -493,9 +494,6 @@ export default function MobileCourseReviewWritePage() {
         />
         <CountRow>
           <NoticeText>욕설, 인격 비방 등 부적절한 글은 블라인드 처리될 수 있어요.</NoticeText>
-          <CharCount $valid={isContentValid}>
-            {content.length} / 1000자
-          </CharCount>
         </CountRow>
       </FormSection>
 
@@ -786,14 +784,6 @@ const NoticeText = styled.span`
   color: var(--text-caption, #8b95a1);
 `;
 
-const CharCount = styled.span<{ $valid: boolean }>`
-  font-size: 12px;
-  font-weight: 600;
-  color: ${({ $valid }) =>
-    $valid ? "var(--interactive-primary, #3182f6)" : "var(--text-error, #f04452)"};
-  white-space: nowrap;
-`;
-
 const BottomActionWrapper = styled.div`
   position: fixed;
   bottom: 0;
@@ -856,15 +846,6 @@ const SelectableValueRow = styled.div`
   align-items: center;
   justify-content: space-between;
   width: 100%;
-`;
-
-const ChangeBadge = styled.span`
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--interactive-primary, #3182f6);
-  background: var(--bg-brand, #e8f3ff);
-  padding: 2px 6px;
-  border-radius: 4px;
 `;
 
 const NoticeBanner = styled.div`

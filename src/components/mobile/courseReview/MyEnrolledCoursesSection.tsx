@@ -233,7 +233,7 @@ export default function MyEnrolledCoursesSection({
                     type="button"
                     onClick={(e) => handleWriteClick(e, item)}
                   >
-                    후기 쓰기 ✎
+                    후기 쓰기
                   </WriteActionButton>
                 )}
               </CardBottomRow>
