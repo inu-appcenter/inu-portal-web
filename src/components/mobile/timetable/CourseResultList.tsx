@@ -54,10 +54,20 @@ const openLectureReview = (
   const targetCourseId = course.numericCourseId || offering?.courseId || matchedCourse?.id;
 
   if (targetCourseId) {
+    const termNum =
+      offering?.term === "SECOND"
+        ? 2
+        : offering?.term === "FIRST"
+          ? 1
+          : undefined;
+
     navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
       state: {
         courseName: course.name,
         professorName: course.professor?.trim() || undefined,
+        year: offering?.year,
+        term: termNum,
+        courseOfferingId: course.id,
       },
     });
     return;

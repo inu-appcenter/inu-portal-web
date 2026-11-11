@@ -166,11 +166,21 @@ export default function ClassDetailBottomSheet({
   const handleLectureReviewClick = () => {
     if (targetCourseId) {
       onOpenChange(false);
+      const termNum =
+        offering?.term === "SECOND"
+          ? 2
+          : offering?.term === "FIRST"
+            ? 1
+            : undefined;
+
       navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
         state: {
           courseName: liveClass.name,
           professorName:
             professorName && professorName !== "-" ? professorName : undefined,
+          year: offering?.year,
+          term: termNum,
+          courseOfferingId: offering?.id || liveClass.courseOfferingId,
         },
       });
       return;

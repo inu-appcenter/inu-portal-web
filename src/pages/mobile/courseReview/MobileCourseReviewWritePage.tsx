@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
@@ -40,31 +40,6 @@ export default function MobileCourseReviewWritePage() {
     (location.state as any)?.courseTitle ||
     "강의평 작성";
 
-  // 학기 옵션 목록 (서버 학기 목록 기준 + 최신순 정렬)
-  const semesterOptions = useMemo(() => {
-    if (semesters.length > 0) {
-      return semesters.map((s) => {
-        const termNum = s.term === "SECOND" ? 2 : 1;
-        const termText = s.term === "SECOND" ? "2학기" : "1학기";
-        return {
-          id: s.id,
-          year: s.year,
-          term: termNum,
-          value: `${s.year}-${termNum}`,
-          label: `${s.year}년 ${termText}`,
-        };
-      });
-    }
-    return [
-      { id: 1, year: 2026, term: 2, value: "2026-2", label: "2026년 2학기" },
-      { id: 2, year: 2026, term: 1, value: "2026-1", label: "2026년 1학기" },
-      { id: 3, year: 2025, term: 2, value: "2025-2", label: "2025년 2학기" },
-      { id: 4, year: 2025, term: 1, value: "2025-1", label: "2025년 1학기" },
-      { id: 5, year: 2024, term: 2, value: "2024-2", label: "2024년 2학기" },
-      { id: 6, year: 2024, term: 1, value: "2024-1", label: "2024년 1학기" },
-    ];
-  }, [semesters]);
-
   // 해당 과목의 교수 목록
   const professors = useMemo(() => {
     const set = new Set<string>();
@@ -79,31 +54,35 @@ export default function MobileCourseReviewWritePage() {
     return Array.from(set);
   }, [courseOfferings, courseId]);
 
-  const initialProfessor = (location.state as any)?.professor || professors[0] || "";
+  const initialProfessor =
+    (location.state as any)?.professor ||
+    (location.state as any)?.professorName ||
+    professors[0] ||
+    "";
 
-  // 기본 학기 계산 (현재 학기 우선)
+  // 기본 학기 계산 (전달받은 state 우선, 없으면 현재 학기)
   const defaultSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
-  const defaultYear = defaultSemester?.year ?? 2026;
-  const defaultTerm = defaultSemester?.term === "SECOND" ? 2 : 1;
+  const initialYear =
+    Number((location.state as any)?.year) ||
+    defaultSemester?.year ||
+    2026;
+  const initialTerm =
+    Number((location.state as any)?.term) ||
+    (defaultSemester?.term === "SECOND" ? 2 : 1);
 
   // 폼 상태
   const [professor, setProfessor] = useState<string>(initialProfessor);
-  const [year, setYear] = useState<number>(defaultYear);
-  const [term, setTerm] = useState<number>(defaultTerm);
+  const [year] = useState<number>(initialYear);
+  const [term] = useState<number>(initialTerm);
   const [rating, setRating] = useState<number>(5);
-  const [gradeSatisfaction, setGradeSatisfaction] = useState<GradeSatisfaction>("GENEROUS");
-  const [assignmentAmount, setAssignmentAmount] = useState<AssignmentAmount>("NORMAL");
-  const [teamProject, setTeamProject] = useState<TeamProject>("NONE");
-  const [examCount, setExamCount] = useState<ExamCount>("TWICE");
-  const [attendanceType, setAttendanceType] = useState<AttendanceType>("ELECTRONIC");
-  const [content, setContent] = useState<string>("");
 
-  useEffect(() => {
-    if (defaultSemester) {
-      setYear(defaultSemester.year);
-      setTerm(defaultSemester.term === "SECOND" ? 2 : 1);
-    }
-  }, [defaultSemester]);
+  // 5대 세부 지표 초기값 해제 (null 시작)
+  const [gradeSatisfaction, setGradeSatisfaction] = useState<GradeSatisfaction | null>(null);
+  const [assignmentAmount, setAssignmentAmount] = useState<AssignmentAmount | null>(null);
+  const [teamProject, setTeamProject] = useState<TeamProject | null>(null);
+  const [examCount, setExamCount] = useState<ExamCount | null>(null);
+  const [attendanceType, setAttendanceType] = useState<AttendanceType | null>(null);
+  const [content, setContent] = useState<string>("");
 
   // 수강 인증 여부 체크 (시간표 스토어 기준)
   const isEnrolledLocally = useMemo(() => {
@@ -123,11 +102,33 @@ export default function MobileCourseReviewWritePage() {
     hasback: true,
   });
 
-  const isContentValid = content.trim().length >= 20;
-  const isFormValid = Boolean(professor && isContentValid);
+  // 5대 세부 지표 선택 완료 여부
+  const isEvaluationComplete = Boolean(
+    gradeSatisfaction &&
+      assignmentAmount &&
+      teamProject &&
+      examCount &&
+      attendanceType,
+  );
+
+  // 총평은 자율 입력(0자도 허용, 1000자 이내)
+  const isContentValid = content.length <= 1000;
+  const isFormValid = Boolean(
+    rating > 0 &&
+      professor &&
+      year &&
+      term &&
+      isEvaluationComplete &&
+      isContentValid,
+  );
 
   const handleSubmit = () => {
     if (!isFormValid || createMutation.isPending) return;
+
+    if (!gradeSatisfaction || !assignmentAmount || !teamProject || !examCount || !attendanceType) {
+      alert("세부 평가 항목을 모두 선택해주세요.");
+      return;
+    }
 
     createMutation.mutate(
       {
@@ -144,7 +145,7 @@ export default function MobileCourseReviewWritePage() {
       },
       {
         onSuccess: () => {
-          alert("강의평이 성공적으로 등록되었습니다!");
+          alert("강의평이 등록되었습니다.");
           navigate(ROUTES.COURSE.REVIEW(courseId), { replace: true });
         },
         onError: (err: any) => {
@@ -161,54 +162,43 @@ export default function MobileCourseReviewWritePage() {
         {isEnrolledLocally && <Badge text="수강생 인증 완료" />}
       </CourseHeader>
 
-      {/* 1. 수강 정보 선택 섹션 */}
+      {/* 1. 수강 정보 섹션 (읽기 전용) */}
       <FormSection>
         <SectionTitle>수강 정보</SectionTitle>
-
-        <FormRow>
-          <FieldLabel>수강 학기</FieldLabel>
-          <SelectWrapper>
-            <StyledSelect
-              value={`${year}-${term}`}
-              onChange={(e) => {
-                const [y, t] = e.target.value.split("-").map(Number);
-                setYear(y);
-                setTerm(t);
-              }}
-            >
-              {semesterOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </StyledSelect>
-          </SelectWrapper>
-        </FormRow>
-
-        <FormRow>
-          <FieldLabel>담당 교수</FieldLabel>
-          {professors.length > 0 ? (
-            <ChipRadioRow>
-              {professors.map((p) => (
-                <ChipRadio
-                  key={p}
-                  type="button"
-                  $selected={professor === p}
-                  onClick={() => setProfessor(p)}
-                >
-                  {p} 교수
-                </ChipRadio>
-              ))}
-            </ChipRadioRow>
-          ) : (
-            <StyledInput
-              type="text"
-              placeholder="교수명을 입력하세요"
-              value={professor}
-              onChange={(e) => setProfessor(e.target.value)}
-            />
-          )}
-        </FormRow>
+        <ReadOnlyInfoGrid>
+          <ReadOnlyInfoItem>
+            <ReadOnlyLabel>수강 학기</ReadOnlyLabel>
+            <ReadOnlyValue>
+              {year}년 {term}학기
+            </ReadOnlyValue>
+          </ReadOnlyInfoItem>
+          <ReadOnlyInfoItem>
+            <ReadOnlyLabel>담당 교수</ReadOnlyLabel>
+            {professor ? (
+              <ReadOnlyValue>{professor} 교수</ReadOnlyValue>
+            ) : professors.length > 0 ? (
+              <ChipRadioRow>
+                {professors.map((p) => (
+                  <ChipRadio
+                    key={p}
+                    type="button"
+                    $selected={professor === p}
+                    onClick={() => setProfessor(p)}
+                  >
+                    {p} 교수
+                  </ChipRadio>
+                ))}
+              </ChipRadioRow>
+            ) : (
+              <StyledInput
+                type="text"
+                placeholder="교수명을 입력하세요"
+                value={professor}
+                onChange={(e) => setProfessor(e.target.value)}
+              />
+            )}
+          </ReadOnlyInfoItem>
+        </ReadOnlyInfoGrid>
       </FormSection>
 
       {/* 2. 총점 별점 선택 */}
@@ -239,7 +229,10 @@ export default function MobileCourseReviewWritePage() {
 
       {/* 3. 5대 세부 지표 선택 */}
       <FormSection>
-        <SectionTitle>세부 평가 항목</SectionTitle>
+        <SectionHeaderRow>
+          <SectionTitle>세부 평가 항목</SectionTitle>
+          <RequiredTag>필수</RequiredTag>
+        </SectionHeaderRow>
 
         <FieldBlock>
           <FieldLabel>학점 비율</FieldLabel>
@@ -377,11 +370,14 @@ export default function MobileCourseReviewWritePage() {
         </FieldBlock>
       </FormSection>
 
-      {/* 4. 총평 서술형 본문 */}
+      {/* 4. 총평 서술형 본문 (자율 선택) */}
       <FormSection>
-        <SectionTitle>총평 작성</SectionTitle>
+        <SectionHeaderRow>
+          <SectionTitle>총평 작성</SectionTitle>
+          <OptionalTag>자율 선택</OptionalTag>
+        </SectionHeaderRow>
         <TextArea
-          placeholder="수업 진행 방식, 시험 출제 경향, 과제 팁 등 후배들에게 도움이 될 솔직한 조언을 남겨주세요. (최소 20자 이상)"
+          placeholder="수업 진행 방식, 시험 출제 경향, 과제 팁 등 후배들에게 전하고 싶은 점을 편하게 남겨주세요."
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, 1000))}
           rows={5}
@@ -389,7 +385,7 @@ export default function MobileCourseReviewWritePage() {
         <CountRow>
           <NoticeText>욕설, 인격 비방 등 부적절한 글은 블라인드 처리될 수 있어요.</NoticeText>
           <CharCount $valid={isContentValid}>
-            {content.length} / 1000자 {content.length < 20 && `(최소 20자)`}
+            {content.length} / 1000자
           </CharCount>
         </CountRow>
       </FormSection>
@@ -397,6 +393,11 @@ export default function MobileCourseReviewWritePage() {
       {/* 5. 하단 순수 플로팅 제출 CTA */}
       <BottomActionWrapper>
         <FloatingButtonContainer>
+          {!isEvaluationComplete && (
+            <FloatingTipMessage>
+              세부 평가 5개 항목을 모두 선택해주세요
+            </FloatingTipMessage>
+          )}
           <CapsuleButton
             variant="primary"
             fullWidth
@@ -453,6 +454,12 @@ const FormSection = styled.div`
   box-sizing: border-box;
 `;
 
+const SectionHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 const SectionTitle = styled.h3`
   margin: 0;
   font-size: 15px;
@@ -460,10 +467,53 @@ const SectionTitle = styled.h3`
   color: var(--text-primary);
 `;
 
-const FormRow = styled.div`
+const RequiredTag = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  background: var(--bg-brand, #e8f3ff);
+  padding: 3px 8px;
+  border-radius: 6px;
+`;
+
+const OptionalTag = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-caption, #8b95a1);
+  background: var(--bg-base, #f2f4f6);
+  padding: 3px 8px;
+  border-radius: 6px;
+`;
+
+const ReadOnlyInfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+`;
+
+const ReadOnlyInfoItem = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-base, #f9fafb);
+  border-radius: 10px;
+  border: 1px solid var(--border-default, #e5e8eb);
+`;
+
+const ReadOnlyLabel = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-caption, #8b95a1);
+`;
+
+const ReadOnlyValue = styled.span`
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const FieldBlock = styled.div`
@@ -476,23 +526,6 @@ const FieldLabel = styled.span`
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-`;
-
-const SelectWrapper = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const StyledSelect = styled.select`
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border-default, #e5e8eb);
-  background: var(--bg-base, #f9fafb);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
-  outline: none;
 `;
 
 const StyledInput = styled.input`
@@ -617,6 +650,19 @@ const BottomActionWrapper = styled.div`
   align-items: center;
   pointer-events: none;
   z-index: 100;
+`;
+
+const FloatingTipMessage = styled.div`
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #4e5968);
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(4px);
 `;
 
 const FloatingButtonContainer = styled.div`

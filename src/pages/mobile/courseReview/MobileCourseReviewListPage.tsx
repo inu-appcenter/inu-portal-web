@@ -170,10 +170,28 @@ export default function MobileCourseReviewListPage() {
       navigate(ROUTES.LOGIN);
       return;
     }
+
+    const stateYear = (location.state as any)?.year;
+    const stateTerm = (location.state as any)?.term;
+    const offeringTermNum =
+      selectedOffering?.term === "SECOND"
+        ? 2
+        : selectedOffering?.term === "FIRST"
+          ? 1
+          : undefined;
+
     navigate(ROUTES.COURSE.REVIEW_WRITE(courseId), {
       state: {
         courseTitle,
-        professor: queryProfessor || availableProfessors[0],
+        professor:
+          (location.state as any)?.professorName ||
+          queryProfessor ||
+          selectedOffering?.professor ||
+          availableProfessors[0],
+        year: stateYear ?? selectedOffering?.year,
+        term: stateTerm ?? offeringTermNum,
+        courseOfferingId:
+          (location.state as any)?.courseOfferingId ?? targetOfferingId,
       },
     });
   };
