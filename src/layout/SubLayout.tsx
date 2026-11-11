@@ -1,5 +1,5 @@
 import { Suspense, useEffect, useRef } from "react";
-import { useLocation, useOutlet } from "react-router-dom";
+import { useLocation, useOutlet, useNavigationType } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
@@ -51,14 +51,18 @@ export default function SubLayout({
   backgroundColor,
 }: SubLayoutProps) {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const outlet = useOutlet();
   const { setIsScrolled, pageBgColor, immersive } = useHeaderConfig(location.pathname);
   const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // 뒤로가기(POP)일 때는 브라우저 기본 스크롤 복원을 위해 강제 상단 이동(scrollTo 0, 0)을 생략
+    if (navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
     setIsScrolled(false);
-  }, [location.pathname, setIsScrolled]);
+  }, [location.pathname, navigationType, setIsScrolled]);
 
   useEffect(() => {
     const handleScroll = () => {

@@ -26,10 +26,7 @@ import RecentReviewsFeedSection from "@/components/mobile/courseReview/RecentRev
 import useUserStore from "@/stores/useUserStore";
 import type { Term } from "@/types/timetables";
 
-const TAB_STORAGE_KEY = "COURSE_REVIEWS_ACTIVE_TAB";
-const SCROLL_STORAGE_KEY = "COURSE_REVIEWS_SCROLL_Y";
 const EXPANDED_STORAGE_KEY = "COURSE_REVIEWS_EXPANDED_ID";
-const TARGET_ID_STORAGE_KEY = "COURSE_REVIEWS_TARGET_ID";
 
 export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
@@ -38,29 +35,14 @@ export default function MobileCourseReviewSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
 
-  // 브라우저 자체의 스크롤 자동 복원 간섭 차단
-  useEffect(() => {
-    if ("scrollRestoration" in window.history) {
-      const original = window.history.scrollRestoration;
-      window.history.scrollRestoration = "manual";
-      return () => {
-        window.history.scrollRestoration = original;
-      };
-    }
-  }, []);
-
-  // 외부에서 새로 진입(PUSH/REPLACE)한 경우 이전 세션 스토리지 상태를 깨끗이 초기화
+  // 외부에서 새로 진입(PUSH/REPLACE)한 경우 이전 펼침 상태 세션 스토리지 초기화
   useEffect(() => {
     if (!isBackNavigation) {
       try {
-        sessionStorage.removeItem(TAB_STORAGE_KEY);
-        sessionStorage.removeItem(SCROLL_STORAGE_KEY);
         sessionStorage.removeItem(EXPANDED_STORAGE_KEY);
-        sessionStorage.removeItem(TARGET_ID_STORAGE_KEY);
       } catch {
         // ignore
       }
-      window.scrollTo(0, 0);
     }
   }, [isBackNavigation]);
 
@@ -74,21 +56,15 @@ export default function MobileCourseReviewSearchPage() {
     }
   }, [isLoggedIn, navigate]);
 
-  // 상단 탭: 둘러보기(기본) vs 전체 강의 (POP 뒤로가기 시에만 세션 스토리지 복원)
-  const [activeTab, setActiveTabState] = useState<string>(() => {
+  // 상단 탭: URL 파라미터(?tab=all) 기반으로 둘러보기 vs 전체 강의 유지
+  const activeTab = useMemo(() => {
     const fromUrl = searchParams.get("tab");
-    if (fromUrl === "all" || fromUrl === "discovery") return fromUrl;
-    if (isBackNavigation) {
-      const fromSession = sessionStorage.getItem(TAB_STORAGE_KEY);
-      if (fromSession === "all" || fromSession === "discovery") return fromSession;
-    }
+    if (fromUrl === "all") return "all";
     return "discovery";
-  });
+  }, [searchParams]);
 
   const setActiveTab = useCallback(
     (newTab: string) => {
-      setActiveTabState(newTab);
-      sessionStorage.setItem(TAB_STORAGE_KEY, newTab);
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -235,85 +211,6 @@ export default function MobileCourseReviewSearchPage() {
   }, []);
 
   const isLoading = isOfferingsLoading || isCoursesLoading;
-
-  // 스크롤 복원 진행 중 여부 (복원 중 스크롤 이벤트가 이전 저장값을 덮어쓰지 않도록 보호)
-  const isRestoringRef = useRef(isBackNavigation);
-
-  // 스크롤 위치 저장 (스크롤 시 세션 스토리지 기록)
-  useEffect(() => {
-    const handleScroll = () => {
-      // 뒤로가기 복원 도중 발생하는 중간 스크롤 이벤트는 무시
-      if (isRestoringRef.current) return;
-      if (window.scrollY > 0) {
-        sessionStorage.setItem(SCROLL_STORAGE_KEY, String(window.scrollY));
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // 상세/계획서 페이지에서 뒤로가기(POP)로 복귀했을 때만 스크롤 복원
-  const isRestoredRef = useRef(false);
-  useEffect(() => {
-    if (!isBackNavigation) {
-      isRestoringRef.current = false;
-      return;
-    }
-    if (isLoading || isRestoredRef.current) return;
-
-    const targetId = sessionStorage.getItem(TARGET_ID_STORAGE_KEY);
-    const savedY = sessionStorage.getItem(SCROLL_STORAGE_KEY);
-    if (!targetId && !savedY) {
-      isRestoringRef.current = false;
-      return;
-    }
-
-    isRestoredRef.current = true;
-
-    const restore = () => {
-      // 1) 클릭했던 특정 카드 엘리먼트가 존재하면 해당 엘리먼트 위치를 우선 복원
-      if (targetId) {
-        const targetElement = document.querySelector<HTMLElement>(
-          `[data-course-id="${targetId}"]`,
-        );
-        if (targetElement) {
-          const rect = targetElement.getBoundingClientRect();
-          // 헤더 및 탭바 높이(약 108px)를 고려해 카드가 시야에 편안하게 들어오도록 정렬
-          const headerOffset = 108;
-          const targetScroll = window.scrollY + rect.top - headerOffset;
-          window.scrollTo({ top: Math.max(0, targetScroll), behavior: "instant" });
-
-          setTimeout(() => {
-            isRestoringRef.current = false;
-          }, 120);
-          return;
-        }
-      }
-
-      // 2) 카드를 못 찾으면 저장된 스크롤 픽셀(px)로 폴백
-      if (savedY) {
-        const top = Number(savedY);
-        if (!isNaN(top) && top > 0) {
-          window.scrollTo({ top, behavior: "instant" });
-        }
-      }
-
-      setTimeout(() => {
-        isRestoringRef.current = false;
-      }, 120);
-    };
-
-    // DOM 렌더링 및 레이아웃이 안정화된 후 복원
-    const rafId = requestAnimationFrame(() => {
-      const timer = setTimeout(restore, 60);
-      return () => clearTimeout(timer);
-    });
-
-    return () => cancelAnimationFrame(rafId);
-  }, [isLoading, isBackNavigation, activeTab, filteredResults.length]);
 
   if (!isLoggedIn) {
     return null;
