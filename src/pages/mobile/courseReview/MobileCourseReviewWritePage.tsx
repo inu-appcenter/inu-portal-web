@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import Badge from "@/components/common/Badge";
+import BottomSheet from "@/components/common/BottomSheet";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
@@ -81,8 +82,9 @@ export default function MobileCourseReviewWritePage() {
 
   // 폼 상태
   const [professor, setProfessor] = useState<string>(initialProfessor);
-  const [year] = useState<number>(initialYear);
-  const [term] = useState<number>(initialTerm);
+  const [year, setYear] = useState<number>(initialYear);
+  const [term, setTerm] = useState<number>(initialTerm);
+  const [isSemesterSheetOpen, setIsSemesterSheetOpen] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(5);
 
   // 5대 세부 지표 초기값 해제 (null 시작)
@@ -139,6 +141,11 @@ export default function MobileCourseReviewWritePage() {
       return;
     }
 
+    const isConfirmed = window.confirm(
+      "강의평은 등록 후 수정이나 삭제를 할 수 없어요.\n이대로 등록할까요?"
+    );
+    if (!isConfirmed) return;
+
     createMutation.mutate(
       {
         courseOfferingId,
@@ -181,12 +188,18 @@ export default function MobileCourseReviewWritePage() {
       <FormSection>
         <SectionTitle>수강 정보</SectionTitle>
         <ReadOnlyInfoGrid>
-          <ReadOnlyInfoItem>
-            <ReadOnlyLabel>수강 학기</ReadOnlyLabel>
-            <ReadOnlyValue>
-              {year}년 {term}학기
-            </ReadOnlyValue>
-          </ReadOnlyInfoItem>
+          <SelectableInfoItem
+            type="button"
+            onClick={() => setIsSemesterSheetOpen(true)}
+          >
+            <ReadOnlyLabel>수강 학기 (변경 가능)</ReadOnlyLabel>
+            <SelectableValueRow>
+              <ReadOnlyValue>
+                {year}년 {term}학기
+              </ReadOnlyValue>
+              <ChangeBadge>변경</ChangeBadge>
+            </SelectableValueRow>
+          </SelectableInfoItem>
           <ReadOnlyInfoItem>
             <ReadOnlyLabel>담당 교수</ReadOnlyLabel>
             {professor ? (
@@ -408,6 +421,9 @@ export default function MobileCourseReviewWritePage() {
       {/* 5. 하단 순수 플로팅 제출 CTA */}
       <BottomActionWrapper>
         <FloatingButtonContainer>
+          <NoticeBanner>
+            강의평은 등록 후 수정이나 삭제를 할 수 없어요.
+          </NoticeBanner>
           {!isEvaluationComplete && (
             <FloatingTipMessage>
               세부 평가 5개 항목을 모두 선택해주세요
@@ -424,6 +440,39 @@ export default function MobileCourseReviewWritePage() {
           </CapsuleButton>
         </FloatingButtonContainer>
       </BottomActionWrapper>
+
+      <BottomSheet
+        open={isSemesterSheetOpen}
+        onOpenChange={setIsSemesterSheetOpen}
+        handle="compact"
+      >
+        <SemesterSheetContent>
+          <SheetHeaderTitle>수강 학기 선택</SheetHeaderTitle>
+          <SemesterList>
+            {semesters.map((s) => {
+              const termNum = (s.term as any) === "SECOND" || (s.term as any) === "2" || (s.term as any) === 2 ? 2 : 1;
+              const isSelected = year === s.year && term === termNum;
+              return (
+                <SemesterOption
+                  key={s.id}
+                  type="button"
+                  $selected={isSelected}
+                  onClick={() => {
+                    setYear(s.year);
+                    setTerm(termNum);
+                    setIsSemesterSheetOpen(false);
+                  }}
+                >
+                  <SemesterOptionText>
+                    {s.year}년 {termNum}학기
+                  </SemesterOptionText>
+                  {isSelected && <SelectedCheck>선택됨</SelectedCheck>}
+                </SemesterOption>
+              );
+            })}
+          </SemesterList>
+        </SemesterSheetContent>
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -688,4 +737,100 @@ const FloatingButtonContainer = styled.div`
   button {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
+`;
+
+
+const SelectableInfoItem = styled.button`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-base, #f9fafb);
+  border-radius: 10px;
+  border: 1px solid var(--border-default, #e5e8eb);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:active {
+    background: var(--bg-subtle, #f2f4f6);
+  }
+`;
+
+const SelectableValueRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const ChangeBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  background: var(--bg-brand, #e8f3ff);
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const NoticeBanner = styled.div`
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-caption, #8b95a1);
+  margin-bottom: 6px;
+`;
+
+const SemesterSheetContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+`;
+
+const SheetHeaderTitle = styled.h3`
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+`;
+
+const SemesterList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SemesterOption = styled.button<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid
+    ${({ $selected }) =>
+      $selected ? "var(--interactive-primary, #3182f6)" : "var(--border-default, #e5e8eb)"};
+  background: ${({ $selected }) =>
+    $selected ? "var(--bg-brand, #e8f3ff)" : "var(--bg-surface, #ffffff)"};
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+`;
+
+const SemesterOptionText = styled.span`
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+
+const SelectedCheck = styled.span`
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--interactive-primary, #3182f6);
 `;
