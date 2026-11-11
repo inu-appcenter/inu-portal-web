@@ -44,6 +44,7 @@ import MobileBusShuttleHelloBusPage from "@/pages/mobile/MobileBus/MobileBusShut
 import MobileBusShuttleRouteInfoPage from "@/pages/mobile/MobileBus/MobileBusShuttleRouteInfoPage";
 import MobileUnidormPage from "@/pages/mobile/MobileUnidormPage";
 import MobileAdminPage from "@/pages/mobile/Admin/MobileAdminPage";
+import MobileAdminStatsDashboardPage from "@/pages/mobile/Admin/MobileAdminStatsDashboardPage";
 import MobileAdminUserStatisticsPage from "@/pages/mobile/Admin/MobileAdminUserStatisticsPage";
 import MobileAdminApiStatisticsPage from "@/pages/mobile/Admin/MobileAdminApiStatisticsPage";
 import MobileAdminFeatureFlagsPage from "@/pages/mobile/Admin/MobileAdminFeatureFlagsPage";
@@ -394,6 +395,10 @@ export const router = createBrowserRouter([
 
           // 관리자
           { path: ROUTES.ADMIN.ROOT, element: <MobileAdminPage /> },
+          {
+            path: ROUTES.ADMIN.STATS,
+            element: <MobileAdminStatsDashboardPage />,
+          },
           {
             path: ROUTES.ADMIN.USER_STAT,
             element: <MobileAdminUserStatisticsPage />,

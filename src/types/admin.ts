@@ -132,3 +132,60 @@ export interface ScheduledNotificationData {
   fcmMessageId: number | null;
   failureReason: string | null;
 }
+
+// 관리자 통계 대시보드 (GET /api/admin/stats)
+export type StatsSourceStatus = "OK" | "NOT_CONFIGURED" | "FAILED";
+
+/** 출처별 조회 결과. 한 출처가 실패해도 응답은 200이라 status로 판단한다. */
+export interface StatsSourceResult<T> {
+  status: StatsSourceStatus;
+  message: string | null;
+  data: T | null;
+}
+
+/** SUMMARY: 하루 요약, RAW: 요약 전 원본 로그(오늘·어제), MISSING: 로그 없음 */
+export type StatsLogStatus = "SUMMARY" | "RAW" | "MISSING";
+
+export interface ServerStatsDailyPoint {
+  date: string;
+  loginUsers: number;
+  guestUsers: number;
+  signups: number;
+  logStatus: StatsLogStatus;
+}
+
+export interface ServerStatsSignupCohort {
+  month: string;
+  signups: number;
+  activeMembers30d: number;
+  partial: boolean;
+}
+
+export interface ServerStatsApiTrend {
+  method: string;
+  uri: string;
+  firstSeen: string | null;
+  total: number;
+  daily: number[];
+}
+
+export interface ServerStats {
+  summary: {
+    totalMembers: number;
+    activeMembers7d: number;
+    activeMembers30d: number;
+    signups: number;
+  };
+  daily: ServerStatsDailyPoint[];
+  signupCohorts: ServerStatsSignupCohort[];
+  apiTrends: ServerStatsApiTrend[];
+}
+
+export interface AdminStatsData {
+  from: string;
+  to: string;
+  generatedAt: string;
+  server: StatsSourceResult<ServerStats>;
+  /** 2단계(Mixpanel 연동)에서 구조가 정해진다 */
+  mixpanel: StatsSourceResult<unknown>;
+}
