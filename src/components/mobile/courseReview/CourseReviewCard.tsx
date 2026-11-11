@@ -29,12 +29,16 @@ export default function CourseReviewCard({
           {review.isVerified && <Badge text="수강생 인증" />}
         </HeaderLeft>
         <HeaderRight>
-          <ReportTextButton
-            type="button"
-            onClick={() => onReportClick(review.id)}
-          >
-            신고
-          </ReportTextButton>
+          {review.isMyReview ? (
+            <MyReviewBadge>내가 쓴 글</MyReviewBadge>
+          ) : (
+            <ReportTextButton
+              type="button"
+              onClick={() => onReportClick(review.id)}
+            >
+              신고
+            </ReportTextButton>
+          )}
         </HeaderRight>
       </CardHeader>
 
@@ -68,13 +72,19 @@ export default function CourseReviewCard({
           <WriterText>{review.writerDisplay}</WriterText>
           <DateText>{review.createdAt?.slice(0, 10)}</DateText>
         </FooterLeft>
-        <LikeButton
-          type="button"
-          $isLiked={review.isLiked}
-          onClick={() => onLikeToggle(review.id)}
-        >
-          도움돼요 {review.likeCount > 0 ? review.likeCount : ""}
-        </LikeButton>
+        {review.isMyReview ? (
+          review.likeCount > 0 ? (
+            <LikeCountStatic>도움돼요 {review.likeCount}</LikeCountStatic>
+          ) : null
+        ) : (
+          <LikeButton
+            type="button"
+            $isLiked={review.isLiked}
+            onClick={() => onLikeToggle(review.id)}
+          >
+            도움돼요 {review.likeCount > 0 ? review.likeCount : ""}
+          </LikeButton>
+        )}
       </CardFooter>
     </CardContainer>
   );
@@ -247,4 +257,21 @@ const LikeButton = styled.button<{ $isLiked: boolean }>`
   &:active {
     transform: scale(0.96);
   }
+`;
+
+
+const MyReviewBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--interactive-primary, #3182f6);
+  background: var(--bg-brand, #e8f3ff);
+  padding: 3px 8px;
+  border-radius: 6px;
+`;
+
+const LikeCountStatic = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary, #8b95a1);
+  padding: 4px 6px;
 `;
