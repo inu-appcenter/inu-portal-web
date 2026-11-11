@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
 import { SlidersHorizontal, ChevronDown, Check, Search } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useNavigationType } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useHeader } from "@/context/HeaderContext";
 import TabUpper from "@/components/common/TabUpper";
@@ -32,8 +32,24 @@ const EXPANDED_STORAGE_KEY = "COURSE_REVIEWS_EXPANDED_ID";
 
 export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+  const isBackNavigation = navigationType === "POP";
   const [searchParams, setSearchParams] = useSearchParams();
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  // 외부에서 새로 진입(PUSH/REPLACE)한 경우 이전 세션 스토리지 상태를 깨끗이 초기화
+  useEffect(() => {
+    if (!isBackNavigation) {
+      try {
+        sessionStorage.removeItem(TAB_STORAGE_KEY);
+        sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+        sessionStorage.removeItem(EXPANDED_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      window.scrollTo(0, 0);
+    }
+  }, [isBackNavigation]);
 
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
@@ -45,12 +61,14 @@ export default function MobileCourseReviewSearchPage() {
     }
   }, [isLoggedIn, navigate]);
 
-  // 상단 탭: 둘러보기(기본) vs 전체 강의 (URL 파라미터 및 세션 스토리지 복원)
+  // 상단 탭: 둘러보기(기본) vs 전체 강의 (POP 뒤로가기 시에만 세션 스토리지 복원)
   const [activeTab, setActiveTabState] = useState<string>(() => {
     const fromUrl = searchParams.get("tab");
     if (fromUrl === "all" || fromUrl === "discovery") return fromUrl;
-    const fromSession = sessionStorage.getItem(TAB_STORAGE_KEY);
-    if (fromSession === "all" || fromSession === "discovery") return fromSession;
+    if (isBackNavigation) {
+      const fromSession = sessionStorage.getItem(TAB_STORAGE_KEY);
+      if (fromSession === "all" || fromSession === "discovery") return fromSession;
+    }
     return "discovery";
   });
 
@@ -184,8 +202,9 @@ export default function MobileCourseReviewSearchPage() {
     return list;
   }, [searchResults, keyword]);
 
-  // 아코디언 펼침 상태 (세션 스토리지 복원)
+  // 아코디언 펼침 상태 (POP 뒤로가기 시에만 세션 스토리지 복원)
   const [expandedId, setExpandedId] = useState<number | null>(() => {
+    if (!isBackNavigation) return null;
     const saved = sessionStorage.getItem(EXPANDED_STORAGE_KEY);
     return saved ? Number(saved) : null;
   });
@@ -218,13 +237,14 @@ export default function MobileCourseReviewSearchPage() {
     };
   }, []);
 
-  // 상세/계획서 페이지에서 뒤로가기로 복귀했을 때 스크롤 복원
+  // 상세/계획서 페이지에서 뒤로가기(POP)로 복귀했을 때만 스크롤 복원
   const isRestoredRef = useRef(false);
   useEffect(() => {
-    if (isLoading) return;
+    if (!isBackNavigation) return;
+    if (isLoading || isRestoredRef.current) return;
 
     const savedY = sessionStorage.getItem(SCROLL_STORAGE_KEY);
-    if (!savedY || isRestoredRef.current) return;
+    if (!savedY) return;
 
     const top = Number(savedY);
     if (!isNaN(top) && top > 0) {
@@ -234,7 +254,7 @@ export default function MobileCourseReviewSearchPage() {
       }, 70);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, activeTab]);
+  }, [isLoading, isBackNavigation, activeTab]);
 
   if (!isLoggedIn) {
     return null;
