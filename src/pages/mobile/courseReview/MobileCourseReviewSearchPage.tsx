@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
-import { SlidersHorizontal, Search, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { SlidersHorizontal, ChevronDown, Check } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
@@ -12,49 +13,68 @@ import { countActiveFilters } from "@/components/mobile/timetable/filter/courseF
 import { mapFilterToOfferingFilters, mapCourseOfferingToCourseResult } from "@/utils/courseSearchResult";
 import CourseResultList from "@/components/mobile/timetable/CourseResultList";
 import type { CourseResult } from "@/components/mobile/timetable/CourseResultList";
-import { pickCurrentSemester } from "@/utils/semester";
-import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { formatSemester, pickCurrentSemester } from "@/utils/semester";
+import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 import EmptyState from "@/components/common/EmptyState";
 import Skeleton from "@/components/common/Skeleton";
+import BottomSheet from "@/components/common/BottomSheet";
+import FloatingSearchBar, { FloatingSearchBarRef } from "@/components/mobile/common/FloatingSearchBar";
 import type { Term } from "@/types/timetables";
 
 export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  // 학기 목록 및 선택
   const { semesters } = useSemesters();
+  const defaultSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
 
-  // 현재 학기 기준 설정
-  const currentSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
-  const currentYear = currentSemester?.year ?? 2026;
-  const currentTerm = (currentSemester?.term ?? "1") as Term;
+  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
+  const [isSemesterSheetOpen, setIsSemesterSheetOpen] = useState(false);
 
-  // 헤더 설정
+  useEffect(() => {
+    if (defaultSemester && selectedSemesterId === null) {
+      setSelectedSemesterId(defaultSemester.id);
+    }
+  }, [defaultSemester, selectedSemesterId]);
+
+  const currentSelectedSemester = useMemo(() => {
+    return semesters.find((s) => s.id === selectedSemesterId) ?? defaultSemester;
+  }, [semesters, selectedSemesterId, defaultSemester]);
+
+  const currentYear = currentSelectedSemester?.year ?? 2026;
+  const currentTerm = (currentSelectedSemester?.term ?? "1") as Term;
+  const currentSemesterLabel = currentSelectedSemester
+    ? formatSemester(currentSelectedSemester.year, currentSelectedSemester.term)
+    : "학기 선택";
+
+  // 헤더 설정: 상단 헤더에 학기 선택 드롭다운 배치
   useHeader({
-    title: "강의평 둘러보기",
+    title: (
+      <HeaderSemesterButton type="button" onClick={() => setIsSemesterSheetOpen(true)}>
+        <span>{currentSemesterLabel}</span>
+        <ChevronDown size={18} color="var(--text-primary)" />
+      </HeaderSemesterButton>
+    ),
     showAlarm: false,
     hasback: true,
   });
 
-  // 검색어 상태
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  // 검색바 활성 상태
+  const [isSearchActive, setIsSearchActive] = useState<boolean>(false);
+  const keyword = searchParams.get("courseQuery") || "";
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery.trim());
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // 필터 스토어 연동 (시간표 편집과 100% 동일한 필터 공유)
+  // 필터 스토어 연동 (시간표 편집과 100% 동일)
   const effectiveFilter = useEffectiveCourseFilters();
   const activeFilterCount = useMemo(() => countActiveFilters(effectiveFilter), [effectiveFilter]);
-
   const offeringFilters = useMemo(
     () => mapFilterToOfferingFilters(effectiveFilter),
     [effectiveFilter]
   );
 
-  // 개설 강좌 데이터 조회 (현재 학기 기준)
+  // 개설 강좌 데이터 조회 (선택된 학기 기준)
   const {
     courseOfferings,
     isLoading: isOfferingsLoading,
@@ -67,7 +87,7 @@ export default function MobileCourseReviewSearchPage() {
   const { courses: allCourses, isLoading: isCoursesLoading } = useCourses();
 
   // 검색 결과 변환 및 클라이언트 필터링
-  const rawResults: CourseResult[] = useMemo(() => {
+  const searchResults: CourseResult[] = useMemo(() => {
     const courseMap = new Map<number, (typeof allCourses)[0]>();
     allCourses.forEach((c) => {
       courseMap.set(c.id, c);
@@ -82,15 +102,18 @@ export default function MobileCourseReviewSearchPage() {
   }, [courseOfferings, allCourses]);
 
   const filteredResults: CourseResult[] = useMemo(() => {
-    if (!debouncedQuery) return rawResults;
-    const lower = debouncedQuery.toLowerCase();
-    return rawResults.filter(
-      (c) =>
-        c.name.toLowerCase().includes(lower) ||
-        (c.professor && c.professor.toLowerCase().includes(lower)) ||
-        (c.courseId && c.courseId.toLowerCase().includes(lower))
-    );
-  }, [rawResults, debouncedQuery]);
+    let list: CourseResult[] = [...searchResults];
+    if (keyword.trim()) {
+      const lower = keyword.trim().toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name.toLowerCase().includes(lower) ||
+          (c.professor && c.professor.toLowerCase().includes(lower)) ||
+          (c.courseId && c.courseId.toLowerCase().includes(lower))
+      );
+    }
+    return list;
+  }, [searchResults, keyword]);
 
   // 아코디언 펼침 상태
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -102,42 +125,11 @@ export default function MobileCourseReviewSearchPage() {
 
   return (
     <PageWrapper>
-      {/* 상단 검색바 & 필터 버튼 영역 */}
-      <SearchHeaderSection>
-        <SearchBarWrapper>
-          <SearchIconWrapper>
-            <Search size={18} color="var(--text-caption, #8b95a1)" />
-          </SearchIconWrapper>
-          <SearchInput
-            type="text"
-            placeholder="과목명, 교수명으로 검색"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </SearchBarWrapper>
-        <FilterButton
-          type="button"
-          $hasFilter={activeFilterCount > 0}
-          onClick={() => navigate(ROUTES.TIMETABLE.FILTER)}
-        >
-          <SlidersHorizontal size={18} />
-          {activeFilterCount > 0 && <FilterCountBadge>{activeFilterCount}</FilterCountBadge>}
-        </FilterButton>
-      </SearchHeaderSection>
-
-      {/* 안내 배너 */}
-      <GuideNoticeBanner>
-        <Star size={15} color="var(--interactive-primary, #3182f6)" fill="var(--interactive-primary, #3182f6)" />
-        <GuideText>
-          강의를 선택하면 후기 목록을 확인하고 직접 수강평을 남길 수 있어요.
-        </GuideText>
-      </GuideNoticeBanner>
-
       {/* 강좌 목록 영역 */}
       <ListContainer>
         {isLoading ? (
           <SkeletonWrapper>
-            {[...Array(5)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <Skeleton key={i} height="88px" variant="card" />
             ))}
           </SkeletonWrapper>
@@ -154,17 +146,69 @@ export default function MobileCourseReviewSearchPage() {
           <EmptyStateWrapper>
             <EmptyState>
               <EmptyTextGroup>
-                <strong>{debouncedQuery ? "검색 결과가 없어요" : "조건에 맞는 강의가 없어요"}</strong>
+                <strong>{keyword ? "검색 결과가 없어요" : "조건에 맞는 강의가 없어요"}</strong>
                 <span>
-                  {debouncedQuery
+                  {keyword
                     ? "검색어를 확인하거나 필터 조건을 변경해 보세요."
-                    : "우측 상단 필터에서 다른 학과나 이수구분을 선택해 보세요."}
+                    : "하단 필터에서 다른 학과나 이수구분을 선택해 보세요."}
                 </span>
               </EmptyTextGroup>
             </EmptyState>
           </EmptyStateWrapper>
         )}
       </ListContainer>
+
+      {/* 시간표 편집과 동일한 하단 플로팅 검색바 & 필터 버튼 */}
+      {createPortal(
+        <FloatingActionsContainer>
+          <FilterButton
+            $isHidden={isSearchActive}
+            $isZeroCount={activeFilterCount === 0}
+            onClick={() => navigate(ROUTES.TIMETABLE.FILTER)}
+          >
+            <SlidersHorizontal size={20} />
+            {activeFilterCount > 0 && <span>필터 {activeFilterCount}</span>}
+          </FilterButton>
+
+          <FloatingSearchBar
+            ref={searchBarRef}
+            placeholder="교과목명, 교수명 검색"
+            onSearch={(query) => console.log("강의평 검색 실행:", query)}
+            onActiveChange={setIsSearchActive}
+            searchParamKey="courseQuery"
+          />
+        </FloatingActionsContainer>,
+        document.body
+      )}
+
+      {/* 학기 선택 바텀시트 */}
+      <BottomSheet
+        open={isSemesterSheetOpen}
+        onOpenChange={setIsSemesterSheetOpen}
+        handle="compact"
+      >
+        <SemesterSheetWrapper>
+          <SemesterSheetTitle>학기 선택</SemesterSheetTitle>
+          <SemesterList>
+            {semesters.map((s) => {
+              const isSelected = s.id === currentSelectedSemester?.id;
+              return (
+                <SemesterItem
+                  key={s.id}
+                  $isSelected={isSelected}
+                  onClick={() => {
+                    setSelectedSemesterId(s.id);
+                    setIsSemesterSheetOpen(false);
+                  }}
+                >
+                  <span>{formatSemester(s.year, s.term)}</span>
+                  {isSelected && <Check size={18} color="var(--interactive-primary, #3182f6)" />}
+                </SemesterItem>
+              );
+            })}
+          </SemesterList>
+        </SemesterSheetWrapper>
+      </BottomSheet>
     </PageWrapper>
   );
 }
@@ -174,110 +218,29 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER} calc(var(--nav-height, 100px) + 20px);
+  padding: 0 20px calc(90px + ${SAFE_AREA.BOTTOM});
   gap: 12px;
 
   @media ${DESKTOP_MEDIA} {
-    padding: 0 0 calc(var(--nav-height, 100px) + 40px);
+    padding: 0 0 calc(90px + ${SAFE_AREA.BOTTOM});
   }
 `;
 
-const SearchHeaderSection = styled.div`
-  display: flex;
+const HeaderSemesterButton = styled.button`
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding-top: 4px;
-`;
-
-const SearchBarWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  background: var(--bg-surface, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 12px;
-  padding: 0 12px;
-  height: 44px;
-  box-sizing: border-box;
-  gap: 8px;
-
-  &:focus-within {
-    border-color: var(--interactive-primary, #3182f6);
-  }
-`;
-
-const SearchIconWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
+  gap: 4px;
+  background: none;
   border: none;
-  background: transparent;
-  font-size: 14px;
-  color: var(--text-primary);
-  outline: none;
-
-  &::placeholder {
-    color: var(--text-caption, #8b95a1);
-  }
-`;
-
-const FilterButton = styled.button<{ $hasFilter: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: ${({ $hasFilter }) =>
-    $hasFilter ? "var(--bg-brand, #e8f3ff)" : "var(--bg-surface, #ffffff)"};
-  border: 1px solid
-    ${({ $hasFilter }) =>
-      $hasFilter ? "var(--interactive-primary, #3182f6)" : "var(--border-default, #e5e8eb)"};
-  color: ${({ $hasFilter }) =>
-    $hasFilter ? "var(--interactive-primary, #3182f6)" : "var(--text-secondary)"};
+  padding: 0;
   cursor: pointer;
-  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
 
   &:active {
-    transform: scale(0.96);
+    opacity: 0.8;
   }
-`;
-
-const FilterCountBadge = styled.span`
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--interactive-primary, #3182f6);
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 10px;
-  padding: 1px 5px;
-  line-height: 1.2;
-`;
-
-const GuideNoticeBanner = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-surface, #ffffff);
-  border: 1px solid var(--border-default, #e5e8eb);
-  border-radius: 12px;
-  padding: 10px 14px;
-  box-sizing: border-box;
-`;
-
-const GuideText = styled.span`
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.4;
 `;
 
 const ListContainer = styled.div`
@@ -289,11 +252,12 @@ const ListContainer = styled.div`
 const SkeletonWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding: 12px 0;
 `;
 
 const EmptyStateWrapper = styled.div`
-  padding: 40px 0;
+  padding: 60px 0;
 `;
 
 const EmptyTextGroup = styled.div`
@@ -310,5 +274,127 @@ const EmptyTextGroup = styled.div`
   span {
     color: var(--text-secondary);
     font-size: 13px;
+  }
+`;
+
+const FloatingActionsContainer = styled.div`
+  position: fixed;
+  bottom: calc(24px + ${SAFE_AREA.BOTTOM});
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: calc(768px - 40px);
+  z-index: 10005;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  box-sizing: border-box;
+`;
+
+const FilterButton = styled.button<{
+  $isHidden: boolean;
+  $isZeroCount?: boolean;
+}>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 48px;
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-sizing: border-box;
+  white-space: nowrap;
+
+  border: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "1px solid var(--border-default)"
+      : "1px solid var(--border-brand)"};
+  background: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "rgba(255, 255, 255, 0.85)"
+      : "var(--interactive-primary)"};
+  box-shadow: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "var(--elevation-1-shadow)"
+      : "0 4px 12px rgba(59, 130, 246, 0.3)"};
+  backdrop-filter: blur(8px);
+
+  color: ${({ $isZeroCount }) =>
+    $isZeroCount
+      ? "var(--text-secondary)"
+      : "var(--text-inverse)"};
+  font-size: 14px;
+  font-weight: 600;
+
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  ${({ $isHidden }) =>
+    $isHidden
+      ? `
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    margin-right: 0px;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    border: 0px solid transparent; 
+  `
+      : `
+    width: auto;
+    padding: 12px 16px;
+    margin-right: 12px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  `}
+
+  &:active {
+    transform: scale(0.96);
+  }
+`;
+
+const SemesterSheetWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px 16px;
+  gap: 12px;
+`;
+
+const SemesterSheetTitle = styled.h3`
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0 8px;
+`;
+
+const SemesterList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const SemesterItem = styled.button<{ $isSelected: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: none;
+  background: ${({ $isSelected }) =>
+    $isSelected ? "var(--bg-brand, #e8f3ff)" : "transparent"};
+  color: ${({ $isSelected }) =>
+    $isSelected ? "var(--interactive-primary, #3182f6)" : "var(--text-primary)"};
+  font-size: 15px;
+  font-weight: ${({ $isSelected }) => ($isSelected ? "700" : "500")};
+  cursor: pointer;
+  text-align: left;
+
+  &:active {
+    background: var(--bg-subtle, #f2f4f6);
   }
 `;
