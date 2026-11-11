@@ -9,7 +9,7 @@ import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useSemesters } from "@/hooks/useSemesters";
-import { useCreateCourseReview } from "@/hooks/useCourseReviews";
+import { useCreateCourseReview, useMyCourseReviews } from "@/hooks/useCourseReviews";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { pickCurrentSemester } from "@/utils/semester";
@@ -156,6 +156,18 @@ export default function MobileCourseReviewWritePage() {
   }, [timetables, courseId, courseTitle]);
 
   const createMutation = useCreateCourseReview(courseId);
+  const { data: myReviews = [] } = useMyCourseReviews();
+
+  // 해당 과목 + 해당 교수 + 현재 선택된 학기(year, term)에 이미 작성된 후기가 있는지 판별
+  const alreadyReviewedInSelectedTerm = useMemo(() => {
+    const trimmedProf = professor?.trim();
+    return myReviews.some((r) => {
+      const isSameCourse = r.courseId === courseId;
+      const isSameProf = !trimmedProf || !r.professor || r.professor.trim() === trimmedProf;
+      const isSameTerm = r.year === year && r.term === term;
+      return isSameCourse && isSameProf && isSameTerm;
+    });
+  }, [myReviews, courseId, professor, year, term]);
 
   useHeader({
     title: "강의평 작성",
@@ -181,7 +193,8 @@ export default function MobileCourseReviewWritePage() {
       year &&
       term &&
       isEvaluationComplete &&
-      isContentValid,
+      isContentValid &&
+      !alreadyReviewedInSelectedTerm,
   );
 
   const handleSubmit = () => {
@@ -475,11 +488,15 @@ export default function MobileCourseReviewWritePage() {
           <NoticeBanner>
             강의평은 등록 후 수정이나 삭제를 할 수 없어요.
           </NoticeBanner>
-          {!isEvaluationComplete && (
+          {alreadyReviewedInSelectedTerm ? (
+            <FloatingTipMessage $warning>
+              이미 해당 학기에 작성한 강의평이 있어요
+            </FloatingTipMessage>
+          ) : !isEvaluationComplete ? (
             <FloatingTipMessage>
               세부 평가 5개 항목을 모두 선택해주세요
             </FloatingTipMessage>
-          )}
+          ) : null}
           <CapsuleButton
             variant="primary"
             fullWidth
@@ -487,7 +504,7 @@ export default function MobileCourseReviewWritePage() {
             loading={createMutation.isPending}
             onClick={handleSubmit}
           >
-            강의평 등록하기
+            {alreadyReviewedInSelectedTerm ? "이미 작성한 학기예요" : "강의평 등록하기"}
           </CapsuleButton>
         </FloatingButtonContainer>
       </BottomActionWrapper>
@@ -502,6 +519,14 @@ export default function MobileCourseReviewWritePage() {
           <SemesterList>
             {availableSemesters.map((item) => {
               const isSelected = year === item.year && term === item.term;
+              const trimmedProf = professor?.trim();
+              const isWritten = myReviews.some(
+                (r) =>
+                  r.courseId === courseId &&
+                  (!trimmedProf || !r.professor || r.professor.trim() === trimmedProf) &&
+                  r.year === item.year &&
+                  r.term === item.term,
+              );
               return (
                 <SemesterOption
                   key={item.key}
@@ -514,7 +539,10 @@ export default function MobileCourseReviewWritePage() {
                   }}
                 >
                   <SemesterOptionText>{item.label}</SemesterOptionText>
-                  {isSelected && <SelectedCheck>선택됨</SelectedCheck>}
+                  <OptionStatusRow>
+                    {isWritten && <AlreadyWrittenBadge>작성 완료</AlreadyWrittenBadge>}
+                    {isSelected && <SelectedCheck>선택됨</SelectedCheck>}
+                  </OptionStatusRow>
                 </SemesterOption>
               );
             })}
@@ -761,13 +789,14 @@ const BottomActionWrapper = styled.div`
   z-index: 100;
 `;
 
-const FloatingTipMessage = styled.div`
+const FloatingTipMessage = styled.div<{ $warning?: boolean }>`
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary, #4e5968);
+  color: ${({ $warning }) => ($warning ? "var(--status-error, #f04452)" : "var(--text-secondary, #4e5968)")};
   margin-bottom: 8px;
-  background: rgba(255, 255, 255, 0.95);
+  background: ${({ $warning }) => ($warning ? "#fff1f2" : "rgba(255, 255, 255, 0.95)")};
+  border: ${({ $warning }) => ($warning ? "1px solid #fecdd3" : "none")};
   padding: 6px 12px;
   border-radius: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -881,4 +910,20 @@ const SelectedCheck = styled.span`
   font-size: 13px;
   font-weight: 700;
   color: var(--interactive-primary, #3182f6);
+`;
+
+
+const OptionStatusRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const AlreadyWrittenBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-caption, #8b95a1);
+  background: var(--bg-subtle, #f2f4f6);
+  padding: 2px 6px;
+  border-radius: 4px;
 `;
