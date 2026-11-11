@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
@@ -11,6 +11,7 @@ import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useSemesters } from "@/hooks/useSemesters";
 import { useCreateCourseReview, useMyCourseReviews } from "@/hooks/useCourseReviews";
 import { useTimetableStore } from "@/stores/useTimetableStore";
+import useUserStore from "@/stores/useUserStore";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { pickCurrentSemester } from "@/utils/semester";
 import type {
@@ -27,8 +28,20 @@ export default function MobileCourseReviewWritePage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { courses } = useCourses();
-  const { courseOfferings } = useCourseOfferings();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용할 수 있어요.");
+      navigate(ROUTES.LOGIN, { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+
+  const { courses } = useCourses(undefined, { enabled: isLoggedIn });
+  const { courseOfferings } = useCourseOfferings(undefined, undefined, undefined, {
+    enabled: isLoggedIn,
+  });
   const { semesters } = useSemesters();
   const { timetables } = useTimetableStore();
 
@@ -156,7 +169,7 @@ export default function MobileCourseReviewWritePage() {
   }, [timetables, courseId, courseTitle]);
 
   const createMutation = useCreateCourseReview(courseId);
-  const { data: myReviews = [] } = useMyCourseReviews();
+  const { data: myReviews = [] } = useMyCourseReviews({ enabled: isLoggedIn });
 
   // 해당 과목 + 해당 교수 + 현재 선택된 학기(year, term)에 이미 작성된 후기가 있는지 판별
   const alreadyReviewedInSelectedTerm = useMemo(() => {
@@ -240,6 +253,10 @@ export default function MobileCourseReviewWritePage() {
       },
     );
   };
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <PageWrapper>

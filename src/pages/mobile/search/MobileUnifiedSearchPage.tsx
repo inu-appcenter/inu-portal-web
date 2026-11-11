@@ -6,6 +6,7 @@ import { IoCloseCircle, IoChevronForward, IoCalendarOutline, IoCallOutline, IoMa
 
 import { getUnifiedSearch } from "@/apis/search";
 import { useCourses } from "@/hooks/useCourses";
+import useUserStore from "@/stores/useUserStore";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import FloatingSearchBar from "@/components/mobile/common/FloatingSearchBar";
 import HighlightText from "@/components/common/HighlightText";
@@ -625,6 +626,12 @@ export default function MobileUnifiedSearchPage() {
                                           type="button"
                                           onClick={(e) => {
                                             e.stopPropagation();
+                                            const token = useUserStore.getState().tokenInfo.accessToken;
+                                            if (!token) {
+                                              alert("로그인 후 이용할 수 있어요.");
+                                              navigate(ROUTES.LOGIN);
+                                              return;
+                                            }
                                             navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
                                               state: {
                                                 courseId: targetCourseId,

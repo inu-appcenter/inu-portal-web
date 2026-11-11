@@ -12,6 +12,7 @@ import {
   getOnlineTypeLabel,
   getEnrollmentLabel,
 } from "@/components/mobile/timetable/filter/courseFilterModel";
+import useUserStore from "@/stores/useUserStore";
 
 export interface CourseResult {
   id: number;
@@ -49,6 +50,13 @@ const openLectureReview = (
   courseOfferings: any[],
   allCourses: any[] = [],
 ) => {
+  const token = useUserStore.getState().tokenInfo.accessToken;
+  if (!token) {
+    alert("로그인 후 이용할 수 있어요.");
+    navigate(ROUTES.LOGIN);
+    return;
+  }
+
   const offering = courseOfferings.find((o) => o.id === course.id);
   const matchedCourse = allCourses.find((c) => c.title?.trim() === course.name?.trim());
   const targetCourseId = course.numericCourseId || offering?.courseId || matchedCourse?.id;

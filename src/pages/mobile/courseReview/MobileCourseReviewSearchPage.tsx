@@ -23,6 +23,7 @@ import BottomSheet from "@/components/common/BottomSheet";
 import FloatingSearchBar, { FloatingSearchBarRef } from "@/components/mobile/common/FloatingSearchBar";
 import MyEnrolledCoursesSection from "@/components/mobile/courseReview/MyEnrolledCoursesSection";
 import RecentReviewsFeedSection from "@/components/mobile/courseReview/RecentReviewsFeedSection";
+import useUserStore from "@/stores/useUserStore";
 import type { Term } from "@/types/timetables";
 
 const TAB_STORAGE_KEY = "COURSE_REVIEWS_ACTIVE_TAB";
@@ -33,6 +34,16 @@ export default function MobileCourseReviewSearchPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchBarRef = useRef<FloatingSearchBarRef>(null);
+
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용할 수 있어요.");
+      navigate(ROUTES.LOGIN, { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
 
   // 상단 탭: 둘러보기(기본) vs 전체 강의 (URL 파라미터 및 세션 스토리지 복원)
   const [activeTab, setActiveTabState] = useState<string>(() => {
@@ -134,10 +145,15 @@ export default function MobileCourseReviewSearchPage() {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useCourseOfferings(currentYear, currentTerm, offeringFilters);
+  } = useCourseOfferings(currentYear, currentTerm, offeringFilters, {
+    enabled: isLoggedIn,
+  });
 
   // 교과목 마스터 데이터
-  const { courses: allCourses, isLoading: isCoursesLoading } = useCourses();
+  const { courses: allCourses, isLoading: isCoursesLoading } = useCourses(
+    undefined,
+    { enabled: isLoggedIn },
+  );
 
   // 검색 결과 변환 및 클라이언트 필터링
   const searchResults: CourseResult[] = useMemo(() => {
@@ -219,6 +235,10 @@ export default function MobileCourseReviewSearchPage() {
       return () => clearTimeout(timer);
     }
   }, [isLoading, activeTab]);
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <PageWrapper $isAllTab={activeTab === "all"}>

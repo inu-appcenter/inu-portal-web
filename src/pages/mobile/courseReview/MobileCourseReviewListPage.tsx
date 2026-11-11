@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
@@ -29,14 +29,23 @@ export default function MobileCourseReviewListPage() {
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용할 수 있어요.");
+      navigate(ROUTES.LOGIN, { replace: true });
+    }
+  }, [isLoggedIn, navigate]);
+
   const initialProfessor = (location.state as any)?.professorName || "all";
   const [selectedProfessorTab, setSelectedProfessorTab] = useState<string>(initialProfessor);
   const [isStatsSheetOpen, setIsStatsSheetOpen] = useState(false);
   const [reportReviewId, setReportReviewId] = useState<number | null>(null);
 
   // 과목 및 개설강좌 정보 조회
-  const { courses } = useCourses();
-  const { courseOfferings } = useCourseOfferings();
+  const { courses } = useCourses(undefined, { enabled: isLoggedIn });
+  const { courseOfferings } = useCourseOfferings(undefined, undefined, undefined, {
+    enabled: isLoggedIn,
+  });
 
   const currentCourse = useMemo(() => {
     return courses.find((c) => c.id === courseId);
@@ -119,13 +128,13 @@ export default function MobileCourseReviewListPage() {
   const { data: reviewsPage, isLoading: isReviewsLoading } = useCourseReviews(
     courseId,
     { professor: queryProfessor },
-    { enabled: !isNaN(courseId) && courseId > 0 },
+    { enabled: isLoggedIn && !isNaN(courseId) && courseId > 0 },
   );
 
   const { data: summary, isLoading: isSummaryLoading } = useCourseReviewSummary(
     courseId,
     queryProfessor,
-    { enabled: !isNaN(courseId) && courseId > 0 },
+    { enabled: isLoggedIn && !isNaN(courseId) && courseId > 0 },
   );
 
   const toggleLikeMutation = useToggleCourseReviewLike(courseId);
@@ -202,6 +211,10 @@ export default function MobileCourseReviewListPage() {
 
   const reviews = reviewsPage?.content || [];
   const hasReviews = (summary?.totalReviews || 0) > 0;
+
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <PageWrapper>

@@ -11,6 +11,7 @@ import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useCourseReviewSummary } from "@/hooks/useCourseReviews";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import useUserStore from "@/stores/useUserStore";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 
 const SYLLABUS_UNAVAILABLE_MESSAGE =
@@ -48,6 +49,8 @@ export default function ClassDetailBottomSheet({
 }: ClassDetailBottomSheetProps) {
   useSheetBackHandler(open, () => onOpenChange(false));
   const navigate = useNavigate();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const { activeTimetableId, timetables, updateTimetableEvents } =
     useTimetableStore();
   const activeTimetable = timetables.find(
@@ -164,6 +167,11 @@ export default function ClassDetailBottomSheet({
   if (!liveClass) return null;
 
   const handleLectureReviewClick = () => {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용할 수 있어요.");
+      navigate(ROUTES.LOGIN);
+      return;
+    }
     if (targetCourseId) {
       onOpenChange(false);
       const termNum =

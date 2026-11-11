@@ -13,6 +13,7 @@ import CapsuleButton from "@/components/common/CapsuleButton";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
 import { useCourses } from "@/hooks/useCourses";
 import { useSyllabus } from "@/hooks/useSyllabus";
+import useUserStore from "@/stores/useUserStore";
 import type { SyllabusContent } from "@/types/syllabus";
 
 // 진행률 표(수업방식비율/기자재활용비율/성적평가비율) 세그먼트에 순서대로 돌려쓰는 색상.
@@ -85,6 +86,8 @@ const MobileSyllabusPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { tokenInfo } = useUserStore();
+  const isLoggedIn = Boolean(tokenInfo.accessToken);
   const state = (location.state ?? {}) as SyllabusLocationState;
   const paramId = searchParams.get("id") || searchParams.get("courseOfferingId");
   const courseOfferingId =
@@ -171,6 +174,11 @@ const MobileSyllabusPage = () => {
   const targetCourseId = stateCourseId || paramCourseId || currentOffering?.courseId || matchedCourse?.id;
 
   const handleReviewClick = () => {
+    if (!isLoggedIn) {
+      alert("로그인 후 이용할 수 있어요.");
+      navigate(ROUTES.LOGIN);
+      return;
+    }
     if (targetCourseId) {
       navigate(ROUTES.COURSE.REVIEW(targetCourseId), {
         state: {

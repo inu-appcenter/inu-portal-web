@@ -907,6 +907,10 @@ const MobileTimeTablePage = () => {
         <ButtonRow>
           <MenuCard
             onClick={() => {
+              if (!isLoggedIn) {
+                handleLoginRequiredClick();
+                return;
+              }
               mixpanelTrack.timetableFeatureClicked("강의평", "시간표 홈");
               navigate(ROUTES.COURSE.HOME);
             }}
