@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
@@ -7,9 +7,11 @@ import Badge from "@/components/common/Badge";
 import { ROUTES } from "@/constants/routes";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useSemesters } from "@/hooks/useSemesters";
 import { useCreateCourseReview } from "@/hooks/useCourseReviews";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { pickCurrentSemester } from "@/utils/semester";
 import type {
   GradeSatisfaction,
   AssignmentAmount,
@@ -26,6 +28,7 @@ export default function MobileCourseReviewWritePage() {
 
   const { courses } = useCourses();
   const { courseOfferings } = useCourseOfferings();
+  const { semesters } = useSemesters();
   const { timetables } = useTimetableStore();
 
   const currentCourse = useMemo(() => {
@@ -36,6 +39,31 @@ export default function MobileCourseReviewWritePage() {
     currentCourse?.title ||
     (location.state as any)?.courseTitle ||
     "강의평 작성";
+
+  // 학기 옵션 목록 (서버 학기 목록 기준 + 최신순 정렬)
+  const semesterOptions = useMemo(() => {
+    if (semesters.length > 0) {
+      return semesters.map((s) => {
+        const termNum = s.term === "SECOND" ? 2 : 1;
+        const termText = s.term === "SECOND" ? "2학기" : "1학기";
+        return {
+          id: s.id,
+          year: s.year,
+          term: termNum,
+          value: `${s.year}-${termNum}`,
+          label: `${s.year}년 ${termText}`,
+        };
+      });
+    }
+    return [
+      { id: 1, year: 2026, term: 2, value: "2026-2", label: "2026년 2학기" },
+      { id: 2, year: 2026, term: 1, value: "2026-1", label: "2026년 1학기" },
+      { id: 3, year: 2025, term: 2, value: "2025-2", label: "2025년 2학기" },
+      { id: 4, year: 2025, term: 1, value: "2025-1", label: "2025년 1학기" },
+      { id: 5, year: 2024, term: 2, value: "2024-2", label: "2024년 2학기" },
+      { id: 6, year: 2024, term: 1, value: "2024-1", label: "2024년 1학기" },
+    ];
+  }, [semesters]);
 
   // 해당 과목의 교수 목록
   const professors = useMemo(() => {
@@ -51,12 +79,17 @@ export default function MobileCourseReviewWritePage() {
     return Array.from(set);
   }, [courseOfferings, courseId]);
 
-  const defaultProfessor = (location.state as any)?.professor || professors[0] || "";
+  const initialProfessor = (location.state as any)?.professor || professors[0] || "";
+
+  // 기본 학기 계산 (현재 학기 우선)
+  const defaultSemester = useMemo(() => pickCurrentSemester(semesters), [semesters]);
+  const defaultYear = defaultSemester?.year ?? 2026;
+  const defaultTerm = defaultSemester?.term === "SECOND" ? 2 : 1;
 
   // 폼 상태
-  const [professor, setProfessor] = useState<string>(defaultProfessor);
-  const [year, setYear] = useState<number>(2026);
-  const [term, setTerm] = useState<number>(1);
+  const [professor, setProfessor] = useState<string>(initialProfessor);
+  const [year, setYear] = useState<number>(defaultYear);
+  const [term, setTerm] = useState<number>(defaultTerm);
   const [rating, setRating] = useState<number>(5);
   const [gradeSatisfaction, setGradeSatisfaction] = useState<GradeSatisfaction>("GENEROUS");
   const [assignmentAmount, setAssignmentAmount] = useState<AssignmentAmount>("NORMAL");
@@ -64,6 +97,13 @@ export default function MobileCourseReviewWritePage() {
   const [examCount, setExamCount] = useState<ExamCount>("TWICE");
   const [attendanceType, setAttendanceType] = useState<AttendanceType>("ELECTRONIC");
   const [content, setContent] = useState<string>("");
+
+  useEffect(() => {
+    if (defaultSemester) {
+      setYear(defaultSemester.year);
+      setTerm(defaultSemester.term === "SECOND" ? 2 : 1);
+    }
+  }, [defaultSemester]);
 
   // 수강 인증 여부 체크 (시간표 스토어 기준)
   const isEnrolledLocally = useMemo(() => {
@@ -136,11 +176,11 @@ export default function MobileCourseReviewWritePage() {
                 setTerm(t);
               }}
             >
-              <option value="2026-1">2026년 1학기</option>
-              <option value="2025-2">2025년 2학기</option>
-              <option value="2025-1">2025년 1학기</option>
-              <option value="2024-2">2024년 2학기</option>
-              <option value="2024-1">2024년 1학기</option>
+              {semesterOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </StyledSelect>
           </SelectWrapper>
         </FormRow>

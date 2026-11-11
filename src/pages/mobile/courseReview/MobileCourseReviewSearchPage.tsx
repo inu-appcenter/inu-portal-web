@@ -239,6 +239,7 @@ const HeaderSemesterButton = styled.button`
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
+  pointer-events: auto;
 
   &:active {
     opacity: 0.8;

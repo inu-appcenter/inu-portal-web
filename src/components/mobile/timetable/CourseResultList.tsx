@@ -399,6 +399,7 @@ const SkeletonCard = styled.div`
   border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
+  background-color: transparent;
   gap: 8px;
 
   .skeleton-row-top {
@@ -420,12 +421,12 @@ const SkeletonCard = styled.div`
   }
 `;
 
-const CourseItem = styled.div`
+const CourseItem = styled.div<{ $transparent?: boolean }>`
   padding: 12px 0;
   border-bottom: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-base);
+  background-color: transparent;
   transition: background-color 0.2s;
 
   /* The sheet's per-frame drag-driven scrollPaddingBottom (see
