@@ -5,6 +5,7 @@ import { ROUTES } from "@/constants/routes";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import useUserStore from "@/stores/useUserStore";
+import { useMyCourseReviews } from "@/hooks/useCourseReviews";
 
 interface MyEnrolledCoursesSectionProps {
   currentYear: number;
@@ -18,6 +19,7 @@ interface EnrolledCourseItem {
   credits: number;
   courseId?: number;
   courseOfferingId?: number;
+  isWritten?: boolean;
 }
 
 export default function MyEnrolledCoursesSection({
@@ -29,6 +31,7 @@ export default function MyEnrolledCoursesSection({
   const { courses: allCourses } = useCourses();
   const { tokenInfo } = useUserStore();
   const isLoggedIn = Boolean(tokenInfo.accessToken);
+  const { data: myReviews = [] } = useMyCourseReviews({ enabled: isLoggedIn });
 
   // 현재 학기 시간표 또는 대표 시간표 선택
   const targetTimetable = useMemo(() => {
@@ -91,8 +94,33 @@ export default function MyEnrolledCoursesSection({
       }
     });
 
-    return Array.from(map.values());
-  }, [targetTimetable, allCourses]);
+    const list = Array.from(map.values());
+
+    const termNum =
+      currentTerm === "SECOND" || currentTerm === 2 || currentTerm === "2" ? 2 : 1;
+    const yearNum = targetTimetable?.year ?? currentYear;
+
+    // 각 과목별로 해당 학기(year, term)에 이미 작성된 후기가 있는지 확인
+    const itemsWithStatus = list.map((item) => {
+      const trimmedProf = item.professor?.trim();
+      const isWritten = myReviews.some((r) => {
+        const isSameCourse =
+          (item.courseId && r.courseId === item.courseId) ||
+          r.courseTitle?.trim() === item.name.trim();
+        const isSameProf =
+          !trimmedProf || !r.professor || r.professor.trim() === trimmedProf;
+        const isSameTerm = r.year === yearNum && r.term === termNum;
+        return isSameCourse && isSameProf && isSameTerm;
+      });
+      return { ...item, isWritten };
+    });
+
+    // 미작성 강의가 앞쪽, 이미 작성 완료된 강의는 뒤쪽으로 정렬
+    return itemsWithStatus.sort((a, b) => {
+      if (a.isWritten === b.isWritten) return 0;
+      return a.isWritten ? 1 : -1;
+    });
+  }, [targetTimetable, allCourses, myReviews, currentYear, currentTerm]);
 
   const handleCourseClick = (item: EnrolledCourseItem) => {
     if (item.courseId) {
@@ -113,6 +141,10 @@ export default function MyEnrolledCoursesSection({
 
   const handleWriteClick = (e: React.MouseEvent, item: EnrolledCourseItem) => {
     e.stopPropagation();
+    if (item.isWritten) {
+      handleCourseClick(item);
+      return;
+    }
     if (!isLoggedIn) {
       navigate(ROUTES.LOGIN);
       return;
@@ -189,12 +221,21 @@ export default function MyEnrolledCoursesSection({
               </CardMiddleRow>
 
               <CardBottomRow>
-                <WriteActionButton
-                  type="button"
-                  onClick={(e) => handleWriteClick(e, item)}
-                >
-                  후기 쓰기 ✎
-                </WriteActionButton>
+                {item.isWritten ? (
+                  <CompletedActionButton
+                    type="button"
+                    onClick={(e) => handleWriteClick(e, item)}
+                  >
+                    작성 완료
+                  </CompletedActionButton>
+                ) : (
+                  <WriteActionButton
+                    type="button"
+                    onClick={(e) => handleWriteClick(e, item)}
+                  >
+                    후기 쓰기 ✎
+                  </WriteActionButton>
+                )}
               </CardBottomRow>
             </CourseCard>
           ))}
@@ -382,6 +423,25 @@ const WriteActionButton = styled.button`
 
   &:active {
     background: #d8eaff;
+  }
+`;
+
+const CompletedActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-subtle, #f2f4f6);
+  color: var(--text-caption, #8b95a1);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:active {
+    background: var(--border-default, #e5e8eb);
   }
 `;
 
