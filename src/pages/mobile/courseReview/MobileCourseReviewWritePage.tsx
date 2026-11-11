@@ -80,10 +80,61 @@ export default function MobileCourseReviewWritePage() {
 
   const courseOfferingId = (location.state as any)?.courseOfferingId;
 
+  // 강의평 작성 가능한 학기 목록: 계절학기 포함 모든 정규/계절 학기를 올바른 라벨로 정렬하고 중복 방지
+  const availableSemesters = useMemo(() => {
+    const getTermNumber = (t: any): number => {
+      if (t === "FIRST" || t === "1" || t === 1) return 1;
+      if (t === "SECOND" || t === "2" || t === 2) return 2;
+      if (t === "SUMMER" || t === "3" || t === 3) return 3;
+      if (t === "WINTER" || t === "4" || t === 4) return 4;
+      return 1;
+    };
+
+    const getTermLabel = (termNum: number): string => {
+      if (termNum === 1) return "1학기";
+      if (termNum === 2) return "2학기";
+      if (termNum === 3) return "여름학기";
+      if (termNum === 4) return "겨울학기";
+      return `${termNum}학기`;
+    };
+
+    const termWeight: Record<number, number> = { 4: 4, 2: 3, 3: 2, 1: 1 };
+
+    const seen = new Set<string>();
+    const list: { key: string; year: number; term: number; label: string }[] = [];
+
+    semesters.forEach((s) => {
+      const termNum = getTermNumber(s.term);
+      const key = `${s.year}-${termNum}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push({
+          key,
+          year: s.year,
+          term: termNum,
+          label: `${s.year}년 ${getTermLabel(termNum)}`,
+        });
+      }
+    });
+
+    return list.sort((a, b) => {
+      if (b.year !== a.year) return b.year - a.year;
+      return (termWeight[b.term] || 0) - (termWeight[a.term] || 0);
+    });
+  }, [semesters]);
+
   // 폼 상태
   const [professor, setProfessor] = useState<string>(initialProfessor);
   const [year, setYear] = useState<number>(initialYear);
   const [term, setTerm] = useState<number>(initialTerm);
+
+  const currentTermLabel = useMemo(() => {
+    if (term === 1) return "1학기";
+    if (term === 2) return "2학기";
+    if (term === 3) return "여름학기";
+    if (term === 4) return "겨울학기";
+    return `${term}학기`;
+  }, [term]);
   const [isSemesterSheetOpen, setIsSemesterSheetOpen] = useState<boolean>(false);
   const [rating, setRating] = useState<number>(5);
 
@@ -195,7 +246,7 @@ export default function MobileCourseReviewWritePage() {
             <ReadOnlyLabel>수강 학기 (변경 가능)</ReadOnlyLabel>
             <SelectableValueRow>
               <ReadOnlyValue>
-                {year}년 {term}학기
+                {year}년 {currentTermLabel}
               </ReadOnlyValue>
               <ChangeBadge>변경</ChangeBadge>
             </SelectableValueRow>
@@ -449,23 +500,20 @@ export default function MobileCourseReviewWritePage() {
         <SemesterSheetContent>
           <SheetHeaderTitle>수강 학기 선택</SheetHeaderTitle>
           <SemesterList>
-            {semesters.map((s) => {
-              const termNum = (s.term as any) === "SECOND" || (s.term as any) === "2" || (s.term as any) === 2 ? 2 : 1;
-              const isSelected = year === s.year && term === termNum;
+            {availableSemesters.map((item) => {
+              const isSelected = year === item.year && term === item.term;
               return (
                 <SemesterOption
-                  key={s.id}
+                  key={item.key}
                   type="button"
                   $selected={isSelected}
                   onClick={() => {
-                    setYear(s.year);
-                    setTerm(termNum);
+                    setYear(item.year);
+                    setTerm(item.term);
                     setIsSemesterSheetOpen(false);
                   }}
                 >
-                  <SemesterOptionText>
-                    {s.year}년 {termNum}학기
-                  </SemesterOptionText>
+                  <SemesterOptionText>{item.label}</SemesterOptionText>
                   {isSelected && <SelectedCheck>선택됨</SelectedCheck>}
                 </SemesterOption>
               );
