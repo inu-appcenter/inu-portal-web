@@ -121,19 +121,37 @@ const CourseReviewIcon = () => (
   </svg>
 );
 
-const ChevronRightIcon = () => (
+const SimulatorIcon = () => (
   <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
+    width="36"
+    height="36"
+    viewBox="0 0 36 36"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <path
-      d="M9 5L16 12L9 19"
-      stroke="white"
-      strokeWidth="2"
+    <rect
+      x="5"
+      y="6.5"
+      width="26"
+      height="18"
+      rx="3"
+      stroke="var(--interactive-primary)"
+      strokeWidth="2.8"
       strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M12 28.5H24M18 24.5V28.5"
+      stroke="var(--interactive-primary)"
+      strokeWidth="2.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15 12L23 15.5L15 19V12Z"
+      fill="var(--interactive-primary)"
+      stroke="var(--interactive-primary)"
+      strokeWidth="1.5"
       strokeLinejoin="round"
     />
   </svg>
@@ -889,12 +907,12 @@ const MobileTimeTablePage = () => {
         <ButtonRow>
           <MenuCard
             onClick={() => {
-              mixpanelTrack.timetableFeatureClicked("강의평 둘러보기", "시간표 홈");
+              mixpanelTrack.timetableFeatureClicked("강의평", "시간표 홈");
               navigate(ROUTES.COURSE.HOME);
             }}
           >
             <MenuCardTitleRow>
-              <MenuCardTitle>강의평 둘러보기</MenuCardTitle>
+              <MenuCardTitle>강의평</MenuCardTitle>
               <IconSlot>
                 <CourseReviewIcon />
               </IconSlot>
@@ -905,17 +923,21 @@ const MobileTimeTablePage = () => {
               솔직한 후기를 찾아보세요.
             </MenuCardDescription>
           </MenuCard>
-        </ButtonRow>
 
-        <SimulatorCard onClick={handleSimulatorClick}>
-          <SimulatorCardBody>
-            <SimulatorCardTitle>모의 수강신청</SimulatorCardTitle>
-            <SimulatorCardDescription>
-              학과, 대기열 사전 설정으로 실전 수강신청 환경을 체험하세요.
-            </SimulatorCardDescription>
-          </SimulatorCardBody>
-          <ChevronRightIcon />
-        </SimulatorCard>
+          <MenuCard onClick={handleSimulatorClick}>
+            <MenuCardTitleRow>
+              <MenuCardTitle>모의 수강신청</MenuCardTitle>
+              <IconSlot>
+                <SimulatorIcon />
+              </IconSlot>
+            </MenuCardTitleRow>
+            <MenuCardDescription>
+              실전 수강신청 환경을
+              <br />
+              미리 체험해 보세요.
+            </MenuCardDescription>
+          </MenuCard>
+        </ButtonRow>
       </ButtonGroup>
 
       {isLoggedIn && activeTimetable && (
@@ -1196,49 +1218,6 @@ const ButtonRow = styled.div`
   flex-direction: row;
   gap: 8px;
   width: 100%;
-`;
-
-const SimulatorCard = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  border: none;
-  border-radius: 20px;
-  background: var(--interactive-primary);
-  padding: 12px 8px 12px 12px;
-  box-sizing: border-box;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-const SimulatorCardBody = styled.div`
-  display: flex;
-  flex: 1 0 0;
-  flex-direction: column;
-  min-width: 0;
-  text-align: left;
-  gap: 12px
-`;
-
-const SimulatorCardTitle = styled.span`
-  font-family: Pretendard;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  color: var(--text-inverse);
-`;
-
-const SimulatorCardDescription = styled.span`
-  font-family: Pretendard;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-inverse);
 `;
 
 const MenuCard = styled.div`
