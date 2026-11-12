@@ -649,9 +649,9 @@
     }
   },
   "alpha": {
-    "white-60": {
+    "white-40": {
       "$type": "color",
-      "$value": "#ffffff99"
+      "$value": "#ffffff66"
     },
     "black-20": {
       "$type": "color",

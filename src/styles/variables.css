@@ -67,7 +67,7 @@
   --yellow-600: #b58000;
   --yellow-700: #7a5400;
   --yellow-800: #4a3400;
-  --alpha-white-60: rgba(255, 255, 255, 0.6);
+  --alpha-white-40: rgba(255, 255, 255, 0.4);
   --alpha-black-20: rgba(0, 0, 0, 0.2);
   --alpha-blue-20: rgba(59, 130, 246, 0.2);
   --brand-neongreen: #57ff85;
@@ -103,7 +103,7 @@
   --bg-warn-subtle: var(--yellow-100);
   --bg-disabled: var(--gray-200);
   --bg-dim: var(--alpha-black-20);
-  --bg-blur: var(--alpha-white-60);
+  --bg-blur: var(--alpha-white-40);
   --interactive-primary-hover: var(--blue-400);
   --interactive-primary: var(--blue-600);
   --interactive-primary-disabled: var(--gray-200);
