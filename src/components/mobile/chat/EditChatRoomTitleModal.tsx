@@ -97,7 +97,7 @@ export default function EditChatRoomTitleModal({
                 label: isLoading ? "변경 중..." : "변경하기",
                 onClick: handleUpdate,
                 backgroundColor: "var(--interactive-primary)",
-                textColor: "var(--text-inverse)",
+                textColor: "var(--text-on-brand)",
                 disabled: isLoading,
               }}
               padding="16px 24px 24px"

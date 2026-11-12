@@ -71,7 +71,7 @@ const Circle = styled.span<{ $added: boolean }>`
   background: ${({ $added }) =>
     $added ? "var(--interactive-primary)" : "var(--bg-brand)"};
   color: ${({ $added }) =>
-    $added ? "var(--text-inverse)" : "var(--text-brand)"};
+    $added ? "var(--text-on-brand)" : "var(--text-brand)"};
   transition:
     background-color 0.15s ease,
     transform 0.1s ease;

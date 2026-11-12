@@ -65,7 +65,7 @@ const getVariantStyles = (variant: CapsuleButtonVariant) => {
     case "primary":
       return css`
         background: var(--interactive-primary);
-        color: var(--text-inverse);
+        color: var(--text-on-brand);
 
         &:hover:not(:disabled) {
           background: var(--interactive-primary-hover);
@@ -100,7 +100,7 @@ const getSpinnerColor = (variant: CapsuleButtonVariant) => {
     case "danger":
       return "var(--text-error)";
     case "primary":
-      return "var(--text-inverse)";
+      return "var(--text-on-brand)";
     case "secondary":
     default:
       return "var(--text-secondary)";

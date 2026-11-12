@@ -317,7 +317,7 @@ const PrimaryButton = styled.button`
   border: none;
   border-radius: 999px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-family: Pretendard;
   font-size: 16px;
   font-weight: 600;

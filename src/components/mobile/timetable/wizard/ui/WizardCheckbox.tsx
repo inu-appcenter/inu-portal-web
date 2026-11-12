@@ -28,7 +28,7 @@ const Box = styled.span<{ $checked: boolean }>`
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: ${({ $checked }) =>
     $checked ? "var(--interactive-primary)" : "var(--bg-subtle)"};
   border: ${({ $checked }) =>

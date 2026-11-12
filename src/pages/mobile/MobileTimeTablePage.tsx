@@ -1061,7 +1061,7 @@ const PortalImportButton = styled.button`
   border: 0;
   border-radius: 10px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1093,7 +1093,7 @@ const EmptyActionButton = styled(CapsuleButton)`
 
 const PortalImportActionButton = styled(EmptyActionButton)`
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 `;
 
 /* 보조 CTA는 brand 팔레트(연한 파랑 배경 + 파란 글자)에 테두리를 더한 형태다.

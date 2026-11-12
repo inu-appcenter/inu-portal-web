@@ -243,7 +243,7 @@ const RecommendBadge = styled.span`
   padding: 3px 8px;
   border-radius: 6px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 11px;
   font-weight: 700;
 `;

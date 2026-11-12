@@ -492,7 +492,7 @@ const MatchBadge = styled.span`
   border-radius: 999px;
   border: 1px solid var(--border-brand);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 
   font-family: Pretendard, sans-serif;
   font-size: 12px;
@@ -602,7 +602,7 @@ const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
       : "var(--interactive-primary)"};
 
   color: ${({ $isAdded }) =>
-    $isAdded ? "var(--text-tertiary)" : "var(--text-inverse)"};
+    $isAdded ? "var(--text-tertiary)" : "var(--text-on-brand)"};
 
   ${({ $isAdded }) =>
     $isAdded &&

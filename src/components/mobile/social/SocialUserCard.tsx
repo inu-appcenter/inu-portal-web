@@ -179,7 +179,7 @@ const ActionButton = styled.button<{ $variant: "primary" | "secondary" }>`
 
   background-color: ${({ $variant }) =>
     $variant === "primary" ? "var(--interactive-primary)" : "var(--bg-muted)"};
-  color: ${({ $variant }) => ($variant === "primary" ? "var(--text-inverse)" : "var(--text-secondary)")};
+  color: ${({ $variant }) => ($variant === "primary" ? "var(--text-on-brand)" : "var(--text-secondary)")};
 
   &:active {
     opacity: 0.7;

@@ -154,7 +154,7 @@ const CheckBox = styled.span<{ $checked: boolean }>`
       $checked ? "var(--border-brand)" : "var(--border-default)"};
   background-color: ${({ $checked }) =>
     $checked ? "var(--border-brand)" : "var(--bg-base)"};
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 
   i {
     opacity: ${({ $checked }) => ($checked ? 1 : 0)};

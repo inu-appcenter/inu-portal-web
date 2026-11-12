@@ -215,7 +215,7 @@ const CancelButton = styled(Button)`
 
 const SaveButton = styled(Button)`
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 `;
 
 const DeleteButton = styled(Button)`
