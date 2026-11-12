@@ -20,6 +20,8 @@ import { usePollNoticeToasts } from "@/hooks/usePollNoticeToasts";
 import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import PollGridFrame, {
+  POLL_RESULT_BLOCK_OPACITY,
+  POLL_ROW_HEIGHT,
   PollBlock,
   PollGridCell,
 } from "@/components/mobile/schedulePoll/PollGrid";
@@ -63,12 +65,6 @@ import { typography } from "@/styles/typography";
 
 /** 범례에 보여 줄 겹침 단계 수. 전원 가능은 따로 진한 블록으로 보여 준다 */
 const LEGEND_STEPS = 3;
-
-/** '김유니님만 안 돼요' / '김유니, 최유리님이 안 돼요' */
-const describeUnavailable = (names: string[]) =>
-  names.length === 1
-    ? `${names[0]}님만 안 돼요`
-    : `${names.join(", ")}님이 안 돼요`;
 
 /**
  * 결과 (Figma E. 결과). 히트맵과 추천 후보 3개를 보여 주고, 고른 후보를 채팅방에 공유한다.
@@ -232,7 +228,7 @@ function PollResultView({
     row: number;
   } | null>(null);
   const cell = focusedCell?.version === result.version ? focusedCell : null;
-  // 추천만 공유 / 이 시간으로 정하기. 둘 다 같은 결과 공유 API로 채팅방에 보낸다.
+  // 선택한 시간 공유 / 이 시간으로 정하기. 둘 다 같은 결과 공유 API로 채팅방에 보낸다.
   const [shareMode, setShareMode] = useState<"RECOMMEND" | "DECIDE" | null>(
     null,
   );
@@ -278,7 +274,6 @@ function PollResultView({
       : null;
 
   const cellMask = cell ? (result.heatmap[cell.column]?.[cell.row] ?? 0) : 0;
-  const cellStart = cell ? shape.rangeStartMin + cell.row * SLOT_MINUTES : 0;
 
   return (
     <PollPage>
@@ -287,8 +282,8 @@ function PollResultView({
           <Headline>{headline}</Headline>
           <SubHeadline>
             {formatColumnsSummary(result.columns)} ·{" "}
-            {formatDuration(result.durationMode, result.durationMin)} 기준 ·{" "}
-            {total}명 기준
+            {formatDuration(result.durationMode, result.durationMin)} · {total}명
+            제출
             {(result.isFinal || isClosed) && " · 최종 결과"}
           </SubHeadline>
           {top && !top.allAvailable && (
@@ -344,24 +339,21 @@ function PollResultView({
                         {candidate.availableCount}/{total}명
                       </PollBadge>
                     </CandidateHead>
-                    {isSelected ? (
-                      <NameChips>
-                        {namesFromMask(
-                          candidate.availableMask,
-                          result.participants,
-                        ).map((name) => (
-                          <NameChip key={name}>{name}</NameChip>
-                        ))}
-                      </NameChips>
-                    ) : (
-                      !candidate.allAvailable && (
-                        <CandidateCaption>
-                          {describeUnavailable(
-                            unavailableNames(candidate.availableMask),
-                          )}
-                        </CandidateCaption>
-                      )
-                    )}
+                    {/* 안 되는 사람도 회색 칩으로 남겨 누가 빠지는지 바로 보이게 한다 */}
+                    <NameChips>
+                      {result.participants.map((participant) => (
+                        <NameChip
+                          key={participant.index}
+                          $off={
+                            ((candidate.availableMask >> participant.index) &
+                              1) ===
+                            0
+                          }
+                        >
+                          {participant.displayName}
+                        </NameChip>
+                      ))}
+                    </NameChips>
                   </CandidateCard>
                 );
               })}
@@ -412,7 +404,10 @@ function PollResultView({
                     ).map((run) => (
                       <PollBlock
                         key={`p${participant.index}-${run.start}`}
-                        style={blockPosition(run.start, run.end)}
+                        style={{
+                          ...blockPosition(run.start, run.end),
+                          opacity: POLL_RESULT_BLOCK_OPACITY,
+                        }}
                       />
                     )),
                   )}
@@ -428,6 +423,33 @@ function PollResultView({
                         {total}명
                       </AllBlock>
                     ))}
+                  {cell?.column === column && (
+                    // 누른 칸 옆에 그 시간에 되는 사람을 띄운다 (Figma E-1).
+                    // 오른쪽 절반 열은 왼쪽에, 아래쪽 칸은 위로 펼쳐 그리드 밖으로 잘리지 않게 한다.
+                    <CellPopover
+                      aria-live="polite"
+                      style={{
+                        ...(column < shape.columns.length / 2
+                          ? { left: "calc(100% + 4px)" }
+                          : { right: "calc(100% + 4px)" }),
+                        ...(cell.row < shape.rowCount / 2
+                          ? { top: cell.row * POLL_ROW_HEIGHT }
+                          : {
+                              bottom:
+                                (shape.rowCount - cell.row - 1) *
+                                POLL_ROW_HEIGHT,
+                            }),
+                      }}
+                    >
+                      {popcount(cellMask) > 0 ? (
+                        namesFromMask(cellMask, result.participants).map(
+                          (name) => <span key={name}>{name}</span>,
+                        )
+                      ) : (
+                        <CellPopoverEmpty>가능한 사람이 없어요</CellPopoverEmpty>
+                      )}
+                    </CellPopover>
+                  )}
                   {selectedRange?.column === column && (
                     <SelectedFrame
                       style={blockPosition(
@@ -455,36 +477,6 @@ function PollResultView({
             <span>{total}명 모두</span>
           </Legend>
 
-          {/* 시안은 칸 옆 말풍선이지만 가로 스크롤 영역에서 잘려, 그리드 아래 고정 패널로 보여 준다 */}
-          <CellPanel aria-live="polite">
-            {cell ? (
-              <>
-                <CellPanelTitle>
-                  {formatColumnName(
-                    result.columns[cell.column],
-                    result.columns[cell.column].key,
-                  )}{" "}
-                  {minutesToTime(cellStart)} ~{" "}
-                  {minutesToTime(cellStart + SLOT_MINUTES)}
-                </CellPanelTitle>
-                <CellPanelNames>
-                  {popcount(cellMask) > 0
-                    ? `가능 ${popcount(cellMask)}명 · ${namesFromMask(cellMask, result.participants).join(", ")}`
-                    : "가능한 사람이 없어요"}
-                </CellPanelNames>
-                {total - popcount(cellMask) > 0 && (
-                  // 불가능한 사람은 이름 대신 인원 수로만 보여 준다(표시 규칙).
-                  <CellPanelCaption>
-                    불가능 {total - popcount(cellMask)}명
-                  </CellPanelCaption>
-                )}
-              </>
-            ) : (
-              <CellPanelCaption>
-                칸을 누르면 그 시간에 가능한 사람을 볼 수 있어요
-              </CellPanelCaption>
-            )}
-          </CellPanel>
         </GridSection>
       </PollBody>
 
@@ -494,7 +486,7 @@ function PollResultView({
           disabled={!selected || total < 2}
           onClick={() => setShareMode("RECOMMEND")}
         >
-          추천만 공유
+          선택한 시간 공유
         </PollSecondaryButton>
         <PollPrimaryButton
           type="button"
@@ -666,26 +658,23 @@ const SelectedFrame = styled.div`
   pointer-events: none;
 `;
 
-const CellPanel = styled(PollCard)`
-  min-height: 56px;
-  padding: 12px 14px;
+const CellPopover = styled.div`
+  position: absolute;
+  z-index: 3;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-`;
-
-const CellPanelTitle = styled.span`
+  gap: 4px;
+  white-space: nowrap;
+  border-radius: 12px;
+  background: var(--bg-base);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   color: var(--text-primary);
-  ${typography.heading3}
-`;
-
-const CellPanelNames = styled.span`
-  color: var(--text-secondary);
+  pointer-events: none;
   ${typography.label2}
 `;
 
-const CellPanelCaption = styled.span`
+const CellPopoverEmpty = styled.span`
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
@@ -755,22 +744,18 @@ const CandidateTime = styled.span`
 const NameChips = styled.div`
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 6px;
 `;
 
-const NameChip = styled.span`
+const NameChip = styled.span<{ $off: boolean }>`
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid var(--border-default);
-  background: var(--bg-base);
-  color: var(--text-secondary);
+  border: 1px solid
+    ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--border-default)")};
+  background: ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--bg-base)")};
+  color: ${({ $off }) =>
+    $off ? "var(--text-disabled)" : "var(--text-secondary)"};
   ${typography.label3}
-`;
-
-const CandidateCaption = styled.span`
-  color: var(--text-tertiary);
-  ${typography.caption1}
 `;
 
 const SectionHint = styled.span`

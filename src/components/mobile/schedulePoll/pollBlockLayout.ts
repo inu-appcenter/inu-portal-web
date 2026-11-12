@@ -1,8 +1,8 @@
-import { POLL_BLOCK_OPACITY, POLL_ROW_HEIGHT } from "./PollGrid";
+import { POLL_RESULT_BLOCK_OPACITY, POLL_ROW_HEIGHT } from "./PollGrid";
 
-/** k명이 겹쳤을 때 보이는 농도. 범례 색을 블록 겹침과 맞추는 데 쓴다 */
+/** 결과 화면에서 k명이 겹쳤을 때 보이는 농도. 범례 색을 블록 겹침과 맞추는 데 쓴다 */
 export const stackedOpacity = (count: number) =>
-  1 - (1 - POLL_BLOCK_OPACITY) ** count;
+  1 - (1 - POLL_RESULT_BLOCK_OPACITY) ** count;
 
 /** 열 하나에서 조건을 만족하는 칸이 이어진 구간 [start, end)을 모은다 */
 export const findRuns = (rowCount: number, test: (row: number) => boolean) => {

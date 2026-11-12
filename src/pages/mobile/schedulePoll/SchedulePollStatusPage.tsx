@@ -1,3 +1,4 @@
+import { UserPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -224,6 +225,12 @@ export default function SchedulePollStatusPage() {
               <strong>{participantCount}</strong>명 참여
               <HeadlineSub> · 최대 {poll.maxParticipants}명</HeadlineSub>
             </Headline>
+            {!isClosed && (
+              <InviteButton type="button" onClick={() => setIsInviteOpen(true)}>
+                <UserPlus size={18} aria-hidden />
+                초대하기
+              </InviteButton>
+            )}
           </SummaryRow>
           <MetaRow>
             {isClosed ? (
@@ -246,7 +253,10 @@ export default function SchedulePollStatusPage() {
               <ParticipantRow key={participant.memberId}>
                 <Avatar src={DEFAULT_AVATAR} alt="" />
                 <ParticipantText>
-                  <ParticipantName>{participant.displayName}</ParticipantName>
+                  <NameLine>
+                    <ParticipantName>{participant.displayName}</ParticipantName>
+                    {participant.isHost && <PollBadge $tone="brand">개설자</PollBadge>}
+                  </NameLine>
                   {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
                   {participant.maskedStudentId !== participant.displayName && (
                     <ParticipantCaption>
@@ -255,7 +265,6 @@ export default function SchedulePollStatusPage() {
                   )}
                 </ParticipantText>
                 <SubmittedAt>
-                  {participant.isHost && "개설자 · "}
                   {formatSubmittedAt(participant.submittedAt)}
                 </SubmittedAt>
               </ParticipantRow>
@@ -318,7 +327,7 @@ export default function SchedulePollStatusPage() {
                   ? "아직 등록한 사람이 없어요"
                   : "한 명만 더 모이면 결과가 나와요"}
               </strong>
-              <span>아래 [초대하기]로 링크나 채팅방에 보내 보세요</span>
+              <span>위 [초대하기]로 링크나 채팅방에 보내 보세요</span>
             </EmptyResult>
           </Section>
         )}
@@ -330,7 +339,7 @@ export default function SchedulePollStatusPage() {
             ? undefined
             : hasResult && result
               ? `지금까지 등록한 ${result.participants.length}명 기준으로 보여 줘요`
-              : undefined
+              : "2명부터 결과를 볼 수 있어요"
         }
       >
         {isClosed ? (
@@ -350,18 +359,13 @@ export default function SchedulePollStatusPage() {
             <PollSecondaryButton type="button" onClick={goToInput}>
               내 일정 수정
             </PollSecondaryButton>
-            {hasResult ? (
-              <PollPrimaryButton type="button" onClick={goToResult}>
-                결과 보기
-              </PollPrimaryButton>
-            ) : (
-              <PollPrimaryButton
-                type="button"
-                onClick={() => setIsInviteOpen(true)}
-              >
-                초대하기
-              </PollPrimaryButton>
-            )}
+            <PollPrimaryButton
+              type="button"
+              disabled={!hasResult}
+              onClick={goToResult}
+            >
+              결과 보기
+            </PollPrimaryButton>
           </>
         )}
       </PollBottomBar>
@@ -441,6 +445,28 @@ const SummaryRow = styled.div`
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+`;
+
+const InviteButton = styled.button`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: 999px;
+  background: var(--bg-brand);
+  color: var(--text-brand);
+  ${typography.label2}
+  cursor: pointer;
+`;
+
+const NameLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 `;
 
 const Headline = styled.h2`

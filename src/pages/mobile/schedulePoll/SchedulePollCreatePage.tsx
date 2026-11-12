@@ -37,7 +37,7 @@ import { mixpanelTrack } from "@/utils/mixpanel";
 import { showToast } from "@/utils/toast";
 import { typography } from "@/styles/typography";
 
-const DEFAULT_TITLE = "회의 시간 맞추기";
+const DEFAULT_TITLE = "시간 맞추기";
 const TITLE_MAX_LENGTH = 30;
 const STEP_COUNT = 4;
 
@@ -102,6 +102,8 @@ export default function SchedulePollCreatePage() {
   const [days, setDays] = useState<PollDay[]>([...POLL_DAYS]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  // 기간 안에서 하나씩 뺀 날짜. 기간을 다시 고르면 비운다.
+  const [excludedDates, setExcludedDates] = useState<string[]>([]);
   const [rangeStart, setRangeStart] = useState("09:00");
   const [rangeEnd, setRangeEnd] = useState("18:00");
   const [durationId, setDurationId] = useState("60");
@@ -125,12 +127,6 @@ export default function SchedulePollCreatePage() {
     [days],
   );
   const rangeEndKey = endDate || startDate;
-  const rangeDayCount = startDate
-    ? Math.round(
-        (parseDateKey(rangeEndKey).getTime() - parseDateKey(startDate).getTime()) /
-          (24 * 60 * 60 * 1000),
-      ) + 1
-    : 0;
   const pickedDateCount = useMemo(
     () =>
       startDate
@@ -139,9 +135,10 @@ export default function SchedulePollCreatePage() {
             days: orderedDays,
             startDate,
             endDate: rangeEndKey,
+            excludedDates,
           }).length
         : 0,
-    [startDate, rangeEndKey, orderedDays],
+    [startDate, rangeEndKey, orderedDays, excludedDates],
   );
 
   // 단계마다 '다음'을 막는 이유를 한 줄로 알려 준다.
@@ -204,6 +201,7 @@ export default function SchedulePollCreatePage() {
         days: orderedDays,
         startDate: isRecurring ? null : startDate,
         endDate: isRecurring ? null : rangeEndKey,
+        excludedDates: isRecurring ? undefined : excludedDates,
         rangeStart,
         rangeEnd,
         durationMode: duration.mode,
@@ -266,14 +264,14 @@ export default function SchedulePollCreatePage() {
       title: "언제 만날까요?",
       description: isRecurring
         ? "매주 만날 수 있는 요일을 골라 주세요"
-        : "기간을 고르고, 안 되는 요일은 빼 주세요",
+        : "기간을 고르고, 안 되는 날은 빼 주세요",
     },
     {
       title: "몇 시쯤, 얼마나 만날까요?",
       description: "이 시간대 안에서 다 같이 비는 시간을 찾아요",
     },
     {
-      title: "응답 마감을 정할까요?",
+      title: "응답 마감 날짜를 정할까요?",
       description: "정하지 않아도 돼요. 나중에 직접 끝낼 수 있어요",
     },
   ][step];
@@ -357,9 +355,7 @@ export default function SchedulePollCreatePage() {
                   <PollFieldHint>
                     {isRecurring
                       ? `안 되는 요일은 눌러서 빼 주세요 · 7개 중 ${orderedDays.length}개`
-                      : startDate
-                        ? `기간을 고른 뒤 뺄 요일을 눌러요 · ${rangeDayCount}일 중 ${pickedDateCount}일`
-                        : `시작일과 끝나는 날을 눌러요 · 최대 ${POLL_MAX_ONE_TIME_DAYS}일`}
+                      : "기간을 고른 뒤 뺄 날짜나 요일을 눌러요"}
                   </PollFieldHint>
                 </LabelGroup>
                 <QuickChips>
@@ -390,10 +386,19 @@ export default function SchedulePollCreatePage() {
                   endDate={endDate}
                   days={days}
                   maxDays={POLL_MAX_ONE_TIME_DAYS}
+                  excludedDates={excludedDates}
                   onRangeChange={(start, end) => {
                     setStartDate(start);
                     setEndDate(end);
+                    setExcludedDates([]);
                   }}
+                  onToggleDate={(key) =>
+                    setExcludedDates((prev) =>
+                      prev.includes(key)
+                        ? prev.filter((value) => value !== key)
+                        : [...prev, key],
+                    )
+                  }
                   onToggleDay={toggleDay}
                 />
               )}
@@ -552,7 +557,7 @@ const Heading = styled.div`
 
 const StepCount = styled.span`
   color: var(--text-tertiary);
-  ${typography.caption1}
+  ${typography.label3}
 `;
 
 const HeadingTitle = styled.h2`
@@ -563,7 +568,7 @@ const HeadingTitle = styled.h2`
 
 const HeadingDescription = styled.p`
   margin: 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   ${typography.body2}
 `;
 
@@ -647,16 +652,20 @@ const QuickChips = styled.div`
   gap: 6px;
 `;
 
+// Figma Chip: 선택하면 연한 파랑 채움(bg/brand) + 연한 테두리(border/brand-subtle).
 const QuickChip = styled.button<{ $selected: boolean }>`
   ${buttonReset}
-  height: 30px;
-  padding: 0 10px;
+  height: 42px;
+  padding: 0 12px;
   border-radius: 999px;
   border: 1px solid
-    ${({ $selected }) => ($selected ? "var(--border-brand)" : "var(--border-default)")};
-  background: var(--bg-base);
-  color: ${({ $selected }) => ($selected ? "var(--text-brand)" : "var(--text-secondary)")};
-  ${typography.label3}
+    ${({ $selected }) =>
+      $selected ? "var(--border-brand-subtle)" : "var(--border-default)"};
+  background: ${({ $selected }) =>
+    $selected ? "var(--bg-brand)" : "var(--bg-base)"};
+  color: ${({ $selected }) =>
+    $selected ? "var(--text-brand)" : "var(--text-secondary)"};
+  ${typography.label2}
 `;
 
 const Summary = styled.span`

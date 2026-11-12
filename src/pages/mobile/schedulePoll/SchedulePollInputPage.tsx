@@ -304,10 +304,6 @@ function PollInputForm({
     rangesToCells(shape, submission?.available ?? []),
   );
   const [isDirty, setIsDirty] = useState(false);
-  // 꾹 눌러 끌기 안내는 한 번 칠해 보면 지우기 안내로 바꾼다. 이미 낸 적 있으면 처음부터 바꿔 둔다.
-  const [hasPaintedOnce, setHasPaintedOnce] = useState(() =>
-    painted.some(Boolean),
-  );
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
   const [isClosedLocally, setIsClosedLocally] = useState(false);
   // 덮어쓰기를 고르면 최신 submissionRevision으로 바꿔 끼운다(FR-117).
@@ -354,7 +350,6 @@ function PollInputForm({
   const updatePainted = (next: boolean[]) => {
     setPainted(next);
     setIsDirty(true);
-    if (next.some(Boolean)) setHasPaintedOnce(true);
   };
 
   /** 되돌리기 알림을 띄우며 칠한 칸을 한 번에 바꾼다. */
@@ -558,9 +553,7 @@ function PollInputForm({
           </TitleRow>
           <TitleRow>
             <GuideDescription>
-              {hasPaintedOnce
-                ? "칠한 칸에서 끌면 지워져요"
-                : "꾹 누른 채 끌면 칠해져요"}
+              꾹 눌러 끌면 칠해지고, 칠한 칸에서 끌면 지워져요
             </GuideDescription>
             <ResetButton
               type="button"

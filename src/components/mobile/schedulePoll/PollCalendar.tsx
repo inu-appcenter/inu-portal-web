@@ -17,23 +17,30 @@ interface PollCalendarProps {
   endDate: string;
   /** 기간 안에서 만날 요일. 빠진 요일은 흐리게 그린다 */
   days: PollDay[];
+  /** 기간 안에서 하나씩 뺀 날짜. 빠진 요일처럼 흐리게 그린다 */
+  excludedDates: string[];
   maxDays: number;
   onRangeChange: (start: string, end: string) => void;
   onToggleDay: (day: PollDay) => void;
+  /** 기간을 다 고른 뒤 기간 안 날짜를 누르면 그 날짜를 빼거나 다시 넣는다 */
+  onToggleDate: (key: string) => void;
 }
 
 /**
  * 기간 + 요일 고르기 달력 (Figma B. 조건 설정 v4 - 단계 2/4).
  * 날짜를 두 번 눌러 기간을 정하고, 요일 머리를 눌러 그 요일을 빼거나 넣는다.
+ * 기간을 다 고른 뒤 기간 안 날짜를 누르면 그 날짜 하나만 빼거나 넣고, 기간 밖을 누르면 새로 고른다.
  */
 const PollCalendar = ({
   today,
   startDate,
   endDate,
   days,
+  excludedDates,
   maxDays,
   onRangeChange,
   onToggleDay,
+  onToggleDate,
 }: PollCalendarProps) => {
   const [month, setMonth] = useState(() => {
     const base = parseDateKey(startDate || today);
@@ -70,6 +77,10 @@ const PollCalendar = ({
     : null;
 
   const handleDateClick = (key: string) => {
+    if (startDate && endDate && key >= startDate && key <= endDate) {
+      onToggleDate(key);
+      return;
+    }
     // 시작만 골라 둔 상태에서 범위 안 날짜를 누르면 끝으로, 아니면 새로 시작한다.
     if (startDate && !endDate && key >= startDate && maxEnd && key <= maxEnd) {
       onRangeChange(startDate, key);
@@ -129,7 +140,8 @@ const PollCalendar = ({
             const isPast = key < today;
             const inRange =
               !!startDate && key >= startDate && key <= (endDate || startDate);
-            const dayOff = !days.includes(dayOf(date));
+            const dayOff =
+              !days.includes(dayOf(date)) || excludedDates.includes(key);
             const selected = inRange && !dayOff;
             const outOfReach =
               !!startDate && !endDate && !!maxEnd && key > maxEnd;
@@ -235,8 +247,8 @@ const Grid = styled.div`
 const WeekdayButton = styled.button<{ $off: boolean }>`
   ${buttonReset}
   height: 28px;
-  color: ${({ $off }) => ($off ? "var(--text-disabled)" : "var(--text-tertiary)")};
-  ${typography.label3}
+  color: ${({ $off }) => ($off ? "var(--text-disabled)" : "var(--text-secondary)")};
+  ${typography.caption1}
 `;
 
 const DateCell = styled.div<{ $band: boolean; $bandStart: boolean; $bandEnd: boolean }>`
@@ -258,8 +270,8 @@ const DateButton = styled.button<{
   $muted: boolean;
 }>`
   ${buttonReset}
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   color: ${({ $muted }) => ($muted ? "var(--text-disabled)" : "var(--text-primary)")};
   ${typography.body2}
@@ -269,6 +281,6 @@ const DateButton = styled.button<{
     css`
       background: var(--interactive-primary);
       color: var(--text-inverse);
-      font-weight: 700;
+      ${typography.label2}
     `}
 `;

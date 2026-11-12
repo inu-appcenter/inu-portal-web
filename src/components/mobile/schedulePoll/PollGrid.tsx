@@ -134,11 +134,14 @@ export const PollGridCell = styled.div<{ $hourEnd?: boolean }>`
   background: var(--bg-base);
 `;
 
-/**
- * 한 사람이 되는 시간 블록의 불투명도. 결과 화면은 같은 블록을 참여자 수만큼 겹쳐 그려
- * 인원이 많을수록 진해진다(1명 30% → 2명 51% → 3명 66% …). 입력 화면도 같은 블록을 쓴다.
- */
+/** 입력 화면에서 칠한 블록의 불투명도 (Figma Painted_Blocks: 채움 30%) */
 export const POLL_BLOCK_OPACITY = 0.3;
+
+/**
+ * 결과 화면에서 한 사람 몫 블록의 불투명도 (Figma Overlap_Blocks: 레이어 20%).
+ * 참여자 수만큼 겹쳐 그려 인원이 많을수록 진해진다(1명 20% → 2명 36% → 3명 49% …).
+ */
+export const POLL_RESULT_BLOCK_OPACITY = 0.2;
 
 /**
  * 이어진 칸을 묶어 그리는 둥근 블록 (Figma Painted_Blocks / Overlap_Blocks).

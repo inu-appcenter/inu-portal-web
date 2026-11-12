@@ -74,6 +74,7 @@ export const buildPollColumns = (input: {
   days: PollDay[] | null;
   startDate: string | null;
   endDate: string | null;
+  excludedDates?: string[];
 }): PollColumn[] => {
   if (input.isRecurring) {
     return POLL_DAYS.filter((day) => input.days?.includes(day)).map((day) => ({
@@ -92,6 +93,7 @@ export const buildPollColumns = (input: {
   ) {
     const day = POLL_DAYS[(cursor.getDay() + 6) % 7];
     if (input.days && input.days.length > 0 && !input.days.includes(day)) continue;
+    if (input.excludedDates?.includes(toDateKey(cursor))) continue;
     columns.push({
       key: toDateKey(cursor),
       label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${WEEKDAY_LABELS[(cursor.getDay() + 6) % 7]})`,
