@@ -148,7 +148,7 @@ export default function DailyBriefCardDetailConfigModal({
                   <Ripple color="rgba(0, 0, 0, 0.06)" />
                   <ItemName>{room}</ItemName>
                   <CheckboxIcon $checked={checked}>
-                    {checked && <Icon name="check" size={13} color="var(--text-inverse)" />}
+                    {checked && <Icon name="check" size={13} color="var(--text-on-brand)" />}
                   </CheckboxIcon>
                 </CheckItem>
               );

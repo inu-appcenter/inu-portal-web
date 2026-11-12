@@ -174,7 +174,7 @@ export default function CreateChatModal({
                 label: isLoading ? "생성 중..." : "방 만들기",
                 onClick: handleCreate,
                 backgroundColor: "var(--interactive-primary)",
-                textColor: "var(--text-inverse)",
+                textColor: "var(--text-on-brand)",
                 disabled: isLoading,
               }}
               padding="16px 24px 24px"

@@ -1053,7 +1053,7 @@ const LoginActionBtn = styled.button`
   gap: 6px;
   padding: 8px 16px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 10px;
   font-size: 13px;
@@ -1932,7 +1932,7 @@ const PortalAuthActionBtn = styled.button`
   width: 100%;
   padding: 10px 0;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 10px;
   font-size: 13.5px;
@@ -3104,7 +3104,7 @@ const StudyBookButton = styled.button`
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: var(--interactive-primary);
   border: none;
   border-radius: 6px;
@@ -3157,7 +3157,7 @@ const RoomTabPill = styled.button<{ $active: boolean }>`
   border-radius: 20px;
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-700)")};
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
   border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   white-space: nowrap;
@@ -3193,7 +3193,7 @@ const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean
     if ($isSelected) {
       return `
         background: var(--interactive-primary);
-        color: var(--text-inverse);
+        color: var(--text-on-brand);
         border: 2px solid var(--border-brand);
       `;
     }

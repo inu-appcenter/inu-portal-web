@@ -482,7 +482,7 @@ const DayChips = styled.div`
 const chipSelected = `
   border-color: var(--border-brand);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 `;
 
 const DayChip = styled.button<{ $selected: boolean }>`

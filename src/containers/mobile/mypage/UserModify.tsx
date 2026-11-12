@@ -668,7 +668,7 @@ const SubmitArea = styled.div`
 const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   box-sizing: border-box;
   background: linear-gradient(135deg, var(--blue-400) 0%, var(--interactive-primary) 100%);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   padding: 14px 18px;
   border-radius: 16px;
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};

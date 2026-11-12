@@ -9,12 +9,12 @@ interface ChatPreviewWidgetProps {
 }
 
 const PASTEL_COLORS = [
-  "var(--time-table-color-yellow)",
-  "var(--time-table-color-lightgreen)",
-  "var(--time-table-color-red)",
-  "var(--time-table-color-skyblue)",
-  "var(--time-table-color-purple)",
-  "var(--time-table-color-orange)",
+  "var(--tt-color-2-bg)",
+  "var(--tt-color-3-bg)",
+  "var(--tt-color-0-bg)",
+  "var(--tt-color-5-bg)",
+  "var(--tt-color-8-bg)",
+  "var(--tt-color-1-bg)",
 ];
 
 const ChatPreviewWrapper = styled.div`

@@ -845,7 +845,7 @@ const ImportButtonMock = styled.div`
   padding: 7px 0;
   border-radius: 999px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-align: center;
   font-size: 10px;
   font-weight: 700;

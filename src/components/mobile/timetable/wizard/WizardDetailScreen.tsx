@@ -132,18 +132,18 @@ const WizardDetailScreen = ({ candidate, reserveBottomSpace = true }: WizardDeta
 
 export default WizardDetailScreen;
 
-// 앱 전역 시간표 색감과 같은 --time-table-color-* 팔레트
+// 앱 전역 시간표 색감과 같은 --tt-color-* 팔레트
 const BLOCK_COLORS = [
-  "var(--time-table-color-pink)",
-  "var(--time-table-color-skyblue)",
-  "var(--time-table-color-teal)",
-  "var(--time-table-color-orange)",
-  "var(--time-table-color-violet)",
-  "var(--time-table-color-yellow)",
-  "var(--time-table-color-lightgreen)",
-  "var(--time-table-color-lilac)",
-  "var(--time-table-color-purple)",
-  "var(--time-table-color-red)",
+  "var(--tt-color-9-bg)",
+  "var(--tt-color-5-bg)",
+  "var(--tt-color-4-bg)",
+  "var(--tt-color-1-bg)",
+  "var(--tt-color-7-bg)",
+  "var(--tt-color-2-bg)",
+  "var(--tt-color-3-bg)",
+  "var(--tt-color-6-bg)",
+  "var(--tt-color-8-bg)",
+  "var(--tt-color-0-bg)",
 ];
 
 const Body = styled.div`

@@ -123,7 +123,7 @@ export default function OpenChatPreviewModal({
                 label: room.joined ? "참여 중" : "참여하기",
                 onClick: handleJoin,
                 backgroundColor: room.joined ? "rgba(59, 130, 246, 0.12)" : "var(--interactive-primary)",
-                textColor: room.joined ? "var(--interactive-primary)" : "var(--text-inverse)",
+                textColor: room.joined ? "var(--interactive-primary)" : "var(--text-on-brand)",
               }}
               padding="16px 24px 24px"
               height="88px"

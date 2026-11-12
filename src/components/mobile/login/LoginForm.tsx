@@ -209,7 +209,7 @@ const LoginButton = styled.button`
   border: none;
   border-radius: var(--radius-full);
   background: var(--blue-800);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;

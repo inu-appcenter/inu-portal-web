@@ -74,7 +74,7 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
     name: "제1기숙사",
     borderColor: "rgba(29, 78, 216, 0.28)",
     badgeBg: "var(--interactive-primary)",
-    badgeText: "var(--text-inverse)",
+    badgeText: "var(--text-on-brand)",
     boxBg: "var(--bg-brand)",
     boxBorder: "rgba(37, 99, 235, 0.2)",
   };

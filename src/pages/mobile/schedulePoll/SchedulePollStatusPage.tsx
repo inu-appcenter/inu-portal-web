@@ -484,7 +484,7 @@ const InviteButton = styled.button<{ $emphasized: boolean }>`
   background: ${({ $emphasized }) =>
     $emphasized ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $emphasized }) =>
-    $emphasized ? "var(--text-inverse)" : "var(--text-secondary)"};
+    $emphasized ? "var(--text-on-brand)" : "var(--text-secondary)"};
   ${typography.label2}
 `;
 
