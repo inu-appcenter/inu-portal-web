@@ -27,6 +27,7 @@ import { useSemesters } from "@/hooks/useSemesters";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import PollPaintGrid from "@/components/mobile/schedulePoll/PollPaintGrid";
+import { POLL_BLOCK_OPACITY } from "@/components/mobile/schedulePoll/PollGrid";
 import {
   PollBody,
   PollBottomBar,
@@ -303,6 +304,10 @@ function PollInputForm({
     rangesToCells(shape, submission?.available ?? []),
   );
   const [isDirty, setIsDirty] = useState(false);
+  // 꾹 눌러 끌기 안내는 한 번 칠해 보면 지우기 안내로 바꾼다. 이미 낸 적 있으면 처음부터 바꿔 둔다.
+  const [hasPaintedOnce, setHasPaintedOnce] = useState(() =>
+    painted.some(Boolean),
+  );
   const [confirm, setConfirm] = useState<ConfirmKind>(null);
   const [isClosedLocally, setIsClosedLocally] = useState(false);
   // 덮어쓰기를 고르면 최신 submissionRevision으로 바꿔 끼운다(FR-117).
@@ -349,6 +354,7 @@ function PollInputForm({
   const updatePainted = (next: boolean[]) => {
     setPainted(next);
     setIsDirty(true);
+    if (next.some(Boolean)) setHasPaintedOnce(true);
   };
 
   /** 되돌리기 알림을 띄우며 칠한 칸을 한 번에 바꾼다. */
@@ -479,7 +485,11 @@ function PollInputForm({
     const target = gridRef.current?.querySelector<HTMLElement>(
       `[data-poll-column="${unpaintedColumns[0]}"]`,
     );
-    target?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    target?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   };
 
   /** 다른 기기에서 먼저 등록한 내용을 불러온다. 부모가 폼을 새로 만든다. */
@@ -532,7 +542,10 @@ function PollInputForm({
             <GuideTitle>되는 시간을 칠해 주세요</GuideTitle>
             <Legend>
               <LegendItem>
-                <Swatch $color="var(--blue-300)" />
+                <Swatch
+                  $color="var(--interactive-primary)"
+                  style={{ opacity: POLL_BLOCK_OPACITY }}
+                />
                 돼요
               </LegendItem>
               {hasClasses && (
@@ -545,7 +558,9 @@ function PollInputForm({
           </TitleRow>
           <TitleRow>
             <GuideDescription>
-              꾹 눌러 끌면 칠해지고, 칠한 칸에서 끌면 지워져요
+              {hasPaintedOnce
+                ? "칠한 칸에서 끌면 지워져요"
+                : "꾹 누른 채 끌면 칠해져요"}
             </GuideDescription>
             <ResetButton
               type="button"
@@ -568,12 +583,17 @@ function PollInputForm({
           />
         </div>
         <GestureHint>
-          {formatDuration(poll.durationMode, poll.durationMin)} 연속으로 비는 시간을 찾아요
+          {formatDuration(poll.durationMode, poll.durationMin)} 연속으로 비는
+          시간을 찾아요
         </GestureHint>
       </PollBody>
 
       <PollBottomBar>
-        <PollSecondaryButton type="button" disabled={isLocked} onClick={handleFillAll}>
+        <PollSecondaryButton
+          type="button"
+          disabled={isLocked}
+          onClick={handleFillAll}
+        >
           {hasClasses ? "수업 빼고 다 칠하기" : "다 칠하기"}
         </PollSecondaryButton>
         <PollPrimaryButton

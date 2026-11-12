@@ -134,6 +134,28 @@ export const PollGridCell = styled.div<{ $hourEnd?: boolean }>`
   background: var(--bg-base);
 `;
 
+/**
+ * 한 사람이 되는 시간 블록의 불투명도. 결과 화면은 같은 블록을 참여자 수만큼 겹쳐 그려
+ * 인원이 많을수록 진해진다(1명 30% → 2명 51% → 3명 66% …). 입력 화면도 같은 블록을 쓴다.
+ */
+export const POLL_BLOCK_OPACITY = 0.3;
+
+/**
+ * 이어진 칸을 묶어 그리는 둥근 블록 (Figma Painted_Blocks / Overlap_Blocks).
+ * 채움은 불투명 그대로 두고 레이어 opacity로 투명하게 한다. 그래서 안에 글자를 넣지 않는다.
+ * 터치는 아래 칸으로 통과한다.
+ */
+export const PollBlock = styled.div`
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--interactive-primary);
+  opacity: ${POLL_BLOCK_OPACITY};
+  pointer-events: none;
+`;
+
 const Scroller = styled.div`
   width: 100%;
   overflow-x: auto;
@@ -185,7 +207,8 @@ const HeaderCell = styled.div<{
   border-bottom: 1px solid var(--border-default);
   border-left: ${({ $weekStart }) =>
     $weekStart ? "1px solid var(--border-strong)" : "none"};
-  color: ${({ $muted }) => ($muted ? "var(--text-disabled)" : "var(--text-tertiary)")};
+  color: ${({ $muted }) =>
+    $muted ? "var(--text-disabled)" : "var(--text-tertiary)"};
   text-align: center;
   white-space: nowrap;
   ${typography.label3}

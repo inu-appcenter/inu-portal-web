@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
-import { useHeader } from "@/context/HeaderContext";
+import { useHeader, type MenuItemType } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import {
   POLL_INTERVAL,
@@ -15,7 +15,6 @@ import {
 } from "@/hooks/useSchedulePoll";
 import { usePollNoticeToasts } from "@/hooks/usePollNoticeToasts";
 import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
-import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import SendTargetSheet from "@/components/mobile/schedulePoll/SendTargetSheet";
 import {
   PollBadge,
@@ -99,7 +98,25 @@ export default function SchedulePollStatusPage() {
   const updateMutation = useUpdatePoll(pollId);
 
   usePollNoticeToasts(pollId, revision);
-  useHeader({ title: poll?.title ?? "시간 맞추기", hasback: true });
+  // 마감 변경·종료는 자주 쓰지 않고 종료는 되돌릴 수 없어서, 본문 대신 헤더 메뉴에 둔다.
+  const isHost = poll?.isHost ?? false;
+  const menuItems = useMemo<MenuItemType[] | undefined>(
+    () =>
+      isHost && !isClosed
+        ? [
+            {
+              label: "응답 마감 변경",
+              onClick: () => {
+                setDeadlineInput(toLocalInputValue(deadlineAt));
+                setHostDialog("DEADLINE");
+              },
+            },
+            { label: "시간 맞추기 종료", onClick: () => setHostDialog("CLOSE") },
+          ]
+        : undefined,
+    [isHost, isClosed, deadlineAt],
+  );
+  useHeader({ title: poll?.title ?? "시간 맞추기", hasback: true, menuItems });
 
   if (!isLoggedIn) {
     return (
@@ -207,15 +224,6 @@ export default function SchedulePollStatusPage() {
               <strong>{participantCount}</strong>명 참여
               <HeadlineSub> · 최대 {poll.maxParticipants}명</HeadlineSub>
             </Headline>
-            {!isClosed && (
-              <InviteButton
-                type="button"
-                $emphasized={needsMorePeople}
-                onClick={() => setIsInviteOpen(true)}
-              >
-                초대하기
-              </InviteButton>
-            )}
           </SummaryRow>
           <MetaRow>
             {isClosed ? (
@@ -229,20 +237,6 @@ export default function SchedulePollStatusPage() {
             )}
           </MetaRow>
         </Summary>
-
-        {needsMorePeople && !isClosed && (
-          <InviteCard>
-            <InviteTitle>
-              {participantCount === 0
-                ? "아직 등록한 사람이 없어요"
-                : "한 명만 더 모이면 결과가 나와요"}
-            </InviteTitle>
-            <InviteDescription>
-              링크나 채팅방으로 초대해 보세요. 2명 이상 모이면 겹치는 시간을 바로
-              계산해요.
-            </InviteDescription>
-          </InviteCard>
-        )}
 
         {participantsQuery.isLoading ? (
           <Skeleton variant="card" height={144} />
@@ -266,6 +260,12 @@ export default function SchedulePollStatusPage() {
                 </SubmittedAt>
               </ParticipantRow>
             ))}
+            {needsMorePeople && !isClosed && (
+              <EmptySlotRow>
+                <EmptySlotAvatar aria-hidden />
+                <span>초대한 사람이 들어오면 여기에 보여요</span>
+              </EmptySlotRow>
+            )}
           </ParticipantList>
         ) : null}
 
@@ -305,25 +305,22 @@ export default function SchedulePollStatusPage() {
           </Section>
         )}
 
-        {poll.isHost && !isClosed && (
-          <HostActions>
-            <HostButton
-              type="button"
-              onClick={() => {
-                setDeadlineInput(toLocalInputValue(deadlineAt));
-                setHostDialog("DEADLINE");
-              }}
-            >
-              마감 변경
-            </HostButton>
-            <HostButton
-              type="button"
-              $danger
-              onClick={() => setHostDialog("CLOSE")}
-            >
-              시간 맞추기 종료
-            </HostButton>
-          </HostActions>
+        {needsMorePeople && !isClosed && (
+          <Section>
+            <SectionHeader>
+              <SectionTitle>지금까지 겹치는 시간</SectionTitle>
+              <PollBadge>{participantCount}명 기준</PollBadge>
+            </SectionHeader>
+            <SectionHint>2명부터 겹치는 시간을 계산해요</SectionHint>
+            <EmptyResult>
+              <strong>
+                {participantCount === 0
+                  ? "아직 등록한 사람이 없어요"
+                  : "한 명만 더 모이면 결과가 나와요"}
+              </strong>
+              <span>아래 [초대하기]로 링크나 채팅방에 보내 보세요</span>
+            </EmptyResult>
+          </Section>
         )}
       </PollBody>
 
@@ -333,7 +330,7 @@ export default function SchedulePollStatusPage() {
             ? undefined
             : hasResult && result
               ? `지금까지 등록한 ${result.participants.length}명 기준으로 보여 줘요`
-              : "2명 이상 모이면 결과를 볼 수 있어요"
+              : undefined
         }
       >
         {isClosed ? (
@@ -471,40 +468,6 @@ const MetaRow = styled.div`
   ${typography.caption1}
 `;
 
-const InviteButton = styled.button<{ $emphasized: boolean }>`
-  ${buttonReset}
-  flex-shrink: 0;
-  height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border-brand);
-  background: ${({ $emphasized }) =>
-    $emphasized ? "var(--interactive-primary)" : "var(--bg-base)"};
-  color: ${({ $emphasized }) =>
-    $emphasized ? "var(--text-inverse)" : "var(--text-brand)"};
-  ${typography.label3}
-`;
-
-const InviteCard = styled.div`
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-radius: 16px;
-  border: 1px solid var(--border-brand-subtle);
-  background: var(--bg-brand);
-`;
-
-const InviteTitle = styled.span`
-  color: var(--text-brand);
-  ${typography.heading2}
-`;
-
-const InviteDescription = styled.span`
-  color: var(--text-secondary);
-  ${typography.caption1}
-`;
-
 const ParticipantList = styled(PollCard)`
   border-radius: 20px;
   overflow: hidden;
@@ -606,23 +569,6 @@ const CandidateTime = styled.span`
   ${typography.label2}
 `;
 
-const HostActions = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const HostButton = styled.button<{ $danger?: boolean }>`
-  ${buttonReset}
-  flex: 1 0 0;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-default);
-  background: var(--bg-base);
-  color: ${({ $danger }) =>
-    $danger ? "var(--text-error)" : "var(--text-secondary)"};
-  ${typography.label2}
-`;
-
 const DeadlineInput = styled.input`
   width: 100%;
   height: 50px;
@@ -634,4 +580,44 @@ const DeadlineInput = styled.input`
   color: var(--text-primary);
   /* iOS는 16px 미만 입력에 포커스하면 화면을 확대한다 */
   font-size: 16px;
+`;
+
+const EmptySlotRow = styled.div`
+  min-height: 72px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-tertiary);
+  ${typography.label2}
+
+  border-top: 1px solid var(--border-default);
+`;
+
+const EmptySlotAvatar = styled.span`
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border-default);
+  background: var(--bg-muted);
+`;
+
+const EmptyResult = styled(PollCard)`
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+
+  strong {
+    color: var(--text-primary);
+    ${typography.title3}
+  }
+
+  span {
+    color: var(--text-tertiary);
+    ${typography.caption1}
+  }
 `;

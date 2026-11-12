@@ -7,7 +7,12 @@ import {
   type PollGridShape,
   type PollOverlayItem,
 } from "@/utils/schedulePoll";
-import PollGridFrame, { POLL_ROW_HEIGHT, PollGridCell } from "./PollGrid";
+import PollGridFrame, {
+  POLL_ROW_HEIGHT,
+  PollBlock,
+  PollGridCell,
+} from "./PollGrid";
+import { blockPosition, findRuns } from "./pollBlockLayout";
 
 interface PollPaintGridProps {
   shape: PollGridShape;
@@ -83,7 +88,8 @@ const PollPaintGrid = ({
 
   const locate = (clientX: number, clientY: number): Cell | null => {
     const body = bodyRef.current;
-    if (!body || shape.columns.length === 0 || shape.rowCount === 0) return null;
+    if (!body || shape.columns.length === 0 || shape.rowCount === 0)
+      return null;
     const rect = body.getBoundingClientRect();
     const clamp = (value: number, max: number) =>
       Math.min(Math.max(value, 0), max);
@@ -172,7 +178,10 @@ const PollPaintGrid = ({
         if (moved > SCROLL_SLOP_PX) endGesture();
         return;
       }
-      if (cell.column === gesture.start.column && cell.row === gesture.start.row) {
+      if (
+        cell.column === gesture.start.column &&
+        cell.row === gesture.start.row
+      ) {
         return;
       }
       gesture.dragging = true;
@@ -221,16 +230,22 @@ const PollPaintGrid = ({
       renderColumn={(column) => (
         <>
           {Array.from({ length: shape.rowCount }, (_unused, row) => {
-            const index = cellIndex(shape, column, row);
             const minutes = shape.rangeStartMin + (row + 1) * SLOT_MINUTES;
             return (
-              <Cell
+              <PollGridCell
                 key={row}
                 $hourEnd={minutes % 60 === 0 || row === shape.rowCount - 1}
-                $painted={painted[index]}
               />
             );
           })}
+          {findRuns(shape.rowCount, (row) =>
+            Boolean(painted[cellIndex(shape, column, row)]),
+          ).map((run) => (
+            <PollBlock
+              key={`paint-${run.start}`}
+              style={blockPosition(run.start, run.end)}
+            />
+          ))}
           {overlayItems.flatMap((item) =>
             item.blocks
               .filter((block) => block.column === column)
@@ -254,11 +269,7 @@ const PollPaintGrid = ({
 
 export default PollPaintGrid;
 
-// 시안 C: 칠한 칸 = blue/300. 수업 = bg/disabled 50% 반투명(poll/class-overlay 토큰 대기).
-const Cell = styled(PollGridCell)<{ $painted: boolean }>`
-  background: ${({ $painted }) => ($painted ? "var(--blue-300)" : "var(--bg-base)")};
-`;
-
+// 시안 C: 칠한 칸 = PollBlock(파랑 30%). 수업 = bg/disabled 50% 반투명(poll/class-overlay 토큰 대기).
 const OverlayBlock = styled.div`
   position: absolute;
   left: 1px;

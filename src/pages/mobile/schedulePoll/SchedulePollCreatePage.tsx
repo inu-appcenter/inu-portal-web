@@ -98,7 +98,8 @@ export default function SchedulePollCreatePage() {
   const [today] = useState(() => toDateKey(new Date()));
   const [title, setTitle] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
-  const [days, setDays] = useState<PollDay[]>(WEEKDAYS);
+  // 날짜 모드는 고른 기간을 그대로 쓰도록 모두로, 매주 반복은 평일만으로 시작한다.
+  const [days, setDays] = useState<PollDay[]>([...POLL_DAYS]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [rangeStart, setRangeStart] = useState("09:00");
@@ -341,7 +342,10 @@ export default function SchedulePollCreatePage() {
               </ToggleText>
               <WizardToggle
                 checked={isRecurring}
-                onCheckedChange={setIsRecurring}
+                onCheckedChange={(checked) => {
+                  setIsRecurring(checked);
+                  setDays(checked ? WEEKDAYS : [...POLL_DAYS]);
+                }}
                 aria-labelledby="poll-recurring-label"
               />
             </ToggleRow>
@@ -365,7 +369,7 @@ export default function SchedulePollCreatePage() {
                     $selected={days.length === 7}
                     onClick={() => setDays([...POLL_DAYS])}
                   >
-                    매일
+                    모두
                   </QuickChip>
                   <QuickChip
                     type="button"

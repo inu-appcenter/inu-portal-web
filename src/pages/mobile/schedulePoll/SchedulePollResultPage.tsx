@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import { useHeader } from "@/context/HeaderContext";
@@ -15,8 +20,14 @@ import { usePollNoticeToasts } from "@/hooks/usePollNoticeToasts";
 import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import PollGridFrame, {
+  PollBlock,
   PollGridCell,
 } from "@/components/mobile/schedulePoll/PollGrid";
+import {
+  blockPosition,
+  findRuns,
+  stackedOpacity,
+} from "@/components/mobile/schedulePoll/pollBlockLayout";
 import SendTargetSheet from "@/components/mobile/schedulePoll/SendTargetSheet";
 import {
   PollBadge,
@@ -50,25 +61,14 @@ import { getPollSharedRoomIds } from "@/utils/schedulePollStorage";
 import { showToast } from "@/utils/toast";
 import { typography } from "@/styles/typography";
 
-// 가능 인원 비율에 따른 칸 색 (Figma E. 결과의 4단계 범례). 전원 가능은 브랜드 채움색.
-const HEAT_LEVELS = [
-  "var(--blue-200)",
-  "var(--blue-300)",
-  "var(--blue-400)",
-  "var(--interactive-primary)",
-];
+/** 범례에 보여 줄 겹침 단계 수. 전원 가능은 따로 진한 블록으로 보여 준다 */
+const LEGEND_STEPS = 3;
 
 /** '김유니님만 안 돼요' / '김유니, 최유리님이 안 돼요' */
 const describeUnavailable = (names: string[]) =>
   names.length === 1
     ? `${names[0]}님만 안 돼요`
     : `${names.join(", ")}님이 안 돼요`;
-
-const heatColor = (count: number, total: number) => {
-  if (count <= 0 || total <= 0) return "var(--bg-base)";
-  if (count >= total) return HEAT_LEVELS[3];
-  return HEAT_LEVELS[Math.min(2, Math.floor((count / total) * 3))];
-};
 
 /**
  * 결과 (Figma E. 결과). 히트맵과 추천 후보 3개를 보여 주고, 고른 후보를 채팅방에 공유한다.
@@ -154,13 +154,13 @@ export default function SchedulePollResultPage() {
       );
     }
     if (code === "RESULT_NOT_READY") {
-      return (
-        <Navigate replace to={ROUTES.SCHEDULE_POLL.STATUS(pollId)} />
-      );
+      return <Navigate replace to={ROUTES.SCHEDULE_POLL.STATUS(pollId)} />;
     }
     return (
       <PollPage>
-        <PollNotice title={getPollErrorMessage(error, "결과를 불러오지 못했어요")}>
+        <PollNotice
+          title={getPollErrorMessage(error, "결과를 불러오지 못했어요")}
+        >
           {code === null && (
             <PollPrimaryButton
               type="button"
@@ -220,8 +220,12 @@ function PollResultView({
   );
 
   // 선택은 결과 버전에 묶인다. 새 버전이 오면 후보가 달라지므로 1순위로 돌아간다.
-  const [selection, setSelection] = useState({ version: result.version, rank: 1 });
-  const selectedRank = selection.version === result.version ? selection.rank : 1;
+  const [selection, setSelection] = useState({
+    version: result.version,
+    rank: 1,
+  });
+  const selectedRank =
+    selection.version === result.version ? selection.rank : 1;
   const [focusedCell, setFocusedCell] = useState<{
     version: number;
     column: number;
@@ -229,12 +233,15 @@ function PollResultView({
   } | null>(null);
   const cell = focusedCell?.version === result.version ? focusedCell : null;
   // 추천만 공유 / 이 시간으로 정하기. 둘 다 같은 결과 공유 API로 채팅방에 보낸다.
-  const [shareMode, setShareMode] = useState<"RECOMMEND" | "DECIDE" | null>(null);
+  const [shareMode, setShareMode] = useState<"RECOMMEND" | "DECIDE" | null>(
+    null,
+  );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const top = result.candidates[0];
   const selected =
-    result.candidates.find((candidate) => candidate.rank === selectedRank) ?? top;
+    result.candidates.find((candidate) => candidate.rank === selectedRank) ??
+    top;
 
   const headline = !top
     ? "겹치는 시간이 아직 없어요"
@@ -254,6 +261,22 @@ function PollResultView({
       .filter((participant) => !((mask >> participant.index) & 1))
       .map((participant) => participant.displayName);
 
+  // 고른 추천 시간을 그리드에도 테두리로 표시한다.
+  const selectedColumn = selected
+    ? result.columns.findIndex((c) => c.key === selected.key)
+    : -1;
+  const selectedRange =
+    selected && selectedColumn >= 0
+      ? {
+          column: selectedColumn,
+          start:
+            (timeToMinutes(selected.start) - shape.rangeStartMin) /
+            SLOT_MINUTES,
+          end:
+            (timeToMinutes(selected.end) - shape.rangeStartMin) / SLOT_MINUTES,
+        }
+      : null;
+
   const cellMask = cell ? (result.heatmap[cell.column]?.[cell.row] ?? 0) : 0;
   const cellStart = cell ? shape.rangeStartMin + cell.row * SLOT_MINUTES : 0;
 
@@ -271,7 +294,8 @@ function PollResultView({
           {top && !top.allAvailable && (
             // 공통 시간이 없을 때는 누가 안 되는지 알려 줘야 조정할 수 있다(PRD 7장 빈 상태).
             <SubHeadline>
-              {unavailableNames(top.availableMask).join(", ")}님은 이 시간에 어려워요
+              {unavailableNames(top.availableMask).join(", ")}님은 이 시간에
+              어려워요
             </SubHeadline>
           )}
         </Heading>
@@ -349,37 +373,85 @@ function PollResultView({
           <SectionTitle>{formatColumnsSummary(result.columns)}</SectionTitle>
           <PollGridFrame
             shape={shape}
-            renderColumn={(column) =>
-              Array.from({ length: shape.rowCount }, (_unused, row) => {
-                const mask = result.heatmap[column]?.[row] ?? 0;
-                const minutes = shape.rangeStartMin + (row + 1) * SLOT_MINUTES;
-                const isFocused = cell?.column === column && cell.row === row;
-                return (
-                  <HeatCell
-                    key={row}
-                    as="button"
-                    type="button"
-                    aria-label={`${result.columns[column].label} ${minutesToTime(minutes - SLOT_MINUTES)} 가능 ${popcount(mask)}명`}
-                    $hourEnd={minutes % 60 === 0 || row === shape.rowCount - 1}
-                    $color={heatColor(popcount(mask), total)}
-                    $focused={isFocused}
-                    onClick={() =>
-                      setFocusedCell(
-                        isFocused
-                          ? null
-                          : { version: result.version, column, row },
-                      )
-                    }
-                  />
-                );
-              })
-            }
+            renderColumn={(column) => {
+              const masks = result.heatmap[column] ?? [];
+              const maskAt = (row: number) => masks[row] ?? 0;
+              return (
+                <>
+                  {Array.from({ length: shape.rowCount }, (_unused, row) => {
+                    const mask = maskAt(row);
+                    const minutes =
+                      shape.rangeStartMin + (row + 1) * SLOT_MINUTES;
+                    const isFocused =
+                      cell?.column === column && cell.row === row;
+                    return (
+                      <HeatCell
+                        key={row}
+                        as="button"
+                        type="button"
+                        aria-label={`${result.columns[column].label} ${minutesToTime(minutes - SLOT_MINUTES)} 가능 ${popcount(mask)}명`}
+                        $hourEnd={
+                          minutes % 60 === 0 || row === shape.rowCount - 1
+                        }
+                        $focused={isFocused}
+                        onClick={() =>
+                          setFocusedCell(
+                            isFocused
+                              ? null
+                              : { version: result.version, column, row },
+                          )
+                        }
+                      />
+                    );
+                  })}
+                  {/* 참여자마다 입력 화면과 같은 블록을 그려 겹친다. 많이 겹칠수록 진해진다 */}
+                  {result.participants.flatMap((participant) =>
+                    findRuns(
+                      shape.rowCount,
+                      (row) => ((maskAt(row) >> participant.index) & 1) === 1,
+                    ).map((run) => (
+                      <PollBlock
+                        key={`p${participant.index}-${run.start}`}
+                        style={blockPosition(run.start, run.end)}
+                      />
+                    )),
+                  )}
+                  {total > 0 &&
+                    findRuns(
+                      shape.rowCount,
+                      (row) => popcount(maskAt(row)) >= total,
+                    ).map((run) => (
+                      <AllBlock
+                        key={`all-${run.start}`}
+                        style={blockPosition(run.start, run.end)}
+                      >
+                        {total}명
+                      </AllBlock>
+                    ))}
+                  {selectedRange?.column === column && (
+                    <SelectedFrame
+                      style={blockPosition(
+                        selectedRange.start,
+                        selectedRange.end,
+                      )}
+                    />
+                  )}
+                </>
+              );
+            }}
           />
           <Legend>
-            <span>적음</span>
-            {HEAT_LEVELS.map((color) => (
-              <LegendSwatch key={color} $color={color} />
-            ))}
+            <span>1명</span>
+            {Array.from(
+              { length: Math.min(LEGEND_STEPS, Math.max(total - 1, 1)) },
+              (_unused, step) => (
+                <LegendSwatch
+                  key={step}
+                  style={{ opacity: stackedOpacity(step + 1) }}
+                />
+              ),
+            )}
+            <LegendSwatch $all />
             <span>{total}명 모두</span>
           </Legend>
 
@@ -414,7 +486,6 @@ function PollResultView({
             )}
           </CellPanel>
         </GridSection>
-
       </PollBody>
 
       <PollBottomBar>
@@ -447,7 +518,10 @@ function PollResultView({
             </>
           ) : undefined
         }
-        secondaryButton={{ text: "취소", onClick: () => setIsConfirmOpen(false) }}
+        secondaryButton={{
+          text: "취소",
+          onClick: () => setIsConfirmOpen(false),
+        }}
         primaryButton={{
           text: "정하기",
           onClick: () => {
@@ -524,14 +598,13 @@ const GridSection = styled.div`
   gap: 8px;
 `;
 
-const HeatCell = styled(PollGridCell)<{ $color: string; $focused: boolean }>`
+const HeatCell = styled(PollGridCell)<{ $focused: boolean }>`
   display: block;
   width: 100%;
   margin: 0;
   padding: 0;
   border-top: none;
   border-left: none;
-  background: ${({ $color }) => $color};
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   ${({ $focused }) =>
@@ -539,6 +612,8 @@ const HeatCell = styled(PollGridCell)<{ $color: string; $focused: boolean }>`
     `
       position: relative;
       z-index: 1;
+      /* 블록 위로 올라오므로 배경을 비워 아래 겹침 색이 그대로 보이게 한다 */
+      background: transparent;
       outline: 2px solid var(--text-primary);
       outline-offset: -2px;
     `}
@@ -552,11 +627,43 @@ const Legend = styled.div`
   ${typography.caption1}
 `;
 
-const LegendSwatch = styled.span<{ $color: string }>`
+// 블록과 같은 방식(불투명 채움 + 레이어 opacity)으로 칠해 겹침 농도와 똑같이 보인다.
+const LegendSwatch = styled.span<{ $all?: boolean }>`
   width: 22px;
   height: 10px;
+  box-sizing: border-box;
   border-radius: 3px;
-  background: ${({ $color }) => $color};
+  background: var(--interactive-primary);
+  ${({ $all }) => $all && "border: 1.5px solid var(--border-brand);"}
+`;
+
+/** 전원 가능 구간. 겹친 블록 위에 불투명하게 덮어 가장 먼저 눈에 띄게 한다 */
+const AllBlock = styled.div`
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1.5px solid var(--border-brand);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+  pointer-events: none;
+  ${typography.caption1}
+`;
+
+/** 고른 추천 시간 테두리 */
+const SelectedFrame = styled.div`
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  box-sizing: border-box;
+  border-radius: 7px;
+  border: 2px solid var(--text-primary);
+  pointer-events: none;
 `;
 
 const CellPanel = styled(PollCard)`
