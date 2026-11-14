@@ -1,0 +1,62 @@
+name: Deploy Production to Server1 (Caddy)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env.production
+        env:
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          if [ -n "$ENV_PRODUCTION" ]; then
+            printf '%s\n' "$ENV_PRODUCTION" > .env.production
+          fi
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Deploy dist to server1 with asset retention
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" \
+            "mkdir -p /var/www/intip-web/dist/assets /var/www/intip-web/staging && rm -rf /var/www/intip-web/staging/*"
+
+          sshpass -e rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" dist/ "${SERVER_USER}@${SERVER_HOST}:/var/www/intip-web/staging/"
+
+          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" '
+            set -e
+            mkdir -p /var/www/intip-web/dist/assets
+            if [ -d /var/www/intip-web/staging/assets ]; then
+              cp -rn /var/www/intip-web/staging/assets/. /var/www/intip-web/dist/assets/ || true
+            fi
+            find /var/www/intip-web/dist/assets -type f -mtime +7 -delete || true
+            rsync -a --delete --exclude="assets" /var/www/intip-web/staging/ /var/www/intip-web/dist/
+            chmod -R a+rX /var/www/intip-web/dist
+            rm -rf /var/www/intip-web/staging/*
+          '
