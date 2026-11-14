@@ -45,11 +45,11 @@ jobs:
           SSHPASS: ${{ secrets.SERVER_PASSWORD }}
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" \
-            "mkdir -p /var/www/intip-web/dist/assets /var/www/intip-web/staging && rm -rf /var/www/intip-web/staging/*"
+            "rm -rf /var/www/intip-web/staging && mkdir -p /var/www/intip-web/dist/assets /var/www/intip-web/staging"
 
           sshpass -e rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" dist/ "${SERVER_USER}@${SERVER_HOST}:/var/www/intip-web/staging/"
 
-          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" '
+          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" 'bash -s' << 'EOF'
             set -e
             mkdir -p /var/www/intip-web/dist/assets
             if [ -d /var/www/intip-web/staging/assets ]; then
@@ -58,5 +58,5 @@ jobs:
             find /var/www/intip-web/dist/assets -type f -mtime +7 -delete || true
             rsync -a --delete --exclude="assets" /var/www/intip-web/staging/ /var/www/intip-web/dist/
             chmod -R a+rX /var/www/intip-web/dist
-            rm -rf /var/www/intip-web/staging/*
-          '
+            rm -rf /var/www/intip-web/staging && mkdir -p /var/www/intip-web/staging
+          EOF
