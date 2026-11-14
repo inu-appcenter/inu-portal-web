@@ -1,0 +1,65 @@
+name: Deploy Production to Server1 (Caddy)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_GEN_TORCHY_URL: ${{ secrets.VITE_GEN_TORCHY_URL }}
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+          VITE_AGENT_WEB_URL: ${{ secrets.VITE_AGENT_WEB_URL }}
+          VITE_INUCHAT_URL: ${{ secrets.VITE_INUCHAT_URL }}
+          VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY }}
+          VITE_FORCE_UPDATE_ENABLED: ${{ secrets.VITE_FORCE_UPDATE_ENABLED }}
+          VITE_INUCHAT_CONSOLE_URL: ${{ secrets.VITE_INUCHAT_CONSOLE_URL }}
+          VITE_MIXPANEL_TOKEN: ${{ secrets.VITE_MIXPANEL_TOKEN }}
+        run: npm run build
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+
+      - name: Deploy dist to server1 with asset retention
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" \
+            "mkdir -p /var/www/intip-web/dist/assets /var/www/intip-web/staging && rm -rf /var/www/intip-web/staging/*"
+
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" dist/ "${SERVER_USER}@${SERVER_HOST}:/var/www/intip-web/staging/"
+
+          ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" '
+            set -e
+            mkdir -p /var/www/intip-web/dist/assets
+            if [ -d /var/www/intip-web/staging/assets ]; then
+              cp -rn /var/www/intip-web/staging/assets/. /var/www/intip-web/dist/assets/ || true
+            fi
+            find /var/www/intip-web/dist/assets -type f -mtime +7 -delete || true
+            rsync -a --delete --exclude="assets" /var/www/intip-web/staging/ /var/www/intip-web/dist/
+            chmod -R a+rX /var/www/intip-web/dist
+            rm -rf /var/www/intip-web/staging/*
+          '
