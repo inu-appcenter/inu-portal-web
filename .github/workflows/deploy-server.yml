@@ -24,17 +24,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build production bundle
+      - name: Create .env.production
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-          VITE_GEN_TORCHY_URL: ${{ secrets.VITE_GEN_TORCHY_URL }}
-          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
-          VITE_AGENT_WEB_URL: ${{ secrets.VITE_AGENT_WEB_URL }}
-          VITE_INUCHAT_URL: ${{ secrets.VITE_INUCHAT_URL }}
-          VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY }}
-          VITE_FORCE_UPDATE_ENABLED: ${{ secrets.VITE_FORCE_UPDATE_ENABLED }}
-          VITE_INUCHAT_CONSOLE_URL: ${{ secrets.VITE_INUCHAT_CONSOLE_URL }}
-          VITE_MIXPANEL_TOKEN: ${{ secrets.VITE_MIXPANEL_TOKEN }}
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          if [ -n "$ENV_PRODUCTION" ]; then
+            printf '%s\n' "$ENV_PRODUCTION" > .env.production
+          fi
+
+      - name: Build production bundle
         run: npm run build
 
       - name: Setup SSH key
