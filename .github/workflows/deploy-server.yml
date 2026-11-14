@@ -35,22 +35,21 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
 
       - name: Deploy dist to server1 with asset retention
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
+          SSHPASS: ${{ secrets.SERVER_PASSWORD }}
         run: |
-          ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" \
+          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" \
             "mkdir -p /var/www/intip-web/dist/assets /var/www/intip-web/staging && rm -rf /var/www/intip-web/staging/*"
 
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" dist/ "${SERVER_USER}@${SERVER_HOST}:/var/www/intip-web/staging/"
+          sshpass -e rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" dist/ "${SERVER_USER}@${SERVER_HOST}:/var/www/intip-web/staging/"
 
-          ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" '
+          sshpass -e ssh -o StrictHostKeyChecking=no "${SERVER_USER}@${SERVER_HOST}" '
             set -e
             mkdir -p /var/www/intip-web/dist/assets
             if [ -d /var/www/intip-web/staging/assets ]; then
