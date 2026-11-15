@@ -294,10 +294,27 @@ export default function MobileTimetableImageImportPage() {
     };
   }, [view, hasChanges, isSaving]);
 
+  // 분석 요청은 수십 초 걸린다. 그 사이 뒤로가기로 취소하거나 다른 이미지를 고르면
+  // 앞선 응답이 늦게 도착해 화면을 결과로 바꾸거나 새 분석 결과를 덮어쓸 수 있다.
+  // 요청마다 번호를 매겨 마지막 요청의 응답만 반영하고, 이전 요청은 중단한다.
+  const analyzeRequestRef = useRef<{ seq: number; controller: AbortController | null }>({
+    seq: 0,
+    controller: null,
+  });
+
+  const cancelAnalyze = () => {
+    analyzeRequestRef.current.seq += 1;
+    analyzeRequestRef.current.controller?.abort();
+    analyzeRequestRef.current.controller = null;
+  };
+
+  useEffect(() => cancelAnalyze, []);
+
   const handleHeaderBack = () => {
     if (view === "result" && hasChanges) {
       setShowUnsavedModal(true);
     } else if (view === "analyzing") {
+      cancelAnalyze();
       setView("intro");
     } else {
       navigate(-1);
@@ -345,6 +362,12 @@ export default function MobileTimetableImageImportPage() {
 
   // Vision AI 분석 실행 로직
   const analyze = async (file: File) => {
+    cancelAnalyze();
+    const controller = new AbortController();
+    analyzeRequestRef.current.controller = controller;
+    const seq = analyzeRequestRef.current.seq;
+    const isStale = () => analyzeRequestRef.current.seq !== seq;
+
     setView("analyzing");
     setMatches([]);
     setProgress(15);
@@ -359,8 +382,14 @@ export default function MobileTimetableImageImportPage() {
         });
       }, 400);
 
-      const recognized = await recognizeTimeTableImage(file, year, term);
+      const recognized = await recognizeTimeTableImage(
+        file,
+        year,
+        term,
+        controller.signal,
+      );
       if (progressTimer) clearInterval(progressTimer);
+      if (isStale()) return;
 
       setProgress(90);
 
@@ -408,8 +437,14 @@ export default function MobileTimetableImageImportPage() {
       setView("result");
     } catch (error) {
       if (progressTimer) clearInterval(progressTimer);
+      // 취소했거나 더 새 요청이 있으면 이 실패는 사용자에게 의미가 없다.
+      if (isStale()) return;
       alert(getImageAnalyzeErrorMessage(error));
       setView("intro");
+    } finally {
+      if (analyzeRequestRef.current.controller === controller) {
+        analyzeRequestRef.current.controller = null;
+      }
     }
   };
 
