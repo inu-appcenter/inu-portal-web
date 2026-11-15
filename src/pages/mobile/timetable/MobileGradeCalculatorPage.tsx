@@ -410,6 +410,7 @@ export default function MobileGradeCalculatorPage() {
     useState<string>("");
   const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const savingRef = useRef(false);
   const [isPortalModalOpen, setIsPortalModalOpen] = useState<boolean>(false);
   const [isFetchingPortalGrades, setIsFetchingPortalGrades] = useState<boolean>(false);
   const [showPortalGradeConfirmModal, setShowPortalGradeConfirmModal] = useState<boolean>(false);
@@ -652,6 +653,9 @@ export default function MobileGradeCalculatorPage() {
       return;
     }
 
+    // isSaving은 리렌더 후에야 버튼을 잠그므로, 한 프레임 안의 연타는 ref로 막는다.
+    if (savingRef.current) return;
+    savingRef.current = true;
     setIsSaving(true);
     try {
       await Promise.all([
@@ -683,6 +687,7 @@ export default function MobileGradeCalculatorPage() {
       console.error("Failed to save grades to server", e);
       alert("성적 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     } finally {
+      savingRef.current = false;
       setIsSaving(false);
     }
   };
