@@ -600,9 +600,22 @@ export default function MobileTimeTableComparePage() {
     }
   };
 
+  // 선택한 친구 중 시간표를 아직 받는 중인 사람이 있으면, 그 친구를 빈 시간표로
+  // 계산해 "공강"을 잘못 보여주게 된다(응답이 도착하면 목록이 줄어든다). 다 받을
+  // 때까지 계산을 미룬다.
+  const isSelectedFriendTimetableLoading = useMemo(
+    () =>
+      selectedFriendIdsState.some(
+        (id) =>
+          id !== 99999 &&
+          (friendTimetableStatesByFriendId.get(id) ?? "LOADING") === "LOADING",
+      ),
+    [selectedFriendIdsState, friendTimetableStatesByFriendId],
+  );
+
   // 공동 공강 목록 계산 (나 + 선택된 모든 친구들)
   const freeSlotsList = useMemo(() => {
-    if (selectedFriendIdsState.length === 0) {
+    if (selectedFriendIdsState.length === 0 || isSelectedFriendTimetableLoading) {
       return [];
     }
 
@@ -624,7 +637,13 @@ export default function MobileTimeTableComparePage() {
       });
 
     return calculateCommonFreeSlots(busyByPerson);
-  }, [selectedFriendIdsState, queriedFriends, getFriendTimetable, myClasses]);
+  }, [
+    selectedFriendIdsState,
+    isSelectedFriendTimetableLoading,
+    queriedFriends,
+    getFriendTimetable,
+    myClasses,
+  ]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -1070,6 +1089,8 @@ export default function MobileTimeTableComparePage() {
             <EmptyStateText>
               공강을 비교할 대상을 상단 칩에서 선택해 주세요.
             </EmptyStateText>
+          ) : isSelectedFriendTimetableLoading ? (
+            <EmptyStateText>친구 시간표를 불러오고 있어요.</EmptyStateText>
           ) : (
             freeSlotsList.length === 0 && (
               <EmptyStateText>겹치는 공강 시간이 없습니다.</EmptyStateText>
