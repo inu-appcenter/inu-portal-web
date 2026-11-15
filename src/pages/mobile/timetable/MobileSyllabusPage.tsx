@@ -12,6 +12,7 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSyllabus } from "@/hooks/useSyllabus";
 import type { SyllabusContent } from "@/types/syllabus";
+import { parseSyllabusOfferingId } from "@/utils/syllabus";
 
 // 진행률 표(수업방식비율/기자재활용비율/성적평가비율) 세그먼트에 순서대로 돌려쓰는 색상.
 // 디자인 토큰에 없는 항목 수까지 대비해 고정 hex로 넉넉히 둔다.
@@ -84,8 +85,10 @@ const MobileSyllabusPage = () => {
   const [searchParams] = useSearchParams();
   const state = (location.state ?? {}) as SyllabusLocationState;
   const paramId = searchParams.get("id") || searchParams.get("courseOfferingId");
-  const courseOfferingId =
-    state.courseOfferingId ?? (paramId ? Number(paramId) : undefined);
+  const courseOfferingId = parseSyllabusOfferingId(
+    state.courseOfferingId,
+    paramId,
+  );
 
   const {
     syllabus,

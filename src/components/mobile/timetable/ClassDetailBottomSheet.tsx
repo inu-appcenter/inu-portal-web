@@ -4,6 +4,7 @@ import { SAFE_AREA } from "@/styles/safeArea";
 import { ClassItem } from "./TimetableGrid";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { buildSyllabusPath } from "@/utils/syllabus";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -422,13 +423,20 @@ export default function ClassDetailBottomSheet({
                         alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                         return;
                       }
-                      navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                        state: {
+                      navigate(
+                        buildSyllabusPath({
                           courseOfferingId: syllabusOfferingId,
                           courseName: liveClass.name,
                           professor: professorName,
+                        }),
+                        {
+                          state: {
+                            courseOfferingId: syllabusOfferingId,
+                            courseName: liveClass.name,
+                            professor: professorName,
+                          },
                         },
-                      });
+                      );
                     }}
                   >
                     강의계획서

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { buildSyllabusPath } from "@/utils/syllabus";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import styled from "styled-components";
 import { SAFE_AREA } from "@/styles/safeArea";
@@ -478,13 +478,20 @@ const WizardCourseSearchSheet = () => {
                                     alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                                     return;
                                   }
-                                  navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                                    state: {
+                                  navigate(
+                                    buildSyllabusPath({
                                       courseOfferingId: row.offeringId,
                                       courseName: row.title,
                                       professor: row.professor,
+                                    }),
+                                    {
+                                      state: {
+                                        courseOfferingId: row.offeringId,
+                                        courseName: row.title,
+                                        professor: row.professor,
+                                      },
                                     },
-                                  });
+                                  );
                                 }}
                               >
                                 <Icon name="file-document" size={20} />
