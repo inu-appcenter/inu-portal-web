@@ -7,10 +7,7 @@ import { broadcastSync } from "@/stores/middleware/broadcastSync";
 import { safeLocalStorage } from "@/utils/safeStorage";
 import { queryClient } from "@/lib/queryClient";
 import { getMemberIdFromToken } from "@/utils/token";
-import {
-  TIMETABLES_QUERY_KEY,
-  useTimetableStore,
-} from "@/stores/useTimetableStore";
+import { useTimetableStore } from "@/stores/useTimetableStore";
 
 interface UserState {
   tokenInfo: TokenInfo;
@@ -46,6 +43,28 @@ export const clearPortalCaches = () => {
   }
 };
 
+/**
+ * 계정이 바뀌면(로그아웃 포함) 이전 계정으로 받은 쿼리 데이터를 모두 비운다.
+ *
+ * - 시간표만이 아니라 성적·친구·알림 등 모든 쿼리가 대상이다.
+ * - removeQueries/clear로 지우면 이미 마운트된 화면의 옵저버는 지워진 쿼리를 계속
+ *   붙잡고 있어 이전 계정 데이터가 그대로 보인다. reset은 진행 중인 요청을 취소하고
+ *   (늦게 도착한 이전 계정 응답이 캐시에 다시 들어가지 않는다) 데이터를 비운 뒤
+ *   옵저버에 알린다.
+ * - 다시 불러오기는 React가 새 로그인 상태로 다시 렌더한 뒤(로그인이 필요한 쿼리가
+ *   enabled=false로 바뀐 뒤)에 활성 쿼리만 한다. 바로 부르면 로그아웃 직후 토큰
+ *   없는 요청이 나간다.
+ */
+export const resetQueriesForAccountChange = () => {
+  queryClient
+    .getQueryCache()
+    .findAll()
+    .forEach((query) => query.reset());
+  setTimeout(() => {
+    void queryClient.refetchQueries({ type: "active" });
+  }, 0);
+};
+
 const handleUserAuthChange = (
   prevToken?: string | null,
   nextToken?: string | null,
@@ -55,7 +74,7 @@ const handleUserAuthChange = (
 
   if (prevMemberId !== nextMemberId) {
     useTimetableStore.getState().reloadTimetableCache(nextMemberId);
-    queryClient.removeQueries({ queryKey: TIMETABLES_QUERY_KEY });
+    resetQueriesForAccountChange();
     clearPortalCaches();
   }
 };

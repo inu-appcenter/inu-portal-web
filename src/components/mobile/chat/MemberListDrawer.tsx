@@ -22,6 +22,7 @@ import {
   DEFAULT_PROFILE_IMAGE_ID,
 } from "@/utils/userInfo";
 import { torchAiLogo as TorchAiLogo } from "@/resources/assets/illustrations/ai";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 const contentShow = keyframes`
   from { opacity: 0; transform: translateX(100%); }
@@ -70,6 +71,10 @@ export default function MemberListDrawer({
   const navigate = useNavigate();
   const { userInfo } = useUserStore();
   const isAdmin = userInfo?.role?.toLowerCase() === "admin";
+  useFriendCompareExposure("채팅방 서랍 공강 보기", {
+    visible: isOpen && !!onFindFreeTime,
+    properties: { room_id: roomId },
+  });
   const [selectedChatRoomMemberId, setSelectedChatRoomMemberId] = useState<
     number | null
   >(null);

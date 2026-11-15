@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/common/Icon";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 interface TimetableShareCardProps {
   extraData?: string | null;
@@ -34,6 +35,8 @@ export default function TimetableShareCard({
   isMe,
 }: TimetableShareCardProps) {
   const navigate = useNavigate();
+  const cardRef = useRef<HTMLDivElement>(null);
+  useFriendCompareExposure("채팅 공강 공유 카드", { ref: cardRef, properties: { is_me: !!isMe } });
 
   let parsedData: TimetableShareExtraData | null = null;
   if (extraData) {
@@ -74,7 +77,7 @@ export default function TimetableShareCard({
   };
 
   return (
-    <CardContainer $isMe={isMe} onClick={handleNavigate}>
+    <CardContainer ref={cardRef} $isMe={isMe} onClick={handleNavigate}>
       <CardHeader>
         <Icon name="calendar-add" size={24} color="var(--interactive-primary)" />
         <HeaderTitle>만나기 좋은 시간 추천</HeaderTitle>

@@ -756,6 +756,86 @@ export const mixpanelTrack = {
   },
 
   /**
+   * 친구 추가 완료 (친구 관계 생성).
+   *
+   * 클라이언트는 "내가 수락한 순간"만 알 수 있다. 내가 보낸 요청을 상대가 수락한 경우는
+   * 서버 이벤트로만 잡힌다.
+   */
+  friendAdded: (properties: {
+    method: "요청 수락" | "초대 링크";
+    location: string;
+    friendId?: number;
+  }) => {
+    trackEvent("[친구] 친구 추가 완료", {
+      method: properties.method,
+      location: properties.location,
+      friend_id: properties.friendId,
+    });
+  },
+
+  /**
+   * 특정 친구의 시간표가 화면(비교 그리드)에 표시됨. 한 화면 방문당 친구별 1회.
+   */
+  friendTimetableViewed: (properties: {
+    friendId: number;
+    visibility: "PUBLIC" | "PROTECTED";
+    entry: "채팅방" | "친구";
+  }) => {
+    trackEvent("[시간표] 친구 시간표 조회", {
+      friend_id: properties.friendId,
+      visibility: properties.visibility,
+      entry: properties.entry,
+    });
+  },
+
+  /**
+   * 시간표 비교 화면 진입
+   */
+  timetableCompareStarted: (properties: {
+    tab: string;
+    entry: "채팅방" | "친구";
+    friendCount: number;
+  }) => {
+    trackEvent("[시간표] 비교 시작", {
+      tab_name: properties.tab,
+      entry: properties.entry,
+      friend_count: properties.friendCount,
+    });
+  },
+
+  /**
+   * 시간표 비교 결과 표시 (선택한 친구 시간표 로딩이 끝난 시점). 한 화면 방문당 탭별 1회.
+   */
+  timetableCompareCompleted: (properties: {
+    tab: string;
+    entry: "채팅방" | "친구";
+    friendCount: number;
+    visibleFriendCount: number;
+    unavailableFriendCount: number;
+    freeSlotCount?: number;
+  }) => {
+    trackEvent("[시간표] 비교 완료", {
+      tab_name: properties.tab,
+      entry: properties.entry,
+      friend_count: properties.friendCount,
+      visible_friend_count: properties.visibleFriendCount,
+      unavailable_friend_count: properties.unavailableFriendCount,
+      has_result: properties.visibleFriendCount > 0,
+      free_slot_count: properties.freeSlotCount,
+    });
+  },
+
+  /**
+   * 친구 시간표 비교 버튼·안내 영역 노출 (컴포넌트 인스턴스당 1회)
+   */
+  friendCompareExposed: (location: string, properties?: Record<string, unknown>) => {
+    trackEvent("[시간표] 친구 비교 노출", {
+      location,
+      ...properties,
+    });
+  },
+
+  /**
    * 시간표 마법사 액션
    */
   timetableWizardAction: (

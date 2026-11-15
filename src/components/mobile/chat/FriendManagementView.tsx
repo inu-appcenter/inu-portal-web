@@ -25,6 +25,13 @@ import {
 } from "@/utils/userInfo";
 import Skeleton from "@/components/common/Skeleton";
 import Modal from "@/components/common/Modal";
+import {
+  isFriendRequestAlreadyProcessed,
+  tryLockFriendRequest,
+  unlockFriendRequest,
+} from "@/utils/friendRequestLock";
+import type { ApiResponse } from "@/types/common";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // --- SVG Icons ---
 
@@ -322,21 +329,86 @@ export default function FriendManagementView({
   });
 
   // Mutations
+  // 받은 요청을 처리하면 목록에서 바로 뺀다. 무효화 재조회가 끝날 때까지 행이 남아
+  // 있으면 그 사이 다시 눌러 같은 요청을 또 보낼 수 있다. 진행 중인 재조회가
+  // 처리 전 목록으로 덮어쓰지 않도록 먼저 취소한다.
+  const settleFriendRequest = async (friendId: number) => {
+    await queryClient.cancelQueries({ queryKey: ["pendingFriends"] });
+    queryClient.setQueryData<ApiResponse<FriendResponseDto[]>>(
+      ["pendingFriends"],
+      (prev) =>
+        prev
+          ? { ...prev, data: prev.data.filter((r) => r.friendId !== friendId) }
+          : prev,
+    );
+    queryClient.invalidateQueries({ queryKey: ["friends"] });
+    queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+  };
+
+  // 잠금 해제와 목록 정리는 화면이 사라져도 실행되도록 useMutation 옵션에 둔다
+  // (mutate()에 넘긴 콜백은 언마운트되면 호출되지 않는다).
+  const friendRequestMutationOptions = {
+    onSuccess: (_data: unknown, friendId: number) => settleFriendRequest(friendId),
+    onError: (error: unknown, friendId: number) => {
+      // 다른 화면·기기에서 먼저 처리된 요청: 실패가 아니라 목록만 맞춘다.
+      if (isFriendRequestAlreadyProcessed(error)) {
+        return settleFriendRequest(friendId);
+      }
+    },
+    onSettled: (_data: unknown, _error: unknown, friendId: number) => {
+      unlockFriendRequest(friendId);
+    },
+  };
+
   const acceptMutation = useMutation({
     mutationFn: acceptFriend,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    ...friendRequestMutationOptions,
+    onSuccess: (_data: unknown, friendId: number) => {
+      mixpanelTrack.friendAdded({
+        method: "요청 수락",
+        location: "친구 관리 목록",
+        friendId,
+      });
+      return settleFriendRequest(friendId);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteFriend,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["friends"] });
-      queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
-    },
+    ...friendRequestMutationOptions,
   });
+
+  const [processingFriendId, setProcessingFriendId] = useState<number | null>(
+    null,
+  );
+  const isFriendRequestActionPending = processingFriendId !== null;
+
+  const handleFriendRequestAction = (
+    type: "accept" | "reject",
+    friendId: number,
+  ) => {
+    // 연타·다른 화면에서의 동시 처리를 동기 잠금으로 막는다.
+    if (!tryLockFriendRequest(friendId)) return;
+    setProcessingFriendId(friendId);
+    const mutation = type === "accept" ? acceptMutation : deleteMutation;
+    mutation.mutate(friendId, {
+      onError: (error) => {
+        if (isFriendRequestAlreadyProcessed(error)) return;
+        const msg = (error as { response?: { data?: { msg?: string } } })
+          .response?.data?.msg;
+        alert(
+          msg ||
+            (type === "accept"
+              ? "친구 요청을 수락하지 못했어요."
+              : "친구 요청을 거절하지 못했어요."),
+        );
+      },
+      onSettled: () => {
+        setProcessingFriendId(null);
+        setConfirmModal(null);
+      },
+    });
+  };
 
   const chatMutation = useMutation({
     mutationFn: async (targetFriendIds: number[]) =>
@@ -361,6 +433,13 @@ export default function FriendManagementView({
 
   const friends = useMemo(() => customFriends || friendsRes?.data || [], [customFriends, friendsRes]);
   const pendingRequests = useMemo(() => pendingRes?.data || [], [pendingRes]);
+
+  // 알림(딥링크)으로 들어와 이 뷰가 스와이퍼 슬라이드로 마운트되면 받은 요청/친구
+  // 목록은 마운트 뒤에 비동기로 도착한다. 부모의 autoHeight는 그 시점에 다시
+  // 계산되지 않아 "받은 친구 요청"이 슬라이드 밖으로 잘린다. 도착할 때마다 알린다.
+  useEffect(() => {
+    onContentHeightChange?.();
+  }, [pendingRequests.length, friends.length, onContentHeightChange]);
 
   // Filtering and sorting
   const filteredFriends = useMemo(() => {
@@ -408,6 +487,10 @@ export default function FriendManagementView({
     if (isSelectionMode) {
       onToggleSelect?.(friendId);
     } else {
+      if (expandedId !== rowId) {
+        // 펼친 행에 "시간표 비교" 버튼이 나타난다.
+        mixpanelTrack.friendCompareExposed("친구 목록 펼침", { friend_id: friendId });
+      }
       setExpandedId((prev) => (prev === rowId ? null : rowId));
     }
   };
@@ -616,7 +699,11 @@ export default function FriendManagementView({
       />
       <Modal
         isOpen={confirmModal !== null}
-        onClose={() => setConfirmModal(null)}
+        onClose={() => {
+          // 처리 중에는 닫지 않는다. 결과를 못 본 채 다시 눌러 중복 요청을 만들기 쉽다.
+          if (isFriendRequestActionPending) return;
+          setConfirmModal(null);
+        }}
         title={
           confirmModal?.type === "accept"
             ? "친구 요청 수락"
@@ -630,18 +717,16 @@ export default function FriendManagementView({
         primaryButton={{
           text: confirmModal?.type === "accept" ? "수락" : "거절",
           variant: confirmModal?.type === "accept" ? "brand" : "danger",
+          disabled: isFriendRequestActionPending,
+          loading: isFriendRequestActionPending,
           onClick: () => {
             if (!confirmModal) return;
-            if (confirmModal.type === "accept") {
-              acceptMutation.mutate(confirmModal.friendId);
-            } else {
-              deleteMutation.mutate(confirmModal.friendId);
-            }
-            setConfirmModal(null);
+            handleFriendRequestAction(confirmModal.type, confirmModal.friendId);
           },
         }}
         secondaryButton={{
           text: "취소",
+          disabled: isFriendRequestActionPending,
           onClick: () => setConfirmModal(null),
         }}
       />
@@ -722,6 +807,7 @@ export default function FriendManagementView({
                     }
                     actionLabel="수락"
                     secondaryActionLabel="거절"
+                    actionsDisabled={isFriendRequestActionPending}
                   />
                   {index < pendingRequests.length - 1 && (
                     <Divider margin="0" />

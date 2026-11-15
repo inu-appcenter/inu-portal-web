@@ -11,6 +11,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseOfferings } from "@/hooks/useCourseOfferings";
+import { useUpdateTimeTableItemMemo } from "@/hooks/useTimeTables";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 
@@ -51,8 +52,7 @@ export default function ClassDetailBottomSheet({
 }: ClassDetailBottomSheetProps) {
   useSheetBackHandler(open, () => onOpenChange(false));
   const navigate = useNavigate();
-  const { activeTimetableId, timetables, updateTimetableEvents } =
-    useTimetableStore();
+  const { activeTimetableId, timetables } = useTimetableStore();
   const activeTimetable = timetables.find(
     (timetable) => timetable.id === activeTimetableId,
   );
@@ -100,6 +100,14 @@ export default function ClassDetailBottomSheet({
           e.ownerName === selectedClass.ownerName,
       ) || selectedClass
     : null;
+
+  // 메모는 시간표 "요소" 단위로 저장된다. 한 요소의 여러 수업 시간(meeting)은 같은
+  // itemId를 공유하므로 itemId로 묶어 고친다. 0 이하는 서버 id가 없는 임시 값이다.
+  const memoItemId =
+    liveClass?.itemId != null && liveClass.itemId > 0 ? liveClass.itemId : null;
+  // 저장 중에 편집기를 다시 열어 또 저장해도 막지 않는다. 같은 요소의 저장은
+  // 뮤테이션 scope로 줄 세워져 서버에 순서대로 반영된다.
+  const updateMemoMutation = useUpdateTimeTableItemMemo(memoItemId);
 
   const offering = liveClass
     ? (liveClass.courseOfferingId
@@ -210,19 +218,67 @@ export default function ClassDetailBottomSheet({
   const hasMemo = Boolean(liveClass.memo && liveClass.memo.trim());
   const canEditMemo = !liveClass.isFriendOwned && !readOnly;
 
-  const handleSaveMemo = () => {
-    if (activeTimetableId === null) return;
-    if (!activeTimetable) return;
+  // 빈 문자열/공백만 남은 입력은 메모 삭제(null)로 보낸다.
+  const nextMemoValue = memoInput.trim() === "" ? null : memoInput;
 
-    const updatedEvents = activeTimetable.events.map((e) => {
-      if (e.id === liveClass.id || e.name === liveClass.name) {
-        return { ...e, memo: memoInput };
-      }
-      return e;
-    });
+  /**
+   * 스토어의 최신 상태를 읽어 해당 요소의 메모만 바꾼다. 렌더 시점 timetables를
+   * 쓰면 그 사이 바뀐 다른 이벤트(재조회 결과 등)를 옛 값으로 덮어쓴다.
+   * expected를 주면 현재 메모가 그 값일 때만 바꾼다(더 새 저장을 되돌리지 않기 위해).
+   */
+  const setItemMemoInStore = (
+    timetableId: number,
+    itemId: number,
+    memo: string | null,
+    expected?: string | null,
+  ) => {
+    const store = useTimetableStore.getState();
+    const target = store.timetables.find((t) => t.id === timetableId);
+    if (!target) return;
+    const itemEvents = target.events.filter((e) => e.itemId === itemId);
+    if (itemEvents.length === 0) return;
+    if (
+      expected !== undefined &&
+      itemEvents.some((e) => (e.memo ?? null) !== expected)
+    ) {
+      return;
+    }
+    store.updateTimetableEvents(
+      timetableId,
+      target.events.map((e) =>
+        e.itemId === itemId ? { ...e, memo: memo ?? undefined } : e,
+      ),
+    );
+  };
 
-    updateTimetableEvents(activeTimetableId, updatedEvents);
+  const handleSaveMemo = async () => {
+    if (activeTimetableId === null || !activeTimetable) return;
+    if (memoItemId === null) {
+      alert("메모를 저장할 수 없는 항목이에요. 새로고침 후 다시 시도해주세요.");
+      return;
+    }
+
+    const timeTableId = activeTimetableId;
+    const itemId = memoItemId;
+    const previousMemo = liveClass.memo ?? null;
+    const memo = nextMemoValue;
+
+    // 낙관적 반영: 서버 응답을 기다리지 않고 먼저 화면에 보여준다.
+    setItemMemoInStore(timeTableId, itemId, memo);
     setIsEditingMemo(false);
+
+    try {
+      await updateMemoMutation.mutateAsync({
+        timeTableId,
+        timeTableItemId: itemId,
+        memo,
+      });
+    } catch {
+      // 실패하면 되돌린다. 단, 그 사이 다른 값으로 바뀌었으면(재조회·다른 저장)
+      // 그 값이 더 새 것이므로 건드리지 않는다.
+      setItemMemoInStore(timeTableId, itemId, previousMemo, memo);
+      alert("메모 저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   return (
