@@ -196,7 +196,7 @@ const FolderListDetail = styled.div`
 const ConfirmButton = styled.button`
   z-index: 1001;
   position: fixed;
-  background-color: var(--interactive-focus);
+  background-color: var(--interactive-primary);
   left: 50%;
   bottom: calc(10% + ${SAFE_AREA.BOTTOM});
   transform: translateX(-50%);

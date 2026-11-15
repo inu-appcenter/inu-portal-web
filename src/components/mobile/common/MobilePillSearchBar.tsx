@@ -133,7 +133,7 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
 
     &:focus-within {
       background-color: rgba(255, 255, 255, 0.85);
-      border-color: var(--interactive-focus);
+      border-color: var(--border-brand);
       box-shadow: 0 4px 14px 0 rgba(156, 175, 226, 0.2);
     }
 
@@ -156,7 +156,7 @@ const SearchFormWrapper = styled.form<{ $variant?: "default" | "clean" }>`
 
     button {
       border: none;
-      background-color: var(--interactive-focus);
+      background-color: var(--interactive-primary);
       color: var(--text-inverse);
       display: flex;
       align-items: center;

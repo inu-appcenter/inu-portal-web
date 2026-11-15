@@ -94,10 +94,10 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
       }
 
       if ($isActive) {
-        return "var(--interactive-focus)";
+        return "var(--interactive-primary)";
       }
 
-      return "var(--border-subtle)";
+      return "var(--border-default)";
     }};
   background:
     ${({ $tone, $isActive }) => {
@@ -167,11 +167,11 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
         }
 
         if ($isActive && $tone === "saturday") {
-          return "var(--interactive-primary-press)";
+          return "var(--interactive-primary)";
         }
 
         if ($isActive) {
-          return "var(--interactive-primary-press)";
+          return "var(--interactive-primary)";
         }
 
         if ($tone === "sunday") {
@@ -198,7 +198,7 @@ const DateButton = styled.button<{ $tone: DayTone; $isActive: boolean }>`
         }
 
         if ($isActive) {
-          return "var(--interactive-focus)";
+          return "var(--interactive-primary)";
         }
 
         return "var(--border-default)";

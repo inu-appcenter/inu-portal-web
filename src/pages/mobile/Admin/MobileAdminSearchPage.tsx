@@ -69,7 +69,7 @@ const DOMAIN_LIST: DomainItem[] = [
     name: "교내 전화번호부",
     description: "교수 연구실, 행정부서, 학과 사무실 연락처",
     icon: (size) => <Phone size={size} color="var(--text-inverse)" />,
-    color: "var(--state-warning)",
+    color: "var(--orange-500)",
   },
   {
     id: "courses",
@@ -645,7 +645,7 @@ const DomainButton = styled.button`
 
   &:hover:not(:disabled) {
     background-color: var(--bg-subtle);
-    border-color: var(--button-inactive);
+    border-color: var(--border-strong);
     color: var(--text-primary);
   }
 
@@ -703,7 +703,7 @@ const LogBadge = styled.span<{ $success: boolean }>`
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 4px;
-  background-color: ${(props) => (props.$success ? "var(--text-success)" : "var(--red-500)")};
+  background-color: ${(props) => (props.$success ? "var(--green-500)" : "var(--red-500)")};
   color: var(--text-inverse);
 `;
 

@@ -55,7 +55,7 @@ const AppItem = ({
           <IconWrapper $isPreparing={isPreparing}>
             <IconComponent
               size={24}
-              color={isPreparing ? "var(--button-inactive)" : "rgb(109, 77, 199)"}
+              color={isPreparing ? "var(--gray-400)" : "rgb(109, 77, 199)"}
             />
           </IconWrapper>
         ) : null}

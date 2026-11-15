@@ -135,7 +135,7 @@ const ConfirmButton = styled.button`
   }
 
   &:active {
-    background-color: var(--interactive-primary-press);
+    background-color: var(--interactive-primary-pressed);
   }
 `;
 

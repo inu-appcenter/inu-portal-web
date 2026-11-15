@@ -71,7 +71,7 @@ const ManageButton = styled.button`
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: var(--text-success);
+  background-color: var(--green-500);
   color: var(--text-inverse);
   border: none;
   border-radius: 4px;

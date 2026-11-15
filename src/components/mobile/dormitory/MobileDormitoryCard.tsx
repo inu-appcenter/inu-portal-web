@@ -50,7 +50,7 @@ function resolveDormitoryTheme(dormType?: string, dormBuilding?: string): Dormit
     return {
       name: "제2기숙사",
       borderColor: "rgba(21, 128, 61, 0.28)",
-      badgeBg: "var(--text-success)",
+      badgeBg: "var(--green-500)",
       badgeText: "var(--text-inverse)",
       boxBg: "rgb(240, 253, 244)",
       boxBorder: "rgba(22, 163, 74, 0.2)",
@@ -285,7 +285,7 @@ const HeaderSection = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-default);
 `;
 
 const HeaderLeft = styled.div`
@@ -346,7 +346,7 @@ const PhotoWrapper = styled.div<{ $fullscreen?: boolean }>`
   height: ${({ $fullscreen }) => ($fullscreen ? "138px" : "128px")};
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
   background-color: var(--bg-subtle);
   flex-shrink: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -504,7 +504,7 @@ const FooterSection = styled.div<{ $fullscreen?: boolean }>`
   z-index: 2;
   padding: ${({ $fullscreen }) => ($fullscreen ? "14px 20px" : "10px 20px")};
   background-color: var(--bg-subtle);
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: center;

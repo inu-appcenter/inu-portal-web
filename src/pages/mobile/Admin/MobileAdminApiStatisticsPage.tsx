@@ -17,8 +17,8 @@ import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 
 const METHOD_COLORS: Record<string, { text: string; bg: string }> = {
   GET: { text: "var(--text-success)", bg: "rgba(16, 185, 129, 0.12)" },
-  POST: { text: "var(--primary)", bg: "rgba(59, 130, 246, 0.12)" },
-  PUT: { text: "var(--state-warning)", bg: "rgba(245, 158, 11, 0.12)" },
+  POST: { text: "var(--interactive-primary)", bg: "rgba(59, 130, 246, 0.12)" },
+  PUT: { text: "var(--orange-500)", bg: "rgba(245, 158, 11, 0.12)" },
   DELETE: { text: "var(--text-error)", bg: "rgba(239, 68, 68, 0.12)" },
   PATCH: { text: "rgb(139, 92, 246)", bg: "rgba(139, 92, 246, 0.12)" },
 };
@@ -118,14 +118,14 @@ const MobileAdminApiStatisticsPage: React.FC = () => {
             title="가장 많이 호출됨"
             value={topEndpoint ? topEndpoint.apiCount.toLocaleString() : 0}
             icon={(size) => <Zap size={size} />}
-            color="var(--state-warning)"
+            color="var(--orange-500)"
             description={topEndpoint ? topEndpoint.uri : "데이터 없음"}
           />
           <StatsDashboardCard
             title="엔드포인트 개수"
             value={apiLogs.length}
             icon={(size) => <BarChart3 size={size} />}
-            color="var(--primary)"
+            color="var(--interactive-primary)"
             description="활성 API 경로 수"
           />
         </StatsGrid>
