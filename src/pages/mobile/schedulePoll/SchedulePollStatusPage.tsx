@@ -466,25 +466,25 @@ export default function SchedulePollStatusPage() {
 const Summary = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SummaryRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const InviteButton = styled.button`
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   height: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-brand);
   color: var(--text-brand);
   ${typography.label2}
@@ -518,7 +518,7 @@ const HeadlineSub = styled.span`
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
@@ -556,7 +556,7 @@ const ParticipantBody = styled.div`
   flex: 1 0 0;
   min-width: 0;
   height: 100%;
-  padding-right: 16px;
+  padding-right: var(--space-4);
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border-default);
@@ -571,7 +571,7 @@ const ParticipantText = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const ParticipantName = styled.span`
@@ -589,7 +589,7 @@ const SubmittedAt = styled.span`
 const CaptionLine = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   color: var(--text-tertiary);
   ${typography.label3}
   white-space: nowrap;
@@ -599,7 +599,7 @@ const MenuButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: var(--space-1);
   border: none;
   background: none;
   cursor: pointer;
@@ -607,11 +607,11 @@ const MenuButton = styled.button`
 
 const MenuRow = styled.button`
   width: 100%;
-  padding: 16px 0;
+  padding: var(--space-4) 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: var(--space-1);
   border: none;
   background: none;
   text-align: left;
@@ -637,15 +637,15 @@ const MenuDivider = styled.div`
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionHeader = styled.div`
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionTitle = styled.h3`
@@ -656,14 +656,14 @@ const SectionTitle = styled.h3`
 
 const SectionHint = styled.p`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
 const CandidateRow = styled(PollCard)`
   height: 52px;
-  padding: 0 12px 0 14px;
+  padding: 0 var(--space-3) 0 14px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -675,7 +675,7 @@ const DeadlineInput = styled.input`
   height: 50px;
   box-sizing: border-box;
   padding: 0 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-primary);
@@ -685,10 +685,10 @@ const DeadlineInput = styled.input`
 
 const EmptySlotRow = styled.div`
   min-height: 72px;
-  padding: 0 16px;
+  padding: 0 var(--space-4);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   color: var(--text-tertiary);
   ${typography.label2}
 
@@ -705,7 +705,7 @@ const EmptySlotAvatar = styled.span`
 `;
 
 const EmptyResult = styled(PollCard)`
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;

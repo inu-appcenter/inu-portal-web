@@ -722,17 +722,17 @@ function PollResultView({
 
 const HeaderButton = styled.button`
   ${buttonReset}
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   color: var(--text-brand);
   white-space: nowrap;
   ${typography.label1}
 `;
 
 const Heading = styled.div`
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const Headline = styled.h2`
@@ -750,7 +750,7 @@ const SubHeadline = styled.p`
 const GridSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const HeatCell = styled(PollGridCell)<{ $focused: boolean }>`
@@ -854,7 +854,7 @@ const RangeRow = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
 `;
 
 const RangeTitle = styled.h3`
@@ -874,14 +874,14 @@ const WeekIndicator = styled.span`
 const SlotSheet = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
   padding: 0 0 34px;
 `;
 
 const SlotTitleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SlotTitle = styled.h2`
@@ -894,10 +894,10 @@ const SlotTitle = styled.h2`
 
 const SlotBadge = styled.span`
   flex-shrink: 0;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-brand);
   color: var(--text-brand);
   ${typography.label3}
@@ -906,7 +906,7 @@ const SlotBadge = styled.span`
 const SlotGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SlotGroupTitle = styled.p<{ $muted?: boolean }>`
@@ -923,8 +923,8 @@ const SlotChips = styled.div`
 `;
 
 const SlotChip = styled.span<{ $off?: boolean }>`
-  padding: 4px 8px;
-  border-radius: 999px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
   border: 1px solid
     ${({ $off }) => ($off ? "transparent" : "var(--border-default)")};
   background: ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--bg-base)")};
@@ -941,26 +941,26 @@ const SlotEmpty = styled.p`
 
 const SlotCta = styled.div`
   display: flex;
-  gap: 12px;
-  padding: 8px 0;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
 `;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 `;
 
 const SectionTitle = styled.h3`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-primary);
   ${typography.heading2}
 `;
 
 const EmptyCandidates = styled.p`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-tertiary);
   ${typography.body2}
 `;
@@ -968,15 +968,15 @@ const EmptyCandidates = styled.p`
 const CandidateList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 `;
 
 const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
   ${buttonReset}
-  padding: 16px;
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
   text-align: left;
   border: ${({ $selected }) =>
     $selected
@@ -990,9 +990,8 @@ const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
 const CandidateHead = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 `;
-
 
 const NameChips = styled.div`
   display: flex;
@@ -1001,8 +1000,8 @@ const NameChips = styled.div`
 `;
 
 const NameChip = styled.span<{ $off: boolean }>`
-  padding: 6px 12px;
-  border-radius: 999px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-full);
   border: 1px solid
     ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--border-default)")};
   background: ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--bg-base)")};
@@ -1012,7 +1011,7 @@ const NameChip = styled.span<{ $off: boolean }>`
 `;
 
 const SectionHint = styled.span`
-  margin-left: 4px;
+  margin-left: var(--space-1);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;

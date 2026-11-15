@@ -97,7 +97,7 @@ export default function SchedulePollInvitePage() {
 const Guide = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   /* 탭과는 12px만 띄운다 (페이지 섹션 간격 24px 중 12px 상쇄) */
   margin-bottom: -12px;
 `;

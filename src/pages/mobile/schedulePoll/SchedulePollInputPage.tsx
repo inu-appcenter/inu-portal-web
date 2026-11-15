@@ -651,8 +651,8 @@ function PollInputForm({
 }
 
 const ClosedBanner = styled.div`
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: var(--space-3) 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-warn-subtle);
   background: var(--bg-warn);
   color: var(--text-warn);
@@ -662,12 +662,12 @@ const ClosedBanner = styled.div`
 const ImportBanner = styled.button`
   ${buttonReset}
   width: 100%;
-  padding: 12px 14px;
+  padding: var(--space-3) 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  border-radius: 12px;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
   background: var(--bg-brand);
   color: var(--text-secondary);
   text-align: left;
@@ -685,14 +685,14 @@ const GuideHeader = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 4px 4px 0;
+  padding: var(--space-1) var(--space-1) 0;
 `;
 
 const TitleRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const GuideTitle = styled.h2`
@@ -718,7 +718,7 @@ const Legend = styled.div`
 const LegendItem = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   color: var(--text-secondary);
   ${typography.caption1}
 `;
@@ -746,7 +746,7 @@ const ResetButton = styled.button`
 
 const GestureHint = styled.p`
   margin: 0;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;

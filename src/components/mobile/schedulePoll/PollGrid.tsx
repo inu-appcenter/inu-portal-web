@@ -243,7 +243,7 @@ const TimeColumn = styled.div`
 const TimeCell = styled.div<{ $hourEnd: boolean }>`
   height: ${POLL_ROW_HEIGHT}px;
   box-sizing: border-box;
-  padding-top: 4px;
+  padding-top: var(--space-1);
   background: var(--bg-base);
   border-right: 1px solid var(--border-default);
   border-bottom: 1px solid

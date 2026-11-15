@@ -526,7 +526,7 @@ export default function SchedulePollCreatePage() {
 }
 
 const Progress = styled.div`
-  margin: 16px 16px 0;
+  margin: var(--space-4) var(--space-4) 0;
   height: 4px;
   border-radius: 2px;
   background: var(--bg-muted);
@@ -543,17 +543,17 @@ const ProgressFill = styled.div`
 const Body = styled.div`
   width: 100%;
   box-sizing: border-box;
-  padding: 20px 16px 16px;
+  padding: var(--space-5) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
 `;
 
 const Heading = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 0 4px;
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
 `;
 
 const StepCount = styled.span`
@@ -576,20 +576,20 @@ const HeadingDescription = styled.p`
 const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const LabelRow = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const LabelGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const Optional = styled.span`
@@ -606,7 +606,7 @@ const fieldBox = `
   height: 50px;
   box-sizing: border-box;
   padding: 0 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
 `;
@@ -630,7 +630,7 @@ const TextInput = styled.input`
 const ToggleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const ToggleText = styled.div`
@@ -638,7 +638,7 @@ const ToggleText = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const chipSelected = `
@@ -657,8 +657,8 @@ const QuickChips = styled.div`
 const QuickChip = styled.button<{ $selected: boolean }>`
   ${buttonReset}
   height: 42px;
-  padding: 0 12px;
-  border-radius: 999px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
   border: 1px solid
     ${({ $selected }) =>
       $selected ? "var(--border-brand-subtle)" : "var(--border-default)"};
@@ -673,9 +673,9 @@ const Summary = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 14px 12px;
-  border-radius: 12px;
+  gap: var(--space-2);
+  padding: 14px var(--space-3);
+  border-radius: var(--radius-md);
   background: var(--bg-subtle);
   color: var(--text-primary);
   ${typography.label2}
@@ -688,7 +688,7 @@ const SummaryCount = styled.span`
 const RangeRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 
   /* 시작·끝 입력이 남는 폭을 똑같이 나눠 갖는다 */
   & > div {
@@ -751,7 +751,7 @@ const NativePicker = styled.input`
 
 const DurationRow = styled.div`
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const DurationChip = styled.button<{ $selected: boolean }>`
@@ -759,8 +759,8 @@ const DurationChip = styled.button<{ $selected: boolean }>`
   flex: 1 0 0;
   min-width: 0;
   height: 42px;
-  padding: 0 4px;
-  border-radius: 999px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);

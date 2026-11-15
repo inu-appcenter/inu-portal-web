@@ -194,26 +194,26 @@ export const PollWeekdayRow = ({ days, onToggleDay }: WeekdayRowProps) => (
 );
 
 const Card = styled.div`
-  padding: 12px 12px 8px;
-  border-radius: 16px;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const WeekdayCard = styled(Card)`
   flex-direction: row;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
 `;
 
 const MonthRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 4px;
+  padding: 0 var(--space-3) var(--space-1);
 `;
 
 const MonthTitle = styled.span`
@@ -223,7 +223,7 @@ const MonthTitle = styled.span`
 
 const MonthNav = styled.div`
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const NavButton = styled.button`
@@ -243,7 +243,7 @@ const NavButton = styled.button`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 4px;
+  row-gap: var(--space-1);
 `;
 
 const WeekdayButton = styled.button<{ $off: boolean }>`

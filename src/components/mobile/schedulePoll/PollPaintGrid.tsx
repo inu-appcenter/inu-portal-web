@@ -275,7 +275,7 @@ const OverlayBlock = styled.div`
   left: 1px;
   right: 2px;
   box-sizing: border-box;
-  padding: 3px 4px;
+  padding: 3px var(--space-1);
   overflow: hidden;
   /* 터치는 통과해 칠하기·지우기와 꼬이지 않는다 */
   pointer-events: none;

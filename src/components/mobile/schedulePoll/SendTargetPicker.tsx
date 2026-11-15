@@ -431,18 +431,18 @@ export default SendTargetPicker;
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
   min-height: 0;
 `;
 
 const ExternalShareRow = styled.button`
   ${buttonReset}
-  padding: 14px 12px 14px 16px;
+  padding: 14px var(--space-3) 14px var(--space-4);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   text-align: left;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);
@@ -456,10 +456,10 @@ const ExternalShareRow = styled.button`
 const SearchField = styled.label`
   height: 44px;
   box-sizing: border-box;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   display: flex;
   align-items: center;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-tertiary);
@@ -500,7 +500,7 @@ const ClearButton = styled.button`
   flex-shrink: 0;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-primary);
   display: flex;
@@ -511,8 +511,8 @@ const ClearButton = styled.button`
 
 const Chips = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 4px 8px;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -528,7 +528,7 @@ const ChipButton = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const ChipAvatar = styled.span`
@@ -600,7 +600,7 @@ const Tab = styled.button<{ $active: boolean }>`
 const List = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   overflow: hidden;
@@ -609,10 +609,10 @@ const List = styled.div`
 const Row = styled.button<{ $checked: boolean }>`
   ${buttonReset}
   height: 72px;
-  padding: 0 16px 0 12px;
+  padding: 0 var(--space-4) 0 var(--space-3);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   text-align: left;
   background: ${({ $checked }) =>
     $checked ? "var(--bg-brand)" : "transparent"};
@@ -636,7 +636,7 @@ const RowText = styled.span`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const RowName = styled.span`
@@ -653,11 +653,11 @@ const RowCaption = styled.span`
 `;
 
 const Empty = styled.div`
-  padding: 40px 16px;
+  padding: 40px var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-secondary);
   text-align: center;
   ${typography.label2}
@@ -676,10 +676,10 @@ const InlineButton = styled.button`
 
 const InviteLinkButton = styled.button`
   ${buttonReset}
-  margin-top: 8px;
+  margin-top: var(--space-2);
   height: 44px;
-  padding: 0 24px;
-  border-radius: 999px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
   background: var(--interactive-primary);
   color: var(--text-on-brand);
   ${typography.heading3}
