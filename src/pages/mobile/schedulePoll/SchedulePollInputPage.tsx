@@ -55,6 +55,7 @@ import {
   parseDateKey,
   rangesToCells,
   type PollOverlayItem,
+  weekdayLabel,
 } from "@/utils/schedulePoll";
 import {
   getPollErrorCode,
@@ -263,7 +264,6 @@ interface PollInputFormProps {
 
 type ConfirmKind = "EMPTY" | "UNPAINTED" | "CONFLICT" | null;
 
-const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 /** 안 칠한 열들을 '11월 9일 – 11일 중 3일' / '월·수요일'처럼 한 줄로 적는다. */
 const describeColumns = (keys: string[], labels: string[]) => {
@@ -272,7 +272,7 @@ const describeColumns = (keys: string[], labels: string[]) => {
   const first = parseDateKey(keys[0]);
   const last = parseDateKey(keys[keys.length - 1]);
   const head = `${first.getMonth() + 1}월 ${first.getDate()}일`;
-  if (keys.length === 1) return `${head} (${WEEKDAY_LABELS[first.getDay()]})`;
+  if (keys.length === 1) return `${head} (${weekdayLabel(first)})`;
   const tail =
     first.getMonth() === last.getMonth()
       ? `${last.getDate()}일`

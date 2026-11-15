@@ -37,7 +37,9 @@ export const POLL_DAY_LABEL: Record<PollDay, string> = {
   SUN: "일",
 };
 
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
+/** 날짜의 요일 한 글자('월'…'일'). */
+export const weekdayLabel = (date: Date): string =>
+  POLL_DAY_LABEL[POLL_DAYS[(date.getDay() + 6) % 7]];
 
 export const timeToMinutes = (time: string): number => {
   const [hour, minute] = time.split(":").map(Number);
@@ -96,7 +98,7 @@ export const buildPollColumns = (input: {
     if (input.excludedDates?.includes(toDateKey(cursor))) continue;
     columns.push({
       key: toDateKey(cursor),
-      label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${WEEKDAY_LABELS[(cursor.getDay() + 6) % 7]})`,
+      label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${weekdayLabel(cursor)})`,
     });
   }
   return columns;
@@ -298,7 +300,7 @@ export const formatColumnName = (column: PollColumn | undefined, key: string) =>
   }
   if (column?.label) return column.label;
   const date = parseDateKey(key);
-  return `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAY_LABELS[columnWeekday(key)]})`;
+  return `${date.getMonth() + 1}/${date.getDate()} (${weekdayLabel(date)})`;
 };
 
 /** 조건 요약용 기간 문구. 정기 '월·수·금', 일회성 '10월 12일 ~ 16일'. */
@@ -320,7 +322,7 @@ export const formatDeadline = (deadlineAt: string | null | undefined) => {
   if (!deadlineAt) return "";
   const date = new Date(deadlineAt);
   if (Number.isNaN(date.getTime())) return "";
-  return `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAY_LABELS[(date.getDay() + 6) % 7]}) ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  return `${date.getMonth() + 1}/${date.getDate()} (${weekdayLabel(date)}) ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 };
 
 /** 기기 시각을 오프셋 포함 ISO-8601(`2026-10-20T18:00:00+09:00`)로 적는다. */

@@ -26,9 +26,9 @@ import {
   PollPage,
   PollPrimaryButton,
   PollSecondaryButton,
+  PollCandidateLabel,
 } from "@/components/mobile/schedulePoll/PollUi";
 import {
-  formatColumnName,
   formatDeadline,
   formatShareResultMessage,
   resolvePollLink,
@@ -294,15 +294,7 @@ export default function SchedulePollStatusPage() {
             {result.candidates.length > 0 ? (
               result.candidates.map((candidate) => (
                 <CandidateRow key={candidate.rank}>
-                  <CandidateDay>
-                    {formatColumnName(
-                      result.columns.find((c) => c.key === candidate.key),
-                      candidate.key,
-                    )}
-                  </CandidateDay>
-                  <CandidateTime>
-                    {candidate.start} ~ {candidate.end}
-                  </CandidateTime>
+                  <PollCandidateLabel candidate={candidate} columns={result.columns} />
                   <PollBadge $tone={candidate.allAvailable ? "brand" : "neutral"}>
                     {candidate.availableCount}/{result.participants.length}명
                   </PollBadge>
@@ -581,19 +573,6 @@ const CandidateRow = styled(PollCard)`
   gap: 10px;
 `;
 
-const CandidateDay = styled.span`
-  flex-shrink: 0;
-  min-width: 52px;
-  color: var(--text-primary);
-  ${typography.heading3}
-`;
-
-const CandidateTime = styled.span`
-  flex: 1 0 0;
-  min-width: 0;
-  color: var(--text-secondary);
-  ${typography.label2}
-`;
 
 const DeadlineInput = styled.input`
   width: 100%;

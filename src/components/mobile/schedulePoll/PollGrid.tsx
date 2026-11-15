@@ -6,6 +6,7 @@ import {
   isDateKey,
   parseDateKey,
   type PollGridShape,
+  weekdayLabel,
 } from "@/utils/schedulePoll";
 
 /** 30분 칸 높이 (Figma TimeTable_Grid: 1시간 40px) */
@@ -18,7 +19,6 @@ const TIME_LABEL_WIDTH = 24;
 const VISIBLE_COLUMNS = 7;
 const PEEK_COLUMNS = 0.5;
 
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
 interface PollGridFrameProps {
   shape: PollGridShape;
@@ -82,7 +82,7 @@ const PollGridFrame = forwardRef<HTMLDivElement, PollGridFrameProps>(
                       <DateLabel>
                         {date.getMonth() + 1}/{date.getDate()}
                       </DateLabel>
-                      <span>{WEEKDAY_LABELS[(date.getDay() + 6) % 7]}</span>
+                      <span>{weekdayLabel(date)}</span>
                     </>
                   ) : (
                     <span>{column.label}</span>

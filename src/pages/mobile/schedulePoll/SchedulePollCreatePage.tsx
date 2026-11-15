@@ -31,6 +31,7 @@ import {
   timeToMinutes,
   toDateKey,
   toOffsetIsoString,
+  weekdayLabel,
 } from "@/utils/schedulePoll";
 import { getPollErrorMessage } from "@/utils/schedulePollError";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -59,11 +60,10 @@ const TIME_OPTIONS = Array.from(
 );
 
 const WEEKDAYS: PollDay[] = ["MON", "TUE", "WED", "THU", "FRI"];
-const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const formatDateShort = (key: string) => {
   const date = parseDateKey(key);
-  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAY_LABELS[date.getDay()]})`;
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdayLabel(date)})`;
 };
 
 /** datetime-local 입력값(`YYYY-MM-DDTHH:mm`) */

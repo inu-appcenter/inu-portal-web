@@ -40,6 +40,7 @@ import {
   PollPage,
   PollPrimaryButton,
   PollSecondaryButton,
+  PollCandidateLabel,
 } from "@/components/mobile/schedulePoll/PollUi";
 import type { PollResult } from "@/types/schedulePolls";
 import {
@@ -324,15 +325,7 @@ function PollResultView({
                     }
                   >
                     <CandidateHead>
-                      <CandidateDay>
-                        {formatColumnName(
-                          result.columns.find((c) => c.key === candidate.key),
-                          candidate.key,
-                        )}
-                      </CandidateDay>
-                      <CandidateTime>
-                        {candidate.start} ~ {candidate.end}
-                      </CandidateTime>
+                      <PollCandidateLabel candidate={candidate} columns={result.columns} />
                       <PollBadge
                         $tone={candidate.allAvailable ? "brand" : "neutral"}
                       >
@@ -727,19 +720,6 @@ const CandidateHead = styled.div`
   gap: 8px;
 `;
 
-const CandidateDay = styled.span`
-  flex-shrink: 0;
-  min-width: 52px;
-  color: var(--text-primary);
-  ${typography.heading3}
-`;
-
-const CandidateTime = styled.span`
-  flex: 1 0 0;
-  min-width: 0;
-  color: var(--text-secondary);
-  ${typography.label2}
-`;
 
 const NameChips = styled.div`
   display: flex;
