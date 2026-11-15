@@ -14,7 +14,10 @@ import Modal from "@/components/common/Modal";
 import { TimetableShareExtraData } from "@/types/chat";
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import { useTimeTableDetail, useTimeTables } from "@/hooks/useTimeTables";
-import { mapDetailItemsToClassItems } from "@/utils/timetable";
+import {
+  mapDetailItemsToClassItems,
+  calculateCommonFreeSlots,
+} from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import type { TimeTableDetail, Term } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
@@ -597,105 +600,50 @@ export default function MobileTimeTableComparePage() {
     }
   };
 
+  // 선택한 친구 중 시간표를 아직 받는 중인 사람이 있으면, 그 친구를 빈 시간표로
+  // 계산해 "공강"을 잘못 보여주게 된다(응답이 도착하면 목록이 줄어든다). 다 받을
+  // 때까지 계산을 미룬다.
+  const isSelectedFriendTimetableLoading = useMemo(
+    () =>
+      selectedFriendIdsState.some(
+        (id) =>
+          id !== 99999 &&
+          (friendTimetableStatesByFriendId.get(id) ?? "LOADING") === "LOADING",
+      ),
+    [selectedFriendIdsState, friendTimetableStatesByFriendId],
+  );
+
   // 공동 공강 목록 계산 (나 + 선택된 모든 친구들)
   const freeSlotsList = useMemo(() => {
-    if (selectedFriendIdsState.length === 0) {
+    if (selectedFriendIdsState.length === 0 || isSelectedFriendTimetableLoading) {
       return [];
     }
-    const list: {
-      day: number;
-      startTime: number;
-      endTime: number;
-      duration: number;
-    }[] = [];
 
-    // 선택된 친구들의 시간표들을 미리 구해둠
-    const selectedFriendsTimetables = selectedFriendIdsState
-      .filter((id) => id !== 99999)
-      .map((friendId) => {
-        const friend = queriedFriends.find((f) => f.friendId === friendId);
-        return friend ? getFriendTimetable(friend) : [];
-      });
+    // 선택된 사람들(나 포함)의 수업을 모두 모은다. 시간표를 아직 알 수 없는
+    // 친구(비공개·미존재·에러·로딩)는 getFriendTimetable이 빈 배열을 돌려줘
+    // 계산에서 자연히 제외된다 - "그 친구는 항상 비어있다"고 잘못 단정하지
+    // 않도록, 상태는 timetableNotice에서 별도로 안내한다.
+    const busyByPerson: { day: number; startTime: number; endTime: number }[][] = [];
 
-    for (let day = 0; day < 5; day++) {
-      const busyIntervals: { start: number; end: number }[] = [];
-
-      const isMeSelected = selectedFriendIdsState.includes(99999);
-      if (isMeSelected) {
-        myClasses.forEach((c) => {
-          if (c.day === day) {
-            busyIntervals.push({ start: c.startTime, end: c.endTime });
-          }
-        });
-      }
-
-      selectedFriendsTimetables.forEach((classes) => {
-        classes.forEach((c) => {
-          if (c.day === day) {
-            busyIntervals.push({ start: c.startTime, end: c.endTime });
-          }
-        });
-      });
-
-      // 9시 ~ 18시 범위로 제한 및 정렬
-      const clampedIntervals = busyIntervals
-        .map((b) => ({
-          start: Math.max(9, b.start),
-          end: Math.min(18, b.end),
-        }))
-        .filter((b) => b.start < b.end);
-
-      clampedIntervals.sort((a, b) => a.start - b.start);
-
-      // 겹치거나 맞닿은 바쁜 구간 병합
-      const mergedBusy: { start: number; end: number }[] = [];
-      for (const curr of clampedIntervals) {
-        if (mergedBusy.length === 0) {
-          mergedBusy.push({ ...curr });
-        } else {
-          const prev = mergedBusy[mergedBusy.length - 1];
-          if (curr.start <= prev.end) {
-            prev.end = Math.max(prev.end, curr.end);
-          } else {
-            mergedBusy.push({ ...curr });
-          }
-        }
-      }
-
-      // 9시부터 18시 사이의 빈 구간(공강) 추출
-      let cursor = 9;
-      for (const busy of mergedBusy) {
-        if (busy.start > cursor) {
-          const duration = busy.start - cursor;
-          const durationMinutes = Math.round(duration * 60);
-          // 30분 이상인 공강만 목록 및 표시에 포함
-          if (durationMinutes >= 30) {
-            list.push({
-              day,
-              startTime: cursor,
-              endTime: busy.start,
-              duration,
-            });
-          }
-        }
-        cursor = Math.max(cursor, busy.end);
-      }
-
-      if (cursor < 18) {
-        const duration = 18 - cursor;
-        const durationMinutes = Math.round(duration * 60);
-        if (durationMinutes >= 30) {
-          list.push({
-            day,
-            startTime: cursor,
-            endTime: 18,
-            duration,
-          });
-        }
-      }
+    if (selectedFriendIdsState.includes(99999)) {
+      busyByPerson.push(myClasses);
     }
-    return list;
-  }, [selectedFriendIdsState, queriedFriends, getFriendTimetable, myClasses]);
+
+    selectedFriendIdsState
+      .filter((id) => id !== 99999)
+      .forEach((friendId) => {
+        const friend = queriedFriends.find((f) => f.friendId === friendId);
+        busyByPerson.push(friend ? getFriendTimetable(friend) : []);
+      });
+
+    return calculateCommonFreeSlots(busyByPerson);
+  }, [
+    selectedFriendIdsState,
+    isSelectedFriendTimetableLoading,
+    queriedFriends,
+    getFriendTimetable,
+    myClasses,
+  ]);
 
   // 만나기 좋은 시간: 1시간 초과인 경우 (긴 시간 순으로 정렬)
   const goodMeetingTimes = useMemo(() => {
@@ -1141,6 +1089,8 @@ export default function MobileTimeTableComparePage() {
             <EmptyStateText>
               공강을 비교할 대상을 상단 칩에서 선택해 주세요.
             </EmptyStateText>
+          ) : isSelectedFriendTimetableLoading ? (
+            <EmptyStateText>친구 시간표를 불러오고 있어요.</EmptyStateText>
           ) : (
             freeSlotsList.length === 0 && (
               <EmptyStateText>겹치는 공강 시간이 없습니다.</EmptyStateText>
