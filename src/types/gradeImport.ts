@@ -24,13 +24,26 @@ export interface ParsedGradeRow {
    * 들어가면 안 된다(같은 과목의 재수강 행이 따로 존재한다).
    */
   voided: boolean;
+  /**
+   * 이 행이 속한 학기. 여러 학기의 "과목별 성적" 표를 한 번에 붙여넣으면(예: 전체
+   * 성적 조회 화면을 통째로 복사) 표 제목이 바뀔 때마다 갱신된다. 아직 어떤
+   * 표 제목도 만나지 못한 채 나온 행이면 null이다.
+   */
+  semester: { year: number; term: Term } | null;
 }
 
 /** 붙여넣은 텍스트 전체를 파싱한 결과. */
 export interface ParsedGradeSheet {
   rows: ParsedGradeRow[];
-  /** "2026년 1학기 과목별 성적" 같은 제목 줄에서 감지한 학기. 없으면 null. */
+  /**
+   * "2026년 1학기 과목별 성적" 같은 제목 줄에서 감지한 학기 — 텍스트에서 처음 만난
+   * 것 하나다. 여러 학기가 섞여 있어도 각 행의 실제 학기는 `row.semester`를 본다.
+   * 이 값은 어떤 행에도 학기가 붙지 않았을 때(제목이 아예 없는 붙여넣기)의
+   * 대체값으로만 쓴다.
+   */
   detectedSemester: { year: number; term: Term } | null;
+  /** 파싱된 행에 서로 다른 학기가 2개 이상 섞여 있는지. */
+  hasMultipleSemesters: boolean;
   /** 과목 행으로 해석하지 못하고 건너뛴 줄(학기 제목 제외). */
   skippedLines: string[];
 }
