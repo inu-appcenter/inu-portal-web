@@ -12,6 +12,7 @@ import {
   createTimeTable,
   createTimeTableCourseItem,
   createTimeTableCustomItem,
+  updateTimeTableItemMemo,
   updateTimeTableName,
   updateTimeTablePrimary,
   updateTimeTableVisibility,
@@ -32,6 +33,7 @@ import type {
   Term,
   TimeTableCourseItemRequest,
   TimeTableCustomItemRequest,
+  TimeTableDetail,
   TimeTableVisibility,
 } from "@/types/timetables";
 
@@ -351,6 +353,72 @@ export const useUpdateTimeTableCustomItem = () => {
       return syncTimeTableDetail(queryClient, timeTableId);
     },
   });
+};
+
+export const getTimeTableItemMemoMutationKey = (timeTableItemId: number) =>
+  [...TIMETABLES_QUERY_KEY, "item-memo", timeTableItemId] as const;
+
+/**
+ * 시간표 요소 메모 저장.
+ *
+ * - 같은 요소의 저장은 scope로 직렬화한다. 연달아 저장하면 서버에 보낸 순서대로
+ *   반영돼, 화면엔 나중 값이 보이는데 서버엔 앞의 값이 남는 역전이 생기지 않는다.
+ * - 성공해도 상세를 다시 불러오지 않고 캐시의 해당 요소 메모만 고친다. 재조회
+ *   응답이 뒤이어 대기 중인 저장의 낙관적 값을 덮어쓰는 것을 피하기 위해서다.
+ *   같은 요소에 대기 중인 저장이 남아 있으면 마지막 저장이 캐시를 고친다.
+ */
+export const timeTableItemMemoMutationOptions = (
+  queryClient: QueryClient,
+  timeTableItemId: number | null,
+) => {
+  const mutationKey = getTimeTableItemMemoMutationKey(timeTableItemId ?? -1);
+  return {
+    mutationKey,
+    scope: { id: mutationKey.join(":") },
+    mutationFn: ({
+      timeTableId,
+      timeTableItemId: itemId,
+      memo,
+    }: {
+      timeTableId: number;
+      timeTableItemId: number;
+      memo: string | null;
+    }) => updateTimeTableItemMemo(timeTableId, itemId, memo),
+    onSuccess: (
+      _data: unknown,
+      {
+        timeTableId,
+        timeTableItemId: itemId,
+        memo,
+      }: { timeTableId: number; timeTableItemId: number; memo: string | null },
+    ) => {
+      // onSuccess 시점엔 이 저장도 아직 pending으로 집계된다.
+      const pendingForItem = queryClient.isMutating({
+        mutationKey: getTimeTableItemMemoMutationKey(itemId),
+      });
+      if (pendingForItem > 1) return;
+
+      queryClient.setQueriesData<TimeTableDetail>(
+        { queryKey: [...TIMETABLES_QUERY_KEY, "detail", timeTableId] },
+        (prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.map((item) =>
+                  item.id === itemId ? { ...item, memo } : item,
+                ),
+              }
+            : prev,
+      );
+    },
+  };
+};
+
+export const useUpdateTimeTableItemMemo = (timeTableItemId: number | null) => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    timeTableItemMemoMutationOptions(queryClient, timeTableItemId),
+  );
 };
 
 export const useDeleteTimeTableItem = () => {
