@@ -751,7 +751,7 @@ export default function FoodRouletteModal({
                     textTransform: "none",
                     backgroundColor: "var(--interactive-primary)",
                     "&:hover": {
-                      backgroundColor: "var(--interactive-primary-press)",
+                      backgroundColor: "var(--interactive-primary-hover)",
                       boxShadow: "none",
                     },
                   }}

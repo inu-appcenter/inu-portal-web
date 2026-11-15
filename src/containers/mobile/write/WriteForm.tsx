@@ -225,7 +225,7 @@ export default function WriteForm({ category, setCategory }: Props) {
                 onClick={() => handleImageRemove(index)}
                 type="button"
               >
-                <Icon name="close-md" size={12} color="var(--icon-inverse)" />
+                <Icon name="close-md" size={12} color="var(--text-inverse)" />
               </RemoveImageButton>
             </ThumbnailContainer>
           ))}

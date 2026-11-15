@@ -77,7 +77,7 @@ const TabButtonWrapper = styled.div<{ isSelected: boolean }>`
   box-sizing: border-box;
   white-space: nowrap;
   border-bottom: 2px solid
-    ${({ isSelected }) => (isSelected ? "var(--interactive-primary)" : "var(--border-subtle)")};
+    ${({ isSelected }) => (isSelected ? "var(--interactive-primary)" : "var(--border-default)")};
   font-style: normal;
   font-weight: 600;
   font-size: 15px;

@@ -4,6 +4,8 @@ import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { typography } from "@/styles/typography";
 import { effects } from "@/styles/effects";
 import { SAFE_AREA } from "@/styles/safeArea";
+import type { PollCandidate, PollColumn } from "@/types/schedulePolls";
+import { formatColumnName } from "@/utils/schedulePoll";
 
 // 시간 맞추기 화면들이 함께 쓰는 틀 (Figma INTIP / 짭투밋 5970:19857).
 
@@ -227,4 +229,38 @@ const NoticeActions = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+`;
+
+interface PollCandidateLabelProps {
+  candidate: Pick<PollCandidate, "key" | "start" | "end">;
+  columns: PollColumn[];
+}
+
+/** 추천 시간 한 줄의 '요일 + 시간' 부분. 참여 현황·결과 화면이 같은 모양으로 쓴다. */
+export const PollCandidateLabel = ({ candidate, columns }: PollCandidateLabelProps) => (
+  <>
+    <CandidateDay>
+      {formatColumnName(
+        columns.find((c) => c.key === candidate.key),
+        candidate.key,
+      )}
+    </CandidateDay>
+    <CandidateTime>
+      {candidate.start} ~ {candidate.end}
+    </CandidateTime>
+  </>
+);
+
+const CandidateDay = styled.span`
+  flex-shrink: 0;
+  min-width: 52px;
+  color: var(--text-primary);
+  ${typography.heading3}
+`;
+
+const CandidateTime = styled.span`
+  flex: 1 0 0;
+  min-width: 0;
+  color: var(--text-secondary);
+  ${typography.label2}
 `;

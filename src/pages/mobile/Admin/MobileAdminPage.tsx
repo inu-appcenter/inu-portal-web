@@ -30,7 +30,7 @@ const MobileAdminPage = () => {
       path: ROUTES.ADMIN.USER_STAT,
       description: "전체 활성 유저 및 유형별 유입 통계",
       icon: (size: number) => <Icon name="users" size={size} color="var(--text-inverse)" />,
-      color: "var(--primary)",
+      color: "var(--interactive-primary)",
       isExternal: false,
     },
     {
@@ -46,7 +46,7 @@ const MobileAdminPage = () => {
       path: ROUTES.ADMIN.USER_NOTIFICATIION,
       description: "전체 또는 타겟별 맞춤형 푸시 자동화",
       icon: (size: number) => <Icon name="bell" size={size} color="var(--text-inverse)" />,
-      color: "var(--state-warning)",
+      color: "var(--orange-500)",
       isExternal: false,
     },
     {
@@ -163,7 +163,7 @@ const MobileAdminPage = () => {
             title="오늘의 방문자"
             value={stats.todayUsers}
             icon={(size) => <Icon name="users" size={size} />}
-            color="var(--primary)"
+            color="var(--interactive-primary)"
             trend={{ value: 12, isUp: true }}
             description="어제보다 12% 증가"
             onClick={() => navigate(ROUTES.ADMIN.USER_STAT)}

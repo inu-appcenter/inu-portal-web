@@ -241,7 +241,7 @@ const CompletedBadge = styled.span`
   font-size: 10px;
   font-weight: 600;
   color: var(--text-success);
-  background: rgb(236, 253, 245);
+  background: var(--bg-success);
   border: 1px solid rgb(167, 243, 208);
   padding: 1px 6px;
   border-radius: 9999px;

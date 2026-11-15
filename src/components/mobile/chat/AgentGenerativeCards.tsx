@@ -2420,7 +2420,7 @@ const LibrarySeatConfirmCard: React.FC<{
                       <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                         📍 {currentRoomObj.name} {selectedSeat.code}번 좌석
                       </div>
-                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-success)", background: "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
+                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-success)", background: "var(--bg-success)", padding: "2px 6px", borderRadius: "4px" }}>
                         배정 가능
                       </span>
                     </div>
@@ -2788,7 +2788,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                 🏢 {currentRoomObj.name} ({currentRoomObj.quota || "2~4인실"})
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "var(--text-success)", background: isCurrentOccupied ? "var(--bg-error)" : "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "var(--text-success)", background: isCurrentOccupied ? "var(--bg-error)" : "var(--bg-success)", padding: "2px 6px", borderRadius: "4px" }}>
                 {isCurrentOccupied ? "이용 중" : "지금 이용 가능"}
               </span>
             </div>
@@ -3538,7 +3538,7 @@ const WatchLiveBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
   color: var(--text-success);
-  background: rgb(220, 252, 231);
+  background: var(--bg-success);
   padding: 2px 8px;
   border-radius: 6px;
 `;

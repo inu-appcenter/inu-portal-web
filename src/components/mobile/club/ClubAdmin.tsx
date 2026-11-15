@@ -132,7 +132,7 @@ const ClubList = styled.div`
 const ClubCard = styled.div`
   height: 96px;
   width: 96%;
-  border: 2px solid var(--interactive-focus);
+  border: 2px solid var(--border-brand);
   border-radius: 10px;
   display: flex;
   gap: 16px;
@@ -190,8 +190,8 @@ const ClubCard = styled.div`
   }
 
   button {
-    border: 2px solid var(--interactive-focus);
-    background-color: var(--interactive-focus);
+    border: 2px solid var(--border-brand);
+    background-color: var(--interactive-primary);
     border-radius: 12px;
     padding: 4px 8px;
     color: var(--text-inverse);

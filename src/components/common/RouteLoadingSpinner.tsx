@@ -21,7 +21,7 @@ export default function RouteLoadingSpinner({
           width: 36,
           height: 36,
           border: "3px solid rgba(0, 0, 0, 0.08)",
-          borderTopColor: "var(--brand-primary, #3182F6)",
+          borderTopColor: "var(--interactive-primary)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite",
         }}

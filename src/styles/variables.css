@@ -84,6 +84,7 @@
   --text-warn: var(--yellow-600);
   --text-primary: var(--gray-900);
   --text-on-brand: var(--gray-0);
+  --text-success: var(--green-600);
   --border-success: var(--green-500);
   --border-default: var(--gray-200);
   --border-strong: var(--gray-300);
@@ -104,6 +105,7 @@
   --bg-disabled: var(--gray-200);
   --bg-dim: var(--alpha-black-20);
   --bg-blur: var(--alpha-white-40);
+  --bg-success: var(--green-50);
   --interactive-primary-hover: var(--blue-400);
   --interactive-primary: var(--blue-600);
   --interactive-primary-disabled: var(--gray-200);

@@ -84,7 +84,7 @@ export default function DailyBriefLibraryCard() {
     const percent = total > 0 ? Math.round((occupied / total) * 100) : 0;
     let status = "여유";
     let statusColor = "var(--text-success)"; // green
-    let statusBg = "rgb(220, 252, 231)";
+    let statusBg = "var(--bg-success)";
 
     if (percent >= 85) {
       status = "혼잡";

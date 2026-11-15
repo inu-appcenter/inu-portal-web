@@ -1004,7 +1004,7 @@ export default function MobileLibraryHubPage() {
             <span>빈자리 알림 및 좌석 만료 알림 목록</span>
           </BannerText>
         </BannerLeft>
-        <ChevronRight size={18} color="var(--button-inactive)" />
+        <ChevronRight size={18} color="var(--gray-400)" />
       </BannerCard>
 
       {/* 액션 피드백 토스트 */}
@@ -1023,7 +1023,7 @@ export default function MobileLibraryHubPage() {
             <FavSection>
               <FavHeader>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Star size={15} color="var(--state-warning)" fill="var(--state-warning)" />
+                  <Star size={15} color="var(--orange-500)" fill="var(--orange-500)" />
                   <FavTitle>내 선호좌석 ({favoriteSeats.length})</FavTitle>
                 </div>
               </FavHeader>
@@ -1115,7 +1115,7 @@ export default function MobileLibraryHubPage() {
             <EmptyBox>현재 조회 가능한 열람실이 없습니다.</EmptyBox>
           ) : filteredRooms.length === 0 ? (
             <EmptyBox>
-              <Search size={28} color="var(--button-inactive)" />
+              <Search size={28} color="var(--gray-400)" />
               <EmptyTitle>일치하는 열람실이 없습니다</EmptyTitle>
               <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
             </EmptyBox>
@@ -1242,7 +1242,7 @@ export default function MobileLibraryHubPage() {
             <EmptyBox>현재 조회 가능한 스터디룸이 없습니다.</EmptyBox>
           ) : filteredStudyRooms.length === 0 ? (
             <EmptyBox>
-              <Search size={28} color="var(--button-inactive)" />
+              <Search size={28} color="var(--gray-400)" />
               <EmptyTitle>일치하는 스터디룸이 없습니다</EmptyTitle>
               <EmptyDesc>검색어나 필터 조건을 변경해보세요.</EmptyDesc>
             </EmptyBox>
@@ -1441,8 +1441,8 @@ export default function MobileLibraryHubPage() {
                     <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
-                        color={mySeat.isFavoriteSeat ? "var(--state-warning)" : "var(--gray-500)"}
-                        fill={mySeat.isFavoriteSeat ? "var(--state-warning)" : "none"}
+                        color={mySeat.isFavoriteSeat ? "var(--orange-500)" : "var(--gray-500)"}
+                        fill={mySeat.isFavoriteSeat ? "var(--orange-500)" : "none"}
                       />
                       <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
                     </SecondaryActionBtn>
@@ -1460,8 +1460,8 @@ export default function MobileLibraryHubPage() {
                     <SecondaryActionBtn onClick={handleToggleFavoriteSeat}>
                       <Star
                         size={14}
-                        color={mySeat.isFavoriteSeat ? "var(--state-warning)" : "var(--gray-500)"}
-                        fill={mySeat.isFavoriteSeat ? "var(--state-warning)" : "none"}
+                        color={mySeat.isFavoriteSeat ? "var(--orange-500)" : "var(--gray-500)"}
+                        fill={mySeat.isFavoriteSeat ? "var(--orange-500)" : "none"}
                       />
                       <span>{mySeat.isFavoriteSeat ? "선호좌석 해제" : "선호좌석"}</span>
                     </SecondaryActionBtn>

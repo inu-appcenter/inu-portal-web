@@ -50,12 +50,12 @@ const STATUS_CONFIG: Record<
   SUCCESS: {
     label: "성공",
     color: "var(--text-success)",
-    bg: "rgb(236, 253, 245)",
+    bg: "var(--bg-success)",
     renderIcon: (size) => <Icon name="circle-check" size={size} />,
   },
   PARTIAL_FAILURE: {
     label: "부분 실패",
-    color: "var(--state-warning)",
+    color: "var(--orange-500)",
     bg: "var(--bg-warn)",
     renderIcon: (size) => <Icon name="circle-warning" size={size} />,
   },
@@ -97,10 +97,10 @@ const SCHEDULE_STATUS_CONFIG: Record<
 > = {
   SCHEDULED: { label: "발송 대기", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
   DISPATCHING: { label: "발송 중", color: "var(--interactive-primary)", bg: "var(--bg-brand)" },
-  SENT: { label: "발송됨", color: "var(--text-success)", bg: "rgb(236, 253, 245)" },
+  SENT: { label: "발송됨", color: "var(--text-success)", bg: "var(--bg-success)" },
   FAILED: { label: "발송 실패", color: "var(--text-error)", bg: "var(--bg-error)" },
   CANCELED: { label: "취소됨", color: "var(--gray-600)", bg: "var(--bg-muted)" },
-  EXPIRED: { label: "만료됨", color: "var(--state-warning)", bg: "var(--bg-warn)" },
+  EXPIRED: { label: "만료됨", color: "var(--text-warn)", bg: "var(--bg-warn)" },
 };
 
 const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));

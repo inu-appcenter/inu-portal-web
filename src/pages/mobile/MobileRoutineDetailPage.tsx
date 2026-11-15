@@ -214,8 +214,8 @@ export const AVAILABLE_ACTIONS = [
     id: "SCHEDULE" as RoutineActionType,
     title: "학사일정 브리핑",
     description: "다가오는 주요 학사일정과 시험/수강신청 일정을 확인해요",
-    icon: <GraduationCap size={24} color="var(--primary)" />,
-    iconBg: "var(--primary)",
+    icon: <GraduationCap size={24} color="var(--interactive-primary)" />,
+    iconBg: "var(--interactive-primary)",
   },
   {
     id: "WEATHER" as RoutineActionType,
@@ -267,7 +267,7 @@ export const ROUTINE_COLORS = [
   { id: "orange", hex: "rgb(255, 122, 0)", label: "오렌지" },
   { id: "green", hex: "rgb(34, 197, 94)", label: "그린" },
   { id: "red", hex: "var(--text-error)", label: "레드" },
-  { id: "amber", hex: "var(--state-warning)", label: "앰버" },
+  { id: "amber", hex: "var(--orange-500)", label: "앰버" },
   { id: "indigo", hex: "rgb(99, 102, 241)", label: "인디고" },
   { id: "pink", hex: "rgb(236, 72, 153)", label: "핑크" },
   { id: "slate", hex: "var(--gray-600)", label: "슬레이트" },
@@ -654,7 +654,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHEDULE",
                 title: "학사일정 알림",
                 subtitle: "학교 및 학과 학사일정",
-                iconBg: "var(--primary)",
+                iconBg: "var(--interactive-primary)",
                 scheduleParams: { scope: "ALL" },
               };
             }
@@ -771,7 +771,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHEDULE",
                 title: "주요 학사일정 알림",
                 subtitle: "학교 및 학과 전체 • 당일 알림",
-                iconBg: "var(--primary)",
+                iconBg: "var(--interactive-primary)",
                 scheduleParams: { scope: "ALL" },
               };
             }
@@ -781,7 +781,7 @@ export default function MobileRoutineDetailPage() {
                 type: "SCHOOL_NOTICE",
                 title: "학교 공지 알림",
                 subtitle: "학교 대표 새 공지사항",
-                iconBg: "var(--primary)",
+                iconBg: "var(--interactive-primary)",
                 schoolNoticeParams: { categories: [], includeKeywords: [], excludeKeywords: [] },
               };
             }
@@ -929,7 +929,7 @@ export default function MobileRoutineDetailPage() {
 
           setTitle("주요 학사일정 알림");
           setSelectedIcon("graduation");
-          setSelectedColor("var(--primary)");
+          setSelectedColor("var(--interactive-primary)");
           setTriggers([
             {
               id: "sys-trigger-schedule",
@@ -951,7 +951,7 @@ export default function MobileRoutineDetailPage() {
               type: "SCHEDULE",
               title: "주요 학사일정 알림",
               subtitle: `${scopeText} • 당일 알림`,
-              iconBg: "var(--primary)",
+              iconBg: "var(--interactive-primary)",
               scheduleParams: { scope },
             },
           ]);
@@ -1424,7 +1424,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHEDULE",
         title: "학사일정 알림",
         subtitle: "학교 및 학과 전체 • 당일 알림",
-        iconBg: "var(--primary)",
+        iconBg: "var(--interactive-primary)",
         scheduleParams: { scope: "ALL" },
       };
       setActions((prev) => [...prev, autoAction]);
@@ -1720,7 +1720,7 @@ export default function MobileRoutineDetailPage() {
         type: "SCHEDULE",
         title: "학사일정 브리핑",
         subtitle: sub,
-        iconBg: "var(--primary)",
+        iconBg: "var(--interactive-primary)",
         scheduleParams: { scope: tempScheduleScope },
       };
       setActions((prev) => [...prev, newAction]);
@@ -2110,7 +2110,7 @@ export default function MobileRoutineDetailPage() {
       case "TIMETABLE_NOWBAR":
         return <GraduationCap size={24} color="rgb(0, 85, 212)" />;
       case "SCHEDULE":
-        return <GraduationCap size={24} color="var(--primary)" />;
+        return <GraduationCap size={24} color="var(--interactive-primary)" />;
       case "WEATHER":
         return <Sun size={24} color="rgb(92, 156, 248)" />;
       case "BUS":
@@ -2125,9 +2125,9 @@ export default function MobileRoutineDetailPage() {
   const renderTriggerIcon = (type: RoutineTriggerType) => {
     switch (type) {
       case "TIME":
-        return <Clock size={24} color="var(--primary)" />;
+        return <Clock size={24} color="var(--interactive-primary)" />;
       case "BEFORE_FIRST_CLASS":
-        return <Sun size={24} color="var(--state-warning)" />;
+        return <Sun size={24} color="var(--orange-500)" />;
       case "BEFORE_CLASS":
         return <Clock size={24} color="rgb(139, 92, 246)" />;
       case "AFTER_LAST_CLASS":
@@ -2295,7 +2295,7 @@ export default function MobileRoutineDetailPage() {
           {triggers.length === 0 ? (
             <EmptyGuideCard>
               <EmptyGuideIconCircle>
-                <Clock size={20} color="var(--button-inactive)" />
+                <Clock size={20} color="var(--gray-400)" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 <EmptyGuideTitle>설정된 실행 조건이 없어요</EmptyGuideTitle>
@@ -2376,7 +2376,7 @@ export default function MobileRoutineDetailPage() {
           {actions.length === 0 ? (
             <EmptyGuideCard>
               <EmptyGuideIconCircle>
-                <Bell size={20} color="var(--button-inactive)" />
+                <Bell size={20} color="var(--gray-400)" />
               </EmptyGuideIconCircle>
               <EmptyGuideText>
                 {triggers.length === 0 ? (
@@ -2435,7 +2435,7 @@ export default function MobileRoutineDetailPage() {
               }}
             >
               <Ripple color="rgba(59, 130, 246, 0.12)" />
-              <Plus size={18} color="var(--primary)" strokeWidth={2.5} />
+              <Plus size={18} color="var(--interactive-primary)" strokeWidth={2.5} />
               <span>동작 추가</span>
             </AddConditionCard>
           )}
@@ -2534,7 +2534,7 @@ export default function MobileRoutineDetailPage() {
                       <ModalOptionDesc>{item.description}</ModalOptionDesc>
                     </ModalOptionTextGroup>
                   </OptionIconTextRow>
-                  <Plus size={18} color="var(--button-inactive)" strokeWidth={2} />
+                  <Plus size={18} color="var(--gray-400)" strokeWidth={2} />
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2663,7 +2663,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempBeforeFirstClassMinutes === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempBeforeFirstClassMinutes === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
+                  {tempBeforeFirstClassMinutes === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2700,7 +2700,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempBeforeClassMinutes === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempBeforeClassMinutes === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
+                  {tempBeforeClassMinutes === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2737,7 +2737,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempAfterLastClassOffset === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempAfterLastClassOffset === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
+                  {tempAfterLastClassOffset === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2774,7 +2774,7 @@ export default function MobileRoutineDetailPage() {
                   <ModalOptionText $selected={tempLongBreakMinGap === opt.value}>
                     {opt.label}
                   </ModalOptionText>
-                  {tempLongBreakMinGap === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
+                  {tempLongBreakMinGap === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -2885,7 +2885,7 @@ export default function MobileRoutineDetailPage() {
                         <ModalOptionDesc>{action.description}</ModalOptionDesc>
                       </ModalOptionTextGroup>
                     </OptionIconTextRow>
-                    <Plus size={18} color="var(--button-inactive)" strokeWidth={2} />
+                    <Plus size={18} color="var(--gray-400)" strokeWidth={2} />
                   </ModalGroupRow>
                 </React.Fragment>
               ))}
@@ -2917,7 +2917,7 @@ export default function MobileRoutineDetailPage() {
         <DeptModalWrapper>
           <ModalSectionLabel>대상 학과 선택 (단일 선택)</ModalSectionLabel>
           <SearchInputWrapper>
-            <Search size={16} color="var(--button-inactive)" />
+            <Search size={16} color="var(--gray-400)" />
             <SearchInput
               type="text"
               placeholder="학과 이름 검색 (예: 컴퓨터, 경영, 전자)"
@@ -3211,7 +3211,7 @@ export default function MobileRoutineDetailPage() {
                 >
                   <Ripple color="rgba(0, 0, 0, 0.04)" />
                   <ModalOptionText $selected={tempBusStop === opt.value}>{opt.label}</ModalOptionText>
-                  {tempBusStop === opt.value && <Check size={18} color="var(--primary)" strokeWidth={3} />}
+                  {tempBusStop === opt.value && <Check size={18} color="var(--interactive-primary)" strokeWidth={3} />}
                 </ModalGroupRow>
               </React.Fragment>
             ))}
@@ -3659,7 +3659,7 @@ const InlineSelect = styled.select`
   box-sizing: border-box;
 
   &:focus {
-    border-color: var(--primary);
+    border-color: var(--border-brand);
     background-color: var(--bg-base);
   }
 `;

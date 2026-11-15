@@ -83,6 +83,16 @@
     "on-brand": {
       "$type": "color",
       "$value": "{gray.0}"
+    },
+    "success": {
+      "$extensions": {
+        "com.figma.scopes": [
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ]
+      },
+      "$type": "color",
+      "$value": "{green.600}"
     }
   },
   "border": {
@@ -277,6 +287,16 @@
       },
       "$type": "color",
       "$value": "{alpha.white-40}"
+    },
+    "success": {
+      "$extensions": {
+        "com.figma.scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL"
+        ]
+      },
+      "$type": "color",
+      "$value": "{green.50}"
     }
   },
   "interactive": {

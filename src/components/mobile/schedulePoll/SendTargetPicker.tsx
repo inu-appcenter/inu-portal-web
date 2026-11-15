@@ -6,10 +6,7 @@ import { WizardCheckbox } from "@/components/mobile/timetable/wizard/ui";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { getPollSendTargets } from "@/apis/schedulePolls";
 import { useSharePoll } from "@/hooks/useSchedulePoll";
-import type {
-  PollShareKind,
-  SharePollResponse,
-} from "@/types/schedulePolls";
+import type { PollShareKind, SharePollResponse } from "@/types/schedulePolls";
 import { getDisplayName, maskStudentId } from "@/utils/displayName";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
@@ -187,7 +184,11 @@ const SendTargetPicker = ({
       return;
     }
     try {
-      await navigator.share({ title: shareText, text: shareText, url: linkUrl });
+      await navigator.share({
+        title: shareText,
+        text: shareText,
+        url: linkUrl,
+      });
       trackExternal("SHARE_SHEET");
     } catch (error) {
       // 사용자가 공유 시트를 닫은 것은 오류가 아니다.
@@ -199,7 +200,9 @@ const SendTargetPicker = ({
 
   const handleSend = () => {
     if (selected.length === 0 || shareMutation.isPending) return;
-    const chatRoomIds = selected.filter((t) => t.type === "ROOM").map((t) => t.id);
+    const chatRoomIds = selected
+      .filter((t) => t.type === "ROOM")
+      .map((t) => t.id);
     const friendMemberIds = selected
       .filter((t) => t.type === "FRIEND")
       .map((t) => t.id);
@@ -262,30 +265,37 @@ const SendTargetPicker = ({
 
   return (
     <Wrapper>
-      <ExternalRow>
-        <ExternalButton type="button" onClick={handleExternalShare}>
-          <Icon name="share" size={18} />
-          <span>공유하기</span>
-        </ExternalButton>
-        <ExternalButton type="button" onClick={handleCopyLink}>
-          <Icon name="link-angled" size={18} />
-          <span>링크 복사</span>
-        </ExternalButton>
-      </ExternalRow>
+      <Tabs role="tablist">
+        {(
+          [
+            ["ROOM", "채팅방"],
+            ["FRIEND", "친구"],
+          ] as const
+        ).map(([id, label]) => (
+          <Tab
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            $active={tab === id}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </Tab>
+        ))}
+      </Tabs>
 
       <SearchField>
         <Icon name="search" size={20} />
         <input
           type="search"
           value={keyword}
-          placeholder="이름, 학번으로 검색"
+          placeholder={
+            tab === "ROOM" ? "채팅방 이름으로 검색" : "이름, 학번으로 검색"
+          }
           onChange={(event) => setKeyword(event.target.value)}
         />
       </SearchField>
-
-      <CountRow>
-        <strong>{selected.length}</strong>/{MAX_TARGETS}곳 선택
-      </CountRow>
 
       {selected.length > 0 && (
         <Chips>
@@ -307,26 +317,6 @@ const SendTargetPicker = ({
           ))}
         </Chips>
       )}
-
-      <Tabs role="tablist">
-        {(
-          [
-            ["ROOM", "채팅방"],
-            ["FRIEND", "친구"],
-          ] as const
-        ).map(([id, label]) => (
-          <Tab
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            $active={tab === id}
-            onClick={() => setTab(id)}
-          >
-            {label}
-          </Tab>
-        ))}
-      </Tabs>
 
       <List>
         {isLoading ? (
@@ -381,6 +371,16 @@ const SendTargetPicker = ({
         )}
       </List>
 
+      {/* 앱 밖 공유는 한 줄로 모은다. 공유 시트 안에 링크 복사가 있고, 공유 시트가 없으면 링크를 복사한다. */}
+      <ExternalShareRow type="button" onClick={handleExternalShare}>
+        <Icon name="share" size={22} />
+        <RowText>
+          <RowName>앱 밖으로 공유하기</RowName>
+          <RowCaption>카카오톡 등으로 보내거나 링크를 복사해요</RowCaption>
+        </RowText>
+        <Icon name="chevron-right" size={20} />
+      </ExternalShareRow>
+
       {renderFooter(
         <>
           {onSkip && (
@@ -399,9 +399,11 @@ const SendTargetPicker = ({
           >
             {shareMutation.isPending
               ? "보내는 중…"
-              : selected.length > 0
-                ? `보내기 (${selected.length}곳)`
-                : "보내기"}
+              : selected.length === 0
+                ? "보낼 곳을 골라 주세요"
+                : selected.length === 1
+                  ? `${selected[0].name}에 보내기`
+                  : `${selected.length}곳에 보내기`}
           </PollPrimaryButton>
         </>,
       )}
@@ -418,26 +420,18 @@ const Wrapper = styled.div`
   min-height: 0;
 `;
 
-const ExternalRow = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const ExternalButton = styled.button`
+const ExternalShareRow = styled.button`
   ${buttonReset}
-  flex: 1 0 0;
-  min-width: 0;
-  height: 44px;
+  min-height: 64px;
+  padding: 0 12px 0 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 12px;
+  gap: 12px;
+  text-align: left;
+  border-radius: 16px;
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);
-  white-space: nowrap;
-  ${typography.label2}
 
   &:active {
     background: var(--bg-muted);
@@ -469,18 +463,6 @@ const SearchField = styled.label`
     &::placeholder {
       color: var(--text-tertiary);
     }
-  }
-`;
-
-const CountRow = styled.div`
-  padding: 0 8px;
-  color: var(--text-secondary);
-  ${typography.label2}
-
-  strong {
-    margin-right: 2px;
-    color: var(--text-brand);
-    font-weight: inherit;
   }
 `;
 
