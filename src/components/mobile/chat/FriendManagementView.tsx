@@ -31,6 +31,7 @@ import {
   unlockFriendRequest,
 } from "@/utils/friendRequestLock";
 import type { ApiResponse } from "@/types/common";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 // --- SVG Icons ---
 
@@ -362,6 +363,14 @@ export default function FriendManagementView({
   const acceptMutation = useMutation({
     mutationFn: acceptFriend,
     ...friendRequestMutationOptions,
+    onSuccess: (_data: unknown, friendId: number) => {
+      mixpanelTrack.friendAdded({
+        method: "요청 수락",
+        location: "친구 관리 목록",
+        friendId,
+      });
+      return settleFriendRequest(friendId);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -478,6 +487,10 @@ export default function FriendManagementView({
     if (isSelectionMode) {
       onToggleSelect?.(friendId);
     } else {
+      if (expandedId !== rowId) {
+        // 펼친 행에 "시간표 비교" 버튼이 나타난다.
+        mixpanelTrack.friendCompareExposed("친구 목록 펼침", { friend_id: friendId });
+      }
       setExpandedId((prev) => (prev === rowId ? null : rowId));
     }
   };

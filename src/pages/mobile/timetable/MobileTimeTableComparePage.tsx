@@ -776,6 +776,60 @@ export default function MobileTimeTableComparePage() {
     selectedFriendStates.some(({ state }) =>
       ["LOADING", "PRIVATE", "NOT_FOUND", "ERROR"].includes(state),
     );
+
+  // --- Mixpanel: 비교 시작·완료, 친구 시간표 조회 ---
+  const compareEntry = originRoomId ? "채팅방" : "친구";
+  const isCompareTargetReady = originRoomId
+    ? !chatRoomTimetablesQuery.isPending
+    : memberIdsParam
+      ? friendsRes != null
+      : true;
+  const compareStartedRef = useRef(false);
+  useEffect(() => {
+    if (compareStartedRef.current || !isCompareTargetReady) return;
+    compareStartedRef.current = true;
+    mixpanelTrack.timetableCompareStarted({
+      tab: activeTabUpper,
+      entry: compareEntry,
+      friendCount: comparisonIds.length,
+    });
+  }, [isCompareTargetReady, activeTabUpper, compareEntry, comparisonIds.length]);
+
+  // 결과가 실제로 그려진 시점(선택한 친구 시간표 로딩 종료) — 화면 방문당 탭별 1회
+  const compareCompletedTabsRef = useRef(new Set<string>());
+  useEffect(() => {
+    if (selectedFriendStates.length === 0) return;
+    if (selectedFriendStates.some(({ state }) => state === "LOADING")) return;
+    if (compareCompletedTabsRef.current.has(activeTabUpper)) return;
+    compareCompletedTabsRef.current.add(activeTabUpper);
+    const visibleFriendCount = selectedFriendStates.filter(({ state }) =>
+      state === "PUBLIC" || state === "PROTECTED",
+    ).length;
+    mixpanelTrack.timetableCompareCompleted({
+      tab: activeTabUpper,
+      entry: compareEntry,
+      friendCount: selectedFriendStates.length,
+      visibleFriendCount,
+      unavailableFriendCount: selectedFriendStates.length - visibleFriendCount,
+      freeSlotCount: activeTabUpper === "free" ? freeSlotsList.length : undefined,
+    });
+  }, [selectedFriendStates, activeTabUpper, compareEntry, freeSlotsList.length]);
+
+  // 비교 탭 그리드에 친구 시간표가 올라간 시점 — 화면 방문당 친구별 1회
+  const viewedFriendIdsRef = useRef(new Set<number>());
+  useEffect(() => {
+    if (isFreeTab || shouldHideGrid) return;
+    selectedFriendStates.forEach(({ id, state }) => {
+      if (state !== "PUBLIC" && state !== "PROTECTED") return;
+      if (viewedFriendIdsRef.current.has(id)) return;
+      viewedFriendIdsRef.current.add(id);
+      mixpanelTrack.friendTimetableViewed({
+        friendId: id,
+        visibility: state,
+        entry: compareEntry,
+      });
+    });
+  }, [selectedFriendStates, isFreeTab, shouldHideGrid, compareEntry]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   const confirmModalDescription = useMemo(() => {

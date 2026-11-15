@@ -13,6 +13,7 @@ import {
   DEFAULT_PROFILE_IMAGE_ID,
   normalizeProfileImageId,
 } from "@/utils/userInfo";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 /** 로그인 왕복 후 "친구 되기"를 다시 누르지 않아도 되게 하는 표식. */
 const AUTO_ACCEPT_STORAGE_KEY = "__intipPendingFriendInviteCode";
@@ -67,7 +68,12 @@ export default function MobileFriendInvitePage() {
 
   const acceptMutation = useMutation({
     mutationFn: () => acceptInvite(code),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      mixpanelTrack.friendAdded({
+        method: "초대 링크",
+        location: "초대 링크 페이지",
+        friendId: res.data?.friendId,
+      });
       setIsAccepted(true);
       queryClient.invalidateQueries({ queryKey: ["friends"] });
       queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });

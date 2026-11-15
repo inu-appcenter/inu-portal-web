@@ -36,6 +36,8 @@ import {
   createDirectPersonalChatRoom,
 } from "@/apis/chat";
 import { ROUTES } from "@/constants/routes";
+import { mixpanelTrack } from "@/utils/mixpanel";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 const StyledOverlay = styled(Drawer.Overlay)`
   position: fixed;
@@ -453,7 +455,12 @@ export default function UserProfileModal({
   // 같은 요청을 친구 목록 모달에서도 처리할 수 있어 friendRequestLock으로 함께 잠근다.
   const acceptMutation = useMutation({
     mutationFn: (friendId: number) => acceptFriend(friendId),
-    onSuccess: () => {
+    onSuccess: (_res, friendId) => {
+      mixpanelTrack.friendAdded({
+        method: "요청 수락",
+        location: "프로필 모달",
+        friendId,
+      });
       alert("친구 요청을 수락했습니다.");
       refreshAfterAccept();
     },
@@ -622,6 +629,10 @@ export default function UserProfileModal({
   };
 
   const isMe = isSelfProfile || userInfo?.nickname === profile?.nickname;
+
+  useFriendCompareExposure("프로필 모달", {
+    visible: isOpen && !!profile && !isMe && profile.friendStatus === "ACCEPTED",
+  });
 
   const canManage =
     !isMe &&

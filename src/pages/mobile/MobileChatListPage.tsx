@@ -36,6 +36,7 @@ import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  useFriendCompareExposure("채팅 목록 친구 선택 비교 버튼", {
+    visible: isSelectionMode && selectedCategory === "친구",
+  });
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const isSelectionModeRef = useRef(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
