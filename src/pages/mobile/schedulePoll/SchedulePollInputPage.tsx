@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { RotateCcw } from "lucide-react";
 import {
   Navigate,
   useLocation,
@@ -265,7 +266,7 @@ interface PollInputFormProps {
 type ConfirmKind = "EMPTY" | "UNPAINTED" | "CONFLICT" | null;
 
 
-/** 안 칠한 열들을 '11월 9일 – 11일 중 3일' / '월·수요일'처럼 한 줄로 적는다. */
+/** 안 칠한 열들을 '11월 9일 – 11일'(연속) / '11월 9일, 11일 외 1일'/'월·수요일'처럼 한 줄로 적는다. */
 const describeColumns = (keys: string[], labels: string[]) => {
   if (keys.length === 0) return "";
   if (!isDateKey(keys[0])) return `${labels.join("·")}요일`;
@@ -277,6 +278,10 @@ const describeColumns = (keys: string[], labels: string[]) => {
     first.getMonth() === last.getMonth()
       ? `${last.getDate()}일`
       : `${last.getMonth() + 1}월 ${last.getDate()}일`;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const isConsecutive =
+    Math.round((last.getTime() - first.getTime()) / dayMs) === keys.length - 1;
+  if (isConsecutive) return `${head} – ${tail}`;
   return keys.length === 2
     ? `${head}, ${tail}`
     : `${head} – ${tail} 중 ${keys.length}일`;
@@ -560,7 +565,7 @@ function PollInputForm({
               disabled={isLocked || paintedCount === 0}
               onClick={handleReset}
             >
-              <ResetIcon aria-hidden>↻</ResetIcon>
+              <RotateCcw size={14} aria-hidden />
               초기화
             </ResetButton>
           </TitleRow>
@@ -614,7 +619,8 @@ function PollInputForm({
         isOpen={confirm === "UNPAINTED"}
         onClose={() => setConfirm(null)}
         title={`${unpaintedText}을 아직 안 칠했어요`}
-        description="그대로 등록하면 그날은 안 되는 시간으로 들어가요."
+        description={`이대로 등록하면 이 ${unpaintedColumns.length}일은
+모두 '안 돼요'로 들어가요`}
         secondaryButton={{ text: "그대로 등록", onClick: () => submit() }}
         primaryButton={{ text: "칠하러 가기", onClick: handleGoPaint }}
       />
@@ -736,11 +742,6 @@ const ResetButton = styled.button`
   &:disabled {
     color: var(--text-disabled);
   }
-`;
-
-const ResetIcon = styled.span`
-  font-size: 14px;
-  line-height: 1;
 `;
 
 const GestureHint = styled.p`

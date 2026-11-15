@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled, { css } from "styled-components";
+import Icon from "@/components/common/Icon";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { typography } from "@/styles/typography";
 import type { PollDay } from "@/types/schedulePolls";
@@ -104,7 +105,7 @@ const PollCalendar = ({
               setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
             }
           >
-            ‹
+            <Icon name="chevron-left" size={24} />
           </NavButton>
           <NavButton
             type="button"
@@ -113,7 +114,7 @@ const PollCalendar = ({
               setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
             }
           >
-            ›
+            <Icon name="chevron-right" size={24} />
           </NavButton>
         </MonthNav>
       </MonthRow>
@@ -193,13 +194,13 @@ export const PollWeekdayRow = ({ days, onToggleDay }: WeekdayRowProps) => (
 );
 
 const Card = styled.div`
-  padding: 16px 12px 12px;
+  padding: 12px 12px 8px;
   border-radius: 16px;
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 `;
 
 const WeekdayCard = styled(Card)`
@@ -212,7 +213,7 @@ const MonthRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px;
+  padding: 0 12px 4px;
 `;
 
 const MonthTitle = styled.span`
@@ -227,11 +228,12 @@ const MonthNav = styled.div`
 
 const NavButton = styled.button`
   ${buttonReset}
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-primary);
-  font-size: 24px;
-  line-height: 1;
 
   &:disabled {
     color: var(--text-disabled);

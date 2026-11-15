@@ -329,6 +329,7 @@ export default function SchedulePollCreatePage() {
 
         {step === 1 && (
           <>
+            {summary}
             <ToggleRow>
               <ToggleText>
                 <PollFieldLabel id="poll-recurring-label">매주 반복해요</PollFieldLabel>
@@ -511,7 +512,7 @@ export default function SchedulePollCreatePage() {
         )}
       </Body>
 
-      <PollBottomBar caption={summary ?? stepError ?? undefined}>
+      <PollBottomBar caption={stepError ?? undefined}>
         <PollPrimaryButton
           type="button"
           disabled={Boolean(stepError) || createMutation.isPending}
@@ -668,10 +669,14 @@ const QuickChip = styled.button<{ $selected: boolean }>`
   ${typography.label2}
 `;
 
-const Summary = styled.span`
+const Summary = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 0 4px;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  background: var(--bg-subtle);
   color: var(--text-primary);
   ${typography.label2}
 `;
@@ -753,9 +758,9 @@ const DurationChip = styled.button<{ $selected: boolean }>`
   ${buttonReset}
   flex: 1 0 0;
   min-width: 0;
-  height: 36px;
+  height: 42px;
   padding: 0 4px;
-  border-radius: 18px;
+  border-radius: 999px;
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);

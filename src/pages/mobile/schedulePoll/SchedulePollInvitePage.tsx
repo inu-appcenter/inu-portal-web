@@ -67,11 +67,13 @@ export default function SchedulePollInvitePage() {
 
   return (
     <PollPage>
-      <PollBody>
+      <PollBody $gap={24}>
         <Guide>
           <GuideTitle>누구와 시간을 맞출까요?</GuideTitle>
           <GuideDescription>
-            고른 곳에 참여 요청 카드를 보내요. 나중에 참여 현황에서도 보낼 수 있어요
+            고른 곳에 참여 요청 카드를 보내요.
+            <br />
+            나중에 참여 현황에서도 보낼 수 있어요
           </GuideDescription>
         </Guide>
         <SendTargetPicker
@@ -95,8 +97,9 @@ export default function SchedulePollInvitePage() {
 const Guide = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 0 4px;
+  gap: 12px;
+  /* 탭과는 12px만 띄운다 (페이지 섹션 간격 24px 중 12px 상쇄) */
+  margin-bottom: -12px;
 `;
 
 const GuideTitle = styled.h2`
@@ -107,6 +110,6 @@ const GuideTitle = styled.h2`
 
 const GuideDescription = styled.p`
   margin: 0;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   ${typography.caption1}
 `;
