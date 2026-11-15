@@ -7,7 +7,7 @@ import {
   getFriends,
   getPendingFriends,
   acceptFriend,
-  deleteFriend,
+  rejectFriendRequest,
 } from "@/apis/friends";
 import { FriendResponseDto } from "@/types/friends";
 import { createPersonalChatRoom } from "@/apis/chat";
@@ -373,8 +373,10 @@ export default function FriendManagementView({
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteFriend,
+  // 거절은 DELETE가 아닌 전용 API를 쓴다. 서버가 PENDING일 때만 지우므로, 다른 기기에서
+  // 먼저 수락된 요청에 거절이 늦게 도착해도 친구 관계가 지워지지 않는다(409).
+  const rejectMutation = useMutation({
+    mutationFn: rejectFriendRequest,
     ...friendRequestMutationOptions,
   });
 
@@ -390,7 +392,7 @@ export default function FriendManagementView({
     // 연타·다른 화면에서의 동시 처리를 동기 잠금으로 막는다.
     if (!tryLockFriendRequest(friendId)) return;
     setProcessingFriendId(friendId);
-    const mutation = type === "accept" ? acceptMutation : deleteMutation;
+    const mutation = type === "accept" ? acceptMutation : rejectMutation;
     mutation.mutate(friendId, {
       onError: (error) => {
         if (isFriendRequestAlreadyProcessed(error)) return;

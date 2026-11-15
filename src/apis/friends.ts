@@ -59,7 +59,39 @@ export const acceptFriend = async (
 };
 
 /**
- * 친구 삭제 또는 요청 거절
+ * 받은 친구 요청 거절
+ *
+ * 서버는 요청이 아직 대기(PENDING) 중일 때만 지운다. 다른 화면·기기에서 먼저 수락됐으면
+ * 409, 상대가 먼저 취소해 요청이 없으면 404 — 둘 다 isFriendRequestAlreadyProcessed로 판별한다.
+ */
+export const rejectFriendRequest = async (
+  friendId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    `/api/friends/${friendId}/reject`,
+  );
+  return response.data;
+};
+
+/**
+ * 내가 보낸 친구 요청 취소
+ *
+ * 거절과 같은 규칙(PENDING일 때만 삭제, 이미 수락 409 / 없음 404)을 따른다.
+ */
+export const cancelFriendRequest = async (
+  friendId: number,
+): Promise<ApiResponse<void>> => {
+  const response = await tokenInstance.post<ApiResponse<void>>(
+    `/api/friends/${friendId}/cancel`,
+  );
+  return response.data;
+};
+
+/**
+ * 친구 삭제 (수락된 친구 관계)
+ *
+ * 서버가 상태를 보지 않고 지우므로 요청 거절·취소에는 쓰지 않는다. 늦게 도착한 거절·취소가
+ * 이미 맺어진 친구 관계를 지울 수 있어서다. 거절·취소는 rejectFriendRequest/cancelFriendRequest.
  */
 export const deleteFriend = async (
   friendId: number,

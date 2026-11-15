@@ -1,7 +1,13 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSentPendingFriends, deleteFriend } from "@/apis/friends";
+import { getSentPendingFriends, cancelFriendRequest } from "@/apis/friends";
+import {
+  getAlreadyProcessedFriendRequestNotice,
+  isFriendRequestAlreadyProcessed,
+  tryLockFriendRequest,
+  unlockFriendRequest,
+} from "@/utils/friendRequestLock";
 import SocialUserCard from "@/components/mobile/social/SocialUserCard";
 import Divider from "@/components/common/Divider";
 import Icon from "@/components/common/Icon";
@@ -36,16 +42,40 @@ export default function SentRequestsModal({
     enabled: isOpen,
   });
 
+  // 취소는 서버가 PENDING일 때만 지운다. 상대가 먼저 수락(409)했거나 요청이 이미
+  // 없어졌으면(404) 실패가 아니라 목록만 맞춘다. 잠금 해제는 모달이 닫혀도 실행되도록
+  // useMutation 옵션에 둔다.
   const cancelMutation = useMutation({
-    mutationFn: deleteFriend,
+    mutationFn: cancelFriendRequest,
     onSuccess: () => {
       alert("요청이 취소되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
-    onError: (error: any) => {
-      alert(error.response?.data?.msg || "요청 취소에 실패했습니다.");
+    onError: (error: unknown) => {
+      if (isFriendRequestAlreadyProcessed(error)) {
+        queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
+        queryClient.invalidateQueries({ queryKey: ["friends"] });
+        queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+        const notice = getAlreadyProcessedFriendRequestNotice(error);
+        if (notice) alert(notice);
+        return;
+      }
+      const msg = (error as { response?: { data?: { msg?: string } } })
+        .response?.data?.msg;
+      alert(msg || "요청 취소에 실패했습니다.");
+    },
+    onSettled: (_data: unknown, _error: unknown, friendId: number) => {
+      unlockFriendRequest(friendId);
     },
   });
+
+  const handleCancel = (friendId: number) => {
+    if (!confirm("보낸 친구 요청을 취소하시겠습니까?")) return;
+    // 연타·다른 화면(프로필)에서의 동시 취소를 동기 잠금으로 막는다.
+    if (!tryLockFriendRequest(friendId)) return;
+    cancelMutation.mutate(friendId);
+  };
 
   const sentRequests = sentRes?.data || [];
 
@@ -71,11 +101,7 @@ export default function SentRequestsModal({
                       name={req.nickname}
                       subtitle={req.studentId}
                       fireId={req.fireId}
-                      onActionClick={() => {
-                        if (confirm("보낸 친구 요청을 취소하시겠습니까?")) {
-                          cancelMutation.mutate(req.friendId);
-                        }
-                      }}
+                      onActionClick={() => handleCancel(req.friendId)}
                       actionLabel="취소"
                     />
                     {index < sentRequests.length - 1 && <Divider />}
