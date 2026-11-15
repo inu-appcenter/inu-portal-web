@@ -412,6 +412,7 @@ export const recognizeTimeTableImage = async (
   file: File,
   year?: number,
   term?: Term,
+  signal?: AbortSignal,
 ): Promise<TimeTableImageRecognizeResponse[]> => {
   const formData = new FormData();
   formData.append("file", file);
@@ -428,6 +429,11 @@ export const recognizeTimeTableImage = async (
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    // Vision AI 분석은 수 초~수십 초가 걸릴 수 있어 넉넉히 잡되, 서버가
+    // 죽거나 응답이 없는 경우까지 무한정 기다리지 않도록 상한을 둔다.
+    // 서버의 분석 상한(40s, 초과 시 504 안내)보다 길어야 그 안내가 도착한다.
+    timeout: 55000,
+    signal,
   });
 
   return response.data.data ?? [];
