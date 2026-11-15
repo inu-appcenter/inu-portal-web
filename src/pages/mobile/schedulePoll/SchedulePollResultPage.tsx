@@ -63,6 +63,7 @@ import {
 } from "@/utils/schedulePollError";
 import { getPollSharedRoomIds } from "@/utils/schedulePollStorage";
 import { showToast } from "@/utils/toast";
+import { updatePoll } from "@/apis/schedulePolls";
 import { typography } from "@/styles/typography";
 
 /** 범례에 보여 줄 겹침 단계 수. 전원 가능은 따로 진한 블록으로 보여 준다 */
@@ -200,7 +201,12 @@ export default function SchedulePollResultPage() {
       linkUrl={resolvePollLink(poll.linkUrl)}
       result={result}
       isClosed={(revision?.status ?? poll.status) === "CLOSED"}
+      isHost={poll.isHost}
       onStale={() => resultQuery.refetch()}
+      onClosed={() => {
+        pollQuery.refetch();
+        resultQuery.refetch();
+      }}
     />
   );
 }
@@ -211,7 +217,9 @@ interface PollResultViewProps {
   linkUrl: string;
   result: PollResult;
   isClosed: boolean;
+  isHost: boolean;
   onStale: () => void;
+  onClosed: () => void;
 }
 
 function PollResultView({
@@ -220,7 +228,9 @@ function PollResultView({
   linkUrl,
   result,
   isClosed,
+  isHost,
   onStale,
+  onClosed,
 }: PollResultViewProps) {
   const total = result.participants.length;
   const shape = useMemo(
@@ -245,7 +255,9 @@ function PollResultView({
   const [focusedCell, setFocusedCell] = useState<{
     version: number;
     column: number;
-    row: number;
+    // 누른 칸이 속한 블록(같은 사람들이 되는 연속 구간). end는 포함하지 않는다.
+    start: number;
+    end: number;
   } | null>(null);
   const cell = focusedCell?.version === result.version ? focusedCell : null;
   // 닫히는 동안에도 내용이 남도록 선택한 칸(cell)과 시트 열림 상태를 따로 둔다.
@@ -260,6 +272,9 @@ function PollResultView({
     null,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeciding, setIsDeciding] = useState(false);
+  // 확정 = 조율 종료(CLOSED). 개설자만 할 수 있고, 서버도 NOT_HOST로 막는다.
+  const canDecide = isHost && !isClosed;
 
   const top = result.candidates[0];
   const selected =
@@ -300,9 +315,12 @@ function PollResultView({
         }
       : null;
 
-  const cellMask = cell ? (result.heatmap[cell.column]?.[cell.row] ?? 0) : 0;
+  const cellMask = cell ? (result.heatmap[cell.column]?.[cell.start] ?? 0) : 0;
   const cellColumn = cell ? result.columns[cell.column] : undefined;
-  const cellStartMin = cell ? shape.rangeStartMin + cell.row * SLOT_MINUTES : 0;
+  const cellStartMin = cell
+    ? shape.rangeStartMin + cell.start * SLOT_MINUTES
+    : 0;
+  const cellEndMin = cell ? shape.rangeStartMin + cell.end * SLOT_MINUTES : 0;
   // 누른 칸이 추천 후보 안에 있으면 그 후보를 공유·확정 대상으로 쓴다.
   const cellCandidate =
     cell && cellColumn
@@ -315,7 +333,7 @@ function PollResultView({
       : undefined;
   const cellTimeRange = cellCandidate
     ? `${cellCandidate.start} – ${cellCandidate.end}`
-    : `${minutesToTime(cellStartMin)} – ${minutesToTime(cellStartMin + SLOT_MINUTES)}`;
+    : `${minutesToTime(cellStartMin)} – ${minutesToTime(cellEndMin)}`;
   const cellAvailable = result.participants.filter(
     (participant) => ((cellMask >> participant.index) & 1) === 1,
   );
@@ -407,7 +425,10 @@ function PollResultView({
                     }
                   >
                     <CandidateHead>
-                      <PollCandidateLabel candidate={candidate} columns={result.columns} />
+                      <PollCandidateLabel
+                        candidate={candidate}
+                        columns={result.columns}
+                      />
                       <PollBadge
                         $tone={candidate.allAvailable ? "brand" : "neutral"}
                       >
@@ -470,7 +491,8 @@ function PollResultView({
                       const isFocused =
                         isSlotSheetOpen &&
                         cell?.column === column &&
-                        cell.row === row;
+                        cell.start <= row &&
+                        row < cell.end;
                       return (
                         <HeatCell
                           key={row}
@@ -482,10 +504,23 @@ function PollResultView({
                           }
                           $focused={isFocused}
                           onClick={() => {
+                            // 칸 하나가 아니라 같은 사람들이 되는 연속 구간 전체를 고른다
+                            let start = row;
+                            let end = row + 1;
+                            if (mask !== 0) {
+                              while (start > 0 && maskAt(start - 1) === mask)
+                                start -= 1;
+                              while (
+                                end < shape.rowCount &&
+                                maskAt(end) === mask
+                              )
+                                end += 1;
+                            }
                             setFocusedCell({
                               version: result.version,
                               column,
-                              row,
+                              start,
+                              end,
                             });
                             setIsSlotSheetOpen(true);
                           }}
@@ -524,7 +559,7 @@ function PollResultView({
                       <SelectedFrame
                         key={`sel-${selectedRange.start}`}
                         style={(() => {
-                          const base = maskAt(selectedRange.start);
+                          const base = selected?.availableMask ?? 0;
                           const run = findRuns(
                             shape.rowCount,
                             (row) =>
@@ -573,13 +608,15 @@ function PollResultView({
         >
           선택한 시간 공유
         </PollSecondaryButton>
-        <PollPrimaryButton
-          type="button"
-          disabled={!selected || total < 2}
-          onClick={() => setIsConfirmOpen(true)}
-        >
-          이 시간으로 정하기
-        </PollPrimaryButton>
+        {canDecide && (
+          <PollPrimaryButton
+            type="button"
+            disabled={!selected || total < 2}
+            onClick={() => setIsConfirmOpen(true)}
+          >
+            이 시간으로 정하기
+          </PollPrimaryButton>
+        )}
       </PollBottomBar>
 
       <Modal
@@ -591,7 +628,7 @@ function PollResultView({
             <>
               {selectedLabel} {selected.start} ~ {selected.end}
               <br />
-              정하면 채팅방에 알려요
+              정하면 조율이 끝나고 채팅방에 알려요
             </>
           ) : undefined
         }
@@ -601,9 +638,20 @@ function PollResultView({
         }}
         primaryButton={{
           text: "정하기",
-          onClick: () => {
-            setIsConfirmOpen(false);
-            setShareMode("DECIDE");
+          onClick: async () => {
+            if (isDeciding) return;
+            setIsDeciding(true);
+            try {
+              // 먼저 조율을 종료해 결과를 확정하고, 그다음 채팅방에 알린다
+              await updatePoll(pollId, { close: true });
+              setIsConfirmOpen(false);
+              onClosed();
+              setShareMode("DECIDE");
+            } catch {
+              showToast("시간을 정하지 못했어요. 잠시 후 다시 시도해 주세요.");
+            } finally {
+              setIsDeciding(false);
+            }
           },
         }}
       />
@@ -667,20 +715,22 @@ function PollResultView({
               >
                 선택한 시간 공유
               </PollSecondaryButton>
-              <PollPrimaryButton
-                type="button"
-                onClick={() => {
-                  if (!cellCandidate) return;
-                  setSelection({
-                    version: result.version,
-                    rank: cellCandidate.rank,
-                  });
-                  setIsSlotSheetOpen(false);
-                  setIsConfirmOpen(true);
-                }}
-              >
-                이 시간으로 정하기
-              </PollPrimaryButton>
+              {canDecide && (
+                <PollPrimaryButton
+                  type="button"
+                  onClick={() => {
+                    if (!cellCandidate) return;
+                    setSelection({
+                      version: result.version,
+                      rank: cellCandidate.rank,
+                    });
+                    setIsSlotSheetOpen(false);
+                    setIsConfirmOpen(true);
+                  }}
+                >
+                  이 시간으로 정하기
+                </PollPrimaryButton>
+              )}
             </SlotCta>
           )}
         </SlotSheet>
