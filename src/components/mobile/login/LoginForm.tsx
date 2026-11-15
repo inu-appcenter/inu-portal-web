@@ -9,6 +9,7 @@ import {
   fetchAcademicInfoFromApp,
   isMobileAppEnvironment,
 } from "@/apis/mobileAgentBridge";
+import { hasPortalSyncConsent } from "@/utils/portalSyncConsent";
 import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
 import { secureStorage } from "@/utils/secureStorage";
 import { ROUTES } from "@/constants/routes";
@@ -59,8 +60,9 @@ export default function LoginForm() {
       const response = await login(trimmedId, trimmedPassword);
       setTokenInfo(response.data);
 
-      // 모바일 앱 환경인 경우 기기 보안 KeyStore에 포털 계정 1회 자동 등록 및 학적 사전 캐싱
-      if (isMobileAppEnvironment()) {
+      // 포털 정보 불러오기에 이미 동의한 기기에서만 포털 계정을 함께 등록하고 학적을 미리 불러온다.
+      // 동의 전이면 로그인 도중 동의 시트를 띄우지 않고, 포털 기능을 처음 쓸 때 동의를 받는다.
+      if (isMobileAppEnvironment() && hasPortalSyncConsent()) {
         try {
           await savePortalAccount(trimmedId, trimmedPassword);
           void fetchAcademicInfoFromApp().then((res) => {
