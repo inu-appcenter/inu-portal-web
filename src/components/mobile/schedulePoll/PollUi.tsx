@@ -40,7 +40,6 @@ export const PollFieldLabel = styled.span`
   padding: 0 4px;
   color: var(--text-primary);
   ${typography.heading3}
-  line-height: 1.6;
 `;
 
 export const PollFieldHint = styled.span`
