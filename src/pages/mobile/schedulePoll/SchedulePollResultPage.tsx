@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type UIEvent } from "react";
 import styled from "styled-components";
 import {
   Navigate,
@@ -6,6 +6,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
+import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import { useHeader } from "@/context/HeaderContext";
@@ -21,7 +22,6 @@ import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import PollGridFrame, {
   POLL_RESULT_BLOCK_OPACITY,
-  POLL_ROW_HEIGHT,
   PollBlock,
   PollGridCell,
 } from "@/components/mobile/schedulePoll/PollGrid";
@@ -42,7 +42,7 @@ import {
   PollSecondaryButton,
   PollCandidateLabel,
 } from "@/components/mobile/schedulePoll/PollUi";
-import type { PollResult } from "@/types/schedulePolls";
+import type { PollColumn, PollResult } from "@/types/schedulePolls";
 import {
   SLOT_MINUTES,
   formatColumnName,
@@ -50,8 +50,9 @@ import {
   formatDuration,
   formatShareResultMessage,
   getPollGridShape,
+  isDateKey,
   minutesToTime,
-  namesFromMask,
+  parseDateKey,
   popcount,
   resolvePollLink,
   timeToMinutes,
@@ -62,10 +63,29 @@ import {
 } from "@/utils/schedulePollError";
 import { getPollSharedRoomIds } from "@/utils/schedulePollStorage";
 import { showToast } from "@/utils/toast";
+import { updatePoll } from "@/apis/schedulePolls";
 import { typography } from "@/styles/typography";
 
 /** 범례에 보여 줄 겹침 단계 수. 전원 가능은 따로 진한 블록으로 보여 준다 */
 const LEGEND_STEPS = 3;
+
+/** 한 화면에 꽉 차게 보이는 열 수와 옆 열이 살짝 보이는 폭 (PollGrid의 가로 스크롤 규칙과 같다) */
+const VISIBLE_COLUMNS = 7;
+const PEEK_COLUMNS = 0.5;
+const TIME_LABEL_WIDTH = 24;
+
+/** 보이는 열의 기간 문구. 일회성은 '11월 2일 – 6일', 정기는 '월·수·금' */
+const formatVisibleRange = (columns: PollColumn[]) => {
+  if (columns.length === 0) return "";
+  if (!isDateKey(columns[0].key)) return formatColumnsSummary(columns);
+  const first = parseDateKey(columns[0].key);
+  const last = parseDateKey(columns[columns.length - 1].key);
+  const head = `${first.getMonth() + 1}월 ${first.getDate()}일`;
+  if (columns.length === 1) return head;
+  return first.getMonth() === last.getMonth()
+    ? `${head} – ${last.getDate()}일`
+    : `${head} – ${last.getMonth() + 1}월 ${last.getDate()}일`;
+};
 
 /**
  * 결과 (Figma E. 결과). 히트맵과 추천 후보 3개를 보여 주고, 고른 후보를 채팅방에 공유한다.
@@ -181,7 +201,12 @@ export default function SchedulePollResultPage() {
       linkUrl={resolvePollLink(poll.linkUrl)}
       result={result}
       isClosed={(revision?.status ?? poll.status) === "CLOSED"}
+      isHost={poll.isHost}
       onStale={() => resultQuery.refetch()}
+      onClosed={() => {
+        pollQuery.refetch();
+        resultQuery.refetch();
+      }}
     />
   );
 }
@@ -192,7 +217,9 @@ interface PollResultViewProps {
   linkUrl: string;
   result: PollResult;
   isClosed: boolean;
+  isHost: boolean;
   onStale: () => void;
+  onClosed: () => void;
 }
 
 function PollResultView({
@@ -201,7 +228,9 @@ function PollResultView({
   linkUrl,
   result,
   isClosed,
+  isHost,
   onStale,
+  onClosed,
 }: PollResultViewProps) {
   const total = result.participants.length;
   const shape = useMemo(
@@ -226,14 +255,26 @@ function PollResultView({
   const [focusedCell, setFocusedCell] = useState<{
     version: number;
     column: number;
-    row: number;
+    // 누른 칸이 속한 블록(같은 사람들이 되는 연속 구간). end는 포함하지 않는다.
+    start: number;
+    end: number;
   } | null>(null);
   const cell = focusedCell?.version === result.version ? focusedCell : null;
+  // 닫히는 동안에도 내용이 남도록 선택한 칸(cell)과 시트 열림 상태를 따로 둔다.
+  const [isSlotSheetOpen, setIsSlotSheetOpen] = useState(false);
+  // 가로 스크롤 위치 (보이는 열 계산용). 스크롤 전에는 첫 화면 기준.
+  const [scrollView, setScrollView] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
   // 선택한 시간 공유 / 이 시간으로 정하기. 둘 다 같은 결과 공유 API로 채팅방에 보낸다.
   const [shareMode, setShareMode] = useState<"RECOMMEND" | "DECIDE" | null>(
     null,
   );
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeciding, setIsDeciding] = useState(false);
+  // 확정 = 조율 종료(CLOSED). 개설자만 할 수 있고, 서버도 NOT_HOST로 막는다.
+  const canDecide = isHost && !isClosed;
 
   const top = result.candidates[0];
   const selected =
@@ -274,7 +315,66 @@ function PollResultView({
         }
       : null;
 
-  const cellMask = cell ? (result.heatmap[cell.column]?.[cell.row] ?? 0) : 0;
+  const cellMask = cell ? (result.heatmap[cell.column]?.[cell.start] ?? 0) : 0;
+  const cellColumn = cell ? result.columns[cell.column] : undefined;
+  const cellStartMin = cell
+    ? shape.rangeStartMin + cell.start * SLOT_MINUTES
+    : 0;
+  const cellEndMin = cell ? shape.rangeStartMin + cell.end * SLOT_MINUTES : 0;
+  // 누른 칸이 추천 후보 안에 있으면 그 후보를 공유·확정 대상으로 쓴다.
+  const cellCandidate =
+    cell && cellColumn
+      ? result.candidates.find(
+          (candidate) =>
+            candidate.key === cellColumn.key &&
+            timeToMinutes(candidate.start) <= cellStartMin &&
+            cellStartMin < timeToMinutes(candidate.end),
+        )
+      : undefined;
+  const cellTimeRange = cellCandidate
+    ? `${cellCandidate.start} – ${cellCandidate.end}`
+    : `${minutesToTime(cellStartMin)} – ${minutesToTime(cellEndMin)}`;
+  const cellAvailable = result.participants.filter(
+    (participant) => ((cellMask >> participant.index) & 1) === 1,
+  );
+  const cellUnavailable = result.participants.filter(
+    (participant) => ((cellMask >> participant.index) & 1) === 0,
+  );
+  const canShareCell = Boolean(cellCandidate) && total >= 2;
+
+  // 보이는 열 범위. 열 폭은 PollGrid의 계산(열 영역 ÷ (7 + 반 칸))을 따른다.
+  const columnCount = result.columns.length;
+  let firstVisible = 0;
+  let lastVisible = Math.min(columnCount, VISIBLE_COLUMNS) - 1;
+  if (columnCount > VISIBLE_COLUMNS && scrollView) {
+    const columnWidth =
+      (scrollView.width - TIME_LABEL_WIDTH) / (VISIBLE_COLUMNS + PEEK_COLUMNS);
+    firstVisible = Math.min(
+      columnCount - 1,
+      Math.max(0, Math.round(scrollView.left / columnWidth)),
+    );
+    lastVisible = Math.min(columnCount - 1, firstVisible + VISIBLE_COLUMNS - 1);
+  }
+  const visibleColumns = result.columns.slice(firstVisible, lastVisible + 1);
+  // 주 번호: 날짜 열에서 요일이 앞서는 곳이 새 주의 시작이다.
+  const weekIndexOf = (index: number) => {
+    let week = 0;
+    for (let i = 1; i <= index; i += 1) {
+      const prev = result.columns[i - 1].key;
+      const key = result.columns[i].key;
+      if (
+        isDateKey(key) &&
+        isDateKey(prev) &&
+        (parseDateKey(key).getDay() + 6) % 7 <=
+          (parseDateKey(prev).getDay() + 6) % 7
+      ) {
+        week += 1;
+      }
+    }
+    return week;
+  };
+  const weekCount = columnCount > 0 ? weekIndexOf(columnCount - 1) + 1 : 1;
+  const currentWeek = weekIndexOf(firstVisible) + 1;
 
   return (
     <PollPage>
@@ -283,8 +383,8 @@ function PollResultView({
           <Headline>{headline}</Headline>
           <SubHeadline>
             {formatColumnsSummary(result.columns)} ·{" "}
-            {formatDuration(result.durationMode, result.durationMin)} · {total}명
-            제출
+            {formatDuration(result.durationMode, result.durationMin)} · {total}
+            명 제출
             {(result.isFinal || isClosed) && " · 최종 결과"}
           </SubHeadline>
           {top && !top.allAvailable && (
@@ -325,7 +425,10 @@ function PollResultView({
                     }
                   >
                     <CandidateHead>
-                      <PollCandidateLabel candidate={candidate} columns={result.columns} />
+                      <PollCandidateLabel
+                        candidate={candidate}
+                        columns={result.columns}
+                      />
                       <PollBadge
                         $tone={candidate.allAvailable ? "brand" : "neutral"}
                       >
@@ -355,106 +458,131 @@ function PollResultView({
         </Section>
 
         <GridSection>
-          <SectionTitle>{formatColumnsSummary(result.columns)}</SectionTitle>
-          <PollGridFrame
-            shape={shape}
-            renderColumn={(column) => {
-              const masks = result.heatmap[column] ?? [];
-              const maskAt = (row: number) => masks[row] ?? 0;
-              return (
-                <>
-                  {Array.from({ length: shape.rowCount }, (_unused, row) => {
-                    const mask = maskAt(row);
-                    const minutes =
-                      shape.rangeStartMin + (row + 1) * SLOT_MINUTES;
-                    const isFocused =
-                      cell?.column === column && cell.row === row;
-                    return (
-                      <HeatCell
-                        key={row}
-                        as="button"
-                        type="button"
-                        aria-label={`${result.columns[column].label} ${minutesToTime(minutes - SLOT_MINUTES)} 가능 ${popcount(mask)}명`}
-                        $hourEnd={
-                          minutes % 60 === 0 || row === shape.rowCount - 1
-                        }
-                        $focused={isFocused}
-                        onClick={() =>
-                          setFocusedCell(
-                            isFocused
-                              ? null
-                              : { version: result.version, column, row },
-                          )
-                        }
-                      />
-                    );
-                  })}
-                  {/* 참여자마다 입력 화면과 같은 블록을 그려 겹친다. 많이 겹칠수록 진해진다 */}
-                  {result.participants.flatMap((participant) =>
-                    findRuns(
-                      shape.rowCount,
-                      (row) => ((maskAt(row) >> participant.index) & 1) === 1,
-                    ).map((run) => (
-                      <PollBlock
-                        key={`p${participant.index}-${run.start}`}
-                        style={{
-                          ...blockPosition(run.start, run.end),
-                          opacity: POLL_RESULT_BLOCK_OPACITY,
-                        }}
-                      />
-                    )),
-                  )}
-                  {total > 0 &&
-                    findRuns(
-                      shape.rowCount,
-                      (row) => popcount(maskAt(row)) >= total,
-                    ).map((run) => (
-                      <AllBlock
-                        key={`all-${run.start}`}
-                        style={blockPosition(run.start, run.end)}
-                      >
-                        {total}명
-                      </AllBlock>
-                    ))}
-                  {cell?.column === column && (
-                    // 누른 칸 옆에 그 시간에 되는 사람을 띄운다 (Figma E-1).
-                    // 오른쪽 절반 열은 왼쪽에, 아래쪽 칸은 위로 펼쳐 그리드 밖으로 잘리지 않게 한다.
-                    <CellPopover
-                      aria-live="polite"
-                      style={{
-                        ...(column < shape.columns.length / 2
-                          ? { left: "calc(100% + 4px)" }
-                          : { right: "calc(100% + 4px)" }),
-                        ...(cell.row < shape.rowCount / 2
-                          ? { top: cell.row * POLL_ROW_HEIGHT }
-                          : {
-                              bottom:
-                                (shape.rowCount - cell.row - 1) *
-                                POLL_ROW_HEIGHT,
-                            }),
-                      }}
-                    >
-                      {popcount(cellMask) > 0 ? (
-                        namesFromMask(cellMask, result.participants).map(
-                          (name) => <span key={name}>{name}</span>,
-                        )
-                      ) : (
-                        <CellPopoverEmpty>가능한 사람이 없어요</CellPopoverEmpty>
-                      )}
-                    </CellPopover>
-                  )}
-                  {selectedRange?.column === column && (
-                    <SelectedFrame
-                      style={blockPosition(
-                        selectedRange.start,
-                        selectedRange.end,
-                      )}
-                    />
-                  )}
-                </>
-              );
+          <RangeRow>
+            <RangeTitle>{formatVisibleRange(visibleColumns)}</RangeTitle>
+            {weekCount > 1 && (
+              <WeekIndicator aria-label={`${weekCount}주 중 ${currentWeek}주`}>
+                {currentWeek} / {weekCount}주
+              </WeekIndicator>
+            )}
+          </RangeRow>
+          <div
+            onScrollCapture={(event: UIEvent<HTMLDivElement>) => {
+              const target = event.target as HTMLElement;
+              // 그리드 가로 스크롤 영역의 스크롤만 본다
+              if (target === event.currentTarget) return;
+              setScrollView({
+                left: target.scrollLeft,
+                width: target.clientWidth,
+              });
             }}
-          />
+          >
+            <PollGridFrame
+              shape={shape}
+              renderColumn={(column) => {
+                const masks = result.heatmap[column] ?? [];
+                const maskAt = (row: number) => masks[row] ?? 0;
+                return (
+                  <>
+                    {Array.from({ length: shape.rowCount }, (_unused, row) => {
+                      const mask = maskAt(row);
+                      const minutes =
+                        shape.rangeStartMin + (row + 1) * SLOT_MINUTES;
+                      const isFocused =
+                        isSlotSheetOpen &&
+                        cell?.column === column &&
+                        cell.start <= row &&
+                        row < cell.end;
+                      return (
+                        <HeatCell
+                          key={row}
+                          as="button"
+                          type="button"
+                          aria-label={`${result.columns[column].label} ${minutesToTime(minutes - SLOT_MINUTES)} 가능 ${popcount(mask)}명`}
+                          $hourEnd={
+                            minutes % 60 === 0 || row === shape.rowCount - 1
+                          }
+                          $focused={isFocused}
+                          onClick={() => {
+                            // 칸 하나가 아니라 같은 사람들이 되는 연속 구간 전체를 고른다
+                            let start = row;
+                            let end = row + 1;
+                            if (mask !== 0) {
+                              while (start > 0 && maskAt(start - 1) === mask)
+                                start -= 1;
+                              while (
+                                end < shape.rowCount &&
+                                maskAt(end) === mask
+                              )
+                                end += 1;
+                            }
+                            setFocusedCell({
+                              version: result.version,
+                              column,
+                              start,
+                              end,
+                            });
+                            setIsSlotSheetOpen(true);
+                          }}
+                        />
+                      );
+                    })}
+                    {/* 참여자마다 입력 화면과 같은 블록을 그려 겹친다. 많이 겹칠수록 진해진다 */}
+                    {result.participants.flatMap((participant) =>
+                      findRuns(
+                        shape.rowCount,
+                        (row) => ((maskAt(row) >> participant.index) & 1) === 1,
+                      ).map((run) => (
+                        <PollBlock
+                          key={`p${participant.index}-${run.start}`}
+                          style={{
+                            ...blockPosition(run.start, run.end),
+                            opacity: POLL_RESULT_BLOCK_OPACITY,
+                          }}
+                        />
+                      )),
+                    )}
+                    {total > 0 &&
+                      findRuns(
+                        shape.rowCount,
+                        (row) => popcount(maskAt(row)) >= total,
+                      ).map((run) => (
+                        <AllBlock
+                          key={`all-${run.start}`}
+                          style={blockPosition(run.start, run.end)}
+                        >
+                          {total}명
+                        </AllBlock>
+                      ))}
+                    {selectedRange?.column === column && (
+                      // 고른 추천 시간이 속한 블록(같은 사람들이 되는 연속 구간) 전체를 감싼다
+                      <SelectedFrame
+                        key={`sel-${selectedRange.start}`}
+                        style={(() => {
+                          const base = selected?.availableMask ?? 0;
+                          const run = findRuns(
+                            shape.rowCount,
+                            (row) =>
+                              base !== 0 && (maskAt(row) & base) === base,
+                          ).find(
+                            (r) =>
+                              r.start <= selectedRange.start &&
+                              r.end >= selectedRange.end,
+                          );
+                          return run
+                            ? blockPosition(run.start, run.end)
+                            : blockPosition(
+                                selectedRange.start,
+                                selectedRange.end,
+                              );
+                        })()}
+                      />
+                    )}
+                  </>
+                );
+              }}
+            />
+          </div>
           <Legend>
             <span>1명</span>
             {Array.from(
@@ -469,7 +597,6 @@ function PollResultView({
             <LegendSwatch $all />
             <span>{total}명 모두</span>
           </Legend>
-
         </GridSection>
       </PollBody>
 
@@ -481,13 +608,15 @@ function PollResultView({
         >
           선택한 시간 공유
         </PollSecondaryButton>
-        <PollPrimaryButton
-          type="button"
-          disabled={!selected || total < 2}
-          onClick={() => setIsConfirmOpen(true)}
-        >
-          이 시간으로 정하기
-        </PollPrimaryButton>
+        {canDecide && (
+          <PollPrimaryButton
+            type="button"
+            disabled={!selected || total < 2}
+            onClick={() => setIsConfirmOpen(true)}
+          >
+            이 시간으로 정하기
+          </PollPrimaryButton>
+        )}
       </PollBottomBar>
 
       <Modal
@@ -499,7 +628,7 @@ function PollResultView({
             <>
               {selectedLabel} {selected.start} ~ {selected.end}
               <br />
-              정하면 채팅방에 알려요
+              정하면 조율이 끝나고 채팅방에 알려요
             </>
           ) : undefined
         }
@@ -509,12 +638,103 @@ function PollResultView({
         }}
         primaryButton={{
           text: "정하기",
-          onClick: () => {
-            setIsConfirmOpen(false);
-            setShareMode("DECIDE");
+          onClick: async () => {
+            if (isDeciding) return;
+            setIsDeciding(true);
+            try {
+              // 먼저 조율을 종료해 결과를 확정하고, 그다음 채팅방에 알린다
+              await updatePoll(pollId, { close: true });
+              setIsConfirmOpen(false);
+              onClosed();
+              setShareMode("DECIDE");
+            } catch {
+              showToast("시간을 정하지 못했어요. 잠시 후 다시 시도해 주세요.");
+            } finally {
+              setIsDeciding(false);
+            }
           },
         }}
       />
+
+      <BottomSheet
+        open={isSlotSheetOpen && cell !== null}
+        onOpenChange={setIsSlotSheetOpen}
+      >
+        <SlotSheet>
+          <SlotTitleRow>
+            <SlotTitle>
+              {formatColumnName(cellColumn, cellColumn?.key ?? "")}{" "}
+              {cellTimeRange}
+            </SlotTitle>
+            <SlotBadge>
+              {cellAvailable.length}/{total}명
+            </SlotBadge>
+          </SlotTitleRow>
+          <SlotGroup>
+            <SlotGroupTitle>되는 사람 {cellAvailable.length}명</SlotGroupTitle>
+            {cellAvailable.length > 0 ? (
+              <SlotChips>
+                {cellAvailable.map((participant) => (
+                  <SlotChip key={participant.index}>
+                    {participant.displayName}
+                  </SlotChip>
+                ))}
+              </SlotChips>
+            ) : (
+              <SlotEmpty>가능한 사람이 없어요</SlotEmpty>
+            )}
+          </SlotGroup>
+          {cellUnavailable.length > 0 && (
+            <SlotGroup>
+              <SlotGroupTitle $muted>
+                안 되는 사람 {cellUnavailable.length}명
+              </SlotGroupTitle>
+              <SlotChips>
+                {cellUnavailable.map((participant) => (
+                  <SlotChip key={participant.index} $off>
+                    {participant.displayName}
+                  </SlotChip>
+                ))}
+              </SlotChips>
+            </SlotGroup>
+          )}
+          {/* 추천 후보에 속한 칸만 공유·확정할 수 있다(공유 API가 후보 순위 기준) */}
+          {canShareCell && (
+            <SlotCta>
+              <PollSecondaryButton
+                type="button"
+                onClick={() => {
+                  if (!cellCandidate) return;
+                  setSelection({
+                    version: result.version,
+                    rank: cellCandidate.rank,
+                  });
+                  setIsSlotSheetOpen(false);
+                  setShareMode("RECOMMEND");
+                }}
+              >
+                선택한 시간 공유
+              </PollSecondaryButton>
+              {canDecide && (
+                <PollPrimaryButton
+                  type="button"
+                  onClick={() => {
+                    if (!cellCandidate) return;
+                    setSelection({
+                      version: result.version,
+                      rank: cellCandidate.rank,
+                    });
+                    setIsSlotSheetOpen(false);
+                    setIsConfirmOpen(true);
+                  }}
+                >
+                  이 시간으로 정하기
+                </PollPrimaryButton>
+              )}
+            </SlotCta>
+          )}
+        </SlotSheet>
+      </BottomSheet>
 
       {selected && (
         <SendTargetSheet
@@ -552,17 +772,17 @@ function PollResultView({
 
 const HeaderButton = styled.button`
   ${buttonReset}
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   color: var(--text-brand);
   white-space: nowrap;
   ${typography.label1}
 `;
 
 const Heading = styled.div`
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const Headline = styled.h2`
@@ -580,7 +800,7 @@ const SubHeadline = styled.p`
 const GridSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const HeatCell = styled(PollGridCell)<{ $focused: boolean }>`
@@ -641,53 +861,156 @@ const AllBlock = styled.div`
 `;
 
 /** 고른 추천 시간 테두리 */
+/* 파란 블록 위에서도 보이도록 흰 간격 + 파란 링을 두르고, 고를 때 한 번 퍼지는 링으로 위치를 알린다
+   (시간표 강의 담기 미리보기의 pulse와 같은 방식) */
 const SelectedFrame = styled.div`
   position: absolute;
+  z-index: 2;
   left: 1px;
   right: 1px;
   box-sizing: border-box;
   border-radius: 7px;
-  border: 2px solid var(--text-primary);
+  border: 2px solid var(--bg-base);
+  box-shadow: 0 0 0 2px var(--border-brand);
   pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 9px;
+    animation: selectedPulse 1.2s ease-out 2;
+  }
+
+  @keyframes selectedPulse {
+    0% {
+      box-shadow: 0 0 0 0 var(--border-brand);
+      opacity: 0.6;
+    }
+    100% {
+      box-shadow: 0 0 0 10px var(--border-brand);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after {
+      animation: none;
+    }
+  }
 `;
 
-const CellPopover = styled.div`
-  position: absolute;
-  z-index: 3;
-  padding: 8px 12px;
+const RangeRow = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  white-space: nowrap;
-  border-radius: 12px;
-  background: var(--bg-base);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  color: var(--text-primary);
-  pointer-events: none;
-  ${typography.label2}
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-2);
 `;
 
-const CellPopoverEmpty = styled.span`
+const RangeTitle = styled.h3`
+  margin: 0;
+  flex: 1 0 0;
+  min-width: 0;
+  color: var(--text-primary);
+  ${typography.title3}
+`;
+
+const WeekIndicator = styled.span`
+  flex-shrink: 0;
   color: var(--text-tertiary);
   ${typography.caption1}
+`;
+
+const SlotSheet = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: 0 0 34px;
+`;
+
+const SlotTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+`;
+
+const SlotTitle = styled.h2`
+  margin: 0;
+  flex: 1 0 0;
+  min-width: 0;
+  color: var(--text-primary);
+  ${typography.title3}
+`;
+
+const SlotBadge = styled.span`
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-brand);
+  color: var(--text-brand);
+  ${typography.label3}
+`;
+
+const SlotGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+`;
+
+const SlotGroupTitle = styled.p<{ $muted?: boolean }>`
+  margin: 0;
+  color: ${({ $muted }) =>
+    $muted ? "var(--text-disabled)" : "var(--text-primary)"};
+  ${typography.heading3}
+`;
+
+const SlotChips = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const SlotChip = styled.span<{ $off?: boolean }>`
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid
+    ${({ $off }) => ($off ? "transparent" : "var(--border-default)")};
+  background: ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--bg-base)")};
+  color: ${({ $off }) =>
+    $off ? "var(--text-disabled)" : "var(--text-secondary)"};
+  ${typography.label3}
+`;
+
+const SlotEmpty = styled.p`
+  margin: 0;
+  color: var(--text-tertiary);
+  ${typography.caption1}
+`;
+
+const SlotCta = styled.div`
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
 `;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 `;
 
 const SectionTitle = styled.h3`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-primary);
   ${typography.heading2}
 `;
 
 const EmptyCandidates = styled.p`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-tertiary);
   ${typography.body2}
 `;
@@ -695,15 +1018,15 @@ const EmptyCandidates = styled.p`
 const CandidateList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 `;
 
 const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
   ${buttonReset}
-  padding: 16px;
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
   text-align: left;
   border: ${({ $selected }) =>
     $selected
@@ -717,9 +1040,8 @@ const CandidateCard = styled(PollCard)<{ $selected: boolean }>`
 const CandidateHead = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 `;
-
 
 const NameChips = styled.div`
   display: flex;
@@ -728,8 +1050,8 @@ const NameChips = styled.div`
 `;
 
 const NameChip = styled.span<{ $off: boolean }>`
-  padding: 6px 12px;
-  border-radius: 999px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-full);
   border: 1px solid
     ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--border-default)")};
   background: ${({ $off }) => ($off ? "var(--bg-disabled)" : "var(--bg-base)")};
@@ -739,7 +1061,7 @@ const NameChip = styled.span<{ $off: boolean }>`
 `;
 
 const SectionHint = styled.span`
-  margin-left: 4px;
+  margin-left: var(--space-1);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;

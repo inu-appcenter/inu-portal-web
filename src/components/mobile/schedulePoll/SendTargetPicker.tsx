@@ -286,15 +286,28 @@ const SendTargetPicker = ({
       </Tabs>
 
       <SearchField>
-        <Icon name="search" size={20} />
+        <SearchIconBox aria-hidden>
+          <Icon name="search" size={20} />
+        </SearchIconBox>
         <input
           type="search"
           value={keyword}
           placeholder={
-            tab === "ROOM" ? "채팅방 이름으로 검색" : "이름, 학번으로 검색"
+            tab === "ROOM"
+              ? "채팅방 이름으로 검색하세요"
+              : "친구 학번 또는 이름으로 검색하세요"
           }
           onChange={(event) => setKeyword(event.target.value)}
         />
+        {keyword && (
+          <ClearButton
+            type="button"
+            aria-label="검색어 지우기"
+            onClick={() => setKeyword("")}
+          >
+            <Icon name="close-md" size={24} />
+          </ClearButton>
+        )}
       </SearchField>
 
       {selected.length > 0 && (
@@ -373,10 +386,12 @@ const SendTargetPicker = ({
 
       {/* 앱 밖 공유는 한 줄로 모은다. 공유 시트 안에 링크 복사가 있고, 공유 시트가 없으면 링크를 복사한다. */}
       <ExternalShareRow type="button" onClick={handleExternalShare}>
-        <Icon name="share" size={22} />
+        <Icon name="link-external" size={24} />
         <RowText>
-          <RowName>앱 밖으로 공유하기</RowName>
-          <RowCaption>카카오톡 등으로 보내거나 링크를 복사해요</RowCaption>
+          <ExternalTitle>앱 밖으로 공유하기</ExternalTitle>
+          <ExternalDescription>
+            카카오톡 등으로 보내거나 링크를 복사해요
+          </ExternalDescription>
         </RowText>
         <Icon name="chevron-right" size={20} />
       </ExternalShareRow>
@@ -402,7 +417,7 @@ const SendTargetPicker = ({
               : selected.length === 0
                 ? "보낼 곳을 골라 주세요"
                 : selected.length === 1
-                  ? `${selected[0].name}에 보내기`
+                  ? `${selected[0].name}${selected[0].type === "FRIEND" ? "님에게" : "에"} 보내기`
                   : `${selected.length}곳에 보내기`}
           </PollPrimaryButton>
         </>,
@@ -416,19 +431,18 @@ export default SendTargetPicker;
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-6);
   min-height: 0;
 `;
 
 const ExternalShareRow = styled.button`
   ${buttonReset}
-  min-height: 64px;
-  padding: 0 12px 0 16px;
+  padding: 14px var(--space-3) 14px var(--space-4);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   text-align: left;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);
@@ -438,14 +452,14 @@ const ExternalShareRow = styled.button`
   }
 `;
 
+/* Figma Search_Bar (7476:39971) */
 const SearchField = styled.label`
-  height: 40px;
+  height: 44px;
   box-sizing: border-box;
-  padding: 0 12px;
+  padding: 0 var(--space-1);
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-tertiary);
@@ -463,13 +477,42 @@ const SearchField = styled.label`
     &::placeholder {
       color: var(--text-tertiary);
     }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
   }
+`;
+
+const SearchIconBox = styled.span`
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-brand);
+`;
+
+const ClearButton = styled.button`
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 `;
 
 const Chips = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 4px 8px;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -485,7 +528,7 @@ const ChipButton = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const ChipAvatar = styled.span`
@@ -526,6 +569,16 @@ const ChipName = styled.span`
   ${typography.caption1}
 `;
 
+const ExternalTitle = styled.span`
+  color: var(--text-primary);
+  ${typography.heading2}
+`;
+
+const ExternalDescription = styled.span`
+  color: var(--text-tertiary);
+  ${typography.caption1}
+`;
+
 const Tabs = styled.div`
   display: flex;
   border-bottom: 1px solid var(--border-default);
@@ -534,19 +587,20 @@ const Tabs = styled.div`
 const Tab = styled.button<{ $active: boolean }>`
   ${buttonReset}
   flex: 1 0 0;
-  height: 40px;
+  height: 52px;
+  box-sizing: border-box;
   margin-bottom: -1px;
   border-bottom: 2px solid
     ${({ $active }) => ($active ? "var(--border-brand)" : "transparent")};
   color: ${({ $active }) =>
     $active ? "var(--text-brand)" : "var(--text-tertiary)"};
-  ${typography.heading3}
+  ${typography.heading1}
 `;
 
 const List = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   overflow: hidden;
@@ -554,11 +608,11 @@ const List = styled.div`
 
 const Row = styled.button<{ $checked: boolean }>`
   ${buttonReset}
-  min-height: 72px;
-  padding: 0 16px;
+  height: 72px;
+  padding: 0 var(--space-4) 0 var(--space-3);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-3);
   text-align: left;
   background: ${({ $checked }) =>
     $checked ? "var(--bg-brand)" : "transparent"};
@@ -570,8 +624,8 @@ const Row = styled.button<{ $checked: boolean }>`
 
 const RowAvatar = styled.img`
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   background: var(--bg-brand);
@@ -582,27 +636,28 @@ const RowText = styled.span`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 `;
 
 const RowName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
 const RowCaption = styled.span`
   color: var(--text-tertiary);
-  ${typography.caption1}
+  ${typography.label3}
 `;
 
 const Empty = styled.div`
-  padding: 40px 16px;
+  padding: 40px var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-secondary);
   text-align: center;
   ${typography.label2}
@@ -621,10 +676,10 @@ const InlineButton = styled.button`
 
 const InviteLinkButton = styled.button`
   ${buttonReset}
-  margin-top: 8px;
+  margin-top: var(--space-2);
   height: 44px;
-  padding: 0 24px;
-  border-radius: 999px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
   background: var(--interactive-primary);
   color: var(--text-on-brand);
   ${typography.heading3}

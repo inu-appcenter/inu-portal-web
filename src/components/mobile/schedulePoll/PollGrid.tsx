@@ -106,7 +106,6 @@ const PollGridFrame = forwardRef<HTMLDivElement, PollGridFrameProps>(
               {shape.columns.map((column, index) => (
                 <Column
                   key={column.key}
-                  data-poll-column={index}
                   $weekStart={weekStarts[index]}
                 >
                   {renderColumn(index)}
@@ -235,7 +234,7 @@ const TimeColumn = styled.div`
   position: sticky;
   left: 0;
   z-index: 2;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
   width: ${TIME_LABEL_WIDTH}px;
 `;
@@ -243,7 +242,7 @@ const TimeColumn = styled.div`
 const TimeCell = styled.div<{ $hourEnd: boolean }>`
   height: ${POLL_ROW_HEIGHT}px;
   box-sizing: border-box;
-  padding-top: 4px;
+  padding-top: var(--space-1);
   background: var(--bg-base);
   border-right: 1px solid var(--border-default);
   border-bottom: 1px solid

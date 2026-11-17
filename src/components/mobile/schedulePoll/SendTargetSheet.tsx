@@ -47,7 +47,7 @@ const SendTargetSheet = ({
 export default SendTargetSheet;
 
 const Title = styled.h2`
-  margin: 4px 4px 12px;
+  margin: var(--space-1) var(--space-1) var(--space-3);
   color: var(--text-primary);
   ${typography.title2}
 `;
@@ -56,7 +56,7 @@ const Footer = styled.div`
   position: sticky;
   bottom: 0;
   display: flex;
-  gap: 12px;
-  padding: 12px 0 0;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 0;
   background: var(--bg-base);
 `;

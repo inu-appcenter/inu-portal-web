@@ -2,9 +2,11 @@ import { UserPlus } from "lucide-react";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import BottomSheet from "@/components/common/BottomSheet";
+import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
-import { useHeader, type MenuItemType } from "@/context/HeaderContext";
+import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
 import {
   POLL_INTERVAL,
@@ -74,6 +76,7 @@ export default function SchedulePollStatusPage() {
   const isLoggedIn = usePollLoggedIn();
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hostDialog, setHostDialog] = useState<HostDialog>(null);
   const [deadlineInput, setDeadlineInput] = useState("");
 
@@ -101,23 +104,35 @@ export default function SchedulePollStatusPage() {
   usePollNoticeToasts(pollId, revision);
   // 마감 변경·종료는 자주 쓰지 않고 종료는 되돌릴 수 없어서, 본문 대신 헤더 메뉴에 둔다.
   const isHost = poll?.isHost ?? false;
-  const menuItems = useMemo<MenuItemType[] | undefined>(
+  const showHostMenu = isHost && !isClosed;
+  const headerRight = useMemo(
     () =>
-      isHost && !isClosed
-        ? [
-            {
-              label: "응답 마감 변경",
-              onClick: () => {
-                setDeadlineInput(toLocalInputValue(deadlineAt));
-                setHostDialog("DEADLINE");
-              },
-            },
-            { label: "시간 맞추기 종료", onClick: () => setHostDialog("CLOSE") },
-          ]
-        : undefined,
-    [isHost, isClosed, deadlineAt],
+      showHostMenu ? (
+        <MenuButton
+          type="button"
+          aria-label="메뉴 열기"
+          onClick={() => setIsMenuOpen(true)}
+        >
+          <Icon name="dot-vertical" size={24} color="var(--text-primary)" />
+        </MenuButton>
+      ) : undefined,
+    [showHostMenu],
   );
-  useHeader({ title: poll?.title ?? "시간 맞추기", hasback: true, menuItems });
+  useHeader({
+    title: poll?.title ?? "시간 맞추기",
+    hasback: true,
+    rightArea: headerRight,
+  });
+
+  const openDeadlineDialog = () => {
+    setIsMenuOpen(false);
+    setDeadlineInput(toLocalInputValue(deadlineAt));
+    setHostDialog("DEADLINE");
+  };
+  const openCloseDialog = () => {
+    setIsMenuOpen(false);
+    setHostDialog("CLOSE");
+  };
 
   if (!isLoggedIn) {
     return (
@@ -251,22 +266,24 @@ export default function SchedulePollStatusPage() {
           <ParticipantList>
             {participants.map((participant) => (
               <ParticipantRow key={participant.memberId}>
-                <Avatar src={DEFAULT_AVATAR} alt="" />
-                <ParticipantText>
-                  <NameLine>
-                    <ParticipantName>{participant.displayName}</ParticipantName>
-                    {participant.isHost && <PollBadge $tone="brand">개설자</PollBadge>}
-                  </NameLine>
-                  {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
-                  {participant.maskedStudentId !== participant.displayName && (
-                    <ParticipantCaption>
-                      {participant.maskedStudentId}
-                    </ParticipantCaption>
-                  )}
-                </ParticipantText>
-                <SubmittedAt>
-                  {formatSubmittedAt(participant.submittedAt)}
-                </SubmittedAt>
+                <AvatarBox>
+                  <Avatar src={DEFAULT_AVATAR} alt="" />
+                </AvatarBox>
+                <ParticipantBody>
+                  <ParticipantText>
+                    <NameLine>
+                      <ParticipantName>{participant.displayName}</ParticipantName>
+                      {participant.isHost && <PollBadge $tone="brand">개설자</PollBadge>}
+                    </NameLine>
+                    <CaptionLine>
+                      {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
+                      {participant.maskedStudentId !== participant.displayName && (
+                        <span>{participant.maskedStudentId}</span>
+                      )}
+                      <SubmittedAt>{formatSubmittedAt(participant.submittedAt)}</SubmittedAt>
+                    </CaptionLine>
+                  </ParticipantText>
+                </ParticipantBody>
               </ParticipantRow>
             ))}
             {needsMorePeople && !isClosed && (
@@ -376,6 +393,26 @@ export default function SchedulePollStatusPage() {
         }}
       />
 
+      <BottomSheet
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+        handle="compact"
+      >
+        <MenuRow type="button" onClick={openDeadlineDialog}>
+          <MenuTitle>응답 마감 변경</MenuTitle>
+          <MenuSub>
+            {deadlineAt
+              ? `지금은 ${formatDeadline(deadlineAt)} 마감`
+              : "지금은 마감 없음"}
+          </MenuSub>
+        </MenuRow>
+        <MenuDivider />
+        <MenuRow type="button" onClick={openCloseDialog}>
+          <MenuTitle $danger>시간 맞추기 종료</MenuTitle>
+          <MenuSub>2명 미만이면 결과 없이 끝나요</MenuSub>
+        </MenuRow>
+      </BottomSheet>
+
       <Modal
         isOpen={hostDialog === "DEADLINE"}
         onClose={() => setHostDialog(null)}
@@ -429,25 +466,25 @@ export default function SchedulePollStatusPage() {
 const Summary = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SummaryRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const InviteButton = styled.button`
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   height: 36px;
   padding: 0 14px;
   border: 1px solid var(--border-brand-subtle);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   background: var(--bg-brand);
   color: var(--text-brand);
   ${typography.label2}
@@ -481,7 +518,7 @@ const HeadlineSub = styled.span`
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
@@ -492,23 +529,41 @@ const ParticipantList = styled(PollCard)`
 `;
 
 const ParticipantRow = styled.div`
-  min-height: 72px;
-  padding: 0 16px;
+  height: 72px;
   display: flex;
   align-items: center;
-  gap: 16px;
+`;
 
-  & + & {
-    border-top: 1px solid var(--border-default);
-  }
+const AvatarBox = styled.div`
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Avatar = styled.img`
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--bg-brand);
+  object-fit: cover;
+  background: var(--border-brand-subtle);
+`;
+
+/* 구분선은 아바타 오른쪽부터 시작하고, 마지막 행은 선을 긋지 않는다. */
+const ParticipantBody = styled.div`
+  flex: 1 0 0;
+  min-width: 0;
+  height: 100%;
+  padding-right: var(--space-4);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-default);
+
+  ${ParticipantRow}:last-child & {
+    border-bottom: none;
+  }
 `;
 
 const ParticipantText = styled.div`
@@ -516,58 +571,99 @@ const ParticipantText = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 `;
 
 const ParticipantName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
-const ParticipantCaption = styled.span`
+const SubmittedAt = styled.span`
+  color: var(--text-disabled);
+`;
+
+const CaptionLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+  ${typography.label3}
+  white-space: nowrap;
+`;
+
+const MenuButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: none;
+  background: none;
+  cursor: pointer;
+`;
+
+const MenuRow = styled.button`
+  width: 100%;
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+`;
+
+const MenuTitle = styled.span<{ $danger?: boolean }>`
+  color: ${({ $danger }) =>
+    $danger ? "var(--text-error)" : "var(--text-primary)"};
+  ${typography.heading2}
+`;
+
+const MenuSub = styled.span`
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
-const SubmittedAt = styled.span`
-  flex-shrink: 0;
-  color: var(--text-tertiary);
-  ${typography.caption1}
+const MenuDivider = styled.div`
+  height: 1px;
+  background: var(--border-default);
 `;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionHeader = styled.div`
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionTitle = styled.h3`
   margin: 0;
   color: var(--text-primary);
   ${typography.heading3}
-  line-height: 1.6;
 `;
 
 const SectionHint = styled.p`
   margin: 0;
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
 const CandidateRow = styled(PollCard)`
   height: 52px;
-  padding: 0 12px 0 14px;
+  padding: 0 var(--space-3) 0 14px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -579,7 +675,7 @@ const DeadlineInput = styled.input`
   height: 50px;
   box-sizing: border-box;
   padding: 0 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-primary);
@@ -589,10 +685,10 @@ const DeadlineInput = styled.input`
 
 const EmptySlotRow = styled.div`
   min-height: 72px;
-  padding: 0 16px;
+  padding: 0 var(--space-4);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   color: var(--text-tertiary);
   ${typography.label2}
 
@@ -609,7 +705,7 @@ const EmptySlotAvatar = styled.span`
 `;
 
 const EmptyResult = styled(PollCard)`
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;

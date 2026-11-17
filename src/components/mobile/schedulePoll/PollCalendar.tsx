@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled, { css } from "styled-components";
+import Icon from "@/components/common/Icon";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { typography } from "@/styles/typography";
 import type { PollDay } from "@/types/schedulePolls";
@@ -104,7 +105,7 @@ const PollCalendar = ({
               setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
             }
           >
-            ‹
+            <Icon name="chevron-left" size={24} />
           </NavButton>
           <NavButton
             type="button"
@@ -113,7 +114,7 @@ const PollCalendar = ({
               setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
             }
           >
-            ›
+            <Icon name="chevron-right" size={24} />
           </NavButton>
         </MonthNav>
       </MonthRow>
@@ -193,26 +194,26 @@ export const PollWeekdayRow = ({ days, onToggleDay }: WeekdayRowProps) => (
 );
 
 const Card = styled.div`
-  padding: 16px 12px 12px;
-  border-radius: 16px;
+  padding: var(--space-3) var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-1);
 `;
 
 const WeekdayCard = styled(Card)`
   flex-direction: row;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
 `;
 
 const MonthRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 4px;
+  padding: 0 var(--space-3) var(--space-1);
 `;
 
 const MonthTitle = styled.span`
@@ -222,16 +223,17 @@ const MonthTitle = styled.span`
 
 const MonthNav = styled.div`
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const NavButton = styled.button`
   ${buttonReset}
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-primary);
-  font-size: 24px;
-  line-height: 1;
 
   &:disabled {
     color: var(--text-disabled);
@@ -241,7 +243,7 @@ const NavButton = styled.button`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 4px;
+  row-gap: var(--space-1);
 `;
 
 const WeekdayButton = styled.button<{ $off: boolean }>`
