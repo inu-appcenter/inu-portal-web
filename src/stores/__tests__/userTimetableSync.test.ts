@@ -150,3 +150,47 @@ describe("User Timetable Sync", () => {
     expect(queryClient.getQueryData([...TIMETABLES_QUERY_KEY, "userA", "all", "all"])).toBeUndefined();
   });
 });
+
+describe("계정 전환 시 쿼리 초기화 (resetQueriesForAccountChange)", () => {
+  it("시간표 외 쿼리도 비운다", async () => {
+    const { resetQueriesForAccountChange } = await import("../useUserStore");
+    queryClient.setQueryData(["friends"], { data: [{ friendId: 1 }] });
+    queryClient.setQueryData(["grades"], [{ id: 1 }]);
+    resetQueriesForAccountChange();
+    expect(queryClient.getQueryData(["friends"])).toBeUndefined();
+    expect(queryClient.getQueryData(["grades"])).toBeUndefined();
+  });
+
+  it("전환 전에 출발한 요청의 응답이 늦게 와도 캐시에 다시 들어가지 않는다", async () => {
+    const { resetQueriesForAccountChange } = await import("../useUserStore");
+    let resolveOld: (v: string) => void = () => {};
+    const pending = queryClient
+      .fetchQuery({
+        queryKey: ["profile"],
+        queryFn: () => new Promise<string>((r) => (resolveOld = r)),
+      })
+      .catch(() => undefined);
+
+    resetQueriesForAccountChange();
+    resolveOld("old-user");
+    await pending;
+    expect(queryClient.getQueryData(["profile"])).toBeUndefined();
+  });
+
+  it("마운트된 옵저버도 이전 데이터를 더 이상 보지 않는다", async () => {
+    const { QueryObserver } = await import("@tanstack/react-query");
+    const { resetQueriesForAccountChange } = await import("../useUserStore");
+    queryClient.setQueryData(["notifications"], ["old"]);
+    const observer = new QueryObserver(queryClient, {
+      queryKey: ["notifications"],
+      queryFn: () => Promise.resolve(["new"]),
+      enabled: false,
+      staleTime: Infinity,
+    });
+    const unsubscribe = observer.subscribe(() => {});
+    expect(observer.getCurrentResult().data).toEqual(["old"]);
+    resetQueriesForAccountChange();
+    expect(observer.getCurrentResult().data).toBeUndefined();
+    unsubscribe();
+  });
+});

@@ -45,7 +45,7 @@ const Chip = styled.button<{ $selected: boolean }>`
     $selected ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $selected }) =>
     $selected
-      ? "var(--text-inverse)"
+      ? "var(--text-on-brand)"
       : "var(--text-secondary)"};
   white-space: nowrap;
   transition:

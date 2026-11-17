@@ -13,6 +13,7 @@ import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
 } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { cafeterias } from "@/resources/strings/cafeterias";
 import { useLocation, useNavigate } from "react-router-dom";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -241,6 +242,7 @@ const CafeteriaWrapper = styled.div`
   gap: 16px;
 
   padding-top: 12px;
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
 
   .swiper-autoheight {
     transition: height 0ms !important;

@@ -37,7 +37,9 @@ export const POLL_DAY_LABEL: Record<PollDay, string> = {
   SUN: "일",
 };
 
-const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
+/** 날짜의 요일 한 글자('월'…'일'). */
+export const weekdayLabel = (date: Date): string =>
+  POLL_DAY_LABEL[POLL_DAYS[(date.getDay() + 6) % 7]];
 
 export const timeToMinutes = (time: string): number => {
   const [hour, minute] = time.split(":").map(Number);
@@ -65,12 +67,16 @@ export const columnWeekday = (key: string): number => {
   return POLL_DAYS.indexOf(key as PollDay);
 };
 
-/** 조건으로 열 목록을 만든다. 정기는 선택한 요일(월→일), 일회성은 시작일~종료일 전부. */
+/**
+ * 조건으로 열 목록을 만든다. 정기는 선택한 요일(월→일), 일회성은 시작일~종료일 중
+ * 고른 요일의 날짜만(요일을 안 보냈으면 전부).
+ */
 export const buildPollColumns = (input: {
   isRecurring: boolean;
   days: PollDay[] | null;
   startDate: string | null;
   endDate: string | null;
+  excludedDates?: string[];
 }): PollColumn[] => {
   if (input.isRecurring) {
     return POLL_DAYS.filter((day) => input.days?.includes(day)).map((day) => ({
@@ -87,9 +93,12 @@ export const buildPollColumns = (input: {
     cursor <= end && columns.length < POLL_MAX_ONE_TIME_DAYS;
     cursor = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + 1)
   ) {
+    const day = POLL_DAYS[(cursor.getDay() + 6) % 7];
+    if (input.days && input.days.length > 0 && !input.days.includes(day)) continue;
+    if (input.excludedDates?.includes(toDateKey(cursor))) continue;
     columns.push({
       key: toDateKey(cursor),
-      label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${WEEKDAY_LABELS[(cursor.getDay() + 6) % 7]})`,
+      label: `${cursor.getMonth() + 1}/${cursor.getDate()} (${weekdayLabel(cursor)})`,
     });
   }
   return columns;
@@ -291,7 +300,7 @@ export const formatColumnName = (column: PollColumn | undefined, key: string) =>
   }
   if (column?.label) return column.label;
   const date = parseDateKey(key);
-  return `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAY_LABELS[columnWeekday(key)]})`;
+  return `${date.getMonth() + 1}/${date.getDate()} (${weekdayLabel(date)})`;
 };
 
 /** 조건 요약용 기간 문구. 정기 '월·수·금', 일회성 '10월 12일 ~ 16일'. */
@@ -313,7 +322,7 @@ export const formatDeadline = (deadlineAt: string | null | undefined) => {
   if (!deadlineAt) return "";
   const date = new Date(deadlineAt);
   if (Number.isNaN(date.getTime())) return "";
-  return `${date.getMonth() + 1}/${date.getDate()} (${WEEKDAY_LABELS[(date.getDay() + 6) % 7]}) ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  return `${date.getMonth() + 1}/${date.getDate()} (${weekdayLabel(date)}) ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 };
 
 /** 기기 시각을 오프셋 포함 ISO-8601(`2026-10-20T18:00:00+09:00`)로 적는다. */

@@ -759,7 +759,7 @@ export default function MobileAgentReminderSetting() {
                   <GroupRow onClick={handleOpenPreClassModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
                     <IconCircle $bgColor="var(--interactive-primary)">
-                      <Clock size={20} color="var(--text-inverse)" />
+                      <Clock size={20} color="var(--text-on-brand)" />
                     </IconCircle>
 
                     <TextContentWrapper>
@@ -787,7 +787,7 @@ export default function MobileAgentReminderSetting() {
                   <GroupRow onClick={handleOpenScheduleModal}>
                     <Ripple color="rgba(0, 0, 0, 0.05)" />
                     <IconCircle $bgColor="var(--interactive-primary)">
-                      <GraduationCap size={20} color="var(--text-inverse)" />
+                      <GraduationCap size={20} color="var(--text-on-brand)" />
                     </IconCircle>
 
                     <TextContentWrapper>
@@ -1530,7 +1530,7 @@ const AmPmButton = styled.button<{ $active: boolean }>`
   overflow: hidden;
   border: none;
   background-color: ${({ $active }) => ($active ? "var(--interactive-primary)" : "transparent")};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-600)")};
   font-size: 14px;
   font-weight: 700;
   padding: 8px 14px;

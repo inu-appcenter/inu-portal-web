@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 import CapsuleButton, { CapsuleButtonVariant } from "./CapsuleButton";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import { effects } from "@/styles/effects";
+import { motionTokens } from "@/styles/motion";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -115,14 +116,30 @@ const fadeIn = keyframes`
   to { opacity: 1; }
 `;
 
+const fadeOut = keyframes`
+  from { opacity: 1; }
+  to { opacity: 0; }
+`;
+
 const scaleUp = keyframes`
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translate(-50%, -48%) scale(0.96);
   }
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
+  }
+`;
+
+const scaleDown = keyframes`
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
   }
 `;
 
@@ -132,7 +149,16 @@ const ModalOverlay = styled(Dialog.Overlay)`
   background-color: var(--bg-dim);
   ${effects.dim}
   z-index: 19999;
-  animation: ${fadeIn} 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  &[data-state="open"] {
+    animation: ${fadeIn} 0.2s ${motionTokens.easeOut} forwards;
+  }
+  &[data-state="closed"] {
+    animation: ${fadeOut} 0.15s ${motionTokens.easeIn} forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+  }
 `;
 
 const ModalContainer = styled(Dialog.Content)`
@@ -153,7 +179,16 @@ const ModalContainer = styled(Dialog.Content)`
   gap: 24px;
   z-index: 20000;
   outline: none;
-  animation: ${scaleUp} 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  &[data-state="open"] {
+    animation: ${scaleUp} 0.25s ${motionTokens.easeOut} forwards;
+  }
+  &[data-state="closed"] {
+    animation: ${scaleDown} 0.15s ${motionTokens.easeIn} forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+  }
   overflow: hidden;
 `;
 

@@ -36,6 +36,7 @@ import { OpenChatRoomResponseDto } from "@/types/chat";
 import Skeleton from "@/components/common/Skeleton";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 const MobileChatListPage = memo(function MobileChatListPage() {
   const navigate = useNavigate();
@@ -45,6 +46,9 @@ const MobileChatListPage = memo(function MobileChatListPage() {
   const params = new URLSearchParams(location.search);
   const selectedCategory = params.get("category") || "개인";
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  useFriendCompareExposure("채팅 목록 친구 선택 비교 버튼", {
+    visible: isSelectionMode && selectedCategory === "친구",
+  });
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const isSelectionModeRef = useRef(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -946,7 +950,7 @@ const Slide = styled.div`
 
 const NotificationWarningBanner = styled.div`
   .link {
-    color: var(--primary);
+    color: var(--text-brand);
     text-decoration: underline;
     margin-left: 6px;
     font-weight: 500;
@@ -1035,7 +1039,7 @@ const FloatingActionButton = styled.button<{ $isTop: boolean }>`
 const ButtonLabel = styled.span<{ $isTop: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   white-space: nowrap;
   overflow: hidden;
 
@@ -1113,7 +1117,7 @@ const SearchBarContainer = styled.div<{ $isSearchActive: boolean }>`
 `;
 
 const CompareButton = styled(CapsuleButton)`
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-align: center;
 
   /* title-3 */

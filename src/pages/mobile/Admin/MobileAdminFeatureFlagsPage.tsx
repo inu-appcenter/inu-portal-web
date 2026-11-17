@@ -421,7 +421,7 @@ const FlagIconBox = styled.div<{ $enabled: boolean }>`
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background-color: ${(props) => props.$enabled ? "rgb(236, 253, 245)" : "var(--bg-muted)"};
+  background-color: ${(props) => props.$enabled ? "var(--bg-success)" : "var(--bg-muted)"};
   color: ${(props) => props.$enabled ? "var(--text-success)" : "var(--text-tertiary)"};
   display: flex;
   align-items: center;
@@ -570,5 +570,5 @@ const PrimaryBtn = styled.button`
   color: var(--text-inverse);
   border-radius: 10px;
   font-weight: 700;
-  &:disabled { background-color: var(--button-inactive); }
+  &:disabled { background-color: var(--interactive-primary-disabled); }
 `;

@@ -205,7 +205,7 @@ const AddButton = styled.button`
   height: 32px;
   border: none;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
@@ -247,7 +247,7 @@ const FolderName = styled.span`
 
 const EditButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -258,7 +258,7 @@ const EditButton = styled.div`
 
 const DeleteButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -269,7 +269,7 @@ const DeleteButton = styled.div`
 
 const SaveButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -280,7 +280,7 @@ const SaveButton = styled.div`
 
 const CancelButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;

@@ -537,7 +537,7 @@ export default function RoutineBuilderModal({
                     </ActionTextCol>
 
                     <OneUiCheckbox $checked={isSelected}>
-                      {isSelected && <Check size={14} color="var(--text-inverse)" strokeWidth={3} />}
+                      {isSelected && <Check size={14} color="var(--text-on-brand)" strokeWidth={3} />}
                     </OneUiCheckbox>
                   </ActionItemRow>
                 </React.Fragment>
@@ -801,7 +801,7 @@ const DayCircleButton = styled.button<{
   background-color: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-muted)")};
   color: ${({ $selected, $isSunday, $isSaturday }) =>
     $selected
-      ? "var(--text-inverse)"
+      ? "var(--text-on-brand)"
       : $isSunday
       ? "var(--text-error)"
       : $isSaturday
@@ -927,7 +927,7 @@ const NotificationHeader = styled.div`
 
 const AppBadge = styled.span`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 10px;
   font-weight: 800;
   padding: 2px 5px;

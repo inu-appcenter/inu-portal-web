@@ -112,7 +112,7 @@ const UpdateButton = styled.button`
   width: 100%;
   height: 52px;
   background-color: var(--blue-800);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--heading-2-font-size);

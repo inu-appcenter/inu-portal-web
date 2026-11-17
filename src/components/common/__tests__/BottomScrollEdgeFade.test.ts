@@ -6,6 +6,34 @@ import {
 
 describe("BottomScrollEdgeFade 로직 및 엣지 케이스 단위 검증", () => {
   describe("isBottomEdgeFadeExcluded (예외 경로 판별)", () => {
+    it("바텀바가 있는 메인 화면들(홈, 시간표, 채팅 목록, 마이페이지, 버스, 저장 등)은 반드시 예외로 처리되어야 한다", () => {
+      // 루트 및 홈
+      expect(isBottomEdgeFadeExcluded("/")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/home")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/home")).toBe(true);
+
+      // 시간표 메인
+      expect(isBottomEdgeFadeExcluded("/timetable")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/timetable")).toBe(true);
+
+      // 채팅 목록 메인
+      expect(isBottomEdgeFadeExcluded("/chat/list")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/chat/list")).toBe(true);
+
+      // 마이페이지 메인
+      expect(isBottomEdgeFadeExcluded("/mypage")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/mypage")).toBe(true);
+
+      // 버스 메인
+      expect(isBottomEdgeFadeExcluded("/bus")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/bus")).toBe(true);
+
+      // 저장/스크랩 메인
+      expect(isBottomEdgeFadeExcluded("/save")).toBe(true);
+      expect(isBottomEdgeFadeExcluded("/m/save")).toBe(true);
+    });
+
     it("채팅방 경로는 독립 스크롤 및 입력창이 있으므로 예외로 처리되어야 한다", () => {
       expect(isBottomEdgeFadeExcluded("/chat/123")).toBe(true);
       expect(isBottomEdgeFadeExcluded("/chat/room/456")).toBe(true);
@@ -26,16 +54,14 @@ describe("BottomScrollEdgeFade 로직 및 엣지 케이스 단위 검증", () =>
       expect(isBottomEdgeFadeExcluded("/labs/portal/dormitory/card")).toBe(true);
     });
 
-    it("일반 메인 탭 및 서브페이지는 예외가 아니므로 false를 반환해야 한다", () => {
-      expect(isBottomEdgeFadeExcluded("/")).toBe(false);
-      expect(isBottomEdgeFadeExcluded("/home")).toBe(false);
-      expect(isBottomEdgeFadeExcluded("/mypage")).toBe(false);
-      expect(isBottomEdgeFadeExcluded("/bus")).toBe(false);
-      expect(isBottomEdgeFadeExcluded("/save")).toBe(false);
+    it("바텀바가 없는 일반 서브페이지들은 예외가 아니므로 false를 반환해야 한다", () => {
       expect(isBottomEdgeFadeExcluded("/timetable/compare")).toBe(false);
       expect(isBottomEdgeFadeExcluded("/friend/list")).toBe(false);
       expect(isBottomEdgeFadeExcluded("/home/notice")).toBe(false);
       expect(isBottomEdgeFadeExcluded("/home/cafeteria")).toBe(false);
+      expect(isBottomEdgeFadeExcluded("/timetable/filter")).toBe(false);
+      expect(isBottomEdgeFadeExcluded("/timetable/calculator")).toBe(false);
+      expect(isBottomEdgeFadeExcluded("/timetable/wizard")).toBe(false);
     });
   });
 

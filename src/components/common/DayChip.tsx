@@ -41,7 +41,7 @@ const ChipButton = styled.button<{ $isSelected: boolean }>`
     `
       background-color: var(--interactive-primary);
       border: 1px solid var(--interactive-primary);
-      color: var(--text-inverse);
+      color: var(--text-on-brand);
     `}
 
   &:active {

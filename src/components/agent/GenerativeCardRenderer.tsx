@@ -85,7 +85,7 @@ const AppDownloadButton = styled.a`
   padding: 6px 12px;
   border-radius: 8px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -103,7 +103,7 @@ const ActionModalButton = styled.button`
   padding: 8px 14px;
   border-radius: 8px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 12px;
   font-weight: 600;
   border: none;

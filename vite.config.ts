@@ -16,4 +16,59 @@ export default defineConfig({
     host: "0.0.0.0", // 모든 네트워크 인터페이스 바인딩
     port: 5173, // 포트 지정 (선택)
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+
+          // 1. 캘린더 라이브러리
+          if (id.includes("@fullcalendar")) {
+            return "vendor-calendar";
+          }
+
+          // 2. 차트 라이브러리
+          if (id.includes("recharts")) {
+            return "vendor-charts";
+          }
+
+          // 3. 수식 라이브러리
+          if (
+            id.includes("katex") ||
+            id.includes("rehype-katex") ||
+            id.includes("remark-math")
+          ) {
+            return "vendor-math";
+          }
+
+          // 4. UI 및 스타일링 라이브러리
+          if (
+            id.includes("@mui") ||
+            id.includes("@emotion") ||
+            id.includes("styled-components") ||
+            id.includes("framer-motion") ||
+            id.includes("/motion/") ||
+            id.includes("\\motion\\")
+          ) {
+            return "vendor-ui";
+          }
+
+          // 5. 핵심 React 생태계 라이브러리
+          if (
+            id.includes("/react/") ||
+            id.includes("\\react\\") ||
+            id.includes("/react-dom/") ||
+            id.includes("\\react-dom\\") ||
+            id.includes("react-router-dom") ||
+            id.includes("@tanstack/react-query") ||
+            id.includes("/axios/") ||
+            id.includes("\\axios\\") ||
+            id.includes("use-sync-external-store")
+          ) {
+            return "vendor-react";
+          }
+        },
+      },
+    },
+  },
 });

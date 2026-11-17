@@ -3,6 +3,8 @@ import { WizardResultCard } from "@/components/mobile/timetable/wizard/ui";
 
 import type { WizardCandidate } from "@/types/timetableWizard";
 import { typography } from "@/styles/typography";
+import SlidingNumber from "@/components/common/SlidingNumber";
+import { subtleFadeIn, motionTokens } from "@/styles/motion";
 
 interface WizardResultsScreenProps {
   candidates: WizardCandidate[];
@@ -16,15 +18,16 @@ const WizardResultsScreen = ({ candidates, onSelectCandidate }: WizardResultsScr
       <HeroTitle>
         조건에 맞는
         <br />
-        시간표 {candidates.length}개를 찾았어요!
+        시간표 <SlidingNumber value={candidates.length} />개를 찾았어요!
       </HeroTitle>
       <HeroCaption>카드를 눌러 자세히 확인해 보세요.</HeroCaption>
     </Hero>
 
     <CardList>
-      {candidates.map((candidate) => (
-        <WizardResultCard
-          key={candidate.id}
+      {candidates.map((candidate, index) => (
+        <StaggerCardItem key={candidate.id} $index={index}>
+          <WizardResultCard
+
           name={candidate.label}
           recommended={candidate.recommended}
           totalCredits={candidate.totalCredit}
@@ -34,7 +37,8 @@ const WizardResultsScreen = ({ candidates, onSelectCandidate }: WizardResultsScr
             reason.tag ? [reason.tag] : [],
           )}
           onClick={() => onSelectCandidate(candidate.id)}
-        />
+          />
+        </StaggerCardItem>
       ))}
     </CardList>
   </Body>
@@ -72,4 +76,16 @@ const CardList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
+`;
+
+const StaggerCardItem = styled.div<{ $index: number }>`
+  width: 100%;
+  opacity: 0;
+  animation: ${subtleFadeIn} 0.28s ${motionTokens.easeOut} forwards;
+  animation-delay: ${({ $index }) => `${$index * 0.04}s`};
+
+  @media (prefers-reduced-motion: reduce) {
+    opacity: 1;
+    animation: none;
+  }
 `;

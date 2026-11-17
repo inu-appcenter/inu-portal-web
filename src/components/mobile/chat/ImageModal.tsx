@@ -223,7 +223,7 @@ const StyledOverlay = styled(Dialog.Overlay)`
   position: fixed;
   inset: 0;
   z-index: 20000;
-  background-color: var(--neutral-1000);
+  background-color: var(--gray-1000);
   animation: ${fadeIn} 200ms ease-out;
 `;
 
@@ -234,7 +234,7 @@ const StyledContent = styled(Dialog.Content)`
   height: 100vh;
   z-index: 20001;
   outline: none;
-  background-color: var(--neutral-1000);
+  background-color: var(--gray-1000);
   box-sizing: border-box;
   animation: ${contentShow} 200ms cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
@@ -256,7 +256,7 @@ const StyledSwiper = styled(Swiper)`
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--neutral-1000);
+    background-color: var(--gray-1000);
   }
 `;
 

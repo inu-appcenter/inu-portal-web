@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
 import MobileHeader from "@/containers/mobile/common/MobileHeader";
+import RouteLoadingSpinner from "@/components/common/RouteLoadingSpinner";
 
 import { useHeaderConfig } from "@/context/HeaderContext";
 import useMeasuredElementHeight from "@/hooks/useMeasuredElementHeight";
@@ -100,7 +101,9 @@ export default function SubLayout({
           $pb={immersive ? 0 : navHeight}
           $fillsViewportOnDesktop={fillsViewportOnDesktop}
         >
-          {outlet}
+          <Suspense fallback={<RouteLoadingSpinner minHeight="50vh" />}>
+            {outlet}
+          </Suspense>
         </ContentArea>
       </ContentShell>
 

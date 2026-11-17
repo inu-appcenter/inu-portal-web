@@ -128,7 +128,7 @@ export default function PortalAutoSyncSheet({
 
         <Reassurance>
           <ShieldCheck size={16} aria-hidden />
-          <span>계정 정보는 인팁 서버로 보내지 않고, 내 휴대폰에만 안전하게 보관해요</span>
+          <span>포털 연결용 비밀번호와 불러온 정보는 이 휴대폰에만 보관해요</span>
         </Reassurance>
 
         <Footer>

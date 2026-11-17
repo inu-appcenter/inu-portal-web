@@ -788,7 +788,7 @@ const FilterButton = styled.button<{
   backdrop-filter: ${({ $isZeroCount }) => ($isZeroCount ? "blur(8px)" : "none")};
 
   color: ${({ $isZeroCount }) =>
-    $isZeroCount ? "var(--text-secondary)" : "var(--text-inverse)"};
+    $isZeroCount ? "var(--text-secondary)" : "var(--text-on-brand)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

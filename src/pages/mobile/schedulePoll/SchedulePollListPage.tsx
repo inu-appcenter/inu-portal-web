@@ -168,7 +168,7 @@ const Tab = styled.button<{ $active: boolean }>`
   background: ${({ $active }) =>
     $active ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $active }) =>
-    $active ? "var(--text-inverse)" : "var(--text-secondary)"};
+    $active ? "var(--text-on-brand)" : "var(--text-secondary)"};
   ${typography.label2}
 `;
 

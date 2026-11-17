@@ -86,7 +86,7 @@ export default function ImageUploadModal({
                 label: "보내기",
                 onClick: onSend,
                 backgroundColor: "var(--interactive-primary)",
-                textColor: "var(--text-inverse)",
+                textColor: "var(--text-on-brand)",
               }}
               padding="16px 24px 24px"
               height="88px"

@@ -24,6 +24,7 @@ import type { FontelloIconName } from "@/components/common/fontelloIcons";
 import Banner from "@/containers/mobile/home/Banner";
 import { useDailyBriefPresentation } from "@/hooks/useDailyBriefRanking";
 import StreamingFadeText from "@/components/mobile/dailyBrief/view/StreamingFadeText";
+import { squishActive } from "@/styles/motion";
 
 const CHANNEL_ID = "UCqOO8FqoVW6Y87jLnqhdflA";
 
@@ -515,11 +516,7 @@ const DailyBriefGreetingEntry = styled.div`
   padding: 4px 4px 16px 4px;
   cursor: pointer;
   user-select: none;
-  transition: opacity 0.15s ease;
-
-  &:active {
-    opacity: 0.75;
-  }
+  ${squishActive}
 `;
 
 const GreetingTextGroup = styled.div`

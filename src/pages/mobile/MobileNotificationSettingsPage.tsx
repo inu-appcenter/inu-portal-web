@@ -12,6 +12,7 @@ import Divider from "@/components/common/Divider";
 import Switch from "@/components/common/Switch";
 import Icon from "@/components/common/Icon";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA, DESKTOP_READING_WIDTH } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 export default function MobileNotificationSettingsPage() {
   const navigate = useNavigate();
   const { userInfo, setUserInfo } = useUserStore();
@@ -202,7 +203,7 @@ const PageWrapper = styled.div`
   width: 100%;
   // min-height: calc(100svh - 56px);
   background-color: transparent;
-  padding: 16px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 `;
 

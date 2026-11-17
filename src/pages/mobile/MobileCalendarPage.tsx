@@ -2,6 +2,7 @@ import styled from "styled-components";
 import Calendar from "@/components/mobile/calendar/Calendar";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import TitleContentArea from "@/components/desktop/common/TitleContentArea";
 import Icon from "@/components/common/Icon";
 import FloatingActionButton from "@/components/common/FloatingActionButton";
@@ -114,7 +115,7 @@ const MobileCalendarPageWrapper = styled.div`
   align-items: center;
   gap: 16px;
   padding: 0 ${MOBILE_PAGE_GUTTER};
-  padding-bottom: 60px;
+  padding-bottom: ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

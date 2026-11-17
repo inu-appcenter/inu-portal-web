@@ -5,6 +5,8 @@ import Box from "@/components/common/Box";
 import { FiChevronRight } from "react-icons/fi";
 import { getArrivalStationText } from "@/components/mobile/bus/busArrivalDisplay";
 import { getBusCircleTone } from "@/components/mobile/bus/busCircleTone";
+import AutoMarquee from "@/components/common/AutoMarquee";
+import { livePulseRing } from "@/styles/motion";
 
 interface BusItemProps extends BusData {
   onClick?: () => void;
@@ -39,19 +41,23 @@ export default function BusItem({
   onClick,
 }: BusItemProps) {
   const stationText = getArrivalStationText(arrivalInfo);
+  const isImminent =
+    arrivalInfo?.time === "곧 도착" ||
+    Boolean(arrivalInfo?.time?.includes("1분")) ||
+    stationText === "1정류장 전";
 
   return (
     <Box onClick={onClick}>
       <BusItemWrapper>
         <TopSection>
-          <RouteText>{formatRouteText(routeNotice, route)}</RouteText>
+          <RouteText><AutoMarquee text={formatRouteText(routeNotice, route)} /></RouteText>
         </TopSection>
         <MainSection>
           <BusCircle number={number} tone={getBusCircleTone(number)} />
           {arrivalInfo && (
             <TimeInfo>
               <ArrivalWrapper>
-                <MainTime>{arrivalInfo.time}</MainTime>
+                <MainTime>{isImminent && <LivePulseDot />}{arrivalInfo.time}</MainTime>
                 {(arrivalInfo.status || stationText) && (
                   <LabelWrapper>
                     <StatusInfo>
@@ -123,6 +129,21 @@ const ArrivalWrapper = styled.div`
   //justify-content: center;
   gap: 12px;
   padding-left: 32px;
+`;
+
+const LivePulseDot = styled.span`
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--red-500);
+  margin-right: 6px;
+  vertical-align: middle;
+  animation: ${livePulseRing} 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 const MainTime = styled.div`

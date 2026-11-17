@@ -422,7 +422,7 @@ const SearchButtonCircle = styled.button<{ $isActive: boolean; $size: number }>`
     width: ${props.$size - 8}px;
     height: ${props.$size - 8}px;
     background: var(--interactive-primary);
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
     border: 1px solid var(--border-brand);
   `
       : `

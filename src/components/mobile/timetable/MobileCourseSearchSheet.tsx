@@ -547,7 +547,7 @@ const FilterButton = styled.button<{
   color: ${({ $isZeroCount }) =>
     $isZeroCount
       ? "var(--text-secondary)"
-      : "var(--text-inverse)"};
+      : "var(--text-on-brand)"};
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

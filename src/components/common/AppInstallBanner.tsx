@@ -159,7 +159,7 @@ const OpenButton = styled.button`
   padding: 8px 16px;
   border-radius: 999px;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 14px;
   font-weight: 600;
 `;

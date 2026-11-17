@@ -791,7 +791,7 @@ export default function MobileAdminBusPage() {
                           onClick={() => openSearchModal("end")}
                         >
                           <div style={{ marginBottom: "6px" }}>
-                            <Icon name="search" size={22} color="var(--button-inactive)" />
+                            <Icon name="search" size={22} color="var(--gray-400)" />
                           </div>
                           <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--gray-700)" }}>
                             목표 도착 정류장을 검색하여 추가해주세요
@@ -1507,7 +1507,7 @@ const Container = styled.div`
 `;
 
 const SuccessBanner = styled.div`
-  background-color: rgb(236, 253, 245);
+  background-color: var(--bg-success);
   color: rgb(6, 95, 70);
   padding: 12px 16px;
   border-radius: 8px;
@@ -1535,7 +1535,7 @@ const TabButton = styled.button<{ active: boolean }>`
   font-weight: 600;
   cursor: pointer;
   background-color: ${({ active }) => (active ? "var(--interactive-primary)" : "var(--bg-muted)")};
-  color: ${({ active }) => (active ? "var(--text-inverse)" : "var(--gray-700)")};
+  color: ${({ active }) => (active ? "var(--text-on-brand)" : "var(--gray-700)")};
   transition: all 0.2s;
   white-space: nowrap;
 
@@ -1587,7 +1587,7 @@ const SyncButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 8px;
   font-size: 15px;
@@ -1918,7 +1918,7 @@ const SectionHeaderLabel = styled.div`
     background-color: var(--interactive-primary);
   }
   .end-dot {
-    background-color: var(--text-success);
+    background-color: var(--green-500);
   }
 `;
 
@@ -2033,7 +2033,7 @@ const TabBadge = styled.span`
 
 const RouteNoBadge = styled.span`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-size: 12px;
   font-weight: 700;
   padding: 2px 8px;
@@ -2246,7 +2246,7 @@ const SearchInput = styled.input`
 const SearchSubmitBtn = styled.button`
   padding: 10px 16px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -2315,7 +2315,7 @@ const SelectStopBtn = styled.button`
   gap: 4px;
   padding: 6px 10px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 4px;
   font-size: 12px;
@@ -2394,7 +2394,7 @@ const StatusBadge = styled.span<{ isOnline: boolean }>`
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
-  background-color: ${({ isOnline }) => (isOnline ? "rgb(220, 252, 231)" : "var(--bg-error)")};
+  background-color: ${({ isOnline }) => (isOnline ? "var(--bg-success)" : "var(--bg-error)")};
   color: ${({ isOnline }) => (isOnline ? "rgb(21, 128, 61)" : "rgb(185, 28, 28)")};
 
   .dot {

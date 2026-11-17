@@ -6,6 +6,7 @@ import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 
 import Box from "@/components/common/Box";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import MoreFeaturesBox from "@/components/desktop/common/MoreFeaturesBox";
 import PostItem from "@/components/mobile/notice/PostItem";
 import { getAlerts, readNotification } from "@/apis/members";
@@ -186,7 +187,30 @@ const MobileAlertPage = () => {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const alerts = useMemo(() => {
-    return data?.pages.flatMap((page) => page.data.contents) || [];
+    const flattened = data?.pages.flatMap((page) => page.data.contents) || [];
+
+    // 오프셋 페이지네이션 특성상 새 알림이 도착한 사이 무효화·재조회가 겹치면
+    // 페이지 경계가 밀려 같은 알림이 두 페이지에 걸쳐 중복으로 잡힐 수 있다.
+    // memberFcmMessageId(없으면 fcmMessageId)로 방어적으로 한 번만 남긴다.
+    const seen = new Set<string>();
+    return flattened.filter((alert) => {
+      // 두 id는 서로 다른 테이블의 값이라 숫자가 겹칠 수 있다. 접두어로 구분한다.
+      const dedupeKey =
+        alert.memberFcmMessageId != null
+          ? `m:${alert.memberFcmMessageId}`
+          : alert.fcmMessageId != null
+            ? `f:${alert.fcmMessageId}`
+            : null;
+
+      if (dedupeKey === null) {
+        return true;
+      }
+      if (seen.has(dedupeKey)) {
+        return false;
+      }
+      seen.add(dedupeKey);
+      return true;
+    });
   }, [data]);
 
   if (!isLoggedIn) {
@@ -257,7 +281,7 @@ export default MobileAlertPage;
 
 const MobileAlertPageWrapper = styled.div`
   width: 100%;
-  padding: 0 16px;
+  padding: 0 16px ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const TipsListContainerWrapper = styled.div`

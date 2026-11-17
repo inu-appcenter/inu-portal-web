@@ -390,7 +390,7 @@ const FixedFooterContent = styled.div`
 `;
 
 const CreateButton = styled(CapsuleButton)`
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-align: center;
   font-family: Pretendard;
   font-size: 16px;

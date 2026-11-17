@@ -118,7 +118,7 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
             title="로그인 유저"
             value={counts.login}
             icon={(size) => <UserCheck size={size} />}
-            color="var(--primary)"
+            color="var(--interactive-primary)"
           />
           <StatsDashboardCard
             title="비로그인 유저"
@@ -135,21 +135,21 @@ const MobileAdminUserStatisticsPage: React.FC = () => {
               <RatioInfo>
                 <RatioItem>
                   <RatioLabel>
-                    <ColorDot $color="var(--primary)" />
+                    <ColorDot $color="var(--interactive-primary)" />
                     <LabelText>로그인 유저</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="var(--primary)">{loginRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--interactive-primary)">{loginRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
                 <RatioItem>
                   <RatioLabel>
                     <ColorDot $color="rgb(203, 213, 225)" />
                     <LabelText>비로그인</LabelText>
                   </RatioLabel>
-                  <RatioValue $color="var(--button-inactive)">{guestRatio.toFixed(1)}%</RatioValue>
+                  <RatioValue $color="var(--gray-400)">{guestRatio.toFixed(1)}%</RatioValue>
                 </RatioItem>
               </RatioInfo>
               <ProgressBar>
-                <ProgressFill $width={loginRatio} $color="var(--primary)" />
+                <ProgressFill $width={loginRatio} $color="var(--interactive-primary)" />
                 <ProgressFill $width={guestRatio} $color="rgb(203, 213, 225)" />
               </ProgressBar>
             </DistributionCard>

@@ -494,12 +494,12 @@ const WidgetContainer = styled.div`
   will-change: transform;
 
   /* 클릭(active) 반응 시 부드러운 스케일 모션 */
-  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.12s ease;
 
   transform: scale(1);
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.975);
   }
 
   &.swiping {
