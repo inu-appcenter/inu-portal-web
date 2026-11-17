@@ -106,7 +106,6 @@ const PollGridFrame = forwardRef<HTMLDivElement, PollGridFrameProps>(
               {shape.columns.map((column, index) => (
                 <Column
                   key={column.key}
-                  data-poll-column={index}
                   $weekStart={weekStarts[index]}
                 >
                   {renderColumn(index)}
