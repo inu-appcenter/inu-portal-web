@@ -14,7 +14,6 @@ import RouteErrorBoundary from "@/components/common/RouteErrorBoundary";
 // Critical Path Pages (첫 진입 화면 정적 임포트 유지)
 import MobileHomePageV2 from "@/pages/mobile/MobileHomePageV2";
 import MobileLoginPage from "@/pages/mobile/MobileLoginPage";
-
 import { TAB_COMPONENTS } from "@/utils/tabImporters";
 
 const MobileTimeTablePage = TAB_COMPONENTS.timetable;
@@ -53,6 +52,7 @@ const MobileBusShuttleHelloBusPage = lazyWithRetry(() => import("@/pages/mobile/
 const MobileBusShuttleRouteInfoPage = lazyWithRetry(() => import("@/pages/mobile/MobileBus/MobileBusShuttleRouteInfoPage"));
 const MobileUnidormPage = lazyWithRetry(() => import("@/pages/mobile/MobileUnidormPage"));
 const MobileAdminPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminPage"));
+const MobileAdminStatsDashboardPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminStatsDashboardPage"));
 const MobileAdminUserStatisticsPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminUserStatisticsPage"));
 const MobileAdminApiStatisticsPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminApiStatisticsPage"));
 const MobileAdminFeatureFlagsPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminFeatureFlagsPage"));
@@ -87,6 +87,10 @@ const MobilePhoneBookPage = lazyWithRetry(() => import("@/pages/mobile/phonebook
 const MobilePhoneBookDetailPage = lazyWithRetry(() => import("@/pages/mobile/phonebook/MobilePhoneBookDetailPage"));
 const MobilePhoneBookSearchPage = lazyWithRetry(() => import("@/pages/mobile/phonebook/MobilePhoneBookSearchPage"));
 const MobileAdminNotificationPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminNotificationPage"));
+const MobileSuggestionWritePage = lazyWithRetry(() => import("@/pages/mobile/Suggestion/MobileSuggestionWritePage"));
+const MobileSuggestionListPage = lazyWithRetry(() => import("@/pages/mobile/Suggestion/MobileSuggestionListPage"));
+const MobileSuggestionDetailPage = lazyWithRetry(() => import("@/pages/mobile/Suggestion/MobileSuggestionDetailPage"));
+const MobileAdminSuggestionPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminSuggestionPage"));
 const MobileAdminChatPage = lazyWithRetry(() => import("@/pages/mobile/Admin/MobileAdminChatPage"));
 const MoreAppsPage = lazyWithRetry(() => import("@/pages/mobile/MoreApps/MoreAppsPage"));
 const LabsPage = lazyWithRetry(() => import("@/pages/mobile/Labs/LabsPage"));
@@ -376,6 +380,9 @@ export const router = createBrowserRouter([
             element: <MobileRoutineDetailPage />,
           },
           { path: ROUTES.MYPAGE.SMART_WATCH, element: <MobileSmartWatchManagementPage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_LIST, element: <MobileSuggestionListPage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_WRITE, element: <MobileSuggestionWritePage /> },
+          { path: ROUTES.MYPAGE.SUGGESTION_DETAIL_PATTERN, element: <MobileSuggestionDetailPage /> },
 
           // 버스 상세
           { path: ROUTES.BUS.DETAIL, element: <MobileBusDetailPage /> },
@@ -394,6 +401,10 @@ export const router = createBrowserRouter([
 
           // 관리자
           { path: ROUTES.ADMIN.ROOT, element: <MobileAdminPage /> },
+          {
+            path: ROUTES.ADMIN.STATS,
+            element: <MobileAdminStatsDashboardPage />,
+          },
           {
             path: ROUTES.ADMIN.USER_STAT,
             element: <MobileAdminUserStatisticsPage />,
@@ -421,6 +432,14 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.ADMIN.SEARCH,
             element: <MobileAdminSearchPage />,
+          },
+          {
+            path: ROUTES.ADMIN.SUGGESTIONS,
+            element: <MobileAdminSuggestionPage />,
+          },
+          {
+            path: ROUTES.ADMIN.SUGGESTION_DETAIL_PATTERN,
+            element: <MobileSuggestionDetailPage admin />,
           },
 
         ],

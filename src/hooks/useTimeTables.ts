@@ -36,6 +36,7 @@ import type {
   TimeTableDetail,
   TimeTableVisibility,
 } from "@/types/timetables";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export { TIMETABLES_QUERY_KEY };
 
@@ -220,6 +221,7 @@ export const useCreateTimeTable = () => {
       timeTableName: string;
     }) => createTimeTable(semesterId, timeTableName),
     onSuccess: () => {
+      mixpanelTrack.contentCreated("timetable", "timetable");
       queryClient.invalidateQueries({ queryKey: TIMETABLES_QUERY_KEY });
       void syncTimeTablesList(queryClient);
     },

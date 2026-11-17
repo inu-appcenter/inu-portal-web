@@ -23,6 +23,7 @@ export const MyPageAccountMenu: MyPageMenuItem[] = [
 /** 로그인 여부와 무관한 문의 · 소개. */
 export const MyPageSupportMenu: MyPageMenuItem[] = [
   { title: "문의하기", icon: "question-mark-circle" },
+  { title: "의견 보내기", icon: "chat-dots" },
   // 부적절한 콘텐츠·악성 사용자 신고를 위한 개발자 직통 연락처
   // (App Store 가이드라인 1.2(UGC) 요구사항이라 디자인에 없어도 유지한다)
   {

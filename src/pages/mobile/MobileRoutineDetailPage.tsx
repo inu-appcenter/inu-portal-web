@@ -67,7 +67,7 @@ import type {
 } from "@/types/agentReminder";
 import type { DailyBriefSettings, ScheduleScope } from "@/types/dailyBrief";
 import Skeleton from "@/components/common/Skeleton";
-import { trackEvent } from "@/utils/mixpanel";
+import { mixpanelTrack, trackEvent } from "@/utils/mixpanel";
 import useUserStore from "@/stores/useUserStore";
 import Ripple from "@/components/common/Ripple";
 
@@ -1890,6 +1890,9 @@ export default function MobileRoutineDetailPage() {
         });
         alert(`'${title.trim()}' 루틴을 저장했어요!`);
         trackEvent("[Daily Brief] 맞춤 루틴 생성", { title: title.trim() });
+        mixpanelTrack.contentCreated("daily_brief", "routine", {
+          target_tool: targetTool || "TIMETABLE",
+        });
         notifyRoutineUpdated();
         navigate(-1);
       } else if (reminder) {
@@ -1952,6 +1955,9 @@ export default function MobileRoutineDetailPage() {
       });
       alert(`'${preset.title}' 루틴을 내 루틴에 등록했어요!`);
       trackEvent("[Daily Brief] 프리셋 루틴 등록", { title: preset.title });
+      mixpanelTrack.contentCreated("daily_brief", "routine", {
+        is_preset: true,
+      });
       notifyRoutineUpdated();
       navigate(-1);
     } catch (error) {

@@ -12,6 +12,7 @@ import {
 import useUserStore from "../../../../stores/useUserStore.ts"; // API 호출 함수 가져오기
 import FontelloIcon from "@/components/common/Icon";
 import ImageBox from "./ImageBox.tsx";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface ItemDetailProps {
   itemId: number;
@@ -142,6 +143,7 @@ export default function ItemDetail({ itemId, onClose }: ItemDetailProps) {
         phoneNumber: phoneNumber,
         quantity: quantity,
       });
+      mixpanelTrack.contentCreated("util", "rental_reservation", { quantity });
 
       alert("예약이 성공적으로 등록되었습니다.");
       onClose(); // 바텀시트 닫기

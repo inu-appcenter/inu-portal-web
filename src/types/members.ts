@@ -3,6 +3,8 @@ export interface TokenInfo {
   accessTokenExpiredTime: string;
   refreshToken: string;
   refreshTokenExpiredTime: string;
+  /** 이번 로그인으로 회원이 새로 생성됐으면 true. 구버전 서버 응답에는 없다 */
+  isNewMember?: boolean;
 }
 
 export interface UserInfoInput {
@@ -19,6 +21,9 @@ export interface UserInfoInput {
   realName?: string | null;
   /** 닉네임이 학번 그대로이고 실명이 없으면 true. 조건은 서버가 계산한다 */
   needsRealName?: boolean | null;
+  /** 가입 시각(ISO). 구버전 서버에는 없다 */
+  joinedAt?: string | null;
+  termsAgreed?: boolean | null;
 }
 
 export interface UserInfo {
@@ -34,6 +39,8 @@ export interface UserInfo {
   /** 실명. 없으면 빈 문자열 */
   realName: string;
   needsRealName: boolean;
+  joinedAt?: string;
+  termsAgreed?: boolean;
 }
 
 export type RealNameSource = "MANUAL" | "PORTAL_SCRAPE";

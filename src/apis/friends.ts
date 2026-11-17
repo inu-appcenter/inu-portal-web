@@ -19,6 +19,7 @@ import {
   getMockInvitePreview,
   getMockRefreshedInviteCode,
 } from "@/mocks/mockFriendInvite";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 /**
  * 친구 요청 보내기
@@ -30,6 +31,7 @@ export const requestFriend = async (
     "/api/friends/request",
     { nickname } as FriendRequestDto,
   );
+  mixpanelTrack.contentCreated("friend", "friend_request");
   return response.data;
 };
 

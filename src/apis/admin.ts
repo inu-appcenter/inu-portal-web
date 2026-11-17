@@ -1,6 +1,7 @@
 import tokenInstance from "./tokenInstance.ts";
 import { ApiResponse, Pagination } from "../types/common.ts";
 import {
+  AdminStatsData,
   ApiLogData,
   FcmAdminLogData,
   FcmSendRequest,
@@ -34,6 +35,19 @@ export const getApiLogs = async (
     console.error("API request error:", error);
     throw new Error("API 호출 순위 조회에 실패했습니다.");
   }
+};
+
+/** 통계 대시보드. 기간을 생략하면 서버가 오늘까지 최근 30일로 조회한다. */
+export const getAdminStats = async (params: {
+  from?: string;
+  to?: string;
+  apiLimit?: number;
+}): Promise<ApiResponse<AdminStatsData>> => {
+  const response = await tokenInstance.get<ApiResponse<AdminStatsData>>(
+    "/api/admin/stats",
+    { params },
+  );
+  return response.data;
 };
 
 export const getFcmAdminLogs = async (

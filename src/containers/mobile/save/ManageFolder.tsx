@@ -5,6 +5,7 @@ import { deleteFolders, postFolders, putFolders } from "@/apis/folders";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
 import axios, { AxiosError } from "axios";
 import { Folder } from "@/types/folders";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface ManageFolderProps {
   folders: Folder[];
@@ -30,6 +31,7 @@ export default function ManageFolder({
     }
     try {
       await postFolders(newFolderName);
+      mixpanelTrack.contentCreated("save", "folder");
       setNewFolderName("");
       onFolderManaged();
     } catch (error) {

@@ -15,7 +15,7 @@ import {
   updateAgentReminder,
   deleteAgentReminder,
 } from "@/apis/agentReminder";
-import { trackEvent } from "@/utils/mixpanel";
+import { mixpanelTrack, trackEvent } from "@/utils/mixpanel";
 
 interface RoutineBuilderModalProps {
   isOpen: boolean;
@@ -337,6 +337,9 @@ export default function RoutineBuilderModal({
           titleTemplate,
           bodyTemplate,
           route,
+        });
+        mixpanelTrack.contentCreated("daily_brief", "routine", {
+          target_tool: targetTool,
         });
         trackEvent("[Routine+] 새 루틴 생성 완료", {
           title,

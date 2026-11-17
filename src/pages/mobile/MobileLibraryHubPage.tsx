@@ -69,6 +69,7 @@ import {
 } from "lucide-react";
 import PortalLinkBanner from "@/components/common/PortalLinkBanner";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 /**
  * 한국 표준시(KST, UTC+9) 기준 YYYY-MM-DD 문자열을 반환합니다.
@@ -513,6 +514,9 @@ export default function MobileLibraryHubPage() {
         seatName: seat.name || `${seat.code}번 좌석`,
         durationMinutes: 120,
       });
+      mixpanelTrack.contentCreated("library", "seat_watch", {
+        scope: "seat",
+      });
       showToast(`'${seat.name || seat.code}' 빈자리 알림이 등록되었습니다.`);
     } catch (e) {
       console.error(e);
@@ -527,6 +531,9 @@ export default function MobileLibraryHubPage() {
         domain: "LIBRARY_SEAT",
         targetId: String(room.id),
         targetName: room.name,
+      });
+      mixpanelTrack.contentCreated("library", "seat_watch", {
+        scope: "room",
       });
       showToast(`'${room.name}' 빈자리 알림이 등록되었습니다.`);
     } catch (e) {
