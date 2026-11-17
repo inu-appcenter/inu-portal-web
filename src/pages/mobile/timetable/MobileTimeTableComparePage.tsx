@@ -19,6 +19,7 @@ import {
   calculateCommonFreeSlots,
 } from "@/utils/timetable";
 import { mixpanelTrack } from "@/utils/mixpanel";
+import { isAnySelectedFriendTimetableLoading } from "@/utils/timetableCompare";
 import type { TimeTableDetail, Term } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
 import { formatSemester } from "@/utils/semester";
@@ -106,7 +107,7 @@ export default function MobileTimeTableComparePage() {
   );
 
   // 2. 친구 목록 로드
-  const { data: friendsRes } = useQuery({
+  const { data: friendsRes, isPending: isFriendsPending } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
   });
@@ -602,15 +603,20 @@ export default function MobileTimeTableComparePage() {
 
   // 선택한 친구 중 시간표를 아직 받는 중인 사람이 있으면, 그 친구를 빈 시간표로
   // 계산해 "공강"을 잘못 보여주게 된다(응답이 도착하면 목록이 줄어든다). 다 받을
-  // 때까지 계산을 미룬다.
+  // 때까지 계산을 미룬다. 더는 친구가 아닌 ID처럼 영영 로드되지 않을 대상은 제외한다.
   const isSelectedFriendTimetableLoading = useMemo(
     () =>
-      selectedFriendIdsState.some(
-        (id) =>
-          id !== 99999 &&
-          (friendTimetableStatesByFriendId.get(id) ?? "LOADING") === "LOADING",
+      isAnySelectedFriendTimetableLoading(
+        selectedFriendIdsState,
+        friendTimetableStatesByFriendId,
+        !originRoomId && isFriendsPending,
       ),
-    [selectedFriendIdsState, friendTimetableStatesByFriendId],
+    [
+      selectedFriendIdsState,
+      friendTimetableStatesByFriendId,
+      originRoomId,
+      isFriendsPending,
+    ],
   );
 
   // 공동 공강 목록 계산 (나 + 선택된 모든 친구들)
