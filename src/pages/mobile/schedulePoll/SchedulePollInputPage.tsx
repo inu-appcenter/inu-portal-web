@@ -45,18 +45,14 @@ import type {
 } from "@/types/schedulePolls";
 import {
   buildOverlayItems,
-  cellIndex,
   cellsToRanges,
   countCells,
   createEmptyCells,
   formatDuration,
   getPollGridShape,
-  isDateKey,
   overlayBlockedCells,
-  parseDateKey,
   rangesToCells,
   type PollOverlayItem,
-  weekdayLabel,
 } from "@/utils/schedulePoll";
 import {
   getPollErrorCode,
@@ -263,29 +259,7 @@ interface PollInputFormProps {
   onLoadLatest: () => void;
 }
 
-type ConfirmKind = "EMPTY" | "UNPAINTED" | "CONFLICT" | null;
-
-
-/** 안 칠한 열들을 '11월 9일 – 11일'(연속) / '11월 9일, 11일 외 1일'/'월·수요일'처럼 한 줄로 적는다. */
-const describeColumns = (keys: string[], labels: string[]) => {
-  if (keys.length === 0) return "";
-  if (!isDateKey(keys[0])) return `${labels.join("·")}요일`;
-  const first = parseDateKey(keys[0]);
-  const last = parseDateKey(keys[keys.length - 1]);
-  const head = `${first.getMonth() + 1}월 ${first.getDate()}일`;
-  if (keys.length === 1) return `${head} (${weekdayLabel(first)})`;
-  const tail =
-    first.getMonth() === last.getMonth()
-      ? `${last.getDate()}일`
-      : `${last.getMonth() + 1}월 ${last.getDate()}일`;
-  const dayMs = 24 * 60 * 60 * 1000;
-  const isConsecutive =
-    Math.round((last.getTime() - first.getTime()) / dayMs) === keys.length - 1;
-  if (isConsecutive) return `${head} – ${tail}`;
-  return keys.length === 2
-    ? `${head}, ${tail}`
-    : `${head} – ${tail} 중 ${keys.length}일`;
-};
+type ConfirmKind = "EMPTY" | "CONFLICT" | null;
 
 function PollInputForm({
   poll,
@@ -302,7 +276,6 @@ function PollInputForm({
     searchParams.get("src") === "CHAT_CARD" ? "CHAT_CARD" : "LINK";
 
   const shape = useMemo(() => getPollGridShape(poll), [poll]);
-  const gridRef = useRef<HTMLDivElement>(null);
 
   // 칠한 칸 = 되는 시간. 처음엔 빈 상태로 시작한다(미리 칠해 두면 확인 없이 등록돼 부풀려진다).
   const [painted, setPainted] = useState<boolean[]>(() =>
@@ -337,20 +310,6 @@ function PollInputForm({
   );
   const hasClasses = overlayItems.length > 0;
   const paintedCount = countCells(painted);
-
-  /** 하나도 안 칠한 열 index. 등록할 때 한 번만 알려 준다. */
-  const unpaintedColumns = useMemo(
-    () =>
-      shape.columns
-        .map((_column, column) => column)
-        .filter((column) => {
-          for (let row = 0; row < shape.rowCount; row += 1) {
-            if (painted[cellIndex(shape, column, row)]) return false;
-          }
-          return true;
-        }),
-    [shape, painted],
-  );
 
   const updatePainted = (next: boolean[]) => {
     setPainted(next);
@@ -472,24 +431,7 @@ function PollInputForm({
       setConfirm("EMPTY");
       return;
     }
-    if (unpaintedColumns.length > 0) {
-      setConfirm("UNPAINTED");
-      return;
-    }
     submit();
-  };
-
-  /** [칠하러 가기]: 안 칠한 첫 날짜가 보이게 그리드를 밀어 준다. */
-  const handleGoPaint = () => {
-    setConfirm(null);
-    const target = gridRef.current?.querySelector<HTMLElement>(
-      `[data-poll-column="${unpaintedColumns[0]}"]`,
-    );
-    target?.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
   };
 
   /** 다른 기기에서 먼저 등록한 내용을 불러온다. 부모가 폼을 새로 만든다. */
@@ -513,10 +455,6 @@ function PollInputForm({
   };
 
   const isLocked = isClosed || submitMutation.isPending;
-  const unpaintedText = describeColumns(
-    unpaintedColumns.map((column) => shape.columns[column].key),
-    unpaintedColumns.map((column) => shape.columns[column].label),
-  );
 
   return (
     <PollPage>
@@ -571,15 +509,13 @@ function PollInputForm({
           </TitleRow>
         </GuideHeader>
 
-        <div ref={gridRef}>
-          <PollPaintGrid
-            shape={shape}
-            painted={painted}
-            overlayItems={overlayItems}
-            disabled={isLocked}
-            onPaintedChange={updatePainted}
-          />
-        </div>
+        <PollPaintGrid
+          shape={shape}
+          painted={painted}
+          overlayItems={overlayItems}
+          disabled={isLocked}
+          onPaintedChange={updatePainted}
+        />
         <GestureHint>
           {formatDuration(poll.durationMode, poll.durationMin)} 연속으로 비는
           시간을 찾아요
@@ -614,15 +550,6 @@ function PollInputForm({
         description="이대로 등록하면 모든 시간이 안 되는 시간으로 들어가요."
         secondaryButton={{ text: "다시 입력", onClick: () => setConfirm(null) }}
         primaryButton={{ text: "그대로 등록", onClick: () => submit() }}
-      />
-      <Modal
-        isOpen={confirm === "UNPAINTED"}
-        onClose={() => setConfirm(null)}
-        title={`${unpaintedText}을 아직 안 칠했어요`}
-        description={`이대로 등록하면 이 ${unpaintedColumns.length}일은
-모두 '안 돼요'로 들어가요`}
-        secondaryButton={{ text: "그대로 등록", onClick: () => submit() }}
-        primaryButton={{ text: "칠하러 가기", onClick: handleGoPaint }}
       />
       <Modal
         isOpen={confirm === "CONFLICT"}
