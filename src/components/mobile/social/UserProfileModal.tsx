@@ -1,4 +1,5 @@
 import {
+  getAlreadyProcessedFriendRequestNotice,
   isFriendRequestAlreadyProcessed,
   tryLockFriendRequest,
   unlockFriendRequest,
@@ -16,6 +17,8 @@ import {
   requestFriend,
   acceptFriend,
   deleteFriend,
+  rejectFriendRequest,
+  cancelFriendRequest,
   updateFriendAlias,
   getFriendProfile,
 } from "@/apis/friends";
@@ -382,8 +385,71 @@ export default function UserProfileModal({
     },
   });
 
+  // 받은 요청 거절·보낸 요청 취소는 친구 삭제(DELETE)와 달리 PENDING일 때만 지우는 전용 API를 쓴다.
+  // 늦게 도착한 거절·취소가 다른 기기에서 먼저 맺어진 친구 관계를 지우지 않게 하려는 것.
+  // 성공·404(요청이 이미 없음)면 친구 관계 ID로 연 프로필은 다시 불러올 수 없으니 닫고,
+  // 409(이미 수락됨)면 프로필을 새로 불러와 친구 상태로 보여 준다.
+  const closeAfterRequestRemoved = () => {
+    onOpenChange(false);
+    queryClient.removeQueries({ queryKey: ["userProfile"] });
+    queryClient.invalidateQueries({ queryKey: ["friends"] });
+    queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
+  };
+
+  const refreshAfterAlreadyAccepted = (err: unknown) => {
+    queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+    queryClient.invalidateQueries({ queryKey: ["friends"] });
+    queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
+    queryClient.invalidateQueries({ queryKey: ["sentPendingFriends"] });
+    const notice = getAlreadyProcessedFriendRequestNotice(err);
+    if (notice) alert(notice);
+  };
+
+  const handleRequestRemovalError = (err: unknown, fallback: string) => {
+    if (isFriendRequestAlreadyProcessed(err)) {
+      if (getAlreadyProcessedFriendRequestNotice(err)) {
+        refreshAfterAlreadyAccepted(err);
+      } else {
+        closeAfterRequestRemoved();
+      }
+      return;
+    }
+    const msg = (err as { response?: { data?: { msg?: string } } }).response
+      ?.data?.msg;
+    alert(msg || fallback);
+  };
+
+  // 잠금 해제는 모달이 닫혀도 실행되도록 useMutation 옵션에 둔다.
+  const cancelRequestMutation = useMutation({
+    mutationFn: (targetFriendId: number) => cancelFriendRequest(targetFriendId),
+    onSuccess: () => {
+      alert("친구 요청을 취소했습니다.");
+      closeAfterRequestRemoved();
+    },
+    onError: (err: unknown) =>
+      handleRequestRemovalError(err, "친구 요청을 취소하지 못했어요."),
+    onSettled: (_data, _err, targetFriendId) =>
+      unlockFriendRequest(targetFriendId),
+  });
+
+  const rejectRequestMutation = useMutation({
+    mutationFn: (targetFriendId: number) => rejectFriendRequest(targetFriendId),
+    onSuccess: () => {
+      alert("친구 요청을 거절했습니다.");
+      closeAfterRequestRemoved();
+    },
+    onError: (err: unknown) =>
+      handleRequestRemovalError(err, "친구 요청을 거절하지 못했어요."),
+    onSettled: (_data, _err, targetFriendId) =>
+      unlockFriendRequest(targetFriendId),
+  });
+
   const isDeletingOrBlocking =
-    deleteMutation.isPending || blockMutation.isPending;
+    deleteMutation.isPending ||
+    blockMutation.isPending ||
+    cancelRequestMutation.isPending ||
+    rejectRequestMutation.isPending;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["userProfile", { roomId: roomContext?.roomId, chatRoomMemberId, friendId, memberId }],
@@ -511,7 +577,10 @@ export default function UserProfileModal({
         break;
       case "PENDING":
         if (confirm("친구 요청을 취소할까요?")) {
-          if (profile.friendId) deleteMutation.mutate(profile.friendId);
+          const targetId = profile.friendId;
+          if (targetId && tryLockFriendRequest(targetId)) {
+            cancelRequestMutation.mutate(targetId);
+          }
         }
         break;
       case "RECEIVED":
@@ -529,8 +598,9 @@ export default function UserProfileModal({
   };
 
   const handleReject = () => {
-    if (profile?.friendId && confirm("친구 요청을 거절할까요?")) {
-      deleteMutation.mutate(profile.friendId);
+    const targetId = profile?.friendId;
+    if (targetId && confirm("친구 요청을 거절할까요?")) {
+      if (tryLockFriendRequest(targetId)) rejectRequestMutation.mutate(targetId);
     }
   };
 
@@ -817,7 +887,7 @@ export default function UserProfileModal({
                           <ActionButton
                             onClick={handleAction}
                             $variant="secondary"
-                            disabled={deleteMutation.isPending}
+                            disabled={cancelRequestMutation.isPending}
                           >
                             <UserCheck size={20} color="var(--text-tertiary)" />
                             요청 대기 중
