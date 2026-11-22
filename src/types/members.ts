@@ -82,6 +82,7 @@ export interface MergeFreshmanRequest {
 export interface MergeFreshmanResponse {
   merged: boolean;
   examNo?: string;
+  token?: TokenInfo;
 }
 
 export interface SyncAcademicRequest {

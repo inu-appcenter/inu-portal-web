@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,6 +16,10 @@ import {
   checkMergeFreshman,
   getMembers,
 } from "@/apis/members";
+import {
+  getSchoolDepartments,
+  SchoolDepartment,
+} from "@/apis/departments";
 import { getMyInviteCode } from "@/apis/friends";
 import {
   getDepartmentOptionGroups,
@@ -39,9 +43,12 @@ const getProfileImageUrl = (fireId: number) =>
 
 type AcademicStepState = "IDLE" | "FETCHING" | "SUCCESS" | "FAIL" | "MANUAL";
 
+const normalizeDeptName = (name: string) =>
+  name.replace(/[\s·\-()]/g, "").toLowerCase();
+
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { userInfo, setUserInfo } = useUserStore();
+  const { userInfo, setUserInfo, setTokenInfo } = useUserStore();
 
   useHeader({
     visible: false,
@@ -71,7 +78,46 @@ export default function OnboardingPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const [schoolDepartments, setSchoolDepartments] = useState<SchoolDepartment[]>([]);
   const departmentGroups = useMemo(() => getDepartmentOptionGroups(), []);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const res = await getSchoolDepartments();
+        if (active && Array.isArray(res.data)) {
+          setSchoolDepartments(res.data);
+        }
+      } catch (e) {
+        console.debug("[Onboarding] failed to load school departments:", e);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const resolveDepartmentCode = useCallback(
+    (name: string): string => {
+      const trimmed = name.trim();
+      if (!trimmed) return "";
+
+      if (schoolDepartments.length > 0) {
+        const exact = schoolDepartments.find((d) => d.name === trimmed);
+        if (exact) return exact.code;
+
+        const target = normalizeDeptName(trimmed);
+        const normalized = schoolDepartments.find(
+          (d) => normalizeDeptName(d.name) === target,
+        );
+        if (normalized) return normalized.code;
+      }
+
+      return findDepartmentCodeByName(trimmed);
+    },
+    [schoolDepartments],
+  );
 
   // 학생 여부 판별 (학번이 9자리 숫자인 경우)
   const isStudent = useMemo(() => {
@@ -86,7 +132,7 @@ export default function OnboardingPage() {
     if (userInfo.department) {
       setDepartmentName(userInfo.department);
       setDepartmentCode(
-        userInfo.departmentCode || findDepartmentCodeByName(userInfo.department),
+        userInfo.departmentCode || resolveDepartmentCode(userInfo.department),
       );
     }
     if (userInfo.fireId) {
@@ -105,7 +151,7 @@ export default function OnboardingPage() {
       // 교직원/교수는 기본 수동 모드로 진입
       setAcademicState("MANUAL");
     }
-  }, [userInfo, isStudent]);
+  }, [userInfo, isStudent, resolveDepartmentCode]);
 
   // 사용자가 명시적으로 '학적 정보 가져오기'를 클릭했을 때만 스크래핑 실행
   const handleFetchAcademic = async () => {
@@ -134,7 +180,7 @@ export default function OnboardingPage() {
         }
         if (scrapedDept) {
           setDepartmentName(scrapedDept);
-          setDepartmentCode(findDepartmentCodeByName(scrapedDept));
+          setDepartmentCode(resolveDepartmentCode(scrapedDept));
         }
         setIsAcademicVerified(true);
         setAcademicState("SUCCESS");
@@ -148,6 +194,15 @@ export default function OnboardingPage() {
               departmentName: scrapedDept,
             });
             if (mergeRes.data.merged) {
+              if (mergeRes.data.token) {
+                setTokenInfo(mergeRes.data.token);
+              }
+              try {
+                const memberRes = await getMembers();
+                setUserInfo(memberRes.data);
+              } catch (syncErr) {
+                console.debug("[Onboarding] post-merge member sync error:", syncErr);
+              }
               setMergedNotice(
                 `${getAcademicYear()}학년도 신입생 전산망으로 작성했던 이전 활동 내역(시간표, 글, 스크랩 등)이 현재 학번 계정으로 모두 통합되었어요.`,
               );
@@ -492,6 +547,15 @@ export default function OnboardingPage() {
                     onChange={(e) => {
                       const code = e.target.value;
                       setDepartmentCode(code);
+                      if (schoolDepartments.length > 0) {
+                        const foundServer = schoolDepartments.find(
+                          (d) => d.code === code,
+                        );
+                        if (foundServer) {
+                          setDepartmentName(foundServer.name);
+                          return;
+                        }
+                      }
                       for (const g of departmentGroups) {
                         const found = g.departments.find((d) => d.code === code);
                         if (found) {
@@ -502,15 +566,21 @@ export default function OnboardingPage() {
                     }}
                   >
                     <option value="">학과를 선택해주세요</option>
-                    {departmentGroups.map((group) => (
-                      <optgroup key={group.college} label={group.college}>
-                        {group.departments.map((dept) => (
+                    {schoolDepartments.length > 0
+                      ? schoolDepartments.map((dept) => (
                           <option key={dept.code} value={dept.code}>
-                            {dept.title}
+                            {dept.name}
                           </option>
+                        ))
+                      : departmentGroups.map((group) => (
+                          <optgroup key={group.college} label={group.college}>
+                            {group.departments.map((dept) => (
+                              <option key={dept.code} value={dept.code}>
+                                {dept.title}
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
-                      </optgroup>
-                    ))}
                   </Select>
                 </DepartmentSelectGroup>
                 {isAppEnv && (

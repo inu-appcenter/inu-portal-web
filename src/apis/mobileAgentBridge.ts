@@ -960,7 +960,8 @@ export async function requestFreshmanAuth(
   userGbn: string;
   encStr: string;
   examNo: string;
-  birthDate: string;
+  birthDate?: string;
+  appCheckToken?: string;
 }>> {
   return sendBridgeAction('requestFreshmanAuth', { examNo, name, birthDate }, 45000);
 }

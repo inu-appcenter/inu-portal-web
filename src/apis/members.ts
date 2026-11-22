@@ -266,10 +266,14 @@ export const putMemberRealName = async (
 // 신입생 로그인/가입
 export const freshmanLogin = async (
   payload: FreshmanLoginRequest,
+  appCheckToken?: string,
 ): Promise<ApiResponse<TokenInfo>> => {
   const response = await axiosInstance.post<ApiResponse<TokenInfo>>(
     `/api/members/freshman-login`,
     payload,
+    appCheckToken
+      ? { headers: { "X-Firebase-AppCheck": appCheckToken } }
+      : undefined,
   );
   return response.data;
 };

@@ -65,23 +65,46 @@ export default function FreshmanAuthModal({
         return;
       }
 
-      // 2. 백엔드 신입생 로그인 및 JWT 발급
-      const loginRes = await freshmanLogin({
-        examNo: examNo.trim(),
-        name: name.trim(),
-        birthDate: birthDate.trim(),
-        deptNm: scraperRes.data.deptNm,
-      });
+      // 2. 백엔드 신입생 로그인 및 JWT 발급 (App Check 토큰 포함)
+      const loginRes = await freshmanLogin(
+        {
+          examNo: examNo.trim(),
+          name: name.trim(),
+          birthDate: birthDate.trim(),
+          deptNm: scraperRes.data.deptNm,
+        },
+        scraperRes.data.appCheckToken,
+      );
 
       // 3. 토큰 보관 및 온보딩 페이지 이동
       setTokenInfo(loginRes.data);
       onClose();
       navigate(ROUTES.ONBOARDING, { replace: true });
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        "신입생 인증 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.";
-      setErrorMessage(msg);
+      const status = err?.response?.status;
+      const serverMsg =
+        err?.response?.data?.msg || err?.response?.data?.message || "";
+
+      if (status === 429) {
+        setErrorMessage(
+          serverMsg || "요청이 너무 많아요. 잠시 후 다시 시도해주세요.",
+        );
+      } else if (status === 403) {
+        setErrorMessage(
+          serverMsg ||
+            "신입생 임시 계정 유효기간이 만료되었어요. 정규 학번으로 포털 로그인해 주세요.",
+        );
+      } else if (status === 401) {
+        setErrorMessage(
+          serverMsg ||
+            "앱 무결성 검증에 실패했거나 신입생 본인인증 정보가 일치하지 않아요.",
+        );
+      } else {
+        setErrorMessage(
+          serverMsg ||
+            "신입생 인증 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+        );
+      }
     } finally {
       setLoading(false);
     }
