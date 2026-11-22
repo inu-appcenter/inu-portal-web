@@ -237,7 +237,7 @@ const SubmitButton = styled.button`
   width: 100%;
   padding: 14px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 12px;
   font-size: 15px;

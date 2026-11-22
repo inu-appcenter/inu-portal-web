@@ -946,7 +946,7 @@ export default function ChattingPage() {
       {showNewMessageBanner && (
         <NewMessageBanner onClick={handleScrollToBottom}>
           <span>새로운 메시지</span>
-          <ArrowDown size={14} color="var(--text-inverse)" strokeWidth={3} />
+          <ArrowDown size={14} color="var(--text-on-brand)" strokeWidth={3} />
         </NewMessageBanner>
       )}
 
@@ -1045,7 +1045,7 @@ export default function ChattingPage() {
             }}
             aria-label="전송"
           >
-            <Icon name="paper-plane" size={20} color="var(--text-inverse)" />
+            <Icon name="paper-plane" size={20} color="var(--text-on-brand)" />
           </SendButton>
         </FloatingInputBar>
       </FloatingInputContainer>
@@ -2026,7 +2026,7 @@ const NewMessageBanner = styled.div`
   align-items: center;
   gap: 6px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 13px;

@@ -212,18 +212,18 @@ export default function SchedulePollJoinPage() {
 
 const Landing = styled.div`
   flex: 1;
-  padding: 56px 24px 40px;
+  padding: 56px var(--space-6) 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   text-align: center;
 `;
 
 const IconCircle = styled.div`
   width: 64px;
   height: 64px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,14 +254,14 @@ const Meta = styled.p`
 const Benefits = styled.ul`
   width: 100%;
   max-width: 360px;
-  margin: 24px 0 0;
-  padding: 16px;
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4);
   box-sizing: border-box;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  border-radius: 16px;
+  gap: var(--space-3);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   text-align: left;
@@ -282,7 +282,7 @@ const Benefit = styled.li`
 const Actions = styled.div`
   width: 100%;
   max-width: 360px;
-  margin-top: 24px;
+  margin-top: var(--space-6);
   display: flex;
 `;
 

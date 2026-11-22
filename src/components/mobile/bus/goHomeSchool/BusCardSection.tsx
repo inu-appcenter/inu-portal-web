@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { DESKTOP_MEDIA } from "@/styles/responsive";
+import { squishActive } from "@/styles/motion";
 import { getPreferredBusUiRoute } from "@/utils/busUiPreference";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
@@ -113,7 +114,7 @@ const CardButton = styled.button`
   text-align: left;
   cursor: pointer;
   appearance: none;
-  transition: transform 0.2s ease;
+  ${squishActive}
 
   @media ${BUS_PAGE_TABLET_MEDIA} {
     max-width: none;

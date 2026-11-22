@@ -303,7 +303,7 @@ const DayButton = styled.button<{ $active: boolean }>`
       $active ? "var(--interactive-primary)" : "var(--border-default)"};
   background: ${({ $active }) =>
     $active ? "var(--interactive-primary)" : "var(--bg-subtle)"};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--text-secondary)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--text-secondary)")};
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

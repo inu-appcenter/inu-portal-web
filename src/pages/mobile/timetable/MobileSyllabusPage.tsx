@@ -12,17 +12,19 @@ import { DESKTOP_MEDIA } from "@/styles/responsive";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import { useSyllabus } from "@/hooks/useSyllabus";
 import type { SyllabusContent } from "@/types/syllabus";
+import { parseSyllabusOfferingId } from "@/utils/syllabus";
 
 // 진행률 표(수업방식비율/기자재활용비율/성적평가비율) 세그먼트에 순서대로 돌려쓰는 색상.
-// 디자인 토큰에 없는 항목 수까지 대비해 고정 hex로 넉넉히 둔다.
+// 피그마 원안 순서(파랑·노랑·초록)를 앞에 두고, 항목이 더 많을 때를 대비해 나머지 원시 토큰을 이어 붙인다.
+// 반드시 variables.css에 정의된 토큰만 쓴다 — 없는 변수는 투명으로 그려져 세그먼트가 사라진다.
 const RATIO_COLORS = [
   "var(--interactive-primary)",
-  "rgb(255, 199, 44)",
-  "var(--text-success)",
-  "rgb(244, 63, 94)",
-  "rgb(139, 92, 246)",
-  "rgb(14, 165, 233)",
-  "rgb(249, 115, 22)",
+  "var(--yellow-400)",
+  "var(--green-500)",
+  "var(--red-500)",
+  "var(--orange-500)",
+  "var(--blue-300)",
+  "var(--yellow-600)",
   "var(--gray-500)",
 ];
 
@@ -84,8 +86,10 @@ const MobileSyllabusPage = () => {
   const [searchParams] = useSearchParams();
   const state = (location.state ?? {}) as SyllabusLocationState;
   const paramId = searchParams.get("id") || searchParams.get("courseOfferingId");
-  const courseOfferingId =
-    state.courseOfferingId ?? (paramId ? Number(paramId) : undefined);
+  const courseOfferingId = parseSyllabusOfferingId(
+    state.courseOfferingId,
+    paramId,
+  );
 
   const {
     syllabus,

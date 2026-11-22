@@ -1,7 +1,7 @@
 import MobileUtilHeader from "@/components/mobile/util/MobileUtilHeader";
 import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import { SAFE_AREA } from "@/styles/safeArea";
+import { SAFE_AREA, PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import UploadBook from "@/components/mobile/util/book/UploadBook.tsx";
 import BookList from "@/components/mobile/util/book/BookList.tsx";
 import UploadLost from "@/components/mobile/util/Lost/UploadLost.tsx";
@@ -137,7 +137,7 @@ const Wrapper = styled.div`
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  padding: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 0 ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
 
   @media ${DESKTOP_MEDIA} {
     padding: 0;

@@ -650,7 +650,7 @@ const DateNumber = styled.div<{
   font-size: 14px;
   font-weight: ${({ $isToday }) => ($isToday ? "700" : "500")};
   line-height: 22px;
-  color: ${({ $isToday }) => ($isToday ? "var(--text-inverse)" : "var(--text-primary)")};
+  color: ${({ $isToday }) => ($isToday ? "var(--text-on-brand)" : "var(--text-primary)")};
 `;
 
 const EventBar = styled.div<{

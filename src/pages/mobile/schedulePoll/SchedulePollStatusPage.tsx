@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { UserPlus } from "lucide-react";
+import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import BottomSheet from "@/components/common/BottomSheet";
+import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import { useHeader } from "@/context/HeaderContext";
@@ -15,7 +18,6 @@ import {
 } from "@/hooks/useSchedulePoll";
 import { usePollNoticeToasts } from "@/hooks/usePollNoticeToasts";
 import { buildLoginRedirect, usePollLoggedIn } from "@/hooks/usePollAuth";
-import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import SendTargetSheet from "@/components/mobile/schedulePoll/SendTargetSheet";
 import {
   PollBadge,
@@ -26,9 +28,9 @@ import {
   PollPage,
   PollPrimaryButton,
   PollSecondaryButton,
+  PollCandidateLabel,
 } from "@/components/mobile/schedulePoll/PollUi";
 import {
-  formatColumnName,
   formatDeadline,
   formatShareResultMessage,
   resolvePollLink,
@@ -74,6 +76,7 @@ export default function SchedulePollStatusPage() {
   const isLoggedIn = usePollLoggedIn();
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hostDialog, setHostDialog] = useState<HostDialog>(null);
   const [deadlineInput, setDeadlineInput] = useState("");
 
@@ -99,7 +102,37 @@ export default function SchedulePollStatusPage() {
   const updateMutation = useUpdatePoll(pollId);
 
   usePollNoticeToasts(pollId, revision);
-  useHeader({ title: poll?.title ?? "시간 맞추기", hasback: true });
+  // 마감 변경·종료는 자주 쓰지 않고 종료는 되돌릴 수 없어서, 본문 대신 헤더 메뉴에 둔다.
+  const isHost = poll?.isHost ?? false;
+  const showHostMenu = isHost && !isClosed;
+  const headerRight = useMemo(
+    () =>
+      showHostMenu ? (
+        <MenuButton
+          type="button"
+          aria-label="메뉴 열기"
+          onClick={() => setIsMenuOpen(true)}
+        >
+          <Icon name="dot-vertical" size={24} color="var(--text-primary)" />
+        </MenuButton>
+      ) : undefined,
+    [showHostMenu],
+  );
+  useHeader({
+    title: poll?.title ?? "시간 맞추기",
+    hasback: true,
+    rightArea: headerRight,
+  });
+
+  const openDeadlineDialog = () => {
+    setIsMenuOpen(false);
+    setDeadlineInput(toLocalInputValue(deadlineAt));
+    setHostDialog("DEADLINE");
+  };
+  const openCloseDialog = () => {
+    setIsMenuOpen(false);
+    setHostDialog("CLOSE");
+  };
 
   if (!isLoggedIn) {
     return (
@@ -208,11 +241,8 @@ export default function SchedulePollStatusPage() {
               <HeadlineSub> · 최대 {poll.maxParticipants}명</HeadlineSub>
             </Headline>
             {!isClosed && (
-              <InviteButton
-                type="button"
-                $emphasized={needsMorePeople}
-                onClick={() => setIsInviteOpen(true)}
-              >
+              <InviteButton type="button" onClick={() => setIsInviteOpen(true)}>
+                <UserPlus size={18} aria-hidden />
                 초대하기
               </InviteButton>
             )}
@@ -230,45 +260,38 @@ export default function SchedulePollStatusPage() {
           </MetaRow>
         </Summary>
 
-        {needsMorePeople && !isClosed && (
-          <InviteCard>
-            <InviteTitle>
-              {participantCount === 0
-                ? "아직 등록한 사람이 없어요"
-                : "한 명만 더 모이면 결과가 나와요"}
-            </InviteTitle>
-            <InviteDescription>
-              링크나 채팅방으로 초대해 보세요. 2명 이상 모이면 겹치는 시간을 바로
-              계산해요.
-            </InviteDescription>
-          </InviteCard>
-        )}
-
         {participantsQuery.isLoading ? (
           <Skeleton variant="card" height={144} />
         ) : participants.length > 0 ? (
           <ParticipantList>
             {participants.map((participant) => (
               <ParticipantRow key={participant.memberId}>
-                <Avatar src={DEFAULT_AVATAR} alt="" />
-                <ParticipantText>
-                  <ParticipantName>{participant.displayName}</ParticipantName>
-                  {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
-                  {participant.maskedStudentId !== participant.displayName && (
-                    <ParticipantCaption>
-                      {participant.maskedStudentId}
-                    </ParticipantCaption>
-                  )}
-                </ParticipantText>
-                {participant.isHost ? (
-                  <PollBadge $tone="brand">개설자</PollBadge>
-                ) : (
-                  <SubmittedAt>
-                    {formatSubmittedAt(participant.submittedAt)}
-                  </SubmittedAt>
-                )}
+                <AvatarBox>
+                  <Avatar src={DEFAULT_AVATAR} alt="" />
+                </AvatarBox>
+                <ParticipantBody>
+                  <ParticipantText>
+                    <NameLine>
+                      <ParticipantName>{participant.displayName}</ParticipantName>
+                      {participant.isHost && <PollBadge $tone="brand">개설자</PollBadge>}
+                    </NameLine>
+                    <CaptionLine>
+                      {/* 이름을 정하지 않은 사람은 표시 이름이 곧 가려진 학번이라 두 번 보여 주지 않는다. */}
+                      {participant.maskedStudentId !== participant.displayName && (
+                        <span>{participant.maskedStudentId}</span>
+                      )}
+                      <SubmittedAt>{formatSubmittedAt(participant.submittedAt)}</SubmittedAt>
+                    </CaptionLine>
+                  </ParticipantText>
+                </ParticipantBody>
               </ParticipantRow>
             ))}
+            {needsMorePeople && !isClosed && (
+              <EmptySlotRow>
+                <EmptySlotAvatar aria-hidden />
+                <span>초대한 사람이 들어오면 여기에 보여요</span>
+              </EmptySlotRow>
+            )}
           </ParticipantList>
         ) : null}
 
@@ -282,21 +305,13 @@ export default function SchedulePollStatusPage() {
             </SectionHeader>
             {!isClosed && (
               <SectionHint>
-                새로 등록하거나 수정하면 결과가 바뀔 수 있어요
+                사람이 더 들어오면 결과가 바뀔 수 있어요
               </SectionHint>
             )}
             {result.candidates.length > 0 ? (
               result.candidates.map((candidate) => (
                 <CandidateRow key={candidate.rank}>
-                  <CandidateDay>
-                    {formatColumnName(
-                      result.columns.find((c) => c.key === candidate.key),
-                      candidate.key,
-                    )}
-                  </CandidateDay>
-                  <CandidateTime>
-                    {candidate.start} ~ {candidate.end}
-                  </CandidateTime>
+                  <PollCandidateLabel candidate={candidate} columns={result.columns} />
                   <PollBadge $tone={candidate.allAvailable ? "brand" : "neutral"}>
                     {candidate.availableCount}/{result.participants.length}명
                   </PollBadge>
@@ -308,33 +323,32 @@ export default function SchedulePollStatusPage() {
           </Section>
         )}
 
-        {poll.isHost && !isClosed && (
-          <HostActions>
-            <HostButton
-              type="button"
-              onClick={() => {
-                setDeadlineInput(toLocalInputValue(deadlineAt));
-                setHostDialog("DEADLINE");
-              }}
-            >
-              마감 변경
-            </HostButton>
-            <HostButton
-              type="button"
-              $danger
-              onClick={() => setHostDialog("CLOSE")}
-            >
-              시간 맞추기 종료
-            </HostButton>
-          </HostActions>
+        {needsMorePeople && !isClosed && (
+          <Section>
+            <SectionHeader>
+              <SectionTitle>지금까지 겹치는 시간</SectionTitle>
+              <PollBadge>{participantCount}명 기준</PollBadge>
+            </SectionHeader>
+            <SectionHint>2명부터 겹치는 시간을 계산해요</SectionHint>
+            <EmptyResult>
+              <strong>
+                {participantCount === 0
+                  ? "아직 등록한 사람이 없어요"
+                  : "한 명만 더 모이면 결과가 나와요"}
+              </strong>
+              <span>위 [초대하기]로 링크나 채팅방에 보내 보세요</span>
+            </EmptyResult>
+          </Section>
         )}
       </PollBody>
 
       <PollBottomBar
         caption={
-          !isClosed && isParticipant && !hasResult
-            ? "2명 이상 모이면 결과를 볼 수 있어요"
-            : undefined
+          isClosed || !isParticipant
+            ? undefined
+            : hasResult && result
+              ? `지금까지 등록한 ${result.participants.length}명 기준으로 보여 줘요`
+              : "2명부터 결과를 볼 수 있어요"
         }
       >
         {isClosed ? (
@@ -354,18 +368,13 @@ export default function SchedulePollStatusPage() {
             <PollSecondaryButton type="button" onClick={goToInput}>
               내 일정 수정
             </PollSecondaryButton>
-            {hasResult ? (
-              <PollPrimaryButton type="button" onClick={goToResult}>
-                결과 보기
-              </PollPrimaryButton>
-            ) : (
-              <PollPrimaryButton
-                type="button"
-                onClick={() => setIsInviteOpen(true)}
-              >
-                초대하기
-              </PollPrimaryButton>
-            )}
+            <PollPrimaryButton
+              type="button"
+              disabled={!hasResult}
+              onClick={goToResult}
+            >
+              결과 보기
+            </PollPrimaryButton>
           </>
         )}
       </PollBottomBar>
@@ -383,6 +392,26 @@ export default function SchedulePollStatusPage() {
           setIsInviteOpen(false);
         }}
       />
+
+      <BottomSheet
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+        handle="compact"
+      >
+        <MenuRow type="button" onClick={openDeadlineDialog}>
+          <MenuTitle>응답 마감 변경</MenuTitle>
+          <MenuSub>
+            {deadlineAt
+              ? `지금은 ${formatDeadline(deadlineAt)} 마감`
+              : "지금은 마감 없음"}
+          </MenuSub>
+        </MenuRow>
+        <MenuDivider />
+        <MenuRow type="button" onClick={openCloseDialog}>
+          <MenuTitle $danger>시간 맞추기 종료</MenuTitle>
+          <MenuSub>2명 미만이면 결과 없이 끝나요</MenuSub>
+        </MenuRow>
+      </BottomSheet>
 
       <Modal
         isOpen={hostDialog === "DEADLINE"}
@@ -437,14 +466,36 @@ export default function SchedulePollStatusPage() {
 const Summary = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SummaryRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
+`;
+
+const InviteButton = styled.button`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-brand);
+  color: var(--text-brand);
+  ${typography.label2}
+  cursor: pointer;
+`;
+
+const NameLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 `;
 
 const Headline = styled.h2`
@@ -467,44 +518,8 @@ const HeadlineSub = styled.span`
 const MetaRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-tertiary);
-  ${typography.caption1}
-`;
-
-const InviteButton = styled.button<{ $emphasized: boolean }>`
-  ${buttonReset}
-  flex-shrink: 0;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 999px;
-  border: 1px solid
-    ${({ $emphasized }) =>
-      $emphasized ? "var(--border-brand)" : "var(--border-default)"};
-  background: ${({ $emphasized }) =>
-    $emphasized ? "var(--interactive-primary)" : "var(--bg-base)"};
-  color: ${({ $emphasized }) =>
-    $emphasized ? "var(--text-inverse)" : "var(--text-secondary)"};
-  ${typography.label2}
-`;
-
-const InviteCard = styled.div`
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-radius: 16px;
-  border: 1px solid var(--border-brand-subtle);
-  background: var(--bg-brand);
-`;
-
-const InviteTitle = styled.span`
-  color: var(--text-brand);
-  ${typography.heading2}
-`;
-
-const InviteDescription = styled.span`
-  color: var(--text-secondary);
   ${typography.caption1}
 `;
 
@@ -514,23 +529,41 @@ const ParticipantList = styled(PollCard)`
 `;
 
 const ParticipantRow = styled.div`
-  min-height: 72px;
-  padding: 0 16px;
+  height: 72px;
   display: flex;
   align-items: center;
-  gap: 16px;
+`;
 
-  & + & {
-    border-top: 1px solid var(--border-default);
-  }
+const AvatarBox = styled.div`
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Avatar = styled.img`
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--bg-brand);
+  object-fit: cover;
+  background: var(--border-brand-subtle);
+`;
+
+/* 구분선은 아바타 오른쪽부터 시작하고, 마지막 행은 선을 긋지 않는다. */
+const ParticipantBody = styled.div`
+  flex: 1 0 0;
+  min-width: 0;
+  height: 100%;
+  padding-right: var(--space-4);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-default);
+
+  ${ParticipantRow}:last-child & {
+    border-bottom: none;
+  }
 `;
 
 const ParticipantText = styled.div`
@@ -538,103 +571,154 @@ const ParticipantText = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 `;
 
 const ParticipantName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
-const ParticipantCaption = styled.span`
+const SubmittedAt = styled.span`
+  color: var(--text-disabled);
+`;
+
+const CaptionLine = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+  ${typography.label3}
+  white-space: nowrap;
+`;
+
+const MenuButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: none;
+  background: none;
+  cursor: pointer;
+`;
+
+const MenuRow = styled.button`
+  width: 100%;
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+`;
+
+const MenuTitle = styled.span<{ $danger?: boolean }>`
+  color: ${({ $danger }) =>
+    $danger ? "var(--text-error)" : "var(--text-primary)"};
+  ${typography.heading2}
+`;
+
+const MenuSub = styled.span`
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
-const SubmittedAt = styled.span`
-  flex-shrink: 0;
-  color: var(--text-tertiary);
-  ${typography.caption1}
+const MenuDivider = styled.div`
+  height: 1px;
+  background: var(--border-default);
 `;
 
 const Section = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionHeader = styled.div`
-  padding: 0 8px;
+  padding: 0 var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const SectionTitle = styled.h3`
   margin: 0;
   color: var(--text-primary);
   ${typography.heading3}
-  line-height: 1.6;
 `;
 
 const SectionHint = styled.p`
   margin: 0;
-  padding: 0 8px;
-  color: var(--text-warn);
+  padding: 0 var(--space-2);
+  color: var(--text-tertiary);
   ${typography.caption1}
 `;
 
 const CandidateRow = styled(PollCard)`
   height: 52px;
-  padding: 0 12px 0 14px;
+  padding: 0 var(--space-3) 0 14px;
   display: flex;
   align-items: center;
   gap: 10px;
 `;
 
-const CandidateDay = styled.span`
-  flex-shrink: 0;
-  min-width: 52px;
-  color: var(--text-primary);
-  ${typography.heading3}
-`;
-
-const CandidateTime = styled.span`
-  flex: 1 0 0;
-  min-width: 0;
-  color: var(--text-secondary);
-  ${typography.label2}
-`;
-
-const HostActions = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const HostButton = styled.button<{ $danger?: boolean }>`
-  ${buttonReset}
-  flex: 1 0 0;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-default);
-  background: var(--bg-base);
-  color: ${({ $danger }) =>
-    $danger ? "var(--text-error)" : "var(--text-secondary)"};
-  ${typography.label2}
-`;
 
 const DeadlineInput = styled.input`
   width: 100%;
   height: 50px;
   box-sizing: border-box;
   padding: 0 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-primary);
   /* iOS는 16px 미만 입력에 포커스하면 화면을 확대한다 */
   font-size: 16px;
+`;
+
+const EmptySlotRow = styled.div`
+  min-height: 72px;
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--text-tertiary);
+  ${typography.label2}
+
+  border-top: 1px solid var(--border-default);
+`;
+
+const EmptySlotAvatar = styled.span`
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border-default);
+  background: var(--bg-muted);
+`;
+
+const EmptyResult = styled(PollCard)`
+  padding: var(--space-6) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+
+  strong {
+    color: var(--text-primary);
+    ${typography.title3}
+  }
+
+  span {
+    color: var(--text-tertiary);
+    ${typography.caption1}
+  }
 `;

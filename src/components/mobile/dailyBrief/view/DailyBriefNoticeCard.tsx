@@ -432,7 +432,7 @@ const PromptText = styled.p`
 
 const PromptButton = styled.button`
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 20px;
   padding: 8px 18px;

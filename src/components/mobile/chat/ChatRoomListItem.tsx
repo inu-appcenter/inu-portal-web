@@ -388,7 +388,7 @@ const BottomRow = styled.div`
 
 const UnreadBadge = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-family: Pretendard;
   font-size: 12px;
   font-weight: 400;

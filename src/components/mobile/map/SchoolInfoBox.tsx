@@ -94,7 +94,7 @@ const Department = styled.div`
   font-size: 12px;
   line-height: 22px;
 
-  color: var(--interactive-focus);
+  color: var(--text-brand);
 
   display: flex;
   flex-direction: row;

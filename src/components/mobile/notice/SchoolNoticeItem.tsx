@@ -64,7 +64,7 @@ const InnerContent = styled.div`
   gap: 8px;
   align-items: flex-start;
   width: 100%;
-  transition: transform 0.12s ease-in-out;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.12s ease;
 `;
 
 const ItemContainer = styled.div<{ $interactive?: boolean }>`
@@ -83,9 +83,11 @@ const ItemContainer = styled.div<{ $interactive?: boolean }>`
       ? css`
           cursor: pointer;
 
-          &.active-touch {
+          &.active-touch,
+          &:active {
             ${InnerContent} {
-              transform: scale(0.97);
+              transform: scale(0.98);
+              opacity: 0.92;
             }
           }
         `

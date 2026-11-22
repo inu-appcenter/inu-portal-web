@@ -15,6 +15,7 @@ import {
   DESKTOP_CONTENT_MAX_WIDTH,
   DESKTOP_MEDIA,
 } from "@/styles/responsive";
+import { SAFE_AREA } from "@/styles/safeArea";
 import MobileWriteButton from "@/components/mobile/tips/MobileWriteButton";
 import SwipeChevronGuides from "@/components/mobile/common/SwipeChevronGuides";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -269,7 +270,7 @@ const MobileTipsPageWrapper = styled.div`
 
 const ListContainer = styled.div`
   width: 100%;
-  padding: 0 0 40px;
+  padding: 0 0 calc(96px + ${SAFE_AREA.BOTTOM});
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

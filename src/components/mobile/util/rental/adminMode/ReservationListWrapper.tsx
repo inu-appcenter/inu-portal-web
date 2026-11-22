@@ -103,7 +103,7 @@ const ButtonWrapper = styled.div`
 
 const StyledButton = styled.button`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 4px;
   padding: 8px 16px;

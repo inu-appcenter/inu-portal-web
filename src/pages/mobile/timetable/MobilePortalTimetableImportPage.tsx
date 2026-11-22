@@ -583,7 +583,7 @@ export default function MobilePortalTimetableImportPage() {
                     >
                       <Checkbox $checked={isChecked}>
                         {isChecked && (
-                          <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
+                          <Check size={14} color="var(--text-on-brand)" strokeWidth={3} />
                         )}
                       </Checkbox>
                       <SemesterLabelText>{sem.label}</SemesterLabelText>
@@ -752,7 +752,7 @@ export default function MobilePortalTimetableImportPage() {
                         >
                           <Checkbox $checked={isGroupAllSelected}>
                             {isGroupAllSelected && (
-                              <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
+                              <Check size={14} color="var(--text-on-brand)" strokeWidth={3} />
                             )}
                           </Checkbox>
                         </GroupCheckboxSlot>
@@ -789,7 +789,7 @@ export default function MobilePortalTimetableImportPage() {
                                 $disabled={item.isAlreadyAdded || !item.offering}
                               >
                                 {item.isSelected && (
-                                  <Check size={12} color="var(--text-inverse)" strokeWidth={3} />
+                                  <Check size={12} color="var(--text-on-brand)" strokeWidth={3} />
                                 )}
                               </Checkbox>
                             </CourseCheckboxSlot>

@@ -1,4 +1,6 @@
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
+import RouteLoadingSpinner from "@/components/common/RouteLoadingSpinner";
+import { prefetchMainTabs } from "@/utils/tabImporters";
 import { useLocation, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -31,6 +33,10 @@ export default function MainTabLayout({
     location.pathname === ROUTES.MOBILE_HOME ||
     location.pathname === "/" ||
     location.pathname === ROUTES.HOME_V2;
+
+  useEffect(() => {
+    prefetchMainTabs();
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -78,7 +84,9 @@ export default function MainTabLayout({
         </HeaderFloating>
       )}
       <ContentArea $isV2Home={isHome}>
-        {outlet}
+        <Suspense fallback={<RouteLoadingSpinner minHeight="50vh" />}>
+          {outlet}
+        </Suspense>
       </ContentArea>
 
       {showNav && (

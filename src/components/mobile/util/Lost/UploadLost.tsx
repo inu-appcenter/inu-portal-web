@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BottomSheet } from "@/components/common/LegacyBottomSheet";
 import "react-spring-bottom-sheet/dist/style.css";
 import styled from "styled-components";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 export default function UploadLost({
   onUploaded,
@@ -52,6 +53,9 @@ export default function UploadLost({
         alert("분실물이 수정되었습니다!");
       } else {
         await postLost(name, content, selectedImages);
+        mixpanelTrack.contentCreated("util", "lost_item", {
+          image_count: selectedImages.length,
+        });
         alert("분실물이 등록되었습니다!");
       }
       resetForm();
@@ -203,7 +207,7 @@ const ButtonWrapper = styled.div`
 
   button:first-child {
     background-color: var(--interactive-primary);
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
   }
 
   button:last-child {

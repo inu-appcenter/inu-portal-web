@@ -49,6 +49,7 @@ import {
   StudyRoomDetail,
 } from "@/apis/library";
 import { registerLocalWatchJobInApp } from "@/apis/mobileAgentBridge";
+import { secureStorage } from "@/utils/secureStorage";
 
 interface Props {
   component?: UiComponent | null;
@@ -1053,7 +1054,7 @@ const LoginActionBtn = styled.button`
   gap: 6px;
   padding: 8px 16px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 10px;
   font-size: 13px;
@@ -1641,10 +1642,22 @@ const AcademicInfoCard: React.FC<{
 }> = ({ data }) => {
   if (!data) return null;
 
+  // AI 서버에는 이름·학번을 보내지 않으므로, 이 휴대폰에 불러와 둔 학적에서 채운다.
+  const localStudent = secureStorage.getItemSync<{
+    koreanName?: string;
+    studentId?: string;
+  }>("portal_student_info");
+
   const koreanName =
-    data.koreanName || data.name || data.studentName || data.korNm || "학우님";
+    data.koreanName ||
+    data.name ||
+    data.studentName ||
+    data.korNm ||
+    localStudent?.koreanName ||
+    "학우님";
   const studentId =
     data.studentId ||
+    localStudent?.studentId ||
     data.id ||
     data.stdNo ||
     data.hakbeon ||
@@ -1932,7 +1945,7 @@ const PortalAuthActionBtn = styled.button`
   width: 100%;
   padding: 10px 0;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border: none;
   border-radius: 10px;
   font-size: 13.5px;
@@ -2407,7 +2420,7 @@ const LibrarySeatConfirmCard: React.FC<{
                       <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                         📍 {currentRoomObj.name} {selectedSeat.code}번 좌석
                       </div>
-                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-success)", background: "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
+                      <span style={{ fontSize: "11.5px", fontWeight: 600, color: "var(--text-success)", background: "var(--bg-success)", padding: "2px 6px", borderRadius: "4px" }}>
                         배정 가능
                       </span>
                     </div>
@@ -2775,7 +2788,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
               <div style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
                 🏢 {currentRoomObj.name} ({currentRoomObj.quota || "2~4인실"})
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "var(--text-success)", background: isCurrentOccupied ? "var(--bg-error)" : "rgb(220, 252, 231)", padding: "2px 6px", borderRadius: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: isCurrentOccupied ? "var(--text-error)" : "var(--text-success)", background: isCurrentOccupied ? "var(--bg-error)" : "var(--bg-success)", padding: "2px 6px", borderRadius: "4px" }}>
                 {isCurrentOccupied ? "이용 중" : "지금 이용 가능"}
               </span>
             </div>
@@ -3104,7 +3117,7 @@ const StudyBookButton = styled.button`
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: var(--interactive-primary);
   border: none;
   border-radius: 6px;
@@ -3157,7 +3170,7 @@ const RoomTabPill = styled.button<{ $active: boolean }>`
   border-radius: 20px;
   font-size: 12px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
-  color: ${({ $active }) => ($active ? "var(--text-inverse)" : "var(--gray-700)")};
+  color: ${({ $active }) => ($active ? "var(--text-on-brand)" : "var(--gray-700)")};
   background: ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--bg-muted)")};
   border: 1px solid ${({ $active }) => ($active ? "var(--interactive-primary)" : "var(--border-default)")};
   white-space: nowrap;
@@ -3193,7 +3206,7 @@ const SeatGridBtn = styled.button<{ $isOccupied?: boolean; $isSelected?: boolean
     if ($isSelected) {
       return `
         background: var(--interactive-primary);
-        color: var(--text-inverse);
+        color: var(--text-on-brand);
         border: 2px solid var(--border-brand);
       `;
     }
@@ -3525,7 +3538,7 @@ const WatchLiveBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
   color: var(--text-success);
-  background: rgb(220, 252, 231);
+  background: var(--bg-success);
   padding: 2px 8px;
   border-radius: 6px;
 `;

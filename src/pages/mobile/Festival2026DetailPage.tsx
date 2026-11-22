@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { FESTIVAL_INFO, FestivalInfoType } from "@/constants/festival";
 import { ROUTES } from "@/constants/routes";
 import { useFeatureFlag } from "@/hooks/useFeatureFlags";
@@ -172,7 +173,7 @@ const Wrapper = styled.div`
   align-items: center;
   width: 100%;
   min-height: 100%;
-  padding: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 0 ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
   position: relative;
 

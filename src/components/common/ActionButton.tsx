@@ -21,7 +21,7 @@ const StyledButton = styled.button<ActionButtonProps>`
   border-radius: var(--radius-full);
   padding: 13px 22px;
   background: linear-gradient(180deg, var(--blue-400) 0%, var(--blue-600) 100%);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   text-decoration: none;
   font-size: 15px;
   font-weight: 700;

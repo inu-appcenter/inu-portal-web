@@ -33,7 +33,7 @@ const FillButtonWrapper = styled.button`
   font-weight: 500;
 
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   box-shadow: ${SOFT_PILL_SHADOW};
   cursor: pointer;
 

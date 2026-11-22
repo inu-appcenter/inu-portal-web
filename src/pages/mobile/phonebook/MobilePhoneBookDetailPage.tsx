@@ -11,6 +11,7 @@ import {
 } from "@/pages/mobile/phonebook/phonebookDetailState";
 import { normalizeExternalUrl } from "@/pages/mobile/phonebook/phonebookConfig";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { SOFT_CARD_SHADOW } from "@/styles/shadows";
 import { CollegeOfficeContact, DirectoryEntry } from "@/types/directory";
 import Divider from "@/components/common/Divider";
@@ -414,7 +415,7 @@ export default MobilePhoneBookDetailPage;
 const PageWrapper = styled.div`
   width: 100%;
   min-height: calc(100dvh - 56px);
-  padding: 12px ${MOBILE_PAGE_GUTTER} 36px;
+  padding: 12px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   @media ${DESKTOP_MEDIA} {

@@ -304,7 +304,7 @@ const IconWrap = styled.div`
   place-items: center;
   border-radius: 22px;
   background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-400) 100%);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   box-shadow: 0 18px 32px rgba(58, 114, 201, 0.3);
 
   svg {
@@ -449,7 +449,7 @@ const SecondaryButton = styled(BaseButton)`
 `;
 
 const PrimaryButton = styled(BaseButton)`
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   background: linear-gradient(135deg, var(--blue-700) 0%, var(--blue-500) 100%);
   box-shadow: 0 16px 30px rgba(31, 95, 191, 0.28);
 `;

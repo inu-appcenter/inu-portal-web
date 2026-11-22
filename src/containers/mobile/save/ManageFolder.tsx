@@ -5,6 +5,7 @@ import { deleteFolders, postFolders, putFolders } from "@/apis/folders";
 import DeleteConfirmModal from "@/components/mobile/save/DeleteConfirmModal";
 import axios, { AxiosError } from "axios";
 import { Folder } from "@/types/folders";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 interface ManageFolderProps {
   folders: Folder[];
@@ -30,6 +31,7 @@ export default function ManageFolder({
     }
     try {
       await postFolders(newFolderName);
+      mixpanelTrack.contentCreated("save", "folder");
       setNewFolderName("");
       onFolderManaged();
     } catch (error) {
@@ -203,7 +205,7 @@ const AddButton = styled.button`
   height: 32px;
   border: none;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
@@ -245,7 +247,7 @@ const FolderName = styled.span`
 
 const EditButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -256,7 +258,7 @@ const EditButton = styled.div`
 
 const DeleteButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -267,7 +269,7 @@ const DeleteButton = styled.div`
 
 const SaveButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;
@@ -278,7 +280,7 @@ const SaveButton = styled.div`
 
 const CancelButton = styled.div`
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   border-radius: 4px;
   height: 24px;
   width: 36px;

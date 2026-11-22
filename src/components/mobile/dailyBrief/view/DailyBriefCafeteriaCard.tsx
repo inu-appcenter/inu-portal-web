@@ -412,7 +412,7 @@ const BlackActionButton = styled.button`
   width: 100%;
   height: 48px;
   border-radius: 24px;
-  background: var(--neutral-1000);
+  background: var(--gray-1000);
   border: none;
   font-size: 15px;
   font-weight: 700;

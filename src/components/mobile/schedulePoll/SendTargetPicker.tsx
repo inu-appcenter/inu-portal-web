@@ -6,10 +6,7 @@ import { WizardCheckbox } from "@/components/mobile/timetable/wizard/ui";
 import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { getPollSendTargets } from "@/apis/schedulePolls";
 import { useSharePoll } from "@/hooks/useSchedulePoll";
-import type {
-  PollShareKind,
-  SharePollResponse,
-} from "@/types/schedulePolls";
+import type { PollShareKind, SharePollResponse } from "@/types/schedulePolls";
 import { getDisplayName, maskStudentId } from "@/utils/displayName";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
@@ -187,7 +184,11 @@ const SendTargetPicker = ({
       return;
     }
     try {
-      await navigator.share({ title: shareText, text: shareText, url: linkUrl });
+      await navigator.share({
+        title: shareText,
+        text: shareText,
+        url: linkUrl,
+      });
       trackExternal("SHARE_SHEET");
     } catch (error) {
       // 사용자가 공유 시트를 닫은 것은 오류가 아니다.
@@ -199,7 +200,9 @@ const SendTargetPicker = ({
 
   const handleSend = () => {
     if (selected.length === 0 || shareMutation.isPending) return;
-    const chatRoomIds = selected.filter((t) => t.type === "ROOM").map((t) => t.id);
+    const chatRoomIds = selected
+      .filter((t) => t.type === "ROOM")
+      .map((t) => t.id);
     const friendMemberIds = selected
       .filter((t) => t.type === "FRIEND")
       .map((t) => t.id);
@@ -262,30 +265,50 @@ const SendTargetPicker = ({
 
   return (
     <Wrapper>
-      <ExternalRow>
-        <ExternalButton type="button" onClick={handleExternalShare}>
-          <Icon name="share" size={18} />
-          <span>공유하기</span>
-        </ExternalButton>
-        <ExternalButton type="button" onClick={handleCopyLink}>
-          <Icon name="link-angled" size={18} />
-          <span>링크 복사</span>
-        </ExternalButton>
-      </ExternalRow>
+      <Tabs role="tablist">
+        {(
+          [
+            ["ROOM", "채팅방"],
+            ["FRIEND", "친구"],
+          ] as const
+        ).map(([id, label]) => (
+          <Tab
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            $active={tab === id}
+            onClick={() => setTab(id)}
+          >
+            {label}
+          </Tab>
+        ))}
+      </Tabs>
 
       <SearchField>
-        <Icon name="search" size={20} />
+        <SearchIconBox aria-hidden>
+          <Icon name="search" size={20} />
+        </SearchIconBox>
         <input
           type="search"
           value={keyword}
-          placeholder="이름, 학번으로 검색"
+          placeholder={
+            tab === "ROOM"
+              ? "채팅방 이름으로 검색하세요"
+              : "친구 학번 또는 이름으로 검색하세요"
+          }
           onChange={(event) => setKeyword(event.target.value)}
         />
+        {keyword && (
+          <ClearButton
+            type="button"
+            aria-label="검색어 지우기"
+            onClick={() => setKeyword("")}
+          >
+            <Icon name="close-md" size={24} />
+          </ClearButton>
+        )}
       </SearchField>
-
-      <CountRow>
-        <strong>{selected.length}</strong>/{MAX_TARGETS}곳 선택
-      </CountRow>
 
       {selected.length > 0 && (
         <Chips>
@@ -307,26 +330,6 @@ const SendTargetPicker = ({
           ))}
         </Chips>
       )}
-
-      <Tabs role="tablist">
-        {(
-          [
-            ["ROOM", "채팅방"],
-            ["FRIEND", "친구"],
-          ] as const
-        ).map(([id, label]) => (
-          <Tab
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            $active={tab === id}
-            onClick={() => setTab(id)}
-          >
-            {label}
-          </Tab>
-        ))}
-      </Tabs>
 
       <List>
         {isLoading ? (
@@ -381,6 +384,18 @@ const SendTargetPicker = ({
         )}
       </List>
 
+      {/* 앱 밖 공유는 한 줄로 모은다. 공유 시트 안에 링크 복사가 있고, 공유 시트가 없으면 링크를 복사한다. */}
+      <ExternalShareRow type="button" onClick={handleExternalShare}>
+        <Icon name="link-external" size={24} />
+        <RowText>
+          <ExternalTitle>앱 밖으로 공유하기</ExternalTitle>
+          <ExternalDescription>
+            카카오톡 등으로 보내거나 링크를 복사해요
+          </ExternalDescription>
+        </RowText>
+        <Icon name="chevron-right" size={20} />
+      </ExternalShareRow>
+
       {renderFooter(
         <>
           {onSkip && (
@@ -399,9 +414,11 @@ const SendTargetPicker = ({
           >
             {shareMutation.isPending
               ? "보내는 중…"
-              : selected.length > 0
-                ? `보내기 (${selected.length}곳)`
-                : "보내기"}
+              : selected.length === 0
+                ? "보낼 곳을 골라 주세요"
+                : selected.length === 1
+                  ? `${selected[0].name}${selected[0].type === "FRIEND" ? "님에게" : "에"} 보내기`
+                  : `${selected.length}곳에 보내기`}
           </PollPrimaryButton>
         </>,
       )}
@@ -414,44 +431,35 @@ export default SendTargetPicker;
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-6);
   min-height: 0;
 `;
 
-const ExternalRow = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const ExternalButton = styled.button`
+const ExternalShareRow = styled.button`
   ${buttonReset}
-  flex: 1 0 0;
-  min-width: 0;
-  height: 44px;
+  padding: 14px var(--space-3) 14px var(--space-4);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 12px;
+  gap: var(--space-3);
+  text-align: left;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-secondary);
-  white-space: nowrap;
-  ${typography.label2}
 
   &:active {
     background: var(--bg-muted);
   }
 `;
 
+/* Figma Search_Bar (7476:39971) */
 const SearchField = styled.label`
-  height: 40px;
+  height: 44px;
   box-sizing: border-box;
-  padding: 0 12px;
+  padding: 0 var(--space-1);
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   color: var(--text-tertiary);
@@ -469,25 +477,42 @@ const SearchField = styled.label`
     &::placeholder {
       color: var(--text-tertiary);
     }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
   }
 `;
 
-const CountRow = styled.div`
-  padding: 0 8px;
-  color: var(--text-secondary);
-  ${typography.label2}
+const SearchIconBox = styled.span`
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-brand);
+`;
 
-  strong {
-    margin-right: 2px;
-    color: var(--text-brand);
-    font-weight: inherit;
-  }
+const ClearButton = styled.button`
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 `;
 
 const Chips = styled.div`
   display: flex;
-  gap: 16px;
-  padding: 4px 8px;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-2);
   overflow-x: auto;
   scrollbar-width: none;
 
@@ -503,7 +528,7 @@ const ChipButton = styled.button`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const ChipAvatar = styled.span`
@@ -544,6 +569,16 @@ const ChipName = styled.span`
   ${typography.caption1}
 `;
 
+const ExternalTitle = styled.span`
+  color: var(--text-primary);
+  ${typography.heading2}
+`;
+
+const ExternalDescription = styled.span`
+  color: var(--text-tertiary);
+  ${typography.caption1}
+`;
+
 const Tabs = styled.div`
   display: flex;
   border-bottom: 1px solid var(--border-default);
@@ -552,19 +587,20 @@ const Tabs = styled.div`
 const Tab = styled.button<{ $active: boolean }>`
   ${buttonReset}
   flex: 1 0 0;
-  height: 40px;
+  height: 52px;
+  box-sizing: border-box;
   margin-bottom: -1px;
   border-bottom: 2px solid
     ${({ $active }) => ($active ? "var(--border-brand)" : "transparent")};
   color: ${({ $active }) =>
     $active ? "var(--text-brand)" : "var(--text-tertiary)"};
-  ${typography.heading3}
+  ${typography.heading1}
 `;
 
 const List = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
   overflow: hidden;
@@ -572,11 +608,11 @@ const List = styled.div`
 
 const Row = styled.button<{ $checked: boolean }>`
   ${buttonReset}
-  min-height: 72px;
-  padding: 0 16px;
+  height: 72px;
+  padding: 0 var(--space-4) 0 var(--space-3);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-3);
   text-align: left;
   background: ${({ $checked }) =>
     $checked ? "var(--bg-brand)" : "transparent"};
@@ -588,8 +624,8 @@ const Row = styled.button<{ $checked: boolean }>`
 
 const RowAvatar = styled.img`
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   background: var(--bg-brand);
@@ -600,27 +636,28 @@ const RowText = styled.span`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 `;
 
 const RowName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   ${typography.heading2}
 `;
 
 const RowCaption = styled.span`
   color: var(--text-tertiary);
-  ${typography.caption1}
+  ${typography.label3}
 `;
 
 const Empty = styled.div`
-  padding: 40px 16px;
+  padding: 40px var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-secondary);
   text-align: center;
   ${typography.label2}
@@ -639,11 +676,11 @@ const InlineButton = styled.button`
 
 const InviteLinkButton = styled.button`
   ${buttonReset}
-  margin-top: 8px;
+  margin-top: var(--space-2);
   height: 44px;
-  padding: 0 24px;
-  border-radius: 999px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-full);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   ${typography.heading3}
 `;

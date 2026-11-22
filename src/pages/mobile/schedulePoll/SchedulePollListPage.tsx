@@ -133,10 +133,10 @@ export default function SchedulePollListPage() {
 }
 
 const Intro = styled.div`
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 `;
 
 const IntroTitle = styled.h2`
@@ -155,30 +155,30 @@ const IntroDescription = styled.p`
 
 const Tabs = styled.div`
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 `;
 
 const Tab = styled.button<{ $active: boolean }>`
   ${buttonReset}
   height: 36px;
-  padding: 0 16px;
-  border-radius: 999px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-full);
   border: 1px solid
     ${({ $active }) => ($active ? "var(--border-brand)" : "var(--border-default)")};
   background: ${({ $active }) =>
     $active ? "var(--interactive-primary)" : "var(--bg-base)"};
   color: ${({ $active }) =>
-    $active ? "var(--text-inverse)" : "var(--text-secondary)"};
+    $active ? "var(--text-on-brand)" : "var(--text-secondary)"};
   ${typography.label2}
 `;
 
 const PollRow = styled(PollCard)`
   ${buttonReset}
   min-height: 76px;
-  padding: 14px 16px;
+  padding: 14px var(--space-4);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   text-align: left;
   border: 1px solid var(--border-default);
   background: var(--bg-base);
@@ -206,11 +206,11 @@ const RowCaption = styled.span`
 `;
 
 const Empty = styled.div`
-  padding: 56px 16px;
+  padding: 56px var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--text-tertiary);
   text-align: center;
   ${typography.label2}

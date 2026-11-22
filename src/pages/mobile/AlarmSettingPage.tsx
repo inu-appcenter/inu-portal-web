@@ -735,7 +735,7 @@ const SelectableChip = styled.div<{ $selected: boolean }>`
   font-size: 14px;
   font-weight: 500;
   background: ${({ $selected }) => ($selected ? "var(--interactive-primary)" : "var(--bg-base)")};
-  color: ${({ $selected }) => ($selected ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${({ $selected }) => ($selected ? "var(--text-on-brand)" : "var(--gray-600)")};
   box-shadow: ${SOFT_CHIP_SHADOW};
   cursor: pointer;
   white-space: nowrap;

@@ -3,8 +3,10 @@ import styled from "styled-components";
 
 import BottomSheet from "@/components/common/BottomSheet";
 import { FEATURE_TOUR_ITEMS, type FeatureTourItem } from "@/constants/featureTour";
+import { ROUTES } from "@/constants/routes";
 import { usePromotion } from "@/hooks/usePromotion";
 import { PROMOTIONS } from "@/utils/promotion/registry";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 interface FeatureTourSheetProps {
   /** 지금 이 안내를 띄워도 되는 상황인지(로그인 여부, 홈 화면 여부 등) */
@@ -24,6 +26,11 @@ export default function FeatureTourSheet({
   const navigate = useNavigate();
   const { isVisible, dismiss, accept } = usePromotion(PROMOTIONS.FEATURE_TOUR, {
     enabled,
+  });
+  useFriendCompareExposure("기능 안내 시트", {
+    visible:
+      isVisible &&
+      FEATURE_TOUR_ITEMS.some((item) => item.route === ROUTES.TIMETABLE.COMPARE),
   });
 
   const handleSelect = (item: FeatureTourItem) => {

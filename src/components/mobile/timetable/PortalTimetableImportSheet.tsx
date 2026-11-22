@@ -557,7 +557,7 @@ export default function PortalTimetableImportSheet({
                       >
                         <Checkbox $checked={isChecked}>
                           {isChecked && (
-                            <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
+                            <Check size={14} color="var(--text-on-brand)" strokeWidth={3} />
                           )}
                         </Checkbox>
                         <SemesterLabelText>{sem.label}</SemesterLabelText>
@@ -677,7 +677,7 @@ export default function PortalTimetableImportSheet({
                           >
                             <Checkbox $checked={isGroupAllSelected}>
                               {isGroupAllSelected && (
-                                <Check size={14} color="var(--text-inverse)" strokeWidth={3} />
+                                <Check size={14} color="var(--text-on-brand)" strokeWidth={3} />
                               )}
                             </Checkbox>
                           </GroupCheckboxSlot>
@@ -712,7 +712,7 @@ export default function PortalTimetableImportSheet({
                                   {c.isSelected && (
                                     <Check
                                       size={14}
-                                      color="var(--text-inverse)"
+                                      color="var(--text-on-brand)"
                                       strokeWidth={3}
                                     />
                                   )}

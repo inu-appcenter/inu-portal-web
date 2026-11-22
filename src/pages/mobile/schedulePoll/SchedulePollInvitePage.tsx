@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styled from "styled-components";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
 import { ROUTES } from "@/constants/routes";
@@ -17,6 +18,7 @@ import {
 } from "@/utils/schedulePoll";
 import { getPollErrorMessage } from "@/utils/schedulePollError";
 import { showToast } from "@/utils/toast";
+import { typography } from "@/styles/typography";
 
 /**
  * 참여자 초대 (PRD 5-2 개설자 3단계). 조건 설정 바로 다음 화면이다.
@@ -65,7 +67,15 @@ export default function SchedulePollInvitePage() {
 
   return (
     <PollPage>
-      <PollBody>
+      <PollBody $gap={24}>
+        <Guide>
+          <GuideTitle>누구와 시간을 맞출까요?</GuideTitle>
+          <GuideDescription>
+            고른 곳에 참여 요청 카드를 보내요.
+            <br />
+            나중에 참여 현황에서도 보낼 수 있어요
+          </GuideDescription>
+        </Guide>
         <SendTargetPicker
           pollId={pollId}
           linkUrl={resolvePollLink(poll.linkUrl)}
@@ -83,3 +93,23 @@ export default function SchedulePollInvitePage() {
     </PollPage>
   );
 }
+
+const Guide = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  /* 탭과는 12px만 띄운다 (페이지 섹션 간격 24px 중 12px 상쇄) */
+  margin-bottom: -12px;
+`;
+
+const GuideTitle = styled.h2`
+  margin: 0;
+  color: var(--text-primary);
+  ${typography.title2}
+`;
+
+const GuideDescription = styled.p`
+  margin: 0;
+  color: var(--text-secondary);
+  ${typography.caption1}
+`;

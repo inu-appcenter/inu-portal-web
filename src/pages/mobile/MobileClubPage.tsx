@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { SAFE_AREA } from "@/styles/safeArea";
+import { SAFE_AREA, PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { Club } from "@/types/club";
 import { getClubs } from "@/apis/club";
 import { useEffect, useMemo, useState } from "react";
@@ -404,7 +404,7 @@ const ClubList = styled.div`
   align-items: center;
   width: 100%;
   gap: 8px;
-  padding: 0 ${MOBILE_PAGE_GUTTER};
+  padding: 0 ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 
   > * {

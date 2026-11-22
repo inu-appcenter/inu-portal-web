@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useHeader } from "@/context/HeaderContext";
 import { DESKTOP_MEDIA, MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { useMemo, useEffect } from "react";
 import CategorySelectorNew from "@/components/mobile/common/CategorySelectorNew";
 import ImageWithSkeleton from "@/components/common/ImageWithSkeleton";
@@ -349,7 +350,7 @@ export default function Festival2026Page() {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 24px ${MOBILE_PAGE_GUTTER};
+  padding: 24px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   gap: 24px;
 `;
 

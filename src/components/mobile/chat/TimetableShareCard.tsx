@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import Icon from "@/components/common/Icon";
 import { TimetableShareExtraData } from "@/types/chat";
 import { ROUTES } from "@/constants/routes";
+import { useFriendCompareExposure } from "@/hooks/useFriendCompareExposure";
 
 interface TimetableShareCardProps {
   extraData?: string | null;
@@ -34,6 +35,8 @@ export default function TimetableShareCard({
   isMe,
 }: TimetableShareCardProps) {
   const navigate = useNavigate();
+  const cardRef = useRef<HTMLDivElement>(null);
+  useFriendCompareExposure("채팅 공강 공유 카드", { ref: cardRef, properties: { is_me: !!isMe } });
 
   let parsedData: TimetableShareExtraData | null = null;
   if (extraData) {
@@ -74,7 +77,7 @@ export default function TimetableShareCard({
   };
 
   return (
-    <CardContainer $isMe={isMe} onClick={handleNavigate}>
+    <CardContainer ref={cardRef} $isMe={isMe} onClick={handleNavigate}>
       <CardHeader>
         <Icon name="calendar-add" size={24} color="var(--interactive-primary)" />
         <HeaderTitle>만나기 좋은 시간 추천</HeaderTitle>
@@ -100,7 +103,7 @@ export default function TimetableShareCard({
 
       <FooterButton>
         <span>공강 시간 확인하러 가기</span>
-        <Icon name="chevron-right" size={16} color="var(--text-inverse)" />
+        <Icon name="chevron-right" size={16} color="var(--text-on-brand)" />
       </FooterButton>
     </CardContainer>
   );
@@ -195,7 +198,7 @@ const CountBadge = styled.div<{ $isTop?: boolean }>`
   border-radius: 999px;
   background: ${({ $isTop }) => ($isTop ? "var(--interactive-primary)" : "var(--bg-brand)")};
   border: ${({ $isTop }) => ($isTop ? "none" : "1px solid var(--border-brand-subtle)")};
-  color: ${({ $isTop }) => ($isTop ? "var(--text-inverse)" : "var(--text-brand)")};
+  color: ${({ $isTop }) => ($isTop ? "var(--text-on-brand)" : "var(--text-brand)")};
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
   font-size: 12px;
   font-weight: 400;
@@ -226,7 +229,7 @@ const FooterButton = styled.div`
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
-    color: var(--text-inverse);
+    color: var(--text-on-brand);
     user-select: none;
   }
 `;

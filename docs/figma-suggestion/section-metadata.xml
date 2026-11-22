@@ -1,0 +1,729 @@
+  <section id="5602:17065" name="건의사항 수집 기능 (v3명세 반영)" x="-1062" y="11111" width="4701" height="2154">
+    <frame id="5608:17099" name="피드백 / 작성 / 초기" x="573" y="100" width="393" height="852">
+      <frame id="5608:17105" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5608:17106" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5608:17107" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5608:17108" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5608:17109" name="Category" x="16" y="98" width="361" height="130">
+          <frame id="5608:17110" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5608:17111" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5608:17112" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5608:17113" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5670:18074" name="button" x="0" y="0" width="75" height="44">
+              <text id="5670:18075" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18076" name="button" x="83" y="0" width="101" height="44">
+              <text id="5670:18077" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5670:18078" name="button" x="192" y="0" width="127" height="44">
+              <text id="5670:18079" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5670:18080" name="button" x="0" y="52" width="75" height="44">
+              <text id="5670:18081" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18082" name="button" x="83" y="52" width="86" height="44">
+              <text id="5670:18083" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5608:17124" name="Content" x="16" y="252" width="361" height="166">
+          <frame id="5608:17125" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5608:17126" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5608:17127" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5608:17128" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5608:17129" name="어떤 점이 불편했거나 개선되었" x="13" y="13" width="335" height="52" />
+            <text id="5608:17130" name="0 / 1000" x="13" y="102" width="335" height="17" />
+          </frame>
+        </frame>
+        <frame id="5608:17131" name="Photo" x="16" y="442" width="361" height="106">
+          <frame id="5608:17132" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5608:17133" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5608:17134" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5608:17135" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5608:17136" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5608:17137" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5608:17139" name="0/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5670:18238" name="BottomScrollSpacer" x="16" y="572" width="361" height="128" />
+      </frame>
+      <frame id="5608:17140" name="Bottom" x="0" y="676" width="393" height="144">
+        <frame id="5608:17141" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5608:17142" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5608:17144" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5670:18102" name="Button" x="16" y="78" width="361" height="58" />
+      </frame>
+      <instance id="5661:17969" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5661:17969;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5661:17969;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5661:17969;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5661:17969;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5608:17147" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5608:17175" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5670:17993" name="피드백 / 작성 / 작성중" x="1016" y="100" width="393" height="852">
+      <frame id="5670:17994" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5670:17995" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5670:17996" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5670:17997" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5670:17998" name="Category" x="16" y="98" width="361" height="130">
+          <frame id="5670:17999" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5670:18000" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5670:18001" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5670:18002" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5670:18084" name="button" x="0" y="0" width="75" height="44">
+              <text id="5670:18085" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18088" name="button" x="83" y="0" width="101" height="44">
+              <text id="5670:18089" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5670:18086" name="button" x="192" y="0" width="127" height="44">
+              <text id="5670:18087" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5670:18092" name="button" x="0" y="52" width="75" height="44">
+              <text id="5670:18093" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18090" name="button" x="83" y="52" width="86" height="44">
+              <text id="5670:18091" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5670:18008" name="Content" x="16" y="252" width="361" height="166">
+          <frame id="5670:18009" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5670:18010" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5670:18011" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5670:18094" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5670:18095" name="시간표에서 과목을 길게 누르면" x="13" y="13" width="335" height="78" />
+            <text id="5670:18096" name="62 / 1000" x="13" y="102" width="335" height="17" />
+          </frame>
+        </frame>
+        <frame id="5670:18015" name="Photo" x="16" y="442" width="361" height="106">
+          <frame id="5670:18016" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5670:18017" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5670:18018" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5674:18512" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5674:18513" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5674:18514" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5674:18515" name="0/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5670:18240" name="BottomScrollSpacer" x="16" y="572" width="361" height="128" />
+      </frame>
+      <frame id="5670:18023" name="Bottom" x="0" y="678" width="393" height="142">
+        <frame id="5670:18024" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5670:18025" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5670:18026" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5670:18098" name="Button" x="16" y="78" width="361" height="56" />
+      </frame>
+      <instance id="5670:18029" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5670:18029;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5670:18029;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5670:18029;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5670:18029;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5670:18030" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5670:18031" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5747:19346" name="피드백 / 제출 완료 모달" x="1902" y="100" width="393" height="852">
+      <frame id="5747:19347" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5747:19348" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5747:19349" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5747:19350" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5747:19351" name="Category" x="16" y="98" width="361" height="130">
+          <frame id="5747:19352" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5747:19353" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5747:19354" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5747:19355" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5747:19356" name="button" x="0" y="0" width="75" height="44">
+              <text id="5747:19357" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5747:19358" name="button" x="83" y="0" width="101" height="44">
+              <text id="5747:19359" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5747:19360" name="button" x="192" y="0" width="127" height="44">
+              <text id="5747:19361" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5747:19362" name="button" x="0" y="52" width="75" height="44">
+              <text id="5747:19363" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5747:19364" name="button" x="83" y="52" width="86" height="44">
+              <text id="5747:19365" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5747:19366" name="Content" x="16" y="252" width="361" height="166">
+          <frame id="5747:19367" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5747:19368" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5747:19369" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5747:19370" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5747:19371" name="시간표에서 과목을 길게 누르면" x="13" y="13" width="335" height="78" />
+            <text id="5747:19372" name="62 / 1000" x="13" y="102" width="335" height="17" />
+          </frame>
+        </frame>
+        <frame id="5747:19373" name="Photo" x="16" y="442" width="361" height="106">
+          <frame id="5747:19374" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5747:19375" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5747:19376" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5747:19377" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5747:19378" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5747:19379" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5747:19380" name="0/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5747:19381" name="BottomScrollSpacer" x="16" y="572" width="361" height="128" />
+      </frame>
+      <frame id="5747:19382" name="Bottom" x="0" y="678" width="393" height="142">
+        <frame id="5747:19383" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5747:19384" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5747:19385" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5747:19386" name="Button" x="16" y="78" width="361" height="56" />
+      </frame>
+      <instance id="5747:19387" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5747:19387;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5747:19387;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5747:19387;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5747:19387;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5747:19388" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5747:19389" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+      <rounded-rectangle id="5747:19429" name="Dim" x="0.52392578125" y="0" width="393" height="852" />
+      <frame id="5747:19430" name="Modal" x="32.5" y="288" width="328" height="276">
+        <frame id="5747:19431" name="Icon" x="136" y="28" width="56" height="56">
+          <instance id="5747:19432" name="Icons/Check" x="14" y="14" width="28" height="28" />
+        </frame>
+        <frame id="5747:19433" name="Text" x="16" y="108" width="296" height="80">
+          <text id="5747:19434" name="소중한 의견 고마워요" x="0" y="0" width="296" height="28" />
+          <text id="5747:19435" name="보내주신 내용은 운영진이 확인할게요. 내가 보낸 의견에서 다시 볼 수 있어요." x="0" y="36" width="296" height="44" />
+        </frame>
+        <frame id="5747:19436" name="Button Container" x="16" y="212" width="296" height="48">
+          <frame id="5747:19437" name="CTA" x="0" y="0" width="142" height="48">
+            <text id="5747:19438" name="내 의견 보기" x="31" y="12" width="80" height="24" />
+          </frame>
+          <frame id="5747:19439" name="CTA" x="154" y="0" width="142" height="48">
+            <text id="5747:19440" name="확인" x="56" y="12" width="30" height="24" />
+          </frame>
+        </frame>
+      </frame>
+    </frame>
+    <frame id="5674:18411" name="피드백 / 작성 / 작성중" x="2345" y="100" width="393" height="852">
+      <frame id="5674:18412" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5674:18413" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5674:18414" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5674:18415" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5674:18416" name="Category" x="16" y="98" width="361" height="130">
+          <frame id="5674:18417" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5674:18418" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5674:18419" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5674:18420" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5674:18421" name="button" x="0" y="0" width="75" height="44">
+              <text id="5674:18422" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5674:18423" name="button" x="83" y="0" width="101" height="44">
+              <text id="5674:18424" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5674:18425" name="button" x="192" y="0" width="127" height="44">
+              <text id="5674:18426" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5674:18427" name="button" x="0" y="52" width="75" height="44">
+              <text id="5674:18428" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5674:18429" name="button" x="83" y="52" width="86" height="44">
+              <text id="5674:18430" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5674:18431" name="Content" x="16" y="252" width="361" height="166">
+          <frame id="5674:18432" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5674:18433" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5674:18434" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5674:18435" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5674:18436" name="시간표에서 과목을 길게 누르면" x="13" y="13" width="335" height="78" />
+            <text id="5674:18437" name="62 / 1000" x="13" y="102" width="335" height="17" />
+          </frame>
+        </frame>
+        <frame id="5674:18438" name="Photo" x="16" y="442" width="361" height="106">
+          <frame id="5674:18439" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5674:18440" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5674:18441" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5674:18494" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5674:18495" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5674:18496" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5674:18497" name="2/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+            <frame id="5674:18498" name="Image_Thumb" x="80" y="0" width="72" height="72">
+              <frame id="5674:18499" name="Remove" x="48" y="4" width="20" height="20">
+                <instance id="5674:18500" name="Icons/Close_MD" x="3" y="3" width="14" height="14" />
+              </frame>
+            </frame>
+            <frame id="5674:18501" name="Image_Thumb" x="160" y="0" width="72" height="72">
+              <frame id="5674:18502" name="Remove" x="48" y="4" width="20" height="20">
+                <instance id="5674:18503" name="Icons/Close_MD" x="3" y="3" width="14" height="14" />
+              </frame>
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5674:18446" name="BottomScrollSpacer" x="16" y="572" width="361" height="128" />
+      </frame>
+      <frame id="5674:18447" name="Bottom" x="0" y="678" width="393" height="142">
+        <frame id="5674:18448" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5674:18449" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5674:18450" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5674:18451" name="Button" x="16" y="78" width="361" height="56" />
+      </frame>
+      <instance id="5674:18452" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5674:18452;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5674:18452;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5674:18452;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5674:18452;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5674:18453" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5674:18454" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5732:18050" name="피드백 / 제출 실패" x="2788" y="100" width="393" height="852">
+      <frame id="5732:18051" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5732:18052" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5732:18053" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5732:18054" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5732:18055" name="Category" x="16" y="98" width="361" height="130">
+          <frame id="5732:18056" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5732:18057" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5732:18058" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5732:18059" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5732:18060" name="button" x="0" y="0" width="75" height="44">
+              <text id="5732:18061" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5732:18062" name="button" x="83" y="0" width="101" height="44">
+              <text id="5732:18063" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5732:18064" name="button" x="192" y="0" width="127" height="44">
+              <text id="5732:18065" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5732:18066" name="button" x="0" y="52" width="75" height="44">
+              <text id="5732:18067" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5732:18068" name="button" x="83" y="52" width="86" height="44">
+              <text id="5732:18069" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5732:18070" name="Content" x="16" y="252" width="361" height="166">
+          <frame id="5732:18071" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5732:18072" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5732:18073" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5732:18074" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5732:18075" name="시간표에서 과목을 길게 누르면" x="13" y="13" width="335" height="78" />
+            <text id="5732:18076" name="62 / 1000" x="13" y="102" width="335" height="17" />
+          </frame>
+        </frame>
+        <frame id="5732:18077" name="Photo" x="16" y="442" width="361" height="106">
+          <frame id="5732:18078" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5732:18079" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5732:18080" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5732:18081" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5732:18082" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5732:18083" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5732:18084" name="2/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+            <frame id="5732:18085" name="Image_Thumb" x="80" y="0" width="72" height="72">
+              <frame id="5732:18086" name="Remove" x="48" y="4" width="20" height="20">
+                <instance id="5732:18087" name="Icons/Close_MD" x="3" y="3" width="14" height="14" />
+              </frame>
+            </frame>
+            <frame id="5732:18088" name="Image_Thumb" x="160" y="0" width="72" height="72">
+              <frame id="5732:18089" name="Remove" x="48" y="4" width="20" height="20">
+                <instance id="5732:18090" name="Icons/Close_MD" x="3" y="3" width="14" height="14" />
+              </frame>
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5732:18091" name="BottomScrollSpacer" x="16" y="572" width="361" height="128" />
+      </frame>
+      <frame id="5732:18092" name="Bottom" x="0" y="678" width="393" height="142">
+        <frame id="5732:18093" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5732:18094" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5732:18095" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5732:18096" name="Button" x="16" y="78" width="361" height="56" />
+      </frame>
+      <frame id="5732:18141" name="Toast" x="16" y="658" width="361" height="84">
+        <text id="5732:18142" name="전송에 실패했어요. 다시 시도해 주세요. 전송에 실패했어요. 다시 시도해 주세요.전송에 실패했어요. 다시 시도해 주세요.전송에 실패했어요. 다시 시도해 주세요." x="16" y="12" width="329" height="60" />
+      </frame>
+      <instance id="5732:18097" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5732:18097;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5732:18097;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5732:18097;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5732:18097;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5732:18098" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5732:18099" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5670:18108" name="피드백 / 작성 / 에러" x="1459" y="100" width="393" height="852">
+      <frame id="5670:18109" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5670:18110" name="Intro" x="16" y="16" width="361" height="58">
+          <text id="5670:18111" name="INTIP을 쓰며 느낀 점을 " x="0" y="0" width="264" height="32" />
+          <text id="5670:18112" name="남겨주신 의견은 더 나은 IN" x="0" y="36" width="361" height="22" />
+        </frame>
+        <frame id="5670:18113" name="Category" x="16" y="98" width="361" height="159">
+          <frame id="5670:18114" name="Label" x="0" y="0" width="117" height="22">
+            <text id="5670:18115" name="어떤 내용인가요?" x="0" y="0" width="105" height="22" />
+            <text id="5670:18116" name="*" x="109" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5670:18190" name="Chips" x="0" y="34" width="361" height="96">
+            <frame id="5670:18191" name="button" x="0" y="0" width="75" height="44">
+              <text id="5670:18192" name="오류 신고" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18193" name="button" x="83" y="0" width="101" height="44">
+              <text id="5670:18194" name="기능 개선 제안" x="12" y="12" width="77" height="20" />
+            </frame>
+            <frame id="5670:18195" name="button" x="192" y="0" width="127" height="44">
+              <text id="5670:18196" name="학교 정보 오류 제보" x="12" y="12" width="103" height="20" />
+            </frame>
+            <frame id="5670:18197" name="button" x="0" y="52" width="75" height="44">
+              <text id="5670:18198" name="기타 의견" x="12" y="12" width="51" height="20" />
+            </frame>
+            <frame id="5670:18199" name="button" x="83" y="52" width="86" height="44">
+              <text id="5670:18200" name="개발진 응원" x="12" y="12" width="62" height="20" />
+            </frame>
+          </frame>
+          <text id="5670:18202" name="문의 유형을 선택해 주세요." x="0" y="142" width="361" height="17" />
+        </frame>
+        <frame id="5670:18128" name="Content" x="16" y="281" width="361" height="195">
+          <frame id="5670:18129" name="Label" x="0" y="0" width="40" height="22">
+            <text id="5670:18130" name="내용" x="0" y="0" width="28" height="22" />
+            <text id="5670:18131" name="*" x="32" y="0" width="8" height="22" />
+          </frame>
+          <frame id="5670:18132" name="Textarea" x="0" y="34" width="361" height="132">
+            <text id="5670:18134" name="62 / 1000" x="13" y="13" width="335" height="17" />
+          </frame>
+          <text id="5670:18204" name="내용을 입력해 주세요. 공백만" x="0" y="178" width="361" height="17" />
+        </frame>
+        <frame id="5670:18135" name="Photo" x="16" y="500" width="361" height="106">
+          <frame id="5670:18136" name="Label" x="0" y="0" width="100" height="22">
+            <text id="5670:18137" name="사진 첨부" x="0" y="0" width="58" height="22" />
+            <text id="5670:18138" name="(선택)" x="62" y="0" width="38" height="22" />
+          </frame>
+          <frame id="5674:18518" name="Photos" x="0" y="34" width="361" height="72">
+            <frame id="5674:18519" name="Add_Photo" x="0" y="0" width="72" height="72">
+              <instance id="5674:18520" name="Icons/Camera" x="24" y="14.5" width="24" height="24" />
+              <text id="5674:18521" name="0/3" x="27" y="40.5" width="18" height="17" />
+            </frame>
+          </frame>
+        </frame>
+        <instance id="5670:18242" name="BottomScrollSpacer" x="16" y="630" width="361" height="128" />
+      </frame>
+      <frame id="5670:18143" name="Bottom" x="0" y="678" width="393" height="142">
+        <frame id="5670:18144" name="Notice" x="16" y="12" width="361" height="54">
+          <instance id="5670:18145" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5670:18146" name="개별 답변은 드리지 않아요. " x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5670:18147" name="Button" x="16" y="78" width="361" height="56" />
+      </frame>
+      <instance id="5670:18148" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5670:18148;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5670:18148;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5670:18148;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5670:18148;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5670:18149" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5670:18150" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5610:17233" name="피드백 / 내 의견 목록" x="573" y="1202" width="393" height="852">
+      <frame id="5610:17241" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5610:17242" name="Hint" x="0" y="16" width="393" height="34">
+          <text id="5610:17243" name="내가 보낸 의견은 나와 운영진만 볼 수 있어요." x="16" y="4" width="361" height="22" />
+        </frame>
+        <frame id="5610:17244" name="Feedback_Item" x="0" y="50" width="393" height="103">
+          <frame id="5610:17245" name="Info" x="16" y="16" width="312" height="70">
+            <frame id="5610:17246" name="Meta" x="0" y="0" width="142" height="20">
+              <text id="5610:17247" name="기능 개선 제안" x="0" y="0" width="77" height="20" />
+              <text id="5610:17248" name="2026.09.14" x="85" y="1.5" width="57" height="17" />
+            </frame>
+            <text id="5610:17249" name="시간표에서 과목을 길게 누르면 바로 색상을 바꿀 수 있으면 좋겠어요. 지금은 설정까지 들어가야 해서 번거로워요." x="0" y="26" width="312" height="44" />
+          </frame>
+          <instance id="5680:18629" name="Status_Badge" x="340" y="16" width="37" height="21" />
+        </frame>
+        <frame id="5610:17252" name="Feedback_Item" x="0" y="153" width="393" height="103">
+          <frame id="5610:17253" name="Info" x="16" y="16" width="300" height="70">
+            <frame id="5610:17254" name="Meta" x="0" y="0" width="118" height="20">
+              <text id="5610:17255" name="오류 신고" x="0" y="0" width="51" height="20" />
+              <text id="5610:17256" name="2026.09.02" x="59" y="1.5" width="59" height="17" />
+            </frame>
+            <text id="5610:17257" name="학점계산기에서 시간표 불러오기를 누르면 이전 학기 과목이 같이 들어와요." x="0" y="26" width="300" height="44" />
+          </frame>
+          <instance id="5680:18632" name="Status_Badge" x="328" y="16" width="49" height="21" />
+        </frame>
+        <frame id="5610:17260" name="Feedback_Item" x="0" y="256" width="393" height="81">
+          <frame id="5610:17261" name="Info" x="16" y="16" width="290" height="48">
+            <frame id="5610:17262" name="Meta" x="0" y="0" width="169" height="20">
+              <text id="5610:17263" name="학교 정보 오류 제보" x="0" y="0" width="103" height="20" />
+              <text id="5610:17264" name="2026.08.21" x="111" y="1.5" width="58" height="17" />
+            </frame>
+            <text id="5610:17265" name="7호관 위치가 지도에서 다른 건물로 표시돼요." x="0" y="26" width="290" height="22" />
+          </frame>
+          <instance id="5680:18636" name="Status_Badge" x="318" y="16" width="59" height="21" />
+        </frame>
+        <frame id="5610:17268" name="Feedback_Item" x="0" y="337" width="393" height="81">
+          <frame id="5610:17269" name="Info" x="16" y="16" width="312" height="48">
+            <frame id="5610:17270" name="Meta" x="0" y="0" width="127" height="20">
+              <text id="5610:17271" name="개발진 응원" x="0" y="0" width="62" height="20" />
+              <text id="5610:17272" name="2026.08.10" x="70" y="1.5" width="57" height="17" />
+            </frame>
+            <text id="5610:17273" name="시간표 공유 기능 잘 쓰고 있어요. 감사합니다!" x="0" y="26" width="312" height="22" />
+          </frame>
+          <instance id="5680:18626" name="Status_Badge" x="340" y="16" width="37" height="21" />
+        </frame>
+      </frame>
+      <instance id="5674:18598" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5674:18598;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5674:18598;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5674:18598;955:2460" name="title" x="44" y="0" width="246" height="40" />
+          <slot id="I5674:18598;1976:12723" name="Icons_Container" x="294" y="0" width="71" height="40">
+            <instance id="I5674:18598;1976:12723;5674:18614" name="Button" x="0" y="-8" width="71" height="56" />
+          </slot>
+        </frame>
+      </instance>
+      <instance id="5610:17276" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5610:17304" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5610:17307" name="피드백 / 내 의견 목록 / 빈상태" x="1016" y="1202" width="393" height="852">
+      <frame id="5610:17313" name="Empty" x="0" y="306" width="393" height="200">
+        <frame id="5610:17314" name="Icon" x="164.5" y="0" width="64" height="64">
+          <instance id="5610:17315" name="Icons/Chat_Dots" x="16" y="16" width="32" height="32" />
+        </frame>
+        <frame id="5610:17317" name="Text" x="40" y="84" width="313" height="52">
+          <text id="5610:17318" name="아직 보낸 의견이 없어요" x="0" y="0" width="313" height="26" />
+          <text id="5610:17319" name="불편했던 점이나 바라는 기능을 알려주세요." x="0" y="30" width="313" height="22" />
+        </frame>
+        <frame id="5610:17320" name="CTA" x="136" y="156" width="121" height="48">
+          <text id="5610:17321" name="의견 보내기" x="25" y="11" width="71" height="26" />
+        </frame>
+      </frame>
+      <instance id="5680:18672" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5680:18672;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5680:18672;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5680:18672;955:2460" name="title" x="44" y="0" width="246" height="40" />
+          <slot id="I5680:18672;1976:12723" name="Icons_Container" x="294" y="0" width="71" height="40">
+            <instance id="I5680:18672;1976:12723;5680:18671" name="Button" x="0" y="-8" width="71" height="56" />
+          </slot>
+        </frame>
+      </instance>
+      <instance id="5680:18686" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5680:18687" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5680:18833" name="피드백 / 내 의견 상세" x="1459" y="1202" width="393" height="852">
+      <frame id="5680:18834" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5680:18835" name="Summary" x="16" y="16" width="361" height="107">
+          <instance id="5680:19039" name="Status_Badge" x="0" y="0" width="37" height="21" />
+          <text id="5680:18838" name="기능 개선 제안" x="0" y="29" width="110" height="32" />
+          <text id="5680:18839" name="2026.09.14 21:36 보냄" x="0" y="69" width="111" height="17" />
+        </frame>
+        <text id="5680:18840" name="시간표에서 과목을 길게 누르면 바로 색상을 바꿀 수 있으면 좋겠어요. 지금은 설정까지 들어가야 해서 번거로워요." x="16" y="147" width="361" height="52" />
+        <frame id="5680:18841" name="Attachments" x="16" y="223" width="361" height="144">
+          <text id="5680:18842" name="첨부 사진 2" x="0" y="0" width="62" height="20" />
+          <frame id="5680:18843" name="Images" x="0" y="32" width="361" height="112">
+            <frame id="5680:18844" name="Image" x="0" y="0" width="112" height="112" />
+            <frame id="5680:18845" name="Image" x="120" y="0" width="112" height="112" />
+          </frame>
+        </frame>
+        <frame id="5680:18846" name="Notice" x="16" y="391" width="361" height="54">
+          <instance id="5680:18847" name="Icons/Info" x="12" y="10" width="16" height="16" />
+          <text id="5680:18848" name="처리 상태는 운영진의 내부 진행 상황이에요. 개별 답변은 드리지 않아요." x="34" y="10" width="315" height="34" />
+        </frame>
+        <instance id="5680:19042" name="BottomScrollSpacer" x="16" y="469" width="361" height="128" />
+      </frame>
+      <instance id="5680:18849" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5680:18849;1797:5319" name="Header" x="12" y="64" width="365" height="40">
+          <instance id="I5680:18849;1610:10160" name="IconButton" x="0" y="0" width="40" height="40" />
+          <text id="I5680:18849;955:2460" name="title" x="44" y="0" width="277" height="40" />
+          <slot id="I5680:18849;1976:12723" name="Icons_Container" x="325" y="0" width="40" height="40" />
+        </frame>
+      </instance>
+      <instance id="5680:18850" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+      <instance id="5680:18851" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+    </frame>
+    <frame id="5611:17347" name="피드백 / 진입 / 마이페이지" x="100" y="100" width="393" height="852">
+      <frame id="5611:17348" name="Body" x="0" y="112" width="393" height="740">
+        <frame id="5611:17349" name="Profile Card" x="16" y="20" width="361" height="173">
+          <frame id="5611:17350" name="Header" x="0" y="0" width="361" height="100">
+            <frame id="5611:17351" name="Profile-Image / Default" x="20" y="20" width="60" height="60" />
+            <frame id="5611:17360" name="User Info" x="96" y="22" width="205" height="56">
+              <text id="5611:17361" name="User Name" x="0" y="0" width="205" height="32" />
+              <text id="5611:17362" name="User Details" x="0" y="34" width="205" height="22" />
+            </frame>
+            <instance id="5611:17363" name="Chevron Icon" x="317" y="38" width="24" height="24" />
+          </frame>
+          <frame id="5611:17364" name="Actions" x="0" y="100" width="361" height="73">
+            <frame id="5611:17365" name="Container" x="0" y="0" width="90.25" height="73">
+              <instance id="5611:17366" name="Edit Icon" x="33.125" y="8" width="24" height="24" />
+              <frame id="5611:17367" name="Posts Counter" x="27.125" y="40" width="36" height="17">
+                <text id="5611:17368" name="Posts Label" x="0" y="0" width="24" height="17" />
+                <text id="5611:17369" name="Posts Count" x="28" y="0" width="8" height="17" />
+              </frame>
+            </frame>
+            <frame id="5611:17370" name="Container" x="90.25" y="0" width="90.25" height="73">
+              <instance id="5611:17371" name="Likes Icon" x="33.125" y="8" width="24" height="24" />
+              <frame id="5611:17372" name="Likes Counter" x="21.125" y="40" width="48" height="17">
+                <text id="5611:17373" name="Likes Label" x="0" y="0" width="31" height="17" />
+                <text id="5611:17374" name="Likes Count" x="35" y="0" width="13" height="17" />
+              </frame>
+            </frame>
+            <frame id="5611:17375" name="Container" x="180.5" y="0" width="90.25" height="73">
+              <instance id="5611:17376" name="Comments Icon" x="33.125" y="8" width="24" height="24" />
+              <frame id="5611:17377" name="Comments Counter" x="28.625" y="40" width="33" height="17">
+                <text id="5611:17378" name="Comments Label" x="0" y="0" width="21" height="17" />
+                <text id="5611:17379" name="Comments Count" x="25" y="0" width="8" height="17" />
+              </frame>
+            </frame>
+            <frame id="5611:17380" name="Container" x="270.75" y="0" width="90.25" height="73">
+              <instance id="5611:17381" name="Bookmarks Icon" x="33.125" y="8" width="24" height="24" />
+              <frame id="5611:17382" name="Bookmarks Counter" x="23.625" y="40" width="43" height="17">
+                <text id="5611:17383" name="Bookmarks Label" x="0" y="0" width="31" height="17" />
+                <text id="5611:17384" name="Bookmarks Count" x="35" y="0" width="8" height="17" />
+              </frame>
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5611:17385" name="Container" x="16" y="213" width="361" height="112">
+          <instance id="5611:17386" name="설정" x="0" y="0" width="361" height="56">
+            <slot id="I5611:17386;4869:20055" name="Icon Slot" x="0" y="0" width="56" height="56">
+              <instance id="I5611:17386;4869:20047" name="Notification icon" x="16" y="16" width="24" height="24" />
+            </slot>
+            <frame id="I5611:17386;4869:20090" name="Container" x="56" y="0" width="305" height="56">
+              <text id="I5611:17386;4869:20048" name="Title" x="0" y="16.5" width="58" height="22" />
+              <frame id="I5611:17386;4869:20049" name="Info" x="216" y="15.5" width="89" height="24">
+                <text id="I5611:17386;4869:20050" name="Description" x="0" y="3.5" width="49" height="17" />
+                <instance id="I5611:17386;4869:20051" name="Right arrow icon" x="57" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </instance>
+          <instance id="5611:17387" name="설정" x="0" y="56" width="361" height="56">
+            <slot id="I5611:17387;4869:20055" name="Icon Slot" x="0" y="0" width="56" height="56">
+              <instance id="I5611:17387;4869:20055;5611:17410" name="Icons/User_Close" x="16" y="16" width="24" height="24" />
+            </slot>
+            <frame id="I5611:17387;4869:20090" name="Container" x="56" y="0" width="305" height="56">
+              <text id="I5611:17387;4869:20048" name="Title" x="0" y="16.5" width="101" height="22" />
+              <frame id="I5611:17387;4869:20049" name="Info" x="273" y="15.5" width="32" height="24">
+                <text id="I5611:17387;4869:20050" name="Description" x="4" y="3.5" width="49" height="17" hidden="true" />
+                <instance id="I5611:17387;4869:20051" name="Right arrow icon" x="0" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </instance>
+        </frame>
+        <frame id="5611:17388" name="Container" x="16" y="345" width="361" height="180">
+          <instance id="5611:17389" name="설정" x="0" y="0" width="361" height="56">
+            <slot id="I5611:17389;4869:20055" name="Icon Slot" x="0" y="0" width="56" height="56">
+              <instance id="I5611:17389;4869:20055;5611:17412" name="Icons/Question Mark Circle" x="16" y="16" width="24" height="24" />
+            </slot>
+            <frame id="I5611:17389;4869:20090" name="Container" x="56" y="0" width="305" height="56">
+              <text id="I5611:17389;4869:20048" name="Title" x="0" y="16.5" width="54" height="22" />
+              <frame id="I5611:17389;4869:20049" name="Info" x="273" y="15.5" width="32" height="24">
+                <text id="I5611:17389;4869:20050" name="Description" x="4" y="3.5" width="49" height="17" hidden="true" />
+                <instance id="I5611:17389;4869:20051" name="Right arrow icon" x="0" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </instance>
+          <frame id="5611:17471" name="설정/의견 보내기" x="0" y="56" width="361" height="56">
+            <frame id="5611:17472" name="Icon Slot" x="0" y="0" width="56" height="56">
+              <instance id="5611:17473" name="Icons/Chat_Dots" x="16" y="16" width="24" height="24" />
+            </frame>
+            <frame id="5611:17474" name="Container" x="56" y="0" width="305" height="56">
+              <text id="5611:17484" name="의견 보내기" x="0" y="16.5" width="78" height="22" />
+              <frame id="5611:17476" name="Info" x="273" y="15.5" width="32" height="24">
+                <text id="5611:17477" name="Description" x="6" y="3" width="49" height="17" hidden="true" />
+                <instance id="5611:17478" name="Right arrow icon" x="0" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </frame>
+          <frame id="5611:17390" name="설정" x="0" y="112" width="361" height="68">
+            <frame id="5611:17391" name="Icon Slot" x="0" y="4" width="56" height="60">
+              <instance id="5611:17392" name="AppCenter_Logo" x="19" y="18" width="18" height="24" />
+            </frame>
+            <frame id="5611:17393" name="Container" x="56" y="0" width="305" height="68">
+              <frame id="5611:17394" name="Frame 427320308" x="0" y="12" width="273" height="43">
+                <text id="5611:17395" name="Title" x="0" y="0" width="190" height="22" />
+                <text id="5611:17396" name="INTIP을 만든 동아리를 알아보세요." x="0" y="26" width="273" height="17" />
+              </frame>
+              <frame id="5611:17397" name="Info" x="273" y="21.5" width="32" height="24">
+                <text id="5611:17398" name="Description" x="6" y="3" width="49" height="17" hidden="true" />
+                <instance id="5611:17399" name="Right arrow icon" x="0" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </frame>
+        </frame>
+        <frame id="5611:17400" name="Container" x="16" y="545" width="361" height="56">
+          <instance id="5611:17401" name="설정" x="0" y="0" width="361" height="56">
+            <slot id="I5611:17401;4869:20055" name="Icon Slot" x="0" y="0" width="56" height="56">
+              <instance id="I5611:17401;4869:20055;5611:17414" name="Icons/Settings 1" x="16" y="16" width="24" height="24" />
+            </slot>
+            <frame id="I5611:17401;4869:20090" name="Container" x="56" y="0" width="305" height="56">
+              <text id="I5611:17401;4869:20048" name="Title" x="0" y="16.5" width="88" height="22" />
+              <frame id="I5611:17401;4869:20049" name="Info" x="167" y="15.5" width="138" height="24">
+                <text id="I5611:17401;4869:20050" name="Description" x="0" y="3.5" width="98" height="17" />
+                <instance id="I5611:17401;4869:20051" name="Right arrow icon" x="106" y="0" width="24" height="24" />
+              </frame>
+            </frame>
+          </instance>
+        </frame>
+        <text id="5611:17402" name="로그아웃" x="172.5" y="621" width="48" height="22" />
+        <instance id="5611:17403" name="BottomScrollSpacer" x="16" y="663" width="361" height="128" />
+      </frame>
+      <instance id="5611:17404" name="Bottom_Navigation" x="0" y="759" width="393" height="93" />
+      <instance id="5611:17405" name="Header" x="0" y="0" width="393" height="112">
+        <frame id="I5611:17405;1906:6638" name="Title Container" x="20" y="64" width="353" height="40">
+          <slot id="I5611:17405;1280:2880" name="Title Container" x="0" y="0" width="101" height="40">
+            <frame id="I5611:17405;1280:2880;5611:17416" name="Title Text Container" x="0" y="0" width="101" height="40">
+              <text id="I5611:17405;1280:2880;5611:17417" name="title" x="0" y="3" width="101" height="34" />
+            </frame>
+          </slot>
+          <slot id="I5611:17405;1508:12774" name="Icons Container" x="273" y="0" width="80" height="40" hidden="true" />
+        </frame>
+      </instance>
+      <instance id="5611:17407" name="iPhone-status-bar(lower)" x="0" y="820" width="393" height="32" />
+      <instance id="5611:17408" name="iPhone-status-bar(upper)" x="0" y="0" width="393" height="60" />
+    </frame>
+    <frame id="5611:17486" name="검토 필요" x="1902" y="1200" width="393" height="202">
+      <text id="5611:17487" name="검토 필요 (명세서 미확정) - Ai 생성" x="20" y="20" width="232" height="22" />
+      <text id="5611:17488" name="- 진입 위치: 마이페이지 문의하기 아래로 가정. 홈 하단 / TIPS 대안 비교 필요 - 사진 장수 제한은 미정 (10장 최대로?) - 글자 수 1000자 상한은 임시값, 최소 글자 수 미정 - 목록/상세의 처리 상태 노출 여부 미정 (현재 노출안) - 반영 예정/완료 배지 색 구분 필요 (success 토큰 부재)" x="20" y="50" width="353" height="132" />
+    </frame>
+    <rounded-rectangle id="5609:17451" name="image 233" x="3778.5556640625" y="100" width="379" height="824" />
+    <frame id="5674:18625" name="Status_Badge" x="1902" y="1534" width="218" height="64">
+      <symbol id="5674:18624" name="Property 1=반영 완료" x="135" y="20" width="59" height="21" />
+      <symbol id="5674:18623" name="Property 1=검토 중" x="71" y="20" width="49" height="21" />
+      <symbol id="5674:18622" name="Property 1=접수" x="20" y="20" width="37" height="21" />
+    </frame>
+    <rounded-rectangle id="5412:17066" name="image 230" x="4207.5556640625" y="100" width="393" height="797.6444702148438" />
+  </section>

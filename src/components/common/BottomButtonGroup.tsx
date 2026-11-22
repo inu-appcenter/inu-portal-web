@@ -59,7 +59,7 @@ const BottomButtonGroup: React.FC<BottomButtonGroupProps> = ({
         <GroupButton
           $flex={rightButton.flex || 1}
           $backgroundColor={rightButton.backgroundColor || "var(--interactive-primary)"}
-          $textColor={rightButton.textColor || "var(--text-inverse)"}
+          $textColor={rightButton.textColor || "var(--text-on-brand)"}
           $disabled={rightButton.disabled}
           onClick={rightButton.onClick}
           disabled={rightButton.disabled}

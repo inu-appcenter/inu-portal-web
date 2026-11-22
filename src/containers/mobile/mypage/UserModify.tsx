@@ -240,6 +240,11 @@ export default function UserModify() {
 
       if (needsTermsAgreement) {
         recordTermsAgreement();
+        mixpanelTrack.onboardingProfileCompleted({
+          hasDepartment: !!updatedUserInfo.department,
+          hasRealName: !!trimmedRealName,
+          nicknameChanged: hasNicknameChanged,
+        });
         alert("설정이 완료되었습니다. INTIP을 시작해보세요!");
         // 시간 맞추기 참여 링크로 들어와 가입한 사람은 원래 조율로 돌려보낸다.
         navigate(consumePendingReturnPath() ?? ROUTES.HOME, { replace: true });
@@ -668,7 +673,7 @@ const SubmitArea = styled.div`
 const ActionButton = styled.button<{ $fullWidth?: boolean }>`
   box-sizing: border-box;
   background: linear-gradient(135deg, var(--blue-400) 0%, var(--interactive-primary) 100%);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   padding: 14px 18px;
   border-radius: 16px;
   width: ${({ $fullWidth }) => ($fullWidth ? "100%" : "auto")};

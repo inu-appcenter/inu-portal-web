@@ -28,6 +28,11 @@ export interface CreatePollRequest {
   days: PollDay[] | null;
   startDate: string | null;
   endDate: string | null;
+  /**
+   * 기간 안에서 뺄 날짜(YYYY-MM-DD). 일회성일 때만 쓴다.
+   * TODO(백엔드): 서버가 아직 받지 않는 필드다. 반영 전에는 무시돼 뺀 날짜가 다시 들어간다.
+   */
+  excludedDates?: string[];
   rangeStart: string;
   rangeEnd: string;
   durationMode: PollDurationMode;

@@ -221,7 +221,7 @@ const ErrorText = styled.span`
 const SubmitButton = styled.button`
   width: 100%;
   padding: 12px 0;
-  background: var(--text-success);
+  background: var(--green-500);
   color: var(--text-inverse);
   border: none;
   border-radius: 12px;

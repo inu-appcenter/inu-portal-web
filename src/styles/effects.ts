@@ -2,9 +2,9 @@ import { css } from "styled-components";
 
 // Figma 효과 스타일(그림자·배경 흐림)을 styled-components에서 쓰는 css 조각.
 //
-// 값은 tokens/(Figma Tokens Studio export) → `npm run build:tokens` → variables.css의 CSS 변수
+// 값은 tokens/(Figma 효과 스타일에서 동기화) → `npm run build:tokens` → variables.css의 CSS 변수
 // (--bottom-sheet-shadow 등)에서 온다. 숫자를 여기 다시 적지 않는다.
-// 단, export에 없는 스타일(Floating_Button·Dim·Bubble)은 값을 직접 두었다. export에 추가되면 변수로 교체.
+// 단, 배경 흐림이 들어간 스타일(Floating_Button·Dim)은 토큰으로 표현할 수 없어 값을 직접 두었다.
 //
 //   const Sheet = styled.div`
 //     ${effects.bottomSheet}
@@ -32,6 +32,6 @@ export const effects = {
   `,
   /** Bubble — 0 1 2 rgba(0,0,0,.08). 말풍선 */
   bubble: css`
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: var(--bubble-shadow);
   `,
 } as const;

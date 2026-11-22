@@ -1,8 +1,9 @@
 import { ROUTES } from "@/constants/routes";
+import { SAFE_AREA } from "@/styles/safeArea";
 import styled from "styled-components";
 // import { intipLogoMascot as intipLogo } from "@/resources/assets/illustrations/brand";
 import { intipLogoWordmark as intipLogo } from "@/resources/assets/illustrations/brand";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { forwardRef } from "react";
 import { useCustomNavigate } from "@/hooks/useCustomNavigate";
 
@@ -127,6 +128,15 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
     const navigate = useCustomNavigate();
     const { hasUnreadNotification } = useUnreadNotification();
     const hasMenuItems = (menuItems?.length ?? 0) > 0;
+    const location = useLocation();
+    const currentPath = targetPath || location.pathname;
+    const isHome =
+      currentPath === ROUTES.ROOT ||
+      currentPath === ROUTES.HOME ||
+      currentPath === ROUTES.MOBILE_HOME ||
+      currentPath === ROUTES.HOME_V2 ||
+      currentPath === ROUTES.MOBILE_ROOT;
+    const shouldShowBack = Boolean(hasback) && !isHome;
 
     const handleLogoClick = () => {
       mixpanelTrack.featureClicked("Logo", "Header");
@@ -156,15 +166,31 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
         $contained={contained}
         $visible={true}
       >
+        <TopEdgeFadeBackdrop
+          $isScrolled={isScrolled}
+          aria-hidden="true"
+          data-testid="top-scroll-edge-fade"
+        />
         <MainHeaderWrapper
           $isScrolled={isScrolled}
-          $hasBack={(hasback && !!title) ?? false}
+          $hasBack={shouldShowBack}
           $hasTitle={hasTitle}
           $noBlur={Boolean(noBlur)}
         >
-          {title ? (
+          {isHome ? (
             <TitleArea>
-              {hasback && (
+              <TitleWrapper $isScrolled={isScrolled} $hasBack={false}>
+                <img
+                  className="logo"
+                  onClick={handleLogoClick}
+                  src={intipLogo}
+                  alt="INTIP"
+                />
+              </TitleWrapper>
+            </TitleArea>
+          ) : (
+            <TitleArea>
+              {shouldShowBack && (
                 <IconBackgroundWrapper
                   $isScrolled={isScrolled}
                   $isCircle={true}
@@ -172,22 +198,14 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
                   <BackButton onClick={handleBack} />
                 </IconBackgroundWrapper>
               )}
-              <TitleWrapper
-                $isScrolled={isScrolled}
-                $hasBack={hasback ?? false}
-              >
-                <HeaderTitle $hasBack={hasback ?? false}>{title}</HeaderTitle>
-              </TitleWrapper>
-            </TitleArea>
-          ) : (
-            <TitleArea>
-              <TitleWrapper $isScrolled={isScrolled} $hasBack={false}>
-                <img
-                  className="logo"
-                  onClick={handleLogoClick}
-                  src={intipLogo}
-                />
-              </TitleWrapper>
+              {title && (
+                <TitleWrapper
+                  $isScrolled={isScrolled}
+                  $hasBack={shouldShowBack}
+                >
+                  <HeaderTitle $hasBack={shouldShowBack}>{title}</HeaderTitle>
+                </TitleWrapper>
+              )}
             </TitleArea>
           )}
 
@@ -226,7 +244,37 @@ const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(
 
 MobileHeader.displayName = "MobileHeader";
 
+export function computeTopFadeHeight(): string {
+  return `calc(${SAFE_AREA.TOP} + 32px)`;
+}
+
 export default MobileHeader;
+
+
+const TopEdgeFadeBackdrop = styled.div<{
+  $isScrolled: boolean;
+}>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: ${computeTopFadeHeight()};
+  pointer-events: none;
+  z-index: 1;
+  opacity: ${({ $isScrolled }) => ($isScrolled ? 1 : 0)};
+  transform: translateZ(0);
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: linear-gradient(
+    180deg,
+    rgba(248, 249, 251, 1) 0%,
+    rgba(248, 249, 251, 0.85) 25%,
+    rgba(248, 249, 251, 0.55) 50%,
+    rgba(248, 249, 251, 0.25) 75%,
+    rgba(248, 249, 251, 0) 100%
+  );
+`;
 
 const MobileHeaderWrapper = styled.header<{
   $visible: boolean;
@@ -312,7 +360,7 @@ const MainHeaderWrapper = styled.div<{
 
 const SubHeaderWrapper = styled.div<{ $floating: boolean }>`
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   display: flex;
   justify-content: flex-start;

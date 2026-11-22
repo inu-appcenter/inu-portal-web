@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { MessagesSquare, SearchX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
+import { buildSyllabusPath } from "@/utils/syllabus";
 import { SEEN_PROMOTIONS, promotionSeenStorage } from "@/utils/promotion/seenStorage";
 import Icon from "@/components/common/Icon";
 import Skeleton from "@/components/common/Skeleton";
@@ -298,13 +298,20 @@ const CourseResultList = ({
                                 alert(SYLLABUS_UNAVAILABLE_MESSAGE);
                                 return;
                               }
-                              navigate(ROUTES.TIMETABLE.SYLLABUS, {
-                                state: {
+                              navigate(
+                                buildSyllabusPath({
                                   courseOfferingId: course.id,
                                   courseName: course.name,
                                   professor: course.professor,
+                                }),
+                                {
+                                  state: {
+                                    courseOfferingId: course.id,
+                                    courseName: course.name,
+                                    professor: course.professor,
+                                  },
                                 },
-                              });
+                              );
                             }}
                           >
                             <Icon name="file-document" size={20} />
@@ -492,7 +499,7 @@ const MatchBadge = styled.span`
   border-radius: 999px;
   border: 1px solid var(--border-brand);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
 
   font-family: Pretendard, sans-serif;
   font-size: 12px;
@@ -602,7 +609,7 @@ const PrimaryActionButton = styled(ActionButton)<{ $isAdded?: boolean }>`
       : "var(--interactive-primary)"};
 
   color: ${({ $isAdded }) =>
-    $isAdded ? "var(--text-tertiary)" : "var(--text-inverse)"};
+    $isAdded ? "var(--text-tertiary)" : "var(--text-on-brand)"};
 
   ${({ $isAdded }) =>
     $isAdded &&

@@ -35,6 +35,8 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
     nearbyVisibility: !!userInfo?.nearbyVisibility,
     realName: normalizeOptionalText(userInfo?.realName).trim(),
     needsRealName: !!userInfo?.needsRealName,
+    joinedAt: userInfo?.joinedAt ?? undefined,
+    termsAgreed: userInfo?.termsAgreed ?? undefined,
     memberType: userInfo?.memberType ?? 'STUDENT',
     onboardingCompleted: userInfo?.onboardingCompleted ?? true,
     needsOnboarding: userInfo?.needsOnboarding ?? false,

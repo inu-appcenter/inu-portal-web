@@ -4,6 +4,8 @@ import { buttonReset } from "@/components/mobile/timetable/wizard/ui/tokens";
 import { typography } from "@/styles/typography";
 import { effects } from "@/styles/effects";
 import { SAFE_AREA } from "@/styles/safeArea";
+import type { PollCandidate, PollColumn } from "@/types/schedulePolls";
+import { formatColumnName } from "@/utils/schedulePoll";
 
 // 시간 맞추기 화면들이 함께 쓰는 틀 (Figma INTIP / 짭투밋 5970:19857).
 
@@ -19,7 +21,7 @@ export const PollPage = styled.div`
 export const PollBody = styled.div<{ $gap?: number }>`
   width: 100%;
   box-sizing: border-box;
-  padding: 16px;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: ${({ $gap = 16 }) => $gap}px;
@@ -28,21 +30,20 @@ export const PollBody = styled.div<{ $gap?: number }>`
 export const PollCard = styled.div`
   width: 100%;
   box-sizing: border-box;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-default);
   background: var(--bg-base);
 `;
 
 /** 필드 묶음 제목 (heading/3) */
 export const PollFieldLabel = styled.span`
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   color: var(--text-primary);
   ${typography.heading3}
-  line-height: 1.6;
 `;
 
 export const PollFieldHint = styled.span`
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   color: var(--text-tertiary);
   ${typography.caption1}
 `;
@@ -52,8 +53,8 @@ export const PollBadge = styled.span<{ $tone?: "brand" | "neutral" | "warn" }>`
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  padding: 4px 9px;
-  border-radius: 999px;
+  padding: var(--space-1) 9px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   ${typography.caption1}
   ${({ $tone = "neutral" }) =>
@@ -76,11 +77,11 @@ export const PollBadge = styled.span<{ $tone?: "brand" | "neutral" | "warn" }>`
 const buttonBase = css`
   ${buttonReset}
   height: 48px;
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   white-space: nowrap;
   transition:
     background-color 0.15s ease,
@@ -97,7 +98,7 @@ export const PollPrimaryButton = styled.button`
   flex: 1 0 0;
   min-width: 0;
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   ${effects.elevation1}
 
   &:active:not(:disabled) {
@@ -160,7 +161,7 @@ const FixedBar = styled.div`
   padding: 12px 16px calc(16px + ${SAFE_AREA.BOTTOM});
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   pointer-events: none;
 
   & > * {
@@ -178,7 +179,7 @@ const BarCaption = styled.p`
 const BarButtons = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 `;
 
 interface PollNoticeProps {
@@ -202,8 +203,8 @@ const NoticeWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 80px 24px;
+  gap: var(--space-2);
+  padding: 80px var(--space-6);
   text-align: center;
 `;
 
@@ -223,8 +224,42 @@ const NoticeDescription = styled.p`
 const NoticeActions = styled.div`
   width: 100%;
   max-width: 320px;
-  margin-top: 16px;
+  margin-top: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
+`;
+
+interface PollCandidateLabelProps {
+  candidate: Pick<PollCandidate, "key" | "start" | "end">;
+  columns: PollColumn[];
+}
+
+/** 추천 시간 한 줄의 '요일 + 시간' 부분. 참여 현황·결과 화면이 같은 모양으로 쓴다. */
+export const PollCandidateLabel = ({ candidate, columns }: PollCandidateLabelProps) => (
+  <>
+    <CandidateDay>
+      {formatColumnName(
+        columns.find((c) => c.key === candidate.key),
+        candidate.key,
+      )}
+    </CandidateDay>
+    <CandidateTime>
+      {candidate.start} ~ {candidate.end}
+    </CandidateTime>
+  </>
+);
+
+const CandidateDay = styled.span`
+  flex-shrink: 0;
+  min-width: 52px;
+  color: var(--text-primary);
+  ${typography.heading3}
+`;
+
+const CandidateTime = styled.span`
+  flex: 1 0 0;
+  min-width: 0;
+  color: var(--text-secondary);
+  ${typography.label2}
 `;

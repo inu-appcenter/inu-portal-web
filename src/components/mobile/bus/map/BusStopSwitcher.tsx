@@ -89,7 +89,7 @@ const StopSwitcherButton = styled.button<{ $selected: boolean }>`
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  color: ${({ $selected }) => ($selected ? "var(--text-inverse)" : "var(--text-secondary)")};
+  color: ${({ $selected }) => ($selected ? "var(--text-on-brand)" : "var(--text-secondary)")};
   background: ${({ $selected }) =>
     $selected ? "var(--interactive-primary)" : "rgba(240, 245, 252, 0.92)"};
   box-shadow: ${({ $selected }) =>

@@ -407,12 +407,12 @@ const DepartmentChip = styled.button<{ $active: boolean }>`
   font-weight: 600;
   transition: all 0.2s;
   background-color: ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--bg-base)")};
-  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${(props) => (props.$active ? "var(--text-on-brand)" : "var(--gray-600)")};
   border: 1px solid ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--border-default)")};
 
   &:hover {
     border-color: var(--interactive-primary);
-    color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--interactive-primary)")};
+    color: ${(props) => (props.$active ? "var(--text-on-brand)" : "var(--interactive-primary)")};
   }
 `;
 
@@ -435,7 +435,7 @@ const ModeButton = styled.button<{ $active: boolean }>`
   font-weight: 700;
   transition: all 0.2s;
   background-color: ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--bg-subtle)")};
-  color: ${(props) => (props.$active ? "var(--text-inverse)" : "var(--gray-600)")};
+  color: ${(props) => (props.$active ? "var(--text-on-brand)" : "var(--gray-600)")};
   border: 1px solid ${(props) => (props.$active ? "var(--interactive-primary)" : "var(--border-default)")};
 `;
 
@@ -473,7 +473,7 @@ const SubmitButton = styled.button`
   padding: 10px 24px;
   border-radius: 10px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-weight: 700;
   transition: all 0.2s;
 

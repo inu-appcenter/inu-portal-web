@@ -488,7 +488,7 @@ export default function MobileUnifiedSearchPage() {
                                   <Ripple />
                                   <ScheduleRow>
                                     <ScheduleIconWrapper>
-                                      <IoCalendarOutline size={18} color="var(--primary)" />
+                                      <IoCalendarOutline size={18} color="var(--interactive-primary)" />
                                     </ScheduleIconWrapper>
                                     <div>
                                       <ItemTitle>

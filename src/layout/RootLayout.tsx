@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate, useOutlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -27,10 +27,12 @@ import { getAppEnvironmentStatus } from "@/utils/getMobilePlatform";
 import AppUpdateModal from "@/components/common/AppUpdateModal";
 import FeatureTourSheet from "@/components/common/FeatureTourSheet";
 import PortalAutoSyncSheet from "@/components/common/PortalAutoSyncSheet";
+import PortalSyncConsentHost from "@/components/common/PortalSyncConsentSheet";
 import LiveActivitySheet from "@/components/common/LiveActivitySheet";
 import AppInstallBanner from "@/components/common/AppInstallBanner";
 import SafeAreaDebugOverlay from "@/components/common/SafeAreaDebugOverlay";
 import BottomScrollEdgeFade from "@/components/common/BottomScrollEdgeFade";
+import RouteLoadingSpinner from "@/components/common/RouteLoadingSpinner";
 import { safeLocalStorage } from "@/utils/safeStorage";
 
 
@@ -197,6 +199,17 @@ export default function RootLayout() {
     void apiCount();
   }, []);
 
+  // 온보딩 마지막 단계: 신규 가입 계정의 첫 홈 진입. 로그인 시 isNewMember로 남긴 표시가 있을 때만
+  // 보낸다(기존 사용자에게 소급 발생하지 않도록). 약관·학과 설정을 마쳐야 홈에 머문다.
+  useEffect(() => {
+    if (location.pathname !== ROUTES.HOME || userInfo.id === 0) return;
+    if (!userInfo.department) return;
+    const key = `intipOnboardingPending:${userInfo.id}`;
+    if (safeLocalStorage.getItem(key) !== "1") return;
+    safeLocalStorage.removeItem(key);
+    mixpanelTrack.onboardingFirstHomeViewed();
+  }, [location.pathname, userInfo.id, userInfo.department]);
+
   // 전역 페이지 뷰 추적
   useEffect(() => {
     trackPageView(location.pathname);
@@ -224,7 +237,9 @@ export default function RootLayout() {
       <AppInstallBanner />
       <SafeAreaDebugOverlay />
       <ScreenContainer>
-        {outlet}
+        <Suspense fallback={<RouteLoadingSpinner />}>
+          {outlet}
+        </Suspense>
         <AIChatFloatingButton isFloatingButtonVisible={isHomeScreen} />
         <BottomScrollEdgeFade />
       </ScreenContainer>
@@ -240,6 +255,8 @@ export default function RootLayout() {
       <PortalAutoSyncSheet
         enabled={isHomeScreen && Boolean(tokenInfo.accessToken)}
       />
+      {/* 포털 스크래핑 요청이 동의 없이 들어오면 어느 화면에서든 동의 시트를 띄운다. */}
+      <PortalSyncConsentHost />
     </HeaderProvider>
   );
 }

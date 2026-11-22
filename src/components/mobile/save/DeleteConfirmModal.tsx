@@ -63,7 +63,7 @@ const ButtonGroup = styled.div`
 const Button = styled.div`
   height: 26px;
   width: 64px;
-  background-color: var(--interactive-focus);
+  background-color: var(--interactive-primary);
   color: var(--text-inverse);
   border-radius: 10px;
   display: flex;

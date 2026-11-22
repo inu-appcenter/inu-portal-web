@@ -5,6 +5,7 @@ import Icon from "@/components/common/Icon";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { acceptInvite, getInvitePreview } from "@/apis/friends";
 import { ROUTES } from "@/constants/routes";
 import useUserStore from "@/stores/useUserStore";
@@ -12,6 +13,7 @@ import {
   DEFAULT_PROFILE_IMAGE_ID,
   normalizeProfileImageId,
 } from "@/utils/userInfo";
+import { mixpanelTrack } from "@/utils/mixpanel";
 
 /** 로그인 왕복 후 "친구 되기"를 다시 누르지 않아도 되게 하는 표식. */
 const AUTO_ACCEPT_STORAGE_KEY = "__intipPendingFriendInviteCode";
@@ -66,7 +68,12 @@ export default function MobileFriendInvitePage() {
 
   const acceptMutation = useMutation({
     mutationFn: () => acceptInvite(code),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      mixpanelTrack.friendAdded({
+        method: "초대 링크",
+        location: "초대 링크 페이지",
+        friendId: res.data?.friendId,
+      });
       setIsAccepted(true);
       queryClient.invalidateQueries({ queryKey: ["friends"] });
       queryClient.invalidateQueries({ queryKey: ["pendingFriends"] });
@@ -208,7 +215,7 @@ export default function MobileFriendInvitePage() {
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 24px ${MOBILE_PAGE_GUTTER} 40px;
+  padding: 24px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
 `;
 
 const StatusBlock = styled.div`
@@ -273,7 +280,7 @@ const AcceptedBadge = styled.div`
   border-radius: 999px;
   border: 2px solid var(--bg-base);
   background: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,7 +329,7 @@ const PrimaryButton = styled.button`
   border: none;
   border-radius: 999px;
   background-color: var(--interactive-primary);
-  color: var(--text-inverse);
+  color: var(--text-on-brand);
   font-family: Pretendard;
   font-size: 16px;
   font-weight: 600;

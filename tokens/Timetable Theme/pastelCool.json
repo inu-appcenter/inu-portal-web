@@ -6,21 +6,19 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#2e2e2e"
+        "$value": "#d6e4fa"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ffffff"
+        "$value": "#191f28"
       }
     },
     "color-1": {
@@ -29,21 +27,19 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#454545"
+        "$value": "#d0e7f7"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ffffff"
+        "$value": "#191f28"
       }
     },
     "color-2": {
@@ -52,21 +48,19 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#5c5c5c"
+        "$value": "#ccecf2"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ffffff"
+        "$value": "#191f28"
       }
     },
     "color-3": {
@@ -75,21 +69,19 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#737373"
+        "$value": "#ccf0ea"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ffffff"
+        "$value": "#191f28"
       }
     },
     "color-4": {
@@ -98,21 +90,19 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#7a7a7a"
+        "$value": "#cff0e0"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ffffff"
+        "$value": "#191f28"
       }
     },
     "color-5": {
@@ -121,18 +111,16 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#a1a1a1"
+        "$value": "#d5f0d5"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
         "$value": "#191f28"
@@ -144,18 +132,16 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#b8b8b8"
+        "$value": "#ddd9f5"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
         "$value": "#191f28"
@@ -167,18 +153,16 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#cfcfcf"
+        "$value": "#d9def7"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
         "$value": "#191f28"
@@ -190,18 +174,16 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#e0e0e0"
+        "$value": "#e0dcf2"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
         "$value": "#191f28"
@@ -213,18 +195,16 @@
           "com.figma.scopes": [
             "FRAME_FILL",
             "SHAPE_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
-        "$value": "#ededed"
+        "$value": "#e8e4f5"
       },
       "text": {
         "$extensions": {
           "com.figma.scopes": [
             "TEXT_FILL"
-          ],
-          "com.figma.hiddenFromPublishing": false
+          ]
         },
         "$type": "color",
         "$value": "#191f28"

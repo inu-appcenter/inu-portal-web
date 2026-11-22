@@ -6,6 +6,7 @@ import {
   MOBILE_PAGE_GUTTER,
   DESKTOP_READING_WIDTH,
 } from "@/styles/responsive";
+import { PAGE_BOTTOM_SAFE_PADDING } from "@/styles/safeArea";
 import { trackPageView } from "@/utils/mixpanel";
 import MobileDailyBriefCardOrderSetting from "@/components/mobile/dailyBrief/MobileDailyBriefCardOrderSetting";
 
@@ -34,7 +35,7 @@ const PageWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 16px ${MOBILE_PAGE_GUTTER} 60px;
+  padding: 16px ${MOBILE_PAGE_GUTTER} ${PAGE_BOTTOM_SAFE_PADDING};
   box-sizing: border-box;
 `;
 
