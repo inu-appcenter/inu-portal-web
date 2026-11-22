@@ -24,6 +24,11 @@ export interface UserInfoInput {
   /** 가입 시각(ISO). 구버전 서버에는 없다 */
   joinedAt?: string | null;
   termsAgreed?: boolean | null;
+  memberType?: MemberType | null;
+  onboardingCompleted?: boolean | null;
+  needsOnboarding?: boolean | null;
+  isAcademicVerified?: boolean | null;
+  examNo?: string | null;
 }
 
 export interface UserInfo {
@@ -41,9 +46,49 @@ export interface UserInfo {
   needsRealName: boolean;
   joinedAt?: string;
   termsAgreed?: boolean;
+  memberType?: MemberType;
+  onboardingCompleted?: boolean;
+  needsOnboarding?: boolean;
+  isAcademicVerified?: boolean;
+  examNo?: string;
 }
 
+export type MemberType = "STUDENT" | "FACULTY" | "FRESHMAN";
+
 export type RealNameSource = "MANUAL" | "PORTAL_SCRAPE";
+
+export interface OnboardingRequest {
+  nickname: string;
+  fireId: number;
+  realName?: string;
+  realNameSource?: RealNameSource;
+  departmentCode?: string;
+  isAcademicVerified?: boolean;
+}
+
+export interface FreshmanLoginRequest {
+  examNo: string;
+  name: string;
+  birthDate: string;
+  deptNm?: string;
+}
+
+export interface MergeFreshmanRequest {
+  koreanName: string;
+  birthDate: string;
+  departmentName?: string;
+}
+
+export interface MergeFreshmanResponse {
+  merged: boolean;
+  examNo?: string;
+  token?: TokenInfo;
+}
+
+export interface SyncAcademicRequest {
+  realName: string;
+  departmentCode?: string;
+}
 
 /** PUT /api/members — 실명 저장·삭제 (API v3.4 3-13, 서버는 기존 PUT을 확장) */
 export interface UpdateRealNameRequest {

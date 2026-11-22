@@ -122,6 +122,29 @@ tokenInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const errorStatus = error.response?.status;
+    const errorMessage = String(error.response?.data?.msg ?? "");
+
+    if (
+      errorStatus === 403 &&
+      errorMessage.includes("신입생 임시 계정 유효기간이 만료")
+    ) {
+      if (!hasNotifiedExpiry) {
+        hasNotifiedExpiry = true;
+        alert(
+          "신입생 임시 계정 유효기간이 만료되었어요. 정규 학번으로 포털 로그인하면 기존 데이터가 그대로 이어집니다.",
+        );
+      }
+      clearAuth();
+      if (
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/login"
+      ) {
+        window.location.replace("/login");
+      }
+      return Promise.reject(error);
+    }
+
     if (
       error.response &&
       error.response.status === 401 &&

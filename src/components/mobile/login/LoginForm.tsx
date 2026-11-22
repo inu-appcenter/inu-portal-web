@@ -20,6 +20,8 @@ import { identifyUser, mixpanelTrack } from "@/utils/mixpanel";
 import { getMemberIdFromToken } from "@/utils/token";
 import { safeLocalStorage } from "@/utils/safeStorage";
 import { loginMascotFace } from "@/resources/assets/illustrations/login";
+import FreshmanAuthModal from "@/components/mobile/login/FreshmanAuthModal";
+import { getAcademicYear } from "@/utils/academicYear";
 
 function getRedirectPath(search: string) {
   const redirect = new URLSearchParams(search).get("redirect");
@@ -35,6 +37,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
+  const [isFreshmanModalOpen, setIsFreshmanModalOpen] = useState(false);
   const { setTokenInfo } = useUserStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -154,7 +157,7 @@ export default function LoginForm() {
           type="text"
           inputMode="numeric"
           autoComplete="username"
-          placeholder="202600000"
+          placeholder={`${getAcademicYear()}00000`}
           value={studentId}
           onChange={setStudentId}
           onKeyDown={handleKeyPress}
@@ -187,9 +190,21 @@ export default function LoginForm() {
           {loading ? "로그인 중..." : "로그인"}
         </LoginButton>
 
+        <FreshmanLinkButton
+          type="button"
+          onClick={() => setIsFreshmanModalOpen(true)}
+        >
+          {`${getAcademicYear()}학년도 신입생이신가요?`}
+        </FreshmanLinkButton>
+
         {/* 약관 동의는 로그인 후 최초 프로필 설정 화면에서 명시적으로 받는다. */}
         <TermsLinks />
       </ButtonSection>
+
+      <FreshmanAuthModal
+        isOpen={isFreshmanModalOpen}
+        onClose={() => setIsFreshmanModalOpen(false)}
+      />
     </FormWrapper>
   );
 }
@@ -242,6 +257,22 @@ const MascotImage = styled.img`
   height: 44.1181px;
   right: -44.1181px;
   bottom: -23px;
+`;
+
+const FreshmanLinkButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-secondary, #4e5968);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-top: 4px;
+
+  &:hover {
+    color: var(--brand-primary, #3182f6);
+  }
 `;
 
 const LoginButton = styled.button`

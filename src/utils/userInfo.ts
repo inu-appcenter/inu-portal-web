@@ -37,5 +37,10 @@ export const normalizeUserInfo = (userInfo?: UserInfoInput | null): UserInfo => 
     needsRealName: !!userInfo?.needsRealName,
     joinedAt: userInfo?.joinedAt ?? undefined,
     termsAgreed: userInfo?.termsAgreed ?? undefined,
+    memberType: userInfo?.memberType ?? 'STUDENT',
+    onboardingCompleted: userInfo?.onboardingCompleted ?? true,
+    needsOnboarding: userInfo?.needsOnboarding ?? false,
+    isAcademicVerified: !!userInfo?.isAcademicVerified,
+    examNo: normalizeOptionalText(userInfo?.examNo),
   };
 };

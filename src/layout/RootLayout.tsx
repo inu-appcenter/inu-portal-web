@@ -76,6 +76,15 @@ export default function RootLayout() {
       return;
     }
 
+    // 온보딩이 완료되지 않은 회원(신규 가입자, 닉네임이 학번인 기존 회원 등)은
+    // 6단계 온보딩 화면으로 강제 이동하여 학적 연동, 닉네임, 프로필 캐릭터를 설정하도록 한다.
+    if (userInfo.needsOnboarding) {
+      if (location.pathname !== ROUTES.ONBOARDING) {
+        navigate(ROUTES.ONBOARDING, { replace: true });
+      }
+      return;
+    }
+
     // 최초 로그인(학과 미등록) 사용자는 학과 등록과 이용약관(EULA) 동의를 마쳐야
     // 서비스를 이용할 수 있다. (App Store 가이드라인 1.2 UGC 대응)
     // 이미 학과가 등록된 기존 사용자에게는 동의 절차를 강제하지 않는다.

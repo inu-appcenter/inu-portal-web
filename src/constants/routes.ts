@@ -3,6 +3,7 @@ export const ROUTES = {
   MOBILE_ROOT: "/m",
 
   LOGIN: "/login",
+  ONBOARDING: "/onboarding",
 
   HOME: "/home",
   MOBILE_HOME: "/m/home",

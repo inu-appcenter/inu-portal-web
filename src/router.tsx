@@ -23,6 +23,7 @@ const MobileMyPage = TAB_COMPONENTS.mypage;
 const MobileSavePage = TAB_COMPONENTS.save;
 
 // Lazy-loaded Sub Pages
+const OnboardingPage = lazyWithRetry(() => import("@/pages/mobile/OnboardingPage"));
 const AiPage = lazyWithRetry(() => import("@/pages/desktop/AiPage"));
 const AiBrandPage = lazyWithRetry(() => import("@/pages/mobile/Ai/AiBrandPage"));
 const MobileWritePage = lazyWithRetry(() => import("@/pages/mobile/MobileWritePage"));
@@ -176,8 +177,9 @@ export const router = createBrowserRouter([
       {
         element: <SubLayout showNav={false} backgroundColor="transparent" />,
         children: [
-          // 로그인
+          // 로그인 및 온보딩
           { path: ROUTES.LOGIN, element: <MobileLoginPage /> },
+          { path: ROUTES.ONBOARDING, element: <OnboardingPage /> },
 
           //시간표
           { path: ROUTES.TIMETABLE.EDIT, element: <MobileTimeTableEditPage /> },
