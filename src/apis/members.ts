@@ -310,3 +310,15 @@ export const syncOfficialAcademic = async (
   );
   return response.data;
 };
+
+// 신입생 임시 계정에서 포털 학번·비밀번호 인증으로 정식 학생 계정 전환
+export const convertFreshmanToStudent = async (
+  studentId: string,
+  password: string,
+): Promise<ApiResponse<TokenInfo>> => {
+  const response = await tokenInstance.post<ApiResponse<TokenInfo>>(
+    `/api/members/freshman/convert`,
+    { studentId, password },
+  );
+  return response.data;
+};
