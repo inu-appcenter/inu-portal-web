@@ -21,6 +21,7 @@ import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAdminUser } from "@/types/admin";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 
 const PostDetailSkeleton = () => (
   <PostWrapper>
@@ -229,10 +230,13 @@ export default function PostDetailPage() {
       });
 
       // postId만으로 서버가 작성자를 찾아 차단하므로(#294) 익명 글도 차단 가능하다.
-      menu.push({
-        label: "작성자 차단하기",
-        onClick: () => handleBlockPostAuthor(post.id, post.writer || "작성자"),
-      });
+      // 탈퇴한 사용자는 차단할 대상이 없다.
+      if (!isWithdrawnNickname(post.writer)) {
+        menu.push({
+          label: "작성자 차단하기",
+          onClick: () => handleBlockPostAuthor(post.id, post.writer || "작성자"),
+        });
+      }
     }
 
     return menu.length > 0 ? menu : undefined;

@@ -10,6 +10,7 @@ import useUserStore from "@/stores/useUserStore";
 import Icon from "@/components/common/Icon";
 import { formatTimeAgo } from "@/utils/date";
 import useHiddenContentStore from "@/stores/useHiddenContentStore";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 
 interface CommentListProps {
   postId?: number;
@@ -143,15 +144,18 @@ export default function CommentListMobile({
                 >
                   신고
                 </DropdownItem>
-                <DropdownItem
-                  $danger
-                  onClick={() => {
-                    setActiveMenuId(null);
-                    onBlockWriter(reply.id, reply.writer || "작성자");
-                  }}
-                >
-                  차단
-                </DropdownItem>
+                {/* 탈퇴한 사용자는 차단할 대상이 없다. */}
+                {!isWithdrawnNickname(reply.writer) && (
+                  <DropdownItem
+                    $danger
+                    onClick={() => {
+                      setActiveMenuId(null);
+                      onBlockWriter(reply.id, reply.writer || "작성자");
+                    }}
+                  >
+                    차단
+                  </DropdownItem>
+                )}
               </>
             )}
           </DropdownMenu>
