@@ -98,7 +98,6 @@ export default function PortalAccountForm({
         <InputField
           label="포털 학번"
           type="text"
-          inputMode="numeric"
           placeholder="학번을 입력해 주세요"
           value={studentId}
           onChange={(val) => setStudentId(val)}

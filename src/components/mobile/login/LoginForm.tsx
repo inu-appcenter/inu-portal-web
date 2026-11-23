@@ -152,7 +152,6 @@ export default function LoginForm() {
         <InputField
           label="학번"
           type="text"
-          inputMode="numeric"
           autoComplete="username"
           placeholder="202600000"
           value={studentId}
