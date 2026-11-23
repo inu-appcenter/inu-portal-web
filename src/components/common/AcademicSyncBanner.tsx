@@ -9,25 +9,64 @@ import {
 } from "@/apis/mobileAgentBridge";
 import { syncOfficialAcademic, getMembers } from "@/apis/members";
 import { findDepartmentCodeByName } from "@/utils/departmentOptions";
+import FreshmanConvertModal from "@/components/mobile/login/FreshmanConvertModal";
 
 export default function AcademicSyncBanner() {
   const { userInfo, setUserInfo } = useUserStore();
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [convertModalOpen, setConvertModalOpen] = useState(false);
 
   const location = useLocation();
 
-  // 온보딩 중이거나 로그인 화면이거나 학생이 아니거나 이미 학적 인증이 완료되었거나 닫았으면 숨김
+  const isFreshman = userInfo.memberType === "FRESHMAN";
+  const isUnverifiedStudent =
+    userInfo.memberType === "STUDENT" && !userInfo.isAcademicVerified;
+
+  // 온보딩 중이거나 로그인 화면이거나 대상 회원이 아니거나 닫았으면 숨김
   if (
     dismissed ||
     userInfo.id === 0 ||
     userInfo.needsOnboarding ||
     location.pathname === ROUTES.ONBOARDING ||
     location.pathname === ROUTES.LOGIN ||
-    userInfo.memberType !== "STUDENT" ||
-    userInfo.isAcademicVerified
+    (!isFreshman && !isUnverifiedStudent)
   ) {
     return null;
+  }
+
+  if (isFreshman) {
+    return (
+      <>
+        <BannerContainer>
+          <BannerContent>
+            <BannerTitle>정식 학번이 발급됐나요?</BannerTitle>
+            <BannerDesc>
+              포털 계정으로 전환하면 지금 데이터 그대로 계속 이용할 수 있어요.
+            </BannerDesc>
+          </BannerContent>
+          <ActionGroup>
+            <SyncButton
+              type="button"
+              onClick={() => setConvertModalOpen(true)}
+            >
+              전환하기
+            </SyncButton>
+            <DismissButton
+              type="button"
+              onClick={() => setDismissed(true)}
+              aria-label="닫기"
+            >
+              ✕
+            </DismissButton>
+          </ActionGroup>
+        </BannerContainer>
+        <FreshmanConvertModal
+          isOpen={convertModalOpen}
+          onClose={() => setConvertModalOpen(false)}
+        />
+      </>
+    );
   }
 
   const handleSync = async () => {
