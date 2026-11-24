@@ -1646,18 +1646,21 @@ const SemesterSelectWrap = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-default);
-  border-radius: 10px;
-  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  padding: 6px 4px;
   flex-shrink: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
 `;
 
 const SemesterLabel = styled.span`
   font-family: Pretendard;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 18px;
+  line-height: 20px;
   color: var(--text-primary);
   white-space: nowrap;
 `;
@@ -1672,7 +1675,7 @@ const SemesterSelect = styled.select`
 `;
 
 const SemesterChevron = styled.span`
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
   color: var(--text-secondary);
   transform: translateY(-1px);
