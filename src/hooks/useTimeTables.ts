@@ -29,6 +29,7 @@ import {
 } from "@/stores/useTimetableStore";
 import useUserStore from "@/stores/useUserStore";
 import { mapDetailItemsToClassItems } from "@/utils/timetable";
+import { pickCurrentSemester } from "@/utils/semester";
 import type {
   Term,
   TimeTableCourseItemRequest,
@@ -158,7 +159,7 @@ export const useTimeTableDetail = (
   const enabled = options?.enabled ?? true;
 
   const currentOpenSemester = useMemo(
-    () => semesters.find((s) => s.status === "OPEN"),
+    () => pickCurrentSemester(semesters),
     [semesters],
   );
 

@@ -40,7 +40,11 @@ import TimetableMenuBottomSheet from "@/components/mobile/timetable/TimetableMen
 import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateModal";
 
 import { mixpanelTrack } from "@/utils/mixpanel";
-import { formatSemester } from "@/utils/semester";
+import {
+  formatSemester,
+  pickCurrentSemester,
+  pickLatestOpenSemester,
+} from "@/utils/semester";
 import TimetableAiEvaluationBubble from "@/components/mobile/timetable/TimetableAiEvaluationBubble";
 
 import { noTimetable as NoTimetableGraphic } from "@/resources/assets/illustrations/timetable";
@@ -139,6 +143,11 @@ const MobileTimeTablePage = () => {
   const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createThenImport, setCreateThenImport] = useState(false);
+  const [createModalInitialSemester, setCreateModalInitialSemester] =
+    useState("");
+  const [dismissedBannerKey, setDismissedBannerKey] = useState<string | null>(
+    null,
+  );
 
   // const {
   //   timetables: fdf,
@@ -156,7 +165,12 @@ const MobileTimeTablePage = () => {
   const deleteItemMutation = useDeleteTimeTableItem();
 
   const currentSemester = useMemo(
-    () => semesters.find((semester) => semester.status === "OPEN") ?? null,
+    () => pickCurrentSemester(semesters) ?? null,
+    [semesters],
+  );
+
+  const latestOpenSemester = useMemo(
+    () => pickLatestOpenSemester(semesters) ?? null,
     [semesters],
   );
 
@@ -167,6 +181,57 @@ const MobileTimeTablePage = () => {
         : "",
     [currentSemester],
   );
+
+  const latestOpenSemesterLabel = useMemo(
+    () =>
+      latestOpenSemester
+        ? formatSemester(latestOpenSemester.year, latestOpenSemester.term)
+        : "",
+    [latestOpenSemester],
+  );
+
+  const newSemesterDismissKey = latestOpenSemester
+    ? `timetable:dismissed-open-semester:${latestOpenSemester.year}-${latestOpenSemester.term}`
+    : null;
+
+  const isNewSemesterBannerDismissed = useMemo(() => {
+    if (!newSemesterDismissKey) return false;
+    if (dismissedBannerKey === newSemesterDismissKey) return true;
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(newSemesterDismissKey) === "1";
+    } catch {
+      return false;
+    }
+  }, [newSemesterDismissKey, dismissedBannerKey]);
+
+  const shouldShowNewSemesterBanner = useMemo(() => {
+    if (!isLoggedIn || !latestOpenSemester || !currentSemester) return false;
+    if (latestOpenSemester.status !== "OPEN") return false;
+    if (latestOpenSemester.id === currentSemester.id) return false;
+    if (isNewSemesterBannerDismissed) return false;
+    return !timetables.some(
+      (t) =>
+        t.year === latestOpenSemester.year &&
+        t.term === latestOpenSemester.term,
+    );
+  }, [
+    isLoggedIn,
+    latestOpenSemester,
+    currentSemester,
+    isNewSemesterBannerDismissed,
+    timetables,
+  ]);
+
+  const handleDismissNewSemesterBanner = () => {
+    if (!newSemesterDismissKey) return;
+    try {
+      window.localStorage.setItem(newSemesterDismissKey, "1");
+    } catch {
+      // localStorage 접근 불가 환경에서도 현재 세션에서는 닫힘 유지
+    }
+    setDismissedBannerKey(newSemesterDismissKey);
+  };
 
   const idParam = searchParams.get("id");
 
@@ -572,8 +637,11 @@ const MobileTimeTablePage = () => {
 
       <TimeTableCreateModal
         isOpen={isCreateModalOpen}
-        initialSemester={currentSemesterLabel}
-        onClose={() => setIsCreateModalOpen(false)}
+        initialSemester={createModalInitialSemester || currentSemesterLabel}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setCreateModalInitialSemester("");
+        }}
         onSuccess={(created) => {
           setIsCreateModalOpen(false);
           if (createThenImport) {
@@ -694,6 +762,37 @@ const MobileTimeTablePage = () => {
             items={timetableMenuItems}
           />
         </>
+      )}
+
+      {shouldShowNewSemesterBanner && latestOpenSemester && (
+        <NewSemesterBanner role="region" aria-label="새 학기 안내">
+          <NewSemesterBannerText>
+            {latestOpenSemesterLabel} 시간표가 열렸어요
+          </NewSemesterBannerText>
+          <NewSemesterBannerActions>
+            <NewSemesterCreateButton
+              type="button"
+              onClick={() => {
+                mixpanelTrack.timetableFeatureClicked(
+                  "시간표 생성",
+                  "신규 학기 안내 배너",
+                );
+                setCreateThenImport(false);
+                setCreateModalInitialSemester(latestOpenSemesterLabel);
+                setIsCreateModalOpen(true);
+              }}
+            >
+              만들기
+            </NewSemesterCreateButton>
+            <NewSemesterDismissButton
+              type="button"
+              aria-label="새 학기 안내 닫기"
+              onClick={handleDismissNewSemesterBanner}
+            >
+              ✕
+            </NewSemesterDismissButton>
+          </NewSemesterBannerActions>
+        </NewSemesterBanner>
       )}
 
       {!isLoggedIn ? (
@@ -1262,4 +1361,62 @@ const MenuCardDescription = styled.p`
   margin: 0;
   width: 100%;
   word-break: keep-all;
+`;
+
+const NewSemesterBanner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-default);
+`;
+
+const NewSemesterBannerText = styled.span`
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: keep-all;
+`;
+
+const NewSemesterBannerActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+`;
+
+const NewSemesterCreateButton = styled.button`
+  border: none;
+  border-radius: 10px;
+  background-color: var(--interactive-primary);
+  color: var(--text-on-brand);
+  font-family: Pretendard;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  padding: 6px 12px;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
+const NewSemesterDismissButton = styled.button`
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
 `;

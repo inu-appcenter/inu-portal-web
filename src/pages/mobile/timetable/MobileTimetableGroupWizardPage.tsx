@@ -9,6 +9,7 @@ import Badge from "@/components/common/Badge";
 import { ROUTES } from "@/constants/routes";
 import { appBridge, supportsMultiWebView } from "@/utils/appBridgeAdapter";
 import { useSemesters } from "@/hooks/useSemesters";
+import { pickLatestOpenSemester } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
 import {
   GROUP_WIZARD_MAX_CREDIT_SCALE,
@@ -92,7 +93,8 @@ export default function MobileTimetableGroupWizardPage() {
   useEffect(() => {
     if (semesters.length === 0) return;
     if (semester && semesters.some((s) => s.id === semester.id)) return;
-    const preferred = semesters.find((s) => s.status === "OPEN") ?? semesters[0];
+    const preferred = pickLatestOpenSemester(semesters);
+    if (!preferred) return;
     setSemester({ id: preferred.id, year: preferred.year, term: preferred.term });
   }, [semesters, semester, setSemester]);
 

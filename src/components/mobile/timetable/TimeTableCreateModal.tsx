@@ -50,10 +50,12 @@ export default function TimeTableCreateModal({
 
   const semesterOptions = useMemo(
     () =>
-      semesters.map((s) => ({
-        id: s.id,
-        label: formatSemester(s.year, s.term),
-      })),
+      semesters
+        .filter((s) => s.status !== "UPCOMING")
+        .map((s) => ({
+          id: s.id,
+          label: formatSemester(s.year, s.term),
+        })),
     [semesters],
   );
 
