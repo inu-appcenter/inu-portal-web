@@ -48,17 +48,16 @@ export default function TimeTableCreateModal({
   const { semesters } = useSemesters();
   const createTimeTableMutation = useCreateTimeTable();
 
-  const semesterOptions = useMemo(() => {
-    const openSemesters = semesters.filter((s) => s.status === "OPEN");
-    const targetSemesters =
-      openSemesters.length > 0
-        ? openSemesters
-        : semesters.filter((s) => s.status !== "UPCOMING");
-    return targetSemesters.map((s) => ({
-      id: s.id,
-      label: formatSemester(s.year, s.term),
-    }));
-  }, [semesters]);
+  const semesterOptions = useMemo(
+    () =>
+      semesters
+        .filter((s) => s.status !== "UPCOMING")
+        .map((s) => ({
+          id: s.id,
+          label: formatSemester(s.year, s.term),
+        })),
+    [semesters],
+  );
 
   const fallbackSemesterId = useMemo(() => {
     const matched = semesterOptions.find((s) => s.label === initialSemester);
