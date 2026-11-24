@@ -42,7 +42,6 @@ import TimeTableCreateModal from "@/components/mobile/timetable/TimeTableCreateM
 import { mixpanelTrack } from "@/utils/mixpanel";
 import {
   formatSemester,
-  isRegularTerm,
   pickCurrentSemester,
   pickLatestOpenSemester,
 } from "@/utils/semester";
@@ -210,7 +209,6 @@ const MobileTimeTablePage = () => {
     if (!isLoggedIn || !latestOpenSemester || !currentSemester) return false;
     if (latestOpenSemester.status !== "OPEN") return false;
     if (latestOpenSemester.id === currentSemester.id) return false;
-    if (!isRegularTerm(latestOpenSemester.term)) return false;
     if (isNewSemesterBannerDismissed) return false;
     return !timetables.some(
       (t) =>
