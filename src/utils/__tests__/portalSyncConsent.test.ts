@@ -19,12 +19,11 @@ Object.defineProperty(globalThis, "window", {
 
 const {
   PORTAL_SYNC_CONSENT_STORAGE_KEY,
+  PORTAL_SYNC_CONSENT_VERSION,
   clearPortalSyncConsent,
-  hasAiAcademicConsent,
   hasPortalSyncConsent,
   recordPortalSyncConsent,
   requestPortalSyncConsent,
-  setAiAcademicConsent,
   setPortalSyncConsentHostMounted,
   settlePortalSyncConsentRequest,
   usePortalSyncConsentStore,
@@ -40,47 +39,44 @@ describe("portalSyncConsent", () => {
     });
   });
 
-  it("동의 전에는 필수·선택 모두 없다", () => {
+  it("동의 전에는 없다", () => {
     expect(hasPortalSyncConsent()).toBe(false);
-    expect(hasAiAcademicConsent()).toBe(false);
   });
 
-  it("필수만 동의하면 AI 활용은 꺼진 채로 남는다", () => {
-    recordPortalSyncConsent({ ai: false });
-    expect(hasPortalSyncConsent()).toBe(true);
-    expect(hasAiAcademicConsent()).toBe(false);
-  });
-
-  it("AI 활용은 필수 동의가 있을 때만 켜고 끌 수 있다", () => {
-    setAiAcademicConsent(true);
-    expect(hasAiAcademicConsent()).toBe(false);
-
-    recordPortalSyncConsent({ ai: false });
-    setAiAcademicConsent(true);
-    expect(hasAiAcademicConsent()).toBe(true);
-    setAiAcademicConsent(false);
-    expect(hasAiAcademicConsent()).toBe(false);
+  it("동의 기록 후에는 통과한다", () => {
+    recordPortalSyncConsent();
     expect(hasPortalSyncConsent()).toBe(true);
   });
 
   it("버전이 다른 동의는 없는 것으로 본다", () => {
     localStorage.setItem(
       PORTAL_SYNC_CONSENT_STORAGE_KEY,
-      JSON.stringify({ version: "old", agreedAt: "2026-01-01T00:00:00.000Z", aiAgreedAt: null }),
+      JSON.stringify({ version: "old", agreedAt: "2026-01-01T00:00:00.000Z" }),
     );
     expect(hasPortalSyncConsent()).toBe(false);
   });
 
-  it("철회하면 필수·선택 모두 지워진다", () => {
-    recordPortalSyncConsent({ ai: true });
+  it("과거 형식(aiAgreedAt 포함)도 같은 버전이면 동의로 인정한다", () => {
+    localStorage.setItem(
+      PORTAL_SYNC_CONSENT_STORAGE_KEY,
+      JSON.stringify({
+        version: PORTAL_SYNC_CONSENT_VERSION,
+        agreedAt: "2026-10-15T00:00:00.000Z",
+        aiAgreedAt: null,
+      }),
+    );
+    expect(hasPortalSyncConsent()).toBe(true);
+  });
+
+  it("철회하면 지워진다", () => {
+    recordPortalSyncConsent();
     clearPortalSyncConsent();
     expect(hasPortalSyncConsent()).toBe(false);
-    expect(hasAiAcademicConsent()).toBe(false);
     expect(usePortalSyncConsentStore.getState().consent).toBeNull();
   });
 
   it("이미 동의했으면 시트를 띄우지 않고 바로 통과한다", async () => {
-    recordPortalSyncConsent({ ai: false });
+    recordPortalSyncConsent();
     await expect(requestPortalSyncConsent()).resolves.toBe(true);
     expect(usePortalSyncConsentStore.getState().requestOpen).toBe(false);
   });
@@ -95,17 +91,16 @@ describe("portalSyncConsent", () => {
     const second = requestPortalSyncConsent();
     expect(usePortalSyncConsentStore.getState().requestOpen).toBe(true);
 
-    settlePortalSyncConsentRequest({ agreed: true, ai: true });
+    settlePortalSyncConsentRequest(true);
     await expect(first).resolves.toBe(true);
     await expect(second).resolves.toBe(true);
-    expect(hasAiAcademicConsent()).toBe(true);
     expect(usePortalSyncConsentStore.getState().requestOpen).toBe(false);
   });
 
   it("시트를 닫으면 거절로 끝나고 동의는 남지 않는다", async () => {
     setPortalSyncConsentHostMounted(true);
     const request = requestPortalSyncConsent();
-    settlePortalSyncConsentRequest({ agreed: false });
+    settlePortalSyncConsentRequest(false);
     await expect(request).resolves.toBe(false);
     expect(hasPortalSyncConsent()).toBe(false);
   });

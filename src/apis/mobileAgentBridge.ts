@@ -1,7 +1,7 @@
 import useUserStore from "@/stores/useUserStore";
 import { secureStorage } from "@/utils/secureStorage";
 import {
-  hasAiAcademicConsent,
+  hasPortalSyncConsent,
   requestPortalSyncConsent,
 } from "@/utils/portalSyncConsent";
 import {
@@ -61,30 +61,6 @@ export interface AcademicInfoData {
 }
 
 /**
- * AI 요청에 포함해도 되는 비식별 학적 요약만 만든다.
- * 원본 학번·이름·지도교수 등 개인 식별 정보는 이 경계를 절대 넘지 않는다.
- */
-function toAnonymousAcademicContext(data: any) {
-  const studentId = data.studentId || data.student_id || "";
-  const entryYear = /^\d{4}/.test(studentId) ? studentId.slice(0, 4) : undefined;
-  const dept = data.departmentName || data.majorName || data.department_name || "";
-  const status = data.enrollmentStatus || data.enrollmentStatusName || data.enrollment_status || "재학";
-
-  return {
-    ...(entryYear ? { entryYear } : {}),
-    departmentName: dept,
-    ...(data.collegeName ? { collegeName: data.collegeName } : {}),
-    enrollmentStatus: status,
-    ...(data.completedSemesterCount ? { completedSemesterCount: String(data.completedSemesterCount) } : {}),
-    acquiredCredits: String(data.acquiredCredits || "0"),
-    gradeAverage: String(data.gradeAverage || "0.0"),
-    ...(data.entranceDate ? { entranceDate: String(data.entranceDate).slice(0, 4) } : {}),
-    ...(data.latestEnrollmentChange ? { latestEnrollmentChange: data.latestEnrollmentChange } : {}),
-    ...(data.advisorProfessorName ? { advisorProfessorName: data.advisorProfessorName } : {}),
-  };
-}
-
-/**
  * UI 표시 및 안전한 캐싱을 위한 정제 학적 정보 생성.
  * rawFields 등 저수준 프로토콜 파편 및 불필요한 민감 필드를 배제합니다.
  */
@@ -127,16 +103,22 @@ export function isMobileAppEnvironment(): boolean {
 }
 
 /**
- * 휴대폰이 학교 포털·이러닝·도서관에 대신 접속하는(스크래핑) 브릿지 액션.
- * [필수] 포털 정보 불러오기 동의가 없으면 보내지 않는다.
- * 계정 확인·삭제처럼 학교 시스템에 접속하지 않는 액션은 넣지 않는다.
+ * 휴대폰에 학교 계정(포털·도서관·이러닝)을 처음 등록·연동할 때 사용하는 브릿지 액션.
+ * [필수] 동의가 없으면 동의 시트를 띄워 사용자 동의를 받는다.
  */
-const PORTAL_SYNC_ACTIONS = new Set([
+const PORTAL_REGISTER_ACTIONS = new Set([
   'savePortalAccount',
-  'fetchAcademicInfo',
-  'executeAgentAction',
   'saveLibraryAccount',
   'saveLmsAccount',
+]);
+
+/**
+ * 이미 연동된 계정을 전제로 학교 포털·이러닝·도서관에 대신 접속하는(스크래핑) 브릿지 액션.
+ * 동의가 없으면 시트를 띄우지 않고 즉시 CONSENT_REQUIRED로 차단한다.
+ */
+const PORTAL_SCRAPE_ACTIONS = new Set([
+  'fetchAcademicInfo',
+  'executeAgentAction',
   'registerLocalWatchJob',
   'startLibrarySeatSession',
   'startLmsDeadlineOngoing',
@@ -144,12 +126,20 @@ const PORTAL_SYNC_ACTIONS = new Set([
 
 /**
  * 모바일 네이티브 브릿지로 액션 요청을 전송하고 응답을 기다리는 헬퍼.
- * 스크래핑 액션은 동의가 없으면 동의 시트를 띄우고, 동의하지 않으면 보내지 않는다.
+ * 계정 등록 시에는 동의 시트를 띄우고, 조회/실행 시에는 동의가 없으면 차단한다.
  */
 async function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs = 15000): Promise<AgentActionResult<T>> {
-  if (PORTAL_SYNC_ACTIONS.has(type) && isMobileAppEnvironment()) {
-    const agreed = await requestPortalSyncConsent();
-    if (!agreed) {
+  if (isMobileAppEnvironment()) {
+    if (PORTAL_REGISTER_ACTIONS.has(type)) {
+      const agreed = await requestPortalSyncConsent();
+      if (!agreed) {
+        return {
+          success: false,
+          errorCode: 'CONSENT_REQUIRED',
+          errorMessage: '포털 정보 불러오기에 동의해야 이용할 수 있어요.',
+        };
+      }
+    } else if (PORTAL_SCRAPE_ACTIONS.has(type) && !hasPortalSyncConsent()) {
       return {
         success: false,
         errorCode: 'CONSENT_REQUIRED',
@@ -828,9 +818,7 @@ export async function cancelLmsDeadlineOngoingBridge(): Promise<AgentActionResul
 }
 
 /**
- * AI 에이전트 질문 전송 시 기기 보안 영역(SSO)의 실시간 컨텍스트(학적, LMS 과제)를 신속하게 수집.
- * [선택] AI 채팅 학적 활용에 동의한 경우에만 학적 요약과 이러닝 일정을 싣는다.
- * 동의 문구(constants/portalSyncTerms.ts)에 적힌 정보만 보내야 한다.
+ * AI 에이전트 질문 전송 시 앱 환경 여부와 포털 연동 상태를 수집한다.
  */
 export async function resolveClientContext(): Promise<Record<string, any>> {
   const isApp = isMobileAppEnvironment();
@@ -840,104 +828,9 @@ export async function resolveClientContext(): Promise<Record<string, any>> {
     return context;
   }
 
-  const aiConsented = hasAiAcademicConsent();
-
   try {
-    const [portalLinked, lmsLinked] = await Promise.all([
-      checkPortalAccountLinked(),
-      checkLmsAccountLinked(),
-    ]);
-
-    const tasks: Promise<any>[] = [];
-
-    if (portalLinked && !aiConsented) {
-      context.portal = {
-        linked: true,
-        academicErrorCode: 'AI_CONSENT_REQUIRED',
-        academicErrorMessage: 'AI 채팅 학적 활용에 동의하지 않았어요. 마이페이지 > 포털 계정 관리에서 켤 수 있어요.',
-      };
-    } else if (portalLinked) {
-      // 이름·학번 등 식별 정보는 보내지 않고 비식별 요약만 싣는다.
-      context.portal = { linked: true };
-      tasks.push(
-        fetchAcademicInfoFromApp()
-          .then((res) => {
-            if (res?.success && res.data) {
-              context.academic = toAnonymousAcademicContext(res.data);
-              try {
-                const cachedData = {
-                  ...res.data,
-                  rawFields: undefined,
-                };
-                void secureStorage.setItem("portal_student_info", cachedData);
-                localStorage.setItem("portal_info_last_updated", new Date().toISOString());
-              } catch {}
-            }
-            context.portal = {
-              linked: true,
-              ...(res?.success ? {} : {
-                academicErrorCode: res?.errorCode,
-                academicErrorMessage: res?.errorMessage,
-              }),
-            };
-          })
-          .catch((err) => {
-            context.portal = {
-              linked: true,
-              academicErrorCode: 'FETCH_ERROR',
-              academicErrorMessage: err?.message || '학적 정보 조회 중 오류가 발생했습니다.',
-            };
-          })
-      );
-    } else {
-      context.portal = { linked: false };
-    }
-
-    // LMS 계정이 연동되어 있으면 과제 일정 수집 (최대 2.5초 대기)
-    if (lmsLinked && aiConsented) {
-      const nowSec = Math.floor(Date.now() / 1000);
-      tasks.push(
-        Promise.race([
-          Promise.all([
-            executeAgentActionBridge({
-            actionId: `ctx_lms_${Date.now()}`,
-            authDomain: 'LMS',
-            request: {
-              method: 'GET',
-              url: 'https://lms.inu.ac.kr/webservice/rest/server.php',
-              params: {
-                wsfunction: 'core_calendar_get_action_events_by_timesort',
-                moodlewsrestformat: 'json',
-                timesortfrom: nowSec - 86400,
-                timesortto: nowSec + 86400 * 14,
-                limitnum: 10,
-              },
-            },
-            }),
-            lmsLinked.user?.id ? executeAgentActionBridge({
-              actionId: `ctx_lms_courses_${Date.now()}`,
-              authDomain: 'LMS',
-              request: {
-                method: 'GET',
-                url: 'https://lms.inu.ac.kr/webservice/rest/server.php',
-                params: { wsfunction: 'core_enrol_get_users_courses', userid: lmsLinked.user.id, moodlewsrestformat: 'json' },
-              },
-            }) : Promise.resolve(null),
-          ]),
-          new Promise<null>((r) => setTimeout(() => r(null), 2500)),
-        ]).then((result: any) => {
-          const [res, coursesRes] = Array.isArray(result) ? result : [];
-          if (res?.success && res.data && !res.data.error) {
-            context.lms = {
-              events: Array.isArray(res.data.events) ? res.data.events : [],
-              courses: coursesRes?.success && Array.isArray(coursesRes.data) ? coursesRes.data : [],
-            };
-          }
-        }).catch(() => {})
-      );
-    }
-
-    await Promise.all(tasks);
+    const portalLinked = await checkPortalAccountLinked();
+    context.portal = { linked: portalLinked };
   } catch (err) {
     console.debug('[resolveClientContext] non-blocking context gathering error:', err);
   }
