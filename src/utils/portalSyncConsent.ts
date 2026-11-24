@@ -5,7 +5,6 @@ import { safeLocalStorage } from "@/utils/safeStorage";
  * 포털 정보 불러오기(휴대폰이 학교 포털·이러닝·도서관에 대신 접속하는 기능) 동의.
  *
  * - [필수] 포털 정보 불러오기: 없으면 앱 브릿지의 스크래핑 요청을 보내지 않는다.
- * - [선택] AI 채팅 학적 활용: 없으면 AI 채팅 요청에 학적·이러닝 정보를 싣지 않는다.
  *
  * 서버에 동의 이력을 저장하는 API가 아직 없어 이용약관 동의(TermsAgreement)처럼
  * 기기 단위로 보관한다. 기기를 바꾸거나 앱을 재설치하면 다시 동의를 받는다.
@@ -20,8 +19,6 @@ export interface PortalSyncConsent {
   version: string;
   /** [필수] 포털 정보 불러오기에 동의한 시각 */
   agreedAt: string;
-  /** [선택] AI 채팅 학적 활용에 동의한 시각. 동의하지 않았거나 철회했으면 null */
-  aiAgreedAt: string | null;
 }
 
 function readConsent(): PortalSyncConsent | null {
@@ -36,7 +33,6 @@ function readConsent(): PortalSyncConsent | null {
     return {
       version: parsed.version,
       agreedAt: parsed.agreedAt,
-      aiAgreedAt: parsed.aiAgreedAt ?? null,
     };
   } catch {
     return null;
@@ -73,26 +69,11 @@ export function hasPortalSyncConsent(): boolean {
   return readConsent() !== null;
 }
 
-export function hasAiAcademicConsent(): boolean {
-  return Boolean(readConsent()?.aiAgreedAt);
-}
-
-export function recordPortalSyncConsent({ ai }: { ai: boolean }): void {
+export function recordPortalSyncConsent(): void {
   const now = new Date().toISOString();
   writeConsent({
     version: PORTAL_SYNC_CONSENT_VERSION,
     agreedAt: now,
-    aiAgreedAt: ai ? now : null,
-  });
-}
-
-/** [선택] AI 채팅 학적 활용만 켜거나 끈다. 필수 동의가 없으면 아무것도 하지 않는다. */
-export function setAiAcademicConsent(agreed: boolean): void {
-  const current = readConsent();
-  if (!current) return;
-  writeConsent({
-    ...current,
-    aiAgreedAt: agreed ? new Date().toISOString() : null,
   });
 }
 
@@ -126,14 +107,12 @@ export function requestPortalSyncConsent(): Promise<boolean> {
 }
 
 /** 동의 시트가 닫힐 때 호스트가 호출한다. */
-export function settlePortalSyncConsentRequest(
-  result: { agreed: true; ai: boolean } | { agreed: false },
-): void {
-  if (result.agreed) {
-    recordPortalSyncConsent({ ai: result.ai });
+export function settlePortalSyncConsentRequest(agreed: boolean): void {
+  if (agreed) {
+    recordPortalSyncConsent();
   }
   usePortalSyncConsentStore.setState({ requestOpen: false });
-  resolvePending?.(result.agreed);
+  resolvePending?.(agreed);
   resolvePending = null;
   pendingRequest = null;
 }
@@ -141,6 +120,6 @@ export function settlePortalSyncConsentRequest(
 export function setPortalSyncConsentHostMounted(mounted: boolean): void {
   usePortalSyncConsentStore.setState({ hostMounted: mounted });
   if (!mounted && pendingRequest) {
-    settlePortalSyncConsentRequest({ agreed: false });
+    settlePortalSyncConsentRequest(false);
   }
 }
