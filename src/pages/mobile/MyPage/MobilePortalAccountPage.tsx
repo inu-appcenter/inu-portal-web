@@ -19,17 +19,12 @@ import Modal from "@/components/common/Modal";
 import Skeleton from "@/components/common/Skeleton";
 import PortalAccountForm from "@/components/common/PortalAccountForm";
 import BottomSheet from "@/components/common/BottomSheet";
-import Switch from "@/components/common/Switch";
 import PortalSyncTermDetail from "@/components/common/PortalSyncTermDetail";
 import WizardBottomCTA from "@/components/mobile/timetable/wizard/ui/WizardBottomCTA";
-import {
-  getPortalSyncTerm,
-  type PortalSyncTermKey,
-} from "@/constants/portalSyncTerms";
+import { getPortalSyncTerm } from "@/constants/portalSyncTerms";
 import {
   clearPortalSyncConsent,
   requestPortalSyncConsent,
-  setAiAcademicConsent,
   usePortalSyncConsentStore,
 } from "@/utils/portalSyncConsent";
 import { openIntipAppOrStore } from "@/utils/appLauncher";
@@ -76,11 +71,8 @@ export default function MobilePortalAccountPage() {
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // 동의 상세 시트. enableAi면 AI 활용을 켜기 전에 상세를 보여주고 동의를 받는다.
-  const [termSheet, setTermSheet] = useState<{
-    key: PortalSyncTermKey;
-    enableAi?: boolean;
-  } | null>(null);
+  // 동의 상세 시트
+  const [isTermSheetOpen, setIsTermSheetOpen] = useState(false);
   const consent = usePortalSyncConsentStore((s) => s.consent);
 
   useHeader({
@@ -304,7 +296,7 @@ export default function MobilePortalAccountPage() {
             <ServiceRow
               onClick={() =>
                 consent
-                  ? setTermSheet({ key: "portal" })
+                  ? setIsTermSheetOpen(true)
                   : void requestPortalSyncConsent()
               }
             >
@@ -317,38 +309,6 @@ export default function MobilePortalAccountPage() {
                 </ServiceSubtitle>
               </ServiceTextGroup>
               <ChevronRight size={18} color="var(--text-tertiary)" />
-            </ServiceRow>
-
-            <DividerLine />
-
-            <ServiceRow
-              onClick={() => setTermSheet({ key: "ai" })}
-            >
-              <ServiceTextGroup>
-                <ServiceTitle>AI 채팅 학적 활용 (선택)</ServiceTitle>
-                <ServiceSubtitle>
-                  {consent?.aiAgreedAt
-                    ? `${formatAgreedDate(consent.aiAgreedAt)} 동의함`
-                    : "학적 요약을 AI 채팅 답변에 써요"}
-                </ServiceSubtitle>
-              </ServiceTextGroup>
-              <SwitchSlot onClick={(e) => e.stopPropagation()}>
-                <Switch
-                  checked={Boolean(consent?.aiAgreedAt)}
-                  onCheckedChange={(next) => {
-                    if (!consent) {
-                      void requestPortalSyncConsent();
-                      return;
-                    }
-                    if (next) {
-                      setTermSheet({ key: "ai", enableAi: true });
-                    } else {
-                      setAiAcademicConsent(false);
-                      showToast("AI 채팅에 학적을 쓰지 않아요.");
-                    }
-                  }}
-                />
-              </SwitchSlot>
             </ServiceRow>
           </ServiceListContainer>
 
@@ -398,26 +358,20 @@ export default function MobilePortalAccountPage() {
 
       {/* 동의 상세 */}
       <BottomSheet
-        open={termSheet !== null}
+        open={isTermSheetOpen}
         onOpenChange={(open) => {
-          if (!open) setTermSheet(null);
+          if (!open) setIsTermSheetOpen(false);
         }}
         handle="compact"
       >
-        {termSheet && (
+        {isTermSheetOpen && (
           <TermSheetContent>
-            <PortalSyncTermDetail term={getPortalSyncTerm(termSheet.key)} />
+            <PortalSyncTermDetail term={getPortalSyncTerm("portal")} />
             <WizardBottomCTA
               placement="sheet"
-              onClick={() => {
-                if (termSheet.enableAi) {
-                  setAiAcademicConsent(true);
-                  showToast("AI 채팅에 학적 요약을 활용해요.");
-                }
-                setTermSheet(null);
-              }}
+              onClick={() => setIsTermSheetOpen(false)}
             >
-              {termSheet.enableAi ? "동의하고 켜기" : "확인"}
+              확인
             </WizardBottomCTA>
           </TermSheetContent>
         )}
@@ -746,12 +700,6 @@ const NoticeFooter = styled.p`
   color: var(--text-tertiary);
   text-align: center;
   line-height: 1.45;
-`;
-
-const SwitchSlot = styled.div`
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
 `;
 
 const TermSheetContent = styled.div`
