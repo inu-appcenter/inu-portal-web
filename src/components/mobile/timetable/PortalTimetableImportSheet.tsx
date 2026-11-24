@@ -42,7 +42,7 @@ import {
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
   formatSemester,
-  pickCurrentSemester,
+  pickLatestOpenSemester,
   termToTmGbn,
 } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -153,7 +153,7 @@ export default function PortalTimetableImportSheet({
       return;
     }
 
-    const current = pickCurrentSemester(semesters);
+    const current = pickLatestOpenSemester(semesters);
     const matched = semesterOptions.find((s) => s.label === initialSemester);
     const initialId = matched?.id ?? current?.id ?? semesterOptions[0]?.id ?? null;
     setSelectedSemesterIds(initialId ? [initialId] : []);
@@ -173,7 +173,7 @@ export default function PortalTimetableImportSheet({
   const toggleAllSemesters = () => {
     if (selectedSemesterIds.length === semesterOptions.length) {
       // 모두 선택되어 있으면 1개(현재 학기)만 남김
-      const current = pickCurrentSemester(semesters);
+      const current = pickLatestOpenSemester(semesters);
       setSelectedSemesterIds(current ? [current.id] : [semesterOptions[0]?.id]);
     } else {
       setSelectedSemesterIds(semesterOptions.map((s) => s.id));

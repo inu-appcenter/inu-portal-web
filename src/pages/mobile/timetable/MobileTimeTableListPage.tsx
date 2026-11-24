@@ -17,7 +17,7 @@ import {
   useDeleteTimeTable,
 } from "@/hooks/useTimeTables";
 import { useSemesters } from "@/hooks/useSemesters";
-import { formatSemester, pickCurrentSemester } from "@/utils/semester";
+import { formatSemester, pickLatestOpenSemester } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
 
 // Icons
@@ -125,9 +125,18 @@ export default function MobileTimeTableListPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addModalSemester, setAddModalSemester] = useState("");
 
-  const semesters = useMemo(
-    () => serverSemesters.map((s) => formatSemester(s.year, s.term)),
+  const visibleServerSemesters = useMemo(
+    () => serverSemesters.filter((s) => s.status !== "UPCOMING"),
     [serverSemesters],
+  );
+
+  const semesterEntries = useMemo(
+    () =>
+      visibleServerSemesters.map((s) => ({
+        label: formatSemester(s.year, s.term),
+        isOpen: s.status === "OPEN",
+      })),
+    [visibleServerSemesters],
   );
 
   const openAddModal = useCallback((semester: string) => {
@@ -136,14 +145,14 @@ export default function MobileTimeTableListPage() {
   }, []);
 
   const handleAddClick = useCallback(() => {
-    // 목록(semesters[0])이 아니라 serverSemesters에서 진행중(OPEN) 학기를 직접
-    // 고른다 — 다음 학기가 미리 등록돼 있으면 semesters[0]이 아직 아무 시간표도
-    // 없어야 정상인 미래 학기가 될 수 있다(#235).
-    const preferred = pickCurrentSemester(serverSemesters);
+    // 목록(semesters[0])이 아니라 serverSemesters에서 가장 최근 열린(OPEN) 학기를
+    // 고른다 — 다음 학기가 UPCOMING으로 등록돼 있어도 아직 열리지 않은 학기를
+    // 기본값으로 띄우지 않는다(#235).
+    const preferred = pickLatestOpenSemester(visibleServerSemesters);
     if (!preferred) return;
     mixpanelTrack.timetableFeatureClicked("시간표 생성", "시간표 목록");
     openAddModal(formatSemester(preferred.year, preferred.term));
-  }, [openAddModal, serverSemesters]);
+  }, [openAddModal, visibleServerSemesters]);
 
   const headerRight = useMemo(() => (
     <IconButton onClick={handleAddClick}>
@@ -184,22 +193,20 @@ export default function MobileTimeTableListPage() {
   return (
     <PageWrapper>
       <ListContainer>
-        {semesters.map((sem) => {
+        {semesterEntries.map(({ label: sem, isOpen }) => {
           const list = timetables.filter((t) => t.semester === sem);
           const hasTimetable = list.length > 0;
+          const canAdd = isOpen;
+          const canClickEmptyCard = !hasTimetable && canAdd;
           return (
             <TimeTableListCard
               key={sem}
-              $isClickable={!hasTimetable}
-              onClick={
-                hasTimetable
-                  ? undefined
-                  : () => openAddModal(sem)
-              }
-              role={!hasTimetable ? "button" : undefined}
-              tabIndex={!hasTimetable ? 0 : undefined}
+              $isClickable={canClickEmptyCard}
+              onClick={canClickEmptyCard ? () => openAddModal(sem) : undefined}
+              role={canClickEmptyCard ? "button" : undefined}
+              tabIndex={canClickEmptyCard ? 0 : undefined}
               onKeyDown={
-                !hasTimetable
+                canClickEmptyCard
                   ? (e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
@@ -211,19 +218,21 @@ export default function MobileTimeTableListPage() {
             >
               <SemesterHeaderRow>
                 <SemesterTitle>{sem}</SemesterTitle>
-                <SemesterAddButton
-                  type="button"
-                  aria-label={`${sem} 시간표 추가`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
-                      semester: sem,
-                    });
-                    openAddModal(sem);
-                  }}
-                >
-                  <Icon name="add-plus-sm" size={20} />
-                </SemesterAddButton>
+                {canAdd && (
+                  <SemesterAddButton
+                    type="button"
+                    aria-label={`${sem} 시간표 추가`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
+                        semester: sem,
+                      });
+                      openAddModal(sem);
+                    }}
+                  >
+                    <Icon name="add-plus-sm" size={20} />
+                  </SemesterAddButton>
+                )}
               </SemesterHeaderRow>
               {hasTimetable ? (
                 <ScheduleListWrapper>
