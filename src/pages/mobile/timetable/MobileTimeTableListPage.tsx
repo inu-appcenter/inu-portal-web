@@ -130,12 +130,8 @@ export default function MobileTimeTableListPage() {
     [serverSemesters],
   );
 
-  const semesterEntries = useMemo(
-    () =>
-      visibleServerSemesters.map((s) => ({
-        label: formatSemester(s.year, s.term),
-        isOpen: s.status === "OPEN",
-      })),
+  const semesters = useMemo(
+    () => visibleServerSemesters.map((s) => formatSemester(s.year, s.term)),
     [visibleServerSemesters],
   );
 
@@ -193,20 +189,18 @@ export default function MobileTimeTableListPage() {
   return (
     <PageWrapper>
       <ListContainer>
-        {semesterEntries.map(({ label: sem, isOpen }) => {
+        {semesters.map((sem) => {
           const list = timetables.filter((t) => t.semester === sem);
           const hasTimetable = list.length > 0;
-          const canAdd = isOpen;
-          const canClickEmptyCard = !hasTimetable && canAdd;
           return (
             <TimeTableListCard
               key={sem}
-              $isClickable={canClickEmptyCard}
-              onClick={canClickEmptyCard ? () => openAddModal(sem) : undefined}
-              role={canClickEmptyCard ? "button" : undefined}
-              tabIndex={canClickEmptyCard ? 0 : undefined}
+              $isClickable={!hasTimetable}
+              onClick={hasTimetable ? undefined : () => openAddModal(sem)}
+              role={!hasTimetable ? "button" : undefined}
+              tabIndex={!hasTimetable ? 0 : undefined}
               onKeyDown={
-                canClickEmptyCard
+                !hasTimetable
                   ? (e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
@@ -218,21 +212,19 @@ export default function MobileTimeTableListPage() {
             >
               <SemesterHeaderRow>
                 <SemesterTitle>{sem}</SemesterTitle>
-                {canAdd && (
-                  <SemesterAddButton
-                    type="button"
-                    aria-label={`${sem} 시간표 추가`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
-                        semester: sem,
-                      });
-                      openAddModal(sem);
-                    }}
-                  >
-                    <Icon name="add-plus-sm" size={20} />
-                  </SemesterAddButton>
-                )}
+                <SemesterAddButton
+                  type="button"
+                  aria-label={`${sem} 시간표 추가`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    mixpanelTrack.timetableFeatureClicked("시간표 생성", "학기 섹션", {
+                      semester: sem,
+                    });
+                    openAddModal(sem);
+                  }}
+                >
+                  <Icon name="add-plus-sm" size={20} />
+                </SemesterAddButton>
               </SemesterHeaderRow>
               {hasTimetable ? (
                 <ScheduleListWrapper>
