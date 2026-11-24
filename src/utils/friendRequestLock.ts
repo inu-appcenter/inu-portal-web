@@ -22,9 +22,25 @@ export const unlockFriendRequest = (friendId: number) => {
 
 export const isFriendRequestLocked = (friendId: number) => inFlight.has(friendId);
 
+const statusOf = (error: unknown) =>
+  axios.isAxiosError(error) ? error.response?.status : undefined;
+
 /**
- * 서버가 "이미 처리된 친구 요청"(409)으로 거절한 경우. 다른 화면·기기에서 먼저
- * 처리된 것이므로 실패로 안내하지 않고 목록만 새로 고친다.
+ * 다른 화면·기기에서 먼저 처리된 친구 요청인 경우. 실패로 안내하지 않고 목록만 새로 고친다.
+ * - 409: 서버가 "이미 처리된 친구 요청"으로 거절(이미 수락됨 등)
+ * - 404: 상대가 먼저 취소·거절해 요청 자체가 없어짐
  */
-export const isFriendRequestAlreadyProcessed = (error: unknown) =>
-  axios.isAxiosError(error) && error.response?.status === 409;
+export const isFriendRequestAlreadyProcessed = (error: unknown) => {
+  const status = statusOf(error);
+  return status === 409 || status === 404;
+};
+
+/**
+ * 거절·취소가 "이미 처리됨"으로 끝났을 때 사용자에게 보여 줄 짧은 안내.
+ * 거절·취소의 409는 요청이 더는 PENDING이 아니라는 뜻, 즉 이미 수락된 경우다.
+ * 404(요청이 사라짐)는 목록에서 빠지는 것으로 충분해 안내하지 않는다(null).
+ */
+export const getAlreadyProcessedFriendRequestNotice = (
+  error: unknown,
+): string | null =>
+  statusOf(error) === 409 ? "이미 수락된 요청이에요." : null;
