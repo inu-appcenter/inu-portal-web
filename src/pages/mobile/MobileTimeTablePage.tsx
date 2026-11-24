@@ -640,10 +640,12 @@ const MobileTimeTablePage = () => {
         initialSemester={createModalInitialSemester || currentSemesterLabel}
         onClose={() => {
           setIsCreateModalOpen(false);
+          setCreateThenImport(false);
           setCreateModalInitialSemester("");
         }}
         onSuccess={(created) => {
           setIsCreateModalOpen(false);
+          setCreateModalInitialSemester("");
           if (createThenImport) {
             setCreateThenImport(false);
             navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
@@ -986,20 +988,6 @@ const MobileTimeTablePage = () => {
           eventsKey={timetableEvents}
         />
       )}
-
-      <TimeTableCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setCreateThenImport(false);
-        }}
-        initialSemester={displayedSemesterLabel}
-        onSuccess={(created) => {
-          if (createThenImport) {
-            navigate(`${ROUTES.TIMETABLE.IMAGE_IMPORT}?id=${created.id}`);
-          }
-        }}
-      />
 
     </MobileTimeTablePageWrapper>
   );
