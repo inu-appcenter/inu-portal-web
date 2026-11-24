@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getUpcomingLmsAssignments, type LmsAssignmentEvent } from "@/apis/lms";
 import { getWeathers } from "@/apis/weathers";
 import type { WeatherInfo } from "@/types/weathers";
+import { hasPortalSyncConsent } from "@/utils/portalSyncConsent";
 
 let weatherCache: WeatherInfo | null = null;
 let weatherRequest: Promise<WeatherInfo | null> | null = null;
@@ -25,6 +26,7 @@ const loadWeather = () => {
 };
 
 const loadAssignments = () => {
+  if (!hasPortalSyncConsent()) return Promise.resolve([]);
   if (assignmentsCache) return Promise.resolve(assignmentsCache);
   if (!assignmentsRequest) {
     assignmentsRequest = getUpcomingLmsAssignments(7)

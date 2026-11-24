@@ -6,9 +6,8 @@ import PortalSyncTermDetail from "@/components/common/PortalSyncTermDetail";
 import WizardBottomCTA from "@/components/mobile/timetable/wizard/ui/WizardBottomCTA";
 import WizardCheckbox from "@/components/mobile/timetable/wizard/ui/WizardCheckbox";
 import {
+  getPortalSyncTerm,
   PORTAL_SYNC_POLICY_NOTE,
-  PORTAL_SYNC_TERMS,
-  type PortalSyncTermKey,
 } from "@/constants/portalSyncTerms";
 import { typography } from "@/styles/typography";
 import {
@@ -20,11 +19,9 @@ import {
 /** 포털 계정 등록 모달(Modal z-index 20000) 위에서도 보이도록 */
 const SHEET_Z_INDEX = 20010;
 
-const UNCHECKED: Record<PortalSyncTermKey, boolean> = { portal: false, ai: false };
-
 interface PortalSyncConsentSheetProps {
   open: boolean;
-  onAgree: (result: { ai: boolean }) => void;
+  onAgree: () => void;
   onDismiss: () => void;
 }
 
@@ -37,27 +34,20 @@ export function PortalSyncConsentSheet({
   onAgree,
   onDismiss,
 }: PortalSyncConsentSheetProps) {
-  const [checked, setChecked] = useState(UNCHECKED);
-  const [detailKey, setDetailKey] = useState<PortalSyncTermKey | null>(null);
+  const [checked, setChecked] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const [wasOpen, setWasOpen] = useState(open);
 
   // 시트를 다시 열 때마다 체크와 화면을 처음으로 돌린다(렌더 중 prop 변화 감지 패턴).
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setChecked(UNCHECKED);
-      setDetailKey(null);
+      setChecked(false);
+      setShowDetail(false);
     }
   }
 
-  const allChecked = PORTAL_SYNC_TERMS.every(({ key }) => checked[key]);
-  const requiredChecked = PORTAL_SYNC_TERMS.filter((t) => t.required).every(
-    ({ key }) => checked[key],
-  );
-  const detailTerm = PORTAL_SYNC_TERMS.find((t) => t.key === detailKey);
-
-  const toggle = (key: PortalSyncTermKey) =>
-    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  const portalTerm = getPortalSyncTerm("portal");
 
   return (
     <BottomSheet
@@ -68,68 +58,50 @@ export function PortalSyncConsentSheet({
       handle="compact"
       zIndex={SHEET_Z_INDEX}
     >
-      {detailTerm ? (
+      {showDetail ? (
         <Content>
-          <PortalSyncTermDetail term={detailTerm} onBack={() => setDetailKey(null)} />
+          <PortalSyncTermDetail term={portalTerm} onBack={() => setShowDetail(false)} />
           <WizardBottomCTA
             placement="sheet"
             onClick={() => {
-              setChecked((prev) => ({ ...prev, [detailTerm.key]: true }));
-              setDetailKey(null);
+              setChecked(true);
+              setShowDetail(false);
             }}
           >
-            {checked[detailTerm.key] ? "확인" : "동의하기"}
+            {checked ? "확인" : "동의하기"}
           </WizardBottomCTA>
         </Content>
       ) : (
         <Content>
           <Terms>
-            <AllBox>
+            <ItemRow>
               <Row
                 type="button"
                 role="checkbox"
-                aria-checked={allChecked}
-                onClick={() =>
-                  setChecked({ portal: !allChecked, ai: !allChecked })
-                }
+                aria-checked={checked}
+                onClick={() => setChecked((prev) => !prev)}
               >
                 <ControlSlot>
-                  <WizardCheckbox checked={allChecked} />
+                  <WizardCheckbox checked={checked} />
                 </ControlSlot>
-                <AllLabel>전체 동의 (선택 포함)</AllLabel>
+                <ItemLabel>{portalTerm.label}</ItemLabel>
               </Row>
-            </AllBox>
-
-            {PORTAL_SYNC_TERMS.map(({ key, label }) => (
-              <ItemRow key={key}>
-                <Row
-                  type="button"
-                  role="checkbox"
-                  aria-checked={checked[key]}
-                  onClick={() => toggle(key)}
-                >
-                  <ControlSlot>
-                    <WizardCheckbox checked={checked[key]} />
-                  </ControlSlot>
-                  <ItemLabel>{label}</ItemLabel>
-                </Row>
-                <DetailButton
-                  type="button"
-                  onClick={() => setDetailKey(key)}
-                  aria-label={`${label} 자세히 보기`}
-                >
-                  <Icon name="chevron-right" size={20} />
-                </DetailButton>
-              </ItemRow>
-            ))}
+              <DetailButton
+                type="button"
+                onClick={() => setShowDetail(true)}
+                aria-label={`${portalTerm.label} 자세히 보기`}
+              >
+                <Icon name="chevron-right" size={20} />
+              </DetailButton>
+            </ItemRow>
 
             <PolicyNote>{PORTAL_SYNC_POLICY_NOTE}</PolicyNote>
           </Terms>
 
           <WizardBottomCTA
             placement="sheet"
-            disabled={!requiredChecked}
-            onClick={() => onAgree({ ai: checked.ai })}
+            disabled={!checked}
+            onClick={onAgree}
           >
             동의하고 연결하기
           </WizardBottomCTA>
@@ -153,8 +125,8 @@ export default function PortalSyncConsentHost() {
   return (
     <PortalSyncConsentSheet
       open={requestOpen}
-      onAgree={({ ai }) => settlePortalSyncConsentRequest({ agreed: true, ai })}
-      onDismiss={() => settlePortalSyncConsentRequest({ agreed: false })}
+      onAgree={() => settlePortalSyncConsentRequest(true)}
+      onDismiss={() => settlePortalSyncConsentRequest(false)}
     />
   );
 }
@@ -170,12 +142,6 @@ const Terms = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-`;
-
-const AllBox = styled.div`
-  padding: 4px 0;
-  border-radius: 16px;
-  background: var(--bg-subtle);
 `;
 
 const Row = styled.button`
@@ -198,16 +164,6 @@ const ControlSlot = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-const AllLabel = styled.span`
-  flex: 1 0 0;
-  min-width: 0;
-  /* Figma 'Agree_All' 라벨(18/700). 같은 크기의 텍스트 토큰이 없어 가입 약관 시트와 같은 값을 쓴다. */
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 26px;
-  color: var(--text-primary);
 `;
 
 const ItemRow = styled.div`
