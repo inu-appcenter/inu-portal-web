@@ -7,7 +7,12 @@ import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { SAFE_AREA } from "@/styles/safeArea";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
-import { getChatRoomPrimaryTimeTables, getFriendPrimaryTimeTableDetail } from "@/apis/timetables";
+import {
+  getChatRoomPrimaryTimeTables,
+  getChatRoomTimetableSemesterIds,
+  getFriendPrimaryTimeTableDetail,
+  getFriendTimetableSemesterIds,
+} from "@/apis/timetables";
 import { createPersonalChatRoom } from "@/apis/chat";
 import BottomSheet from "@/components/common/BottomSheet";
 import Modal from "@/components/common/Modal";
@@ -21,7 +26,11 @@ import {
 import { mixpanelTrack } from "@/utils/mixpanel";
 import type { TimeTableDetail, Term } from "@/types/timetables";
 import { useSemesters } from "@/hooks/useSemesters";
-import { formatSemester, pickCurrentSemester } from "@/utils/semester";
+import {
+  formatSemester,
+  formatSemesterShortLines,
+  pickCurrentSemester,
+} from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
 
 // 공용 컴포넌트 임포트
@@ -100,22 +109,16 @@ export default function MobileTimeTableComparePage() {
 
   useTimeTables();
   const { semesters } = useSemesters();
-  const selectableSemesters = useMemo(
+  const nonUpcomingSemesters = useMemo(
     () => semesters.filter((semester) => semester.status !== "UPCOMING"),
     [semesters],
   );
   const defaultSemester = useMemo(
-    () => pickCurrentSemester(selectableSemesters) ?? null,
-    [selectableSemesters],
+    () => pickCurrentSemester(nonUpcomingSemesters) ?? null,
+    [nonUpcomingSemesters],
   );
   const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(
     null,
-  );
-  const targetSemester = useMemo(
-    () =>
-      selectableSemesters.find((s) => s.id === selectedSemesterId) ??
-      defaultSemester,
-    [selectableSemesters, selectedSemesterId, defaultSemester],
   );
 
   // 2. 친구 목록 로드
@@ -123,6 +126,91 @@ export default function MobileTimeTableComparePage() {
     queryKey: ["friends"],
     queryFn: getFriends,
   });
+
+  const friendsMap = useMemo(() => {
+    const list = friendsRes?.data || [];
+    return list;
+  }, [friendsRes]);
+
+  const selectedFriendIds = useMemo(() => {
+    if (memberIdsParam) {
+      const memberIds = memberIdsParam.split(",").map(Number).filter(Boolean);
+      return friendsMap
+        .filter((friend) => memberIds.includes(friend.friendMemberId))
+        .map((friend) => friend.friendId);
+    }
+    return friendIdsParam.split(",").map(Number).filter(Boolean);
+  }, [friendIdsParam, memberIdsParam, friendsMap]);
+
+  const targetFriendMemberIds = useMemo(() => {
+    const hasSelectionParam = Boolean(friendIdsParam || memberIdsParam);
+    const baseList = hasSelectionParam
+      ? friendsMap.filter((friend) => selectedFriendIds.includes(friend.friendId))
+      : friendsMap;
+    return Array.from(
+      new Set(
+        baseList
+          .map((friend) => friend.friendMemberId)
+          .filter((id): id is number => Boolean(id)),
+      ),
+    );
+  }, [friendIdsParam, memberIdsParam, friendsMap, selectedFriendIds]);
+
+  const friendSemesterIdsQuery = useQuery({
+    queryKey: originRoomId
+      ? ["timetables", "chat-room-semesters", originRoomId]
+      : ["timetables", "friend-semesters", targetFriendMemberIds],
+    queryFn: () =>
+      originRoomId
+        ? getChatRoomTimetableSemesterIds(originRoomId)
+        : getFriendTimetableSemesterIds(targetFriendMemberIds),
+    enabled: originRoomId
+      ? Boolean(originRoomId)
+      : targetFriendMemberIds.length > 0,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+  });
+
+  const myTimetableSemesterIdSet = useMemo(
+    () => new Set(timetables.map((t) => t.semesterId)),
+    [timetables],
+  );
+
+  const selectableSemesters = useMemo(() => {
+    const friendSemesterIdSet = new Set(friendSemesterIdsQuery.data ?? []);
+    const isSingleFriendQuery = !originRoomId && targetFriendMemberIds.length === 1;
+
+    return nonUpcomingSemesters.filter((semester) => {
+      if (semester.status === "OPEN" || semester.id === defaultSemester?.id) {
+        return true;
+      }
+      if (friendSemesterIdsQuery.isSuccess) {
+        if (isSingleFriendQuery) {
+          return friendSemesterIdSet.has(semester.id);
+        }
+        return (
+          friendSemesterIdSet.has(semester.id) ||
+          myTimetableSemesterIdSet.has(semester.id)
+        );
+      }
+      return myTimetableSemesterIdSet.has(semester.id);
+    });
+  }, [
+    nonUpcomingSemesters,
+    defaultSemester?.id,
+    friendSemesterIdsQuery.isSuccess,
+    friendSemesterIdsQuery.data,
+    originRoomId,
+    targetFriendMemberIds.length,
+    myTimetableSemesterIdSet,
+  ]);
+
+  const targetSemester = useMemo(
+    () =>
+      selectableSemesters.find((s) => s.id === selectedSemesterId) ??
+      defaultSemester,
+    [selectableSemesters, selectedSemesterId, defaultSemester],
+  );
 
   const chatRoomTimetablesQuery = useQuery({
     queryKey: [
@@ -144,21 +232,6 @@ export default function MobileTimeTableComparePage() {
       targetSemester?.term != null,
     retry: false,
   });
-
-  const friendsMap = useMemo(() => {
-    const list = friendsRes?.data || [];
-    return list;
-  }, [friendsRes]);
-
-  const selectedFriendIds = useMemo(() => {
-    if (memberIdsParam) {
-      const memberIds = memberIdsParam.split(",").map(Number).filter(Boolean);
-      return friendsMap
-        .filter((friend) => memberIds.includes(friend.friendMemberId))
-        .map((friend) => friend.friendId);
-    }
-    return friendIdsParam.split(",").map(Number).filter(Boolean);
-  }, [friendIdsParam, memberIdsParam, friendsMap]);
 
   const activeTimetable = useMemo(() => {
     if (!targetSemester) return null;
@@ -378,10 +451,39 @@ export default function MobileTimeTableComparePage() {
     [activeTabUpper, comparisonIds, searchParams, setSearchParams],
   );
 
+  const headerRight = useMemo(() => {
+    if (selectableSemesters.length <= 1 || !targetSemester) return undefined;
+    return (
+      <SemesterSelectWrap>
+        <SemesterLabel aria-hidden="true">
+          {formatSemesterShortLines(targetSemester.year, targetSemester.term).join(" ")}
+        </SemesterLabel>
+        <SemesterChevron aria-hidden="true">⌵</SemesterChevron>
+        <SemesterSelect
+          aria-label="비교할 학기 선택"
+          value={targetSemester.id}
+          onChange={(e) => {
+            const nextId = Number(e.target.value);
+            setSelectedSemesterId(Number.isFinite(nextId) ? nextId : null);
+            setHighlightedSlot(null);
+          }}
+        >
+          {selectableSemesters.map((semester) => (
+            <option key={semester.id} value={semester.id}>
+              {formatSemester(semester.year, semester.term)}
+            </option>
+          ))}
+        </SemesterSelect>
+      </SemesterSelectWrap>
+    );
+  }, [selectableSemesters, targetSemester]);
+
   // 1. 헤더 설정
   useHeader({
     title: isSingleFriendMode ? "친구 시간표" : "친구와 시간표 비교",
     hasback: true,
+    rightArea: headerRight,
+    rightAreaNotCircle: true,
     subHeader,
     floatingSubHeader: false,
   });
@@ -994,28 +1096,6 @@ export default function MobileTimeTableComparePage() {
       $snapHeight={typeof snap === "number" ? snap : 0.45}
     >
       <ContentArea>
-        {selectableSemesters.length > 1 && targetSemester && (
-          <SemesterBar data-vaul-no-drag="">
-            <SemesterSelectWrap>
-              <SemesterSelect
-                aria-label="비교할 학기 선택"
-                value={targetSemester.id}
-                onChange={(e) => {
-                  const nextId = Number(e.target.value);
-                  setSelectedSemesterId(Number.isFinite(nextId) ? nextId : null);
-                  setHighlightedSlot(null);
-                }}
-              >
-                {selectableSemesters.map((semester) => (
-                  <option key={semester.id} value={semester.id}>
-                    {formatSemester(semester.year, semester.term)}
-                  </option>
-                ))}
-              </SemesterSelect>
-              <SemesterChevron aria-hidden="true">⌵</SemesterChevron>
-            </SemesterSelectWrap>
-          </SemesterBar>
-        )}
         {/* 2. 친구 필터 칩 목록 노출 */}
         {activeTabUpper === "compare" && (
           <ChipSection data-vaul-no-drag="">
@@ -1561,44 +1641,38 @@ const FloatingShareButton = styled.button`
   }
 `;
 
-const SemesterBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 10px;
-`;
-
 const SemesterSelectWrap = styled.div`
   position: relative;
   display: inline-flex;
   align-items: center;
-`;
-
-const SemesterSelect = styled.select`
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: var(--bg-base);
+  gap: 4px;
+  background-color: var(--bg-subtle);
   border: 1px solid var(--border-default);
   border-radius: 10px;
-  padding: 6px 28px 6px 12px;
+  padding: 5px 10px;
+  flex-shrink: 0;
+`;
+
+const SemesterLabel = styled.span`
   font-family: Pretendard;
   font-size: 13px;
   font-weight: 600;
   line-height: 18px;
   color: var(--text-primary);
-  cursor: pointer;
+  white-space: nowrap;
+`;
 
-  &:focus {
-    outline: none;
-    border-color: var(--interactive-primary);
-  }
+const SemesterSelect = styled.select`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 `;
 
 const SemesterChevron = styled.span`
-  position: absolute;
-  right: 10px;
-  pointer-events: none;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
   color: var(--text-secondary);
   transform: translateY(-1px);
