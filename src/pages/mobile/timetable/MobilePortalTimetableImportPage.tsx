@@ -38,7 +38,7 @@ import {
 import { useTimetableStore } from "@/stores/useTimetableStore";
 import {
   formatSemester,
-  pickCurrentSemester,
+  pickLatestOpenSemester,
   termToTmGbn,
 } from "@/utils/semester";
 import { mixpanelTrack } from "@/utils/mixpanel";
@@ -169,7 +169,7 @@ export default function MobilePortalTimetableImportPage() {
   }, [isMultipleSemesters, activeTimetable, isSemesterMatched, singleSelectedSemester]);
 
   useEffect(() => {
-    const current = pickCurrentSemester(semesters);
+    const current = pickLatestOpenSemester(semesters);
     const initialId = current?.id ?? semesterOptions[0]?.id ?? null;
     setSelectedSemesterIds(initialId ? [initialId] : []);
   }, [semesters, semesterOptions]);
@@ -213,7 +213,7 @@ export default function MobilePortalTimetableImportPage() {
 
   const toggleAllSemesters = () => {
     if (selectedSemesterIds.length === semesterOptions.length) {
-      const current = pickCurrentSemester(semesters);
+      const current = pickLatestOpenSemester(semesters);
       setSelectedSemesterIds(current ? [current.id] : [semesterOptions[0]?.id]);
     } else {
       setSelectedSemesterIds(semesterOptions.map((s) => s.id));
