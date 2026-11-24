@@ -44,14 +44,40 @@ export const sortSemestersDesc = (semesters: Semester[]) =>
     (a, b) => b.year - a.year || TERM_ORDER[b.term] - TERM_ORDER[a.term],
   );
 
-// 서버 학기 목록에서 "지금" 학기를 고른다. status가 OPEN인 학기를 우선하고,
-// 없으면(학기 전환기 등) 가장 최근 학기로 대체한다.
-//
-// semesters[0](정렬 후 최신 항목)을 그냥 쓰면 안 되는 이유: 다음 학기가 등록 시작
-// 전부터(과목 편람만 채워진 UPCOMING 상태로) 서버에 미리 들어올 수 있는데, 정렬은
-// status를 보지 않고 연도/학기 순서로만 매기므로 이 경우 semesters[0]이 아직 아무도
-// 쓰지 않는 미래 학기가 돼 버린다(#235).
-export const pickCurrentSemester = <T extends { status: Semester["status"] }>(
+export const getLocalDateIso = (date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+export const isRegularTerm = (term: Term): boolean =>
+  term === "FIRST" || term === "SECOND";
+
+// 현재 수업이 진행 중인 학기를 고른다.
+// 1. 신버전 서버의 isCurrent 플래그 우선
+// 2. 구버전 서버 호환을 위한 startDate <= today <= endDate 폴백
+// 3. 방학 등 공백기에는 OPEN 학기 -> 최신 학기 순으로 폴백
+export const pickCurrentSemester = <
+  T extends Pick<Semester, "status"> &
+    Partial<Pick<Semester, "isCurrent" | "startDate" | "endDate">>,
+>(
+  semesters: T[],
+  today = getLocalDateIso(),
+): T | undefined =>
+  semesters.find((s) => s.isCurrent === true) ??
+  semesters.find(
+    (s) =>
+      Boolean(s.startDate && s.endDate) &&
+      s.startDate! <= today &&
+      today <= s.endDate!,
+  ) ??
+  semesters.find((s) => s.status === "OPEN") ??
+  semesters[0];
+
+// 시간표 생성·마법사·포털 가져오기처럼 "가장 최근에 열린 학기"가 기본값이 되어야
+// 하는 화면에서 사용한다.
+export const pickLatestOpenSemester = <T extends { status: Semester["status"] }>(
   semesters: T[],
 ): T | undefined =>
   semesters.find((s) => s.status === "OPEN") ?? semesters[0];
