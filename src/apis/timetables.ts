@@ -305,6 +305,28 @@ export const getChatRoomPrimaryTimeTables = async (
   return response.data.data ?? [];
 };
 
+/** 친구(들)에게 비공개가 아닌 대표 시간표가 존재하는 학기 ID 목록 조회 */
+export const getFriendTimetableSemesterIds = async (
+  memberIds: number[],
+): Promise<number[]> => {
+  if (memberIds.length === 0) return [];
+  const response = await tokenInstance.get<ApiResponse<number[]>>(
+    "/api/timetables/friends/semesters",
+    { params: { memberIds: memberIds.join(",") } },
+  );
+  return response.data.data ?? [];
+};
+
+/** 일반 단체톡에서 본인을 제외한 참여자들에게 비공개가 아닌 대표 시간표가 존재하는 학기 ID 목록 조회 */
+export const getChatRoomTimetableSemesterIds = async (
+  roomId: number | string,
+): Promise<number[]> => {
+  const response = await tokenInstance.get<ApiResponse<number[]>>(
+    `/api/timetables/chat-rooms/${roomId}/semesters`,
+  );
+  return response.data.data ?? [];
+};
+
 /**
  * 시간표 AI 평가 캐시 조회
  */
