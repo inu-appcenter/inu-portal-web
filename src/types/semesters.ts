@@ -9,4 +9,5 @@ export interface Semester {
   status: SemesterStatus;
   startDate: string;
   endDate: string;
+  isCurrent?: boolean;
 }
