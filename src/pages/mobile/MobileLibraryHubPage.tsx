@@ -37,6 +37,7 @@ import {
   cancelLibrarySeatSessionBridge,
   isMobileAppEnvironment,
   type LocalWatchJob,
+  withPortalConsent,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
@@ -456,7 +457,7 @@ export default function MobileLibraryHubPage() {
   const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
     setIsLoadingSeats(true);
     try {
-      const res = await getRoomSeats(room.id);
+      const res = await withPortalConsent(() => getRoomSeats(room.id));
       if (res.success && res.seats.length > 0) {
         setRoomSeats(res.seats);
         setSelectedSeatRoom(room);
@@ -493,7 +494,7 @@ export default function MobileLibraryHubPage() {
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
-          const res = await reserveSeat(seat.id);
+          const res = await withPortalConsent(() => reserveSeat(seat.id));
           if (res.success) {
             showToast(`'${seat.name || seat.code}' 좌석이 배정되었습니다.`);
             setSelectedSeatRoom(null);
@@ -523,14 +524,14 @@ export default function MobileLibraryHubPage() {
       showAlert("알림 등록 실패", "좌석이 속한 열람실 정보를 찾을 수 없습니다.");
       return;
     }
-    const res = await registerLocalWatchJobInApp({
+    const res = await withPortalConsent(() => registerLocalWatchJobInApp({
       watchType: "SPECIFIC_SEAT_SNIPER",
       roomId,
       roomName,
       seatId: seat.id,
       seatNo: seat.code,
       durationMinutes: 180,
-    });
+    }));
     if (!res.success) {
       showAlert("알림 등록 실패", res.errorMessage || "빈자리 알림 등록에 실패했습니다.");
       return;
@@ -544,12 +545,12 @@ export default function MobileLibraryHubPage() {
   // 열람실 전체 빈자리 알림 등록 (앱이면 기기 로컬 감시, 웹이면 서버 감시)
   const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
     const res = isMobileAppEnvironment()
-      ? await registerLocalWatchJobInApp({
+      ? await withPortalConsent(() => registerLocalWatchJobInApp({
           watchType: "ROOM_ANY_SEAT",
           roomId: room.id,
           roomName: room.name,
           durationMinutes: 180,
-        })
+        }))
       : null;
     // 구버전 앱은 ROOM_ANY_SEAT를 모르므로("지원하지 않는 로컬 감시 타입") 서버 감시로 폴백
     const unsupported = !!res && !res.success && (res.errorMessage || "").includes("지원하지 않는");
@@ -648,7 +649,7 @@ export default function MobileLibraryHubPage() {
 
     setIsLoadingTimeline(true);
     try {
-      const res = await getStudyRoomDetail(sRoom.id, today);
+      const res = await withPortalConsent(() => getStudyRoomDetail(sRoom.id, today));
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [sRoom.id]: res.detail! }));
@@ -680,7 +681,7 @@ export default function MobileLibraryHubPage() {
     if (!selectedStudyRoom) return;
     setIsLoadingTimeline(true);
     try {
-      const res = await getStudyRoomDetail(selectedStudyRoom.id, dateStr);
+      const res = await withPortalConsent(() => getStudyRoomDetail(selectedStudyRoom.id, dateStr));
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [selectedStudyRoom.id]: res.detail! }));
