@@ -1,50 +1,93 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import styled from "styled-components";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import styled, { keyframes } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import {
-  onboardingTimetable,
-  onboardingNotice,
   onboardingAi,
-  onboardingComplete,
+  onboardingNotice,
+  onboardingPortalMagnifier,
+  onboardingPortalWindow,
+  onboardingTimetable,
 } from "@/resources/assets/illustrations/onboarding";
 import {
-  isMobileAppEnvironment,
+  deletePortalAccount,
   fetchAcademicInfoFromApp,
+  isMobileAppEnvironment,
+  savePortalAccount,
 } from "@/apis/mobileAgentBridge";
-import {
-  postOnboarding,
-  checkMergeFreshman,
-  getMembers,
-} from "@/apis/members";
-import {
-  getSchoolDepartments,
-  SchoolDepartment,
-} from "@/apis/departments";
+import { adaptAcademicInfoToStudentInfo } from "@/apis/portal";
+import { checkMergeFreshman, getMembers, postOnboarding } from "@/apis/members";
+import { getSchoolDepartments, SchoolDepartment } from "@/apis/departments";
 import { getMyInviteCode } from "@/apis/friends";
-import {
-  getDepartmentOptionGroups,
-  findDepartmentCodeByName,
-} from "@/utils/departmentOptions";
+import { getDepartmentOptionGroups, findDepartmentCodeByName } from "@/utils/departmentOptions";
 import { getAcademicYear } from "@/utils/academicYear";
+import { secureStorage } from "@/utils/secureStorage";
+import { showToast } from "@/utils/toast";
+import { hasPortalSyncConsent, recordPortalSyncConsent } from "@/utils/portalSyncConsent";
+import {
+  NICKNAME_MAX_LENGTH,
+  validateNickname,
+  validateRealName,
+} from "@/utils/onboardingValidation";
 import useUserStore from "@/stores/useUserStore";
 import { ROUTES } from "@/constants/routes";
 import { useHeader } from "@/context/HeaderContext";
+import { typography } from "@/styles/typography";
+import { SAFE_AREA } from "@/styles/safeArea";
 import InputField from "@/components/common/InputField";
+import BottomSheet from "@/components/common/BottomSheet";
+import Icon from "@/components/common/Icon";
+import { recordTermsAgreement } from "@/components/common/TermsAgreement";
+import { PortalSyncConsentSheet } from "@/components/common/PortalSyncConsentSheet";
+import OnboardingFunnelHeader from "@/components/mobile/onboarding/OnboardingFunnelHeader";
+import OnboardingBottomCTA from "@/components/mobile/onboarding/OnboardingBottomCTA";
+import DepartmentSelectSheet, {
+  DepartmentOption,
+} from "@/components/mobile/onboarding/DepartmentSelectSheet";
+import ServiceTermsSheet from "@/components/mobile/onboarding/ServiceTermsSheet";
 
-const TOTAL_STEPS = 6;
+/**
+ * 온보딩 퍼널 (Figma 08 온보딩 퍼널 6269:18497).
+ *
+ * 인트로 3장 → 포털 계정 등록(성공하면 이름·학과 자동) 또는 이름·학과 직접 입력
+ * → 닉네임 → 프로필 이미지 → 확인(약관 동의 시트) → 완료.
+ * - 교직원(학번이 9자리 숫자가 아님)은 포털 단계 없이 직접 입력부터.
+ * - 이미 학적 인증된 회원·신입생 계정은 포털·이름·학과를 건너뛴다.
+ * - 진행 바 칸 수는 시안(5칸)과 달리 실제로 거치는 단계 수에 맞춘다.
+ */
+
+type FunnelStep = "portal" | "name" | "nickname" | "department" | "profile" | "confirm";
+type Step = "intro" | FunnelStep | "done";
+type PortalStatus = "idle" | "loading" | "error";
+
 const PROFILE_IMAGE_IDS = Array.from({ length: 12 }, (_, index) => index + 1);
-const FORBIDDEN_KEYWORDS = [
-  "알림", "공지", "알람", "운영자", "운영진", "관리자", "시스템", "스태프", "어드민",
-  "notice", "admin", "system", "staff", "intip", "인팁", "appcenter", "앱센터",
-];
+const INTRO_SLIDES = [
+  {
+    image: onboardingTimetable,
+    alt: "시간표와 공강 비교",
+    title: "시간표 짜기부터\n친구와 공강 비교까지",
+    body: "수강 편람이 열리면 바로 시간표를 만들고\n친구와 겹치는 공강을 한눈에 봐요.",
+  },
+  {
+    image: onboardingNotice,
+    alt: "공지사항 키워드 알림",
+    title: "놓치기 쉬운 학과 공지\n키워드로 바로 알림",
+    body: "장학금·수강신청 같은 키워드를 등록하면\n새 공지가 올라올 때 알려드려요.",
+  },
+  {
+    image: onboardingAi,
+    alt: "횃불이 AI",
+    title: "학교생활이 궁금할 땐\n언제나 횃불이 AI",
+    body: "학식, 도서관 빈자리, 졸업 요건까지\n인천대 생활 궁금증을 물어보세요.",
+  },
+] as const;
 
 const getProfileImageUrl = (fireId: number) =>
   `https://portal.inuappcenter.kr/images/profile/${fireId}`;
 
-type AcademicStepState = "IDLE" | "FETCHING" | "SUCCESS" | "FAIL" | "MANUAL";
+const normalizeDeptName = (name: string) => name.replace(/[\s·\-()]/g, "").toLowerCase();
 
-const normalizeDeptName = (name: string) =>
-  name.replace(/[\s·\-()]/g, "").toLowerCase();
+const isCredentialError = (message: string) =>
+  ["비밀번호", "아이디", "틀렸습니다", "휴면"].some((kw) => message.includes(kw));
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
@@ -56,39 +99,52 @@ export default function OnboardingPage() {
     pageBgColor: "var(--bg-base)",
   });
 
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const isAppEnv = isMobileAppEnvironment();
+  const isStudent = /^\d{9}$/.test(userInfo.studentId ?? "");
+  /** 이미 학적이 확인된 회원: 포털·이름·학과를 건너뛴다 */
+  const academicLocked =
+    Boolean(userInfo.isAcademicVerified) || userInfo.memberType === "FRESHMAN";
 
-  // 학적 정보 상태 (Slide 4)
-  const [academicState, setAcademicState] = useState<AcademicStepState>("IDLE");
+  const [step, setStep] = useState<Step>("intro");
+  const [introIndex, setIntroIndex] = useState(0);
+  /** 확인 단계에서 항목을 눌러 들어온 경우, 다음을 누르면 확인 단계로 돌아간다 */
+  const [returnToConfirm, setReturnToConfirm] = useState(false);
+  /** 학생이 포털 대신 직접 입력을 고른 경우 */
+  const [manualChosen, setManualChosen] = useState(false);
+
+  // 포털 계정
+  const [portalSheetOpen, setPortalSheetOpen] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
+  const [portalStatus, setPortalStatus] = useState<PortalStatus>("idle");
+  const [portalError, setPortalError] = useState("");
+  const [portalStudentId, setPortalStudentId] = useState("");
+  const [portalPassword, setPortalPassword] = useState("");
+
+  // 학적
   const [realName, setRealName] = useState("");
   const [departmentName, setDepartmentName] = useState("");
   const [departmentCode, setDepartmentCode] = useState("");
   const [isAcademicVerified, setIsAcademicVerified] = useState(false);
-  const [failErrorMessage, setFailErrorMessage] = useState("");
   const [mergedNotice, setMergedNotice] = useState<string | null>(null);
+  const [deptSheetOpen, setDeptSheetOpen] = useState(false);
 
-  // 프로필 설정 상태 (Slide 5)
+  // 프로필
   const [nickname, setNickname] = useState("");
   const [fireId, setFireId] = useState(1);
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [nicknameError, setNicknameError] = useState("");
 
-  // 초대 링크 상태 (Slide 6)
+  // 확인·완료
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const [schoolDepartments, setSchoolDepartments] = useState<SchoolDepartment[]>([]);
-  const departmentGroups = useMemo(() => getDepartmentOptionGroups(), []);
 
   useEffect(() => {
     let active = true;
     void (async () => {
       try {
         const res = await getSchoolDepartments();
-        if (active && Array.isArray(res.data)) {
-          setSchoolDepartments(res.data);
-        }
+        if (active && Array.isArray(res.data)) setSchoolDepartments(res.data);
       } catch (e) {
         console.debug("[Onboarding] failed to load school departments:", e);
       }
@@ -98,199 +154,229 @@ export default function OnboardingPage() {
     };
   }, []);
 
+  /** 서버 학과 목록, 못 불러오면 내장 목록을 한 줄로 편다 */
+  const departmentOptions = useMemo<DepartmentOption[]>(() => {
+    if (schoolDepartments.length > 0) {
+      return schoolDepartments.map((d) => ({ code: d.code, name: d.name }));
+    }
+    return getDepartmentOptionGroups().flatMap((g) =>
+      g.departments.map((d) => ({ code: d.code, name: d.title })),
+    );
+  }, [schoolDepartments]);
+
   const resolveDepartmentCode = useCallback(
     (name: string): string => {
       const trimmed = name.trim();
       if (!trimmed) return "";
-
-      if (schoolDepartments.length > 0) {
-        const exact = schoolDepartments.find((d) => d.name === trimmed);
-        if (exact) return exact.code;
-
-        const target = normalizeDeptName(trimmed);
-        const normalized = schoolDepartments.find(
-          (d) => normalizeDeptName(d.name) === target,
-        );
-        if (normalized) return normalized.code;
-      }
-
+      const exact = schoolDepartments.find((d) => d.name === trimmed);
+      if (exact) return exact.code;
+      const target = normalizeDeptName(trimmed);
+      const normalized = schoolDepartments.find((d) => normalizeDeptName(d.name) === target);
+      if (normalized) return normalized.code;
       return findDepartmentCodeByName(trimmed);
     },
     [schoolDepartments],
   );
 
-  // 학생 여부 판별 (학번이 9자리 숫자인 경우)
-  const isStudent = useMemo(() => {
-    return /^\d{9}$/.test(userInfo.studentId ?? "");
-  }, [userInfo.studentId]);
-
-  // 초기 사용자 정보 바인딩
+  // 서버에 이미 있는 회원 정보로 채운다
   useEffect(() => {
-    if (userInfo.realName) {
-      setRealName(userInfo.realName);
-    }
+    if (userInfo.realName) setRealName(userInfo.realName);
     if (userInfo.department) {
       setDepartmentName(userInfo.department);
-      setDepartmentCode(
-        userInfo.departmentCode || resolveDepartmentCode(userInfo.department),
-      );
+      setDepartmentCode(userInfo.departmentCode || resolveDepartmentCode(userInfo.department));
     }
-    if (userInfo.fireId) {
-      setFireId(userInfo.fireId);
-    }
+    if (userInfo.fireId) setFireId(userInfo.fireId);
     if (userInfo.nickname && userInfo.nickname !== userInfo.studentId) {
       setNickname(userInfo.nickname);
     }
-    if (userInfo.isAcademicVerified) {
+    if (userInfo.isAcademicVerified || userInfo.memberType === "FRESHMAN") {
       setIsAcademicVerified(true);
-      setAcademicState("SUCCESS");
-    } else if (userInfo.memberType === "FRESHMAN") {
-      setIsAcademicVerified(true);
-      setAcademicState("SUCCESS");
-    } else if (!isStudent && userInfo.id > 0) {
-      // 교직원/교수는 기본 수동 모드로 진입
-      setAcademicState("MANUAL");
     }
-  }, [userInfo, isStudent, resolveDepartmentCode]);
-
-  // 사용자가 명시적으로 '학적 정보 가져오기'를 클릭했을 때만 스크래핑 실행
-  const handleFetchAcademic = async () => {
-    if (!isMobileAppEnvironment()) {
-      setAcademicState("MANUAL");
-      return;
+    if (/^\d{9}$/.test(userInfo.studentId ?? "")) {
+      setPortalStudentId((prev) => prev || (userInfo.studentId ?? ""));
     }
+  }, [userInfo, resolveDepartmentCode]);
 
-    try {
-      setLoading(true);
-      setAcademicState("FETCHING");
-      setFailErrorMessage("");
+  /** 이 사용자가 거치는 단계. 진행 바 칸 수도 여기서 나온다 */
+  const funnelSteps = useMemo<FunnelStep[]>(() => {
+    if (academicLocked || (isAcademicVerified && !manualChosen)) {
+      // 포털에서 불러왔으면 포털 단계는 남겨 둔다(뒤로 가서 다시 불러올 수 있게)
+      return isAcademicVerified && !academicLocked
+        ? ["portal", "nickname", "profile", "confirm"]
+        : ["nickname", "profile", "confirm"];
+    }
+    if (isStudent && !manualChosen) return ["portal", "nickname", "profile", "confirm"];
+    return ["name", "nickname", "department", "profile", "confirm"];
+  }, [academicLocked, isAcademicVerified, isStudent, manualChosen]);
 
-      const res = await fetchAcademicInfoFromApp();
-      if (res.success && res.data) {
-        const scrapedName = res.data.koreanName || "";
-        const scrapedDept = res.data.departmentName || "";
-        const scrapedBirth =
-          res.data.rawFields?.birthDt ||
-          res.data.rawFields?.birthDate ||
-          res.data.rawFields?.birth ||
-          "";
-
-        if (scrapedName) {
-          setRealName(scrapedName);
-        }
-        if (scrapedDept) {
-          setDepartmentName(scrapedDept);
-          setDepartmentCode(resolveDepartmentCode(scrapedDept));
-        }
-        setIsAcademicVerified(true);
-        setAcademicState("SUCCESS");
-
-        // 3월 정규 학번 발급 시 신입생 계정 통합 확인
-        if (scrapedName && scrapedBirth) {
-          try {
-            const mergeRes = await checkMergeFreshman({
-              koreanName: scrapedName,
-              birthDate: scrapedBirth.replace(/\D/g, ""),
-              departmentName: scrapedDept,
-            });
-            if (mergeRes.data.merged) {
-              if (mergeRes.data.token) {
-                setTokenInfo(mergeRes.data.token);
-              }
-              try {
-                const memberRes = await getMembers();
-                setUserInfo(memberRes.data);
-              } catch (syncErr) {
-                console.debug("[Onboarding] post-merge member sync error:", syncErr);
-              }
-              setMergedNotice(
-                `${getAcademicYear()}학년도 신입생 전산망으로 작성했던 이전 활동 내역(시간표, 글, 스크랩 등)이 현재 학번 계정으로 모두 통합되었어요.`,
-              );
-            }
-          } catch (mergeErr) {
-            console.debug("[Onboarding] merge check error:", mergeErr);
-          }
-        }
-      } else {
-        setFailErrorMessage(
-          res.errorMessage ||
-            "학적 정보를 가져오지 못했어요. 포털 로그인 정보를 확인해주세요.",
-        );
-        setAcademicState("FAIL");
-      }
-    } catch (e: any) {
-      setFailErrorMessage(
-        e?.message || "학적 정보를 가져오는 중 오류가 발생했어요.",
-      );
-      setAcademicState("FAIL");
-    } finally {
-      setLoading(false);
+  const goToFunnelStep = (next: FunnelStep) => {
+    setStep(next);
+    if (next === "portal" && portalStatus !== "loading" && !isAcademicVerified) {
+      setPortalSheetOpen(true);
     }
   };
 
-  // Slide 6 진입 시 초대 코드 조회
-  useEffect(() => {
-    if (step === 6 && !inviteCode) {
-      void (async () => {
-        try {
-          const res = await getMyInviteCode();
-          if (res.data?.code) {
-            setInviteCode(res.data.code);
-          }
-        } catch (e) {
-          console.debug("[Onboarding] failed to get invite code:", e);
-        }
-      })();
+  const handleIntroNext = () => {
+    if (introIndex < INTRO_SLIDES.length - 1) {
+      setIntroIndex((i) => i + 1);
+      return;
     }
+    goToFunnelStep(funnelSteps[0]);
+  };
+
+  const handleNext = () => {
+    if (step === "intro" || step === "done") return;
+    if (returnToConfirm) {
+      setReturnToConfirm(false);
+      setStep("confirm");
+      return;
+    }
+    const index = funnelSteps.indexOf(step);
+    const next = funnelSteps[index + 1];
+    if (next) goToFunnelStep(next);
+  };
+
+  const handleBack = () => {
+    if (step === "intro" || step === "done") return;
+    if (returnToConfirm) {
+      setReturnToConfirm(false);
+      setStep("confirm");
+      return;
+    }
+    const index = funnelSteps.indexOf(step);
+    if (index <= 0) {
+      setPortalSheetOpen(false);
+      setStep("intro");
+      setIntroIndex(INTRO_SLIDES.length - 1);
+      return;
+    }
+    setStep(funnelSteps[index - 1]);
+  };
+
+  const chooseManual = () => {
+    setPortalSheetOpen(false);
+    setManualChosen(true);
+    if (!academicLocked) setIsAcademicVerified(false);
+    setPortalStatus("idle");
+    setPortalError("");
+    setStep("name");
+  };
+
+  const choosePortal = () => {
+    setPortalSheetOpen(false);
+    if (!hasPortalSyncConsent()) setConsentOpen(true);
+  };
+
+  // 포털 계정 저장 → 학적 불러오기
+  const handlePortalSubmit = async () => {
+    const studentId = portalStudentId.trim();
+    const password = portalPassword;
+    if (!studentId || !password) return;
+    if (!isAppEnv) {
+      setPortalSheetOpen(true);
+      return;
+    }
+    // 시트를 내려 닫고 바로 입력한 경우에도 필수 동의 없이는 불러오지 않는다
+    if (!hasPortalSyncConsent()) {
+      setConsentOpen(true);
+      return;
+    }
+
+    setPortalStatus("loading");
+    setPortalError("");
+    try {
+      const saveRes = await savePortalAccount(studentId, password);
+      if (!saveRes.success) throw new Error(saveRes.errorMessage || "계정을 등록하지 못했어요.");
+
+      const res = await fetchAcademicInfoFromApp(true);
+      if (!res.success || !res.data) {
+        const message = res.errorMessage || "";
+        if (isCredentialError(message)) {
+          await deletePortalAccount().catch(() => {});
+          throw new Error("학번 또는 비밀번호가 맞지 않아요. 다시 확인해주세요.");
+        }
+        throw new Error(message || "포털 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+
+      const info = res.data;
+      try {
+        await secureStorage.setItem("portal_student_info", adaptAcademicInfoToStudentInfo(info));
+        localStorage.setItem("portal_info_last_updated", new Date().toISOString());
+      } catch (e) {
+        console.debug("[Onboarding] failed to cache student info:", e);
+      }
+
+      const scrapedName = info.koreanName || "";
+      const scrapedDept = info.departmentName || "";
+      if (scrapedName) setRealName(scrapedName);
+      if (scrapedDept) {
+        setDepartmentName(scrapedDept);
+        setDepartmentCode(resolveDepartmentCode(scrapedDept));
+      }
+      setIsAcademicVerified(true);
+      setManualChosen(false);
+      setPortalStatus("idle");
+      setPortalPassword("");
+
+      // 3월 정규 학번 발급 시 신입생 계정 통합 확인
+      const birth =
+        info.rawFields?.birthDt || info.rawFields?.birthDate || info.rawFields?.birth || "";
+      if (scrapedName && birth) {
+        try {
+          const mergeRes = await checkMergeFreshman({
+            koreanName: scrapedName,
+            birthDate: birth.replace(/\D/g, ""),
+            departmentName: scrapedDept,
+          });
+          if (mergeRes.data.merged) {
+            if (mergeRes.data.token) setTokenInfo(mergeRes.data.token);
+            try {
+              const memberRes = await getMembers();
+              setUserInfo(memberRes.data);
+            } catch (syncErr) {
+              console.debug("[Onboarding] post-merge member sync error:", syncErr);
+            }
+            setMergedNotice(
+              `${getAcademicYear()}학년도 신입생 계정의 시간표·글·스크랩을\n이 계정으로 옮겼어요.`,
+            );
+          }
+        } catch (mergeErr) {
+          console.debug("[Onboarding] merge check error:", mergeErr);
+        }
+      }
+
+      if (returnToConfirm) {
+        setReturnToConfirm(false);
+        setStep("confirm");
+      } else {
+        setStep("nickname");
+      }
+    } catch (e) {
+      setPortalStatus("error");
+      setPortalError(
+        e instanceof Error && e.message
+          ? e.message
+          : "포털 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.",
+      );
+    }
+  };
+
+  // 완료 화면에서 초대 코드 조회
+  useEffect(() => {
+    if (step !== "done" || inviteCode) return;
+    void (async () => {
+      try {
+        const res = await getMyInviteCode();
+        if (res.data?.code) setInviteCode(res.data.code);
+      } catch (e) {
+        console.debug("[Onboarding] failed to get invite code:", e);
+      }
+    })();
   }, [step, inviteCode]);
 
-  // 닉네임 유효성 검사
-  const validateNickname = (value: string): string => {
-    const trimmed = value.trim();
-    if (trimmed.length < 2) return "닉네임은 2자 이상 입력해주세요.";
-    if (trimmed.length > 10) return "닉네임은 10자 이내로 입력해주세요.";
-    if (trimmed === userInfo.studentId) return "학번과 동일한 닉네임은 사용할 수 없어요.";
-
-    const normalized = trimmed.replace(/\s+/g, "").toLowerCase();
-    const hasForbidden = FORBIDDEN_KEYWORDS.some((kw) =>
-      normalized.includes(kw.toLowerCase()),
-    );
-    if (hasForbidden) return "사용할 수 없는 단어가 포함되어 있어요.";
-
-    return "";
-  };
-
-  const handleNextFromIntro = () => {
-    setStep((prev) => Math.min(prev + 1, TOTAL_STEPS));
-  };
-
-  const handleNextFromAcademic = () => {
-    if (academicState === "MANUAL") {
-      if (!realName.trim()) {
-        alert("이름을 입력해주세요.");
-        return;
-      }
-      if (!departmentName) {
-        alert("학과를 선택해주세요.");
-        return;
-      }
-    }
-    setStep(5);
-  };
-
-  const handleCompleteOnboarding = async () => {
-    const error = validateNickname(nickname);
-    if (error) {
-      setNicknameError(error);
-      return;
-    }
-    if (!agreeTerms) {
-      alert("서비스 이용약관에 동의해주세요.");
-      return;
-    }
-
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      setLoading(true);
       await postOnboarding({
         nickname: nickname.trim(),
         fireId,
@@ -299,910 +385,804 @@ export default function OnboardingPage() {
         departmentCode: departmentCode || undefined,
         isAcademicVerified,
       });
-
-      // 최신 사용자 정보 동기화
+      recordTermsAgreement();
       const memberRes = await getMembers();
       setUserInfo(memberRes.data);
-
-      setStep(6);
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        "프로필 설정 중 문제가 발생했어요. 다시 시도해주세요.";
-      alert(msg);
+      setTermsOpen(false);
+      setStep("done");
+    } catch (err: unknown) {
+      const serverMessage =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+      setTermsOpen(false);
+      showToast(serverMessage || "저장하지 못했어요. 잠시 후 다시 시도해주세요.", {
+        bottomOffset: 80,
+      });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleCopyInviteLink = async () => {
+  const handleCopyInvite = async () => {
     const inviteUrl = inviteCode
       ? `${window.location.origin}/friend/invite/${inviteCode}`
       : `${window.location.origin}/`;
-
-    if (navigator.clipboard) {
-      try {
+    try {
+      if (navigator.clipboard) {
         await navigator.clipboard.writeText(inviteUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
+        showToast("초대 링크를 복사했어요.", { bottomOffset: 80 });
         return;
-      } catch (e) {}
+      }
+    } catch {
+      // 클립보드가 막힌 환경이면 공유 시트로 넘긴다
     }
-
     if (navigator.share) {
       try {
         await navigator.share({
           title: "인팁 친구 초대",
-          text: "인팁에서 시간표 맞추고 학교 생활 같이 해요!",
+          text: "인팁에서 시간표 맞추고 학교생활 같이 해요!",
           url: inviteUrl,
         });
-      } catch (e) {}
+      } catch {
+        // 사용자가 공유를 닫음
+      }
     }
   };
 
-  const handleStartService = () => {
-    navigate(ROUTES.HOME, { replace: true });
+  const editFromConfirm = (target: FunnelStep) => {
+    setReturnToConfirm(true);
+    goToFunnelStep(target);
   };
 
-  const isAppEnv = isMobileAppEnvironment();
+  const nameError = validateRealName(realName);
+  const nicknameError = validateNickname(nickname, userInfo.studentId);
+  const nicknameLength = nickname.trim().length;
+
+  /* ───────────── 렌더 ───────────── */
+
+  if (step === "intro") {
+    const slide = INTRO_SLIDES[introIndex];
+    return (
+      <Page>
+        <IntroBody key={introIndex}>
+          <IntroImage src={slide.image} alt={slide.alt} />
+          <TitleBlock $center>
+            <Title>{slide.title}</Title>
+            <Subtitle>{slide.body}</Subtitle>
+          </TitleBlock>
+          <Dots aria-label={`${INTRO_SLIDES.length}장 중 ${introIndex + 1}장`}>
+            {INTRO_SLIDES.map((_, i) => (
+              <Dot key={i} $active={i === introIndex} />
+            ))}
+          </Dots>
+        </IntroBody>
+        <OnboardingBottomCTA primary={{ label: "다음", onClick: handleIntroNext }} />
+      </Page>
+    );
+  }
+
+  if (step === "done") {
+    return (
+      <Page>
+        <DoneBody>
+          <Avatar src={getProfileImageUrl(fireId)} alt="" $size={120} />
+          <TitleBlock $center>
+            <Title>{nickname.trim()}님, 환영해요!</Title>
+            <Subtitle>
+              {"이제 INTIP의 모든 기능을 쓸 수 있어요.\n친구를 초대해 공강을 함께 맞춰보세요."}
+            </Subtitle>
+          </TitleBlock>
+        </DoneBody>
+        <OnboardingBottomCTA
+          secondary={{ label: "초대 링크 복사", onClick: handleCopyInvite }}
+          primary={{
+            label: "INTIP 시작하기",
+            onClick: () => navigate(ROUTES.HOME, { replace: true }),
+          }}
+        />
+      </Page>
+    );
+  }
+
+  const stepIndex = funnelSteps.indexOf(step);
+  const header = (
+    <OnboardingFunnelHeader
+      step={stepIndex + 1}
+      total={funnelSteps.length}
+      onBack={portalStatus === "loading" ? undefined : handleBack}
+    />
+  );
 
   return (
-    <PageWrapper>
-      {/* 상단 프로그레스 바 */}
-      <ProgressContainer>
-        <ProgressBar $progress={(step / TOTAL_STEPS) * 100} />
-      </ProgressContainer>
+    <Page>
+      {header}
 
-      {/* 상단 바 (이전 버튼 및 단계 표시) */}
-      <TopBar>
-        {step > 1 && step < 6 ? (
-          <BackButton type="button" onClick={() => setStep((s) => s - 1)}>
-            ‹ 이전
-          </BackButton>
-        ) : (
-          <span />
-        )}
-        <StepIndicator>{step} / {TOTAL_STEPS}</StepIndicator>
-      </TopBar>
+      {step === "portal" && (
+        <>
+          <Body>
+            <TitleBlock>
+              <Title>포털 계정 등록</Title>
+              <Subtitle>
+                {"인천대학교 포털 계정을 등록하면\n학적·LMS·도서관 기능을 바로 이용할 수 있어요."}
+              </Subtitle>
+            </TitleBlock>
+            <Fields>
+              <InputField
+                label="학번"
+                type="text"
+                inputMode="numeric"
+                autoComplete="username"
+                placeholder="입력하세요"
+                value={portalStudentId}
+                onChange={(v) => {
+                  setPortalStudentId(v.replace(/\D/g, ""));
+                  if (portalStatus === "error") setPortalStatus("idle");
+                }}
+                disabled={portalStatus === "loading"}
+                error={portalStatus === "error"}
+              />
+              <InputField
+                label="비밀번호"
+                type="password"
+                autoComplete="current-password"
+                placeholder="입력하세요"
+                value={portalPassword}
+                onChange={(v) => {
+                  setPortalPassword(v);
+                  if (portalStatus === "error") setPortalStatus("idle");
+                }}
+                disabled={portalStatus === "loading"}
+                error={portalStatus === "error"}
+              />
+              {portalStatus === "error" && portalError && <Helper $error>{portalError}</Helper>}
+            </Fields>
+          </Body>
+          <OnboardingBottomCTA
+            caption={
+              portalStatus === "loading"
+                ? "포털에서 이름과 학과를 불러오고 있어요"
+                : portalStatus === "error"
+                  ? "이름, 학과 직접 입력하기"
+                  : "계정 정보는 기기에만 저장되며, 포털에 직접 요청합니다."
+            }
+            onCaptionClick={portalStatus === "error" ? chooseManual : undefined}
+            primary={{
+              label: portalStatus === "loading" ? "불러오는 중…" : "다음",
+              onClick: handlePortalSubmit,
+              disabled:
+                portalStatus === "loading" || !portalStudentId.trim() || !portalPassword,
+            }}
+          />
 
-      <ContentArea>
-        {/* Slide 1: 시간표 & 편람 & 친구 비교 */}
-        {step === 1 && (
-          <SlideSection>
-            <IllustrationFrame>
-              <IllustrationImage src={onboardingTimetable} alt="시간표와 공강 비교" />
-            </IllustrationFrame>
-            <Title>시간표 짜기부터<br />친구와 공강 비교까지</Title>
-            <Subtitle>
-              수강 편람이 열리면 바로 시간표를 만들고,<br />
-              친구 시간표와 겹치는 공강 시간을 한눈에 비교해보세요.
-            </Subtitle>
-          </SlideSection>
-        )}
-
-        {/* Slide 2: 공지사항 키워드 알림 */}
-        {step === 2 && (
-          <SlideSection>
-            <IllustrationFrame>
-              <IllustrationImage src={onboardingNotice} alt="공지사항 키워드 알림" />
-            </IllustrationFrame>
-            <Title>놓치기 쉬운 학과 공지,<br />키워드로 바로 알림</Title>
-            <Subtitle>
-              장학금, 수강신청 등 원하는 키워드를 등록하면<br />
-              새 공지가 뜰 때마다 바로 푸시 알림을 보내드려요.
-            </Subtitle>
-          </SlideSection>
-        )}
-
-        {/* Slide 3: 횃불이 AI 어시스턴트 */}
-        {step === 3 && (
-          <SlideSection>
-            <IllustrationFrame>
-              <IllustrationImage src={onboardingAi} alt="횃불이 AI" />
-            </IllustrationFrame>
-            <Title>학교 생활 궁금할 땐<br />언제나 횃불이 AI</Title>
-            <Subtitle>
-              학식 메뉴, 도서관 잔여석, 졸업 요건까지<br />
-              인천대 생활의 모든 궁금증을 해결해드려요.
-            </Subtitle>
-          </SlideSection>
-        )}
-
-        {/* Slide 4: 학적 정보 확인 및 연동 */}
-        {step === 4 && (
-          <SlideSection>
-            <Title>학적 정보를 확인해요</Title>
-            <Subtitle>
-              인천대학교 공식 학적 정보와 연동하여<br />
-              학과 커뮤니티와 시간표 기능을 시작해요.
-            </Subtitle>
-
-            {/* 1. 가져오기 대기 상태 (IDLE) */}
-            {academicState === "IDLE" && (
-              <CardBox>
-                <NoticeBox>
-                  <NoticeStrongText>
-                    이 기기에서 학교 시스템에 직접 접속하여 학적 정보를 안전하게 가져와요.
-                  </NoticeStrongText>
-                  <NoticeSubText>
-                    서버로 비밀번호가 전송되지 않으며, 오직 이 폰 안에서만 안전하게 수행돼요.
-                  </NoticeSubText>
-                </NoticeBox>
-
-                {isAppEnv ? (
-                  <ActionWrapper>
-                    <ImportActionButton
-                      type="button"
-                      onClick={handleFetchAcademic}
-                    >
-                      학적 정보 가져오기
-                    </ImportActionButton>
-                    <TextLinkButton
-                      type="button"
-                      onClick={() => setAcademicState("MANUAL")}
-                    >
-                      직접 입력하기
-                    </TextLinkButton>
-                  </ActionWrapper>
-                ) : (
-                  <ActionWrapper>
-                    <BrowserNotice>
-                      자동 학적 정보 가져오기는 인팁 모바일 앱 환경에서만 가능해요.
-                      지금은 직접 입력하고, 나중에 앱에서 공식 인증할 수 있어요.
-                    </BrowserNotice>
-                    <ImportActionButton
-                      type="button"
-                      onClick={() => setAcademicState("MANUAL")}
-                    >
-                      직접 입력하여 계속하기
-                    </ImportActionButton>
-                  </ActionWrapper>
-                )}
-              </CardBox>
-            )}
-
-            {/* 2. 가져오는 중 (FETCHING) */}
-            {academicState === "FETCHING" && (
-              <CardBox>
-                <LoadingBox>
-                  <Spinner />
-                  <LoadingText>
-                    이 기기에서 학적 정보를 안전하게 확인하는 중이에요...
-                  </LoadingText>
-                </LoadingBox>
-              </CardBox>
-            )}
-
-            {/* 3. 성공 상태 (SUCCESS) */}
-            {academicState === "SUCCESS" && (
-              <CardBox>
-                <InfoRow>
-                  <InfoLabel>성명</InfoLabel>
-                  <InfoValue>{realName || "인증 완료"}</InfoValue>
-                </InfoRow>
-                <InfoRow>
-                  <InfoLabel>학과</InfoLabel>
-                  <InfoValue>{departmentName || "확인됨"}</InfoValue>
-                </InfoRow>
-                {userInfo.studentId && (
-                  <InfoRow>
-                    <InfoLabel>학번</InfoLabel>
-                    <InfoValue>{userInfo.studentId}</InfoValue>
-                  </InfoRow>
-                )}
-                <VerifiedBadge>공식 학적 인증 완료</VerifiedBadge>
-
-                {mergedNotice && (
-                  <MergedBanner>
-                    <MergedTitle>신입생 활동 내역 통합 안내</MergedTitle>
-                    <MergedText>{mergedNotice}</MergedText>
-                  </MergedBanner>
-                )}
-              </CardBox>
-            )}
-
-            {/* 4. 실패 상태 (FAIL) */}
-            {academicState === "FAIL" && (
-              <CardBox>
-                <FailText>
-                  {failErrorMessage || "학적 정보를 가져오지 못했어요."}<br />
-                  포털 로그인 상태를 확인하고 다시 시도하거나,<br />
-                  직접 입력하여 계속 진행할 수 있어요.
-                </FailText>
-                <ButtonGroup>
-                  <SecondaryButton
-                    type="button"
-                    onClick={handleFetchAcademic}
-                  >
-                    다시 시도하기
-                  </SecondaryButton>
-                  <SecondaryButton
-                    type="button"
-                    onClick={() => setAcademicState("MANUAL")}
-                  >
-                    직접 입력하여 계속하기
-                  </SecondaryButton>
-                </ButtonGroup>
-              </CardBox>
-            )}
-
-            {/* 5. 수동 입력 모드 (MANUAL) */}
-            {academicState === "MANUAL" && (
-              <ManualForm>
-                <ManualNotice>
-                  지금은 직접 입력하고, 나중에 홈 화면 상단 배너에서 언제든
-                  공식 학적으로 인증할 수 있어요.
-                </ManualNotice>
-                <InputField
-                  label="이름"
-                  type="text"
-                  placeholder="본명 입력"
-                  value={realName}
-                  onChange={setRealName}
+          <BottomSheet
+            open={portalSheetOpen}
+            onOpenChange={(next) => {
+              if (!next) setPortalSheetOpen(false);
+            }}
+            handle="compact"
+          >
+            <SheetContent>
+              <TitleBlock>
+                <Title>포털 계정을 등록할 수 있어요</Title>
+                <Subtitle>
+                  {
+                    "인천대학교 포털 계정을 등록하면\n학사정보 시스템·LMS·도서관 기능을 바로 이용할 수 있어요."
+                  }
+                </Subtitle>
+              </TitleBlock>
+              <PortalIllustration aria-hidden>
+                <img className="window" src={onboardingPortalWindow} alt="" />
+                <img className="magnifier" src={onboardingPortalMagnifier} alt="" />
+              </PortalIllustration>
+              {isAppEnv ? (
+                <OnboardingBottomCTA
+                  placement="inline"
+                  caption="이름, 학과 직접 입력하기"
+                  onCaptionClick={chooseManual}
+                  primary={{ label: "포털 계정 등록하기", onClick: choosePortal }}
                 />
-                <DepartmentSelectGroup>
-                  <SelectLabel>학과 선택</SelectLabel>
-                  <Select
-                    value={departmentCode}
-                    onChange={(e) => {
-                      const code = e.target.value;
-                      setDepartmentCode(code);
-                      if (schoolDepartments.length > 0) {
-                        const foundServer = schoolDepartments.find(
-                          (d) => d.code === code,
-                        );
-                        if (foundServer) {
-                          setDepartmentName(foundServer.name);
-                          return;
-                        }
-                      }
-                      for (const g of departmentGroups) {
-                        const found = g.departments.find((d) => d.code === code);
-                        if (found) {
-                          setDepartmentName(found.title);
-                          break;
-                        }
-                      }
-                    }}
-                  >
-                    <option value="">학과를 선택해주세요</option>
-                    {schoolDepartments.length > 0
-                      ? schoolDepartments.map((dept) => (
-                          <option key={dept.code} value={dept.code}>
-                            {dept.name}
-                          </option>
-                        ))
-                      : departmentGroups.map((group) => (
-                          <optgroup key={group.college} label={group.college}>
-                            {group.departments.map((dept) => (
-                              <option key={dept.code} value={dept.code}>
-                                {dept.title}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                  </Select>
-                </DepartmentSelectGroup>
-                {isAppEnv && (
-                  <TextLinkButton
-                    type="button"
-                    onClick={() => setAcademicState("IDLE")}
-                  >
-                    ‹ 기기에서 직접 가져오기로 돌아가기
-                  </TextLinkButton>
-                )}
-              </ManualForm>
-            )}
-          </SlideSection>
-        )}
+              ) : (
+                <OnboardingBottomCTA
+                  placement="inline"
+                  caption="포털 계정 등록은 INTIP 앱에서 할 수 있어요"
+                  primary={{ label: "이름, 학과 입력하기", onClick: chooseManual }}
+                />
+              )}
+            </SheetContent>
+          </BottomSheet>
 
-        {/* Slide 5: 프로필 설정 (닉네임 & 횃불이) */}
-        {step === 5 && (
-          <SlideSection>
-            <Title>프로필을 완성해주세요</Title>
-            <Subtitle>
-              커뮤니티에서 활동할 닉네임과 횃불이 캐릭터를 선택해주세요.
-            </Subtitle>
+          <PortalSyncConsentSheet
+            open={consentOpen}
+            ctaLabel="동의하고 시작하기"
+            onAgree={(choice) => {
+              recordPortalSyncConsent(choice);
+              setConsentOpen(false);
+              if (portalStudentId.trim() && portalPassword) void handlePortalSubmit();
+            }}
+            onDismiss={() => {
+              setConsentOpen(false);
+              setPortalSheetOpen(true);
+            }}
+          />
+        </>
+      )}
 
-            <ProfileForm>
+      {step === "name" && (
+        <>
+          <Body>
+            <TitleBlock>
+              <Title>이름을 알려주세요</Title>
+              <Subtitle>실제 이름을 입력해주세요.</Subtitle>
+            </TitleBlock>
+            <Field>
+              <InputField
+                label="이름"
+                type="text"
+                autoComplete="name"
+                placeholder="입력하세요"
+                value={realName}
+                onChange={setRealName}
+                error={Boolean(nameError)}
+                autoFocus
+              />
+              {nameError && <Helper $error>{nameError}</Helper>}
+            </Field>
+          </Body>
+          <OnboardingBottomCTA
+            primary={{
+              label: "다음",
+              onClick: handleNext,
+              disabled: !realName.trim() || Boolean(nameError),
+            }}
+          />
+        </>
+      )}
+
+      {step === "nickname" && (
+        <>
+          <Body>
+            <TitleBlock>
+              <Title>{"커뮤니티에서 쓸\n닉네임을 정해주세요"}</Title>
+              <Subtitle>커뮤니티와 마이페이지에 표시돼요.</Subtitle>
+            </TitleBlock>
+            <Field>
               <InputField
                 label="닉네임"
                 type="text"
-                placeholder="2~10자 한글/영문/숫자"
+                placeholder="입력하세요"
                 value={nickname}
-                onChange={(val) => {
-                  setNickname(val);
-                  setNicknameError(validateNickname(val));
-                }}
+                onChange={setNickname}
+                error={Boolean(nicknameError)}
+                autoFocus
               />
-              {nicknameError && <ErrorText>{nicknameError}</ErrorText>}
+              <HelperRow>
+                <Helper $error>{nicknameError}</Helper>
+                <Counter $error={Boolean(nicknameError)}>
+                  {nicknameLength}/{NICKNAME_MAX_LENGTH}
+                </Counter>
+              </HelperRow>
+            </Field>
+          </Body>
+          <OnboardingBottomCTA
+            primary={{
+              label: "다음",
+              onClick: handleNext,
+              disabled: !nickname.trim() || Boolean(nicknameError),
+            }}
+          />
+        </>
+      )}
 
-              <CharacterSection>
-                <SectionLabel>횃불이 캐릭터 선택</SectionLabel>
-                <CharacterGrid>
-                  {PROFILE_IMAGE_IDS.map((id) => (
-                    <CharacterOption
-                      key={id}
-                      type="button"
-                      $isSelected={fireId === id}
-                      onClick={() => setFireId(id)}
-                    >
-                      <CharacterImg
-                        src={getProfileImageUrl(id)}
-                        alt={`횃불이 ${id}`}
-                      />
-                    </CharacterOption>
-                  ))}
-                </CharacterGrid>
-              </CharacterSection>
+      {step === "department" && (
+        <>
+          <Body>
+            <TitleBlock>
+              <Title>어느 학과 소속이신가요?</Title>
+              <Subtitle>부/복수전공 선택은 추후 추가될 예정이에요.</Subtitle>
+            </TitleBlock>
+            <SelectField type="button" onClick={() => setDeptSheetOpen(true)}>
+              <SelectText>
+                <SelectLabel>학과 (주전공)</SelectLabel>
+                <SelectValue $placeholder={!departmentName}>
+                  {departmentName || "학과를 선택하세요"}
+                </SelectValue>
+              </SelectText>
+              <Icon name="chevron-down" size={20} />
+            </SelectField>
+          </Body>
+          <OnboardingBottomCTA
+            primary={{ label: "다음", onClick: handleNext, disabled: !departmentCode }}
+          />
+          <DepartmentSelectSheet
+            open={deptSheetOpen}
+            departments={departmentOptions}
+            selectedCode={departmentCode}
+            onSelect={(d) => {
+              setDepartmentCode(d.code);
+              setDepartmentName(d.name);
+              setDeptSheetOpen(false);
+            }}
+            onClose={() => setDeptSheetOpen(false)}
+          />
+        </>
+      )}
 
-              <TermsBox>
-                <CheckboxLabel>
-                  <input
-                    type="checkbox"
-                    checked={agreeTerms}
-                    onChange={(e) => setAgreeTerms(e.target.checked)}
-                  />
-                  <span>
-                    인팁 서비스 이용약관 및 개인정보 처리방침에 동의합니다.
-                  </span>
-                </CheckboxLabel>
-              </TermsBox>
-            </ProfileForm>
-          </SlideSection>
-        )}
+      {step === "profile" && (
+        <>
+          <Body $gap={24}>
+            <TitleBlock>
+              <Title>프로필 이미지를 골라주세요</Title>
+              <Subtitle>마이페이지에서 언제든 바꿀 수 있어요.</Subtitle>
+            </TitleBlock>
+            <Preview>
+              <Avatar src={getProfileImageUrl(fireId)} alt="" $size={64} />
+              <PreviewText>
+                <PreviewName>{nickname.trim()}</PreviewName>
+                {departmentName && <PreviewDept>{departmentName}</PreviewDept>}
+              </PreviewText>
+            </Preview>
+            <ProfileGrid role="radiogroup" aria-label="프로필 이미지">
+              {PROFILE_IMAGE_IDS.map((id) => (
+                <ProfileOption
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={fireId === id}
+                  aria-label={`프로필 이미지 ${id}`}
+                  $selected={fireId === id}
+                  onClick={() => setFireId(id)}
+                >
+                  <img src={getProfileImageUrl(id)} alt="" />
+                </ProfileOption>
+              ))}
+            </ProfileGrid>
+          </Body>
+          <OnboardingBottomCTA primary={{ label: "다음", onClick: handleNext }} />
+        </>
+      )}
 
-        {/* Slide 6: 온보딩 완료 & 친구 초대 */}
-        {step === 6 && (
-          <SlideSection>
-            <IllustrationFrame>
-              <IllustrationImage src={onboardingComplete} alt="온보딩 완료" />
-            </IllustrationFrame>
-            <Title>모든 준비가 끝났어요!</Title>
-            <Subtitle>
-              친구에게 초대 링크를 보내고<br />
-              시간표와 공강을 함께 맞춰보세요.
-            </Subtitle>
-
-            <InviteActionBox>
-              <InviteCopyButton type="button" onClick={handleCopyInviteLink}>
-                {copied ? "초대 링크가 복사되었어요!" : "친구 초대 링크 복사하기"}
-              </InviteCopyButton>
-            </InviteActionBox>
-          </SlideSection>
-        )}
-      </ContentArea>
-
-      {/* 하단 고정 액션 버튼 */}
-      <BottomCtaContainer>
-        {step < 4 && (
-          <PrimaryButton type="button" onClick={handleNextFromIntro}>
-            다음
-          </PrimaryButton>
-        )}
-        {step === 4 && (
-          <PrimaryButton
-            type="button"
-            onClick={handleNextFromAcademic}
-            disabled={
-              loading ||
-              (academicState !== "SUCCESS" && academicState !== "MANUAL") ||
-              (academicState === "MANUAL" && (!realName.trim() || !departmentName))
-            }
-          >
-            다음
-          </PrimaryButton>
-        )}
-        {step === 5 && (
-          <PrimaryButton
-            type="button"
-            onClick={handleCompleteOnboarding}
-            disabled={
-              loading ||
-              !nickname.trim() ||
-              Boolean(nicknameError) ||
-              !agreeTerms
-            }
-          >
-            {loading ? "설정 완료하는 중..." : "인팁 시작하기"}
-          </PrimaryButton>
-        )}
-        {step === 6 && (
-          <PrimaryButton type="button" onClick={handleStartService}>
-            홈으로 이동하기
-          </PrimaryButton>
-        )}
-      </BottomCtaContainer>
-    </PageWrapper>
+      {step === "confirm" && (
+        <>
+          <Body $gap={24}>
+            <TitleBlock>
+              <Title>이대로 시작할까요?</Title>
+              <Subtitle>
+                {isAcademicVerified
+                  ? "이름·학번·학과는 포털에서 불러와서 고칠 수 없어요."
+                  : "항목을 누르면 다시 고칠 수 있어요."}
+              </Subtitle>
+            </TitleBlock>
+            <Summary>
+              <SummaryRow
+                label="이름"
+                value={realName}
+                onClick={isAcademicVerified ? undefined : () => editFromConfirm("name")}
+              />
+              {isAcademicVerified && userInfo.studentId && (
+                <SummaryRow label="학번" value={userInfo.studentId} />
+              )}
+              <SummaryRow
+                label="닉네임"
+                value={nickname.trim()}
+                onClick={() => editFromConfirm("nickname")}
+              />
+              <SummaryRow
+                label="학과"
+                value={departmentName}
+                onClick={isAcademicVerified ? undefined : () => editFromConfirm("department")}
+              />
+              <SummaryRow
+                label="프로필 이미지"
+                value={<Avatar src={getProfileImageUrl(fireId)} alt="" $size={32} />}
+                onClick={() => editFromConfirm("profile")}
+              />
+            </Summary>
+            {mergedNotice && (
+              <Notice>
+                <NoticeTitle>신입생 때 쓰던 기록을 합쳤어요</NoticeTitle>
+                <NoticeText>{mergedNotice}</NoticeText>
+              </Notice>
+            )}
+          </Body>
+          <OnboardingBottomCTA primary={{ label: "시작하기", onClick: () => setTermsOpen(true) }} />
+          <ServiceTermsSheet
+            open={termsOpen}
+            submitting={saving}
+            onAgree={handleSave}
+            onDismiss={() => setTermsOpen(false)}
+          />
+        </>
+      )}
+    </Page>
   );
 }
 
-const PageWrapper = styled.div`
+/* Figma Onboarding/Summary_Row 6269:18544 — 누를 수 없는 행은 › 자리만 비워 값 끝을 맞춘다 */
+function SummaryRow({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value: ReactNode;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <RowLabel>{label}</RowLabel>
+      <RowValue>{value}</RowValue>
+      <RowChevron $hidden={!onClick} aria-hidden>
+        <Icon name="chevron-right" size={20} />
+      </RowChevron>
+    </>
+  );
+  return onClick ? (
+    <RowButton type="button" onClick={onClick} aria-label={`${label} 고치기`}>
+      {content}
+    </RowButton>
+  ) : (
+    <RowStatic>{content}</RowStatic>
+  );
+}
+
+/* ───────────── styles ───────────── */
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(6px, 4px) rotate(-6deg); }
+`;
+
+const Page = styled.div`
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
   box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  position: relative;
+  padding-top: ${SAFE_AREA.TOP};
+  background: var(--bg-base);
 `;
 
-const ProgressContainer = styled.div`
-  width: 100%;
-  height: 4px;
-  background-color: var(--bg-subtle, #f2f4f6);
-  border-radius: 2px;
-  overflow: hidden;
-`;
-
-const ProgressBar = styled.div<{ $progress: number }>`
-  width: ${({ $progress }) => $progress}%;
-  height: 100%;
-  background-color: var(--brand-primary, #3182f6);
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-`;
-
-const TopBar = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px 8px;
-  height: 40px;
-  box-sizing: border-box;
-`;
-
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-secondary, #4e5968);
-  cursor: pointer;
-  padding: 4px 8px;
-  margin-left: -8px;
-`;
-
-const StepIndicator = styled.span`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-caption, #8b95a1);
-`;
-
-const ContentArea = styled.main`
-  flex: 1;
+const Body = styled.main<{ $gap?: number }>`
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 8px 20px calc(88px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
+  gap: ${({ $gap }) => $gap ?? 32}px;
+  padding: 24px 24px 0;
+  animation: ${fadeIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 `;
 
-const SlideSection = styled.div`
+const TitleBlock = styled.div<{ $center?: boolean }>`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-
-const IllustrationFrame = styled.div`
-  width: 160px;
-  height: 160px;
-  margin: 12px 0 18px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(49, 130, 246, 0.08);
-  background-color: var(--bg-surface, #ffffff);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const IllustrationImage = styled.img`
+  gap: 8px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  text-align: ${({ $center }) => ($center ? "center" : "left")};
 `;
 
 const Title = styled.h1`
-  margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.35;
-  color: var(--text-primary, #191f28);
-  letter-spacing: -0.4px;
+  margin: 0;
+  ${typography.title1}
+  color: var(--text-primary);
   white-space: pre-line;
+  word-break: keep-all;
 `;
 
 const Subtitle = styled.p`
-  margin: 0 0 18px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-secondary, #4e5968);
-  white-space: pre-line;
-`;
-
-const CardBox = styled.div`
-  width: 100%;
-  background-color: var(--bg-surface, #ffffff);
-  border-radius: 18px;
-  padding: 18px 16px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  border: 1px solid var(--border-divider, #e5e8eb);
-`;
-
-const NoticeBox = styled.div`
-  background-color: var(--brand-subtle, #e8f3ff);
-  border-radius: 12px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-`;
-
-const NoticeStrongText = styled.span`
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.45;
-  color: var(--brand-primary, #3182f6);
-`;
-
-const NoticeSubText = styled.span`
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-secondary, #4e5968);
-`;
-
-const ActionWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
-`;
-
-const ImportActionButton = styled.button`
-  width: 100%;
-  height: 48px;
-  border-radius: 12px;
-  border: none;
-  background-color: var(--brand-primary, #3182f6);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-const TextLinkButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: var(--text-secondary, #4e5968);
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 6px;
-
-  &:hover {
-    color: var(--brand-primary, #3182f6);
-  }
-`;
-
-const BrowserNotice = styled.p`
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-secondary, #4e5968);
-  text-align: left;
+  ${typography.body2}
+  color: var(--text-tertiary);
+  white-space: pre-line;
+  word-break: keep-all;
 `;
 
-const LoadingBox = styled.div`
+const IntroBody = styled.main`
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 24px 0;
+  justify-content: center;
+  gap: 32px;
+  padding: 0 24px;
+  animation: ${fadeIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 `;
 
-const Spinner = styled.div`
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--bg-subtle, #f2f4f6);
-  border-top-color: var(--brand-primary, #3182f6);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+const IntroImage = styled.img`
+  width: 280px;
+  height: 280px;
+  border-radius: 24px;
+  object-fit: cover;
+`;
 
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
+const Dots = styled.div`
+  display: flex;
+  gap: 6px;
+`;
+
+const Dot = styled.span<{ $active: boolean }>`
+  width: ${({ $active }) => ($active ? 16 : 6)}px;
+  height: 6px;
+  border-radius: 3px;
+  background: ${({ $active }) =>
+    $active ? "var(--interactive-primary)" : "var(--border-default)"};
+  transition: width 0.2s ease;
+`;
+
+const DoneBody = styled.main`
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 24px;
+  animation: ${fadeIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+`;
+
+const Avatar = styled.img<{ $size: number }>`
+  width: ${({ $size }) => $size}px;
+  height: ${({ $size }) => $size}px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-subtle);
+`;
+
+const Fields = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const HelperRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0 4px;
+`;
+
+const Helper = styled.p<{ $error?: boolean }>`
+  flex: 1 0 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0 4px;
+  ${typography.caption1}
+  color: ${({ $error }) => ($error ? "var(--text-error)" : "var(--text-tertiary)")};
+
+  ${HelperRow} & {
+    padding: 0;
+  }
+`;
+
+const Counter = styled.span<{ $error: boolean }>`
+  flex-shrink: 0;
+  ${typography.caption1}
+  color: ${({ $error }) => ($error ? "var(--text-error)" : "var(--text-tertiary)")};
+`;
+
+const SheetContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0 10px;
+`;
+
+/* Figma lookingup (6304:22848): 창 + 돋보기. 돋보기는 시안처럼 살짝 움직인다 */
+const PortalIllustration = styled.div`
+  position: relative;
+  width: 240px;
+  height: 240px;
+  flex-shrink: 0;
+
+  .window {
+    position: absolute;
+    top: 20.76%;
+    right: 20.23%;
+    bottom: 20.89%;
+    left: 20.24%;
+    width: 59.53%;
+    height: 58.35%;
+  }
+
+  .magnifier {
+    position: absolute;
+    top: 22.12%;
+    left: 16.26%;
+    width: 26.07%;
+    height: 26.07%;
+    animation: ${float} 2.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .magnifier {
+      animation: none;
     }
   }
 `;
 
-const LoadingText = styled.span`
-  font-size: 13px;
-  color: var(--text-secondary, #4e5968);
-`;
-
-const InfoRow = styled.div`
+const SelectField = styled.button`
   display: flex;
   align-items: center;
-  justify-content: space-between;
-`;
-
-const InfoLabel = styled.span`
-  font-size: 14px;
-  color: var(--text-caption, #8b95a1);
-`;
-
-const InfoValue = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary, #191f28);
-`;
-
-const VerifiedBadge = styled.div`
-  margin-top: 4px;
-  padding: 8px;
-  background-color: var(--brand-subtle, #e8f3ff);
-  color: var(--brand-primary, #3182f6);
-  font-size: 13px;
-  font-weight: 700;
-  border-radius: 10px;
-  text-align: center;
-`;
-
-const FailText = styled.p`
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-secondary, #4e5968);
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
   gap: 8px;
-`;
-
-const SecondaryButton = styled.button`
   width: 100%;
-  height: 46px;
+  padding: 8px 16px 8px 12px;
+  border: 1px solid var(--border-default);
   border-radius: 12px;
-  border: 1px solid var(--border-divider, #e5e8eb);
-  background-color: var(--bg-subtle, #f2f4f6);
-  color: var(--text-primary, #191f28);
-  font-size: 14px;
-  font-weight: 600;
+  background: var(--bg-subtle);
+  text-align: left;
   cursor: pointer;
-
-  &:active {
-    transform: scale(0.98);
-  }
+  color: var(--text-tertiary);
+  -webkit-tap-highlight-color: transparent;
 `;
 
-const ManualForm = styled.div`
-  width: 100%;
+const SelectText = styled.span`
+  flex: 1 0 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  text-align: left;
+  gap: 2px;
 `;
 
-const ManualNotice = styled.p`
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text-caption, #8b95a1);
+const SelectLabel = styled.span`
+  ${typography.caption1}
+  color: var(--text-secondary);
 `;
 
-const DepartmentSelectGroup = styled.div`
+const SelectValue = styled.span<{ $placeholder: boolean }>`
+  ${typography.body1}
+  color: ${({ $placeholder }) => ($placeholder ? "var(--text-disabled)" : "var(--text-primary)")};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Preview = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const SelectLabel = styled.label`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #4e5968);
-`;
-
-const Select = styled.select`
-  width: 100%;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--border-divider, #e5e8eb);
-  padding: 0 12px;
-  font-size: 14px;
-  color: var(--text-primary, #191f28);
-  background-color: var(--bg-surface, #ffffff);
-  outline: none;
-
-  &:focus {
-    border-color: var(--brand-primary, #3182f6);
-  }
-`;
-
-const MergedBanner = styled.div`
-  margin-top: 10px;
-  width: 100%;
-  background-color: var(--brand-subtle, #e8f3ff);
-  border-radius: 12px;
-  padding: 12px 14px;
-  box-sizing: border-box;
-  text-align: left;
-`;
-
-const MergedTitle = styled.h4`
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--brand-primary, #3182f6);
-`;
-
-const MergedText = styled.p`
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--text-secondary, #4e5968);
-`;
-
-const ProfileForm = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 16px;
-  text-align: left;
+  padding: 16px;
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: 16px;
+  background: var(--bg-brand);
 `;
 
-const ErrorText = styled.p`
-  margin: -10px 0 0;
-  font-size: 12px;
-  color: var(--status-error, #f04452);
-`;
-
-const CharacterSection = styled.div`
+const PreviewText = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 2px;
+  min-width: 0;
 `;
 
-const SectionLabel = styled.span`
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #4e5968);
+const PreviewName = styled.p`
+  margin: 0;
+  ${typography.title3}
+  color: var(--text-primary);
 `;
 
-const CharacterGrid = styled.div`
+const PreviewDept = styled.p`
+  margin: 0;
+  ${typography.body2}
+  color: var(--text-tertiary);
+`;
+
+const ProfileGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 80px);
+  justify-content: space-between;
+  row-gap: 8px;
 `;
 
-const CharacterOption = styled.button<{ $isSelected: boolean }>`
-  aspect-ratio: 1;
-  border-radius: 14px;
-  border: 2px solid
-    ${({ $isSelected }) =>
-      $isSelected ? "var(--brand-primary, #3182f6)" : "transparent"};
-  background-color: var(--bg-surface, #ffffff);
+/* Figma Onboarding/Profile_Option: 80 칸 안 72 원, 선택되면 바깥 3px 테두리 */
+const ProfileOption = styled.button<{ $selected: boolean }>`
+  width: 80px;
+  height: 80px;
   padding: 4px;
-  box-sizing: border-box;
+  border: none;
+  background: none;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  img {
+    display: block;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: ${({ $selected }) =>
+      $selected ? "0 0 0 3px var(--interactive-primary)" : "none"};
+    transition: box-shadow 0.15s ease;
+  }
+`;
+
+const Summary = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const rowBase = `
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: transform 0.1s ease;
-
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
-const CharacterImg = styled.img`
+  gap: 12px;
   width: 100%;
-  height: 100%;
-  object-fit: contain;
-`;
-
-const TermsBox = styled.div`
-  margin-top: 4px;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--text-secondary, #4e5968);
-  cursor: pointer;
-
-  input {
-    margin-top: 2px;
-  }
-`;
-
-const InviteActionBox = styled.div`
-  width: 100%;
-  margin-top: 10px;
-`;
-
-const InviteCopyButton = styled.button`
-  width: 100%;
-  height: 50px;
-  border-radius: 14px;
-  border: 1px solid var(--brand-primary, #3182f6);
-  background-color: var(--brand-subtle, #e8f3ff);
-  color: var(--brand-primary, #3182f6);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-const BottomCtaContainer = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 440px;
-  padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(
-    to top,
-    var(--bg-base, #f9fafb) 80%,
-    rgba(249, 250, 251, 0)
-  );
+  height: 56px;
+  padding: 16px 0;
   box-sizing: border-box;
-  z-index: 100;
 `;
 
-const PrimaryButton = styled.button`
-  width: 100%;
-  height: 50px;
-  border-radius: 14px;
+const RowButton = styled.button`
+  ${rowBase}
   border: none;
-  background-color: var(--brand-primary, #3182f6);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 700;
+  background: none;
+  text-align: left;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+`;
 
-  &:active {
-    transform: scale(0.98);
-  }
+const RowStatic = styled.div`
+  ${rowBase}
+`;
 
-  &:disabled {
-    background-color: var(--bg-disabled, #e5e8eb);
-    color: var(--text-disabled, #8b95a1);
-    cursor: not-allowed;
-    transform: none;
-  }
+const RowLabel = styled.span`
+  width: 88px;
+  flex-shrink: 0;
+  ${typography.body2}
+  color: var(--text-tertiary);
+`;
+
+const RowValue = styled.span`
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  ${typography.label1}
+  color: var(--text-primary);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const RowChevron = styled.span<{ $hidden: boolean }>`
+  display: flex;
+  flex-shrink: 0;
+  color: var(--text-primary);
+  visibility: ${({ $hidden }) => ($hidden ? "hidden" : "visible")};
+`;
+
+const Notice = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border: 1px solid var(--border-brand-subtle);
+  border-radius: 16px;
+  background: var(--bg-brand);
+`;
+
+const NoticeTitle = styled.p`
+  margin: 0;
+  ${typography.title3}
+  color: var(--text-primary);
+`;
+
+const NoticeText = styled.p`
+  margin: 0;
+  ${typography.body2}
+  color: var(--text-tertiary);
+  white-space: pre-line;
+  word-break: keep-all;
 `;
