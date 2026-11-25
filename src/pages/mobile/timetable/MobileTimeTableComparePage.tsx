@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueries } from "@tanstack/react-query";
 import { useHeader } from "@/context/HeaderContext";
 import { MOBILE_PAGE_GUTTER } from "@/styles/responsive";
 import { SAFE_AREA } from "@/styles/safeArea";
+import { typography } from "@/styles/typography";
 import { ROUTES } from "@/constants/routes";
 import { getFriends } from "@/apis/friends";
 import {
@@ -451,32 +452,44 @@ export default function MobileTimeTableComparePage() {
     [activeTabUpper, comparisonIds, searchParams, setSearchParams],
   );
 
+  // 학기 선택은 네이티브 select를 투명하게 덮어 OS 기본 피커를 쓴다.
+  // 수업 탭은 하단 가운데 플로팅 칩(Figma 7958:32840), 공강 탭은 하단을 겹치는 공강
+  // 바텀시트가 차지하므로 헤더 우상단에 둔다.
+  const semesterSelect = useMemo(() => {
+    if (selectableSemesters.length <= 1 || !targetSemester) return null;
+    return (
+      <SemesterSelect
+        aria-label="비교할 학기 선택"
+        value={targetSemester.id}
+        onChange={(e) => {
+          const nextId = Number(e.target.value);
+          setSelectedSemesterId(Number.isFinite(nextId) ? nextId : null);
+          setHighlightedSlot(null);
+        }}
+      >
+        {selectableSemesters.map((semester) => (
+          <option key={semester.id} value={semester.id}>
+            {formatSemester(semester.year, semester.term)}
+          </option>
+        ))}
+      </SemesterSelect>
+    );
+  }, [selectableSemesters, targetSemester]);
+
   const headerRight = useMemo(() => {
-    if (selectableSemesters.length <= 1 || !targetSemester) return undefined;
+    if (!semesterSelect || !targetSemester || activeTabUpper !== "free") {
+      return undefined;
+    }
     return (
       <SemesterSelectWrap>
         <SemesterLabel aria-hidden="true">
           {formatSemesterShortLines(targetSemester.year, targetSemester.term).join(" ")}
         </SemesterLabel>
         <SemesterChevron aria-hidden="true">⌵</SemesterChevron>
-        <SemesterSelect
-          aria-label="비교할 학기 선택"
-          value={targetSemester.id}
-          onChange={(e) => {
-            const nextId = Number(e.target.value);
-            setSelectedSemesterId(Number.isFinite(nextId) ? nextId : null);
-            setHighlightedSlot(null);
-          }}
-        >
-          {selectableSemesters.map((semester) => (
-            <option key={semester.id} value={semester.id}>
-              {formatSemester(semester.year, semester.term)}
-            </option>
-          ))}
-        </SemesterSelect>
+        {semesterSelect}
       </SemesterSelectWrap>
     );
-  }, [selectableSemesters, targetSemester]);
+  }, [semesterSelect, targetSemester, activeTabUpper]);
 
   // 1. 헤더 설정
   useHeader({
@@ -1182,6 +1195,17 @@ export default function MobileTimeTableComparePage() {
         )}
       </ContentArea>
 
+      {/* 수업 탭 학기 선택 플로팅 칩 */}
+      {!isFreeTab && semesterSelect && targetSemester && (
+        <FloatingSemesterChip>
+          <FloatingSemesterLabel aria-hidden="true">
+            {formatSemester(targetSemester.year, targetSemester.term)}
+          </FloatingSemesterLabel>
+          <Icon name="chevron-down" size={16} color="var(--text-secondary)" />
+          {semesterSelect}
+        </FloatingSemesterChip>
+      )}
+
       {/* 5. 겹치는 공강 바텀시트 (대분류가 공강일 때만 상시 노출) */}
       <BottomSheet
         open={isFreeTab}
@@ -1336,7 +1360,8 @@ const PageWrapper = styled.div<{ $isFreeTab?: boolean; $snapHeight?: number }>`
     ${({ $isFreeTab, $snapHeight }) =>
       $isFreeTab && typeof $snapHeight === "number"
         ? `calc(${$snapHeight * 100}dvh + 32px + ${SAFE_AREA.BOTTOM})`
-        : `calc(36px + ${SAFE_AREA.BOTTOM})`};
+        : // 하단 플로팅 학기 칩(40px)에 시간표 끝이 가리지 않도록
+          `calc(72px + ${SAFE_AREA.BOTTOM})`};
 `;
 
 const ContentArea = styled.div`
@@ -1672,6 +1697,34 @@ const SemesterSelect = styled.select`
   height: 100%;
   opacity: 0;
   cursor: pointer;
+`;
+
+// Figma Compare/SemesterChip. 홈 인디케이터 바로 위, 가운데.
+const FloatingSemesterChip = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: max(${SAFE_AREA.BOTTOM}, var(--space-4));
+  transform: translateX(-50%);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--bg-blur);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  &:active {
+    opacity: 0.7;
+  }
+`;
+
+const FloatingSemesterLabel = styled.span`
+  ${typography.label1}
+  color: var(--text-primary);
+  white-space: nowrap;
 `;
 
 const SemesterChevron = styled.span`
