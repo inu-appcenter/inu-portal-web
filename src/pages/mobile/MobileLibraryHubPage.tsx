@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -429,6 +429,50 @@ export default function MobileLibraryHubPage() {
     };
   }, [navigate]);
 
+  // 알림·Live Activity 딥링크: /services/library?tab=seats&roomId=..&seatId=..
+  // 또는 ?tab=study&roomId=..&date=YYYY-MM-DD&hour=H → 해당 열람실 배치도 / 스터디룸 예약 시트를 연다.
+  // 특정 좌석이고 지금 비어 있으면 바로 배정 확인창까지 띄운다.
+  const deepLinkHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    const roomIdParam = Number(searchParams.get("roomId"));
+    if (!roomIdParam) return;
+    const key = searchParams.toString();
+    if (deepLinkHandledRef.current === key) return;
+
+    if (urlTab === "study") {
+      const sRoom = studyRooms.find((r) => r.id === roomIdParam);
+      if (!sRoom) return;
+      deepLinkHandledRef.current = key;
+      setActiveTab("study");
+      void (async () => {
+        const opened = await handleOpenStudyBooking(sRoom);
+        if (!opened) return;
+        const date = searchParams.get("date");
+        if (date && date !== getKstDateString(0)) {
+          setSelectedDate(date);
+          const res = await withPortalConsent(() => getStudyRoomDetail(sRoom.id, date));
+          if (res.success && res.detail) setStudyRoomDetail(res.detail);
+        }
+        const hour = Number(searchParams.get("hour"));
+        if (hour >= 9 && hour <= 21) handleBeginTimeChange(`${hour < 10 ? `0${hour}` : hour}:00`);
+      })();
+      return;
+    }
+
+    const room = rooms.find((r) => r.id === roomIdParam);
+    if (!room) return;
+    deepLinkHandledRef.current = key;
+    setActiveTab("seats");
+    void (async () => {
+      const seats = await handleOpenSeatPicker(room);
+      const seatId = Number(searchParams.get("seatId"));
+      const target = seatId ? seats?.find((seat) => seat.id === seatId) : undefined;
+      if (target && !target.isOccupied && target.isActive !== false) handleAssignSeat(target);
+    })();
+    // 핸들러는 매 렌더 새로 만들어지므로 의존성에서 뺀다(데이터·URL이 바뀔 때만 실행).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms, studyRooms, searchParams]);
+
   // 임시 배정 남은 시간 카운트다운
   useEffect(() => {
     if (!mySeat?.isTempCharge || !mySeat.beginTime) {
@@ -454,13 +498,14 @@ export default function MobileLibraryHubPage() {
   }, [mySeat]);
 
   // 좌석 배치도 열기
-  const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
+  const handleOpenSeatPicker = async (room: LibrarySeatRoom): Promise<LibrarySeat[] | null> => {
     setIsLoadingSeats(true);
     try {
       const res = await withPortalConsent(() => getRoomSeats(room.id));
       if (res.success && res.seats.length > 0) {
         setRoomSeats(res.seats);
         setSelectedSeatRoom(room);
+        return res.seats;
       } else if (res.errorCode === "NOT_IN_APP") {
         showAlert(
           "모바일 앱 전용 기능",
@@ -483,6 +528,7 @@ export default function MobileLibraryHubPage() {
     } finally {
       setIsLoadingSeats(false);
     }
+    return null;
   };
 
   // 좌석 즉시 배정
@@ -611,7 +657,7 @@ export default function MobileLibraryHubPage() {
   };
 
   // 스터디룸 예약 바텀시트 열기
-  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
+  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom): Promise<boolean> => {
     setCompanions([]);
     setCompanionName("");
     setCompanionMemberNo("");
@@ -654,6 +700,7 @@ export default function MobileLibraryHubPage() {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [sRoom.id]: res.detail! }));
         setSelectedStudyRoom(sRoom);
+        return true;
       } else if (res.errorCode === "NOT_IN_APP") {
         showAlert(
           "모바일 앱 전용 기능",
@@ -673,6 +720,7 @@ export default function MobileLibraryHubPage() {
     } finally {
       setIsLoadingTimeline(false);
     }
+    return false;
   };
 
   // 날짜 변경 시 타임라인 갱신
