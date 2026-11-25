@@ -59,6 +59,19 @@ export const PROMOTIONS = {
     priority: 20,
     startsAt: "2026-08-04T16:00:00+09:00",
   },
+  /**
+   * 홈 칩 "도서관 좌석"에 붙는 빈자리 알림 소개 툴팁(기말고사 대비).
+   * 앱에서만 동작하는 기능이라 앱 환경에서만 켠다(HomeChipGroup).
+   * 칩을 누르면 accept로 영구 종료.
+   */
+  LIBRARY_SEAT_WATCH: {
+    id: "library-seat-watch-2026-12",
+    location: "Home Chip Group",
+    analyticsName: "Library Seat Watch Tooltip",
+    priority: 15,
+    maxImpressions: 3,
+    endsAt: "2026-12-24T00:00:00+09:00",
+  },
   HOME_FESTIVAL: {
     id: "home-festival-2026",
     location: "Home Chip Group",

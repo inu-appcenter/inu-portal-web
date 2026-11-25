@@ -2852,7 +2852,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
                         <span style={{ width: 8, height: 8, background: "rgb(147, 197, 253)", borderRadius: 2, display: "inline-block" }} /> 가능
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                        <span style={{ width: 8, height: 8, background: "rgb(71, 85, 105)", borderRadius: 2, display: "inline-block" }} /> 점유됨
+                        <span style={{ width: 8, height: 8, background: "rgb(71, 85, 105)", borderRadius: 2, display: "inline-block" }} /> 이용 중
                       </span>
                     </div>
                   </StudyTimelineHeader>

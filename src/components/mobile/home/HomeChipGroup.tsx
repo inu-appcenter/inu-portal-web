@@ -13,6 +13,7 @@ import {
 import { map as CampusMapIcon } from "@/resources/assets/illustrations/mobile-home/category-form";
 import { appcenterLogoMark as AppcenterLogo_NoText } from "@/resources/assets/illustrations/brand";
 import {
+  LuArmchair,
   LuCalendarClock,
   LuFlaskConical,
   LuPartyPopper,
@@ -26,11 +27,13 @@ import { ROUTES } from "@/constants/routes";
 import { FEATURE_FLAG_KEYS } from "@/types/featureFlags";
 import { mixpanelTrack } from "@/utils/mixpanel";
 import { usePollEntryEnabled } from "@/hooks/usePollAuth";
+import { isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
 
 const HomeChipGroup = () => {
   const navigate = useNavigate();
   const phonebookTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const festivalTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
+  const libraryTooltipAnchorRef = useRef<HTMLDivElement | null>(null);
   const { enabled: isLabsEnabled } = useFeatureFlag(FEATURE_FLAG_KEYS.LABS);
   const { enabled: isFestivalEnabled } = useFeatureFlag(
     FEATURE_FLAG_KEYS.FESTIVAL,
@@ -44,6 +47,14 @@ const HomeChipGroup = () => {
     accept: acceptFestivalTooltip,
   } = usePromotion(PROMOTIONS.HOME_FESTIVAL, { enabled: isFestivalEnabled });
 
+  const {
+    isVisible: isLibraryTooltipVisible,
+    dismiss: dismissLibraryTooltip,
+    accept: acceptLibraryTooltip,
+  } = usePromotion(PROMOTIONS.LIBRARY_SEAT_WATCH, {
+    enabled: isMobileAppEnvironment(),
+  });
+
   const chips = [
     {
       id: "campus-map",
@@ -52,6 +63,20 @@ const HomeChipGroup = () => {
       onClick: () => {
         mixpanelTrack.featureClicked("캠퍼스맵", "Home Chip");
         navigate(ROUTES.BOARD.CAMPUS);
+      },
+    },
+    {
+      id: "library",
+      iconComponent: LuArmchair,
+      iconColor: "var(--interactive-primary)",
+      iconSize: 22,
+      title: "도서관 좌석",
+      onClick: () => {
+        mixpanelTrack.featureClicked("도서관 좌석", "Home Chip");
+        if (isLibraryTooltipVisible) {
+          acceptLibraryTooltip("Chip");
+        }
+        navigate(ROUTES.SERVICES.LIBRARY);
       },
     },
 
@@ -165,9 +190,11 @@ const HomeChipGroup = () => {
           .map((chip) => {
             const isPhonebookChip = chip.id === "phonebook";
             const isFestivalChip = chip.id === "festival2026";
+            const isLibraryChip = chip.id === "library";
 
             const reserveTooltipSpace =
-              isFestivalChip && isFestivalTooltipVisible;
+              (isFestivalChip && isFestivalTooltipVisible) ||
+              (isLibraryChip && isLibraryTooltipVisible);
 
             return (
               <ChipSlot
@@ -180,7 +207,9 @@ const HomeChipGroup = () => {
                       ? phonebookTooltipAnchorRef
                       : isFestivalChip
                         ? festivalTooltipAnchorRef
-                        : undefined
+                        : isLibraryChip
+                          ? libraryTooltipAnchorRef
+                          : undefined
                   }
                 >
                   <Chip
@@ -200,6 +229,15 @@ const HomeChipGroup = () => {
                       position="top"
                       align="center"
                       anchorRef={festivalTooltipAnchorRef}
+                    />
+                  )}
+                  {isLibraryChip && isLibraryTooltipVisible && (
+                    <TooltipMessage
+                      message="자리 나면 바로 알려드려요\n열람실 빈자리 알림을 켜보세요!"
+                      onClose={dismissLibraryTooltip}
+                      position="top"
+                      align="center"
+                      anchorRef={libraryTooltipAnchorRef}
                     />
                   )}
                 </TooltipAnchor>

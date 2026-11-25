@@ -23,6 +23,9 @@ export interface LibrarySeat {
   isReservable: boolean;
   isOccupied: boolean;
   remainingTime?: number;
+  /** 선호좌석 목록처럼 여러 열람실이 섞인 응답에서 좌석이 속한 열람실 */
+  roomId?: number;
+  roomName?: string;
 }
 
 export interface LibraryStudyRoom {
@@ -827,6 +830,8 @@ export async function getFavoriteSeats(): Promise<LibrarySeat[]> {
       isReservable: !isOccupied && isActive,
       isOccupied,
       remainingTime: s.remainingTime,
+      roomId: s.room?.id,
+      roomName: roomName || undefined,
     };
   });
 }
