@@ -543,13 +543,17 @@ export default function MobileLibraryHubPage() {
 
   // 열람실 전체 빈자리 알림 등록 (앱이면 기기 로컬 감시, 웹이면 서버 감시)
   const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
-    if (isMobileAppEnvironment()) {
-      const res = await registerLocalWatchJobInApp({
-        watchType: "ROOM_ANY_SEAT",
-        roomId: room.id,
-        roomName: room.name,
-        durationMinutes: 180,
-      });
+    const res = isMobileAppEnvironment()
+      ? await registerLocalWatchJobInApp({
+          watchType: "ROOM_ANY_SEAT",
+          roomId: room.id,
+          roomName: room.name,
+          durationMinutes: 180,
+        })
+      : null;
+    // 구버전 앱은 ROOM_ANY_SEAT를 모르므로("지원하지 않는 로컬 감시 타입") 서버 감시로 폴백
+    const unsupported = !!res && !res.success && (res.errorMessage || "").includes("지원하지 않는");
+    if (res && !unsupported) {
       if (!res.success) {
         showAlert("알림 등록 실패", res.errorMessage || "빈자리 알림 등록에 실패했습니다.");
         return;
