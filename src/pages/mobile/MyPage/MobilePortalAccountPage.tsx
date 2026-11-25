@@ -38,6 +38,7 @@ import {
   ChevronRight,
   Smartphone,
 } from "lucide-react";
+import { secureStorageLabel } from "@/utils/secureStorageLabel";
 
 /** 연결 해제 시 함께 지우는, 포털에서 불러와 이 휴대폰에 둔 정보 */
 const PORTAL_CACHE_KEYS = [
@@ -199,7 +200,7 @@ export default function MobilePortalAccountPage() {
                 <span>정상 연결됨</span>
               </ConnectedBadge>
               <SecurityTag>
-                <span>기기 보안 저장소에 안전하게 보관 중</span>
+                <span>{secureStorageLabel()}에 안전하게 보관 중</span>
               </SecurityTag>
             </StatusRow>
 

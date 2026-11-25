@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { X, ShieldCheck, Lock, User } from "lucide-react";
 import { saveLibraryAccount, isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
+import { secureStorageLabel } from "@/utils/secureStorageLabel";
 
 interface Props {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const LibraryAccountModal: React.FC<Props> = ({
 
         <Form onSubmit={handleSubmit}>
           <NoticeBox>
-            💡 인천대 포털, 이러닝(LMS), 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 연동하시면 도서관 좌석, LMS 과제, 포털 학적까지 모든 캠퍼스 서비스가 안전하게 한 번에 자동 연동됩니다. (기기 보안 영역 SecureStore 보관)
+            💡 인천대 포털, 이러닝(LMS), 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 연동하시면 도서관 좌석, LMS 과제, 포털 학적까지 모든 캠퍼스 서비스가 안전하게 한 번에 자동 연동됩니다. (계정은 {secureStorageLabel()}에만 보관되고 서버로 전송되지 않아요)
           </NoticeBox>
 
           <InputGroup>
