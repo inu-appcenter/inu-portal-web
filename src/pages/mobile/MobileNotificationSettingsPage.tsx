@@ -153,9 +153,9 @@ export default function MobileNotificationSettingsPage() {
               navigate(ROUTES.MYPAGE.SMART_WATCH);
             }}>
               <RowContent>
-                <RowTitle>스마트 감시 & 리마인더</RowTitle>
+                <RowTitle>빈자리·마감 알림</RowTitle>
                 <RowDescription>
-                  힐링존/열람실 빈자리 감시 및 LMS 과제, 좌석 연장 알림을 확인해요.
+                  힐링존·열람실 빈자리 알림과 LMS 과제, 좌석 연장 알림을 확인해요.
                 </RowDescription>
               </RowContent>
               <Icon name="chevron-right" size={20} color="var(--gray-400)" />

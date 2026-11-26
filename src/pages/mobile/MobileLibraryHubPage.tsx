@@ -243,11 +243,11 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
   };
 }
 
-/** 감시 등록 토스트. iOS는 위치 권한 결과에 따라 백그라운드 동작 여부가 달라서 함께 안내한다. */
+/** 빈자리 알림 등록 토스트. iOS는 위치 권한 결과에 따라 백그라운드 동작 여부가 달라서 함께 안내한다. */
 function watchRegisteredMessage(target: string, mode?: LocalWatchJob["keepAliveMode"]): string {
   const base = `'${target}' 빈자리 알림을 켰어요.`;
   if (mode === "ALWAYS" || mode === "NOT_NEEDED") return `${base} 앱을 닫아도 자리가 나면 알려드려요.`;
-  if (mode === "WHEN_IN_USE") return `${base} 앱을 완전히 종료하면 감시가 멈춰요.`;
+  if (mode === "WHEN_IN_USE") return `${base} 앱을 완전히 끄면 횃불이도 찾기를 멈춰요.`;
   if (mode === "NONE") return `${base} 위치 권한이 없어 앱을 켜 둔 동안만 확인해요.`;
   return base;
 }
