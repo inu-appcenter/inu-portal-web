@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { createPortal } from "react-dom";
 import Icon from "@/components/common/Icon";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 
 /**
  * 게시글 목록(피드)에서 바로 쓰는 신고/차단 메뉴.
@@ -89,17 +90,20 @@ export default function PostModerationMenu({
               >
                 신고하기
               </DropdownItem>
-              <DropdownItem
-                type="button"
-                $danger
-                onClick={(event) => {
-                  stop(event);
-                  setIsOpen(false);
-                  onBlock(postId, writer || "작성자");
-                }}
-              >
-                작성자 차단하기
-              </DropdownItem>
+              {/* 탈퇴한 사용자는 차단할 대상이 없다. */}
+              {!isWithdrawnNickname(writer) && (
+                <DropdownItem
+                  type="button"
+                  $danger
+                  onClick={(event) => {
+                    stop(event);
+                    setIsOpen(false);
+                    onBlock(postId, writer || "작성자");
+                  }}
+                >
+                  작성자 차단하기
+                </DropdownItem>
+              )}
             </DropdownMenu>
           </>,
           document.body

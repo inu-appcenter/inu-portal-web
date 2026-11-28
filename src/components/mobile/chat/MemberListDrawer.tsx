@@ -15,6 +15,7 @@ import {
 } from "@/apis/chat";
 import useUserStore from "@/stores/useUserStore";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 import { useState } from "react";
 import { ChatRoom, ChatRoomMemberResponseDto } from "@/types/chat";
 import {
@@ -214,6 +215,8 @@ export default function MemberListDrawer({
                       <MemberItem
                         key={`${member.nickname}-${index}`}
                         onClick={() => {
+                          // 탈퇴한 사용자는 프로필이 없다.
+                          if (isWithdrawnNickname(member.nickname)) return;
                           if (member.isMe) {
                             setSelectedChatRoomMemberId(null);
                             setIsProfileModalOpen(true);

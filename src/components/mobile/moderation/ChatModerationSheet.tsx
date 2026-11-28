@@ -1,6 +1,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import styled, { keyframes } from "styled-components";
 import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 
 /**
  * 채팅 메시지 롱프레스 시 나타나는 Context Menu 모달 (Figma Node 5297:16774).
@@ -112,9 +113,12 @@ export default function ChatModerationSheet({
                 <ActionItem type="button" $danger onClick={handleReport}>
                   신고하기
                 </ActionItem>
-                <ActionItem type="button" $danger onClick={handleBlock}>
-                  {senderNickname ? `‘${senderNickname}님’ 차단하기` : "차단하기"}
-                </ActionItem>
+                {/* 탈퇴한 사용자는 차단할 대상이 없다. */}
+                {!isWithdrawnNickname(senderNickname) && (
+                  <ActionItem type="button" $danger onClick={handleBlock}>
+                    {senderNickname ? `‘${senderNickname}님’ 차단하기` : "차단하기"}
+                  </ActionItem>
+                )}
               </>
             )}
           </ActionGroup>

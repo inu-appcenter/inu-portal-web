@@ -32,6 +32,7 @@ import {
 } from "@/utils/userInfo";
 import Skeleton from "@/components/common/Skeleton";
 import UserProfileModal from "@/components/mobile/social/UserProfileModal";
+import { isWithdrawnNickname } from "@/utils/withdrawnMember";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -679,6 +680,14 @@ export default function ChattingPage() {
   };
 
   const handleOpenProfileFromImage = (chatRoomMemberId: number) => {
+    const target = members.find(
+      (m: ChatRoomMemberResponseDto) => m.chatRoomMemberId === chatRoomMemberId,
+    );
+    if (
+      isWithdrawnNickname(target?.nickname) ||
+      isWithdrawnNickname(activeImageMeta?.senderName)
+    )
+      return;
     setSelectedChatRoomMemberId(chatRoomMemberId);
     setIsProfileModalOpen(true);
   };
@@ -1717,13 +1726,18 @@ const ChatItemOtherPerson = ({
       matched?.friendAlias || message.senderAlias || message.senderNickname
     );
   };
-  const safeFireId = normalizeProfileImageId(
-    matched?.fireId,
-    DEFAULT_PROFILE_IMAGE_ID,
-  );
+  // 탈퇴한 사용자는 프로필이 없다: 기본 이미지로 보이고 눌러도 프로필이 열리지 않는다.
+  const isWithdrawnSender = isWithdrawnNickname(message.senderNickname);
+  const safeFireId = isWithdrawnSender
+    ? DEFAULT_PROFILE_IMAGE_ID
+    : normalizeProfileImageId(matched?.fireId, DEFAULT_PROFILE_IMAGE_ID);
   const resolvedProfileImageUrl =
-    userImageUrl ||
+    (!isWithdrawnSender && userImageUrl) ||
     `https://portal.inuappcenter.kr/images/profile/${safeFireId}`;
+  const handleSenderClick = () => {
+    if (isWithdrawnSender) return;
+    onSenderClick(message.senderChatRoomMemberId);
+  };
 
   const thumbnailUrl =
     message.imageCount > 0
@@ -1749,7 +1763,7 @@ const ChatItemOtherPerson = ({
         <ProfileImage
           src={resolvedProfileImageUrl}
           alt="profile"
-          onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+          onClick={handleSenderClick}
           onError={(e) => {
             (e.target as HTMLImageElement).src = `https://portal.inuappcenter.kr/images/profile/${DEFAULT_PROFILE_IMAGE_ID}`;
           }}
@@ -1761,9 +1775,9 @@ const ChatItemOtherPerson = ({
         {showName && (
           <SenderHeader>
             <SenderName
-              role="button"
-              tabIndex={0}
-              onClick={() => onSenderClick(message.senderChatRoomMemberId)}
+              role={isWithdrawnSender ? undefined : "button"}
+              tabIndex={isWithdrawnSender ? undefined : 0}
+              onClick={handleSenderClick}
             >
               {getDisplayName()}
             </SenderName>
