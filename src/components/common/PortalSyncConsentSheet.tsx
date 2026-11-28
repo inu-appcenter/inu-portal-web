@@ -8,9 +8,11 @@ import WizardCheckbox from "@/components/mobile/timetable/wizard/ui/WizardCheckb
 import {
   getPortalSyncTerm,
   PORTAL_SYNC_POLICY_NOTE,
+  type PortalSyncTermKey,
 } from "@/constants/portalSyncTerms";
 import { typography } from "@/styles/typography";
 import {
+  type PortalSyncConsentChoice,
   setPortalSyncConsentHostMounted,
   settlePortalSyncConsentRequest,
   usePortalSyncConsentStore,
@@ -21,33 +23,48 @@ const SHEET_Z_INDEX = 20010;
 
 interface PortalSyncConsentSheetProps {
   open: boolean;
-  onAgree: () => void;
+  onAgree: (choice: PortalSyncConsentChoice) => void;
   onDismiss: () => void;
+  /** 하단 버튼 문구. 온보딩은 "동의하고 시작하기" */
+  ctaLabel?: string;
 }
+
+const TERM_KEYS: PortalSyncTermKey[] = ["portal", "aiChat"];
 
 /**
  * 포털 정보 불러오기 동의 시트 (Figma 6431:20082, 가입 약관 시트와 같은 틀).
+ * 전체 동의(선택 포함) + [필수] 포털 정보 + [선택] AI 채팅 스크래핑.
  * 항목 오른쪽 › 를 누르면 시트 안에서 상세 약관으로 바뀌어, 체크 상태를 잃지 않는다.
  */
 export function PortalSyncConsentSheet({
   open,
   onAgree,
   onDismiss,
+  ctaLabel = "동의하고 연결하기",
 }: PortalSyncConsentSheetProps) {
-  const [checked, setChecked] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
+  const [checked, setChecked] = useState<Record<PortalSyncTermKey, boolean>>({
+    portal: false,
+    aiChat: false,
+  });
+  const [detailKey, setDetailKey] = useState<PortalSyncTermKey | null>(null);
   const [wasOpen, setWasOpen] = useState(open);
 
   // 시트를 다시 열 때마다 체크와 화면을 처음으로 돌린다(렌더 중 prop 변화 감지 패턴).
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setChecked(false);
-      setShowDetail(false);
+      setChecked({ portal: false, aiChat: false });
+      setDetailKey(null);
     }
   }
 
-  const portalTerm = getPortalSyncTerm("portal");
+  const allChecked = TERM_KEYS.every((key) => checked[key]);
+  const toggle = (key: PortalSyncTermKey) =>
+    setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggleAll = () =>
+    setChecked({ portal: !allChecked, aiChat: !allChecked });
+
+  const detailTerm = detailKey ? getPortalSyncTerm(detailKey) : null;
 
   return (
     <BottomSheet
@@ -58,52 +75,74 @@ export function PortalSyncConsentSheet({
       handle="compact"
       zIndex={SHEET_Z_INDEX}
     >
-      {showDetail ? (
+      {detailTerm && detailKey ? (
         <Content>
-          <PortalSyncTermDetail term={portalTerm} onBack={() => setShowDetail(false)} />
+          <PortalSyncTermDetail term={detailTerm} onBack={() => setDetailKey(null)} />
           <WizardBottomCTA
             placement="sheet"
             onClick={() => {
-              setChecked(true);
-              setShowDetail(false);
+              setChecked((prev) => ({ ...prev, [detailKey]: true }));
+              setDetailKey(null);
             }}
           >
-            {checked ? "확인" : "동의하기"}
+            {checked[detailKey] ? "확인" : "동의하기"}
           </WizardBottomCTA>
         </Content>
       ) : (
         <Content>
           <Terms>
-            <ItemRow>
+            <AllBox>
               <Row
                 type="button"
                 role="checkbox"
-                aria-checked={checked}
-                onClick={() => setChecked((prev) => !prev)}
+                aria-checked={allChecked}
+                onClick={toggleAll}
               >
                 <ControlSlot>
-                  <WizardCheckbox checked={checked} />
+                  <WizardCheckbox checked={allChecked} />
                 </ControlSlot>
-                <ItemLabel>{portalTerm.label}</ItemLabel>
+                <AllLabel>전체 동의 (선택 포함)</AllLabel>
               </Row>
-              <DetailButton
-                type="button"
-                onClick={() => setShowDetail(true)}
-                aria-label={`${portalTerm.label} 자세히 보기`}
-              >
-                <Icon name="chevron-right" size={20} />
-              </DetailButton>
-            </ItemRow>
+            </AllBox>
+
+            {TERM_KEYS.map((key) => {
+              const term = getPortalSyncTerm(key);
+              return (
+                <ItemRow key={key}>
+                  <Row
+                    type="button"
+                    role="checkbox"
+                    aria-checked={checked[key]}
+                    onClick={() => toggle(key)}
+                  >
+                    <ControlSlot>
+                      <WizardCheckbox checked={checked[key]} />
+                    </ControlSlot>
+                    <ItemLabel>
+                      {term.label}
+                      {term.required && <Required aria-label="필수"> *</Required>}
+                    </ItemLabel>
+                  </Row>
+                  <DetailButton
+                    type="button"
+                    onClick={() => setDetailKey(key)}
+                    aria-label={`${term.label} 자세히 보기`}
+                  >
+                    <Icon name="chevron-right" size={20} />
+                  </DetailButton>
+                </ItemRow>
+              );
+            })}
 
             <PolicyNote>{PORTAL_SYNC_POLICY_NOTE}</PolicyNote>
           </Terms>
 
           <WizardBottomCTA
             placement="sheet"
-            disabled={!checked}
-            onClick={onAgree}
+            disabled={!checked.portal}
+            onClick={() => onAgree({ aiChat: checked.aiChat })}
           >
-            동의하고 연결하기
+            {ctaLabel}
           </WizardBottomCTA>
         </Content>
       )}
@@ -125,7 +164,7 @@ export default function PortalSyncConsentHost() {
   return (
     <PortalSyncConsentSheet
       open={requestOpen}
-      onAgree={() => settlePortalSyncConsentRequest(true)}
+      onAgree={(choice) => settlePortalSyncConsentRequest(true, choice)}
       onDismiss={() => settlePortalSyncConsentRequest(false)}
     />
   );
@@ -164,6 +203,30 @@ const ControlSlot = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+const AllBox = styled.div`
+  display: flex;
+  padding: 4px 0;
+  border-radius: 16px;
+  background: var(--bg-subtle);
+`;
+
+/* Figma Agree_All: 18/26 Bold (텍스트 스타일 없이 값으로 지정돼 있음) */
+const AllLabel = styled.span`
+  flex: 1 0 0;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const Required = styled.span`
+  color: var(--text-brand);
 `;
 
 const ItemRow = styled.div`

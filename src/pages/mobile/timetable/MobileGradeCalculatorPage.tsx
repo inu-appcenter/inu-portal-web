@@ -8,23 +8,32 @@ import {
   useBeforeUnload,
   useNavigate,
 } from "react-router-dom";
-import { Calendar, ClipboardPaste, School, AlertCircle } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
-import SlidingNumber from "@/components/common/SlidingNumber";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
 import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalculatorIntroSheet";
-import GraduationRequirementCard from "@/components/mobile/timetable/GraduationRequirementCard";
+import GpaSummaryCard from "@/components/mobile/timetable/gradeCalculator/GpaSummaryCard";
+import type { GpaTrendPoint } from "@/components/mobile/timetable/gradeCalculator/GpaTrendChart";
+import GradeImportOptionsSheet, {
+  type GradeImportMethod,
+} from "@/components/mobile/timetable/gradeCalculator/GradeImportOptionsSheet";
+import GraduationSummaryCard from "@/components/mobile/timetable/gradeCalculator/GraduationSummaryCard";
+import GraduationDetailView from "@/components/mobile/timetable/gradeCalculator/GraduationDetailView";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
+import {
+  ActionButton,
+  CardTitle,
+  SectionCard,
+  SelectChip,
+} from "@/components/mobile/timetable/gradeCalculator/ui";
+import { typography } from "@/styles/typography";
 import GraduationSettingModal, {
   type GraduationProfile,
 } from "@/components/mobile/timetable/GraduationSettingModal";
-import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
-import {
-  checkPortalAccountLinked,
-  fetchFullAcademicReportFromApp,
-} from "@/apis/mobileAgentBridge";
+import PortalGradeImportSheet from "@/components/mobile/timetable/gradeCalculator/PortalGradeImportSheet";
+import { showToast } from "@/utils/toast";
 import { convertPortalGradesToSemestersData } from "@/utils/portalGradeSync";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
 import {
@@ -44,6 +53,7 @@ import {
   TERM_ORDER,
   formatSemester,
   formatSemesterShort,
+  formatSemesterShortLines,
 } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
 import {
@@ -56,14 +66,6 @@ import type {
   GradeRecord,
   GradeRecordRequest,
 } from "@/types/gradeRecords";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  ReferenceLine,
-} from "recharts";
 import { backHandler } from "@/utils/backHandler";
 import type { ClassItem } from "@/components/mobile/timetable/TimetableGrid";
 
@@ -129,7 +131,13 @@ const formatSemesterKeyLabel = (key: string): string => {
   return formatSemester(entry.year, entry.term);
 };
 
-/** 그래프 x축용 짧은 표기("23-2학기"). 학기가 늘어도 라벨이 겹치지 않게 한다. */
+/** 학기 칩·시트 부제목용 표기("26년 1학기", "24년 여름"). */
+const formatSemesterChipLabel = (key: string): string => {
+  const entry = parseSemesterKey(key);
+  return formatSemesterShortLines(entry.year, entry.term).join(" ");
+};
+
+/** 그래프 x축용 짧은 표기("23-2\n학기"). 학기가 늘어도 라벨이 겹치지 않게 두 줄로 쓴다. */
 const formatSemesterKeyShortLabel = (key: string): string => {
   const entry = parseSemesterKey(key);
   return formatSemesterShort(entry.year, entry.term);
@@ -248,136 +256,6 @@ const getUniqueCourseEvents = (events: ClassItem[]): ClassItem[] => {
   return Array.from(byItemId.values());
 };
 
-/**
- * x축 학기 라벨. "22년" / "1학기"처럼 두 줄로 그린다.
- *
- * 예전에는 "2023년 2학기"를 공백에서 잘라 썼는데, 연도가 네 자리라 학기가 늘면
- * 옆 라벨과 겹쳤다("여름학기"처럼 긴 조각은 특히). 연도를 두 자리로 줄이고
- * 계절학기는 "학기"를 떼서 각 줄을 30px 아래로 낮췄다. 학기 수가 많을 때는
- * 글자 크기를 한 단계 더 낮춘다.
- */
-const CustomXAxisTick = (props: {
-  x?: number;
-  y?: number;
-  payload?: { value?: string };
-  visibleTicksCount?: number;
-}) => {
-  const { x, y, payload, visibleTicksCount } = props;
-  if (!payload || !payload.value) return null;
-
-  const [firstLine, secondLine] = String(payload.value).split("\n");
-  const fontSize = (visibleTicksCount ?? 0) >= 7 ? 10 : 11;
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={0}
-        y={12}
-        textAnchor="middle"
-        fill="var(--gray-500)"
-        fontSize={fontSize}
-        fontWeight={500}
-      >
-        {firstLine}
-      </text>
-      {secondLine && (
-        <text
-          x={0}
-          y={12 + fontSize + 3}
-          textAnchor="middle"
-          fill="var(--gray-500)"
-          fontSize={fontSize}
-          fontWeight={500}
-        >
-          {secondLine}
-        </text>
-      )}
-    </g>
-  );
-};
-
-/** 그래프에서 선택된 학기의 평점을 띄우는 말풍선. 선택 안 된 점에는 아무것도 안 그린다. */
-const GpaPointLabel = (props: {
-  x?: number;
-  y?: number;
-  value?: number;
-  index?: number;
-  activeIndex: number | null;
-  /** 전체 평점은 점 위에, 전공 평점은 점 아래에 둔다(값이 붙어 있어도 안 겹치게). */
-  placement: "top" | "bottom";
-  label: string;
-  color: string;
-}) => {
-  const { x, y, value, index, activeIndex, placement, label, color } = props;
-  if (
-    activeIndex === null ||
-    index !== activeIndex ||
-    typeof x !== "number" ||
-    typeof y !== "number" ||
-    typeof value !== "number"
-  ) {
-    return null;
-  }
-
-  const width = 58;
-  const height = 18;
-  const offsetY = placement === "top" ? -height - 10 : 12;
-
-  return (
-    <g transform={`translate(${x - width / 2},${y + offsetY})`}>
-      <rect
-        width={width}
-        height={height}
-        rx={9}
-        fill="var(--text-inverse)"
-        stroke={color}
-        strokeWidth={1}
-      />
-      <text
-        x={width / 2}
-        y={height / 2 + 3.5}
-        textAnchor="middle"
-        fill="var(--gray-800)"
-        fontSize={10}
-        fontWeight={700}
-      >
-        {`${label} ${value.toFixed(2)}`}
-      </text>
-    </g>
-  );
-};
-
-/**
- * 그래프의 점. 선택된 학기는 크게 그리고, 손가락으로 누를 수 있도록 눈에 안 보이는
- * 넓은 히트 영역을 함께 둔다(실제 점은 반지름 4px이라 그대로는 누르기 어렵다).
- */
-const GpaPointDot = (props: {
-  cx?: number;
-  cy?: number;
-  index?: number;
-  activeIndex: number | null;
-  color: string;
-  onToggle: (index: number) => void;
-}) => {
-  const { cx, cy, index, activeIndex, color, onToggle } = props;
-  if (typeof cx !== "number" || typeof cy !== "number" || index === undefined) {
-    return null;
-  }
-
-  const isActive = index === activeIndex;
-
-  return (
-    <g style={{ cursor: "pointer" }} onClick={() => onToggle(index)}>
-      <circle cx={cx} cy={cy} r={16} fill="transparent" />
-      {/* 선택된 점은 흰 링을 한 겹 둘러 배경선과 구분되게 키운다. */}
-      {isActive && (
-        <circle cx={cx} cy={cy} r={7} fill="var(--text-inverse)" stroke={color} strokeWidth={2} />
-      )}
-      <circle cx={cx} cy={cy} r={isActive ? 4 : 3.5} fill={color} />
-    </g>
-  );
-};
-
 export default function MobileGradeCalculatorPage() {
   // --- State ---
   const [selectedSemesterKey, setSelectedSemesterKey] = useState<
@@ -393,13 +271,25 @@ export default function MobileGradeCalculatorPage() {
   /** 취득 학점을 사용자가 직접 고쳤는지. 로컬 값이 학과 규정보다 우선한다. */
   const [targetCreditsOverridden, setTargetCreditsOverridden] =
     useState<boolean>(false);
-  /** 그래프에서 평점을 펼쳐 볼 학기(점) 인덱스. null이면 아무 값도 안 띄운다. */
-  const [activeGraphIndex, setActiveGraphIndex] = useState<number | null>(null);
   const [showTargetCreditsModal, setShowTargetCreditsModal] =
     useState<boolean>(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] =
     useState<boolean>(false);
+  /** 요약 카드 펼침(목표 평점 · 학기별 추이) */
   const [showGraph, setShowGraph] = useState<boolean>(false);
+  /** 졸업요건 카드 펼침 */
+  const [showGraduationDetail, setShowGraduationDetail] = useState<boolean>(false);
+  /**
+   * 졸업요건 상세 화면(Figma "졸업요건 상세")을 열었는지.
+   * 작성 중인(저장 전) 성적으로 판정해야 해서 라우트를 나누지 않고 이 페이지 안에서
+   * 전체 화면으로 바꿔 그린다. 경로가 그대로라 저장 이탈 경고도 걸리지 않는다.
+   */
+  const [showGraduationPage, setShowGraduationPage] = useState<boolean>(false);
+  /** 상세 화면을 열기 전 스크롤 위치. 닫을 때 졸업요건 카드 자리로 돌아온다. */
+  const graduationPageScrollRef = useRef(0);
+  const [showImportOptionsSheet, setShowImportOptionsSheet] = useState<boolean>(false);
+  /** 빈 상태에서 "직접 입력하기"를 눌렀는지. 과목이 하나도 없어도 입력 화면을 보여준다. */
+  const [startedManually, setStartedManually] = useState<boolean>(false);
   const [showSemesterSheet, setShowSemesterSheet] = useState<boolean>(false);
   const [showTimetableSheet, setShowTimetableSheet] = useState<boolean>(false);
   const [showGradeImportSheet, setShowGradeImportSheet] =
@@ -411,61 +301,25 @@ export default function MobileGradeCalculatorPage() {
   const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const savingRef = useRef(false);
-  const [isPortalModalOpen, setIsPortalModalOpen] = useState<boolean>(false);
-  const [isFetchingPortalGrades, setIsFetchingPortalGrades] = useState<boolean>(false);
-  const [showPortalGradeConfirmModal, setShowPortalGradeConfirmModal] = useState<boolean>(false);
+  /** 포털 성적 가져오기 시트(안내 → 계정 등록 → 불러오는 중 → 실패) */
+  const [showPortalImportSheet, setShowPortalImportSheet] = useState<boolean>(false);
 
-  const handleExecutePortalGradeImport = async () => {
-    setIsFetchingPortalGrades(true);
-    try {
-      const reportRes = await fetchFullAcademicReportFromApp();
-      if (!reportRes.success || !reportRes.data) {
-        if (reportRes.errorCode === "AUTH_REQUIRED") {
-          setIsPortalModalOpen(true);
-          return;
-        }
-        throw new Error(
-          reportRes.errorMessage || "포털 성적 정보를 불러오지 못했습니다.",
-        );
-      }
+  // 포털 공식 성적표로 전체를 덮어쓴다(기존 수동 입력 과목 대체). 저장은 사용자가 한다.
+  const handlePortalGradesImported = (
+    courseGrades: Parameters<typeof convertPortalGradesToSemestersData>[0],
+  ) => {
+    const incomingData = convertPortalGradesToSemestersData(courseGrades);
+    const incomingKeys = Object.keys(incomingData).sort(compareSemesterKeys);
 
-      const incomingData = convertPortalGradesToSemestersData(
-        reportRes.data.courseGrades,
-      );
-      const incomingSemCount = Object.keys(incomingData).length;
-      const incomingSubCount = reportRes.data.courseGrades.length;
-
-      // 포털 공식 성적표 데이터로 전체 덮어쓰기 (기존 수동/임의 데이터 대체)
-      setSemestersData(incomingData);
-
-      const incomingKeys = Object.keys(incomingData).sort(compareSemesterKeys);
-      if (incomingKeys.length > 0) {
-        setSelectedSemesterKey(incomingKeys[incomingKeys.length - 1]);
-      }
-
-      alert(
-        `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러와 학점 계산기를 최신 정보로 업데이트했어요!`,
-      );
-    } catch (err: unknown) {
-      console.error("포털 성적 연동 실패:", err);
-      alert(err instanceof Error ? err.message : "포털 성적을 불러오는 중 오류가 발생했습니다.");
-    } finally {
-      setIsFetchingPortalGrades(false);
+    setSemestersData(incomingData);
+    if (incomingKeys.length > 0) {
+      setSelectedSemesterKey(incomingKeys[incomingKeys.length - 1]);
     }
-  };
-
-  const handleOpenPortalGradeConfirm = () => {
-    setShowPortalGradeConfirmModal(true);
-  };
-
-  const handleConfirmPortalGradeImport = async () => {
-    setShowPortalGradeConfirmModal(false);
-    const isLinked = await checkPortalAccountLinked();
-    if (!isLinked) {
-      setIsPortalModalOpen(true);
-      return;
-    }
-    await handleExecutePortalGradeImport();
+    setShowPortalImportSheet(false);
+    showToast(
+      `${incomingKeys.length}개 학기 ${courseGrades.length}과목을 불러왔어요. 저장을 눌러 반영하세요.`,
+      { bottomOffset: 80 },
+    );
   };
 
   const [graduationProfile, setGraduationProfile] = useState<GraduationProfile>(
@@ -487,11 +341,33 @@ export default function MobileGradeCalculatorPage() {
   const isLoggedIn = Boolean(useUserStore((state) => state.tokenInfo.accessToken));
 
   // --- Header Integration ---
-  useHeader({
-    title: "학점계산기",
-    hasback: true,
-    rightArea: null,
-  });
+  const closeGraduationPage = () => {
+    setShowGraduationPage(false);
+    const top = graduationPageScrollRef.current;
+    requestAnimationFrame(() => window.scrollTo({ top }));
+  };
+  const openGraduationPage = () => {
+    graduationPageScrollRef.current = window.scrollY;
+    setShowGraduationPage(true);
+    requestAnimationFrame(() => window.scrollTo({ top: 0 }));
+  };
+  // 브라우저·앱 뒤로가기로 상세 화면을 닫는다(시트와 같은 히스토리 처리).
+  useSheetBackHandler(showGraduationPage, closeGraduationPage);
+
+  useHeader(
+    showGraduationPage
+      ? {
+          title: "졸업요건",
+          hasback: true,
+          rightArea: null,
+          onBack: closeGraduationPage,
+        }
+      : {
+          title: "학점계산기",
+          hasback: true,
+          rightArea: null,
+        },
+  );
 
   // --- Load Data ---
   // 로그인한 사용자는 서버(GET /api/grades/all)를 우선하고, 서버에 데이터가
@@ -1039,21 +915,25 @@ export default function MobileGradeCalculatorPage() {
     requiredMajorCourses,
   ]);
 
+  // 졸업까지 남은 학점. 졸업요건 판정이 있으면 그 값을, 없으면(학과 미설정 등)
+  // 직접 정한 졸업 학점에서 지금까지 취득한 학점을 뺀 값을 쓴다.
+  const remainingCredits =
+    graduationEvaluation?.remainingTotalCredits ??
+    Math.max(0, targetCredits - overallStats.acquiredCredits);
+
   const requiredAverageGpa = useMemo(() => {
-    if (!graduationEvaluation || graduationProfile.targetGpa === null) {
-      return null;
-    }
+    if (graduationProfile.targetGpa === null) return null;
     return calculateRequiredAverageGpa({
       targetGpa: graduationProfile.targetGpa,
       gpaCredits: overallStats.gpaCredits,
       gpaPoints: overallStats.gpaPoints,
-      remainingCredits: graduationEvaluation.remainingTotalCredits,
+      remainingCredits,
     });
   }, [
-    graduationEvaluation,
     graduationProfile.targetGpa,
     overallStats.gpaCredits,
     overallStats.gpaPoints,
+    remainingCredits,
   ]);
 
   const handleSaveGraduationProfile = (profile: GraduationProfile) => {
@@ -1099,45 +979,56 @@ export default function MobileGradeCalculatorPage() {
     return calculateSemesterStats(currentSubjects);
   }, [currentSubjects]);
 
-  // --- SVG Graph Data ---
-  const graphData = useMemo(() => {
-    const semestersWithData = sortedSemesterKeys
-      .map((key) => {
-        const subjects = semestersData[key] || [];
-        if (subjects.length === 0) return null;
-        const stats = calculateSemesterStats(subjects);
-        return {
-          semesterKey: key,
-          gpa: stats.gpa,
-        };
-      })
-      .filter(
-        (item): item is { semesterKey: string; gpa: number } => item !== null,
-      );
-
-    return semestersWithData;
-  }, [semestersData, sortedSemesterKeys]);
-
-  const graphChartData = useMemo(
+  // --- 학기별 추이 그래프 ---
+  // 평점에 들어가는 과목이 있는 학기만 점으로 찍는다(성적 미입력 학기는 0점처럼 보이면 안 된다).
+  const trendSemesters = useMemo(
     () =>
-      graphData.map((d) => {
-        const stats = calculateSemesterStats(semestersData[d.semesterKey] || []);
-        return {
-          name: formatSemesterKeyShortLabel(d.semesterKey),
-          overall: parseFloat(d.gpa.toFixed(2)),
-          major: parseFloat(stats.majorGpa.toFixed(2)),
-        };
-      }),
-    [graphData, semestersData],
+      sortedSemesterKeys
+        .map((key) => {
+          const subjects = semestersData[key] || [];
+          if (!subjects.some(countsInGpa)) return null;
+          const stats = calculateSemesterStats(subjects);
+          const hasMajor = subjects.some((sub) => sub.isMajor && countsInGpa(sub));
+          return { key, subjects, gpa: stats.gpa, majorGpa: hasMajor ? stats.majorGpa : null };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null),
+    [semestersData, sortedSemesterKeys],
   );
 
-  // 학기를 지우거나 새로 넣으면 펼쳐 둔 점이 다른 학기를 가리키게 되므로 닫는다.
-  useEffect(() => {
-    setActiveGraphIndex(null);
-  }, [graphChartData.length]);
+  const trendPoints = useMemo<GpaTrendPoint[]>(
+    () =>
+      trendSemesters.map((s) => ({
+        name: formatSemesterKeyShortLabel(s.key),
+        overall: parseFloat(s.gpa.toFixed(2)),
+        major: s.majorGpa === null ? null : parseFloat(s.majorGpa.toFixed(2)),
+      })),
+    [trendSemesters],
+  );
 
-  const toggleGraphPoint = (index: number) =>
-    setActiveGraphIndex((prev) => (prev === index ? null : index));
+  // Figma "빈 상태 (첫 진입)": 어느 학기에도 과목이 없고, 아직 "직접 입력하기"를
+  // 고르지 않았으면 시작 카드를 보여준다.
+  const isStartEmpty =
+    !startedManually &&
+    Object.values(semestersData).every((subjects) => subjects.length === 0);
+
+  const handleStartManually = () => {
+    setStartedManually(true);
+    if (!selectedSemesterKey) {
+      openAddSemesterModal();
+      return;
+    }
+    handleAddSubject();
+  };
+
+  // 불러오기 시트가 닫히는 애니메이션이 끝난 뒤 다음 시트·모달을 연다(겹쳐 뜨지 않게).
+  const handleSelectImportMethod = (method: GradeImportMethod) => {
+    setShowImportOptionsSheet(false);
+    setTimeout(() => {
+      if (method === "portal") setShowPortalImportSheet(true);
+      if (method === "paste") setShowGradeImportSheet(true);
+      if (method === "timetable") setShowTimetableSheet(true);
+    }, 300);
+  };
 
   const selectedSemesterLabel = selectedSemesterKey
     ? formatSemesterKeyLabel(selectedSemesterKey)
@@ -1182,7 +1073,8 @@ export default function MobileGradeCalculatorPage() {
         // 시간(끝-시작)으로 대략 추정한다.
         credits:
           event.credits ?? Math.max(1, Math.round(event.endTime - event.startTime)),
-        grade: "A+",
+        // 시간표에는 성적이 없다. 미입력으로 넣어 사용자가 고르기 전엔 평점에서 뺀다.
+        grade: UNGRADED,
         isMajor: false,
         courseCode: event.courseId,
         courseId: event.numericCourseId ?? null,
@@ -1410,395 +1302,271 @@ export default function MobileGradeCalculatorPage() {
         onSave={handleSaveGraduationProfile}
       />
 
-      {/* 1. 전체 학기 요약 카드 */}
-      <StickyStatsCard>
-        <StatsHeader>
-          <StatsTitle>전체 학기</StatsTitle>
-        </StatsHeader>
-        <StatsRow>
-          <StatBox>
-            <StatLabel>전체 평점</StatLabel>
-            <StatValueWrapper>
-              <StatValueText>
-                <SlidingNumber value={overallStats.gpa.toFixed(2)} />
-              </StatValueText>
-              <StatMaxText>/ 4.5</StatMaxText>
-            </StatValueWrapper>
-          </StatBox>
-          <StatBox>
-            <StatLabel>전공 평점</StatLabel>
-            <StatValueWrapper>
-              <StatValueText>
-                <SlidingNumber value={overallStats.majorGpa.toFixed(2)} />
-              </StatValueText>
-              <StatMaxText>/ 4.5</StatMaxText>
-            </StatValueWrapper>
-          </StatBox>
-          <StatBox>
-            <StatLabel>취득 학점</StatLabel>
-            <StatValueWrapper>
-              <StatValueText>
-                <SlidingNumber value={overallStats.acquiredCredits} />
-              </StatValueText>
-              <TargetCreditsButton onClick={handleEditTargetCredits}>
-                <span className="target-limit">/ {targetCredits}</span>
-                <Icon name="edit-pencil-01" size={12} className="pencil-icon" />
-              </TargetCreditsButton>
-            </StatValueWrapper>
-          </StatBox>
-        </StatsRow>
+      {showGraduationPage && resolvedGraduationRule && graduationEvaluation ? (
+        <GraduationDetailView
+          profile={graduationProfile}
+          resolved={resolvedGraduationRule}
+          evaluation={graduationEvaluation}
+          onEdit={() => setShowGraduationModal(true)}
+        />
+      ) : (
+      <>
+      {isStartEmpty ? (
+        /* Figma "리디자인 / 빈 상태 (첫 진입)" */
+        <SectionCard as="div">
+          <StartCard>
+            <StartIcon>
+              <Icon name="calculator-02" size={32} />
+            </StartIcon>
+            <StartText>
+              <h2>성적을 불러와서 시작해요</h2>
+              <p>
+                포털에서 가져오면 전 학기 성적이 한 번에 들어와요.
+                <br />
+                평점·졸업까지 남은 학점을 바로 계산해 드려요.
+              </p>
+            </StartText>
+            <StartButtons>
+              <StartButton
+                type="button"
+                $primary
+                onClick={() => setShowPortalImportSheet(true)}
+              >
+                포털에서 성적 가져오기
+              </StartButton>
+              <StartButton type="button" onClick={handleStartManually}>
+                직접 입력하기
+              </StartButton>
+            </StartButtons>
+            <StartLinks>
+              <button type="button" onClick={() => setShowGradeImportSheet(true)}>
+                성적표 붙여넣기
+              </button>
+              <button type="button" onClick={() => setShowTimetableSheet(true)}>
+                시간표에서 불러오기
+              </button>
+            </StartLinks>
+          </StartCard>
+        </SectionCard>
+      ) : (
+        <>
+          {/* 1. 요약 카드 (전체 평점 · 목표 평점 · 학기별 추이) */}
+          <GpaSummaryCard
+            overallGpa={overallStats.gpa}
+            majorGpa={overallStats.majorGpa}
+            acquiredCredits={overallStats.acquiredCredits}
+            targetCredits={targetCredits}
+            targetGpa={graduationProfile.targetGpa}
+            requiredAverageGpa={requiredAverageGpa}
+            remainingCredits={remainingCredits}
+            trend={trendPoints}
+            expanded={showGraph}
+            onToggle={() => setShowGraph((prev) => !prev)}
+            onEditTargetGpa={() => setShowGraduationModal(true)}
+            onEditTargetCredits={handleEditTargetCredits}
+          />
 
-        {/* 그래프 토글 헤더 (항상 노출, 좌측 상단 버튼 배치) */}
-        <GraphHeaderRow>
-          <GraphFoldButton onClick={() => setShowGraph(!showGraph)}>
-            <span>{showGraph ? "그래프 접기" : "그래프 보기"}</span>
-            {showGraph ? (
-              <Icon name="chevron-up" size={16} className="caret-icon" />
+          {/* 2. 학기별 성적 카드 */}
+          <SemesterCard>
+            <SemesterTitleRow>
+              <CardTitle>학기별 성적</CardTitle>
+              <MoreButton
+                type="button"
+                aria-label="학기 관리"
+                onClick={() => setShowSemesterSheet(true)}
+              >
+                <Icon name="dot-vertical" size={24} />
+              </MoreButton>
+            </SemesterTitleRow>
+
+            {!selectedSemesterKey ? (
+              <EmptySemesterState>
+                <p>아직 추가된 학기가 없어요.</p>
+                <p className="sub">학기를 추가하고 성적을 입력해보세요.</p>
+                <CapsuleButton variant="brand" onClick={openAddSemesterModal}>
+                  학기 추가
+                </CapsuleButton>
+              </EmptySemesterState>
             ) : (
-              <Icon name="chevron-down" size={16} className="caret-icon" />
+              <>
+                <SemesterChipRow>
+                  {[...sortedSemesterKeys].reverse().map((key) => (
+                    <SelectChip
+                      key={key}
+                      type="button"
+                      $selected={key === selectedSemesterKey}
+                      onClick={() => setSelectedSemesterKey(key)}
+                    >
+                      {formatSemesterChipLabel(key)}
+                    </SelectChip>
+                  ))}
+                </SemesterChipRow>
+
+                <SemesterSummary>
+                  <span className="gpa">
+                    <strong>{currentSemesterStats.gpa.toFixed(2)}</strong>
+                    <small>평점</small>
+                  </span>
+                  <span>전공 {currentSemesterStats.majorGpa.toFixed(2)}</span>
+                  <span>{currentSemesterStats.acquiredCredits}학점</span>
+                </SemesterSummary>
+                {/* 과목 입력 표: 리디자인 전 안 확정(편집 시트 없이 행에서 바로 고친다) */}
+                <GradeTable>
+                  <TableHeader>
+                    <ColSubject>과목명</ColSubject>
+                    <ColCredits>학점</ColCredits>
+                    <ColGrade>성적</ColGrade>
+                    <ColMajor>전공</ColMajor>
+                    <ColDelete></ColDelete>
+                  </TableHeader>
+
+                  <TableBody>
+                    {currentSubjects.length === 0 ? (
+                      <EmptyRowText>
+                        등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
+                      </EmptyRowText>
+                    ) : (
+                      currentSubjects.map((subject) => (
+                        <TableRow key={subject.id} $dimmed={subject.excluded}>
+                          <ColSubject>
+                            <SubjectInput
+                              type="text"
+                              value={subject.name}
+                              placeholder="과목명 입력"
+                              onChange={(e) =>
+                                handleUpdateSubject(subject.id, "name", e.target.value)
+                              }
+                            />
+                          </ColSubject>
+                          <ColCredits>
+                            <CreditsSelectorWrapper>
+                              <span className="credits-val">{subject.credits}</span>
+                              <HiddenSelect
+                                value={subject.credits}
+                                onChange={(e) =>
+                                  handleUpdateSubject(
+                                    subject.id,
+                                    "credits",
+                                    parseInt(e.target.value, 10),
+                                  )
+                                }
+                              >
+                                <option value={1}>1</option>
+                                <option value={2}>2</option>
+                                <option value={3}>3</option>
+                                <option value={4}>4</option>
+                              </HiddenSelect>
+                            </CreditsSelectorWrapper>
+                          </ColCredits>
+                          <ColGrade>
+                            <GradeSelectorButton>
+                              <span className="grade-val">
+                                {subject.grade === UNGRADED ? "-" : subject.grade}
+                              </span>
+                              <Icon name="chevron-down" size={14} className="grade-caret" />
+                              <HiddenSelect
+                                value={subject.grade}
+                                onChange={(e) =>
+                                  handleUpdateSubject(
+                                    subject.id,
+                                    "grade",
+                                    e.target.value,
+                                  )
+                                }
+                              >
+                                {GRADES.map((g) => (
+                                  <option key={g} value={g}>
+                                    {g}
+                                  </option>
+                                ))}
+                                <option value={UNGRADED}>미입력</option>
+                              </HiddenSelect>
+                            </GradeSelectorButton>
+                          </ColGrade>
+                          <ColMajor>
+                            <CheckboxWrapper
+                              onClick={() =>
+                                handleUpdateSubject(
+                                  subject.id,
+                                  "isMajor",
+                                  !subject.isMajor,
+                                )
+                              }
+                            >
+                              {subject.isMajor ? (
+                                <CheckedIcon>
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M20 6L9 17L4 12"
+                                      stroke="var(--text-inverse)"
+                                      strokeWidth="3"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </CheckedIcon>
+                              ) : (
+                                <UncheckedIcon />
+                              )}
+                            </CheckboxWrapper>
+                          </ColMajor>
+                          <ColDelete>
+                            <DeleteButton
+                              onClick={() => handleDeleteSubject(subject.id)}
+                            >
+                              <Icon name="close-md" size={16} />
+                            </DeleteButton>
+                          </ColDelete>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </GradeTable>
+
+                <SemesterActions>
+                  <ActionButton type="button" onClick={handleAddSubject}>
+                    <Icon name="add-plus-sm" size={20} />
+                    과목 추가
+                  </ActionButton>
+                  <ActionButton
+                    type="button"
+                    $tone="outline"
+                    onClick={() => setShowImportOptionsSheet(true)}
+                  >
+                    <Icon name="add-to-queue" size={20} />
+                    성적 불러오기
+                  </ActionButton>
+                </SemesterActions>
+              </>
             )}
-          </GraphFoldButton>
-          {showGraph && (
-            <GraphLegendRow>
-              <LegendItem>
-                <svg
-                  width="12"
-                  height="8"
-                  viewBox="0 0 12 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ flexShrink: 0 }}
-                >
-                  <line
-                    x1="0"
-                    y1="4"
-                    x2="12"
-                    y2="4"
-                    stroke="var(--border-brand)"
-                    strokeWidth="2"
-                  />
-                </svg>
-                <span>전체 평점</span>
-              </LegendItem>
-              <LegendItem>
-                <svg
-                  width="12"
-                  height="8"
-                  viewBox="0 0 12 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ flexShrink: 0 }}
-                >
-                  <line
-                    x1="0"
-                    y1="4"
-                    x2="12"
-                    y2="4"
-                    stroke="var(--border-warn)"
-                    strokeWidth="2"
-                    strokeDasharray="3 2"
-                  />
-                </svg>
-                <span>전공 평점</span>
-              </LegendItem>
-            </GraphLegendRow>
-          )}
-        </GraphHeaderRow>
+          </SemesterCard>
+        </>
+      )}
 
-        <GraphSection $expanded={showGraph}>
-          {/* 그래프 카드 본문 */}
-          {graphData.length < 2 ? (
-            <EmptyGraphText>
-              다음 학기부터 성적 추이를 볼 수 있어요.
-            </EmptyGraphText>
-          ) : (
-            <GraphCardBody
-              style={{ height: "220px", marginTop: "12px", width: "100%" }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={graphChartData}
-                  // 카드 폭을 최대한 쓰도록 여백을 최소로 둔다. 위쪽만 선택 시
-                  // 뜨는 말풍선이 잘리지 않을 만큼 남긴다.
-                  margin={{ top: 12, right: 4, left: 0, bottom: 30 }}
-                >
-                  <ReferenceLine y={4.5} stroke="var(--border-default)" strokeWidth={1} />
-                  <ReferenceLine y={4.0} stroke="var(--border-default)" strokeWidth={1} />
-                  <ReferenceLine y={3.5} stroke="var(--border-default)" strokeWidth={1} />
-                  <ReferenceLine y={3.0} stroke="var(--border-default)" strokeWidth={1} />
-                  <ReferenceLine y={2.0} stroke="var(--border-default)" strokeWidth={1} />
-
-                  <XAxis
-                    dataKey="name"
-                    tick={<CustomXAxisTick />}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={0}
-                    padding={{ left: 10, right: 10 }}
-                  />
-                  <YAxis
-                    domain={[1.2, 4.8]}
-                    ticks={[2.0, 3.0, 3.5, 4.0, 4.5]}
-                    axisLine={false}
-                    tickLine={false}
-                    width={28}
-                    interval={0}
-                    tickFormatter={(val) => val.toFixed(1)}
-                    tick={{ fill: "var(--gray-500)", fontSize: 11, fontWeight: 500 }}
-                  />
-                  <Line
-                    type="linear"
-                    dataKey="overall"
-                    stroke="var(--border-brand)"
-                    strokeWidth={2.5}
-                    dot={
-                      <GpaPointDot
-                        activeIndex={activeGraphIndex}
-                        color="var(--border-brand)"
-                        onToggle={toggleGraphPoint}
-                      />
-                    }
-                    label={
-                      <GpaPointLabel
-                        activeIndex={activeGraphIndex}
-                        placement="top"
-                        label="전체"
-                        color="var(--border-brand)"
-                      />
-                    }
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    type="linear"
-                    dataKey="major"
-                    stroke="var(--border-warn)"
-                    strokeWidth={2.5}
-                    strokeDasharray="4 4"
-                    dot={
-                      <GpaPointDot
-                        activeIndex={activeGraphIndex}
-                        color="var(--border-warn)"
-                        onToggle={toggleGraphPoint}
-                      />
-                    }
-                    label={
-                      <GpaPointLabel
-                        activeIndex={activeGraphIndex}
-                        placement="bottom"
-                        label="전공"
-                        color="var(--border-warn)"
-                      />
-                    }
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </GraphCardBody>
-          )}
-        </GraphSection>
-      </StickyStatsCard>
-
-      {/* 2. 졸업요건 피드백 카드 */}
-      <GraduationRequirementCard
+      {/* 3. 졸업요건 카드 */}
+      <GraduationSummaryCard
         profile={graduationProfile}
         resolved={resolvedGraduationRule}
         evaluation={graduationEvaluation}
-        requiredAverageGpa={requiredAverageGpa}
+        expanded={showGraduationDetail}
+        onToggle={() => setShowGraduationDetail((prev) => !prev)}
         onEdit={() => setShowGraduationModal(true)}
+        onOpenDetail={openGraduationPage}
       />
+      </>
+      )}
 
-      {/* 3. 학기별 학점계산기 메인 카드 */}
-      <MainContainer>
-        {!selectedSemesterKey ? (
-          <EmptySemesterState>
-            <p>아직 추가된 학기가 없어요.</p>
-            <p className="sub">학기를 추가하고 성적을 입력해보세요.</p>
-            <CapsuleButton variant="brand" onClick={openAddSemesterModal}>
-              학기 추가
-            </CapsuleButton>
-          </EmptySemesterState>
-        ) : (
-          <>
-            <SemesterSummaryHeader>
-              <SemesterSelectButton onClick={() => setShowSemesterSheet(true)}>
-                <span className="semester-name">{selectedSemesterLabel}</span>
-                <Icon name="chevron-down" size={20} className="dropdown-caret" />
-              </SemesterSelectButton>
-
-              <SemesterStatsRow>
-                <SemStatBox>
-                  <span className="stat-val bold">
-                    {currentSemesterStats.gpa.toFixed(2)}
-                  </span>
-                  <span className="stat-label">평점</span>
-                </SemStatBox>
-                <SemStatBox>
-                  <span className="stat-val">
-                    {currentSemesterStats.majorGpa.toFixed(2)}
-                  </span>
-                  <span className="stat-label">전공</span>
-                </SemStatBox>
-                <SemStatBox>
-                  <span className="stat-val">
-                    {currentSemesterStats.acquiredCredits}
-                  </span>
-                  <span className="stat-label">취득</span>
-                </SemStatBox>
-              </SemesterStatsRow>
-
-              <ImportButtonRow>
-                <ImportTimetableButton
-                  onClick={handleOpenPortalGradeConfirm}
-                  disabled={isFetchingPortalGrades}
-                >
-                  <School size={16} className="calendar-icon" color="var(--interactive-primary)" />
-                  <span className="import-text">
-                    {isFetchingPortalGrades ? "가져오는 중..." : "포털에서 성적 가져오기"}
-                  </span>
-                </ImportTimetableButton>
-                <ImportTimetableButton onClick={() => setShowTimetableSheet(true)}>
-                  <Calendar size={16} className="calendar-icon" />
-                  <span className="import-text">시간표 불러오기</span>
-                </ImportTimetableButton>
-                <ImportTimetableButton
-                  onClick={() => setShowGradeImportSheet(true)}
-                >
-                  <ClipboardPaste size={16} className="calendar-icon" />
-                  <span className="import-text">성적 붙여넣기</span>
-                </ImportTimetableButton>
-              </ImportButtonRow>
-            </SemesterSummaryHeader>
-
-            {/* 4. 과목 리스트 테이블 */}
-            <GradeTable>
-              <TableHeader>
-                <ColSubject>과목명</ColSubject>
-                <ColCredits>학점</ColCredits>
-                <ColGrade>성적</ColGrade>
-                <ColMajor>전공</ColMajor>
-                <ColDelete></ColDelete>
-              </TableHeader>
-
-              <TableBody>
-                {currentSubjects.length === 0 ? (
-                  <EmptyRowText>
-                    등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
-                  </EmptyRowText>
-                ) : (
-                  currentSubjects.map((subject) => (
-                    <TableRow key={subject.id} $dimmed={subject.excluded}>
-                      <ColSubject>
-                        <SubjectInput
-                          type="text"
-                          value={subject.name}
-                          placeholder="과목명 입력"
-                          onChange={(e) =>
-                            handleUpdateSubject(subject.id, "name", e.target.value)
-                          }
-                        />
-                      </ColSubject>
-                      <ColCredits>
-                        <CreditsSelectorWrapper>
-                          <span className="credits-val">{subject.credits}</span>
-                          <HiddenSelect
-                            value={subject.credits}
-                            onChange={(e) =>
-                              handleUpdateSubject(
-                                subject.id,
-                                "credits",
-                                parseInt(e.target.value, 10),
-                              )
-                            }
-                          >
-                            <option value={1}>1</option>
-                            <option value={2}>2</option>
-                            <option value={3}>3</option>
-                            <option value={4}>4</option>
-                          </HiddenSelect>
-                        </CreditsSelectorWrapper>
-                      </ColCredits>
-                      <ColGrade>
-                        <GradeSelectorButton>
-                          <span className="grade-val">
-                            {subject.grade === UNGRADED ? "-" : subject.grade}
-                          </span>
-                          <Icon name="chevron-down" size={14} className="grade-caret" />
-                          <HiddenSelect
-                            value={subject.grade}
-                            onChange={(e) =>
-                              handleUpdateSubject(
-                                subject.id,
-                                "grade",
-                                e.target.value,
-                              )
-                            }
-                          >
-                            {GRADES.map((g) => (
-                              <option key={g} value={g}>
-                                {g}
-                              </option>
-                            ))}
-                            <option value={UNGRADED}>미입력</option>
-                          </HiddenSelect>
-                        </GradeSelectorButton>
-                      </ColGrade>
-                      <ColMajor>
-                        <CheckboxWrapper
-                          onClick={() =>
-                            handleUpdateSubject(
-                              subject.id,
-                              "isMajor",
-                              !subject.isMajor,
-                            )
-                          }
-                        >
-                          {subject.isMajor ? (
-                            <CheckedIcon>
-                              <svg
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M20 6L9 17L4 12"
-                                  stroke="var(--text-inverse)"
-                                  strokeWidth="3"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </CheckedIcon>
-                          ) : (
-                            <UncheckedIcon />
-                          )}
-                        </CheckboxWrapper>
-                      </ColMajor>
-                      <ColDelete>
-                        <DeleteButton
-                          onClick={() => handleDeleteSubject(subject.id)}
-                        >
-                          <Icon name="close-md" size={16} />
-                        </DeleteButton>
-                      </ColDelete>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-
-              {/* 테이블 하단 컨트롤 */}
-              <TableFooter>
-                <AddSubjectButton onClick={handleAddSubject}>
-                  <Icon name="add-plus-sm" size={16} />
-                  <span>과목 추가</span>
-                </AddSubjectButton>
-                <ResetButton onClick={handleResetSubjects}>초기화</ResetButton>
-              </TableFooter>
-            </GradeTable>
-          </>
-        )}
-      </MainContainer>
+      <GradeImportOptionsSheet
+        open={showImportOptionsSheet}
+        onOpenChange={setShowImportOptionsSheet}
+        onSelect={handleSelectImportMethod}
+      />
 
       {/* 학기 선택 바텀 시트 */}
       {showSemesterSheet && (
@@ -1807,7 +1575,7 @@ export default function MobileGradeCalculatorPage() {
           <BottomSheet>
             <SheetHeader>
               <div className="drag-handle" />
-              <div className="title">학기 선택</div>
+              <div className="title">학기 관리</div>
             </SheetHeader>
             <SheetList>
               {sortedSemesterKeys.length === 0 ? (
@@ -1842,6 +1610,17 @@ export default function MobileGradeCalculatorPage() {
                 <Icon name="add-plus-sm" size={16} />
                 <span>학기 추가</span>
               </AddSemesterRow>
+              {selectedSemesterKey && currentSubjects.length > 0 && (
+                <ResetSemesterRow
+                  type="button"
+                  onClick={() => {
+                    setShowSemesterSheet(false);
+                    handleResetSubjects();
+                  }}
+                >
+                  {selectedSemesterLabel} 과목 모두 지우기
+                </ResetSemesterRow>
+              )}
             </SheetList>
           </BottomSheet>
         </>
@@ -1927,49 +1706,15 @@ export default function MobileGradeCalculatorPage() {
         onApply={handleApplyImportedGrades}
       />
 
-      <Modal
-        isOpen={showPortalGradeConfirmModal}
-        onClose={() => setShowPortalGradeConfirmModal(false)}
-        title="포털에서 성적 가져오기"
-        description="인천대학교 포털에서 전체 학기 성적표를 불러와 학점 계산기에 자동으로 입력해요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setShowPortalGradeConfirmModal(false),
-        }}
-        primaryButton={{
-          text: "가져오기",
-          variant: "brand",
-          onClick: handleConfirmPortalGradeImport,
-        }}
-      >
-        <PortalModalContent>
-          <PortalNoticeCard>
-            <NoticeTitleRow>
-              <AlertCircle size={15} color="var(--interactive-primary)" />
-              <span>기존 데이터 덮어쓰기 안내</span>
-            </NoticeTitleRow>
-            <NoticeDescText>
-              포털 성적을 가져오면 현재 학점 계산기에 저장된 과목 내역은{" "}
-              <strong>포털의 공식 성적 데이터로 모두 대체(덮어쓰기)</strong>돼요.
-              <br />
-              (직접 수동 입력했던 미반영 과목 등은 포털 성적 기준으로 초기화됩니다.)
-            </NoticeDescText>
-          </PortalNoticeCard>
-          <SecurityNoticeText>
-            포털 로그인 정보는 서버에 전송되지 않으며, 기기에서 직접 안전하게 성적을 불러와요.
-          </SecurityNoticeText>
-        </PortalModalContent>
-      </Modal>
-
-      <PortalAccountModal
-        isOpen={isPortalModalOpen}
-        onClose={() => setIsPortalModalOpen(false)}
-        onSuccess={() => {
-          setIsPortalModalOpen(false);
-          handleExecutePortalGradeImport();
-        }}
+      <PortalGradeImportSheet
+        open={showPortalImportSheet}
+        onClose={() => setShowPortalImportSheet(false)}
+        onImported={handlePortalGradesImported}
       />
 
+      {/* 빈 상태(시작 카드)에서는 저장할 것이 없으니 숨긴다. 시안에도 없다. */}
+      {/* 졸업요건 상세 화면에도 저장 버튼이 없다(시안). 작성 중인 내용은 그대로 남는다. */}
+      {!(isStartEmpty && !hasChanges) && !showGraduationPage && (
       <FloatingSaveArea>
         <CapsuleButton
           variant="primary"
@@ -1982,6 +1727,7 @@ export default function MobileGradeCalculatorPage() {
           저장
         </CapsuleButton>
       </FloatingSaveArea>
+      )}
     </PageWrapper>
   );
 }
@@ -1993,8 +1739,10 @@ const PageWrapper = styled.div`
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  padding: 24px 16px calc(112px + ${SAFE_AREA.BOTTOM});
-  gap: 16px;
+  min-height: 100%;
+  padding: 8px 16px calc(112px + ${SAFE_AREA.BOTTOM});
+  gap: 12px;
+  background: var(--bg-subtle);
 `;
 
 const FloatingSaveArea = styled.div`
@@ -2010,285 +1758,109 @@ const FloatingSaveArea = styled.div`
 `;
 
 // 1. 요약 카드 스타일
-const StickyStatsCard = styled.div`
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-default);
-  border-radius: 20px;
-  padding: 16px 20px 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-`;
-
-const StatsHeader = styled.div`
-  display: flex;
-  align-items: center;
-  height: 24px;
-`;
-
-const StatsTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 0;
-`;
-
-const StatsRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding-bottom: 8px;
-`;
-
-const StatBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1;
-`;
-
-const StatLabel = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin-bottom: 4px;
-`;
-
-const StatValueWrapper = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-`;
-
-const StatValueText = styled.span`
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: -0.2px;
-  line-height: 32px;
-`;
-
-const StatMaxText = styled.span`
-  font-size: 12px;
-  color: var(--text-tertiary);
-  line-height: 16px;
-`;
-
-const TargetCreditsButton = styled.button`
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-
-  .target-limit {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    line-height: 16px;
-  }
-
-  .pencil-icon {
-    color: var(--text-tertiary);
-    opacity: 0.8;
-  }
-
-  &:hover .pencil-icon {
-    opacity: 1;
-  }
-`;
-
-const GraphSection = styled.div<{ $expanded: boolean }>`
-  border-top: 1px solid
-    ${(props) => (props.$expanded ? "var(--border-default)" : "transparent")};
-  padding: ${(props) => (props.$expanded ? "16px 0 8px" : "0px")};
-  width: 100%;
-  max-height: ${(props) => (props.$expanded ? "320px" : "0px")};
-  opacity: ${(props) => (props.$expanded ? "1" : "0")};
-  transform: ${(props) => (props.$expanded ? "translateY(0)" : "translateY(-10px)")};
-  overflow: hidden;
-  transition:
-    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease,
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s ease;
-`;
-
-const GraphHeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 44px;
-`;
-
-const GraphFoldButton = styled.button`
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-
-  span {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-tertiary);
-  }
-
-  .caret-icon {
-    color: var(--text-tertiary);
-  }
-`;
-
-const GraphLegendRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const LegendItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  span {
-    font-size: 12px;
-    color: var(--text-tertiary);
-  }
-`;
-
-const GraphCardBody = styled.div`
-  display: flex;
-  width: 100%;
-  margin-top: 8px;
-
-  /*
-   * recharts의 accessibilityLayer(기본 켜짐)가 차트 <svg>에 tabIndex=0을 걸어서,
-   * 점을 탭하면 브라우저 기본 포커스 링이 그래프 전체를 감싼다. 키보드로 들어온
-   * 포커스(:focus-visible)에서는 그대로 두고, 마우스·터치일 때만 지운다.
-   */
-  .recharts-surface:focus:not(:focus-visible),
-  .recharts-wrapper:focus:not(:focus-visible) {
-    outline: none;
-  }
-`;
-
-const EmptyGraphText = styled.div`
-  text-align: center;
-  font-size: 14px;
-  color: var(--text-disabled);
-  padding: 40px 16px;
-  width: 100%;
-`;
-
 // 2. 메인 컨테이너 스타일
-const MainContainer = styled.div`
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-default);
+// 3. 과목 테이블 스타일
+const EmptyRowText = styled.p`
+  ${typography.caption1}
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+  color: var(--text-tertiary);
+`;
+
+// --- 학기별 성적 카드 (Figma 리디자인 "학기별 성적") ---
+// 칩·과목 목록이 카드 끝까지 닿도록 좌우 패딩은 각 줄이 갖는다.
+const SemesterCard = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 0 16px;
   border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  background: var(--bg-base);
 `;
 
-const SemesterSummaryHeader = styled.div`
-  padding: 16px 20px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const SemesterSelectButton = styled.button`
-  background: none;
-  border: none;
+const SemesterTitleRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
+  justify-content: space-between;
+  padding: 0 12px 0 20px;
+`;
+
+const MoreButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  align-self: flex-start;
-  outline: none;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
 
-  .semester-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-secondary);
-  }
-
-  .dropdown-caret {
-    color: var(--text-secondary);
+  &:active {
+    background: var(--bg-muted);
   }
 `;
 
-const SemesterStatsRow = styled.div`
+const SemesterChipRow = styled.div`
+  display: flex;
+  gap: 8px;
+  padding: 2px 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const SemesterSummary = styled.div`
+  ${typography.label2}
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-top: 4px;
-`;
+  padding: 0 20px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 
-const SemStatBox = styled.div`
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-
-  .stat-val {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-secondary);
-
-    &.bold {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.2px;
-      line-height: 32px;
-    }
+  .gpa {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
   }
 
-  .stat-label {
-    font-size: 12px;
+  strong {
+    ${typography.title1}
+    color: var(--text-primary);
+  }
+
+  small {
+    ${typography.caption1}
     color: var(--text-tertiary);
   }
 `;
 
-const ImportButtonRow = styled.div`
+const SemesterActions = styled.div`
   display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px;
 `;
 
-const ImportTimetableButton = styled.button`
-  background: none;
+const ResetSemesterRow = styled.button`
+  ${typography.label2}
+  width: 100%;
+  padding: 14px 0;
   border: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  background: none;
+  color: var(--text-error);
   cursor: pointer;
-  padding: 4px 0;
-  align-self: flex-start;
-  outline: none;
-  margin-top: 8px;
-
-  .calendar-icon {
-    color: var(--text-brand);
-  }
-
-  .import-text {
-    font-size: 14px;
-    color: var(--text-brand);
-  }
 `;
 
-// 3. 과목 테이블 스타일
+// --- 과목 입력 표 (리디자인 전 안 유지) ---
 const GradeTable = styled.div`
   display: flex;
   flex-direction: column;
@@ -2326,12 +1898,6 @@ const TableRow = styled.div<{ $dimmed?: boolean }>`
   }
 `;
 
-const EmptyRowText = styled.div`
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-tertiary);
-  padding: 40px 16px;
-`;
 
 // 컬럼 비율/가로 정의
 const ColSubject = styled.div`
@@ -2491,40 +2057,97 @@ const DeleteButton = styled.button`
 `;
 
 // 테이블 푸터 컨트롤
-const TableFooter = styled.div`
+
+// --- 빈 상태 (Figma 리디자인 "빈 상태 (첫 진입)") ---
+const StartCard = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  height: 48px;
-  padding: 0 16px;
-  border-top: 1px solid var(--border-default);
+  gap: 20px;
+  width: 100%;
+  padding: 12px 0 4px;
 `;
 
-const AddSubjectButton = styled.button`
-  background: none;
-  border: none;
+const StartIcon = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--bg-brand);
   color: var(--interactive-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  padding: 4px 0;
 `;
 
-const ResetButton = styled.button`
-  background: none;
+const StartText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+
+  h2 {
+    ${typography.title2}
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  p {
+    ${typography.body2}
+    margin: 0;
+    color: var(--text-secondary);
+  }
+`;
+
+const StartButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+`;
+
+/** Figma Button Size L(48, title/3). primary = 파란 채움, 아니면 bg/muted. */
+const StartButton = styled.button<{ $primary?: boolean }>`
+  ${typography.title3}
+  width: 100%;
+  height: 48px;
+  padding: var(--space-3) var(--space-6);
   border: none;
-  color: var(--text-tertiary);
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: var(--radius-full);
+  background: ${({ $primary }) =>
+    $primary ? "var(--interactive-primary)" : "var(--bg-muted)"};
+  color: ${({ $primary }) =>
+    $primary ? "var(--text-inverse)" : "var(--text-secondary)"};
   cursor: pointer;
-  outline: none;
-  padding: 4px 0;
+
+  &:active:not(:disabled) {
+    box-shadow: inset 0 0 0 999px rgba(0, 0, 0, 0.08);
+  }
+
+  &:disabled {
+    background: var(--bg-disabled);
+    color: var(--text-disabled);
+    cursor: default;
+  }
 `;
 
+const StartLinks = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+
+  button {
+    ${typography.label2}
+    padding: 4px 0;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+`;
+
+// 네이티브 셀렉트 오버레이
+// 체크박스 커스텀
+// 테이블 푸터 컨트롤
 // 바텀 시트 스타일들
 const SheetOverlay = styled.div`
   position: fixed;
@@ -2748,50 +2371,5 @@ const EmptySemesterState = styled.div`
     color: var(--text-tertiary);
     margin-bottom: 8px;
   }
-`;
-
-const PortalModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
-`;
-
-const PortalNoticeCard = styled.div`
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-`;
-
-const NoticeTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--interactive-primary);
-`;
-
-const NoticeDescText = styled.p`
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  margin: 0;
-
-  strong {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-`;
-
-const SecurityNoticeText = styled.div`
-  font-size: 11.5px;
-  color: var(--text-tertiary);
-  text-align: center;
 `;
 

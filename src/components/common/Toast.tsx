@@ -31,6 +31,16 @@ function ToastElement({ toast, onDismiss }: ToastProps) {
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       role="status"
       aria-live="polite"
+      style={
+        toast.bottomOffset !== undefined
+          ? {
+              // 하단 고정 버튼이 있는 화면에서 토스트를 그 위로 올린다(화면 아래에서 잰 거리)
+              marginBottom: `calc(${
+                typeof toast.bottomOffset === "number" ? `${toast.bottomOffset}px` : toast.bottomOffset
+              } - 28px)`,
+            }
+          : undefined
+      }
     >
       <ToastMessage>{toast.message}</ToastMessage>
       {toast.action && (

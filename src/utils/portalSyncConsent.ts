@@ -5,6 +5,7 @@ import { safeLocalStorage } from "@/utils/safeStorage";
  * 포털 정보 불러오기(휴대폰이 학교 포털·이러닝·도서관에 대신 접속하는 기능) 동의.
  *
  * - [필수] 포털 정보 불러오기: 없으면 앱 브릿지의 스크래핑 요청을 보내지 않는다.
+ * - [선택] AI 채팅 스크래핑 정보 활용: AI 채팅이 불러온 포털 정보를 참고해도 되는지.
  *
  * 서버에 동의 이력을 저장하는 API가 아직 없어 이용약관 동의(TermsAgreement)처럼
  * 기기 단위로 보관한다. 기기를 바꾸거나 앱을 재설치하면 다시 동의를 받는다.
@@ -19,6 +20,8 @@ export interface PortalSyncConsent {
   version: string;
   /** [필수] 포털 정보 불러오기에 동의한 시각 */
   agreedAt: string;
+  /** [선택] AI 채팅 스크래핑 정보 활용에 동의한 시각. 동의하지 않았으면 없음 */
+  aiChatAgreedAt?: string;
 }
 
 function readConsent(): PortalSyncConsent | null {
@@ -33,6 +36,7 @@ function readConsent(): PortalSyncConsent | null {
     return {
       version: parsed.version,
       agreedAt: parsed.agreedAt,
+      ...(parsed.aiChatAgreedAt ? { aiChatAgreedAt: parsed.aiChatAgreedAt } : {}),
     };
   } catch {
     return null;
@@ -69,11 +73,21 @@ export function hasPortalSyncConsent(): boolean {
   return readConsent() !== null;
 }
 
-export function recordPortalSyncConsent(): void {
+export function hasAiChatScrapingConsent(): boolean {
+  return Boolean(readConsent()?.aiChatAgreedAt);
+}
+
+export interface PortalSyncConsentChoice {
+  /** [선택] AI 채팅 스크래핑 정보 활용 */
+  aiChat?: boolean;
+}
+
+export function recordPortalSyncConsent(choice: PortalSyncConsentChoice = {}): void {
   const now = new Date().toISOString();
   writeConsent({
     version: PORTAL_SYNC_CONSENT_VERSION,
     agreedAt: now,
+    ...(choice.aiChat ? { aiChatAgreedAt: now } : {}),
   });
 }
 
@@ -107,9 +121,12 @@ export function requestPortalSyncConsent(): Promise<boolean> {
 }
 
 /** 동의 시트가 닫힐 때 호스트가 호출한다. */
-export function settlePortalSyncConsentRequest(agreed: boolean): void {
+export function settlePortalSyncConsentRequest(
+  agreed: boolean,
+  choice: PortalSyncConsentChoice = {},
+): void {
   if (agreed) {
-    recordPortalSyncConsent();
+    recordPortalSyncConsent(choice);
   }
   usePortalSyncConsentStore.setState({ requestOpen: false });
   resolvePending?.(agreed);
