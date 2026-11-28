@@ -68,7 +68,6 @@ const HomeChipGroup = () => {
     {
       id: "library",
       iconComponent: LuArmchair,
-      iconColor: "var(--interactive-primary)",
       iconSize: 22,
       title: "도서관 좌석",
       onClick: () => {
