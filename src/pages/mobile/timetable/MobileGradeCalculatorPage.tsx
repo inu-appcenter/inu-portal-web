@@ -18,16 +18,12 @@ import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalcul
 import GpaSummaryCard, {
   type GpaTrendPoint,
 } from "@/components/mobile/timetable/gradeCalculator/GpaSummaryCard";
-import GradeDropdown from "@/components/mobile/timetable/gradeCalculator/GradeDropdown";
 import GradeImportOptionsSheet, {
   type GradeImportMethod,
 } from "@/components/mobile/timetable/gradeCalculator/GradeImportOptionsSheet";
 import GraduationSummaryCard from "@/components/mobile/timetable/gradeCalculator/GraduationSummaryCard";
-import SubjectEditSheet from "@/components/mobile/timetable/gradeCalculator/SubjectEditSheet";
-import { getSubjectCategoryLabel } from "@/components/mobile/timetable/gradeCalculator/subject";
 import {
   ActionButton,
-  Badge,
   CardTitle,
   SectionCard,
   SelectChip,
@@ -292,8 +288,6 @@ export default function MobileGradeCalculatorPage() {
   const [showGraph, setShowGraph] = useState<boolean>(false);
   /** 졸업요건 카드 펼침 */
   const [showGraduationDetail, setShowGraduationDetail] = useState<boolean>(false);
-  /** 과목 편집 시트에 띄운 과목 id. null이면 시트가 닫혀 있다. */
-  const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null);
   const [showImportOptionsSheet, setShowImportOptionsSheet] = useState<boolean>(false);
   /** 빈 상태에서 "직접 입력하기"를 눌렀는지. 과목이 하나도 없어도 입력 화면을 보여준다. */
   const [startedManually, setStartedManually] = useState<boolean>(false);
@@ -728,24 +722,15 @@ export default function MobileGradeCalculatorPage() {
     }));
   };
 
-  // 새 과목은 성적 미입력(Dropdown_Grade Empty "선택")으로 만들고, 과목명을 적도록
-  // 편집 시트를 바로 연다. 성적을 고르기 전에는 평점에 들어가지 않는다.
   const handleAddSubject = () => {
     const newSub: Subject = {
       id: `${Date.now()}-${Math.random()}`,
       name: "",
       credits: 3,
-      grade: UNGRADED,
+      grade: "A+",
       isMajor: false,
     };
     updateSubjects([...currentSubjects, newSub]);
-    setEditingSubjectId(newSub.id);
-  };
-
-  const patchSubject = (id: string, patch: Partial<Subject>) => {
-    updateSubjects(
-      currentSubjects.map((sub) => (sub.id === id ? { ...sub, ...patch } : sub)),
-    );
   };
 
   const handleUpdateSubject = (
@@ -1046,11 +1031,6 @@ export default function MobileGradeCalculatorPage() {
         : "";
     return `${formatSemesterKeyAxisLabel(lowest.key)} 평점이 가장 낮아요${failedText}`;
   }, [trendSemesters]);
-
-  const editingSubject =
-    editingSubjectId === null
-      ? null
-      : (currentSubjects.find((sub) => sub.id === editingSubjectId) ?? null);
 
   // Figma "빈 상태 (첫 진입)": 어느 학기에도 과목이 없고, 아직 "직접 입력하기"를
   // 고르지 않았으면 시작 카드를 보여준다.
@@ -1450,47 +1430,124 @@ export default function MobileGradeCalculatorPage() {
                   <span>전공 {currentSemesterStats.majorGpa.toFixed(2)}</span>
                   <span>{currentSemesterStats.acquiredCredits}학점</span>
                 </SemesterSummary>
+                {/* 과목 입력 표: 리디자인 전 안 확정(편집 시트 없이 행에서 바로 고친다) */}
+                <GradeTable>
+                  <TableHeader>
+                    <ColSubject>과목명</ColSubject>
+                    <ColCredits>학점</ColCredits>
+                    <ColGrade>성적</ColGrade>
+                    <ColMajor>전공</ColMajor>
+                    <ColDelete></ColDelete>
+                  </TableHeader>
 
-                <SubjectList>
-                  {currentSubjects.length === 0 ? (
-                    <EmptyRowText>
-                      아직 과목이 없어요. 과목을 추가하거나 성적을 불러와 보세요.
-                    </EmptyRowText>
-                  ) : (
-                    currentSubjects.map((subject) => {
-                      const category = getSubjectCategoryLabel(subject);
-                      return (
-                        <SubjectRow key={subject.id} $dimmed={subject.excluded}>
-                          <SubjectInfo
-                            type="button"
-                            onClick={() => setEditingSubjectId(subject.id)}
-                          >
-                            <span className={subject.name ? "name" : "name empty"}>
-                              {subject.name || "과목명 입력"}
-                            </span>
-                            <SubjectMeta>
-                              {subject.excluded && <Badge $tone="neutral">재수강</Badge>}
-                              {category && (
-                                <Badge $tone={subject.isMajor ? "brand" : "neutral"}>
-                                  {category}
-                                </Badge>
+                  <TableBody>
+                    {currentSubjects.length === 0 ? (
+                      <EmptyRowText>
+                        등록된 과목이 없습니다. 아래 과목 추가를 눌러보세요.
+                      </EmptyRowText>
+                    ) : (
+                      currentSubjects.map((subject) => (
+                        <TableRow key={subject.id} $dimmed={subject.excluded}>
+                          <ColSubject>
+                            <SubjectInput
+                              type="text"
+                              value={subject.name}
+                              placeholder="과목명 입력"
+                              onChange={(e) =>
+                                handleUpdateSubject(subject.id, "name", e.target.value)
+                              }
+                            />
+                          </ColSubject>
+                          <ColCredits>
+                            <CreditsSelectorWrapper>
+                              <span className="credits-val">{subject.credits}</span>
+                              <HiddenSelect
+                                value={subject.credits}
+                                onChange={(e) =>
+                                  handleUpdateSubject(
+                                    subject.id,
+                                    "credits",
+                                    parseInt(e.target.value, 10),
+                                  )
+                                }
+                              >
+                                <option value={1}>1</option>
+                                <option value={2}>2</option>
+                                <option value={3}>3</option>
+                                <option value={4}>4</option>
+                              </HiddenSelect>
+                            </CreditsSelectorWrapper>
+                          </ColCredits>
+                          <ColGrade>
+                            <GradeSelectorButton>
+                              <span className="grade-val">
+                                {subject.grade === UNGRADED ? "-" : subject.grade}
+                              </span>
+                              <Icon name="chevron-down" size={14} className="grade-caret" />
+                              <HiddenSelect
+                                value={subject.grade}
+                                onChange={(e) =>
+                                  handleUpdateSubject(
+                                    subject.id,
+                                    "grade",
+                                    e.target.value,
+                                  )
+                                }
+                              >
+                                {GRADES.map((g) => (
+                                  <option key={g} value={g}>
+                                    {g}
+                                  </option>
+                                ))}
+                                <option value={UNGRADED}>미입력</option>
+                              </HiddenSelect>
+                            </GradeSelectorButton>
+                          </ColGrade>
+                          <ColMajor>
+                            <CheckboxWrapper
+                              onClick={() =>
+                                handleUpdateSubject(
+                                  subject.id,
+                                  "isMajor",
+                                  !subject.isMajor,
+                                )
+                              }
+                            >
+                              {subject.isMajor ? (
+                                <CheckedIcon>
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M20 6L9 17L4 12"
+                                      stroke="var(--text-inverse)"
+                                      strokeWidth="3"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </CheckedIcon>
+                              ) : (
+                                <UncheckedIcon />
                               )}
-                              <span>{subject.credits}학점</span>
-                            </SubjectMeta>
-                          </SubjectInfo>
-                          <GradeDropdown
-                            value={subject.grade}
-                            grades={GRADES}
-                            subjectName={subject.name}
-                            onChange={(grade) =>
-                              handleUpdateSubject(subject.id, "grade", grade)
-                            }
-                          />
-                        </SubjectRow>
-                      );
-                    })
-                  )}
-                </SubjectList>
+                            </CheckboxWrapper>
+                          </ColMajor>
+                          <ColDelete>
+                            <DeleteButton
+                              onClick={() => handleDeleteSubject(subject.id)}
+                            >
+                              <Icon name="close-md" size={16} />
+                            </DeleteButton>
+                          </ColDelete>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </GradeTable>
 
                 <SemesterActions>
                   <ActionButton type="button" onClick={handleAddSubject}>
@@ -1521,25 +1578,6 @@ export default function MobileGradeCalculatorPage() {
         expanded={showGraduationDetail}
         onToggle={() => setShowGraduationDetail((prev) => !prev)}
         onEdit={() => setShowGraduationModal(true)}
-      />
-
-      <SubjectEditSheet
-        open={editingSubject !== null}
-        onOpenChange={(open) => {
-          if (!open) setEditingSubjectId(null);
-        }}
-        subject={editingSubject}
-        semesterLabel={
-          selectedSemesterKey ? formatSemesterChipLabel(selectedSemesterKey) : ""
-        }
-        onChange={(patch) => {
-          if (editingSubject) patchSubject(editingSubject.id, patch);
-        }}
-        onDelete={() => {
-          if (!editingSubject) return;
-          handleDeleteSubject(editingSubject.id);
-          setEditingSubjectId(null);
-        }}
       />
 
       <GradeImportOptionsSheet
@@ -1861,56 +1899,6 @@ const SemesterSummary = styled.div`
   }
 `;
 
-const SubjectList = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0 20px;
-`;
-
-const SubjectRow = styled.div<{ $dimmed?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border-default);
-  opacity: ${({ $dimmed }) => ($dimmed ? 0.5 : 1)};
-`;
-
-const SubjectInfo = styled.button`
-  display: flex;
-  flex: 1 0 0;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  min-width: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-
-  .name {
-    ${typography.label1}
-    max-width: 100%;
-    overflow: hidden;
-    color: var(--text-primary);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .name.empty {
-    color: var(--text-tertiary);
-  }
-`;
-
-const SubjectMeta = styled.span`
-  ${typography.caption1}
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-tertiary);
-`;
-
 const SemesterActions = styled.div`
   display: flex;
   gap: 8px;
@@ -1926,6 +1914,204 @@ const ResetSemesterRow = styled.button`
   color: var(--text-error);
   cursor: pointer;
 `;
+
+// --- 과목 입력 표 (리디자인 전 안 유지) ---
+const GradeTable = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const TableHeader = styled.div`
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  background-color: var(--bg-subtle);
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  text-align: center;
+`;
+
+const TableBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+`;
+
+const TableRow = styled.div<{ $dimmed?: boolean }>`
+  display: flex;
+  align-items: center;
+  height: 52px;
+  border-bottom: 1px solid var(--border-default);
+  /* 재수강으로 성적이 취소된 과목 — 계산에서 빠졌다는 걸 보이게 남긴다 */
+  opacity: ${({ $dimmed }) => ($dimmed ? 0.5 : 1)};
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+
+// 컬럼 비율/가로 정의
+const ColSubject = styled.div`
+  flex: 1;
+  text-align: left;
+  padding-left: 16px;
+  min-width: 0;
+`;
+
+const ColCredits = styled.div`
+  width: 60px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+`;
+
+const ColGrade = styled.div`
+  width: 70px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+`;
+
+const ColMajor = styled.div`
+  width: 50px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+`;
+
+const ColDelete = styled.div`
+  width: 40px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding-right: 8px;
+`;
+
+// 입력 요소들 스타일
+const SubjectInput = styled.input`
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--text-secondary);
+  outline: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &::placeholder {
+    color: var(--text-disabled);
+  }
+`;
+
+const CreditsSelectorWrapper = styled.div`
+  position: relative;
+  width: 44px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background-color: var(--bg-subtle);
+  cursor: pointer;
+
+  .credits-val {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+`;
+
+const GradeSelectorButton = styled.div`
+  position: relative;
+  background-color: var(--bg-warn);
+  border: 1px solid var(--border-warn-subtle); /* border/warn-subtle */
+  border-radius: 999px;
+  height: 32px;
+  width: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+
+  .grade-val {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--yellow-600);
+    text-align: center;
+    min-width: 24px;
+  }
+
+  .grade-caret {
+    color: var(--yellow-600);
+    opacity: 0.4;
+  }
+`;
+
+// 네이티브 셀렉트 오버레이
+const HiddenSelect = styled.select`
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  -webkit-appearance: none;
+  outline: none;
+`;
+
+// 체크박스 커스텀
+const CheckboxWrapper = styled.div`
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const CheckedIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  background-color: var(--interactive-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const UncheckedIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-strong);
+  border-radius: 8px;
+  box-sizing: border-box;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  opacity: 0.7;
+
+  &:hover {
+    color: var(--text-error);
+    opacity: 1;
+  }
+`;
+
+// 테이블 푸터 컨트롤
 
 // --- 빈 상태 (Figma 리디자인 "빈 상태 (첫 진입)") ---
 const StartCard = styled.div`
