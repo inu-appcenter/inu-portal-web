@@ -8,16 +8,14 @@ import {
   useBeforeUnload,
   useNavigate,
 } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
 import Icon from "@/components/common/Icon";
 import Modal from "@/components/common/Modal";
 import InputField from "@/components/common/InputField";
 import CapsuleButton from "@/components/common/CapsuleButton";
 import GradeImportSheet from "@/components/mobile/timetable/GradeImportSheet";
 import GradeCalculatorIntroSheet from "@/components/mobile/timetable/GradeCalculatorIntroSheet";
-import GpaSummaryCard, {
-  type GpaTrendPoint,
-} from "@/components/mobile/timetable/gradeCalculator/GpaSummaryCard";
+import GpaSummaryCard from "@/components/mobile/timetable/gradeCalculator/GpaSummaryCard";
+import type { GpaTrendPoint } from "@/components/mobile/timetable/gradeCalculator/GpaTrendChart";
 import GradeImportOptionsSheet, {
   type GradeImportMethod,
 } from "@/components/mobile/timetable/gradeCalculator/GradeImportOptionsSheet";
@@ -34,11 +32,8 @@ import { typography } from "@/styles/typography";
 import GraduationSettingModal, {
   type GraduationProfile,
 } from "@/components/mobile/timetable/GraduationSettingModal";
-import { PortalAccountModal } from "@/components/mobile/agent/PortalAccountModal";
-import {
-  checkPortalAccountLinked,
-  fetchFullAcademicReportFromApp,
-} from "@/apis/mobileAgentBridge";
+import PortalGradeImportSheet from "@/components/mobile/timetable/gradeCalculator/PortalGradeImportSheet";
+import { showToast } from "@/utils/toast";
 import { convertPortalGradesToSemestersData } from "@/utils/portalGradeSync";
 import { isMajorCompletion } from "@/utils/parseSmartCampusGrades";
 import {
@@ -57,6 +52,7 @@ import {
   TERM_LABELS,
   TERM_ORDER,
   formatSemester,
+  formatSemesterShort,
   formatSemesterShortLines,
 } from "@/utils/semester";
 import useUserStore from "@/stores/useUserStore";
@@ -141,17 +137,10 @@ const formatSemesterChipLabel = (key: string): string => {
   return formatSemesterShortLines(entry.year, entry.term).join(" ");
 };
 
-const AXIS_TERM_LABELS: Record<Term, string> = {
-  FIRST: "1",
-  SUMMER: "여름",
-  SECOND: "2",
-  WINTER: "겨울",
-};
-
-/** 학기별 추이 그래프 x축용 짧은 표기("24-2", "24-여름"). */
-const formatSemesterKeyAxisLabel = (key: string): string => {
+/** 그래프 x축용 짧은 표기("23-2\n학기"). 학기가 늘어도 라벨이 겹치지 않게 두 줄로 쓴다. */
+const formatSemesterKeyShortLabel = (key: string): string => {
   const entry = parseSemesterKey(key);
-  return `${String(entry.year).slice(-2)}-${AXIS_TERM_LABELS[entry.term]}`;
+  return formatSemesterShort(entry.year, entry.term);
 };
 
 // 정확한 개강일 대신 대략적인 학사 일정으로 "현재 학기"를 추정한다.
@@ -312,61 +301,25 @@ export default function MobileGradeCalculatorPage() {
   const [newSemesterTerm, setNewSemesterTerm] = useState<Term>("FIRST");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const savingRef = useRef(false);
-  const [isPortalModalOpen, setIsPortalModalOpen] = useState<boolean>(false);
-  const [isFetchingPortalGrades, setIsFetchingPortalGrades] = useState<boolean>(false);
-  const [showPortalGradeConfirmModal, setShowPortalGradeConfirmModal] = useState<boolean>(false);
+  /** 포털 성적 가져오기 시트(안내 → 계정 등록 → 불러오는 중 → 실패) */
+  const [showPortalImportSheet, setShowPortalImportSheet] = useState<boolean>(false);
 
-  const handleExecutePortalGradeImport = async () => {
-    setIsFetchingPortalGrades(true);
-    try {
-      const reportRes = await fetchFullAcademicReportFromApp();
-      if (!reportRes.success || !reportRes.data) {
-        if (reportRes.errorCode === "AUTH_REQUIRED") {
-          setIsPortalModalOpen(true);
-          return;
-        }
-        throw new Error(
-          reportRes.errorMessage || "포털 성적 정보를 불러오지 못했습니다.",
-        );
-      }
+  // 포털 공식 성적표로 전체를 덮어쓴다(기존 수동 입력 과목 대체). 저장은 사용자가 한다.
+  const handlePortalGradesImported = (
+    courseGrades: Parameters<typeof convertPortalGradesToSemestersData>[0],
+  ) => {
+    const incomingData = convertPortalGradesToSemestersData(courseGrades);
+    const incomingKeys = Object.keys(incomingData).sort(compareSemesterKeys);
 
-      const incomingData = convertPortalGradesToSemestersData(
-        reportRes.data.courseGrades,
-      );
-      const incomingSemCount = Object.keys(incomingData).length;
-      const incomingSubCount = reportRes.data.courseGrades.length;
-
-      // 포털 공식 성적표 데이터로 전체 덮어쓰기 (기존 수동/임의 데이터 대체)
-      setSemestersData(incomingData);
-
-      const incomingKeys = Object.keys(incomingData).sort(compareSemesterKeys);
-      if (incomingKeys.length > 0) {
-        setSelectedSemesterKey(incomingKeys[incomingKeys.length - 1]);
-      }
-
-      alert(
-        `포털에서 총 ${incomingSemCount}개 학기, ${incomingSubCount}개 과목 성적을 불러와 학점 계산기를 최신 정보로 업데이트했어요!`,
-      );
-    } catch (err: unknown) {
-      console.error("포털 성적 연동 실패:", err);
-      alert(err instanceof Error ? err.message : "포털 성적을 불러오는 중 오류가 발생했습니다.");
-    } finally {
-      setIsFetchingPortalGrades(false);
+    setSemestersData(incomingData);
+    if (incomingKeys.length > 0) {
+      setSelectedSemesterKey(incomingKeys[incomingKeys.length - 1]);
     }
-  };
-
-  const handleOpenPortalGradeConfirm = () => {
-    setShowPortalGradeConfirmModal(true);
-  };
-
-  const handleConfirmPortalGradeImport = async () => {
-    setShowPortalGradeConfirmModal(false);
-    const isLinked = await checkPortalAccountLinked();
-    if (!isLinked) {
-      setIsPortalModalOpen(true);
-      return;
-    }
-    await handleExecutePortalGradeImport();
+    setShowPortalImportSheet(false);
+    showToast(
+      `${incomingKeys.length}개 학기 ${courseGrades.length}과목을 불러왔어요. 저장을 눌러 반영하세요.`,
+      { bottomOffset: 80 },
+    );
   };
 
   const [graduationProfile, setGraduationProfile] = useState<GraduationProfile>(
@@ -1045,24 +998,12 @@ export default function MobileGradeCalculatorPage() {
   const trendPoints = useMemo<GpaTrendPoint[]>(
     () =>
       trendSemesters.map((s) => ({
-        name: formatSemesterKeyAxisLabel(s.key),
+        name: formatSemesterKeyShortLabel(s.key),
         overall: parseFloat(s.gpa.toFixed(2)),
         major: s.majorGpa === null ? null : parseFloat(s.majorGpa.toFixed(2)),
       })),
     [trendSemesters],
   );
-
-  // "24-2 평점이 가장 낮아요 · F 1과목(통계학입문)"
-  const trendCaption = useMemo(() => {
-    if (trendSemesters.length < 2) return null;
-    const lowest = trendSemesters.reduce((min, s) => (s.gpa < min.gpa ? s : min));
-    const failed = lowest.subjects.filter((sub) => !sub.excluded && sub.grade === "F");
-    const failedText =
-      failed.length > 0
-        ? ` · F ${failed.length}과목(${failed.map((sub) => sub.name || "이름 없음").join(", ")})`
-        : "";
-    return `${formatSemesterKeyAxisLabel(lowest.key)} 평점이 가장 낮아요${failedText}`;
-  }, [trendSemesters]);
 
   // Figma "빈 상태 (첫 진입)": 어느 학기에도 과목이 없고, 아직 "직접 입력하기"를
   // 고르지 않았으면 시작 카드를 보여준다.
@@ -1083,7 +1024,7 @@ export default function MobileGradeCalculatorPage() {
   const handleSelectImportMethod = (method: GradeImportMethod) => {
     setShowImportOptionsSheet(false);
     setTimeout(() => {
-      if (method === "portal") handleOpenPortalGradeConfirm();
+      if (method === "portal") setShowPortalImportSheet(true);
       if (method === "paste") setShowGradeImportSheet(true);
       if (method === "timetable") setShowTimetableSheet(true);
     }, 300);
@@ -1389,10 +1330,9 @@ export default function MobileGradeCalculatorPage() {
               <StartButton
                 type="button"
                 $primary
-                disabled={isFetchingPortalGrades}
-                onClick={handleOpenPortalGradeConfirm}
+                onClick={() => setShowPortalImportSheet(true)}
               >
-                {isFetchingPortalGrades ? "가져오는 중..." : "포털에서 성적 가져오기"}
+                포털에서 성적 가져오기
               </StartButton>
               <StartButton type="button" onClick={handleStartManually}>
                 직접 입력하기
@@ -1420,7 +1360,6 @@ export default function MobileGradeCalculatorPage() {
             requiredAverageGpa={requiredAverageGpa}
             remainingCredits={remainingCredits}
             trend={trendPoints}
-            trendCaption={trendCaption}
             expanded={showGraph}
             onToggle={() => setShowGraph((prev) => !prev)}
             onEditTargetGpa={() => setShowGraduationModal(true)}
@@ -1626,7 +1565,6 @@ export default function MobileGradeCalculatorPage() {
       <GradeImportOptionsSheet
         open={showImportOptionsSheet}
         onOpenChange={setShowImportOptionsSheet}
-        isFetchingPortal={isFetchingPortalGrades}
         onSelect={handleSelectImportMethod}
       />
 
@@ -1768,47 +1706,10 @@ export default function MobileGradeCalculatorPage() {
         onApply={handleApplyImportedGrades}
       />
 
-      <Modal
-        isOpen={showPortalGradeConfirmModal}
-        onClose={() => setShowPortalGradeConfirmModal(false)}
-        title="포털에서 성적 가져오기"
-        description="인천대학교 포털에서 전체 학기 성적표를 불러와 학점 계산기에 자동으로 입력해요."
-        secondaryButton={{
-          text: "취소",
-          onClick: () => setShowPortalGradeConfirmModal(false),
-        }}
-        primaryButton={{
-          text: "가져오기",
-          variant: "brand",
-          onClick: handleConfirmPortalGradeImport,
-        }}
-      >
-        <PortalModalContent>
-          <PortalNoticeCard>
-            <NoticeTitleRow>
-              <AlertCircle size={15} color="var(--interactive-primary)" />
-              <span>기존 데이터 덮어쓰기 안내</span>
-            </NoticeTitleRow>
-            <NoticeDescText>
-              포털 성적을 가져오면 현재 학점 계산기에 저장된 과목 내역은{" "}
-              <strong>포털의 공식 성적 데이터로 모두 대체(덮어쓰기)</strong>돼요.
-              <br />
-              (직접 수동 입력했던 미반영 과목 등은 포털 성적 기준으로 초기화됩니다.)
-            </NoticeDescText>
-          </PortalNoticeCard>
-          <SecurityNoticeText>
-            포털 로그인 정보는 서버에 전송되지 않으며, 기기에서 직접 안전하게 성적을 불러와요.
-          </SecurityNoticeText>
-        </PortalModalContent>
-      </Modal>
-
-      <PortalAccountModal
-        isOpen={isPortalModalOpen}
-        onClose={() => setIsPortalModalOpen(false)}
-        onSuccess={() => {
-          setIsPortalModalOpen(false);
-          handleExecutePortalGradeImport();
-        }}
+      <PortalGradeImportSheet
+        open={showPortalImportSheet}
+        onClose={() => setShowPortalImportSheet(false)}
+        onImported={handlePortalGradesImported}
       />
 
       {/* 빈 상태(시작 카드)에서는 저장할 것이 없으니 숨긴다. 시안에도 없다. */}
@@ -2470,50 +2371,5 @@ const EmptySemesterState = styled.div`
     color: var(--text-tertiary);
     margin-bottom: 8px;
   }
-`;
-
-const PortalModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 4px;
-`;
-
-const PortalNoticeCard = styled.div`
-  background-color: var(--bg-subtle);
-  border: 1px solid var(--border-default);
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-`;
-
-const NoticeTitleRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--interactive-primary);
-`;
-
-const NoticeDescText = styled.p`
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  line-height: 1.45;
-  margin: 0;
-
-  strong {
-    color: var(--text-primary);
-    font-weight: 600;
-  }
-`;
-
-const SecurityNoticeText = styled.div`
-  font-size: 11.5px;
-  color: var(--text-tertiary);
-  text-align: center;
 `;
 

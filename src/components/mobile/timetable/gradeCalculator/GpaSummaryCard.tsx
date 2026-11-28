@@ -1,17 +1,9 @@
 import styled from "styled-components";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 import Icon from "@/components/common/Icon";
 import SlidingNumber from "@/components/common/SlidingNumber";
 import { typography } from "@/styles/typography";
 import { MAX_GPA } from "@/utils/graduationRequirements";
+import GpaTrendChart, { type GpaTrendPoint } from "./GpaTrendChart";
 import {
   ActionButton,
   Divider,
@@ -21,13 +13,6 @@ import {
   ProgressTrack,
   SectionCard,
 } from "./ui";
-
-export interface GpaTrendPoint {
-  /** x축 라벨("24-2") */
-  name: string;
-  overall: number;
-  major: number | null;
-}
 
 interface GpaSummaryCardProps {
   overallGpa: number;
@@ -39,8 +24,6 @@ interface GpaSummaryCardProps {
   requiredAverageGpa: number | null;
   remainingCredits: number;
   trend: GpaTrendPoint[];
-  /** "24-2 평점이 가장 낮아요 · F 1과목(통계학입문)" 같은 한 줄 요약. 없으면 null. */
-  trendCaption: string | null;
   expanded: boolean;
   onToggle: () => void;
   onEditTargetGpa: () => void;
@@ -50,6 +33,7 @@ interface GpaSummaryCardProps {
 /**
  * Figma "리디자인 / 메인 · 기본(접힘)"(7885:32518)·"메인 · 펼침"(7885:32673)의 요약 카드.
  * 접힘: 전체 평점 + 전공·취득 / 펼침: 목표 평점 진행도 + 학기별 추이 그래프.
+ * 학기별 추이 그래프는 시안 대신 리디자인 전 그래프(GpaTrendChart)를 쓴다(2026-11-28 결정).
  */
 export default function GpaSummaryCard({
   overallGpa,
@@ -60,7 +44,6 @@ export default function GpaSummaryCard({
   requiredAverageGpa,
   remainingCredits,
   trend,
-  trendCaption,
   expanded,
   onToggle,
   onEditTargetGpa,
@@ -175,116 +158,10 @@ export default function GpaSummaryCard({
           <Divider />
 
           <TrendTitle>학기별 추이</TrendTitle>
-          {trend.length < 2 ? (
-            <EmptyTrend>다음 학기부터 성적 추이를 볼 수 있어요.</EmptyTrend>
-          ) : (
-            <>
-              <ChartBox>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={trend}
-                    margin={{ top: 8, right: 4, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      horizontal
-                      vertical={false}
-                      stroke="var(--border-default)"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      axisLine={false}
-                      tickLine={false}
-                      interval={0}
-                      padding={{ left: 8, right: 8 }}
-                      tick={<TrendXTick lastIndex={trend.length - 1} />}
-                    />
-                    <YAxis
-                      domain={[1.5, MAX_GPA]}
-                      ticks={[2.5, 3.5, 4.5]}
-                      axisLine={false}
-                      tickLine={false}
-                      width={28}
-                      tickFormatter={(v: number) => v.toFixed(1)}
-                      tick={{ fill: "var(--text-tertiary)", fontSize: 12 }}
-                    />
-                    {targetGpa !== null && (
-                      <ReferenceLine
-                        y={targetGpa}
-                        stroke="var(--border-warn)"
-                        strokeDasharray="4 4"
-                        label={{
-                          value: "목표",
-                          position: "insideTopLeft",
-                          fill: "var(--text-warn)",
-                          fontSize: 12,
-                        }}
-                      />
-                    )}
-                    <Line
-                      type="linear"
-                      dataKey="major"
-                      stroke="var(--text-tertiary)"
-                      strokeWidth={2}
-                      strokeDasharray="4 4"
-                      dot={false}
-                      connectNulls
-                      isAnimationActive={false}
-                    />
-                    <Line
-                      type="linear"
-                      dataKey="overall"
-                      stroke="var(--interactive-primary)"
-                      strokeWidth={2}
-                      dot={{
-                        r: 3.5,
-                        fill: "var(--bg-base)",
-                        stroke: "var(--interactive-primary)",
-                        strokeWidth: 2,
-                      }}
-                      isAnimationActive={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartBox>
-              <Legend>
-                <LegendItem>
-                  <LegendSwatch $color="var(--interactive-primary)" />
-                  전체 평점
-                </LegendItem>
-                <LegendItem>
-                  <LegendSwatch $color="var(--text-tertiary)" />
-                  전공 평점
-                </LegendItem>
-              </Legend>
-              {trendCaption && <TrendCaption>{trendCaption}</TrendCaption>}
-            </>
-          )}
+          <GpaTrendChart data={trend} />
         </>
       )}
     </SectionCard>
-  );
-}
-
-/** x축 라벨. 마지막(최근) 학기만 진하게 표시한다. */
-function TrendXTick(props: {
-  x?: number;
-  y?: number;
-  index?: number;
-  payload?: { value: string };
-  lastIndex: number;
-}) {
-  const { x = 0, y = 0, index = 0, payload, lastIndex } = props;
-  const isLast = index === lastIndex;
-  return (
-    <text
-      x={x}
-      y={y + 12}
-      textAnchor="middle"
-      fontSize={12}
-      fill={isLast ? "var(--text-primary)" : "var(--text-tertiary)"}
-    >
-      {payload?.value}
-    </text>
   );
 }
 
@@ -411,40 +288,3 @@ const TrendTitle = styled.p`
   color: var(--text-primary);
 `;
 
-const EmptyTrend = styled.p`
-  ${typography.caption1}
-  margin: 0;
-  color: var(--text-tertiary);
-`;
-
-const ChartBox = styled.div`
-  width: 100%;
-  height: 140px;
-`;
-
-const Legend = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const LegendItem = styled.span`
-  ${typography.caption1}
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text-secondary);
-`;
-
-const LegendSwatch = styled.span<{ $color: string }>`
-  width: 10px;
-  height: 3px;
-  border-radius: 2px;
-  background: ${({ $color }) => $color};
-`;
-
-const TrendCaption = styled.p`
-  ${typography.caption1}
-  margin: 0;
-  color: var(--text-secondary);
-`;

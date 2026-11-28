@@ -12,8 +12,6 @@ interface GradeImportOptionsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (method: GradeImportMethod) => void;
-  /** 포털 가져오기가 진행 중이면 그 항목을 잠근다. */
-  isFetchingPortal: boolean;
 }
 
 interface ImportOption {
@@ -52,7 +50,6 @@ export default function GradeImportOptionsSheet({
   open,
   onOpenChange,
   onSelect,
-  isFetchingPortal,
 }: GradeImportOptionsSheetProps) {
   return (
     <BottomSheet open={open} onOpenChange={onOpenChange} handle="compact">
@@ -68,12 +65,10 @@ export default function GradeImportOptionsSheet({
         </TitleBlock>
         <OptionList>
           {OPTIONS.map((option) => {
-            const disabled = option.method === "portal" && isFetchingPortal;
             return (
               <OptionButton
                 key={option.method}
                 type="button"
-                disabled={disabled}
                 onClick={() => onSelect(option.method)}
               >
                 <IconBox>{option.icon}</IconBox>
@@ -82,9 +77,7 @@ export default function GradeImportOptionsSheet({
                     <OptionTitle>{option.title}</OptionTitle>
                     {option.recommended && <Badge $tone="brand">추천</Badge>}
                   </OptionTitleRow>
-                  <OptionDesc>
-                    {disabled ? "가져오는 중..." : option.desc}
-                  </OptionDesc>
+                  <OptionDesc>{option.desc}</OptionDesc>
                 </OptionText>
                 <Icon name="chevron-right" size={20} className="chevron" />
               </OptionButton>
