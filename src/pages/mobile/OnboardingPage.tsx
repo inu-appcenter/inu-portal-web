@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   onboardingAi,
   onboardingNotice,
-  onboardingPortalMagnifier,
-  onboardingPortalWindow,
   onboardingTimetable,
 } from "@/resources/assets/illustrations/onboarding";
 import {
@@ -44,6 +42,9 @@ import DepartmentSelectSheet, {
   DepartmentOption,
 } from "@/components/mobile/onboarding/DepartmentSelectSheet";
 import ServiceTermsSheet from "@/components/mobile/onboarding/ServiceTermsSheet";
+import PortalLookupIllustration from "@/components/mobile/onboarding/PortalLookupIllustration";
+import { Subtitle, Title, TitleBlock } from "@/components/mobile/onboarding/onboardingText";
+import { isCredentialError } from "@/utils/portalCredential";
 
 /**
  * 온보딩 퍼널 (Figma 08 온보딩 퍼널 6269:18497).
@@ -85,9 +86,6 @@ const getProfileImageUrl = (fireId: number) =>
   `https://portal.inuappcenter.kr/images/profile/${fireId}`;
 
 const normalizeDeptName = (name: string) => name.replace(/[\s·\-()]/g, "").toLowerCase();
-
-const isCredentialError = (message: string) =>
-  ["비밀번호", "아이디", "틀렸습니다", "휴면"].some((kw) => message.includes(kw));
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
@@ -571,10 +569,7 @@ export default function OnboardingPage() {
                   }
                 </Subtitle>
               </TitleBlock>
-              <PortalIllustration aria-hidden>
-                <img className="window" src={onboardingPortalWindow} alt="" />
-                <img className="magnifier" src={onboardingPortalMagnifier} alt="" />
-              </PortalIllustration>
+              <PortalLookupIllustration />
               {isAppEnv ? (
                 <OnboardingBottomCTA
                   placement="inline"
@@ -833,11 +828,6 @@ const fadeIn = keyframes`
   to { opacity: 1; transform: translateY(0); }
 `;
 
-const float = keyframes`
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(6px, 4px) rotate(-6deg); }
-`;
-
 const Page = styled.div`
   width: 100%;
   max-width: 440px;
@@ -857,30 +847,6 @@ const Body = styled.main<{ $gap?: number }>`
   gap: ${({ $gap }) => $gap ?? 32}px;
   padding: 24px 24px 0;
   animation: ${fadeIn} 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-`;
-
-const TitleBlock = styled.div<{ $center?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  text-align: ${({ $center }) => ($center ? "center" : "left")};
-`;
-
-const Title = styled.h1`
-  margin: 0;
-  ${typography.title1}
-  color: var(--text-primary);
-  white-space: pre-line;
-  word-break: keep-all;
-`;
-
-const Subtitle = styled.p`
-  margin: 0;
-  ${typography.body2}
-  color: var(--text-tertiary);
-  white-space: pre-line;
-  word-break: keep-all;
 `;
 
 const IntroBody = styled.main`
@@ -979,39 +945,6 @@ const SheetContent = styled.div`
   align-items: center;
   gap: 16px;
   padding: 16px 0 10px;
-`;
-
-/* Figma lookingup (6304:22848): 창 + 돋보기. 돋보기는 시안처럼 살짝 움직인다 */
-const PortalIllustration = styled.div`
-  position: relative;
-  width: 240px;
-  height: 240px;
-  flex-shrink: 0;
-
-  .window {
-    position: absolute;
-    top: 20.76%;
-    right: 20.23%;
-    bottom: 20.89%;
-    left: 20.24%;
-    width: 59.53%;
-    height: 58.35%;
-  }
-
-  .magnifier {
-    position: absolute;
-    top: 22.12%;
-    left: 16.26%;
-    width: 26.07%;
-    height: 26.07%;
-    animation: ${float} 2.4s ease-in-out infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .magnifier {
-      animation: none;
-    }
-  }
 `;
 
 const SelectField = styled.button`
