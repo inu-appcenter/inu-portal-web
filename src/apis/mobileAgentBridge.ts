@@ -150,6 +150,18 @@ async function sendBridgeAction<T = any>(type: string, payload?: any, timeoutMs 
   return dispatchBridgeAction<T>(type, payload, timeoutMs);
 }
 
+/**
+ * 사용자가 직접 누른 동작용: 조회/실행 브릿지가 동의 없음(CONSENT_REQUIRED)으로 막히면
+ * 에러 문구를 띄우는 대신 동의 시트를 열고, 동의하면 같은 동작을 한 번 더 실행한다.
+ * (자동 조회는 sendBridgeAction 그대로 — 화면 진입만으로 시트가 뜨지 않게.)
+ */
+export async function withPortalConsent<T extends { errorCode?: string }>(run: () => Promise<T>): Promise<T> {
+  const first = await run();
+  if (first.errorCode !== 'CONSENT_REQUIRED') return first;
+  const agreed = await requestPortalSyncConsent();
+  return agreed ? run() : first;
+}
+
 function dispatchBridgeAction<T>(type: string, payload: unknown, timeoutMs: number): Promise<AgentActionResult<T>> {
   return new Promise((resolve) => {
     if (!isMobileAppEnvironment()) {
@@ -721,9 +733,16 @@ export async function saveLmsAccount(username: string, password: string): Promis
   return sendBridgeAction('saveLmsAccount', { username, password });
 }
 
+export type LocalWatchType =
+  | 'STUDY_ROOM_SNIPER'
+  | 'SPECIFIC_SEAT_SNIPER'
+  | 'ROOM_ANY_SEAT'
+  | 'SEAT_EXPIRATION'
+  | 'ASSIGNMENT_REMINDER';
+
 export interface LocalWatchJob {
   id: string;
-  type: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
+  type: LocalWatchType;
   title: string;
   targetName: string;
   targetId?: string | number;
@@ -739,6 +758,8 @@ export interface LocalWatchJob {
   createdAt: number;
   expiresAt: number;
   status: 'ACTIVE' | 'NOTIFIED' | 'EXPIRED' | 'CANCELLED';
+  /** iOS 백그라운드 유지 방식(위치 권한 결과). 구버전 앱은 보내지 않는다. */
+  keepAliveMode?: 'ALWAYS' | 'WHEN_IN_USE' | 'NONE' | 'NOT_NEEDED';
 }
 
 /**
@@ -752,7 +773,7 @@ export async function getLocalWatchJobsFromApp(): Promise<AgentActionResult<Loca
  * 모바일 기기 로컬 감시 등록
  */
 export async function registerLocalWatchJobInApp(payload: {
-  watchType: 'STUDY_ROOM_SNIPER' | 'SPECIFIC_SEAT_SNIPER' | 'SEAT_EXPIRATION' | 'ASSIGNMENT_REMINDER';
+  watchType: LocalWatchType;
   roomId?: number;
   roomName?: string;
   seatId?: number;

@@ -2268,7 +2268,7 @@ const LibrarySeatConfirmCard: React.FC<{
       if (res.success) {
         setActionStatus("SUCCESS");
         setStatusMessage(
-          `🎯 [${currentRoomObj.name}] ${occupiedSeat.code}번 좌석 빈자리 알림(스나이퍼)이 기기에 등록되었습니다! 자리가 나는 즉시 푸시 알림을 보내드립니다.`
+          `🎯 [${currentRoomObj.name}] ${occupiedSeat.code}번 좌석 빈자리 알림을 켰어요! 자리가 나면 횃불이가 바로 알려드릴게요.`
         );
       } else {
         setActionStatus("ERROR");
@@ -2852,7 +2852,7 @@ const LibraryStudyRoomConfirmCard: React.FC<{
                         <span style={{ width: 8, height: 8, background: "rgb(147, 197, 253)", borderRadius: 2, display: "inline-block" }} /> 가능
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                        <span style={{ width: 8, height: 8, background: "rgb(71, 85, 105)", borderRadius: 2, display: "inline-block" }} /> 점유됨
+                        <span style={{ width: 8, height: 8, background: "rgb(71, 85, 105)", borderRadius: 2, display: "inline-block" }} /> 이용 중
                       </span>
                     </div>
                   </StudyTimelineHeader>
@@ -2987,9 +2987,9 @@ const LocalWatchActionCard: React.FC<{ data?: any; onNavigate?: () => void }> = 
     // 방/좌석 ID는 공개 목록에서 확정해야 하므로 부족하면 기존 상세 화면으로 이동한다.
     if (!data?.roomId) { onNavigate?.(); window.location.assign(ROUTES.SERVICES.LIBRARY); return; }
     const res = await registerLocalWatchJobInApp({ watchType: data.watchType, roomId: Number(data.roomId), roomName: data.targetName, seatNo: data.seatNo, targetHour: data.targetHour, hopeDate: data.hopeDate, durationMinutes: Number(data.durationMinutes || 90) });
-    setMessage(res.success ? "기기 알림 감시를 등록했습니다." : (res.errorMessage || "감시 등록에 실패했습니다."));
+    setMessage(res.success ? "자리가 나면 바로 알려드릴게요." : (res.errorMessage || "빈자리 알림을 켜지 못했어요."));
   };
-  return <LibraryCardBox><CardHeader><Bell size={17} color="var(--interactive-primary)" /><CardTitle>기기 내 빈자리 감시</CardTitle></CardHeader><p>{message || `${data?.targetName || "대상"}의 빈자리를 앱에서 감시합니다.`}</p><StudyBookButton type="button" onClick={register}>{data?.roomId ? "감시 등록" : "대상 선택하기"}</StudyBookButton></LibraryCardBox>;
+  return <LibraryCardBox><CardHeader><Bell size={17} color="var(--interactive-primary)" /><CardTitle>빈자리 알림</CardTitle></CardHeader><p>{message || `${data?.targetName || "대상"} 빈자리를 횃불이가 찾아드려요.`}</p><StudyBookButton type="button" onClick={register}>{data?.roomId ? "자리 나면 알림 받기" : "대상 선택하기"}</StudyBookButton></LibraryCardBox>;
 };
 
 const LibraryCardBox = styled.div`
@@ -3456,17 +3456,17 @@ const CampusWatchResultCard: React.FC<{
     <WatchCardBox>
       <CardHeader>
         <Bell size={17} color="var(--interactive-primary)" />
-        <CardTitle>실시간 빈자리 감시 시작</CardTitle>
-        <WatchLiveBadge>감시 중</WatchLiveBadge>
+        <CardTitle>빈자리 알림 시작</CardTitle>
+        <WatchLiveBadge>찾는 중</WatchLiveBadge>
       </CardHeader>
       <WatchBody>
-        <WatchTargetTitle>{targetName} 빈자리 스나이퍼</WatchTargetTitle>
+        <WatchTargetTitle>{targetName} 빈자리 알림</WatchTargetTitle>
         <WatchDesc>
-          서버가 45초마다 안전하게 감시 중입니다. 빈자리 발생 시 즉시 푸시 알림을 보내드릴게요!
+          횃불이가 45초마다 빈자리를 찾고 있어요. 자리가 나면 바로 푸시 알림을 보내드릴게요!
         </WatchDesc>
         <WatchTimeInfo>
           <Clock size={13} color="var(--text-warn)" />
-          <span>최대 감시 시간: 약 {remainingMinutes}분 (만료 시 자동 종료)</span>
+          <span>최대 약 {remainingMinutes}분 동안 찾아볼게요 (시간이 지나면 자동 종료)</span>
         </WatchTimeInfo>
       </WatchBody>
       <WatchManageBtn
@@ -3476,7 +3476,7 @@ const CampusWatchResultCard: React.FC<{
           navigate(ROUTES.MYPAGE.SMART_WATCH);
         }}
       >
-        감시 목록 & 관리 페이지 열기
+        빈자리 알림 관리 열기
       </WatchManageBtn>
     </WatchCardBox>
   );
@@ -3497,11 +3497,11 @@ const CampusWatchListCard: React.FC<{
     <WatchCardBox>
       <CardHeader>
         <Bell size={17} color="var(--interactive-primary)" />
-        <CardTitle>내 스마트 감시 현황</CardTitle>
+        <CardTitle>내 빈자리 알림</CardTitle>
         <WatchCountBadge>{activeJobs.length}건 진행 중</WatchCountBadge>
       </CardHeader>
       {activeJobs.length === 0 ? (
-        <WatchEmptyText>현재 진행 중인 실시간 빈자리 감시가 없습니다.</WatchEmptyText>
+        <WatchEmptyText>지금 찾고 있는 빈자리가 없어요.</WatchEmptyText>
       ) : (
         <WatchMiniList>
           {activeJobs.slice(0, 4).map((job: any) => (
@@ -3522,7 +3522,7 @@ const CampusWatchListCard: React.FC<{
           navigate(ROUTES.MYPAGE.SMART_WATCH);
         }}
       >
-        스마트 감시 관리 대시보드
+        빈자리 알림 관리
       </WatchManageBtn>
     </WatchCardBox>
   );

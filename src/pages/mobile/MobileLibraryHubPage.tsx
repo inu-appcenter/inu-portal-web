@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useHeader } from "@/context/HeaderContext";
@@ -36,6 +36,8 @@ import {
   startLibrarySeatSessionBridge,
   cancelLibrarySeatSessionBridge,
   isMobileAppEnvironment,
+  type LocalWatchJob,
+  withPortalConsent,
 } from "@/apis/mobileAgentBridge";
 import { ROUTES } from "@/constants/routes";
 import { MOBILE_PAGE_GUTTER, DESKTOP_MEDIA } from "@/styles/responsive";
@@ -201,7 +203,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
     previewSlots.push({
       timeStr,
       type: isPast ? "past" : isOcc ? "occ" : "avail",
-      label: `${timeStr} ${isPast ? "(마감)" : isOcc ? "(점유됨)" : "(이용 가능)"}`,
+      label: `${timeStr} ${isPast ? "(마감)" : isOcc ? "(이용 중)" : "(이용 가능)"}`,
     });
   }
 
@@ -226,7 +228,7 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
     summaryText = "";
   } else {
     badgeType = "occupied";
-    badgeLabel = "점유됨";
+    badgeLabel = "이용 중";
     summaryText = "";
   }
 
@@ -239,6 +241,15 @@ export function computeStudyRoom2HourStatus(detail: StudyRoomDetail | undefined)
     badgeType,
     previewSlots,
   };
+}
+
+/** 빈자리 알림 등록 토스트. iOS는 위치 권한 결과에 따라 백그라운드 동작 여부가 달라서 함께 안내한다. */
+function watchRegisteredMessage(target: string, mode?: LocalWatchJob["keepAliveMode"]): string {
+  const base = `'${target}' 빈자리 알림을 켰어요.`;
+  if (mode === "ALWAYS" || mode === "NOT_NEEDED") return `${base} 앱을 닫아도 자리가 나면 알려드려요.`;
+  if (mode === "WHEN_IN_USE") return `${base} 앱을 완전히 끄면 횃불이도 찾기를 멈춰요.`;
+  if (mode === "NONE") return `${base} 위치 권한이 없어 앱을 켜 둔 동안만 확인해요.`;
+  return base;
 }
 
 export default function MobileLibraryHubPage() {
@@ -418,6 +429,50 @@ export default function MobileLibraryHubPage() {
     };
   }, [navigate]);
 
+  // 알림·Live Activity 딥링크: /services/library?tab=seats&roomId=..&seatId=..
+  // 또는 ?tab=study&roomId=..&date=YYYY-MM-DD&hour=H → 해당 열람실 배치도 / 스터디룸 예약 시트를 연다.
+  // 특정 좌석이고 지금 비어 있으면 바로 배정 확인창까지 띄운다.
+  const deepLinkHandledRef = useRef<string | null>(null);
+  useEffect(() => {
+    const roomIdParam = Number(searchParams.get("roomId"));
+    if (!roomIdParam) return;
+    const key = searchParams.toString();
+    if (deepLinkHandledRef.current === key) return;
+
+    if (urlTab === "study") {
+      const sRoom = studyRooms.find((r) => r.id === roomIdParam);
+      if (!sRoom) return;
+      deepLinkHandledRef.current = key;
+      setActiveTab("study");
+      void (async () => {
+        const opened = await handleOpenStudyBooking(sRoom);
+        if (!opened) return;
+        const date = searchParams.get("date");
+        if (date && date !== getKstDateString(0)) {
+          setSelectedDate(date);
+          const res = await withPortalConsent(() => getStudyRoomDetail(sRoom.id, date));
+          if (res.success && res.detail) setStudyRoomDetail(res.detail);
+        }
+        const hour = Number(searchParams.get("hour"));
+        if (hour >= 9 && hour <= 21) handleBeginTimeChange(`${hour < 10 ? `0${hour}` : hour}:00`);
+      })();
+      return;
+    }
+
+    const room = rooms.find((r) => r.id === roomIdParam);
+    if (!room) return;
+    deepLinkHandledRef.current = key;
+    setActiveTab("seats");
+    void (async () => {
+      const seats = await handleOpenSeatPicker(room);
+      const seatId = Number(searchParams.get("seatId"));
+      const target = seatId ? seats?.find((seat) => seat.id === seatId) : undefined;
+      if (target && !target.isOccupied && target.isActive !== false) handleAssignSeat(target);
+    })();
+    // 핸들러는 매 렌더 새로 만들어지므로 의존성에서 뺀다(데이터·URL이 바뀔 때만 실행).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms, studyRooms, searchParams]);
+
   // 임시 배정 남은 시간 카운트다운
   useEffect(() => {
     if (!mySeat?.isTempCharge || !mySeat.beginTime) {
@@ -443,13 +498,14 @@ export default function MobileLibraryHubPage() {
   }, [mySeat]);
 
   // 좌석 배치도 열기
-  const handleOpenSeatPicker = async (room: LibrarySeatRoom) => {
+  const handleOpenSeatPicker = async (room: LibrarySeatRoom): Promise<LibrarySeat[] | null> => {
     setIsLoadingSeats(true);
     try {
-      const res = await getRoomSeats(room.id);
+      const res = await withPortalConsent(() => getRoomSeats(room.id));
       if (res.success && res.seats.length > 0) {
         setRoomSeats(res.seats);
         setSelectedSeatRoom(room);
+        return res.seats;
       } else if (res.errorCode === "NOT_IN_APP") {
         showAlert(
           "모바일 앱 전용 기능",
@@ -472,6 +528,7 @@ export default function MobileLibraryHubPage() {
     } finally {
       setIsLoadingSeats(false);
     }
+    return null;
   };
 
   // 좌석 즉시 배정
@@ -483,7 +540,7 @@ export default function MobileLibraryHubPage() {
       onConfirm: async () => {
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         try {
-          const res = await reserveSeat(seat.id);
+          const res = await withPortalConsent(() => reserveSeat(seat.id));
           if (res.success) {
             showToast(`'${seat.name || seat.code}' 좌석이 배정되었습니다.`);
             setSelectedSeatRoom(null);
@@ -505,27 +562,55 @@ export default function MobileLibraryHubPage() {
     });
   };
 
-  // 특정 좌석 빈자리 알림 등록
+  // 특정 좌석 빈자리 알림 등록 (앱 로컬 감시: 백그라운드에서도 30초마다 확인)
   const handleRegisterSpecificSeatSniper = async (seat: LibrarySeat) => {
-    try {
-      await registerLocalWatchJobInApp({
-        watchType: "SPECIFIC_SEAT_SNIPER",
-        seatId: seat.id,
-        seatName: seat.name || `${seat.code}번 좌석`,
-        durationMinutes: 120,
-      });
-      mixpanelTrack.contentCreated("library", "seat_watch", {
-        scope: "seat",
-      });
-      showToast(`'${seat.name || seat.code}' 빈자리 알림이 등록되었습니다.`);
-    } catch (e) {
-      console.error(e);
-      showAlert("알림 등록 실패", "빈자리 알림 등록에 실패했습니다.");
+    const roomId = seat.roomId ?? selectedSeatRoom?.id;
+    const roomName = seat.roomName || selectedSeatRoom?.name || "열람실";
+    if (!roomId) {
+      showAlert("알림 등록 실패", "좌석이 속한 열람실 정보를 찾을 수 없습니다.");
+      return;
     }
+    const res = await withPortalConsent(() => registerLocalWatchJobInApp({
+      watchType: "SPECIFIC_SEAT_SNIPER",
+      roomId,
+      roomName,
+      seatId: seat.id,
+      seatNo: seat.code,
+      durationMinutes: 180,
+    }));
+    if (!res.success) {
+      showAlert("알림 등록 실패", res.errorMessage || "빈자리 알림 등록에 실패했습니다.");
+      return;
+    }
+    mixpanelTrack.contentCreated("library", "seat_watch", {
+      scope: "seat",
+    });
+    showToast(watchRegisteredMessage(`${roomName} ${seat.code}번`, res.data?.keepAliveMode));
   };
 
-  // 열람실 전체 빈자리 알림 등록
+  // 열람실 전체 빈자리 알림 등록 (앱이면 기기 로컬 감시, 웹이면 서버 감시)
   const handleRegisterSeatSniper = async (room: LibrarySeatRoom) => {
+    const res = isMobileAppEnvironment()
+      ? await withPortalConsent(() => registerLocalWatchJobInApp({
+          watchType: "ROOM_ANY_SEAT",
+          roomId: room.id,
+          roomName: room.name,
+          durationMinutes: 180,
+        }))
+      : null;
+    // 구버전 앱은 ROOM_ANY_SEAT를 모르므로("지원하지 않는 로컬 감시 타입") 서버 감시로 폴백
+    const unsupported = !!res && !res.success && (res.errorMessage || "").includes("지원하지 않는");
+    if (res && !unsupported) {
+      if (!res.success) {
+        showAlert("알림 등록 실패", res.errorMessage || "빈자리 알림 등록에 실패했습니다.");
+        return;
+      }
+      mixpanelTrack.contentCreated("library", "seat_watch", {
+        scope: "room",
+      });
+      showToast(watchRegisteredMessage(room.name, res.data?.keepAliveMode));
+      return;
+    }
     try {
       await postRegisterCampusWatch({
         domain: "LIBRARY_SEAT",
@@ -572,7 +657,7 @@ export default function MobileLibraryHubPage() {
   };
 
   // 스터디룸 예약 바텀시트 열기
-  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom) => {
+  const handleOpenStudyBooking = async (sRoom: LibraryStudyRoom): Promise<boolean> => {
     setCompanions([]);
     setCompanionName("");
     setCompanionMemberNo("");
@@ -610,11 +695,12 @@ export default function MobileLibraryHubPage() {
 
     setIsLoadingTimeline(true);
     try {
-      const res = await getStudyRoomDetail(sRoom.id, today);
+      const res = await withPortalConsent(() => getStudyRoomDetail(sRoom.id, today));
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [sRoom.id]: res.detail! }));
         setSelectedStudyRoom(sRoom);
+        return true;
       } else if (res.errorCode === "NOT_IN_APP") {
         showAlert(
           "모바일 앱 전용 기능",
@@ -634,6 +720,7 @@ export default function MobileLibraryHubPage() {
     } finally {
       setIsLoadingTimeline(false);
     }
+    return false;
   };
 
   // 날짜 변경 시 타임라인 갱신
@@ -642,7 +729,7 @@ export default function MobileLibraryHubPage() {
     if (!selectedStudyRoom) return;
     setIsLoadingTimeline(true);
     try {
-      const res = await getStudyRoomDetail(selectedStudyRoom.id, dateStr);
+      const res = await withPortalConsent(() => getStudyRoomDetail(selectedStudyRoom.id, dateStr));
       if (res.success && res.detail) {
         setStudyRoomDetail(res.detail);
         setStudyDetailsMap((prev) => ({ ...prev, [selectedStudyRoom.id]: res.detail! }));
@@ -1191,10 +1278,6 @@ export default function MobileLibraryHubPage() {
               <span>새로고침</span>
             </RefreshButton>
           </SectionHeader>
-
-          <NoticeBanner>
-            날짜별 10분 단위 예약 현황을 확인하고 직접 예약할 수 있습니다.
-          </NoticeBanner>
 
           {/* 검색 및 필터 바 */}
           <FilterArea>
@@ -1763,7 +1846,7 @@ export default function MobileLibraryHubPage() {
                   <LegendDot $type="avail" /> 가능
                 </LegendItem>
                 <LegendItem>
-                  <LegendDot $type="occ" /> 점유됨
+                  <LegendDot $type="occ" /> 이용 중
                 </LegendItem>
                 <LegendItem>
                   <LegendDot $type="past" /> 마감
@@ -1793,7 +1876,7 @@ export default function MobileLibraryHubPage() {
                           <MinuteBar
                             key={mIdx}
                             $type={isPast ? "past" : isOcc ? "occ" : "avail"}
-                            title={`${timeStr} ${isPast ? "(마감)" : isOcc ? "(점유됨)" : "(선택 가능)"}`}
+                            title={`${timeStr} ${isPast ? "(마감)" : isOcc ? "(이용 중)" : "(선택 가능)"}`}
                             style={{ cursor: !isPast && !isOcc ? "pointer" : "default" }}
                             onClick={() => {
                               if (!isPast && !isOcc) {
@@ -2219,16 +2302,6 @@ const RefreshButton = styled.button`
   font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
-`;
-
-const NoticeBanner = styled.div`
-  background: var(--bg-brand);
-  border: 1px solid var(--border-brand-subtle);
-  color: rgb(30, 64, 175);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 12.5px;
-  line-height: 1.4;
 `;
 
 const SkeletonList = styled.div`

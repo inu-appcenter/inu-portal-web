@@ -151,6 +151,9 @@ export default function MobileSmartWatchManagementPage() {
       } else if (l.type === "SPECIFIC_SEAT_SNIPER") {
         domainName = "열람실 특정 좌석";
         conditionDesc = "해당 좌석 퇴실/반납 시 알림으로 안내합니다.";
+      } else if (l.type === "ROOM_ANY_SEAT") {
+        domainName = "열람실 빈자리";
+        conditionDesc = "열람실에 빈자리가 하나라도 생기면 알림으로 안내합니다.";
       } else if (l.type === "SEAT_EXPIRATION") {
         domainName = "좌석 만료 리마인더";
         conditionDesc = "이용 종료 20분 전 알림으로 안내합니다.";

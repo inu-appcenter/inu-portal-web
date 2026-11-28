@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { X, ShieldCheck, Lock, User } from "lucide-react";
 import { savePortalAccount, deletePortalAccount, fetchAcademicInfoFromApp, isMobileAppEnvironment } from "@/apis/mobileAgentBridge";
 import { secureStorage } from "@/utils/secureStorage";
+import { secureStorageLabel } from "@/utils/secureStorageLabel";
 
 interface Props {
   isOpen: boolean;
@@ -104,7 +105,7 @@ export const PortalAccountModal: React.FC<Props> = ({
         <SecurityNotice>
           <ShieldCheck size={18} color="var(--text-success)" />
           <SecurityNoticeText>
-            <strong>안심하세요!</strong> 인천대 포털, LMS, 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 등록하시면 기기 보안 영역(KeyStore)에만 암호화 보관되며, 포털 학적·LMS 과제·도서관 좌석이 한 번에 자동 연동됩니다.
+            <strong>안심하세요!</strong> 인천대 포털, LMS, 도서관은 동일한 학번/비밀번호를 사용합니다. 1회만 등록하시면 {secureStorageLabel()}에만 암호화 보관되고 INTIP 서버로는 전송되지 않으며, 포털 학적·LMS 과제·도서관 좌석이 한 번에 자동 연동됩니다.
           </SecurityNoticeText>
         </SecurityNotice>
 

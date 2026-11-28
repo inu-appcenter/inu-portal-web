@@ -34,7 +34,7 @@ const TOOL_NAME_KO: Record<string, string> = {
   LIBRARY_SEATS: "도서관 좌석 관제",
   LMS_CALENDAR: "이러닝(LMS) 일정",
   LMS_ASSIGNMENTS: "이러닝(LMS) 과제",
-  CAMPUS_WATCH: "실시간 빈자리 감시(스나이퍼)",
+  CAMPUS_WATCH: "실시간 빈자리 찾기",
 };
 
 export const AgentReasoningAccordion: React.FC<AgentReasoningAccordionProps> = ({
