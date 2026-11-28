@@ -22,6 +22,8 @@ import GradeImportOptionsSheet, {
   type GradeImportMethod,
 } from "@/components/mobile/timetable/gradeCalculator/GradeImportOptionsSheet";
 import GraduationSummaryCard from "@/components/mobile/timetable/gradeCalculator/GraduationSummaryCard";
+import GraduationDetailView from "@/components/mobile/timetable/gradeCalculator/GraduationDetailView";
+import { useSheetBackHandler } from "@/hooks/useSheetBackHandler";
 import {
   ActionButton,
   CardTitle,
@@ -288,6 +290,14 @@ export default function MobileGradeCalculatorPage() {
   const [showGraph, setShowGraph] = useState<boolean>(false);
   /** 졸업요건 카드 펼침 */
   const [showGraduationDetail, setShowGraduationDetail] = useState<boolean>(false);
+  /**
+   * 졸업요건 상세 화면(Figma "졸업요건 상세")을 열었는지.
+   * 작성 중인(저장 전) 성적으로 판정해야 해서 라우트를 나누지 않고 이 페이지 안에서
+   * 전체 화면으로 바꿔 그린다. 경로가 그대로라 저장 이탈 경고도 걸리지 않는다.
+   */
+  const [showGraduationPage, setShowGraduationPage] = useState<boolean>(false);
+  /** 상세 화면을 열기 전 스크롤 위치. 닫을 때 졸업요건 카드 자리로 돌아온다. */
+  const graduationPageScrollRef = useRef(0);
   const [showImportOptionsSheet, setShowImportOptionsSheet] = useState<boolean>(false);
   /** 빈 상태에서 "직접 입력하기"를 눌렀는지. 과목이 하나도 없어도 입력 화면을 보여준다. */
   const [startedManually, setStartedManually] = useState<boolean>(false);
@@ -378,11 +388,33 @@ export default function MobileGradeCalculatorPage() {
   const isLoggedIn = Boolean(useUserStore((state) => state.tokenInfo.accessToken));
 
   // --- Header Integration ---
-  useHeader({
-    title: "학점계산기",
-    hasback: true,
-    rightArea: null,
-  });
+  const closeGraduationPage = () => {
+    setShowGraduationPage(false);
+    const top = graduationPageScrollRef.current;
+    requestAnimationFrame(() => window.scrollTo({ top }));
+  };
+  const openGraduationPage = () => {
+    graduationPageScrollRef.current = window.scrollY;
+    setShowGraduationPage(true);
+    requestAnimationFrame(() => window.scrollTo({ top: 0 }));
+  };
+  // 브라우저·앱 뒤로가기로 상세 화면을 닫는다(시트와 같은 히스토리 처리).
+  useSheetBackHandler(showGraduationPage, closeGraduationPage);
+
+  useHeader(
+    showGraduationPage
+      ? {
+          title: "졸업요건",
+          hasback: true,
+          rightArea: null,
+          onBack: closeGraduationPage,
+        }
+      : {
+          title: "학점계산기",
+          hasback: true,
+          rightArea: null,
+        },
+  );
 
   // --- Load Data ---
   // 로그인한 사용자는 서버(GET /api/grades/all)를 우선하고, 서버에 데이터가
@@ -1329,6 +1361,15 @@ export default function MobileGradeCalculatorPage() {
         onSave={handleSaveGraduationProfile}
       />
 
+      {showGraduationPage && resolvedGraduationRule && graduationEvaluation ? (
+        <GraduationDetailView
+          profile={graduationProfile}
+          resolved={resolvedGraduationRule}
+          evaluation={graduationEvaluation}
+          onEdit={() => setShowGraduationModal(true)}
+        />
+      ) : (
+      <>
       {isStartEmpty ? (
         /* Figma "리디자인 / 빈 상태 (첫 진입)" */
         <SectionCard as="div">
@@ -1574,11 +1615,13 @@ export default function MobileGradeCalculatorPage() {
         profile={graduationProfile}
         resolved={resolvedGraduationRule}
         evaluation={graduationEvaluation}
-        requiredAverageGpa={requiredAverageGpa}
         expanded={showGraduationDetail}
         onToggle={() => setShowGraduationDetail((prev) => !prev)}
         onEdit={() => setShowGraduationModal(true)}
+        onOpenDetail={openGraduationPage}
       />
+      </>
+      )}
 
       <GradeImportOptionsSheet
         open={showImportOptionsSheet}
@@ -1769,7 +1812,8 @@ export default function MobileGradeCalculatorPage() {
       />
 
       {/* 빈 상태(시작 카드)에서는 저장할 것이 없으니 숨긴다. 시안에도 없다. */}
-      {!(isStartEmpty && !hasChanges) && (
+      {/* 졸업요건 상세 화면에도 저장 버튼이 없다(시안). 작성 중인 내용은 그대로 남는다. */}
+      {!(isStartEmpty && !hasChanges) && !showGraduationPage && (
       <FloatingSaveArea>
         <CapsuleButton
           variant="primary"
