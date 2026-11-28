@@ -24,6 +24,11 @@ interface GraduationRequirementCardProps {
   /** 목표 평점에 닿기 위해 남은 학점에서 받아야 하는 평균 평점 */
   requiredAverageGpa: number | null;
   onEdit: () => void;
+  /**
+   * 다른 카드(학점계산기 리디자인의 접히는 졸업요건 카드) 안에 넣을 때 true.
+   * 카드 테두리와 "졸업요건" 제목을 빼고 내용만 그린다.
+   */
+  embedded?: boolean;
 }
 
 const formatEnglishCertification = (
@@ -43,6 +48,7 @@ export default function GraduationRequirementCard({
   evaluation,
   requiredAverageGpa,
   onEdit,
+  embedded = false,
 }: GraduationRequirementCardProps) {
   const departmentTitle = findTitleOrCode(profile.departmentCode);
   const [showDoneMajorCourses, setShowDoneMajorCourses] = useState(false);
@@ -96,9 +102,9 @@ export default function GraduationRequirementCard({
     requiredMajorCourses?.filter((course) => course.done) ?? [];
 
   return (
-    <Card>
+    <Card $embedded={embedded}>
       <CardHeader>
-        <CardTitle>졸업요건</CardTitle>
+        {embedded ? <span /> : <CardTitle>졸업요건</CardTitle>}
         <EditButton onClick={onEdit}>
           <Settings2 size={14} />
           <span>설정</span>
@@ -338,7 +344,7 @@ function MajorCourseRow({ course }: { course: RequiredMajorCourseProgress }) {
   );
 }
 
-const Card = styled.div`
+const Card = styled.div<{ $embedded?: boolean }>`
   background-color: var(--bg-base);
   border: 1px solid var(--border-default);
   border-radius: 20px;
@@ -347,6 +353,15 @@ const Card = styled.div`
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+  ${({ $embedded }) =>
+    $embedded &&
+    `
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  `}
 `;
 
 const CardHeader = styled.div`
